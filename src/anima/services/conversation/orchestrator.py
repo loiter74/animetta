@@ -11,8 +11,8 @@ import numpy as np
 from datetime import datetime
 import uuid
 
-from anima.events.core import EventBus, EventRouter, EventPriority
-from anima.core import EventType, OutputEvent
+from anima.events import EventBus, EventRouter, EventPriority
+from anima.events import EventType, OutputEvent
 from anima.pipeline import InputPipeline, OutputPipeline
 from anima.pipeline.steps import ASRStep, TextCleanStep, EmotionExtractionStep
 
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from anima.services.asr import ASRInterface
     from anima.services.tts import TTSInterface
     from anima.services.llm import AgentInterface
-    from anima.events.handlers import BaseHandler
+    from anima.handlers import BaseHandler
     from anima.core import WebSocketSend, PipelineContext
     from anima.memory import MemorySystem
 
@@ -101,7 +101,7 @@ class ConversationOrchestrator:
         # 包装 websocket_send（如果提供）以适配前端事件格式
         self.websocket_send = websocket_send
         if websocket_send is not None:
-            from anima.events.handlers.socket_adapter import SocketEventAdapter
+            from anima.handlers.adapters.socket import SocketEventAdapter
             adapter = SocketEventAdapter(websocket_send)
             self.websocket_send = adapter.send
 
@@ -518,7 +518,7 @@ class ConversationOrchestrator:
             emotions: 表情标签列表
             text: 文本内容
         """
-        from anima.core.events import EventType
+        from anima.events import EventType
 
         event_data = {
             "audio_path": audio_path,

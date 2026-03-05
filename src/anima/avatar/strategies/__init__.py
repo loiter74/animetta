@@ -6,9 +6,9 @@
 """
 
 from .base import ITimelineStrategy, TimelineSegment, TimelineConfig
-from .position_based import PositionBasedStrategy
-from .duration_based import DurationBasedStrategy
-from .intensity_based import IntensityBasedStrategy
+from .position import PositionBasedStrategy
+from .duration import DurationBasedStrategy
+from .intensity import IntensityBasedStrategy
 
 __all__ = [
     "ITimelineStrategy",

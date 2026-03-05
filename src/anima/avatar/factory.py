@@ -9,12 +9,12 @@ from typing import Dict, Type, Optional, Any
 from loguru import logger
 
 from .analyzers.base import IEmotionAnalyzer
-from .analyzers.standalone_llm_analyzer import StandaloneLLMTagAnalyzer
-from .analyzers.keyword_analyzer import KeywordAnalyzer
+from .analyzers.llm_tag import StandaloneLLMTagAnalyzer
+from .analyzers.keyword import KeywordAnalyzer
 from .strategies.base import ITimelineStrategy, TimelineConfig
-from .strategies.position_based import PositionBasedStrategy
-from .strategies.duration_based import DurationBasedStrategy
-from .strategies.intensity_based import IntensityBasedStrategy
+from .strategies.position import PositionBasedStrategy
+from .strategies.duration import DurationBasedStrategy
+from .strategies.intensity import IntensityBasedStrategy
 
 
 class EmotionAnalyzerFactory:

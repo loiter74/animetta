@@ -1,0 +1,76 @@
+# 风格转换训练配置
+# Style Transfer Training Configuration
+
+# ===========================
+# 模型配置
+# ===========================
+model:
+  base_model: "Qwen/Qwen22.5-7B-Instruct"
+  cache_dir: null  # 或指定本地缓存路径
+  use_flash_attention: true
+
+# ===========================
+# LoRA 配置
+# ===========================
+lora:
+  r: 16                      # LoRA rank
+  lora_alpha: 32             # 通常设为 2 * r
+  lora_dropout: 0.05
+  target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
+  bias: "none"
+
+# ===========================
+# 训练配置
+# ===========================
+training:
+  max_epochs: 3
+  batch_size: 4              # per device
+  gradient_accumulation_steps: 4
+  learning_rate: 2.0e-4
+  weight_decay: 0.01
+  warmup_ratio: 0.1
+  max_source_length: 256       # 输入最大长度
+  max_target_length: 256       # 输出最大长度
+  optimizer: "adamw_torch"
+  lr_scheduler: "cosine"
+  precision: "bf16-mixed"
+  gradient_checkpointing: true
+  log_every_n_steps: 10
+  val_check_interval: 0.25
+
+# ===========================
+# 数据配置
+# ===========================
+data:
+  # 数据根目录 (E盘)
+  data_root: "E:/anima_data"
+  # 训练/验证数据 (相对于 data_root/processed/)
+  train_file: "train.json"
+  val_file: "val.json"
+  # 原始数据目录 (相对于 data_root)
+  raw_data_dir: "raw"
+  # 缓存目录 (相对于 data_root)
+  cache_dir: "cache"
+  # 处理配置
+  num_workers: 4
+  preprocessing_num_workers: 8
+  # 增量处理
+  resume_from_checkpoint: true
+  checkpoint_interval: 1000
+
+# ===========================
+# 其他配置
+# ===========================
+output_dir: "outputs/style_transfer"
+seed: 42
+
+# 风格信息 (运行时填充)
+style_name: "custom"
+style_description: ""

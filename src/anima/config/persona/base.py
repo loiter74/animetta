@@ -6,7 +6,7 @@ Persona (人设) 配置模块
 
 from typing import Optional, List
 from pydantic import Field
-from .core.base import BaseConfig
+from ..core.base import BaseConfig
 
 
 class PersonalityTraits(BaseConfig):

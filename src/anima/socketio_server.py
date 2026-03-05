@@ -62,13 +62,13 @@ from anima.services.conversation import (
     ConversationOrchestrator,
     SessionManager,
 )
-from anima.events.handlers import TextHandler
-from anima.events.handlers.unified_event_handler import UnifiedEventHandler
-from anima.events.core import EventPriority
+from anima.handlers import TextHandler
+from anima.handlers.unified import UnifiedEventHandler
+from anima.events import EventPriority
 from anima.utils.logger_manager import logger_manager
 from anima.config.user_settings import UserSettings
 from anima.config.live2d import get_live2d_config
-from anima.avatar.prompt_builder import EmotionPromptBuilder
+from anima.avatar.prompts import EmotionPromptBuilder
 
 # 创建 Socket.IO 服务器
 sio = socketio.AsyncServer(

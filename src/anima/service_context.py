@@ -249,7 +249,7 @@ class ServiceContext:
         """
         try:
             from .config.live2d import get_live2d_config
-            from .live2d.prompt_builder import EmotionPromptBuilder
+            from .avatar.prompts import EmotionPromptBuilder
 
             live2d_config = get_live2d_config()
 

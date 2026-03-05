@@ -11,10 +11,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Dict, Any
 from loguru import logger
 
-from .base_handler import BaseHandler
+from .base import BaseHandler
 from anima.avatar.analyzers.base import IEmotionAnalyzer, EmotionData
 from anima.avatar.strategies.base import ITimelineStrategy, TimelineSegment
-from anima.avatar.audio_analyzer import AudioAnalyzer
+from anima.avatar.analyzers.audio import AudioAnalyzer
 from anima.avatar.factory import (
     create_emotion_analyzer,
     create_timeline_strategy

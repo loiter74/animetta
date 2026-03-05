@@ -115,7 +115,11 @@
       "Bash(powershell -Command \"\nGet-NetTCPConnection -LocalPort 12394 -ErrorAction SilentlyContinue | Select-Object LocalPort, State\n\")",
       "Bash(powershell -Command:*)",
       "Bash(while read:*)",
-      "Bash(head:*)"
+      "Bash(head:*)",
+      "Bash(mv avatar/analyzers/keyword_analyzer.py avatar/analyzers/keyword.py)",
+      "Bash(mv avatar/analyzers/standalone_llm_analyzer.py avatar/analyzers/llm_tag.py)",
+      "Bash(mv avatar/audio_analyzer.py avatar/analyzers/audio.py)",
+      "Bash(mv avatar/prompt_builder.py avatar/prompts.py)"
     ]
   }
 }

@@ -5,7 +5,7 @@
 from typing import TYPE_CHECKING
 from loguru import logger
 
-from .base_handler import BaseHandler
+from .base import BaseHandler
 
 if TYPE_CHECKING:
     from anima.core import OutputEvent

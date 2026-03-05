@@ -7,7 +7,7 @@ Live2D 模块
 
 # 新的插件式架构
 from .analyzers.base import IEmotionAnalyzer, EmotionData
-from .analyzers.standalone_llm_analyzer import (
+from .analyzers.llm_tag import (
     StandaloneLLMTagAnalyzer,
     EmotionTag,
     EmotionExtractionResult
@@ -21,8 +21,8 @@ from .factory import (
 )
 
 # 保留的工具类
-from .audio_analyzer import AudioAnalyzer
-from .prompt_builder import EmotionPromptBuilder
+from .analyzers.audio import AudioAnalyzer
+from .prompts import EmotionPromptBuilder
 
 __all__ = [
     # 新架构 - 分析器

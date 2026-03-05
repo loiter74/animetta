@@ -10,7 +10,7 @@ from .bus import EventBus, EventPriority, Subscription
 
 if TYPE_CHECKING:
     from anima.core import OutputEvent
-    from anima.events.handlers import BaseHandler
+    from anima.handlers import BaseHandler
 
 
 class EventRouter:

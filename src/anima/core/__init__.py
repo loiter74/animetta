@@ -8,7 +8,7 @@ from .types import (
     ConversationResult,
 )
 from .context import PipelineContext
-from .events import OutputEvent, SinkMessage, EventType, ControlSignal
+from anima.events import OutputEvent, SinkMessage, EventType, ControlSignal
 
 __all__ = [
     # Types
