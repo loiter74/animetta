@@ -6,9 +6,26 @@
 
 from .bus import EventBus, EventPriority, Subscription
 from .router import EventRouter
-from .models import EventType, ControlSignal, OutputEvent, SinkMessage
+from .models import (
+    # 基础类型
+    EventType,
+    ControlSignal,
+    OutputEvent,
+    SinkMessage,
+
+    # Adapter Layer 类型
+    ChannelMessage,
+    ChannelInfo,
+
+    # MCP Layer 类型
+    ToolPermission,
+    ToolCallRequest,
+    ToolCallResult,
+    ToolSchema,
+)
 
 __all__ = [
+    # 基础
     'EventBus',
     'EventPriority',
     'Subscription',
@@ -17,4 +34,14 @@ __all__ = [
     'ControlSignal',
     'OutputEvent',
     'SinkMessage',
+
+    # Adapter Layer
+    'ChannelMessage',
+    'ChannelInfo',
+
+    # MCP Layer
+    'ToolPermission',
+    'ToolCallRequest',
+    'ToolCallResult',
+    'ToolSchema',
 ]
