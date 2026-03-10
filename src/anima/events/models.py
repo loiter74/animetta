@@ -37,14 +37,26 @@ class EventType(str, Enum):
 
 class ControlSignal(str, Enum):
     """控制信号枚举"""
+    # 对话生命周期
     CONVERSATION_START = "conversation-start"
     CONVERSATION_END = "conversation-end"
+
+    # ASR 相关
     ASR_START = "asr-start"
     SYNTH_COMPLETE = "backend-synth-complete"
+
+    # 打断相关
     INTERRUPT = "interrupt"
     INTERRUPTED = "interrupted"
+
+    # 麦克风控制
     START_MIC = "start-mic"
     STOP_MIC = "stop-mic"
+    MIC_AUDIO_END = "mic-audio-end"
+
+    # 错误/警告
+    NO_AUDIO_DATA = "no-audio-data"
+    ERROR = "error"
 
 
 @dataclass

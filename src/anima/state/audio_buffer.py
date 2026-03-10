@@ -11,40 +11,51 @@ from loguru import logger
 class AudioBufferManager:
     """
     管理每个会话的音频缓冲区
-    
+
     支持累积音频数据、获取完整音频、清空缓冲区等操作
     参考 Open-LLM-VTuber 的 received_data_buffers 实现
     """
-    
+
+    # 最大缓冲区时长（秒），超过此限制将触发警告
+    MAX_BUFFER_DURATION_SECONDS = 300  # 5 分钟
+
     def __init__(self):
         # 存储每个会话的音频缓冲区
         # 键: session_id, 值: numpy 数组
         self._buffers: Dict[str, np.ndarray] = {}
-        
+
         # 音频配置
         self.sample_rate = 16000  # 默认采样率
     
     def append(self, session_id: str, audio_data: list) -> int:
         """
         向指定会话的缓冲区追加音频数据
-        
+
         Args:
             session_id: 会话 ID
             audio_data: 音频数据列表（float32 格式）
-            
+
         Returns:
             int: 当前缓冲区中的采样点数量
         """
         if session_id not in self._buffers:
             self._buffers[session_id] = np.array([], dtype=np.float32)
-        
+
         # 将音频数据追加到缓冲区
         audio_np = np.array(audio_data, dtype=np.float32)
         self._buffers[session_id] = np.append(
-            self._buffers[session_id], 
+            self._buffers[session_id],
             audio_np
         )
-        
+
+        # 检查缓冲区大小限制
+        buffer_duration = len(self._buffers[session_id]) / self.sample_rate
+        if buffer_duration > self.MAX_BUFFER_DURATION_SECONDS:
+            logger.warning(
+                f"会话 {session_id} 的音频缓冲区已超过 {self.MAX_BUFFER_DURATION_SECONDS} 秒 "
+                f"(当前: {buffer_duration:.1f} 秒)，可能导致内存问题"
+            )
+
         return len(self._buffers[session_id])
     
     def get(self, session_id: str) -> Optional[np.ndarray]:

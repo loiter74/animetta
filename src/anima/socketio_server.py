@@ -51,8 +51,8 @@ else:
 
 import socketio
 import json
+import time
 import numpy as np
-from fastapi import FastAPI
 import uvicorn
 from typing import Dict, Union, Optional
 
@@ -64,24 +64,54 @@ from anima.services.conversation import (
 )
 from anima.handlers import TextHandler
 from anima.handlers.unified import UnifiedEventHandler
+from anima.handlers.input_handler import InputHandler
 from anima.events import EventPriority
 from anima.utils.logger_manager import logger_manager
 from anima.config.user_settings import UserSettings
 from anima.config.live2d import get_live2d_config
 from anima.avatar.prompts import EmotionPromptBuilder
 
-# 创建 Socket.IO 服务器
+# Adapter layer
+from anima.adapters import (
+    DesktopLive2DChatter,
+    DesktopChatterConfig,
+    AdapterRegistry,
+)
+from anima.state import AudioBufferManager
+
+# Create Socket.IO server with ASGI mode (works with uvicorn)
 sio = socketio.AsyncServer(
     async_mode='asgi',
-    cors_allowed_origins=['http://localhost:3000', 'http://127.0.0.1:3000', '*'],
+    cors_allowed_origins='*',
     cors_credentials=True,
+    logger=False,  # Disable default logging (we handle our own)
+    engineio_logger=False,  # Disable default engine.io logging
 )
 
-# 创建 FastAPI 应用
-app = FastAPI(title="Anima - AI Virtual Companion")
+# Create ASGI app for Socket.IO
+asgi_app = socketio.ASGIApp(sio)
 
-# 将 Socket.IO 挂载到 FastAPI
-socket_app = socketio.ASGIApp(sio, app)
+logger.info(f"[Socket.IO] Server created with async_mode='asgi'")
+logger.info(f"[Socket.IO] CORS enabled: origins=*")
+
+
+# ============================================
+# Socket.IO Event Handlers with Logging
+# ============================================
+
+@sio.on('connect')
+async def on_connect(sid, environ, auth):
+    logger.info(f"[Socket.IO] Client connected: sid={sid}")
+    await sio.save_session(sid, {'connected_at': time.time()})
+    logger.info(f"[Socket.IO] Session saved: {sid}")
+
+
+@sio.on('disconnect')
+async def on_disconnect(sid):
+    logger.info(f"[Socket.IO] Client disconnected: sid={sid}")
+    # Cleanup session resources
+    await cleanup_context(sid)
+    logger.info(f"[Socket.IO] Session cleaned up: {sid}")
 
 # ============================================
 # 全局状态管理
@@ -95,12 +125,9 @@ session_contexts: Dict[str, ServiceContext] = {}
 # 键: session_id, 值: ConversationOrchestrator 实例
 orchestrators: Dict[str, ConversationOrchestrator] = {}
 
-# 音频缓冲区（简单实现）
-audio_buffers: Dict[str, list] = {}
-
-# VAD 超时追踪（防止VAD一直检测不到语音结束）
-# 键: session_id, 值: {'active_time': 最后活跃时间戳, 'chunk_count': 接收的音频块数}
-vad_active_sessions: Dict[str, dict] = {}
+# 存储每个会话的 DesktopLive2DChatter adapter
+# 键: session_id, 值: DesktopLive2DChatter 实例
+adapters: Dict[str, DesktopLive2DChatter] = {}
 
 # 全局配置（可被所有会话共享）
 global_config: AppConfig = None
@@ -113,43 +140,52 @@ initial_log_level = user_settings.get_log_level()
 logger_manager.set_level(initial_log_level)
 logger.info(f"应用用户日志级别配置: {initial_log_level}")
 
-# VAD 超时设置（秒）
-VAD_TIMEOUT_SECONDS = 15  # 如果VAD持续活跃超过15秒，强制触发ASR
+# ============================================
+# Electron 桌面客户端支持
+# ============================================
+
+# 桌面客户端类型
+DESKTOP_CLIENT_TYPES = ["live2d", "chat", "web"]
+
+# 存储桌面客户端信息
+# 键: session_id, 值: {client_type: str, connected: bool}
+desktop_clients: Dict[str, dict] = {}
+
+# Live2D 动作队列（延迟初始化）
+_live2d_action_queue = None
+
+def get_live2d_action_queue():
+    """获取 Live2D 动作队列"""
+    global _live2d_action_queue
+    if _live2d_action_queue is None:
+        from anima.services.live2d import Live2DActionQueue
+        _live2d_action_queue = Live2DActionQueue()
+
+        # 设置执行回调 - 将动作发送到 Live2D 客户端
+        async def execute_action(action):
+            await broadcast_to_desktop_clients("live2d", "live2d.action", {
+                "action": action.action,
+                "action_id": action.action_id
+            })
+
+        _live2d_action_queue.set_execute_callback(execute_action)
+        logger.info("[Live2D] 动作队列已初始化")
+
+    return _live2d_action_queue
 
 
-class AudioBufferManager:
-    """音频缓冲区管理器"""
-    
-    def append(self, sid: str, audio_data) -> int:
-        """追加音频数据"""
-        if sid not in audio_buffers:
-            audio_buffers[sid] = []
-        
-        if isinstance(audio_data, list):
-            audio_buffers[sid].extend(audio_data)
-        else:
-            audio_buffers[sid].append(audio_data)
-        
-        return len(audio_buffers[sid])
-    
-    def pop(self, sid: str) -> Optional[np.ndarray]:
-        """获取并清空缓冲区"""
-        if sid not in audio_buffers:
-            return None
-        
-        data = audio_buffers.pop(sid)
-        if not data:
-            return None
-        
-        return np.array(data, dtype=np.float32)
-    
-    def remove(self, sid: str) -> None:
-        """移除缓冲区"""
-        audio_buffers.pop(sid, None)
+async def broadcast_to_desktop_clients(client_type: str, event: str, data: dict):
+    """
+    广播消息到指定类型的桌面客户端
 
-
-# 音频缓冲区管理器实例
-audio_buffer_manager = AudioBufferManager()
+    Args:
+        client_type: 客户端类型 ("live2d", "chat", "web")
+        event: 事件名称
+        data: 事件数据
+    """
+    for sid, client_info in list(desktop_clients.items()):
+        if client_info.get("client_type") == client_type and client_info.get("connected"):
+            await sio.emit(event, data, to=sid)
 
 
 async def get_or_create_context(sid: str) -> ServiceContext:
@@ -252,7 +288,16 @@ async def get_or_create_orchestrator(sid: str) -> ConversationOrchestrator:
 
         # 启动编排器（将 EventRouter 连接到 EventBus）
         orchestrator.start()
-        
+
+        # 创建并注册 InputHandler（处理 INPUT_TEXT/INPUT_AUDIO 事件）
+        input_handler = InputHandler(
+            event_bus=orchestrator.event_bus,
+            orchestrator_registry=lambda session_id: orchestrators.get(session_id),
+            asr_service=ctx.asr_service,
+        )
+        await input_handler.start()
+        logger.info(f"[{sid}] InputHandler 已启动，订阅 INPUT_TEXT/INPUT_AUDIO 事件")
+
         orchestrators[sid] = orchestrator
         logger.info(f"为会话 {sid} 创建了新的 ConversationOrchestrator，已注册 {orchestrator.get_handler_count()} 个 Handler")
     
@@ -262,19 +307,25 @@ async def get_or_create_orchestrator(sid: str) -> ConversationOrchestrator:
 async def cleanup_context(sid: str) -> None:
     """
     清理指定会话的所有资源
-    
+
     Args:
         sid: session id
     """
+    # 停止并清理 adapter
+    if sid in adapters:
+        try:
+            await adapters[sid].stop()
+            logger.debug(f"[{sid}] Adapter 已停止")
+        except Exception as e:
+            logger.error(f"[{sid}] 停止 Adapter 时出错: {e}")
+        del adapters[sid]
+
     # 停止编排器（清理 EventRouter 中的所有订阅）
     if sid in orchestrators:
         orchestrator = orchestrators[sid]
         orchestrator.stop()
         del orchestrators[sid]
-    
-    # 清理音频缓冲区
-    audio_buffer_manager.remove(sid)
-    
+
     # 清理上下文
     if sid in session_contexts:
         ctx = session_contexts[sid]
@@ -283,72 +334,60 @@ async def cleanup_context(sid: str) -> None:
         logger.info(f"已清理会话 {sid} 的所有资源")
 
 
-async def _process_audio_input(sid: str) -> None:
+async def get_or_create_adapter(sid: str) -> DesktopLive2DChatter:
     """
-    处理音频输入的辅助函数
+    获取或创建指定会话的 DesktopLive2DChatter adapter
 
-    从缓冲区获取音频数据并通过 ConversationOrchestrator 处理
+    EventBus 架构：
+    - Adapter 只依赖 EventBus，不直接依赖 Orchestrator
+    - 输入：Adapter → EventBus.emit(INPUT_TEXT/INPUT_AUDIO) → InputHandler → Orchestrator
+    - 输出：Orchestrator → EventBus → Adapter.send() → 客户端
+
+    Args:
+        sid: session id
+
+    Returns:
+        DesktopLive2DChatter: 该会话的 adapter 实例
     """
-    try:
-        # 获取累积的音频数据
-        audio_data = audio_buffer_manager.pop(sid)
+    if sid not in adapters:
+        logger.info(f"[{sid}] 创建新的 DesktopLive2DChatter adapter (EventBus 架构)")
 
-        if audio_data is None or len(audio_data) == 0:
-            logger.warning(f"[{sid}] _process_audio_input: 没有音频数据")
-            await sio.emit('control', {
-                'type': 'control',
-                'text': 'no-audio-data'
-            }, to=sid)
-            return
-
-        audio_duration = len(audio_data) / 16000  # 假设 16kHz
-        logger.info(f"[{sid}] 🎙️ 开始处理音频，时长: {audio_duration:.2f}秒")
-
-        # 发送 conversation-start 信号，通知前端暂停发送音频
-        await sio.emit('control', {
-            'type': 'control',
-            'text': 'conversation-start'
-        }, to=sid)
-
+        # 获取上下文和编排器（用于获取 EventBus 和 VAD）
+        ctx = await get_or_create_context(sid)
         orchestrator = await get_or_create_orchestrator(sid)
 
-        # 使用编排器处理音频输入
-        result = await orchestrator.process_input(
-            raw_input=audio_data,
-            metadata={},
-            from_name='User',
+        # 创建发送回调函数
+        async def send_callback(data: dict):
+            """发送数据到客户端"""
+            event_type = data.get('type', 'message')
+            await sio.emit(event_type, data, to=sid)
+
+        # 创建 adapter 配置
+        config = DesktopChatterConfig(
+            sample_rate=16000,
+            channels=1,
+            vad_enabled=ctx.vad_engine is not None,
+            vad_timeout_seconds=15.0,
+            auto_interrupt=True,
         )
 
-        if result.error:
-            logger.error(f"[{sid}] 处理出错: {result.error}")
-            await sio.emit('error', {
-                'type': 'error',
-                'message': result.error
-            }, to=sid)
-            # 出错时也发送 conversation-end，恢复前端监听
-            await sio.emit('control', {
-                'type': 'control',
-                'text': 'conversation-end'
-            }, to=sid)
-        else:
-            logger.info(f"[{sid}] [OK] 音频处理完成")
-            # 发送 conversation-end 信号，通知前端恢复监听
-            await sio.emit('control', {
-                'type': 'control',
-                'text': 'conversation-end'
-            }, to=sid)
+        # 创建 adapter（只依赖 EventBus，不直接依赖 Orchestrator）
+        adapter = DesktopLive2DChatter(
+            event_bus=orchestrator.event_bus,
+            channel_id=sid,
+            vad_engine=ctx.vad_engine,
+            config=config,
+            send_callback=send_callback,
+            session_id=sid,
+        )
 
-    except Exception as e:
-        logger.error(f"[{sid}] _process_audio_input 出错: {e}", exc_info=True)
-        await sio.emit('error', {
-            'type': 'error',
-            'message': str(e)
-        }, to=sid)
-        # 出错时也发送 conversation-end，恢复前端监听
-        await sio.emit('control', {
-            'type': 'control',
-            'text': 'conversation-end'
-        }, to=sid)
+        # 启动 adapter
+        await adapter.start()
+
+        adapters[sid] = adapter
+        logger.info(f"[{sid}] DesktopLive2DChatter adapter 已创建并启动 (EventBus 模式)")
+
+    return adapters[sid]
 
 
 # ============================================
@@ -359,24 +398,32 @@ async def _process_audio_input(sid: str) -> None:
 async def connect(sid, environ):
     """
     客户端连接时触发
+    支持 Web 和 Electron 桌面客户端
     """
+    # 检测客户端类型
+    client_type = environ.get("HTTP_USER_AGENT", "")
+    is_electron = "electron" in client_type.lower()
+
     print(f"\n{'='*60}")
     print(f"[OK] 客户端已连接: {sid}")
+    print(f"     类型: {'Electron' if is_electron else 'Web'}")
     print(f"{'='*60}\n")
-    logger.info(f"客户端已连接: {sid}")
+    logger.info(f"客户端已连接: {sid} (类型: {'Electron' if is_electron else 'Web'})")
 
     # 发送欢迎消息
     await sio.emit('connection-established', {
         'message': '连接成功',
-        'sid': sid
+        'sid': sid,
+        'server_time': asyncio.get_event_loop().time()
     }, to=sid)
 
-    # 发送启动麦克风信号
-    await sio.emit('control', {
-        'type': 'control',
-        'text': 'start-mic'
-    }, to=sid)
-    print(f"[OK] 已发送 start-mic 信号给客户端 {sid}")
+    # 对于 Web 客户端，发送启动麦克风信号
+    if not is_electron:
+        await sio.emit('control', {
+            'type': 'control',
+            'text': 'start-mic'
+        }, to=sid)
+        print(f"[OK] 已发送 start-mic 信号给客户端 {sid}")
 
 
 @sio.event
@@ -398,31 +445,22 @@ async def disconnect(sid):
 async def text_input(sid, data):
     """
     处理文本输入
-    使用 ConversationOrchestrator 处理对话
+    使用 DesktopLive2DChatter adapter 处理对话
     """
     text = data.get('text', '')
     logger.info(f"[{sid}] 收到文本输入: {text}")
-    
+
     if not text:
         return
-    
+
     try:
-        orchestrator = await get_or_create_orchestrator(sid)
-        
-        # 使用编排器处理输入
-        result = await orchestrator.process_input(
-            raw_input=text,
-            metadata=data.get('metadata', {}),
+        adapter = await get_or_create_adapter(sid)
+        await adapter.handle_text_input(
+            text=text,
             from_name=data.get('from_name', 'User'),
+            metadata=data.get('metadata', {}),
         )
-        
-        if result.error:
-            logger.error(f"[{sid}] 处理出错: {result.error}")
-            await sio.emit('error', {
-                'type': 'error',
-                'message': result.error
-            }, to=sid)
-        
+
     except Exception as e:
         logger.error(f"[{sid}] 处理文本输入时出错: {e}")
         await sio.emit('error', {
@@ -434,21 +472,23 @@ async def text_input(sid, data):
 @sio.event
 async def mic_audio_data(sid, data):
     """
-    处理音频数据流
-    将音频数据累积到缓冲区
+    处理音频数据流（非 VAD 模式）
+    使用 DesktopLive2DChatter adapter 累积音频数据
     """
     audio = data.get('audio', [])
-    
+
     if audio:
-        sample_count = audio_buffer_manager.append(sid, audio)
-        logger.debug(f"[{sid}] 累积音频: {len(audio)} 个采样点, 总计: {sample_count}")
+        adapter = await get_or_create_adapter(sid)
+        # 使用 adapter 的 handle_audio_chunk 方法（会自动处理无 VAD 的情况）
+        await adapter.handle_audio_chunk(audio)
+        logger.debug(f"[{sid}] 累积音频: {len(audio)} 个采样点")
 
 
 @sio.event
 async def raw_audio_data(sid, data):
     """
     处理原始音频数据用于 VAD 检测
-    参考 Open-LLM-VTuber 的 _handle_raw_audio_data 实现
+    使用 DesktopLive2DChatter adapter 处理
     """
     audio_chunk = data.get('audio', [])
 
@@ -456,130 +496,10 @@ async def raw_audio_data(sid, data):
         logger.debug(f"[{sid}] 收到空音频数据")
         return
 
-    # 静态计数器（用于日志）
-    if not hasattr(raw_audio_data, 'counter'):
-        raw_audio_data.counter = {}
-    if sid not in raw_audio_data.counter:
-        raw_audio_data.counter[sid] = 0
-    raw_audio_data.counter[sid] += 1
-
-    # 导入 numpy（在条件块之前，确保后续代码可以使用）
-    import numpy as np
-
-    # 每 50 个块打印一次音频统计信息
-    count = raw_audio_data.counter[sid]
-    if count % 50 == 1:
-        audio_arr = np.array(audio_chunk)
-        audio_min = float(np.min(audio_arr)) if len(audio_arr) > 0 else 0
-        audio_max = float(np.max(audio_arr)) if len(audio_arr) > 0 else 0
-        audio_mean = float(np.mean(np.abs(audio_arr))) if len(audio_arr) > 0 else 0
-        audio_rms = float(np.sqrt(np.mean(audio_arr**2))) if len(audio_arr) > 0 else 0
-
-        # 诊断日志
-        logger.info(f"[{sid}] 🎙️ Audio chunk #{count}: {len(audio_chunk)} samples")
-        logger.info(f"  Range: [{audio_min:.2f}, {audio_max:.2f}], Mean: {audio_mean:.2f}, RMS: {audio_rms:.2f}")
-
     try:
-        ctx = await get_or_create_context(sid)
+        adapter = await get_or_create_adapter(sid)
+        await adapter.handle_audio_chunk(audio_chunk)
 
-        # 检查是否有 VAD 引擎
-        if ctx.vad_engine is None:
-            # 没有 VAD，直接累积音频
-            audio_buffer_manager.append(sid, audio_chunk)
-            if count % 100 == 1:
-                logger.warning(f"[{sid}] [WARNING] VAD 引擎未初始化，直接累积音频: {len(audio_chunk)} 采样点")
-            return
-
-        # 使用 VAD 检测语音（返回 VADResult 对象，不是可迭代对象）
-        result = ctx.vad_engine.detect_speech(audio_chunk)
-
-        # 记录 VAD 状态（降低频率，避免刷屏）
-        # if count % 50 == 0 or result.state.value != 'IDLE':
-        #     logger.info(f"[{sid}] 📊 VAD 状态: {result.state.value}, 音频块: {len(audio_chunk)} 采样点 (第 {count} 块)")
-
-        # 🔥 超时保护：追踪VAD活跃时间
-        import time
-        current_time = time.time()
-
-        if result.state.value == 'ACTIVE':
-            # VAD 检测到语音，记录活跃时间
-            if sid not in vad_active_sessions:
-                vad_active_sessions[sid] = {'active_time': current_time, 'chunk_count': 0}
-            vad_active_sessions[sid]['chunk_count'] += 1
-
-            # 检查是否超时（防止VAD一直检测不到语音结束）
-            active_duration = current_time - vad_active_sessions[sid]['active_time']
-            if active_duration > VAD_TIMEOUT_SECONDS:
-                logger.warning(f"[{sid}] ⏰ VAD 持续活跃超过 {VAD_TIMEOUT_SECONDS} 秒，强制触发语音结束")
-
-                # 清除超时记录
-                if sid in vad_active_sessions:
-                    del vad_active_sessions[sid]
-
-                # 手动触发语音结束处理
-                # 从 VAD 状态机获取累积的音频数据
-                if hasattr(ctx.vad_engine, 'state_machine') and ctx.vad_engine.state_machine.bytes:
-                    audio_data_bytes = bytes(ctx.vad_engine.state_machine.bytes)
-
-                    if len(audio_data_bytes) > 1024:  # 至少有一些音频数据
-                        logger.info(f"[{sid}] 🚨 超时强制触发ASR，音频长度: {len(audio_data_bytes)} 字节")
-
-                        # 转换为 float32
-                        audio_float = np.frombuffer(audio_data_bytes, dtype=np.int16).astype(np.float32) / 32767.0
-                        audio_buffer_manager.append(sid, audio_float.tolist())
-
-                        # 重置 VAD 状态机
-                        ctx.vad_engine.reset()
-
-                        # 发送控制信号
-                        await sio.emit('control', {
-                            'type': 'control',
-                            'text': 'mic-audio-end'
-                        }, to=sid)
-
-                        # 触发对话处理
-                        await _process_audio_input(sid)
-
-        elif result.state.value == 'IDLE' and sid in vad_active_sessions:
-            # VAD 回到空闲状态，清除超时记录
-            del vad_active_sessions[sid]
-
-        # 处理检测结果
-        if result.is_speech_start:
-            # 检测到语音开始
-            logger.info(f"[{sid}] [OK] VAD 检测到语音开始")
-
-            # 🔥 自动打断：如果当前正在处理对话，则自动打断
-            if sid in orchestrators and orchestrators[sid].is_processing:
-                logger.info(f"[{sid}] 🎤 检测到新语音，自动打断当前回复")
-                orchestrators[sid].interrupt()
-                # 发送打断信号给前端
-                await sio.emit('control', {
-                    'type': 'control',
-                    'text': 'interrupt'
-                }, to=sid)
-
-        elif result.is_speech_end and len(result.audio_data) > 1024:
-            # 检测到语音结束，保存音频并触发对话
-            logger.info(f"[{sid}] [OK] VAD 检测到语音结束，音频长度: {len(result.audio_data)} 字节")
-
-            # 清除超时记录
-            if sid in vad_active_sessions:
-                del vad_active_sessions[sid]
-
-            # 将 int16 字节流转换为归一化的 float32（范围：[-1.0, 1.0]）
-            audio_data = np.frombuffer(result.audio_data, dtype=np.int16).astype(np.float32) / 32767.0
-            audio_buffer_manager.append(sid, audio_data.tolist())
-
-            # 发送控制信号通知前端
-            await sio.emit('control', {
-                'type': 'control',
-                'text': 'mic-audio-end'
-            }, to=sid)
-
-            # 直接触发对话处理（不需要等前端发送 mic_audio_end）
-            await _process_audio_input(sid)
-                
     except Exception as e:
         logger.error(f"[{sid}] VAD 处理出错: {e}", exc_info=True)
 
@@ -588,41 +508,17 @@ async def raw_audio_data(sid, data):
 async def mic_audio_end(sid, data):
     """
     用户说完话，触发完整对话流程
-    使用 ConversationOrchestrator 处理
+    使用 DesktopLive2DChatter adapter 处理
     """
     logger.info(f"[{sid}] 音频输入结束")
-    
+
     try:
-        # 获取累积的音频数据
-        audio_data = audio_buffer_manager.pop(sid)
-        
-        if audio_data is None or len(audio_data) == 0:
-            logger.warning(f"[{sid}] 没有音频数据")
-            await sio.emit('control', {
-                'type': 'control',
-                'text': 'no-audio-data'
-            }, to=sid)
-            return
-        
-        audio_duration = len(audio_data) / 16000  # 假设 16kHz
-        logger.info(f"[{sid}] 音频时长: {audio_duration:.2f}秒")
-        
-        orchestrator = await get_or_create_orchestrator(sid)
-        
-        # 使用编排器处理音频输入
-        result = await orchestrator.process_input(
-            raw_input=audio_data,
+        adapter = await get_or_create_adapter(sid)
+        await adapter.handle_audio_end(
             metadata=data.get('metadata', {}),
             from_name=data.get('from_name', 'User'),
         )
-        
-        if result.error:
-            logger.error(f"[{sid}] 处理出错: {result.error}")
-            await sio.emit('error', {
-                'type': 'error',
-                'message': result.error
-            }, to=sid)
-        
+
     except Exception as e:
         logger.error(f"[{sid}] 处理音频时出错: {e}")
         await sio.emit('error', {
@@ -636,20 +532,19 @@ async def interrupt_signal(sid, data):
     """
     打断信号
     取消当前正在进行的对话和 TTS
+    使用 DesktopLive2DChatter adapter 处理
     """
     # 获取用户听到的部分回复
     heard_response = data.get('text', '')
     logger.info(f"[{sid}] 收到打断信号，已听到的回复: {heard_response[:50] if heard_response else '(空)'}...")
-    
-    # 打断编排器（interrupt() 是同步方法，不需要 await）
-    if sid in orchestrators:
-        orchestrator = orchestrators[sid]
-        orchestrator.interrupt()
-    
-    # 更新上下文状态
-    if sid in session_contexts:
-        session_contexts[sid].is_speaking = False
-    
+
+    try:
+        adapter = await get_or_create_adapter(sid)
+        await adapter.handle_interrupt(heard_text=heard_response)
+
+    except Exception as e:
+        logger.error(f"[{sid}] 处理打断信号时出错: {e}")
+
     await sio.emit('control', {
         'type': 'control',
         'text': 'interrupted'
@@ -795,20 +690,136 @@ async def heartbeat(sid, data):
 
 
 # ============================================
+# Electron 桌面客户端事件处理
+# ============================================
+
+@sio.event
+async def desktop_register(sid, data):
+    """
+    Electron 桌面客户端注册
+
+    Args:
+        data: {client_type: "live2d" | "chat"}
+    """
+    client_type = data.get('client_type', 'web')
+
+    if client_type not in DESKTOP_CLIENT_TYPES:
+        await sio.emit('error', {
+            'type': 'error',
+            'message': f'Unknown client type: {client_type}'
+        }, to=sid)
+        return
+
+    desktop_clients[sid] = {
+        'client_type': client_type,
+        'connected': True
+    }
+
+    logger.info(f"[Desktop] {client_type} 客户端已注册: {sid}")
+
+    await sio.emit('desktop.registered', {
+        'client_id': sid,
+        'client_type': client_type
+    }, to=sid)
+
+
+@sio.event
+async def desktop_live2d_action(sid, data):
+    """
+    处理来自 Electron 的 Live2D 动作请求
+
+    Args:
+        data: {action: {...}, action_id: str}
+    """
+    from anima.services.live2d import ActionMessage, QueuePolicy
+
+    action_data = data.get('action', {})
+    action_id = data.get('action_id', '')
+    queue_policy = data.get('queue_policy', 'append')
+    duration = data.get('duration', 0.5)
+
+    # 创建动作消息
+    action = ActionMessage(
+        action_id=action_id,
+        action=action_data,
+        duration_sec=duration,
+        queue_policy=queue_policy
+    )
+
+    # 入队到动作队列
+    queue = get_live2d_action_queue()
+    result = await queue.enqueue(action)
+
+    logger.info(f"[Desktop] Live2D 动作已入队: {action_id}, 结果: {result}")
+
+    await sio.emit('desktop.action_queued', result, to=sid)
+
+
+@sio.event
+async def desktop_chat_message(sid, data):
+    """
+    处理来自 Electron Chat 窗口的聊天消息
+    使用 DesktopLive2DChatter adapter 处理
+
+    Args:
+        data: {text: str, timestamp: float}
+    """
+    text = data.get('text', '')
+    logger.info(f"[Desktop][Chat] 收到消息: {text[:50]}...")
+
+    try:
+        adapter = await get_or_create_adapter(sid)
+        await adapter.handle_text_input(
+            text=text,
+            from_name='User',
+            metadata={},
+        )
+
+    except Exception as e:
+        logger.error(f"[{sid}] 处理桌面聊天消息时出错: {e}")
+        await sio.emit('error', {
+            'type': 'error',
+            'message': str(e)
+        }, to=sid)
+
+
+@sio.event
+async def desktop_voice_start(sid, data):
+    """开始语音输入"""
+    logger.info(f"[Desktop][Chat] 语音输入开始")
+    # 可以启动 VAD 或通知客户端开始录音
+    await sio.emit('desktop.voice_started', {}, to=sid)
+
+
+@sio.event
+async def desktop_voice_stop(sid, data):
+    """停止语音输入"""
+    logger.info(f"[Desktop][Chat] 语音输入停止")
+    # 处理录制的音频
+    await sio.emit('desktop.voice_stopped', {}, to=sid)
+
+
+# ============================================
 # 优雅关闭
 # ============================================
 
 import signal
 import asyncio
 
-# 关闭标志
-shutdown_event = asyncio.Event()
-
 
 async def cleanup_all_resources():
     """清理所有资源"""
     logger.info("开始清理所有资源...")
-    
+
+    # 清理所有 adapters
+    for sid, adapter in list(adapters.items()):
+        try:
+            await adapter.stop()
+            logger.debug(f"[{sid}] Adapter 已停止")
+        except Exception as e:
+            logger.error(f"[{sid}] 停止 Adapter 时出错: {e}")
+    adapters.clear()
+
     # 清理所有编排器
     for sid, orchestrator in list(orchestrators.items()):
         try:
@@ -817,7 +828,7 @@ async def cleanup_all_resources():
         except Exception as e:
             logger.error(f"[{sid}] 停止编排器时出错: {e}")
     orchestrators.clear()
-    
+
     # 清理所有会话上下文
     for sid, ctx in list(session_contexts.items()):
         try:
@@ -826,11 +837,7 @@ async def cleanup_all_resources():
         except Exception as e:
             logger.error(f"[{sid}] 关闭上下文时出错: {e}")
     session_contexts.clear()
-    
-    # 清理音频缓冲区
-    audio_buffers.clear()
-    vad_active_sessions.clear()
-    
+
     logger.info("所有资源已清理完成")
 
 
@@ -838,16 +845,9 @@ def signal_handler(signum, frame):
     """信号处理器"""
     signal_name = signal.Signals(signum).name
     logger.info(f"收到信号 {signal_name}，准备优雅关闭...")
-    
-    # 设置关闭事件
-    try:
-        loop = asyncio.get_running_loop()
-        loop.call_soon_threadsafe(shutdown_event.set)
-    except RuntimeError:
-        # 如果没有运行中的事件循环，直接退出
-        logger.info("没有运行中的事件循环，直接退出")
-        import sys
-        sys.exit(0)
+    # uvicorn 会处理优雅关闭
+    import sys
+    sys.exit(0)
 
 
 def setup_signal_handlers():
@@ -873,35 +873,6 @@ def setup_signal_handlers():
 
 
 # ============================================
-# FastAPI 生命周期事件
-# ============================================
-
-from contextlib import asynccontextmanager
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """FastAPI 应用生命周期管理"""
-    # 启动时
-    logger.info("服务器启动中...")
-    setup_signal_handlers()
-    
-    yield
-    
-    # 关闭时
-    logger.info("服务器关闭中...")
-    await cleanup_all_resources()
-    logger.info("服务器已关闭")
-
-
-# 重新创建 FastAPI 应用（带生命周期）
-app = FastAPI(title="Anima - AI Virtual Companion", lifespan=lifespan)
-
-# 重新挂载 Socket.IO
-socket_app = socketio.ASGIApp(sio, app)
-
-
-# ============================================
 # 启动入口
 # ============================================
 
@@ -924,39 +895,48 @@ def init_config(config_path: str = None) -> None:
 
 
 def run_server():
-    """运行服务器"""
-    import sys
-    
-    # 解析命令行参数
-    config_file = None
-    if len(sys.argv) > 1:
-        config_file = sys.argv[1]
-    
+    """运行服务器 using uvicorn (ASGI mode)"""
+    import uvicorn
+    import atexit
+
     # 初始化配置
-    init_config(config_file)
-    
+    init_config(None)
+
+    # 设置信号处理器
+    setup_signal_handlers()
+
+    # 注册退出时的清理函数
+    def cleanup_on_exit():
+        logger.info("服务器关闭中...")
+        try:
+            # 在同步上下文中调用异步清理函数
+            import asyncio
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(cleanup_all_resources())
+            loop.close()
+        except Exception as e:
+            logger.error(f"清理资源时出错: {e}")
+        logger.info("服务器已关闭")
+
+    atexit.register(cleanup_on_exit)
+
+    logger.info("=" * 50)
     logger.info("启动 Socket.IO 服务器...")
+    logger.info(f"Host: {global_config.system.host}")
+    logger.info(f"Port: {global_config.system.port}")
+    logger.info(f"Socket.IO async_mode: asgi (uvicorn)")
+    logger.info("=" * 50)
     logger.info(f"访问 http://{global_config.system.host}:{global_config.system.port} 测试")
-    
-    # 配置 uvicorn
-    config = uvicorn.Config(
-        'anima.socketio_server:socket_app',
+    logger.info(f"WebSocket URL: ws://{global_config.system.host}:{global_config.system.port}/socket.io/")
+
+    # Run uvicorn server
+    uvicorn.run(
+        "anima.socketio_server:asgi_app",
         host=global_config.system.host,
         port=global_config.system.port,
-        reload=False,  # 禁用 reload 以避免信号处理问题
-        access_log=False,  # 减少日志噪音
+        log_level="info"
     )
-    
-    server = uvicorn.Server(config)
-    
-    # 运行服务器
-    try:
-        server.run()
-    except KeyboardInterrupt:
-        logger.info("收到键盘中断，正在关闭...")
-    finally:
-        logger.info("服务器已退出")
-
 
 if __name__ == '__main__':
     run_server()
