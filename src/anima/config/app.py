@@ -113,7 +113,7 @@ class ServicesConfig(BaseConfig):
     asr: str = Field(default="mock", description="ASR 服务名称")
     tts: str = Field(default="mock", description="TTS 服务名称")
     agent: str = Field(default="mock", description="Agent 服务名称（底座LLM）")
-    local_llm: str = Field(default="local_lora", description="本地LLM服务名称（简单应答，无persona）")
+    local_llm: Optional[str] = Field(default=None, description="本地LLM服务名称（可选，不设置则不加载）")
     vad: str = Field(default="mock", description="VAD 服务名称")
 
 
@@ -188,20 +188,25 @@ class AppConfig(BaseConfig):
     def _load_services_mode(cls, main_config: Dict[str, Any]) -> "AppConfig":
         """Services 模式加载"""
         services_config = main_config.get("services", {})
-        
+
         # 加载各个服务配置
         asr_name = services_config.get("asr", "mock")
         tts_name = services_config.get("tts", "mock")
         agent_name = services_config.get("agent", "mock")
-        local_llm_name = services_config.get("local_llm", "local_lora")
+        local_llm_name = services_config.get("local_llm")  # None if not specified
         vad_name = services_config.get("vad", "mock")
 
         asr_data = _load_service_config("asr", asr_name)
         tts_data = _load_service_config("tts", tts_name)
         agent_data = _load_service_config("llm", agent_name)
-        local_llm_full = _load_service_config("llm", local_llm_name)
-        # local_llm配置文件包含llm_config嵌套，需要提取
-        local_llm_data = local_llm_full.get("llm_config", local_llm_full)
+
+        # 只在指定时加载 local_llm
+        local_llm_data = None
+        if local_llm_name:
+            local_llm_full = _load_service_config("llm", local_llm_name)
+            # local_llm配置文件包含llm_config嵌套，需要提取
+            local_llm_data = local_llm_full.get("llm_config", local_llm_full)
+
         vad_data = _load_service_config("vad", vad_name)
 
         # 构建完整配置
@@ -213,7 +218,7 @@ class AppConfig(BaseConfig):
             "local_llm": local_llm_data,
             "vad": vad_data,
         }
-        
+
         return cls(**merged)
 
     def _apply_env_expansion(self) -> None:

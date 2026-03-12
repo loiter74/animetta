@@ -119,13 +119,22 @@ class LocalLoraLLM(LLMInterface):
         try:
             from transformers import AutoModelForCausalLM, AutoTokenizer
             from peft import PeftModel
+            import os
 
             logger.info(f"[LocalLoraLLM] 加载基座模型: {self.base_model_name}")
+
+            # 检测是否为本地路径（Windows盘符或绝对路径）
+            is_local_path = (
+                os.path.isabs(self.base_model_name) or
+                (len(self.base_model_name) > 2 and self.base_model_name[1] == ':') or
+                self.base_model_name.startswith('/')
+            )
 
             # 加载分词器
             self.tokenizer = AutoTokenizer.from_pretrained(
                 self.base_model_name,
-                trust_remote_code=True
+                trust_remote_code=True,
+                local_files_only=is_local_path
             )
 
             if self.tokenizer.pad_token is None:
@@ -146,7 +155,8 @@ class LocalLoraLLM(LLMInterface):
                 torch_dtype=torch_dtype,
                 device_map=device_map,
                 trust_remote_code=True,
-                low_cpu_mem_usage=True  # 减少CPU内存占用
+                low_cpu_mem_usage=True,  # 减少CPU内存占用
+                local_files_only=is_local_path
             )
 
             # 加载 LoRA 适配器

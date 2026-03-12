@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anima 配置面板</title>
+    <link rel="stylesheet" href="/static/css/config.css">
+</head>
+<body>
+    <div id="app">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h1>Anima</h1>
+                <span class="subtitle">配置面板</span>
+            </div>
+            <nav class="nav">
+                <button class="nav-item active" data-page="dashboard">
+                    <span class="icon">🏠</span>
+                    <span>仪表盘</span>
+                </button>
+                <button class="nav-item" data-page="live2d">
+                    <span class="icon">🎭</span>
+                    <span>Live2D 配置</span>
+                </button>
+                <button class="nav-item" data-page="presets">
+                    <span class="icon">🎨</span>
+                    <span>动作预设</span>
+                </button>
+                <button class="nav-item" data-page="history">
+                    <span class="icon">💬</span>
+                    <span>对话历史</span>
+                </button>
+                <button class="nav-item" data-page="logs">
+                    <span class="icon">📋</span>
+                    <span>系统日志</span>
+                </button>
+                <button class="nav-item" data-page="settings">
+                    <span class="icon">⚙️</span>
+                    <span>系统设置</span>
+                </button>
+            </nav>
+            <div class="status">
+                <div class="connection-status" id="connectionStatus">
+                    <span class="dot"></span>
+                    <span class="text">未连接</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 仪表盘页面 -->
+            <section class="page active" id="page-dashboard">
+                <h2>仪表盘</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-sessions">0</div>
+                        <div class="stat-label">活跃会话</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-messages">0</div>
+                        <div class="stat-label">今日消息</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-uptime">0m</div>
+                        <div class="stat-label">运行时间</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-live2d">-</div>
+                        <div class="stat-label">Live2D 状态</div>
+                    </div>
+                </div>
+                <div class="quick-actions">
+                    <h3>快速操作</h3>
+                    <div class="action-buttons">
+                        <button id="btnStartBackend" class="btn btn-primary">启动后端</button>
+                        <button id="btnStartDesktop" class="btn btn-secondary">启动桌面应用</button>
+                        <button id="btnClearHistory" class="btn btn-danger">清空历史</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Live2D 配置页面 -->
+            <section class="page" id="page-live2d">
+                <h2>Live2D 配置</h2>
+                <div class="config-section">
+                    <h3>模型选择</h3>
+                    <div class="form-group">
+                        <label>当前模型</label>
+                        <select id="live2dModelSelect" class="form-control">
+                            <option value="">选择模型...</option>
+                            <option value="/live2d/hiyori/Hiyori.prog.json">Hiyori</option>
+                            <option value="/live2d/haru/Haru.prog.json">Haru</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>模型缩放</label>
+                        <input type="range" id="live2dScale" min="0.5" max="2" step="0.1" value="1" class="form-control">
+                        <span class="range-value">1.0</span>
+                    </div>
+                    <div class="form-group">
+                        <label>透明背景</label>
+                        <input type="checkbox" id="live2dTransparent" checked>
+                    </div>
+                    <div class="form-group">
+                        <label>置顶显示</label>
+                        <input type="checkbox" id="live2dAlwaysOnTop" checked>
+                    </div>
+                </div>
+                <div class="config-section">
+                    <h3>口型同步</h3>
+                    <div class="form-group">
+                        <label>启用口型同步</label>
+                        <input type="checkbox" id="lipSyncEnabled" checked>
+                    </div>
+                    <div class="form-group">
+                        <label>模式</label>
+                        <select id="lipSyncMode" class="form-control">
+                            <option value="viseme">Viseme (推荐)</option>
+                            <option value="simple">简单 RMS</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>灵敏度</label>
+                        <input type="range" id="lipSyncSensitivity" min="1" max="5" step="0.1" value="2.5" class="form-control">
+                        <span class="range-value">2.5</span>
+                    </div>
+                </div>
+                <button id="btnSaveLive2D" class="btn btn-primary">保存配置</button>
+            </section>
+
+            <!-- 动作预设页面 -->
+            <section class="page" id="page-presets">
+                <h2>动作预设</h2>
+                <div class="config-section">
+                    <h3>情感预设 (Emotes)</h3>
+                    <div class="preset-list" id="emotePresets">
+                        <!-- 动态生成 -->
+                    </div>
+                </div>
+                <div class="config-section">
+                    <h3>手势预设 (Gestures)</h3>
+                    <div class="preset-list" id="gesturePresets">
+                        <!-- 动态生成 -->
+                    </div>
+                </div>
+                <div class="config-section">
+                    <h3>反应预设 (Reacts)</h3>
+                    <div class="preset-list" id="reactPresets">
+                        <!-- 动态生成 -->
+                    </div>
+                </div>
+                <button id="btnTestPreset" class="btn btn-secondary">测试选中预设</button>
+            </section>
+
+            <!-- 对话历史页面 -->
+            <section class="page" id="page-history">
+                <h2>对话历史</h2>
+                <div class="history-controls">
+                    <button id="btnRefreshHistory" class="btn btn-secondary">刷新</button>
+                    <button id="btnExportHistory" class="btn btn-secondary">导出</button>
+                    <button id="btnClearHistory" class="btn btn-danger">清空</button>
+                </div>
+                <div class="history-list" id="historyList">
+                    <div class="empty-state">暂无对话历史</div>
+                </div>
+            </section>
+
+            <!-- 系统日志页面 -->
+            <section class="page" id="page-logs">
+                <h2>系统日志</h2>
+                <div class="log-controls">
+                    <select id="logLevelFilter" class="form-control">
+                        <option value="all">全部</option>
+                        <option value="DEBUG">DEBUG</option>
+                        <option value="INFO">INFO</option>
+                        <option value="WARNING">WARNING</option>
+                        <option value="ERROR">ERROR</option>
+                    </select>
+                    <button id="btnClearLogs" class="btn btn-secondary">清空</button>
+                    <button id="btnRefreshLogs" class="btn btn-secondary">刷新</button>
+                </div>
+                <div class="log-container" id="logContainer">
+                    <div class="empty-state">暂无日志</div>
+                </div>
+            </section>
+
+            <!-- 系统设置页面 -->
+            <section class="page" id="page-settings">
+                <h2>系统设置</h2>
+                <div class="config-section">
+                    <h3>服务配置</h3>
+                    <div class="form-group">
+                        <label>后端地址</label>
+                        <input type="text" id="backendUrl" value="http://localhost:12394" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>日志级别</label>
+                        <select id="logLevel" class="form-control">
+                            <option value="DEBUG">DEBUG</option>
+                            <option value="INFO" selected>INFO</option>
+                            <option value="WARNING">WARNING</option>
+                            <option value="ERROR">ERROR</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="config-section">
+                    <h3>关于</h3>
+                    <div class="info-item">
+                        <span class="label">版本</span>
+                        <span class="value">1.0.0</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">项目</span>
+                        <span class="value">Anima - AI Virtual Companion</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">协议</span>
+                        <span class="value">MIT</span>
+                    </div>
+                </div>
+                <button id="btnSaveSettings" class="btn btn-primary">保存设置</button>
+            </section>
+        </main>
+    </div>
+
+    <script src="/static/js/config.js"></script>
+</body>
+</html>

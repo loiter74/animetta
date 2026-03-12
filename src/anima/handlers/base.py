@@ -170,18 +170,10 @@ class BaseHandler(ABC):
     # ========================================
 
     async def send(self, message: dict) -> None:
-        """
-        发送消息到 WebSocket
-
-        Args:
-            message: 消息字典
-        """
         if self.websocket_send is None:
-            logger.warning(f"[{self.name}] WebSocket 未设置，无法发送消息")
+            logger.warning(...)
             return
-
-        import json
-        await self.websocket_send(json.dumps(message))
+        await self.websocket_send(message) 
 
     async def send_error(self, message: str, seq: int = 0) -> None:
         """

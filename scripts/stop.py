@@ -232,14 +232,15 @@ def main():
         description='Anima Project Stop Script',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Examples:
-  python scripts/stop.py                # Stop all services
-  python scripts/stop.py --skip-backend  # Stop only frontend
+示例:
+  python scripts/stop.py              # 停止所有服务
+  python scripts/stop.py --skip-backend  # 仅停止前端
         """
     )
 
     parser.add_argument('--skip-backend', action='store_true', help='Skip backend stop')
     parser.add_argument('--skip-frontend', action='store_true', help='Skip frontend stop')
+    parser.add_argument('--skip-web-config', action='store_true', help='Skip web config stop')
     parser.add_argument('--cleanup', action='store_true', help='Clean up temporary files')
 
     args = parser.parse_args()
@@ -248,11 +249,11 @@ Examples:
     print()
     if Colors.enabled():
         print(f"{Colors.MAGENTA}{'=' * 40}{Colors.NC}")
-        print(f"{Colors.MAGENTA}  Anima Project Stop Script{Colors.NC}")
+        print(f"{Colors.MAGENTA}  Anima 停止脚本{Colors.NC}")
         print(f"{Colors.MAGENTA}{'=' * 40}{Colors.NC}")
     else:
         print('=' * 40)
-        print('  Anima Project Stop Script')
+        print('  Anima 停止脚本')
         print('=' * 40)
     print()
 
@@ -262,13 +263,21 @@ Examples:
     # Stop services
     stopped_any = False
 
+    # Stop backend (port 12394)
     if not args.skip_backend:
-        if pm.stop_service_on_port(12394, "Backend"):
+        if pm.stop_service_on_port(12394, "后端"):
             stopped_any = True
         print()
 
+    # Stop web config (port 8080)
+    if not args.skip_frontend and not args.skip_web_config:
+        if pm.stop_service_on_port(8080, "Web配置"):
+            stopped_any = True
+        print()
+
+    # Stop frontend (port 3000)
     if not args.skip_frontend:
-        if pm.stop_service_on_port(3000, "Frontend"):
+        if pm.stop_service_on_port(3000, "前端"):
             stopped_any = True
         print()
 

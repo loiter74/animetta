@@ -442,7 +442,11 @@ class DesktopLive2DChatter(ChannelAdapter):
     async def _send_text_output(self, event: "OutputEvent") -> None:
         """发送文本输出"""
         text = event.data
-        is_complete = event.metadata.get("is_complete", False) if event.metadata else False
+        # 防御性检查：确保 metadata 是 dict 类型
+        metadata = event.metadata
+        is_complete = False
+        if isinstance(metadata, dict):
+            is_complete = metadata.get("is_complete", False)
 
         await self._send_callback({
             "type": "sentence",

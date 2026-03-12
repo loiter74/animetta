@@ -170,12 +170,14 @@ class EventRouter:
             try:
                 await handler.handle(event)
             except Exception as e:
+                import traceback
                 logger.error(
-                    f"Handler {handler.__class__.__name__} 执行出错 "
-                    f"[event={event.type}]: {e}"
+                    f"Handler {handler.__class__.__name__} 处理失败 "
+                    f"[event={event.type}]: {e}\n{traceback.format_exc()}"  # ← 加这个
                 )
         return wrapper
     
+
     def unregister(self, event_type: str, handler: "BaseHandler") -> bool:
         """
         取消特定 Handler 的注册

@@ -19,8 +19,9 @@ memory:
     base_score: 0.5  # 基础分数
 
   # Vector search (Layer 2 Personalization)
+  # 注意：需要从 huggingface.co 下载 embedding 模型，首次使用需要网络
   vector_search:
-    enabled: true  # 是否启用向量搜索
+    enabled: false  # 暂时禁用，避免网络问题导致阻塞
     storage_path: "E:/AnimaData/vector_db"  # E盘存储路径
     embedding_model: "paraphrase-multilingual-MiniLM-L12-v2"  # 支持中文的嵌入模型
 

@@ -4,6 +4,7 @@
 """
 
 import signal
+import sys
 import asyncio
 from loguru import logger
 from typing import Callable, Optional
@@ -23,6 +24,7 @@ class LifecycleManager:
         self._shutdown_event: Optional[asyncio.Event] = None
         self._cleanup_callbacks: list = []
         self._signal_handlers_set = False
+        self._shutting_down = False
 
     def setup_signal_handlers(self, shutdown_event: asyncio.Event) -> None:
         """
@@ -55,19 +57,28 @@ class LifecycleManager:
 
     def _signal_handler(self, signum, frame):
         """信号处理器"""
+        # 防止重复处理
+        if self._shutting_down:
+            logger.info("已在关闭中，忽略重复信号")
+            return
+
+        self._shutting_down = True
         signal_name = signal.Signals(signum).name
         logger.info(f"收到信号 {signal_name}，准备优雅关闭...")
 
-        # 设置关闭事件
-        if self._shutdown_event:
+        # 执行同步清理回调
+        for callback in self._cleanup_callbacks:
             try:
-                loop = asyncio.get_running_loop()
-                loop.call_soon_threadsafe(self._shutdown_event.set)
-            except RuntimeError:
-                # 如果没有运行中的事件循环，直接退出
-                logger.info("没有运行中的事件循环，直接退出")
-                import sys
-                sys.exit(0)
+                # 对于异步回调，在同步上下文中我们只能尽力而为
+                if asyncio.iscoroutinefunction(callback):
+                    logger.warning("异步清理回调在信号处理器中无法执行，跳过")
+                else:
+                    callback()
+            except Exception as e:
+                logger.error(f"清理回调执行失败: {e}")
+
+        logger.info("资源清理完成，退出进程")
+        sys.exit(0)
 
     def register_cleanup_callback(self, callback: Callable) -> None:
         """
@@ -96,6 +107,4 @@ class LifecycleManager:
     @property
     def is_shutdown_requested(self) -> bool:
         """是否已请求关闭"""
-        if self._shutdown_event:
-            return self._shutdown_event.is_set()
-        return False
+        return self._shutting_down

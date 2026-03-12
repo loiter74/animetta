@@ -7,9 +7,16 @@
 from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Any, Optional
-import chromadb
-from chromadb.config import Settings
 from loguru import logger
+
+# 可选导入 chromadb
+try:
+    import chromadb
+    from chromadb.config import Settings
+    CHROMADB_AVAILABLE = True
+except ImportError:
+    CHROMADB_AVAILABLE = False
+    logger.warning("[VectorStore] chromadb 未安装，向量存储功能将被禁用")
 
 
 class VectorStore:
@@ -32,6 +39,12 @@ class VectorStore:
             storage_path: E盘存储路径（ChromaDB数据）
             embedding_model: 嵌入模型名称（支持中文）
         """
+        if not CHROMADB_AVAILABLE:
+            logger.warning("[VectorStore] chromadb 不可用，向量存储功能已禁用")
+            self.enabled = False
+            return
+
+        self.enabled = True
         self.storage_path = Path(storage_path)
         self.storage_path.mkdir(parents=True, exist_ok=True)
 
@@ -60,6 +73,9 @@ class VectorStore:
 
     def _init_collections(self):
         """初始化ChromaDB集合"""
+        if not self.enabled:
+            return
+
         collection_names = [
             "conversations",  # 对话历史
             "user_profiles",   # 用户画像
@@ -80,6 +96,9 @@ class VectorStore:
     @property
     def embedding_model(self):
         """延迟加载嵌入模型"""
+        if not self.enabled:
+            return None
+
         if self._embedding_model is None:
             try:
                 from sentence_transformers import SentenceTransformer
@@ -118,6 +137,10 @@ class VectorStore:
         Returns:
             str: 文档ID
         """
+        if not self.enabled:
+            logger.debug("[VectorStore] 向量存储已禁用，跳过添加对话")
+            return ""
+
         # 组合文本
         text = f"User: {user_input}\nAI: {ai_response}"
 
@@ -177,6 +200,10 @@ class VectorStore:
                 "distance": float
             }
         """
+        if not self.enabled:
+            logger.debug("[VectorStore] 向量存储已禁用，返回空结果")
+            return []
+
         # 生成查询嵌入
         query_embedding = self.embedding_model.encode(query).tolist()
 
@@ -220,6 +247,9 @@ class VectorStore:
         Returns:
             str: 文档ID
         """
+        if not self.enabled:
+            return ""
+
         # 格式化画像文本
         profile_text = "用户偏好总结：\n"
         for key, value in preferences.items():
@@ -268,6 +298,9 @@ class VectorStore:
         Returns:
             Dict: 各集合的文档数量
         """
+        if not self.enabled:
+            return {}
+
         stats = {}
         for name, collection in self.collections.items():
             try:
@@ -285,6 +318,9 @@ class VectorStore:
         Args:
             session_id: 会话ID
         """
+        if not self.enabled:
+            return
+
         # 注意：ChromaDB不支持按metadata删除
         # 需要查询所有数据然后逐个删除
         # 这里暂时跳过，实际使用时可以考虑重建集合

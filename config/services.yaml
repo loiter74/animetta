@@ -114,9 +114,11 @@ llm:
     memory_enabled: true
     llm_config:
       type: local_lora
-      base_model_name: "${ANIMA_BASE_MODEL_PATH}"
-      lora_path: "${ANIMA_LORA_PATH}"
-      device: cpu  # cuda / cpu
+      # 使用本地缓存的 Qwen2.5-7B-Instruct 模型（避免重新下载）
+      base_model_name: "E:/anima_data/models/huggingface/models--Qwen--Qwen2.5-7B-Instruct/snapshots/a09a35458c702b33eeacc393d103063234e8bc28"
+      # 使用 style_transfer 训练的 LoRA（与 7B 模型兼容）
+      lora_path: "E:/anima_data/models/style_transfer/final/lora"
+      device: cuda  # cuda / cpu
       max_new_tokens: 512
       temperature: 0.8
       top_p: 0.9

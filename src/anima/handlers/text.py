@@ -1,8 +1,10 @@
 """
 文本 Handler - 处理文本事件
+
+处理 sentence 事件，发送文本到前端。
 """
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from loguru import logger
 
 from .base import BaseHandler
@@ -15,7 +17,10 @@ class TextHandler(BaseHandler):
     """
     文本 Handler
 
-    处理 sentence 事件，发送文本到前端
+    处理 sentence 事件，发送文本到前端。
+
+    event.data 格式: str (文本内容)
+    event.metadata 格式: {"is_complete": bool} (可选)
     """
 
     # 类变量，用于减少日志频率
@@ -24,38 +29,61 @@ class TextHandler(BaseHandler):
 
     async def handle(self, event: "OutputEvent") -> None:
         """处理文本事件"""
-        text = event.data
+        # DEBUG: 打印事件详情
+        logger.info(
+            f"[{self.name}] DEBUG event: type={type(event).__name__}, "
+            f"data_type={type(event.data).__name__}, data={repr(event.data)[:100]}, "
+            f"metadata_type={type(event.metadata).__name__}, metadata={repr(event.metadata)[:100]}"
+        )
 
-        # 检查是否是完成标记（空文本）
-        is_complete = event.metadata.get("is_complete", False) if event.metadata else False
+        # 使用统一的提取方法
+        text, metadata = self.extract_event_data(event, expect_data_type=str)
+
+        # DEBUG: 打印提取后的值
+        logger.debug(
+            f"[{self.name}] DEBUG extracted: text_type={type(text).__name__}, "
+            f"metadata_type={type(metadata).__name__}, metadata={repr(metadata)[:100]}"
+        )
+        if text is None:
+            return
+
+        # 检查是否是完成标记
+        is_complete = metadata.get("is_complete", False) if isinstance(metadata, dict) else False
 
         if is_complete:
-            # 发送完成标记到前端（保留INFO级别，这是重要事件）
-            logger.info(f"[TextHandler] ✅ 发送完成标记 [seq={event.seq}]")
-            logger.debug(f"[TextHandler] Handler实例ID={id(self)}")
-            await self.send({
-                "type": "sentence",
-                "text": "",  # 空文本表示完成
-                "seq": event.seq,
-            })
-            # 重置计数器
-            self._log_counter = 0
+            await self._handle_completion(event.seq)
             return
 
         # 普通文本
-        if not text or not isinstance(text, str):
+        if not text:
             return
 
-        # 发送文本到前端
+        await self._handle_text(text, event.seq)
+
+    async def _handle_completion(self, seq: int) -> None:
+        """处理完成标记"""
+        logger.info(f"[{self.name}] ✅ 发送完成标记 [seq={seq}]")
+
+        await self.send({
+            "type": "sentence",
+            "text": "",  # 空文本表示完成
+            "seq": seq,
+        })
+
+        # 重置计数器
+        self._log_counter = 0
+
+    async def _handle_text(self, text: str, seq: int) -> None:
+        """处理普通文本"""
         self._log_counter += 1
 
         # 只在特定间隔打印DEBUG日志，减少日志量
         if self._log_counter % self._log_interval == 0:
-            logger.debug(f"[TextHandler] 📤 发送文本片段 [seq={event.seq}] (第{self._log_counter}个片段)")
-            logger.debug(f"[TextHandler] 片段内容: {text[:50]}...")
+            logger.debug(f"[{self.name}] 📤 发送文本片段 [seq={seq}] (第{self._log_counter}个片段)")
+            logger.debug(f"[{self.name}] 片段内容: {text[:50]}...")
 
         await self.send({
             "type": "sentence",
             "text": text,
-            "seq": event.seq,
+            "seq": seq,
         })
