@@ -88,13 +88,17 @@ src/anima/
 │   ├── unified.py       # UnifiedEventHandler (audio + expression)
 │   ├── input_handler.py # InputHandler (INPUT_* → Orchestrator)
 │   └── adapters/        # Socket adapter handlers
-├── memory/               # Conversation memory
-│   ├── memory_system.py # Unified memory interface
-│   ├── short_term.py    # Rolling window context
-│   ├── long_term.py     # Persistent storage
-│   ├── vector_store.py  # Semantic search with sentence-transformers
+├── memory/               # Conversation memory (OpenClaw-style architecture)
+│   ├── memory_system.py # Unified memory interface (backward compatible)
+│   ├── memory_manager.py # Core manager (index/sync/search)
 │   ├── memory_turn.py   # Memory turn data structure
-│   └── importance_scorer.py  # Memory importance scoring
+│   ├── config.py        # Configuration (ChunkConfig, SearchConfig, MemoryConfig)
+│   ├── models.py        # Data models (Chunk, SearchResult, FileEntry)
+│   ├── chunker.py       # Markdown sliding-window chunking
+│   ├── sqlite_store.py  # SQLite FTS5 + metadata storage
+│   ├── chroma_store.py  # Chroma vector storage
+│   ├── hybrid_search.py # Hybrid search (vector 70% + keyword 30%)
+│   └── tools.py         # Agent tool interfaces (memory_search/memory_get)
 ├── avatar/               # Live2D expression analysis
 │   ├── analyzers/       # Keyword-based and LLM-based emotion extraction
 │   └── strategies/      # Duration, intensity, position-based strategies

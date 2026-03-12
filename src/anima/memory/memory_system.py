@@ -1,16 +1,21 @@
 """
 记忆系统协调器
 
-统一管理四层存储：短期、长期、向量搜索、知识图谱
+基于 OpenClaw 架构的新版记忆系统：
+- Markdown 文件是唯一事实来源 (MEMORY.md + daily logs)
+- 混合检索: 向量语义搜索 (70%) + BM25 关键词搜索 (30%)
+- 滑动窗口分块: ~400 token/块, 80 token 重叠
+- 增量索引: 基于文件哈希检测变更
 """
 
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
+from datetime import datetime
 from loguru import logger
+
 from .memory_turn import MemoryTurn
-from .short_term import ShortTermMemory
-from .long_term import LongTermMemory
-from .importance_scorer import ImportanceScorer
-from .vector_store import VectorStore
+from .config import MemoryConfig
+from .memory_manager import MemoryManager
+from .models import SearchResult
 
 
 class MemorySystem:
@@ -18,16 +23,14 @@ class MemorySystem:
     记忆系统统一入口
 
     职责：
-    1. 协调三层存储
-    2. 提供统一 API
-    3. 智能路由（短期 vs 长期）
-    4. 重要性评估
+    1. 包装 MemoryManager，提供与旧接口兼容的 API
+    2. 管理短期记忆（内存）+ 长期记忆（Markdown + SQLite + Chroma）
+    3. 提供混合检索能力
 
     Example:
         >>> memory = MemorySystem({
+        ...     "workspace_dir": "~/.anima/workspace",
         ...     "short_term_max_turns": 20,
-        ...     "long_term_db_path": "memory_db/memories.db",
-        ...     "importance_threshold": 0.7
         ... })
         >>> turn = MemoryTurn(...)
         >>> await memory.store_turn(turn)
@@ -37,86 +40,89 @@ class MemorySystem:
         ... )
     """
 
-    def __init__(self, config: Dict):
+    def __init__(self, config: Dict[str, Any]):
         """
         初始化记忆系统
 
         Args:
             config: 配置字典
+                - workspace_dir: 工作目录（存储 MEMORY.md 和 daily logs）
+                - db_path: SQLite 数据库路径（可选）
+                - chroma_path: Chroma 向量库路径（可选）
                 - short_term_max_turns: 短期记忆容量
-                - long_term_db_path: 长期记忆数据库路径
-                - importance_threshold: 长期存储阈值
-                - enable_vector_search: 是否启用向量搜索
+                - embedding_model: embedding 模型名称
         """
-        max_turns = config.get("short_term_max_turns", 20)
+        # 短期记忆（内存中的会话缓存）
+        self._short_term_max_turns = config.get("short_term_max_turns", 20)
+        self._session_cache: Dict[str, List[MemoryTurn]] = {}
 
-        # 1. 短期记忆
-        self.short_term = ShortTermMemory(max_turns=max_turns)
+        # 构建 MemoryConfig
+        workspace = config.get("workspace_dir", "~/.anima/workspace")
+        memory_config = MemoryConfig(
+            workspace_dir=workspace,
+            db_path=config.get("db_path"),
+            chroma_path=config.get("chroma_path"),
+        )
 
-        # 2. 长期记忆
-        db_path = config.get("long_term_db_path", "memory_db/memories.db")
-        self.long_term = LongTermMemory(db_path=db_path)
+        # 设置 embedding 模型
+        if "embedding_model" in config:
+            from .config import EmbeddingConfig
+            memory_config.embedding = EmbeddingConfig(model_name=config["embedding_model"])
 
-        # 3. 重要性评分器
-        self.importance_threshold = config.get("importance_threshold", 0.7)
-        self.importance_scorer = ImportanceScorer()
-
-        # 4. 向量存储（可选）
-        self.vector_store = None
-        if config.get("enable_vector_search", False):
-            try:
-                vector_path = config.get("vector_storage_path", "E:/AnimaData/vector_db")
-                embedding_model = config.get("embedding_model", "paraphrase-multilingual-MiniLM-L12-v2")
-
-                self.vector_store = VectorStore(
-                    storage_path=vector_path,
-                    embedding_model=embedding_model
-                )
-                logger.info("[MemorySystem] 向量搜索已启用")
-            except Exception as e:
-                logger.warning(f"[MemorySystem] 向量存储初始化失败: {e}")
-                self.vector_store = None
-        else:
-            logger.info("[MemorySystem] 向量搜索未启用")
+        # 初始化 MemoryManager
+        try:
+            self.manager = MemoryManager(config=memory_config)
+            logger.info(f"[MemorySystem] 初始化成功，workspace: {memory_config.workspace_dir}")
+        except Exception as e:
+            logger.warning(f"[MemorySystem] MemoryManager 初始化失败，降级为纯内存模式: {e}")
+            self.manager = None
 
     async def store_turn(self, turn: MemoryTurn) -> None:
         """
         存储对话轮次
 
         流程：
-        1. 评估重要性
-        2. 存储到短期记忆
-        3. 高重要性 → 长期记忆
-        4. 存储到向量搜索（如果启用）
+        1. 存储到短期记忆（内存缓存）
+        2. 写入长期记忆（Markdown 文件）
+        3. 触发增量索引
 
         Args:
             turn: 对话轮次数据
         """
-        # 1. 评估重要性
-        turn.importance = await self.importance_scorer.score(turn)
+        # 1. 存储到短期记忆
+        session_id = turn.session_id
+        if session_id not in self._session_cache:
+            self._session_cache[session_id] = []
 
-        # 2. 存储到短期记忆
-        await self.short_term.add(turn)
+        cache = self._session_cache[session_id]
+        cache.append(turn)
 
-        # 3. 高重要性 → 长期记忆
-        if turn.importance >= self.importance_threshold:
-            await self.long_term.store(turn)
+        # 保持短期记忆容量限制
+        if len(cache) > self._short_term_max_turns:
+            cache.pop(0)
 
-        # 4. 存储到向量搜索（第二层个性化）
-        if self.vector_store:
+        # 2. 写入长期记忆
+        if self.manager:
             try:
-                self.vector_store.add_conversation(
-                    session_id=turn.session_id,
-                    user_input=turn.user_input,
-                    ai_response=turn.agent_response,
-                    emotions=turn.emotions,
-                    metadata={
-                        "importance": turn.importance,
-                        "timestamp": turn.timestamp.isoformat()
-                    }
-                )
+                # 格式化对话为 Markdown
+                timestamp = turn.timestamp.strftime("%H:%M")
+                content = f"""### {timestamp}
+**User**: {turn.user_input}
+**AI**: {turn.agent_response}
+"""
+                if turn.emotions:
+                    content += f"*Emotions: {', '.join(turn.emotions)}*\n"
+
+                # 写入每日日志
+                self.manager.write_daily_log(content)
+
+                # 如果重要性高，也写入 MEMORY.md
+                if turn.importance >= 0.7:
+                    memory_entry = f"- [{turn.timestamp.strftime('%Y-%m-%d')}] {turn.user_input[:50]}...\n"
+                    self.manager.write_memory(memory_entry)
+
             except Exception as e:
-                logger.warning(f"[MemorySystem] 向量存储失败: {e}")
+                logger.warning(f"[MemorySystem] 长期记忆写入失败: {e}")
 
     async def retrieve_context(
         self,
@@ -125,12 +131,11 @@ class MemorySystem:
         max_turns: int = 5
     ) -> List[MemoryTurn]:
         """
-        检索相关记忆（增强版：向量搜索 + 关键词搜索）
+        检索相关记忆
 
         策略：多路召回
         1. 短期记忆：最近 N 轮
-        2. 向量搜索：语义相关对话（如果启用）
-        3. 长期记忆：全文搜索（FTS）
+        2. 混合搜索：向量语义 + BM25 关键词
 
         Args:
             query: 查询文本
@@ -143,67 +148,46 @@ class MemorySystem:
         results = []
 
         # 1. 短期记忆：最近 N 轮
-        recent = await self.short_term.get_recent(
-            session_id=session_id,
-            n=max_turns
-        )
+        cache = self._session_cache.get(session_id, [])
+        recent = cache[-max_turns:] if cache else []
         results.extend(recent)
 
-        # 2. 向量搜索：语义相关（第二层个性化）
-        if self.vector_store:
+        # 2. 混合搜索长期记忆
+        if self.manager:
             try:
-                vector_results = self.vector_store.search_relevant_context(
+                search_results = self.manager.search(
                     query=query,
-                    session_id=session_id,
-                    n_results=3
+                    max_results=5
                 )
 
-                # 将向量搜索结果转换为MemoryTurn
-                for vr in vector_results:
-                    # 从文本中解析用户输入和AI回复
-                    text = vr["text"]
-                    lines = text.split("\n")
-                    user_input = ""
-                    agent_response = ""
+                # 转换 SearchResult 为 MemoryTurn
+                for sr in search_results:
+                    # 解析 Markdown 格式的对话
+                    user_input, agent_response = self._parse_markdown_dialog(sr.text)
 
-                    for i, line in enumerate(lines):
-                        if line.startswith("User: "):
-                            user_input = line[6:]
-                        elif line.startswith("AI: "):
-                            agent_response = line[4:]
-
-                    if user_input and agent_response:
-                        from datetime import datetime
-                        import uuid
-
+                    if user_input or agent_response:
                         memory_turn = MemoryTurn(
-                            turn_id=str(uuid.uuid4()),
+                            turn_id=f"search_{sr.path}_{sr.start_line}",
                             session_id=session_id,
-                            timestamp=datetime.fromisoformat(vr["metadata"].get("timestamp", datetime.now().isoformat())),
+                            timestamp=datetime.now(),
                             user_input=user_input,
                             agent_response=agent_response,
-                            emotions=vr["metadata"].get("emotions", "").split(",") if vr["metadata"].get("emotions") else [],
-                            metadata=vr["metadata"],
-                            importance=vr["metadata"].get("importance", 0.5)
+                            emotions=[],
+                            metadata={
+                                "path": sr.path,
+                                "score": sr.score,
+                                "source": sr.source,
+                            },
+                            importance=sr.score
                         )
                         results.append(memory_turn)
 
-                logger.debug(f"[MemorySystem] 向量搜索返回 {len(vector_results)} 条结果")
+                logger.debug(f"[MemorySystem] 混合搜索返回 {len(search_results)} 条结果")
+
             except Exception as e:
-                logger.warning(f"[MemorySystem] 向量搜索失败: {e}")
+                logger.warning(f"[MemorySystem] 混合搜索失败: {e}")
 
-        # 3. 长期记忆：全文搜索（FTS）
-        try:
-            relevant = await self.long_term.search(
-                query=query,
-                top_k=3,
-                session_id=None  # 全局搜索
-            )
-            results.extend(relevant)
-        except Exception as e:
-            logger.warning(f"[MemorySystem] 长期记忆搜索失败: {e}")
-
-        # 4. 去重（按 turn_id）
+        # 3. 去重（按 turn_id）
         seen = set()
         unique_results = []
         for turn in results:
@@ -212,6 +196,24 @@ class MemorySystem:
                 unique_results.append(turn)
 
         return unique_results
+
+    def _parse_markdown_dialog(self, text: str) -> tuple:
+        """解析 Markdown 格式的对话"""
+        user_input = ""
+        agent_response = ""
+
+        lines = text.split("\n")
+        for line in lines:
+            if line.startswith("**User**:"):
+                user_input = line[9:].strip()
+            elif line.startswith("**AI**:"):
+                agent_response = line[6:].strip()
+            elif line.startswith("User: "):
+                user_input = line[6:].strip()
+            elif line.startswith("AI: "):
+                agent_response = line[4:].strip()
+
+        return user_input, agent_response
 
     async def get_user_history(
         self,
@@ -228,10 +230,9 @@ class MemorySystem:
         Returns:
             历史对话列表（按时间倒序）
         """
-        return await self.long_term.get_user_history(
-            session_id=session_id,
-            limit=limit
-        )
+        # 从短期记忆获取
+        cache = self._session_cache.get(session_id, [])
+        return list(reversed(cache[-limit:]))
 
     async def clear_session(self, session_id: str) -> None:
         """
@@ -240,8 +241,78 @@ class MemorySystem:
         Args:
             session_id: 会话 ID
         """
-        await self.short_term.clear(session_id)
+        if session_id in self._session_cache:
+            del self._session_cache[session_id]
+
+    def write_memory(self, content: str, append: bool = True) -> None:
+        """
+        写入长期记忆 (MEMORY.md)
+
+        Args:
+            content: 要写入的内容
+            append: True=追加, False=覆盖
+        """
+        if self.manager:
+            self.manager.write_memory(content, append=append)
+
+    def write_daily_log(self, content: str) -> None:
+        """
+        写入每日日志
+
+        Args:
+            content: 日志内容
+        """
+        if self.manager:
+            self.manager.write_daily_log(content)
+
+    def search(self, query: str, max_results: int = 10) -> List[SearchResult]:
+        """
+        直接搜索记忆（不转换为 MemoryTurn）
+
+        Args:
+            query: 查询文本
+            max_results: 返回结果数量
+
+        Returns:
+            SearchResult 列表
+        """
+        if self.manager:
+            return self.manager.search(query, max_results=max_results)
+        return []
+
+    def load_session_context(self) -> str:
+        """
+        加载会话启动时的记忆上下文
+
+        Returns:
+            组合后的记忆上下文文本
+        """
+        if self.manager:
+            return self.manager.load_session_context()
+        return ""
+
+    def should_flush(self, current_tokens: int, context_window: int) -> bool:
+        """
+        判断是否需要触发记忆 flush
+
+        Args:
+            current_tokens: 当前会话消耗的 token 数
+            context_window: 模型上下文窗口大小
+
+        Returns:
+            True 表示应该触发 flush
+        """
+        if self.manager:
+            return self.manager.should_flush(current_tokens, context_window)
+        return False
+
+    def sync(self) -> None:
+        """全量同步索引"""
+        if self.manager:
+            self.manager.sync()
 
     def close(self) -> None:
         """关闭记忆系统"""
-        self.long_term.close()
+        if self.manager:
+            self.manager.close()
+        self._session_cache.clear()
