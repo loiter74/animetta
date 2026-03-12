@@ -106,6 +106,11 @@ class IpcBridge {
       this.sendToWindow('live2d', 'audio:stream', data);
     });
 
+    // Audio with expression (TTS audio playback)
+    this.socket.on('audio_with_expression', (data) => {
+      this.sendToWindow('live2d', 'audio:with-expression', data);
+    });
+
     // Chat message
     this.socket.on('chat.message', (data) => {
       this.sendToWindow('chat', 'chat:message', data);

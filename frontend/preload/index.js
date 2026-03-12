@@ -36,6 +36,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
       const listener = (_event, data) => callback(data);
       ipcRenderer.on('audio:stream', listener);
       return () => ipcRenderer.removeListener('audio:stream', listener);
+    },
+
+    // Listen for audio with expression (TTS playback)
+    onAudioWithExpression: (callback) => {
+      const listener = (_event, data) => callback(data);
+      ipcRenderer.on('audio:with-expression', listener);
+      return () => ipcRenderer.removeListener('audio:with-expression', listener);
     }
   },
 

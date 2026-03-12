@@ -9,6 +9,7 @@ import { LipSync } from './animation/LipSync.js';
 import { ExpressionController } from './animation/ExpressionController.js';
 import { ActionExecutor } from './animation/ActionExecutor.js';
 import { Live2DIpcListeners } from './ipc/Live2DIpcListeners.js';
+import { AudioWithExpression } from './audio/AudioWithExpression.js';
 
 export class Live2DRenderer {
   constructor() {
@@ -27,6 +28,7 @@ export class Live2DRenderer {
     this.expressionController = null;
     this.actionExecutor = null;
     this.ipc = null;
+    this.audioWithExpression = null;
 
     // Resize handler bound
     this._handleResize = this._handleResize.bind(this);
@@ -55,10 +57,23 @@ export class Live2DRenderer {
       // Create action executor
       this.actionExecutor = new ActionExecutor(this.expressionController);
 
+      // Create audio with expression player
+      this.audioWithExpression = new AudioWithExpression({
+        setMouthOpen: (v) => this.lipSync.setTarget(v),
+        setExpression: (name) => this.expressionController.setExpression(name),
+        onPlaybackStart: (seq) => console.log('[Live2DRenderer] Audio playback started:', seq),
+        onPlaybackEnd: () => {
+          // Reset lip sync after playback
+          this.lipSync.setTarget(0);
+        },
+        onError: (err) => console.error('[Live2DRenderer] Audio error:', err),
+      });
+
       // Setup IPC listeners
       this.ipc = new Live2DIpcListeners({
         onAction: (action) => this.actionExecutor.execute(action),
         onAudioStream: (data) => this._handleAudioStream(data),
+        onAudioWithExpression: (data) => this._handleAudioWithExpression(data),
       });
       this.ipc.setup();
 
@@ -140,6 +155,15 @@ export class Live2DRenderer {
   }
 
   /**
+   * Handle audio with expression event (TTS playback)
+   * @param {Object} data - Audio with expression data
+   */
+  _handleAudioWithExpression(data) {
+    console.log('[Live2DRenderer] Received audio_with_expression:', data.seq);
+    this.audioWithExpression.play(data);
+  }
+
+  /**
    * Handle window resize
    */
   _handleResize() {
@@ -208,6 +232,11 @@ export class Live2DRenderer {
     // Cleanup IPC listeners
     if (this.ipc) {
       this.ipc.cleanup();
+    }
+
+    // Cleanup audio player
+    if (this.audioWithExpression) {
+      this.audioWithExpression.destroy();
     }
 
     // Cleanup lip sync

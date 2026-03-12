@@ -20,9 +20,19 @@ export class ExpressionController {
    * @param {string} expressionName
    */
   setExpression(expressionName) {
-    if (!this.model) return;
+    if (!this.model) {
+      console.warn('[ExpressionController] No model loaded, cannot set expression');
+      return;
+    }
 
-    const expressionIndex = this.model.internalModel.motionManager.expressionNames.indexOf(
+    // Defensive check for model internals
+    const internalModel = this.model.internalModel;
+    if (!internalModel?.motionManager?.expressionNames) {
+      console.warn('[ExpressionController] Model does not support expressions');
+      return;
+    }
+
+    const expressionIndex = internalModel.motionManager.expressionNames.indexOf(
       expressionName
     );
 

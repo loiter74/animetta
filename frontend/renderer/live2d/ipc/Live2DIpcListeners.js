@@ -27,12 +27,22 @@ export class Live2DIpcListeners {
     if (cleanupAction) this._cleanupFns.push(cleanupAction);
 
     // Listen for audio stream (lip sync)
-    const cleanupAudio = window.electronAPI.live2d.onAudioStream((data) => {
-      this.handlers.onAudioStream(data);
-    });
-    if (cleanupAudio) this._cleanupFns.push(cleanupAudio);
+    if (window.electronAPI.live2d.onAudioStream) {
+      const cleanupAudio = window.electronAPI.live2d.onAudioStream((data) => {
+        this.handlers.onAudioStream(data);
+      });
+      if (cleanupAudio) this._cleanupFns.push(cleanupAudio);
+    }
 
-    console.log('[Live2DIpcListeners] Setup complete');
+    // Listen for audio with expression (TTS playback)
+    if (window.electronAPI.live2d.onAudioWithExpression) {
+      const cleanupAudioExpr = window.electronAPI.live2d.onAudioWithExpression((data) => {
+        this.handlers.onAudioWithExpression(data);
+      });
+      if (cleanupAudioExpr) this._cleanupFns.push(cleanupAudioExpr);
+    }
+
+    // console.log('[Live2DIpcListeners] Setup complete');
   }
 
   /**
@@ -49,6 +59,5 @@ export class Live2DIpcListeners {
       }
     });
     this._cleanupFns = [];
-    console.log('[Live2DIpcListeners] Cleanup complete');
   }
 }
