@@ -112,8 +112,12 @@ class MemoryManager:
             else:
                 f.write(content)
         logger.info(f"Wrote to MEMORY.md ({'append' if append else 'overwrite'})")
-        # 自动增量索引
-        self._index_file(str(path.relative_to(self._workspace)), "memory")
+
+        # 自动增量索引（失败不影响写入）
+        try:
+            self._index_file(str(path.relative_to(self._workspace)), "memory")
+        except Exception as e:
+            logger.warning(f"Index failed for MEMORY.md: {e}")
 
     def write_daily_log(self, content: str, date: datetime | None = None):
         """
@@ -128,7 +132,12 @@ class MemoryManager:
             timestamp = datetime.now().strftime("%H:%M")
             f.write(f"\n## {timestamp}\n{content}\n")
         logger.info(f"Wrote daily log: {path.name}")
-        self._index_file(str(path.relative_to(self._workspace)), "daily")
+
+        # 增量索引（失败不影响写入）
+        try:
+            self._index_file(str(path.relative_to(self._workspace)), "daily")
+        except Exception as e:
+            logger.warning(f"Index failed for {path.name}: {e}")
 
     def get(
         self, relative_path: str, start_line: int | None = None, end_line: int | None = None
