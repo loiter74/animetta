@@ -315,7 +315,7 @@ class ServiceContext:
         初始化记忆系统
 
         从 config/features/memory.yaml 加载配置
-        支持向量搜索（第二层个性化）
+        基于 OpenClaw 架构的新版记忆系统
         """
         try:
             from pathlib import Path
@@ -334,26 +334,25 @@ class ServiceContext:
                 logger.info(f"[{self.session_id}] 记忆系统未启用")
                 return
 
-            # 构建记忆系统配置
+            # 构建新版记忆系统配置
+            mem_cfg = memory_config['memory']
             config = {
-                "short_term_max_turns": memory_config['memory']['short_term']['max_turns'],
-                "long_term_db_path": memory_config['memory']['long_term']['db_path'],
-                "importance_threshold": memory_config['memory']['importance']['threshold']
+                "workspace_dir": mem_cfg.get('workspace_dir', '~/.anima/workspace'),
+                "short_term_max_turns": mem_cfg.get('short_term', {}).get('max_turns', 20),
             }
 
-            # 向量搜索配置（第二层个性化）
-            vector_search_config = memory_config.get('memory', {}).get('vector_search', {})
-            if vector_search_config.get('enabled', False):
-                config['enable_vector_search'] = True
-                config['vector_storage_path'] = vector_search_config.get('storage_path', 'E:/AnimaData/vector_db')
-                config['embedding_model'] = vector_search_config.get('embedding_model', 'paraphrase-multilingual-MiniLM-L12-v2')
-
-                logger.info(f"[{self.session_id}] 向量搜索已启用")
-                logger.info(f"[{self.session_id}] 存储路径: {config['vector_storage_path']}")
-                logger.info(f"[{self.session_id}] 嵌入模型: {config['embedding_model']}")
+            # Embedding 模型配置
+            embedding_cfg = mem_cfg.get('embedding', {})
+            if embedding_cfg.get('model_name'):
+                config['embedding_model'] = embedding_cfg['model_name']
 
             self.memory_system = MemorySystem(config)
+
+            # 同步索引现有记忆文件
+            self.memory_system.sync()
+
             logger.info(f"[{self.session_id}] ✅ 记忆系统初始化完成")
+            logger.info(f"[{self.session_id}] 工作目录: {config['workspace_dir']}")
 
         except Exception as e:
             logger.warning(f"[{self.session_id}] 记忆系统初始化失败: {e}")

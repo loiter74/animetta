@@ -52,6 +52,12 @@ class MemoryManager:
             collection_name=f"memory_{self.config.agent_id}",
         )
 
+        # 初始化 MEMORY.md 基础文件
+        memory_file = ws / "MEMORY.md"
+        if not memory_file.exists():
+            memory_file.write_text("# Long-term Memory\n\n重要对话和用户偏好记录。\n", encoding="utf-8")
+            logger.info(f"Created MEMORY.md at {memory_file}")
+
         # 尝试加载 sentence-transformers 用于 embedding
         self._embedder = None
         try:
@@ -64,6 +70,9 @@ class MemoryManager:
                 "sentence-transformers not installed. "
                 "Vector search disabled, falling back to keyword-only."
             )
+        except Exception as e:
+            logger.warning(f"Failed to load embedding model: {e}")
+            self._embedder = None
 
     # ── 文件读写 ──────────────────────────────────────────
 

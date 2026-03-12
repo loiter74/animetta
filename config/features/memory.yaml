@@ -1,30 +1,60 @@
 # Memory System Configuration
-# 四层记忆系统配置（已集成向量搜索）
+# 基于 OpenClaw 架构的新版记忆系统配置
 
 memory:
   enabled: true
 
-  # Short-term memory (session-level)
+  # 工作目录 - 所有记忆文件的存储位置
+  # MEMORY.md (长期记忆) 和 memory/YYYY-MM-DD.md (每日日志) 都存在这里
+  workspace_dir: "~/.anima/workspace"
+
+  # 短期记忆（内存缓存）
   short_term:
-    max_turns: 20  # 最大保存轮数
+    max_turns: 20  # 内存中保留的最大轮数
 
-  # Long-term memory (persistent)
-  long_term:
-    backend: "sqlite"  # sqlite (default) | postgresql
-    db_path: "memory_db/memories.db"
+  # 分块配置
+  chunk:
+    target_tokens: 400  # 每块目标 token 数
+    overlap_tokens: 80  # 相邻块重叠 token 数
+    chars_per_token: 2.0  # 中文字符/token 比
 
-  # Importance scoring
-  importance:
-    threshold: 0.7  # 高于此分数才存长期记忆
-    base_score: 0.5  # 基础分数
+  # 搜索配置
+  search:
+    vector_weight: 0.7  # 向量得分权重
+    keyword_weight: 0.3  # 关键词 (BM25) 得分权重
+    default_max_results: 10
 
-  # Vector search (Layer 2 Personalization)
-  # 注意：需要从 huggingface.co 下载 embedding 模型，首次使用需要网络
-  vector_search:
-    enabled: false  # 暂时禁用，避免网络问题导致阻塞
-    storage_path: "E:/AnimaData/vector_db"  # E盘存储路径
-    embedding_model: "paraphrase-multilingual-MiniLM-L12-v2"  # 支持中文的嵌入模型
+  # Embedding 模型配置
+  # 注意：需要从 huggingface.co 下载模型，首次使用需要网络
+  embedding:
+    model_name: "BAAI/bge-small-zh-v1.5"  # 中文推荐模型
+    # model_name: "sentence-transformers/all-MiniLM-L6-v2"  # 英文模型
 
-# Note: Knowledge graph is optional and not implemented yet
-# knowledge_graph:
-#   enabled: false
+  # 上下文压缩前 flush 配置
+  flush:
+    enabled: true
+    soft_threshold_tokens: 4000
+    reserve_tokens_floor: 20000
+
+# 记忆文件结构说明:
+# ─────────────────────────────────────────
+# workspace_dir/
+# ├── MEMORY.md           # 长期记忆（重要对话摘要）
+# └── memory/
+#     ├── 2026-03-13.md   # 每日对话日志
+#     ├── 2026-03-12.md
+#     └── ...
+#
+# 日志格式 (memory/YYYY-MM-DD.md):
+# ─────────────────────────────────────────
+# ## 14:30
+# **User**: 你好
+# **AI**: 你好！有什么可以帮你的吗？
+# *Emotions: happy, friendly*
+#
+# 长期记忆格式 (MEMORY.md):
+# ─────────────────────────────────────────
+# # Long-term Memory
+#
+# - [2026-03-13] 用户喜欢用 Python 编程...
+# - [2026-03-12] 用户提到喜欢吃寿司...
