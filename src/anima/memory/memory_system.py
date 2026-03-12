@@ -104,10 +104,8 @@ class MemorySystem:
         # 2. 写入长期记忆
         if self.manager:
             try:
-                # 格式化对话为 Markdown
-                timestamp = turn.timestamp.strftime("%H:%M")
-                content = f"""### {timestamp}
-**User**: {turn.user_input}
+                # 格式化对话为 Markdown（不含时间戳，由 write_daily_log 添加）
+                content = f"""**User**: {turn.user_input}
 **AI**: {turn.agent_response}
 """
                 if turn.emotions:

@@ -63,13 +63,20 @@ class MemoryManager:
         try:
             from sentence_transformers import SentenceTransformer
 
-            self._embedder = SentenceTransformer(self.config.embedding.model_name)
-            logger.info(f"Loaded embedding model: {self.config.embedding.model_name}")
+            # 强制使用 CPU，避免 CUDA 兼容性问题
+            import os
+            os.environ['CUDA_VISIBLE_DEVICES'] = ''
+
+            self._embedder = SentenceTransformer(self.config.embedding.model_name, device='cpu')
+            logger.info(f"Loaded embedding model: {self.config.embedding.model_name} (CPU)")
         except ImportError:
             logger.warning(
                 "sentence-transformers not installed. "
                 "Vector search disabled, falling back to keyword-only."
             )
+        except Exception as e:
+            logger.warning(f"Failed to load embedding model: {e}")
+            self._embedder = None
         except Exception as e:
             logger.warning(f"Failed to load embedding model: {e}")
             self._embedder = None
@@ -224,19 +231,11 @@ class MemoryManager:
             for rc in raw_chunks
         ]
 
-        # 事务性更新: 先删旧的, 再写新的
+        # 事务性更新: 先删旧的 chunks 和 vectors
         self.sqlite.delete_chunks_by_path(relative_path)
         self.chroma.delete_by_path(relative_path)
 
-        rowids = self.sqlite.insert_chunks(chunks)
-
-        # 计算 embedding (带缓存)
-        embeddings = self._compute_embeddings(chunks)
-
-        # 写入 Chroma
-        self.chroma.upsert_chunks(chunks, rowids, embeddings)
-
-        # 更新文件索引记录
+        # 先插入/更新文件记录（外键约束要求）
         self.sqlite.upsert_file(
             FileEntry(
                 path=relative_path,
@@ -246,6 +245,15 @@ class MemoryManager:
                 chunk_count=len(chunks),
             )
         )
+
+        # 再插入 chunks
+        rowids = self.sqlite.insert_chunks(chunks)
+
+        # 计算 embedding (带缓存)
+        embeddings = self._compute_embeddings(chunks)
+
+        # 写入 Chroma
+        self.chroma.upsert_chunks(chunks, rowids, embeddings)
 
         logger.info(f"Indexed {relative_path}: {len(chunks)} chunks")
         return True
