@@ -15,9 +15,9 @@ class SocketEventAdapter:
     """
 
     # 事件名称映射表
-    # sentence 需要映射为 text（前端期望 text 事件）
+    # sentence 不映射，保持原样（前端 IpcBridge 监听 sentence 事件）
     EVENT_NAME_MAPPING = {
-        "sentence": "text",  # 启用映射：后端发送 sentence，前端期望 text
+        # "sentence": "text",  # 不映射：前端 IpcBridge 监听 sentence 并转换为 llm:chunk
         "user-transcript": "transcript",
         # 其他事件保持原样
         "audio": "audio",
@@ -78,9 +78,7 @@ class SocketEventAdapter:
         # 转换数据格式
         if event_type == "user-transcript":
             return self._adapt_transcript_event(event)
-        elif event_type == "sentence":
-            # sentence 事件需要特殊处理以保持字段兼容性
-            return self._adapt_sentence_event(event)
+        # sentence 事件保持原样，不转换
         else:
             # 其他事件保持原样，只转换 type
             return {"type": mapped_type, **{k: v for k, v in event.items() if k != "type"}}

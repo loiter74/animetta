@@ -111,9 +111,24 @@ class IpcBridge {
       this.sendToWindow('chat', 'chat:message', data);
     });
 
-    // Sentence (text response)
+    // Sentence (text response) -> convert to llm:chunk for frontend
     this.socket.on('sentence', (data) => {
-      this.sendToWindow('chat', 'sentence', data);
+      // Convert sentence event to llm:chunk format expected by frontend
+      const chunkData = {
+        text: data.text || '',
+        seq: data.seq || 0,
+        is_complete: data.text === '' || data.is_complete
+      };
+      console.log('[IpcBridge] sentence -> llm:chunk:', chunkData.text?.substring(0, 20) || '(empty)');
+      this.sendToWindow('chat', 'llm:chunk', chunkData);
+    });
+
+    // Control events (conversation-end to hide typing indicator)
+    this.socket.on('control', (data) => {
+      console.log('[IpcBridge] control event:', data);
+      if (data.signal === 'conversation-end') {
+        this.sendToWindow('chat', 'chat:message', { type: 'complete' });
+      }
     });
   }
 
@@ -142,9 +157,8 @@ class IpcBridge {
         this.sendToWindow('chat', 'chat:message', data);
         break;
 
-      case 'sentence':
-        this.sendToWindow('chat', 'sentence', data);
-        break;
+      // sentence is now handled by socket.on('sentence') listener above
+      // Do NOT add case 'sentence' here to avoid duplicate processing
 
       default:
         console.log('[IpcBridge] Unknown event:', event);

@@ -146,6 +146,8 @@ class DesktopLive2DChatter(ChannelAdapter):
         发送输出事件到客户端
 
         将事件转换为前端格式并发送
+
+        注意: sentence 事件由 TextHandler 处理，这里不再重复发送
         """
         if not self._send_callback:
             return
@@ -153,9 +155,10 @@ class DesktopLive2DChatter(ChannelAdapter):
         try:
             event_type = event.type
 
-            # 根据事件类型转换格式
+            # sentence 事件由 TextHandler 处理，避免重复发送
             if event_type == "sentence":
-                await self._send_text_output(event)
+                # 跳过，由 TextHandler 处理
+                pass
             elif event_type in ("audio", "audio_with_expression"):
                 await self._send_audio_output(event)
             elif event_type == "control":
