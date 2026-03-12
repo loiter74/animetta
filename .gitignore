@@ -66,7 +66,13 @@ out/
 # Claude Code skills (user-specific)
 .claude/skills/
 
-# Memory system database (user-specific data)
-data/*.db
-data/*.db-*memory_db/
+# Memory system (OpenClaw-style)
+# Keep directory structure, ignore generated files
+memory_db/*.sqlite
+memory_db/*.sqlite-*
+memory_db/chroma_db/
+memory_db/memory/*.md
+memory_db/MEMORY.md
+!memory_db/.gitkeep
+
 training_data/datasets/raw/
