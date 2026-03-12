@@ -3,12 +3,17 @@
 
 整合情绪分析、时间轴计算和音频处理。
 使用新的 IEmotionAnalyzer 和 ITimelineStrategy 接口。
+
+event.data 格式: dict
+    - audio_path: str (必需) - 音频文件路径
+    - text: str (可选) - 文本内容
+    - emotions: list (可选) - 预计算的情绪列表
 """
 
 import base64
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, Dict, Any
+from typing import TYPE_CHECKING, Optional, Dict, Any, List
 from loguru import logger
 
 from .base import BaseHandler
@@ -29,27 +34,19 @@ class UnifiedEventHandler(BaseHandler):
     统一事件处理器
 
     整合情绪分析、时间轴计算和音频处理功能。
-    使用新的策略模式和工厂模式，支持灵活的组件配置。
+    处理 audio_with_expression 事件。
 
-    功能:
-    - 自动从文本中提取情绪（使用 IEmotionAnalyzer）
-    - 计算情绪时间轴（使用 ITimelineStrategy）
-    - 处理音频并计算音量包络
-    - 发送统一的 WebSocket 消息
+    event.data 格式:
+        - audio_path: str (必需) - 音频文件路径
+        - text: str (可选) - 文本内容
+        - emotions: list (可选) - 预计算的情绪列表
 
-    Attributes:
-        analyzer: 情绪分析器（LLMTagAnalyzer 或 KeywordAnalyzer）
-        strategy: 时间轴策略（PositionBasedStrategy 等）
-        audio_analyzer: 音频分析器
-        sample_rate: 音量包络采样率
-
-    Example:
-        >>> handler = UnifiedEventHandler(
-        ...     analyzer_type="llm_tag_analyzer",
-        ...     strategy_type="duration_based"
-        ... )
-        >>> await handler.handle(event)
+    event.metadata 格式:
+        - seq: int (可选) - 序号
     """
+
+    # 必需的 data 键
+    REQUIRED_DATA_KEYS = ["audio_path"]
 
     def __init__(
         self,
@@ -102,19 +99,34 @@ class UnifiedEventHandler(BaseHandler):
     async def handle(self, event: "OutputEvent") -> None:
         """
         处理音频 + 表情事件
-
-        Args:
-            event: OutputEvent，data 应包含:
-                - audio_path: 音频文件路径
-                - text: 文本内容（可选，如果没有则从情绪分析器推断）
-                - emotions: 情绪列表（可选，如果没有则从文本提取）
-                - seq: 序号
         """
-        data = event.data
-        audio_path = data.get("audio_path")
+        # DEBUG: 打印事件详情
+        logger.debug(
+            f"[{self.name}] DEBUG event: type={type(event).__name__}, "
+            f"data_type={type(event.data).__name__}, data={repr(event.data)[:200]}, "
+            f"metadata_type={type(event.metadata).__name__}, metadata={repr(event.metadata)[:200]}"
+        )
+
+        # 使用统一的提取方法
+        data, metadata = self.extract_dict_data(
+            event,
+            required_keys=self.REQUIRED_DATA_KEYS,
+        )
+
+        # DEBUG: 打印提取后的值
+        logger.debug(
+            f"[{self.name}] DEBUG extracted: data_type={type(data).__name__}, "
+            f"metadata_type={type(metadata).__name__}, metadata={repr(metadata)[:200]}"
+        )
+
+        if data is None:
+            return
+
+        # 提取字段
+        audio_path = data["audio_path"]
         text = data.get("text", "")
         provided_emotions = data.get("emotions")
-        seq = event.metadata.get("seq", event.seq)
+        seq = metadata.get("seq", event.seq) if isinstance(metadata, dict) else event.seq
 
         # 记录开始时间
         start_time = time.time()
@@ -177,18 +189,7 @@ class UnifiedEventHandler(BaseHandler):
             )
 
             # 6. 构建表情时间轴数据（包含 intensity）
-            expressions_data = {
-                "segments": [
-                    {
-                        "emotion": seg.emotion,
-                        "time": seg.start_time,
-                        "duration": seg.duration,
-                        "intensity": getattr(seg, 'intensity', 1.0)  # ← 强度值
-                    }
-                    for seg in timeline_segments
-                ],
-                "total_duration": duration
-            }
+            expressions_data = self._build_expressions_data(timeline_segments, duration)
 
             # 7. 发送统一消息
             await self.send({
@@ -198,7 +199,7 @@ class UnifiedEventHandler(BaseHandler):
                 "volumes": volumes,
                 "expressions": expressions_data,
                 "text": text,
-                "seq": seq
+                "seq": seq,
             })
 
             total_time = time.time() - start_time
