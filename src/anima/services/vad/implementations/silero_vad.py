@@ -177,7 +177,8 @@ class SileroVAD(VADInterface):
 
         # 返回优先级最高的事件：语音结束 > 语音开始 > 普通状态
         if speech_end_event is not None:
-            logger.info(f"[VAD] 返回语音结束事件，音频长度: {len(speech_end_event.audio_data)} 字节")
+            # 只在 DEBUG 级别记录，避免刷屏
+            logger.debug(f"[VAD] 语音结束，音频长度: {len(speech_end_event.audio_data)} 字节")
             return speech_end_event
         elif speech_start_event is not None:
             return speech_start_event
@@ -305,9 +306,9 @@ class SileroStateMachine:
         # 每5个块打印一次诊断信息（更频繁）
         self._chunk_count += 1
 
-        # 临时启用诊断日志（每10个块打印一次）
-        if self._chunk_count % 10 == 1:
-            logger.debug(f"[VAD] #{self._chunk_count}: state={self.state.value}, prob={smoothed_prob:.3f}/{self.vad.prob_threshold:.3f}, speech={is_speech}, hit={self.hit_count}, miss={self.miss_count}")
+        # 诊断日志：每 100 个块打印一次（约 3 秒）
+        if self._chunk_count % 100 == 1:
+            logger.debug(f"[VAD] #{self._chunk_count}: state={self.state.value}, prob={smoothed_prob:.3f}/{self.vad.prob_threshold:.3f}, speech={is_speech}")
 
         # 状态机处理
         if self.state == VADState.IDLE:
@@ -321,7 +322,7 @@ class SileroStateMachine:
                     self.state = VADState.ACTIVE
                     self.update(chunk_bytes, smoothed_prob, smoothed_db)
                     self.hit_count = 0
-                    logger.info(f"[VAD State Machine] ✅ 语音开始: hit_count={self.hit_count}")
+                    logger.debug(f"[VAD] 语音开始")
                     return VADResult(
                         audio_data=b"",
                         is_speech_start=True,
@@ -347,7 +348,7 @@ class SileroStateMachine:
                     self.state = VADState.INACTIVE
                     self.miss_count = 0
                     self._inactive_start_time = None  # 重置超时计时
-                    logger.info(f"[VAD State Machine] ⏸️ 语音暂停 (ACTIVE→INACTIVE)")
+                    logger.debug(f"[VAD] 语音暂停 (ACTIVE→INACTIVE)")
 
         elif self.state == VADState.INACTIVE:
             # 暂停状态：等待语音继续或结束
@@ -361,7 +362,7 @@ class SileroStateMachine:
             inactive_duration = time.time() - self._inactive_start_time
             if inactive_duration > self._inactive_timeout:
                 # 超时强制结束
-                logger.info(f"[VAD State Machine] ⏰ INACTIVE 超时 ({inactive_duration:.2f}s > {self._inactive_timeout}s)，强制结束语音")
+                logger.debug(f"[VAD] INACTIVE 超时 ({inactive_duration:.2f}s)，强制结束")
                 self.state = VADState.IDLE
                 self._inactive_start_time = None
                 self.miss_count = 0
@@ -375,7 +376,7 @@ class SileroStateMachine:
 
                 # 检查音频长度是否足够（至少0.5秒，约8000字节）
                 if len(audio_data) > 8000:
-                    logger.info(f"[VAD State Machine] ✅ 语音结束 (INACTIVE 超时), 音频长度: {len(audio_data)} 字节")
+                    logger.debug(f"[VAD] 语音结束 (超时), 音频: {len(audio_data)} 字节")
                     return VADResult(
                         audio_data=audio_data,
                         is_speech_start=False,
@@ -383,7 +384,7 @@ class SileroStateMachine:
                         state=VADState.IDLE
                     )
                 else:
-                    logger.debug(f"[VAD State Machine] 音频太短 ({len(audio_data)} 字节)，丢弃")
+                    logger.debug(f"[VAD] 音频太短 ({len(audio_data)} 字节)，丢弃")
                     return None
 
             if is_speech:
@@ -394,7 +395,7 @@ class SileroStateMachine:
                     self.hit_count = 0
                     self.miss_count = 0
                     self._inactive_start_time = None
-                    logger.info(f"[VAD State Machine] ▶️ 语音继续 (INACTIVE→ACTIVE)")
+                    logger.debug(f"[VAD] 语音继续 (INACTIVE→ACTIVE)")
             else:
                 self.hit_count = 0
                 self.miss_count += 1
@@ -416,7 +417,7 @@ class SileroStateMachine:
 
                     # 检查音频长度是否足够（至少0.5秒，约8000字节）
                     if len(audio_data) > 8000:
-                        logger.info(f"[VAD State Machine] ✅ 语音结束 (INACTIVE→IDLE), 音频长度: {len(audio_data)} 字节")
+                        logger.debug(f"[VAD] 语音结束 (INACTIVE→IDLE), 音频: {len(audio_data)} 字节")
                         return VADResult(
                             audio_data=audio_data,
                             is_speech_start=False,
@@ -424,6 +425,6 @@ class SileroStateMachine:
                             state=VADState.IDLE
                         )
                     else:
-                        logger.debug(f"[VAD State Machine] 音频太短 ({len(audio_data)} 字节)，丢弃")
+                        logger.debug(f"[VAD] 音频太短 ({len(audio_data)} 字节)，丢弃")
 
         return None

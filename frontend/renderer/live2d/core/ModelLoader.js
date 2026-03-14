@@ -1,5 +1,8 @@
 /**
  * ModelLoader - Live2D model loading, unloading, and scaling
+ *
+ * 注意: 模型缩放和定位现在由 ScaleManager 处理
+ * 此类仅负责模型的加载和卸载
  */
 
 export class ModelLoader {
@@ -29,9 +32,10 @@ export class ModelLoader {
       this.model = await PIXI.live2d.Live2DModel.from(modelPath);
       this.modelPath = modelPath;
 
-      // Auto scale and center
-      this._autoScale();
-      this._center();
+      // 设置默认锚点和位置 (将由 ScaleManager 调整)
+      this.model.anchor.set(0.5, 0.5);
+      this.model.x = this.app.screen.width / 2;
+      this.model.y = this.app.screen.height / 2;
 
       // Add to stage
       this.app.stage.addChild(this.model);
@@ -92,13 +96,12 @@ export class ModelLoader {
   }
 
   /**
-   * Recenter and rescale after resize
+   * Handle resize (由 ScaleManager 处理)
+   * @deprecated Use ScaleManager.handleResize() instead
    */
   handleResize() {
-    if (this.model) {
-      this._center();
-      this._autoScale();
-    }
+    // 缩放和定位现在由 ScaleManager 处理
+    // 此方法保留以保持向后兼容
   }
 
   /**

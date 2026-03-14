@@ -1,4 +1,4 @@
-const { BrowserWindow, globalShortcut } = require('electron');
+const { app, BrowserWindow, globalShortcut } = require('electron');
 const path = require('path');
 const Live2DWindow = require('./Live2DWindow');
 const ChatWindow = require('./ChatWindow');
@@ -37,9 +37,15 @@ class WindowManager {
       console.log('[WindowManager] Live2D window closed');
     });
 
-    // DevTools in development - use detach mode for transparent window
-    if (process.argv.includes('--dev')) {
-      this.windows.live2d.webContents.openDevTools({ mode: 'detach' });
+    // DevTools - use detach mode for transparent window
+    // 开发模式默认开启，生产模式需要 --dev 参数
+    const isDev = process.env.NODE_ENV === 'development' || process.argv.includes('--dev') || !app.isPackaged;
+    console.log('[WindowManager] isDev:', isDev, 'argv:', process.argv);
+    if (isDev) {
+      this.windows.live2d.webContents.on('did-finish-load', () => {
+        this.windows.live2d.webContents.openDevTools({ mode: 'detach' });
+        console.log('[WindowManager] Live2D DevTools opened');
+      });
     }
 
     // Add keyboard shortcut to toggle DevTools (F12)
@@ -80,9 +86,14 @@ class WindowManager {
       console.log('[WindowManager] Chat window closed');
     });
 
-    // DevTools in development
-    if (process.argv.includes('--dev')) {
-      this.windows.chat.webContents.openDevTools({ mode: 'detach' });
+    // DevTools - 开发模式默认开启
+    const isDev = process.env.NODE_ENV === 'development' || process.argv.includes('--dev') || !app.isPackaged;
+    console.log('[WindowManager] Chat isDev:', isDev);
+    if (isDev) {
+      this.windows.chat.webContents.on('did-finish-load', () => {
+        this.windows.chat.webContents.openDevTools({ mode: 'detach' });
+        console.log('[WindowManager] Chat DevTools opened');
+      });
     }
 
     // Add keyboard shortcut to toggle DevTools (F12)

@@ -9,6 +9,7 @@ import { InputBar } from './ui/InputBar.js';
 import { VoiceButton } from './ui/VoiceButton.js';
 import { TypingIndicator } from './ui/TypingIndicator.js';
 import { IpcListeners } from './ipc/IpcListeners.js';
+import { AudioCapture } from './audio/AudioCapture.js';
 
 export class ChatWindow {
   constructor() {
@@ -21,6 +22,7 @@ export class ChatWindow {
       messageInput: document.getElementById('message-input'),
       sendBtn: document.getElementById('send-btn'),
       voiceBtn: document.getElementById('voice-btn'),
+      volumeIndicator: document.getElementById('volume-indicator'),
       connectionStatus: document.getElementById('connection-status'),
       speakingIndicator: document.getElementById('speaking-indicator'),
       styleTransferSwitch: document.getElementById('style-transfer-switch'),
@@ -54,6 +56,29 @@ export class ChatWindow {
       onSpeaking: (isSpeaking) => this._setSpeaking(isSpeaking),
       onStyleTransfer: (enabled) => this._setStyleTransfer(enabled),
     });
+
+    // Initialize audio capture
+    this.audioCapture = new AudioCapture({
+      sampleRate: 16000,
+      chunkSize: 480, // 30ms at 16kHz
+    });
+
+    // Setup audio capture callbacks
+    this.audioCapture.onAudioChunk = (audioData) => {
+      this._sendAudioChunk(audioData);
+    };
+    this.audioCapture.onError = (error) => {
+      console.error('[ChatWindow] Audio capture error:', error);
+      this._showError(`麦克风错误: ${error.message}`);
+      this.ui.voiceButton.isRecording = false;
+      this.elements.voiceBtn.classList.remove('recording');
+    };
+    this.audioCapture.onPermissionGranted = () => {
+      console.log('[ChatWindow] Microphone permission granted');
+    };
+    this.audioCapture.onVolumeUpdate = (volume) => {
+      this._updateVolumeIndicator(volume);
+    };
 
     // Setup event listeners
     this._setupEventListeners();
@@ -246,13 +271,25 @@ export class ChatWindow {
    * Start voice input
    */
   async _startVoiceInput() {
-    if (!window.electronAPI || !window.electronAPI.chat) return;
-    
+    if (!window.electronAPI || !window.electronAPI.chat) {
+      console.error('[ChatWindow] Electron API not available');
+      return;
+    }
+
     try {
+      // 1. 通知后端开始语音输入
       await window.electronAPI.chat.startVoiceInput();
+
+      // 2. 启动本地录音
+      await this.audioCapture.start();
+
       console.log('[ChatWindow] Voice input started');
     } catch (error) {
       console.error('[ChatWindow] Failed to start voice input:', error);
+      this._showError(`无法启动录音: ${error.message}`);
+      // 重置按钮状态
+      this.ui.voiceButton.isRecording = false;
+      this.elements.voiceBtn.classList.remove('recording');
     }
   }
 
@@ -261,12 +298,50 @@ export class ChatWindow {
    */
   async _stopVoiceInput() {
     if (!window.electronAPI || !window.electronAPI.chat) return;
-    
+
     try {
+      // 1. 停止本地录音
+      this.audioCapture.stop();
+
+      // 2. 通知后端停止语音输入
       await window.electronAPI.chat.stopVoiceInput();
+
       console.log('[ChatWindow] Voice input stopped');
     } catch (error) {
       console.error('[ChatWindow] Failed to stop voice input:', error);
+    }
+  }
+
+  /**
+   * Send audio chunk to backend
+   * @param {Float32Array} audioData - Audio samples at 16kHz
+   */
+  _sendAudioChunk(audioData) {
+    if (!window.electronAPI || !window.electronAPI.chat) return;
+
+    // 转换为普通数组发送 (IPC 不能直接传输 TypedArray)
+    const audioArray = Array.from(audioData);
+    window.electronAPI.chat.sendAudioChunk(audioArray);
+
+    // 每 30 块打印一次 (~900ms)
+    if (!this._audioChunkCount) this._audioChunkCount = 0;
+    this._audioChunkCount++;
+    if (this._audioChunkCount % 30 === 0) {
+      console.log(`[ChatWindow] 📤 已发送 ${this._audioChunkCount} 个音频块到后端`);
+    }
+  }
+
+  /**
+   * Update volume indicator
+   * @param {number} volume - Volume level 0-1
+   */
+  _updateVolumeIndicator(volume) {
+    if (this.elements.volumeIndicator) {
+      // Amplify volume for better visibility (mic input can be quiet)
+      const amplified = Math.min(1, volume * 5);
+      const percentage = Math.round(amplified * 100);
+      this.elements.volumeIndicator.style.setProperty('--volume', `${percentage}%`);
+      this.elements.volumeIndicator.classList.toggle('active', amplified > 0.05);
     }
   }
 
@@ -366,6 +441,10 @@ export class ChatWindow {
    * Destroy chat window (cleanup)
    */
   destroy() {
+    // Stop audio capture
+    if (this.audioCapture) {
+      this.audioCapture.stop();
+    }
     this.ipc.cleanup();
     console.log('[ChatWindow] Destroyed');
   }

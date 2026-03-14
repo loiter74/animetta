@@ -109,7 +109,12 @@ class MemorySystem:
 **AI**: {turn.agent_response}
 """
                 if turn.emotions:
-                    content += f"*Emotions: {', '.join(turn.emotions)}*\n"
+                    # emotions 可能是字典列表 [{"emotion": "happy", "position": 6}] 或字符串列表 ["happy"]
+                    if turn.emotions and isinstance(turn.emotions[0], dict):
+                        emotion_names = [e.get("emotion", str(e)) for e in turn.emotions]
+                    else:
+                        emotion_names = [str(e) for e in turn.emotions]
+                    content += f"*Emotions: {', '.join(emotion_names)}*\n"
 
                 # 写入每日日志
                 self.manager.write_daily_log(content)

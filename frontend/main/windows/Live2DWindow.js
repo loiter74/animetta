@@ -24,42 +24,58 @@ class Live2DWindow {
    * Create the Live2D browser window
    * @returns {BrowserWindow} The created window
    */
-  createWindow() {
-    // Get screen dimensions for positioning
-    const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+createWindow() {
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
-    const window = new BrowserWindow({
-      width: this.config.width,
-      height: this.config.height,
-      x: width - this.config.width - 50, // Position on right side
-      y: (height - this.config.height) / 2, // Center vertically
-      transparent: this.config.transparent,
-      frame: this.config.frame,
-      alwaysOnTop: this.config.alwaysOnTop,
-      resizable: this.config.resizable,
-      skipTaskbar: this.config.skipTaskbar,
-      title: this.config.title,
-      backgroundColor: this.config.backgroundColor,
-      webPreferences: {
-        preload: path.join(__dirname, '../../preload/index.js'),
-        contextIsolation: true,
-        nodeIntegration: false,
-        sandbox: false,
-        webSecurity: true
-      }
+  const window = new BrowserWindow({
+    width: this.config.width,
+    height: this.config.height,
+    x: width - this.config.width - 50,
+    y: (height - this.config.height) / 2,
+    transparent: this.config.transparent,
+    frame: this.config.frame,
+    alwaysOnTop: this.config.alwaysOnTop,
+    resizable: this.config.resizable,
+    skipTaskbar: this.config.skipTaskbar,
+    title: this.config.title,
+    backgroundColor: this.config.backgroundColor,
+    webPreferences: {
+      preload: path.join(__dirname, '../../preload/index.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false,
+      webSecurity: true,
+      devTools: true,          // 明确开启
+      autoplayPolicy: 'no-user-gesture-required', 
+    }
+  });
+
+  // 加载页面
+  const filePath = path.join(__dirname, '../../renderer/live2d/live2d.html');
+  console.log('[Live2DWindow] 加载路径:', filePath);
+  console.log('[Live2DWindow] 文件存在:', require('fs').existsSync(filePath));
+  window.loadFile(filePath);
+
+  // 等页面加载完再开 DevTools，调试期间先不穿透
+  if (process.env.NODE_ENV === 'development' || process.argv.includes('--dev')) {
+    window.webContents.on('did-finish-load', () => {
+      console.log('[Live2DWindow] 页面加载完成，开启 DevTools');
+      window.webContents.openDevTools({ mode: 'detach' });
+      // 调试期间暂时关掉穿透，能正常点击 DevTools
+      // window.setIgnoreMouseEvents(true, { forward: true });
     });
-
-    // Make window click-through when not clicking on the model
+  } else {
+    // 生产环境才开穿透
     window.setIgnoreMouseEvents(true, { forward: true });
-
-    // Handle window movement
-    window.on('move', () => {
-      const [x, y] = window.getPosition();
-      console.log(`[Live2DWindow] Moved to ${x}, ${y}`);
-    });
-
-    return window;
   }
+
+  window.on('move', () => {
+    const [x, y] = window.getPosition();
+    console.log(`[Live2DWindow] Moved to ${x}, ${y}`);
+  });
+
+  return window;
+}
 }
 
 module.exports = Live2DWindow;

@@ -237,7 +237,7 @@ server.serve_forever()
         except Exception as e:
             error(f"启动 Web 配置失败: {e}")
 
-    def start_desktop_app(self, project_root):
+    def start_desktop_app(self, project_root, dev_mode=False):
         """启动 Electron 桌面应用"""
         info("启动 Electron 桌面应用...")
 
@@ -255,6 +255,8 @@ server.serve_forever()
             )
 
         cmd = ["npm", "run", "dev"]
+        if dev_mode:
+            cmd = ["npm", "run", "dev", "--", "--dev"]
 
         try:
             process = subprocess.Popen(
@@ -373,6 +375,7 @@ def main():
     parser.add_argument('--no-app', action='store_true', help='不启动桌面/前端应用')
     parser.add_argument('--web-port', type=int, default=8080, help='Web 配置界面端口')
     parser.add_argument('--install', action='store_true', help='安装依赖')
+    parser.add_argument('--dev', action='store_true', help='开启开发者工具 (DevTools)')
 
     args = parser.parse_args()
 
@@ -441,7 +444,7 @@ def main():
         # 启动应用
         if not args.no_app and not args.backend_only:
             if args.mode == 'desktop':
-                pm.start_desktop_app(project_root)
+                pm.start_desktop_app(project_root, dev_mode=args.dev)
             else:
                 if not pkg_manager:
                     error("Web 模式需要 pnpm/npm")

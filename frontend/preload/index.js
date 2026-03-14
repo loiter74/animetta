@@ -57,6 +57,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     setSpeaking: (isSpeaking) => ipcRenderer.invoke('chat:setSpeaking', isSpeaking),
     setTyping: (isTyping) => ipcRenderer.invoke('chat:setTyping', isTyping),
 
+    // 🔧 新增: 发送音频数据块 (高频调用，用 send 不用 invoke)
+    sendAudioChunk: (audioData) => ipcRenderer.send('chat:sendAudioChunk', audioData),
+
     // Listen for LLM chunks (streaming response)
     onLlmChunk: (callback) => {
       const listener = (_event, data) => callback(data);
@@ -92,6 +95,57 @@ contextBridge.exposeInMainWorld('electronAPI', {
     minimize: () => ipcRenderer.send('window:minimize'),
     maximize: () => ipcRenderer.send('window:maximize'),
     close: () => ipcRenderer.send('window:close')
+  },
+
+  // Display controls (新增)
+  display: {
+    // 缩放控制
+    setScaleStrategy: (strategy) => ipcRenderer.invoke('display:setScaleStrategy', strategy),
+    getScaleStrategy: () => ipcRenderer.invoke('display:getScaleStrategy'),
+    getAvailableStrategies: () => ipcRenderer.invoke('display:getAvailableStrategies'),
+    zoom: (delta) => ipcRenderer.invoke('display:zoom', delta),
+    setUserScale: (scale) => ipcRenderer.invoke('display:setUserScale', scale),
+    resetScale: () => ipcRenderer.invoke('display:resetScale'),
+
+    // 模型位置
+    moveModel: (dx, dy) => ipcRenderer.invoke('display:moveModel', dx, dy),
+    resetModelPosition: () => ipcRenderer.invoke('display:resetModelPosition'),
+
+    // 背景控制 (Phase 2)
+    setBackgroundMode: (mode, options) => ipcRenderer.invoke('display:setBackgroundMode', mode, options),
+    getBackgroundMode: () => ipcRenderer.invoke('display:getBackgroundMode'),
+    setBackgroundColor: (color) => ipcRenderer.invoke('display:setBackgroundColor', color),
+    setBackgroundOpacity: (opacity) => ipcRenderer.invoke('display:setBackgroundOpacity', opacity),
+    setBackgroundImage: (path) => ipcRenderer.invoke('display:setBackgroundImage', path),
+    setBackgroundVideo: (path) => ipcRenderer.invoke('display:setBackgroundVideo', path),
+    cycleBackgroundMode: () => ipcRenderer.invoke('display:cycleBackgroundMode'),
+    getAvailableBackgroundModes: () => ipcRenderer.invoke('display:getAvailableBackgroundModes'),
+
+    // 窗口控制
+    setAlwaysOnTop: (value) => ipcRenderer.invoke('display:setAlwaysOnTop', value),
+    setClickThrough: (value) => ipcRenderer.invoke('display:setClickThrough', value),
+    moveWindow: (x, y) => ipcRenderer.invoke('display:moveWindow', x, y),
+    resizeWindow: (width, height) => ipcRenderer.invoke('display:resizeWindow', width, height),
+    getWindowPosition: () => ipcRenderer.invoke('display:getWindowPosition'),
+
+    // 配置持久化
+    getConfig: () => ipcRenderer.invoke('display:getConfig'),
+    saveConfig: (config) => ipcRenderer.invoke('display:saveConfig', config),
+    getWindowState: () => ipcRenderer.invoke('display:getWindowState'),
+    saveWindowState: (state) => ipcRenderer.invoke('display:saveWindowState', state),
+    resetConfig: () => ipcRenderer.invoke('display:resetConfig'),
+    exportConfig: () => ipcRenderer.invoke('display:exportConfig'),
+    importConfig: (json) => ipcRenderer.invoke('display:importConfig', json),
+
+    // 状态
+    getState: () => ipcRenderer.invoke('display:getState'),
+    getModelInfo: () => ipcRenderer.invoke('display:getModelInfo'),
+
+    // 快捷键控制 (Phase 3)
+    setHotkey: (action, key, modifiers) => ipcRenderer.invoke('display:setHotkey', action, key, modifiers),
+    getHotkeys: () => ipcRenderer.invoke('display:getHotkeys'),
+    resetHotkeys: () => ipcRenderer.invoke('display:resetHotkeys'),
+    setHotkeysEnabled: (enabled) => ipcRenderer.invoke('display:setHotkeysEnabled', enabled),
   }
 });
 
@@ -118,6 +172,39 @@ contextBridge.exposeInMainWorld('anima', {
       start: () => window.electronAPI.chat.startVoiceInput(),
       stop: () => window.electronAPI.chat.stopVoiceInput()
     }
+  },
+
+  // Display shortcuts (新增)
+  display: {
+    // 缩放策略
+    strategy: (name) => window.electronAPI.display.setScaleStrategy(name),
+    zoomIn: () => window.electronAPI.display.zoom(1),
+    zoomOut: () => window.electronAPI.display.zoom(-1),
+    reset: () => {
+      window.electronAPI.display.resetScale();
+      window.electronAPI.display.resetModelPosition();
+    },
+
+    // 位置移动
+    move: (dx, dy) => window.electronAPI.display.moveModel(dx, dy),
+    up: () => window.electronAPI.display.moveModel(0, -10),
+    down: () => window.electronAPI.display.moveModel(0, 10),
+    left: () => window.electronAPI.display.moveModel(-10, 0),
+    right: () => window.electronAPI.display.moveModel(10, 0),
+
+    // 窗口
+    alwaysOnTop: (value) => window.electronAPI.display.setAlwaysOnTop(value),
+    clickThrough: (value) => window.electronAPI.display.setClickThrough(value),
+
+    // 背景 (Phase 2)
+    background: (mode) => window.electronAPI.display.setBackgroundMode(mode),
+    backgroundTransparent: () => window.electronAPI.display.setBackgroundMode('transparent'),
+    backgroundGreen: () => window.electronAPI.display.setBackgroundMode('color', { color: '#00ff00' }),
+    backgroundWhite: () => window.electronAPI.display.setBackgroundMode('color', { color: '#ffffff' }),
+    backgroundCycle: () => window.electronAPI.display.cycleBackgroundMode(),
+
+    // 状态
+    info: () => window.electronAPI.display.getModelInfo()
   }
 });
 

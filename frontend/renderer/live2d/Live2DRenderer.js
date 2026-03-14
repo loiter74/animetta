@@ -1,267 +1,175 @@
 /**
- * Live2DRenderer - Main controller for Live2D rendering
- * Coordinates PIXI app, model loading, animation, and IPC
+ * Live2DRenderer - 主入口
+ * 整合所有模块，对外唯一接口
  */
 
 import { PixiApp } from './core/PixiApp.js';
 import { ModelLoader } from './core/ModelLoader.js';
-import { LipSync } from './animation/LipSync.js';
-import { ExpressionController } from './animation/ExpressionController.js';
-import { ActionExecutor } from './animation/ActionExecutor.js';
-import { Live2DIpcListeners } from './ipc/Live2DIpcListeners.js';
-import { AudioWithExpression } from './audio/AudioWithExpression.js';
+import { ScaleManager } from './renderer/ScaleManager.js';
+import { BackgroundManager } from './renderer/BackgroundManager.js';
+import { ExpressionController } from './renderer/ExpressionController.js';
+import { IpcBridge } from './bridge/IpcBridge.js';
+import { DisplayConfig } from './config/index.js';
+
+// 简化: 不依赖外部模块，内联实现
+class SimpleAudioPlayer {
+  constructor(opts) {
+    this.opts = opts;
+    this.ctx = null;
+    this.source = null;
+  }
+
+  async play(data) {
+    console.log('[AudioPlayer] play() 被调用, audio_data:', !!data?.audio_data); // ← 加这行
+    const { audio_data, format, volumes, expressions } = data || {};
+    if (!audio_data) return;
+
+    // 播放音频
+    try {
+      const binary = atob(audio_data);
+      const buffer = new Uint8Array(binary.length);
+      for (let o = 0; o < binary.length; o++) buffer[o] = binary.charCodeAt(o);
+      const blob = new Blob([buffer], { type: `audio/${format || 'mp3'}` });
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      await audio.play();
+      audio.onended = () => {
+        this.opts.onPlaybackEnd?.();
+        URL.revokeObjectURL(url);
+      };
+    } catch {
+      console.error('[AudioPlayer] ❌ 播放失败:', e.name, e.message);
+    }
+  }
+}
 
 export class Live2DRenderer {
   constructor() {
-    // DOM elements
     this.canvas = document.getElementById('live2d-canvas');
     this.container = document.getElementById('live2d-container');
-
-    // State
     this.isLoaded = false;
-
-    // Components (initialized in _init)
-    this.pixiApp = null;
-    this.app = null;
-    this.modelLoader = null;
-    this.lipSync = null;
-    this.expressionController = null;
-    this.actionExecutor = null;
-    this.ipc = null;
-    this.audioWithExpression = null;
-
-    // Resize handler bound
     this._handleResize = this._handleResize.bind(this);
   }
 
-  /**
-   * Initialize the renderer
-   */
   async init() {
-    try {
-      console.log('[Live2DRenderer] Initializing...');
+    console.log('[Live2DRenderer] Initializing...');
 
-      // Create PIXI application
-      this.pixiApp = new PixiApp(this.canvas, this.container);
-      this.app = await this.pixiApp.create();
+    // 创建 PIXI 应用
+    this.pixiApp = new PixiApp(this.canvas, this.container);
+    this.app = await this.pixiApp.create();
 
-      // Create model loader
-      this.modelLoader = new ModelLoader(this.app, this.container);
+    // 创建模型加载器
+    this.modelLoader = new ModelLoader(this.app, this.container);
 
-      // Create lip sync (uses PIXI ticker, not rAF)
-      this.lipSync = new LipSync(this.app.ticker);
+    // 创建渲染器
+    this.scaleManager = new ScaleManager(this.app, this.modelLoader);
+    this.backgroundManager = new BackgroundManager(this.app, this.container);
+    this.expressionController = new ExpressionController(this.app.ticker, this.modelLoader);
 
-      // Create expression controller
-      this.expressionController = new ExpressionController();
+    // 创建音频播放器
+    this.audioPlayer = new SimpleAudioPlayer({
+      onPlaybackEnd: () => this.expressionController.setMouthTarget(0),
+    });
 
-      // Create action executor
-      this.actionExecutor = new ActionExecutor(this.expressionController);
+    // 创建配置管理
+    this.displayConfig = new DisplayConfig();
+    await this._loadConfig();
 
-      // Create audio with expression player
-      this.audioWithExpression = new AudioWithExpression({
-        setMouthOpen: (v) => this.lipSync.setTarget(v),
-        setExpression: (name) => this.expressionController.setExpression(name),
-        onPlaybackStart: (seq) => console.log('[Live2DRenderer] Audio playback started:', seq),
-        onPlaybackEnd: () => {
-          // Reset lip sync after playback
-          this.lipSync.setTarget(0);
-        },
-        onError: (err) => console.error('[Live2DRenderer] Audio error:', err),
-      });
+    // 创建 IPC 桥接
+    this.ipcBridge = new IpcBridge();
+    this._setupIpcListeners();
 
-      // Setup IPC listeners
-      this.ipc = new Live2DIpcListeners({
-        onAction: (action) => this.actionExecutor.execute(action),
-        onAudioStream: (data) => this._handleAudioStream(data),
-        onAudioWithExpression: (data) => this._handleAudioWithExpression(data),
-      });
-      this.ipc.setup();
+    // 监听窗口大小变化
+    window.addEventListener('resize', this._handleResize);
 
-      // Handle window resize
-      window.addEventListener('resize', this._handleResize);
+    // 暴露全局引用
+    window.live2dRenderer = this;
 
-      // Expose globally for IPC calls
-      window.live2dRenderer = this;
+    console.log('[Live2DRenderer] Initialized');
 
-      console.log('[Live2DRenderer] Initialized successfully');
-
-      // Load default model
-      await this._loadDefaultModel();
-    } catch (error) {
-      console.error('[Live2DRenderer] Initialization failed:', error);
-      this._showError(`Failed to initialize: ${error.message}`);
-    }
+    // 加载默认模型
+    await this._loadDefaultModel();
   }
 
-  /**
-   * Load default model from config or fallback
-   */
   async _loadDefaultModel() {
     const fallbackPath = '../../public/live2d/haru/haru_greeter_t03.model3.json';
-
     try {
-      let modelPath = null;
-
-      // Try to get from config
-      if (window.electronAPI?.getConfig) {
-        modelPath = await window.electronAPI.getConfig('model.defaultPath');
-      }
-
-      if (modelPath) {
-        console.log('[Live2DRenderer] Default model path from config:', modelPath);
-        await this.loadModel(modelPath);
-      } else {
-        console.log('[Live2DRenderer] Using fallback model path:', fallbackPath);
-        await this.loadModel(fallbackPath);
-      }
-    } catch (error) {
-      console.error('[Live2DRenderer] Failed to load default model, trying fallback:', error);
-      try {
-        await this.loadModel(fallbackPath);
-      } catch (fallbackError) {
-        console.error('[Live2DRenderer] Fallback model also failed:', fallbackError);
-      }
+      const modelPath = await window.electronAPI?.getConfig?.('model.defaultPath') || fallbackPath;
+      await this.loadModel(modelPath);
+    } catch {
+      await this.loadModel(fallbackPath);
     }
   }
 
-  /**
-   * Load Live2D model
-   * @param {string} modelPath - Path to model file
-   */
+  async _loadConfig() {
+    const config = await this.displayConfig.load();
+    if (config?.scale) {
+      if (config.scale.strategy) this.scaleManager.setStrategy(config.scale.strategy);
+      if (config.scale.userScale) this.scaleManager.setUserScale(config.scale.userScale);
+    }
+    if (config?.background) {
+      await this.backgroundManager.setMode(config.background.mode, config.background);
+    }
+  }
+
+  _setupIpcListeners() {
+    this.ipcBridge.on('live2d:action', (data) => {
+      console.log('[Renderer] 收到 audio:with-expression');
+      this.expressionController.execute(data);
+    });
+
+    this.ipcBridge.on('audio:with-expression', (data) => {
+      this.audioPlayer.play(data);
+    });
+
+    this.ipcBridge.on('audio:stream', (data) => {
+      if (data.volume !== undefined) {
+        this.expressionController.setMouthTarget(data.volume);
+      }
+    });
+  }
+
   async loadModel(modelPath) {
-    try {
-      const model = await this.modelLoader.load(modelPath);
-
-      // Connect model to components
-      this.lipSync.setModel(model);
-      this.expressionController.setModel(model);
-      this.expressionController.enableTapInteraction();
-
-      this.isLoaded = true;
-    } catch (error) {
-      console.error('[Live2DRenderer] Failed to load model:', error);
-      throw error;
-    }
+    console.log('[Live2DRenderer] Loading model:', modelPath);
+    const model = await this.modelLoader.load(modelPath);
+    this.expressionController.setModel(model);
+    await this.scaleManager.onModelLoaded(model);
+    this.isLoaded = true;
+    console.log('[Live2DRenderer] Model loaded');
   }
 
-  /**
-   * Handle audio stream for lip sync
-   * @param {Object} data - Audio data with volume
-   */
-  _handleAudioStream(data) {
-    if (data.volume !== undefined) {
-      this.lipSync.setTarget(data.volume);
-    }
-  }
-
-  /**
-   * Handle audio with expression event (TTS playback)
-   * @param {Object} data - Audio with expression data
-   */
-  _handleAudioWithExpression(data) {
-    console.log('[Live2DRenderer] Received audio_with_expression:', data.seq);
-    this.audioWithExpression.play(data);
-  }
-
-  /**
-   * Handle window resize
-   */
   _handleResize() {
     this.pixiApp.handleResize();
-    this.modelLoader.handleResize();
+    this.scaleManager.handleResize();
+    this.backgroundManager.handleResize();
   }
 
-  /**
-   * Set expression (public API)
-   * @param {string} expressionName
-   */
-  setExpression(expressionName) {
-    this.expressionController.setExpression(expressionName);
-  }
+  // === 公共 API ===
+  setExpression(name) { this.expressionController.setExpression(name); }
+  playMotion(group, index) { this.expressionController.playMotion(group, index); }
+  setMouthOpen(value) { this.expressionController.setMouthTarget(value); }
+  executeAction(action) { this.expressionController.execute(action); }
 
-  /**
-   * Play motion (public API)
-   * @param {string} group
-   * @param {number} index
-   */
-  playMotion(group, index) {
-    this.expressionController.playMotion(group, index);
-  }
+  zoom(delta) { this.scaleManager.zoom(delta); }
+  setScaleStrategy(strategy) { this.scaleManager.setStrategy(strategy); }
+  resetScale() { this.scaleManager.reset(); }
+  moveModel(dx, dy) { this.scaleManager.moveModel(dx, dy); }
+  resetModelPosition() { this.scaleManager.resetModelPosition(); }
 
-  /**
-   * Set mouth openness (public API)
-   * @param {number} value
-   */
-  setMouthOpen(value) {
-    this.lipSync.setTarget(value);
-  }
+  async setBackgroundMode(mode, options) { await this.backgroundManager.setMode(mode, options); }
 
-  /**
-   * Execute action (public API)
-   * @param {Object} action
-   */
-  executeAction(action) {
-    this.actionExecutor.execute(action);
-  }
+  getModelInfo() { return this.scaleManager.getModelInfo(); }
+  getScaleState() { return this.scaleManager.getState(); }
+  getBackgroundState() { return this.backgroundManager.getState(); }
 
-  /**
-   * Get model bounds (public API)
-   */
-  getBounds() {
-    return this.modelLoader.getBounds();
-  }
-
-  /**
-   * Show error message
-   * @param {string} message
-   */
-  _showError(message) {
-    const existing = this.container.querySelector('.error');
-    if (existing) existing.remove();
-
-    const error = document.createElement('div');
-    error.className = 'error';
-    error.textContent = message;
-    this.container.appendChild(error);
-  }
-
-  /**
-   * Destroy renderer and cleanup
-   */
   destroy() {
-    // Cleanup IPC listeners
-    if (this.ipc) {
-      this.ipc.cleanup();
-    }
-
-    // Cleanup audio player
-    if (this.audioWithExpression) {
-      this.audioWithExpression.destroy();
-    }
-
-    // Cleanup lip sync
-    if (this.lipSync) {
-      this.lipSync.destroy();
-    }
-
-    // Remove resize listener
     window.removeEventListener('resize', this._handleResize);
-
-    // Cleanup model
-    if (this.modelLoader) {
-      this.modelLoader.unload();
-    }
-
-    // Cleanup PIXI
-    if (this.pixiApp) {
-      this.pixiApp.destroy();
-    }
-
-    // Remove global reference
-    if (window.live2dRenderer === this) {
-      delete window.live2dRenderer;
-    }
-
+    this.expressionController?.destroy();
+    this.backgroundManager?.destroy();
+    this.ipcBridge = null;
+    this.modelLoader?.unload();
+    this.pixiApp?.destroy();
+    delete window.live2dRenderer;
     console.log('[Live2DRenderer] Destroyed');
   }
 }

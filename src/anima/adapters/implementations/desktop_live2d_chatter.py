@@ -154,6 +154,8 @@ class DesktopLive2DChatter(ChannelAdapter):
 
         try:
             event_type = event.type
+            print(f"[DEBUG] send() 收到事件: {event_type}")  # ← 加这行
+
 
             # sentence 事件由 TextHandler 处理，避免重复发送
             if event_type == "sentence":
@@ -319,8 +321,9 @@ class DesktopLive2DChatter(ChannelAdapter):
         # 没有 VAD，直接累积
         if not self.vad_engine:
             self._audio_buffer_manager.append(self.session_id, audio_data)
-            if self._audio_chunk_counter % 100 == 1:
-                logger.warning(f"[{self.channel_id}] No VAD, accumulating audio directly")
+            # 只记录一次，不重复警告
+            if self._audio_chunk_counter == 1:
+                logger.warning(f"[{self.channel_id}] No VAD engine, audio will accumulate until manual end")
             return
 
         # VAD 检测
@@ -410,11 +413,11 @@ class DesktopLive2DChatter(ChannelAdapter):
 
     async def _handle_speech_start(self) -> None:
         """处理语音开始事件"""
-        logger.info(f"[{self.channel_id}] Speech start detected")
+        logger.debug(f"[{self.channel_id}] Speech start detected")
 
         # 自动打断（通过 EventBus 发送 INTERRUPT 事件）
         if self.config.auto_interrupt:
-            logger.info(f"[{self.channel_id}] New speech detected, auto-interrupting")
+            logger.debug(f"[{self.channel_id}] Auto-interrupting")
             await self.send_interrupt()
             await self._send_control_signal("interrupt")
 
@@ -425,7 +428,7 @@ class DesktopLive2DChatter(ChannelAdapter):
         Args:
             audio_data: VAD 检测到的音频数据（int16 bytes）
         """
-        logger.info(f"[{self.channel_id}] Speech end detected: {len(audio_data)} bytes")
+        logger.debug(f"[{self.channel_id}] Speech end: {len(audio_data)} bytes")
 
         # 清除 VAD 状态
         self._clear_vad_state()
@@ -459,11 +462,19 @@ class DesktopLive2DChatter(ChannelAdapter):
 
     async def _send_audio_output(self, event: "OutputEvent") -> None:
         """发送音频输出"""
-        await self._send_callback({
-            "type": event.type,
-            "data": event.data,
-            "seq": event.seq,
-        })
+        if isinstance(event.data, dict):
+            # 直接透传，不多包一层
+            await self._send_callback({
+                **event.data,
+                "type": event.type,
+                "seq": event.seq,
+            })
+        else:
+            await self._send_callback({
+                "type": event.type,
+                "data": event.data,
+                "seq": event.seq,
+            })
 
     async def _send_control(self, event: "OutputEvent") -> None:
         """发送控制信号"""

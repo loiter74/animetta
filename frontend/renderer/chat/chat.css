@@ -330,6 +330,7 @@ body {
 .voice-btn {
   background: var(--bg-tertiary);
   color: var(--text-secondary);
+  position: relative;
 }
 
 .voice-btn:hover {
@@ -341,6 +342,41 @@ body {
   background: var(--accent);
   color: white;
   animation: pulse 1.5s infinite;
+}
+
+/* Volume indicator inside voice button */
+.volume-indicator {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 4px;
+  background: var(--bg-primary);
+  border-radius: 2px;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.voice-btn.recording .volume-indicator {
+  opacity: 1;
+}
+
+.volume-indicator::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 0%;
+  background: #4ade80;
+  border-radius: 2px;
+  transition: width 0.05s;
+}
+
+.voice-btn.recording .volume-indicator.active::after {
+  width: var(--volume, 0%);
 }
 
 .send-btn {

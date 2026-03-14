@@ -148,11 +148,11 @@ Adapter Layer: DesktopLive2DChatter
     ↓
 EventBus → InputHandler → Orchestrator.process_input()
     ↓
-InputPipeline: ASRStep → TextCleanStep → LocalLLMStep
+Orchestrator's InputPipeline: ASRStep → TextCleanStep → LocalLLMStep
     ↓
 Agent.chat_stream() → LLM streaming response
     ↓
-OutputPipeline: Sentence splitting → TTS synthesis
+Orchestrator's OutputPipeline: Sentence splitting → TTS synthesis → EmotionExtraction
     ↓
 EventBus.emit(sentence/audio/expression/control)
     ↓
@@ -160,6 +160,57 @@ Adapter.send(event) → WebSocket emit
     ↓
 Frontend: Text display + Audio playback + Live2D sync
 ```
+
+**Note:** The Orchestrator creates and manages InputPipeline/OutputPipeline internally. Each Orchestrator instance has its own EventBus and EventRouter for isolated session handling.
+
+## Memory System Architecture
+
+The memory system follows an OpenClaw-style architecture with Markdown as the single source of truth.
+
+### Storage Layers
+
+1. **Short-term Memory**: In-memory session cache (configurable max turns, default 20)
+2. **Long-term Memory**:
+   - **Markdown Files**: Primary storage (`MEMORY.md` + daily logs in `YYYY-MM-DD.md`)
+   - **SQLite FTS5**: Full-text search index with metadata
+   - **Chroma**: Vector embeddings for semantic search
+
+### Retrieval Strategy
+
+Hybrid search combining:
+- **Vector semantic search** (70% weight): Finds conceptually similar content
+- **BM25 keyword search** (30% weight): Finds exact keyword matches
+
+### Chunking
+
+Sliding window chunking with:
+- Target: ~400 tokens per chunk
+- Overlap: 80 tokens between chunks
+- Incremental indexing based on file hash detection
+
+### Key Components
+
+```python
+# Storing a conversation turn
+await memory.store_turn(MemoryTurn(
+    session_id="session-001",
+    user_input="Hello",
+    agent_response="Hi there!",
+    emotions=["happy"],
+    importance=0.5,  # High importance (>=0.7) also saved to MEMORY.md
+))
+
+# Retrieving context
+results = await memory.retrieve_context(
+    query="what did we talk about",
+    session_id="session-001",
+    max_turns=5,
+)
+```
+
+### Graceful Degradation
+
+If MemoryManager initialization fails (missing dependencies, etc.), the system falls back to pure in-memory mode with a warning log.
 
 ## EventBus Architecture
 

@@ -85,3 +85,150 @@ body {
 .debug-info.hidden {
   display: none;
 }
+
+/* ========================================
+   Control Overlay - 控制面板
+   ======================================== */
+
+.control-overlay {
+  position: absolute;
+  bottom: 15px;
+  left: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.control-overlay.visible,
+#live2d-container:hover .control-overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.control-group {
+  display: flex;
+  gap: 6px;
+}
+
+.control-divider {
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.control-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.control-btn:hover {
+  background: rgba(0, 0, 0, 0.8);
+  transform: scale(1.05);
+}
+
+.control-btn:active {
+  transform: scale(0.95);
+}
+
+.control-btn.active {
+  background: rgba(66, 133, 244, 0.8);
+}
+
+/* 下拉选择器 */
+.control-select {
+  height: 36px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  color: white;
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+}
+
+.control-select:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.control-select option {
+  background: #1a1a1a;
+  color: white;
+}
+
+/* 快捷键提示 */
+.hotkey-hint {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-family: monospace;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  max-width: 200px;
+}
+
+.hotkey-hint span {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Toast 提示 */
+.toast {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-family: sans-serif;
+  font-size: 14px;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  z-index: 2000;
+}
+
+.toast.fade-out {
+  opacity: 0;
+}
+
+/* ========================================
+   Responsive 调整
+   ======================================== */
+
+@media (max-width: 400px) {
+  .control-overlay {
+    bottom: 10px;
+    left: 10px;
+  }
+
+  .control-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+
+  .hotkey-hint {
+    display: none;
+  }
+}

@@ -43,14 +43,14 @@ def expand_env_vars(value):
             var_name = match.group(1) or match.group(2)
             env_value = os.getenv(var_name, "")
 
-            # 详细调试日志 - 重点记录 API Key
+            # 只在首次加载时记录 API Key 状态
             if var_name == "GLM_API_KEY":
-                if env_value:
-                    logger.info(f"[expand_env_vars] ✅ GLM_API_KEY 已加载: {env_value[:20]}...")
-                else:
-                    logger.error(f"[expand_env_vars] ⚠️ GLM_API_KEY 未设置！API Key将为空，GLM将降级到MockLLM")
-            elif not env_value:
-                logger.debug(f"[expand_env_vars] 环境变量 {var_name} 未设置")
+                if env_value and not hasattr(replace_var, '_logged'):
+                    logger.debug(f"[expand_env_vars] GLM_API_KEY 已加载: {env_value[:20]}...")
+                    replace_var._logged = True
+                elif not env_value and not hasattr(replace_var, '_error_logged'):
+                    logger.error(f"[expand_env_vars] ⚠️ GLM_API_KEY 未设置！")
+                    replace_var._error_logged = True
 
             return env_value
 
@@ -64,6 +64,10 @@ def expand_env_vars(value):
 
 CONFIG_DIR = Path(__file__).parent.parent.parent.parent / "config"
 SERVICES_DIR = CONFIG_DIR / "services"
+
+# 配置缓存（避免重复加载和日志）
+_services_yaml_cache = None
+_services_config_logged = set()
 
 
 def _load_yaml_file(path: Path) -> Dict[str, Any]:
@@ -81,6 +85,11 @@ def _load_yaml_file(path: Path) -> Dict[str, Any]:
     return data or {}
 
 
+# 缓存已加载的服务配置，避免重复日志
+_services_yaml_cache: Optional[Dict[str, Any]] = None
+_services_config_logged: set = set()
+
+
 def _load_service_config(service_type: str, service_name: str) -> Dict[str, Any]:
     """
     加载单个服务的配置
@@ -92,19 +101,30 @@ def _load_service_config(service_type: str, service_name: str) -> Dict[str, Any]
     Returns:
         Dict: 服务配置
     """
-    # 尝试从统一的 services.yaml 加载
+    global _services_yaml_cache
+
+    cache_key = f"{service_type}/{service_name}"
+
+    # 尝试从统一的 services.yaml 加载（使用缓存）
     unified_services_path = CONFIG_DIR / "services.yaml"
     if unified_services_path.exists():
-        services_data = _load_yaml_file(unified_services_path)
-        if service_type in services_data and service_name in services_data[service_type]:
-            logger.info(f"从 services.yaml 加载服务配置: {service_type}/{service_name}")
-            return services_data[service_type][service_name]
+        if _services_yaml_cache is None:
+            _services_yaml_cache = _load_yaml_file(unified_services_path)
+
+        if service_type in _services_yaml_cache and service_name in _services_yaml_cache[service_type]:
+            # 只打印一次日志
+            if cache_key not in _services_config_logged:
+                logger.debug(f"加载服务配置: {cache_key}")
+                _services_config_logged.add(cache_key)
+            return _services_yaml_cache[service_type][service_name]
 
     # 回退到旧的分散配置文件（向后兼容）
     service_path = SERVICES_DIR / service_type / f"{service_name}.yaml"
     if not service_path.exists():
         raise FileNotFoundError(f"服务配置不存在: {service_path}")
-    logger.info(f"从分散配置文件加载服务配置: {service_type}/{service_name}")
+    if cache_key not in _services_config_logged:
+        logger.debug(f"加载服务配置: {cache_key}")
+        _services_config_logged.add(cache_key)
     return _load_yaml_file(service_path)
 
 
@@ -181,7 +201,7 @@ class AppConfig(BaseConfig):
         # 应用环境变量覆盖
         config._apply_env_overrides()
         
-        logger.info(f"配置加载完成: persona={config.persona}")
+        logger.debug(f"配置加载完成: persona={config.persona}")
         return config
 
     @classmethod
@@ -256,11 +276,11 @@ class AppConfig(BaseConfig):
                 if needs_api_key and hasattr(self.agent.llm_config, 'api_key'):
                     api_key = self.agent.llm_config.api_key
                     if api_key:
-                        logger.info(f"[AppConfig] ✅ Agent LLM API Key 已设置: {api_key[:20]}... (长度: {len(api_key)})")
+                        logger.debug(f"[AppConfig] Agent LLM API Key 已设置: {api_key[:20]}... (长度: {len(api_key)})")
                     else:
                         logger.error(f"[AppConfig] ⚠️ Agent LLM API Key 为空！LLM 类型: {self.agent.llm_config.type} 需要 API Key")
                 elif not needs_api_key:
-                    logger.info(f"[AppConfig] ✅ 使用本地 LLM: {self.agent.llm_config.type}（无需 API Key）")
+                    logger.debug(f"[AppConfig] 使用本地 LLM: {self.agent.llm_config.type}")
 
         # 处理 local_llm 配置
         if self.local_llm:
@@ -274,9 +294,9 @@ class AppConfig(BaseConfig):
             if hasattr(self.local_llm, 'api_key'):
                 api_key = self.local_llm.api_key
                 if api_key:
-                    logger.info(f"[AppConfig] ✅ Local LLM API Key 已设置: {api_key[:20]}... (长度: {len(api_key)})")
+                    logger.debug(f"[AppConfig] Local LLM API Key 已设置: {api_key[:20]}... (长度: {len(api_key)})")
                 else:
-                    logger.info(f"[AppConfig] ✅ Local LLM 无需 API Key（本地模型）")
+                    logger.debug(f"[AppConfig] Local LLM 无需 API Key（本地模型）")
 
     def _apply_env_overrides(self) -> None:
         """应用环境变量覆盖"""
@@ -331,7 +351,7 @@ class AppConfig(BaseConfig):
                     break
         
         if path and Path(path).exists():
-            logger.info(f"从配置文件加载: {path}")
+            logger.debug(f"从配置文件加载: {path}")
             return cls.from_yaml(path)
         
         raise FileNotFoundError(

@@ -2,6 +2,7 @@ const { ipcMain } = require('electron');
 const { io } = require('socket.io-client');
 const { registerLive2dHandlers } = require('./handlers/live2d');
 const { registerChatHandlers } = require('./handlers/chat');
+const { registerDisplayHandlers } = require('./handlers/display');
 
 /**
  * IPC Bridge - Handles inter-process communication
@@ -31,6 +32,9 @@ class IpcBridge {
 
     // Register Chat handlers
     registerChatHandlers(this);
+
+    // Register Display handlers (新增)
+    registerDisplayHandlers();
 
     // System handlers
     ipcMain.handle('app:getConfig', async (event, key) => {
