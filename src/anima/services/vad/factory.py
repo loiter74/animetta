@@ -63,11 +63,11 @@ class VADFactory:
                 from .implementations.silero_vad import SileroVAD
                 return SileroVAD(
                     sample_rate=kwargs.get("sample_rate", 16000),
-                    prob_threshold=kwargs.get("prob_threshold", 0.4),
-                    db_threshold=kwargs.get("db_threshold", 60),
-                    required_hits=kwargs.get("required_hits", 3),
-                    required_misses=kwargs.get("required_misses", 24),
-                    smoothing_window=kwargs.get("smoothing_window", 5),
+                    prob_threshold=kwargs.get("prob_threshold", 0.15),
+                    db_threshold=kwargs.get("db_threshold", -100),
+                    required_hits=kwargs.get("required_hits", 6),
+                    required_misses=kwargs.get("required_misses", 2),
+                    smoothing_window=kwargs.get("smoothing_window", 12),
                 )
             except ImportError as e:
                 logger.warning(f"silero-vad 未安装，降级使用 Mock VAD: {e}")

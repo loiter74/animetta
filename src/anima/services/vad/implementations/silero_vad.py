@@ -28,10 +28,10 @@ class SileroVAD(VADInterface):
         self,
         sample_rate: int = 16000,
         prob_threshold: float = 0.15,
-        db_threshold: int = 60,
-        required_hits: int = 2,
-        required_misses: int = 16,
-        smoothing_window: int = 5,
+        db_threshold: int = -100,
+        required_hits: int = 6,
+        required_misses: int = 2,
+        smoothing_window: int = 12,
     ):
         # 保存配置参数
         self.sample_rate = sample_rate
