@@ -103,8 +103,12 @@ export class AudioCapture {
         this._processAudioChunk(inputData);
       };
 
-      // 7. 连接节点
-      this.sourceNode.connect(this.scriptProcessor);
+      this.gainNode = this.audioContext.createGain();
+      this.gainNode.gain.value = 3.0;
+
+      // 7. 连接节点 ← 只改这里
+      this.sourceNode.connect(this.gainNode);      // source → gain
+      this.gainNode.connect(this.scriptProcessor); // gain → processor
       this.scriptProcessor.connect(this.audioContext.destination);
 
       this.isRecording = true;
@@ -130,6 +134,11 @@ export class AudioCapture {
     this.isRecording = false;
 
     // 断开音频节点
+    if (this.gainNode) {
+      this.gainNode.disconnect();
+      this.gainNode = null;
+    }
+
     if (this.scriptProcessor) {
       this.scriptProcessor.disconnect();
       this.scriptProcessor.onaudioprocess = null;

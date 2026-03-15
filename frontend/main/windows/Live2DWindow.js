@@ -62,7 +62,7 @@ createWindow() {
       console.log('[Live2DWindow] 页面加载完成，开启 DevTools');
       window.webContents.openDevTools({ mode: 'detach' });
       // 调试期间暂时关掉穿透，能正常点击 DevTools
-      // window.setIgnoreMouseEvents(true, { forward: true });
+      window.setIgnoreMouseEvents(true, { forward: true });
     });
   } else {
     // 生产环境才开穿透
