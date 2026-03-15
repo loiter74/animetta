@@ -39,7 +39,10 @@ class PipelineContext:
     
     # 是否应跳过后续处理
     skip_remaining: bool = False
-    
+
+    # 记忆上下文（由 MemoryStep 填充）
+    memory_context: str = ""
+
     def is_audio_input(self) -> bool:
         """检查原始输入是否为音频"""
         return isinstance(self.raw_input, np.ndarray)

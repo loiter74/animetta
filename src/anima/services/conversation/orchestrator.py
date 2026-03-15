@@ -130,8 +130,9 @@ class ConversationOrchestrator:
 
         新架构（LocalLLM + 底座LLM）：
         1. ASRStep: 处理音频输入，转换为文本
-        2. LocalLLMStep: 调用LocalLLM进行简单应答（无persona）
-        3. TextCleanStep: 清洗和规范化文本
+        2. MemoryStep: 检索相关记忆上下文
+        3. LocalLLMStep: 调用LocalLLM进行简单应答（无persona）
+        4. TextCleanStep: 清洗和规范化文本
 
         输出管线：使用 OutputPipeline 的默认行为
         """
@@ -143,6 +144,18 @@ class ConversationOrchestrator:
             )
             self.input_pipeline.add_step(asr_step)
             logger.debug(f"[{self.session_id}] 添加输入步骤: ASRStep")
+
+        # MemoryStep（如果记忆系统可用）
+        if self.memory_system:
+            from anima.pipeline.steps.memory_step import MemoryStep
+
+            memory_step = MemoryStep(
+                memory_system=self.memory_system,
+                session_id=self.session_id,
+                max_turns=3,
+            )
+            self.input_pipeline.add_step(memory_step)
+            logger.info(f"[{self.session_id}] 添加输入步骤: MemoryStep 📚")
 
         # LocalLLM步骤（如果本地LLM可用）
         if self.local_llm:
@@ -311,6 +324,8 @@ class ConversationOrchestrator:
                     error="无法获取有效的输入文本"
                 )
             
+            logger.info(f"[Memory] 注入上下文长度: {len(ctx.memory_context or '')}")
+            logger.info(f"[Memory] 上下文内容: {(ctx.memory_context or '')[:200]}")
             # 处理对话
             result = await self._process_conversation(ctx, text)
             
@@ -348,34 +363,8 @@ class ConversationOrchestrator:
 
         logger.info(f"[{self.session_id}] 处理对话: {text[:50]}...")
 
-        # 📚 检索相关记忆（如果记忆系统可用）
+        # 📚 使用 Pipeline 中 MemoryStep 检索的记忆上下文
         original_text = text
-        if self.memory_system:
-            try:
-                related_memories = await self.memory_system.retrieve_context(
-                    query=text,
-                    session_id=self.session_id,
-                    max_turns=3
-                )
-
-                if related_memories:
-                    logger.info(f"[{self.session_id}] 检索到 {len(related_memories)} 条相关记忆")
-
-                    # 格式化记忆为上下文
-                    memory_context = self._format_memory_context(related_memories)
-
-                    # 将记忆注入到输入文本中，并明确指示LLM使用这些信息
-                    text = f"""【重要提示】以下是与当前对话相关的历史记录，请仔细阅读并参考这些信息来回答用户的问题。如果用户询问相关信息，你必须基于这些历史记录来回答。
-
-[相关历史对话]
-{memory_context}
-
-[当前对话]
-{text}"""
-                    logger.debug(f"[{self.session_id}] 记忆上下文已注入")
-            except Exception as e:
-                logger.warning(f"[{self.session_id}] 记忆检索失败: {e}")
-
         # 发送思考表情
         await self._emit_expression("thinking")
 
@@ -387,13 +376,27 @@ class ConversationOrchestrator:
             logger.info(f"[{self.session_id}] 添加强制表情标签提醒")
 
         # 获取 Agent 响应流
-        agent_stream = self.agent.chat_stream(text)
+        original_system = self.agent.system_prompt
+
+        if ctx.memory_context:
+            memory_injection = f"""
+
+        ## 用户历史记忆（必须参考）
+        {ctx.memory_context}
+
+        如果用户问到相关内容，直接基于上面的记录回答，不要说"我不记得"或"我不知道"。"""
+            self.agent.set_system_prompt(original_system + memory_injection)
 
         # 发送说话表情
         await self._emit_expression("speaking")
 
-        # 使用 OutputPipeline 处理响应流
-        response_text = await self.output_pipeline.process(ctx, agent_stream)
+        try:
+            
+            agent_stream = self.agent.chat_stream(text)  # text 保持干净，只有用户输入
+            response_text = await self.output_pipeline.process(ctx, agent_stream)
+        finally:
+            # 恢复原始 system prompt，避免记忆在下轮叠加
+            self.agent.set_system_prompt(original_system)
 
         if self._interrupted:
             return ConversationResult(
@@ -618,31 +621,7 @@ class ConversationOrchestrator:
     def is_processing(self) -> bool:
         """是否正在处理输入"""
         return self._is_processing
-    
+
     def get_handler_count(self) -> int:
         """获取已注册的 Handler 数量"""
         return self.event_router.handler_count
-
-    def _format_memory_context(self, memories) -> str:
-        """
-        格式化记忆为上下文字符串
-
-        Args:
-            memories: MemoryTurn 列表
-
-        Returns:
-            str: 格式化的记忆上下文
-        """
-        if not memories:
-            return ""
-
-        lines = []
-        for i, mem in enumerate(memories, 1):
-            # 只显示最近几条对话的摘要
-            user_input = mem.user_input[:100] + "..." if len(mem.user_input) > 100 else mem.user_input
-            agent_response = mem.agent_response[:100] + "..." if len(mem.agent_response) > 100 else mem.agent_response
-
-            lines.append(f"{i}. 用户: {user_input}")
-            lines.append(f"   AI: {agent_response}")
-
-        return "\n".join(lines)
