@@ -12,7 +12,7 @@ persona: "neuro-vtuber"
 # 例如: asr: glm 会加载 config/services/asr/glm.yaml
 
 services:
-  asr: faster_whisper   # 开源免费 ASR（faster-whisper）
+  asr: funasr   # FunASR Paraformer（阿里开源，中文效果最好）
   tts: edge   # 使用 Edge TTS（微软免费TTS，无配额限制）
   agent: glm  # 底座LLM：GLM API（应用persona，生成最终回复）
   # local_llm: local_lora  # 本地LLM：LocalLoraLLM（简单应答，无persona，保留LoRA效果）- 已禁用

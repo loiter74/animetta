@@ -209,6 +209,15 @@ class InputHandler(LifecycleHandler):
 
             logger.info(f"[{self.name}] ASR result: {text}")
 
+            # 发送 transcript 事件到前端（显示用户语音输入)
+            # 直接通过 orchestrator 的 websocket_send 发送
+            if hasattr(orchestrator, 'websocket_send') and orchestrator.websocket_send:
+                import json
+                await orchestrator.websocket_send(json.dumps({
+                    "type": "user-transcript",
+                    "text": text.strip()
+                }))
+
             # 调用 Orchestrator 处理转写后的文本
             await orchestrator.process_input(
                 raw_input=text.strip(),

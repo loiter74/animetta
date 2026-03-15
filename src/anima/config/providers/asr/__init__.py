@@ -8,6 +8,7 @@ from .mock import MockASRConfig
 from .openai import OpenAIASRConfig
 from .glm import GLMASRConfig
 from .faster_whisper import FasterWhisperASRConfig
+from .funasr import FunASRConfig
 
 __all__ = [
     "ASRBaseConfig",
@@ -15,6 +16,7 @@ __all__ = [
     "OpenAIASRConfig",
     "GLMASRConfig",
     "FasterWhisperASRConfig",
+    "FunASRConfig",
     "ASRConfig",
 ]
 
@@ -25,6 +27,7 @@ ASRConfig = Annotated[
         OpenAIASRConfig,
         GLMASRConfig,
         FasterWhisperASRConfig,
+        FunASRConfig,
     ],
     Field(discriminator="type")
 ]

@@ -35,8 +35,19 @@ class ASRFactory:
                 base_url=kwargs.get("base_url")
             )
         elif provider == "funasr":
-            from .implementations.fun_asr import FunASR
-            return FunASR()
+            from .implementations.funasr_asr import FunASRASR
+            return FunASRASR(
+                model=kwargs.get("model", "paraformer-zh"),
+                language=kwargs.get("language", "zh"),
+                device=kwargs.get("device", "cuda"),
+                ncpu=kwargs.get("ncpu", 4),
+                vad_model=kwargs.get("vad_model", "fsmn-vad"),
+                punc_model=kwargs.get("punc_model", "ct-punc"),
+                spk_model=kwargs.get("spk_model"),
+                hotword=kwargs.get("hotword"),
+                model_hub=kwargs.get("model_hub", "ms"),
+                disable_update=kwargs.get("disable_update", True)
+            )
         elif provider == "glm":
             from .implementations.glm_asr import GLMASR
             return GLMASR(
@@ -67,4 +78,4 @@ class ASRFactory:
     @staticmethod
     def get_available_providers() -> List[str]:
         """获取所有可用的提供商列表"""
-        return ["mock", "openai", "glm", "faster_whisper"]
+        return ["mock", "openai", "glm", "faster_whisper", "funasr"]

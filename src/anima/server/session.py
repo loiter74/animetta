@@ -122,7 +122,7 @@ class SessionManager:
             )
 
             # 启动编排器
-            orchestrator.start()
+            await orchestrator.start()
 
             # 使用 HandlerRegistry 注册所有 handlers
             handlers = await HandlerRegistry.register_all(

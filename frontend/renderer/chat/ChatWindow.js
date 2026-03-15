@@ -55,6 +55,7 @@ export class ChatWindow {
       onMessage: (data) => this._handleMessage(data),
       onSpeaking: (isSpeaking) => this._setSpeaking(isSpeaking),
       onStyleTransfer: (enabled) => this._setStyleTransfer(enabled),
+      onTranscript: (data) => this._handleTranscript(data),
     });
 
     // Initialize audio capture
@@ -232,6 +233,28 @@ export class ChatWindow {
   _handleMessage(data) {
     console.log('[ChatWindow] Complete message:', data);
     this._finalizeResponse();
+  }
+
+  /**
+   * Handle transcript (ASR result from voice input)
+   * Display user's voice input in the chat box
+   */
+  _handleTranscript(data) {
+    const text = data.text || '';
+    if (!text.trim()) return;
+
+    console.log('[ChatWindow] 🎤 User transcript:', text);
+
+    // Add user message to chat (from voice input)
+    this._addMessage({
+      role: 'user',
+      text: text,
+      timestamp: Date.now(),
+      source: 'voice',  // Mark as voice input
+    });
+
+    // Show typing indicator (waiting for AI response)
+    this.ui.typingIndicator.show();
   }
 
   /**

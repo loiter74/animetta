@@ -139,6 +139,12 @@ class IpcBridge {
         this.sendToWindow('chat', 'chat:message', { type: 'complete' });
       }
     });
+
+    // User transcript (ASR result - display user's voice input in chat)
+    this.socket.on('transcript', (data) => {
+      console.log('[IpcBridge] transcript event:', data.text?.substring(0, 30));
+      this.sendToWindow('chat', 'chat:transcript', data);
+    });
   }
 
   /**

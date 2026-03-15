@@ -242,6 +242,14 @@ class VoiceInputAdapter(ChannelAdapter):
 
             logger.info(f"[VoiceInputAdapter] ASR result: {text}")
 
+            # 发送 transcript 事件到前端（显示用户语音输入）
+            if self._send_callback:
+                import json
+                await self._send_callback(json.dumps({
+                    "type": "user-transcript",
+                    "text": text.strip()
+                }))
+
             # 通过 EventBus 发送 INPUT_TEXT 事件
             await self._emit_input(
                 event_type="INPUT_TEXT",

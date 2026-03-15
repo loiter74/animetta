@@ -141,8 +141,21 @@ class ServiceContext:
             download_root=getattr(asr_config, 'download_root', None),
             beam_size=getattr(asr_config, 'beam_size', 5),
             vad_filter=getattr(asr_config, 'vad_filter', True),
-            vad_parameters=getattr(asr_config, 'vad_parameters', {})
+            vad_parameters=getattr(asr_config, 'vad_parameters', {}),
+            # funasr 特定参数
+            ncpu=getattr(asr_config, 'ncpu', 4),
+            vad_model=getattr(asr_config, 'vad_model', None),
+            punc_model=getattr(asr_config, 'punc_model', None),
+            spk_model=getattr(asr_config, 'spk_model', None),
+            hotword=getattr(asr_config, 'hotword', None),
+            model_hub=getattr(asr_config, 'model_hub', 'ms'),
+            disable_update=getattr(asr_config, 'disable_update', True),
         )
+
+        # 预加载模型（避免首次使用时延迟）
+        if hasattr(self.asr_engine, 'preload'):
+            logger.info(f"[{self.session_id}] 预加载 ASR 模型...")
+            await self.asr_engine.preload()
 
     async def init_tts(self, tts_config: TTSConfig) -> None:
         """
@@ -196,12 +209,10 @@ class ServiceContext:
             logger.info(f"[{self.session_id}] 使用人设: {persona_name}")
             if live2d_prompt:
                 logger.info(f"[{self.session_id}] 已添加 Live2D 表情提示词")
-                logger.info(f"[{self.session_id}] Live2D 提示词长度: {len(live2d_prompt)} 字符")
-                logger.info(f"[{self.session_id}] Live2D 提示词内容:\n{live2d_prompt}")
+                logger.debug(f"[{self.session_id}] Live2D 提示词长度: {len(live2d_prompt)} 字符")
             else:
-                logger.warning(f"[{self.session_id}] Live2D 提示词为空或未生成")
-            logger.info(f"[{self.session_id}] System prompt 总长度: {len(system_prompt)} 字符")
-            logger.info(f"[{self.session_id}] System prompt 前500字符:\n{system_prompt[:500]}...")
+                logger.debug(f"[{self.session_id}] Live2D 提示词为空或未生成")
+            logger.debug(f"[{self.session_id}] System prompt 总长度: {len(system_prompt)} 字符")
         else:
             system_prompt = self._build_system_prompt(agent_config, persona_config)
 

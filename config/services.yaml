@@ -6,15 +6,29 @@
 # ===========================
 
 asr:
-  # Faster-Whisper（开源免费，推荐）
+  # FunASR Paraformer（阿里开源，中文效果最好，推荐）
+  funasr:
+    type: funasr
+    model: paraformer-zh  # paraformer-zh / paraformer-zh-streaming / paraformer-en
+    language: zh
+    device: cpu  # CUDA 兼容性问题，先用 CPU
+    ncpu: 4
+    vad_model: fsmn-vad  # VAD 模型，设为 null 禁用
+    punc_model: ct-punc  # 标点恢复模型，设为 null 禁用
+    spk_model: null  # 说话人识别模型，设为 null 禁用
+    hotword: null  # 热词文件路径或字符串
+    model_hub: ms  # ms=ModelScope, hf=HuggingFace
+    disable_update: true
+
+  # Faster-Whisper（开源免费）
   faster_whisper:
     type: faster_whisper
-    model: large-v3  # 推荐: large-v3, large-v2
+    model: distil-large-v3  # 蒸馏版模型，更快且准确
     language: zh
     device: cuda
     compute_type: float16
     beam_size: 5
-    vad_filter: false
+    vad_filter: true  # 启用 VAD 过滤静音，提升识别效果
     vad_parameters:
       min_silence_duration_ms: 500
       speech_pad_ms: 30
@@ -75,19 +89,14 @@ tts:
 # ===========================
 
 llm:
-  # 智谱 GLM（推荐）
+  # 智谱 GLM（推荐)
   glm:
     memory_enabled: true
     llm_config:
       type: glm
-      model: "glm-4-flash"  # glm-4-plus / glm-4 / glm-4-flash / glm-5
       api_key: "${GLM_API_KEY}"
-      temperature: 0.7
-      max_tokens: 4096
-      enable_thinking: false
-      max_retries: 3
-      retry_delay: 1.0
-      timeout: 60
+      model: "glm-4-plus"  # 最新旗舰模型，744B 参数，Agent/Coding 能力 SOTA
+      enable_thinking: false  # 关闭深度思考模式，加快响应速度
 
   # OpenAI
   openai:
@@ -134,15 +143,14 @@ llm:
 # ===========================
 
 vad:
-  # Silero VAD（推荐）
   silero:
     type: silero
     sample_rate: 16000
-    prob_threshold: 0.5
+    prob_threshold: 0.15   # 原0.5，太高，弱信号触发不了
     db_threshold: -100
-    required_hits: 6
-    required_misses: 10
-    smoothing_window: 5
+    required_hits: 2        # 原6，太多，短音节会漏掉
+    required_misses: 16     # 原10，太少，说话中间停顿会被截断
+    smoothing_window: 5     # 这个不用动
 
   # Mock（测试用）
   mock:

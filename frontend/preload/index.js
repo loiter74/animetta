@@ -87,6 +87,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
       const listener = (_event, enabled) => callback(enabled);
       ipcRenderer.on('chat:styleTransfer', listener);
       return () => ipcRenderer.removeListener('chat:styleTransfer', listener);
+    },
+
+    // Listen for user transcript (ASR result - voice input text)
+    onTranscript: (callback) => {
+      const listener = (_event, data) => callback(data);
+      ipcRenderer.on('chat:transcript', listener);
+      return () => ipcRenderer.removeListener('chat:transcript', listener);
     }
   },
 

@@ -45,9 +45,11 @@ class ChromaStore:
         Args:
             persist_dir: 持久化目录
             collection_name: 集合名称
+            embedding_dim: embedding 向量维度
             embedding_function: Chroma 的 EmbeddingFunction 实例.
                 如果为 None, 需要在 upsert 时手动传入 embeddings.
         """
+        self.embedding_dim = embedding_dim
         Path(persist_dir).mkdir(parents=True, exist_ok=True)
 
         self.client = chromadb.PersistentClient(
@@ -55,13 +57,31 @@ class ChromaStore:
             settings=Settings(anonymized_telemetry=False),
         )
 
+        # 维度检测：检查已有 collection 的 embedding 维度是否匹配
+        try:
+            existing = self.client.get_collection(collection_name)
+            if existing.count() > 0:
+                # 获取一个样本检查维度
+                sample = existing.peek(limit=1)
+                if sample.get("embeddings") and len(sample["embeddings"]) > 0:
+                    existing_dim = len(sample["embeddings"][0])
+                    if existing_dim != embedding_dim:
+                        logger.warning(
+                            f"Chroma collection '{collection_name}' dimension mismatch: "
+                            f"existing={existing_dim}, expected={embedding_dim}. "
+                            f"Deleting and recreating..."
+                        )
+                        self.client.delete_collection(collection_name)
+        except Exception as e:
+            logger.debug(f"Chroma dimension check skipped: {e}")
+
         self.collection = self.client.get_or_create_collection(
             name=collection_name,
             metadata={"hnsw:space": "cosine"},  # 余弦距离
             embedding_function=_PassthroughEmbeddingFunction(),
         )
         logger.info(
-            f"Chroma collection '{collection_name}' ready, "
+            f"Chroma collection '{collection_name}' ready (dim={embedding_dim}), "
             f"{self.collection.count()} vectors stored"
         )
 

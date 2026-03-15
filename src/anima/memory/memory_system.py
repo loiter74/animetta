@@ -11,11 +11,14 @@
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 from loguru import logger
+import asyncio
 
 from .memory_turn import MemoryTurn
 from .config import MemoryConfig
 from .memory_manager import MemoryManager
 from .models import SearchResult
+from .scorer import MemoryScorer
+from .stores import ShortTermMemory, LongTermMemory
 
 
 class MemorySystem:
@@ -23,9 +26,9 @@ class MemorySystem:
     记忆系统统一入口
 
     职责：
-    1. 包装 MemoryManager，提供与旧接口兼容的 API
-    2. 管理短期记忆（内存）+ 长期记忆（Markdown + SQLite + Chroma）
-    3. 提供混合检索能力
+    1. 协调短期记忆和长期记忆
+    2. 提供统一的存储和检索接口
+    3. 管理生命周期
 
     Example:
         >>> memory = MemorySystem({
@@ -46,17 +49,13 @@ class MemorySystem:
 
         Args:
             config: 配置字典
-                - workspace_dir: 工作目录（存储 MEMORY.md 和 daily logs）
-                - db_path: SQLite 数据库路径（可选）
-                - chroma_path: Chroma 向量库路径（可选）
+                - workspace_dir: 工作目录
+                - db_path: SQLite 数据库路径 (可选)
+                - chroma_path: Chroma 向量库路径 (可选)
                 - short_term_max_turns: 短期记忆容量
                 - embedding_model: embedding 模型名称
         """
-        # 短期记忆（内存中的会话缓存）
-        self._short_term_max_turns = config.get("short_term_max_turns", 20)
-        self._session_cache: Dict[str, List[MemoryTurn]] = {}
-
-        # 构建 MemoryConfig
+        # 构建配置
         workspace = config.get("workspace_dir", "~/.anima/workspace")
         memory_config = MemoryConfig(
             workspace_dir=workspace,
@@ -69,63 +68,75 @@ class MemorySystem:
             from .config import EmbeddingConfig
             memory_config.embedding = EmbeddingConfig(model_name=config["embedding_model"])
 
-        # 初始化 MemoryManager
+        # 初始化组件
+        self._scorer = MemoryScorer()
+        self._short_term = ShortTermMemory(
+            max_turns=config.get("short_term_max_turns", 20)
+        )
+
+        # 初始化长期记忆 (可能降级)
+        self._long_term: Optional[LongTermMemory] = None
         try:
-            self.manager = MemoryManager(config=memory_config)
-            logger.info(f"[MemorySystem] 初始化成功，workspace: {memory_config.workspace_dir}")
+            manager = MemoryManager(config=memory_config)
+            self._long_term = LongTermMemory(manager)
+            logger.info(f"[MemorySystem] 初始化成功, workspace: {memory_config.workspace_dir}")
         except Exception as e:
-            logger.warning(f"[MemorySystem] MemoryManager 初始化失败，降级为纯内存模式: {e}")
-            self.manager = None
+            logger.warning(f"[MemorySystem] MemoryManager 初始化失败， 降级为纯短期记忆模式: {e}")
+
+    async def start(self) -> None:
+        """启动记忆系统"""
+        if self._long_term:
+            await self._long_term.start()
+            logger.info("[MemorySystem] 长期记忆已启动")
+
+    async def stop(self) -> None:
+        """停止记忆系统"""
+        if self._long_term:
+            await self._long_term.stop()
+        self._short_term.clear_all()
+        logger.info("[MemorySystem] 记忆系统已停止")
 
     async def store_turn(self, turn: MemoryTurn) -> None:
         """
         存储对话轮次
 
-        流程：
-        1. 存储到短期记忆（内存缓存）
-        2. 写入长期记忆（Markdown 文件）
-        3. 触发增量索引
+        流程:
+        1. 计算重要性分数
+        2. 根据分数决定存储策略
+        3. 存储到短期记忆 (同步)
+        4. 存储到长期记忆 (异步, 如果分数足够)
 
         Args:
             turn: 对话轮次数据
         """
-        # 1. 存储到短期记忆
-        session_id = turn.session_id
-        if session_id not in self._session_cache:
-            self._session_cache[session_id] = []
+        # 1. 计算重要性分数
+        score = self._scorer.score(turn)
+        turn.importance = score  # 更新重要性
 
-        cache = self._session_cache[session_id]
-        cache.append(turn)
+        # 2. 存储到短期记忆 (同步, 总是存储)
+        self._short_term.append(turn.session_id, turn)
+        logger.debug(f"[MemorySystem] 短期记忆已存储 (分数: {score:.2f})")
 
-        # 保持短期记忆容量限制
-        if len(cache) > self._short_term_max_turns:
-            cache.pop(0)
+        # 3. 存储到长期记忆 (异步, 根据分数决定)
+        if self._long_term and self._scorer.should_store(score):
+            # 异步存储, 不等待
+            asyncio.create_task(self._store_to_long_term(turn, score))
+            logger.debug(f"[MemorySystem] 长期记忆存储任务已提交 (分数: {score:.2f})")
+        else:
+            logger.debug(f"[MemorySystem] 跳过长期存储 (分数: {score:.2f})")
 
-        # 2. 写入长期记忆
-        if self.manager:
-            try:
-                # 格式化对话为 Markdown（不含时间戳，由 write_daily_log 添加）
-                content = f"""**User**: {turn.user_input}
-**AI**: {turn.agent_response}
-"""
-                if turn.emotions:
-                    # emotions 可能是字典列表 [{"emotion": "happy", "position": 6}] 或字符串列表 ["happy"]
-                    if turn.emotions and isinstance(turn.emotions[0], dict):
-                        emotion_names = [e.get("emotion", str(e)) for e in turn.emotions]
-                    else:
-                        emotion_names = [str(e) for e in turn.emotions]
-                    content += f"*Emotions: {', '.join(emotion_names)}*\n"
+    async def _store_to_long_term(self, turn: MemoryTurn, score: float) -> None:
+        """
+        异步存储到长期记忆
 
-                # 写入每日日志
-                self.manager.write_daily_log(content)
-
-                # 如果重要性高，也写入 MEMORY.md
-                if turn.importance >= 0.7:
-                    memory_entry = f"- [{turn.timestamp.strftime('%Y-%m-%d')}] {turn.user_input[:50]}...\n"
-                    self.manager.write_memory(memory_entry)
-
-            except Exception as e:
-                logger.warning(f"[MemorySystem] 长期记忆写入失败: {e}")
+        Args:
+            turn: 对话轮次
+            score: 重要性分数
+        """
+        try:
+            await self._long_term.store(turn, score)
+        except Exception as e:
+            logger.warning(f"[MemorySystem] 长期记忆存储失败: {e}")
 
     async def retrieve_context(
         self,
@@ -136,9 +147,9 @@ class MemorySystem:
         """
         检索相关记忆
 
-        策略：多路召回
-        1. 短期记忆：最近 N 轮
-        2. 混合搜索：向量语义 + BM25 关键词
+        策略: 多路召回
+        1. 短期记忆: 最近 N 轮
+        2. 混合搜索: 向量语义 + BM25 关键词
 
         Args:
             query: 查询文本
@@ -150,47 +161,43 @@ class MemorySystem:
         """
         results = []
 
-        # 1. 短期记忆：最近 N 轮
-        cache = self._session_cache.get(session_id, [])
-        recent = cache[-max_turns:] if cache else []
+        # 1. 短期记忆: 最近 N 轮
+        recent = self._short_term.get_recent(session_id, max_turns)
         results.extend(recent)
 
         # 2. 混合搜索长期记忆
-        if self.manager:
+        if self._long_term:
             try:
-                search_results = self.manager.search(
+                search_results = await self._long_term.search(
                     query=query,
+                    session_id=session_id,
                     max_results=5
                 )
 
                 # 转换 SearchResult 为 MemoryTurn
                 for sr in search_results:
-                    # 解析 Markdown 格式的对话
-                    user_input, agent_response = self._parse_markdown_dialog(sr.text)
-
-                    if user_input or agent_response:
-                        memory_turn = MemoryTurn(
-                            turn_id=f"search_{sr.path}_{sr.start_line}",
-                            session_id=session_id,
-                            timestamp=datetime.now(),
-                            user_input=user_input,
-                            agent_response=agent_response,
-                            emotions=[],
-                            metadata={
-                                "path": sr.path,
-                                "score": sr.score,
-                                "source": sr.source,
-                            },
-                            importance=sr.score
-                        )
-                        results.append(memory_turn)
+                    memory_turn = MemoryTurn(
+                        turn_id=f"search_{sr.path}_{sr.start_line}",
+                        session_id=session_id,
+                        timestamp=datetime.now(),
+                        user_input=self._extract_user_input(sr.text),
+                        agent_response=self._extract_agent_response(sr.text),
+                        emotions=[],
+                        metadata={
+                            "path": sr.path,
+                            "score": sr.score,
+                            "source": sr.source,
+                        },
+                        importance=sr.score
+                    )
+                    results.append(memory_turn)
 
                 logger.debug(f"[MemorySystem] 混合搜索返回 {len(search_results)} 条结果")
 
             except Exception as e:
                 logger.warning(f"[MemorySystem] 混合搜索失败: {e}")
 
-        # 3. 去重（按 turn_id）
+        # 3. 去重 (按 turn_id)
         seen = set()
         unique_results = []
         for turn in results:
@@ -200,23 +207,27 @@ class MemorySystem:
 
         return unique_results
 
-    def _parse_markdown_dialog(self, text: str) -> tuple:
-        """解析 Markdown 格式的对话"""
-        user_input = ""
-        agent_response = ""
-
+    def _extract_user_input(self, text: str) -> str:
+        """从 Markdown 格式中提取用户输入"""
         lines = text.split("\n")
         for line in lines:
             if line.startswith("**User**:"):
-                user_input = line[9:].strip()
-            elif line.startswith("**AI**:"):
-                agent_response = line[6:].strip()
+                return line[9:].strip()
             elif line.startswith("User: "):
-                user_input = line[6:].strip()
-            elif line.startswith("AI: "):
-                agent_response = line[4:].strip()
+                return line[6:].strip()
+            elif line.startswith("- 用户说："):
+                return line[5:].strip()
+        return ""
 
-        return user_input, agent_response
+    def _extract_agent_response(self, text: str) -> str:
+        """从 Markdown 格式中提取 AI 响应"""
+        lines = text.split("\n")
+        for line in lines:
+            if line.startswith("**AI**:"):
+                return line[6:].strip()
+            elif line.startswith("AI: "):
+                return line[4:].strip()
+        return ""
 
     async def get_user_history(
         self,
@@ -231,21 +242,18 @@ class MemorySystem:
             limit: 返回记录数量
 
         Returns:
-            历史对话列表（按时间倒序）
+            历史对话列表 (按时间倒序)
         """
-        # 从短期记忆获取
-        cache = self._session_cache.get(session_id, [])
-        return list(reversed(cache[-limit:]))
+        return list(reversed(self._short_term.get_recent(session_id, limit)))
 
     async def clear_session(self, session_id: str) -> None:
         """
-        清除会话（短期记忆）
+        清除会话 (短期记忆)
 
         Args:
             session_id: 会话 ID
         """
-        if session_id in self._session_cache:
-            del self._session_cache[session_id]
+        self._short_term.clear(session_id)
 
     def write_memory(self, content: str, append: bool = True) -> None:
         """
@@ -255,8 +263,8 @@ class MemorySystem:
             content: 要写入的内容
             append: True=追加, False=覆盖
         """
-        if self.manager:
-            self.manager.write_memory(content, append=append)
+        if self._long_term:
+            self._long_term.write_memory(content, append=append)
 
     def write_daily_log(self, content: str) -> None:
         """
@@ -265,12 +273,12 @@ class MemorySystem:
         Args:
             content: 日志内容
         """
-        if self.manager:
-            self.manager.write_daily_log(content)
+        if self._long_term:
+            self._long_term.write_daily_log(content)
 
     def search(self, query: str, max_results: int = 10) -> List[SearchResult]:
         """
-        直接搜索记忆（不转换为 MemoryTurn）
+        直接搜索记忆 (不转换为 MemoryTurn)
 
         Args:
             query: 查询文本
@@ -279,21 +287,21 @@ class MemorySystem:
         Returns:
             SearchResult 列表
         """
-        if self.manager:
-            return self.manager.search(query, max_results=max_results)
+        if self._long_term:
+            return self._long_term.sync_search(query, max_results=max_results)
         return []
 
     def load_session_context(self, query: str = "") -> str:
         """
         加载会话启动时的记忆上下文
+
         Args:
-            query: 当前用户输入，用于语义检索相关记忆
+            query: 当前用户输入, 用于语义检索相关记忆
         """
-        if self.manager:
-            return self.manager.load_session_context(query=query)
+        if self._long_term:
+            return self._long_term.get_context(query=query)
         return ""
-    
-    
+
     def should_flush(self, current_tokens: int, context_window: int) -> bool:
         """
         判断是否需要触发记忆 flush
@@ -305,17 +313,17 @@ class MemorySystem:
         Returns:
             True 表示应该触发 flush
         """
-        if self.manager:
-            return self.manager.should_flush(current_tokens, context_window)
+        if self._long_term:
+            return self._long_term.should_flush(current_tokens, context_window)
         return False
 
     def sync(self) -> None:
         """全量同步索引"""
-        if self.manager:
-            self.manager.sync()
+        if self._long_term:
+            self._long_term.sync()
 
     def close(self) -> None:
         """关闭记忆系统"""
-        if self.manager:
-            self.manager.close()
-        self._session_cache.clear()
+        if self._long_term:
+            self._long_term.close()
+        self._short_term.clear_all()

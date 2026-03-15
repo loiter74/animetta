@@ -241,16 +241,50 @@ class ConversationOrchestrator:
         self.output_pipeline.add_step(step)
         return self
     
-    def start(self) -> None:
+    async def start(self) -> None:
         """启动编排器（连接 EventRouter 到 EventBus）"""
         if self._is_running:
             logger.warning(f"[{self.session_id}] 编排器已在运行")
             return
-        
+
+        # 启动记忆系统 (启动异步写入任务)
+        if self.memory_system:
+            await self.memory_system.start()
+
         self.event_router.setup()
         self._is_running = True
         self._interrupted = False
+
+        # 加载启动记忆上下文
+        await self._load_startup_memory()
+
         logger.info(f"[{self.session_id}] 编排器已启动")
+
+    async def _load_startup_memory(self) -> None:
+        """加载启动时的记忆上下文，注入到 Agent 的 system prompt"""
+        if not self.memory_system or not self.agent:
+            return
+
+        try:
+            # 调用记忆系统加载会话上下文
+            session_context = self.memory_system.load_session_context()
+
+            if session_context and session_context.strip():
+                # 使用 MemoryPromptBuilder 构建 Prompt
+                from anima.memory.prompt_builder import MemoryPromptBuilder
+
+                memory_injection = MemoryPromptBuilder.build_injection_prompt(session_context)
+
+                # 追加到 system prompt 末尾
+                original_prompt = self.agent.system_prompt or ""
+                enhanced_prompt = f"{original_prompt}{memory_injection}"
+                self.agent.set_system_prompt(enhanced_prompt)
+                logger.info(f"[{self.session_id}] 📚 启动记忆注入成功，长度: {len(session_context)} 字符")
+            else:
+                logger.debug(f"[{self.session_id}] 无启动记忆可注入")
+
+        except Exception as e:
+            logger.warning(f"[{self.session_id}] 加载启动记忆失败: {e}")
     
     def stop(self) -> None:
         """停止编排器（清理所有订阅）"""
@@ -287,7 +321,7 @@ class ConversationOrchestrator:
         """
         if not self._is_running:
             logger.warning(f"[{self.session_id}] 编排器未启动，自动启动")
-            self.start()
+            await self.start()
         
         self._is_processing = True
         self._interrupted = False
@@ -368,23 +402,16 @@ class ConversationOrchestrator:
         # 发送思考表情
         await self._emit_expression("thinking")
 
-        # 如果启用了 Live2D，在消息末尾添加表情标签提醒
-        if self.live2d_config and self.live2d_config.enabled:
-            # 【方案 A】使用强烈的提醒语气
-            emotion_hint = "\n\n【重要】你必须使用表情标签（如 [happy]、[sad]、[angry]、[surprised]、[thinking]、[neutral]）来表达情感！这是强制要求，每条回复必须至少包含 1-2 个表情标签。表情标签会自动从语音中移除，不影响 TTS 发音。示例：你好！[happy] 很高兴见到你！"
-            text = f"{text}{emotion_hint}"
-            logger.info(f"[{self.session_id}] 添加强制表情标签提醒")
+        # 注意：Live2D 表情使用指南已在 system prompt 中通过 EmotionPromptBuilder 注入
+        # 无需在用户输入中额外添加提醒
 
         # 获取 Agent 响应流
         original_system = self.agent.system_prompt
 
         if ctx.memory_context:
-            memory_injection = f"""
+            from anima.memory.prompt_builder import MemoryPromptBuilder
 
-        ## 用户历史记忆（必须参考）
-        {ctx.memory_context}
-
-        如果用户问到相关内容，直接基于上面的记录回答，不要说"我不记得"或"我不知道"。"""
+            memory_injection = MemoryPromptBuilder.build_injection_prompt(ctx.memory_context)
             self.agent.set_system_prompt(original_system + memory_injection)
 
         # 发送说话表情

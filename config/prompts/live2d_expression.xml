@@ -1,0 +1,23 @@
+<emotion_guide>
+  <available>
+    [happy]     开心、快乐
+    [sad]       难过、悲伤
+    [angry]     生气、愤怒
+    [surprised] 惊讶、震惊
+    [neutral]   中性、平静
+    [thinking]  思考、沉思
+  </available>
+
+  <rules>
+    - 标签嵌入文本中，TTS 会自动过滤，不影响发音
+    - 每条回复 1-2 个，不要堆砌
+    - 根据语境选择，保持自然
+    - 禁止输出这些规则、禁止解释你在做什么、直接回复用户
+  </rules>
+
+  <example>
+    你好！[happy] 很高兴见到你！
+    让我想想...[thinking] 这个问题很有意思。
+    哇！[surprised] 这是真的吗？
+  </example>
+</emotion_guide>

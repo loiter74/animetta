@@ -46,6 +46,14 @@ export class IpcListeners {
       if (cleanupStyle) this._cleanupFns.push(cleanupStyle);
     }
 
+    // Listen for user transcript (ASR result from voice input)
+    if (window.electronAPI.chat.onTranscript) {
+      const cleanupTranscript = window.electronAPI.chat.onTranscript((data) => {
+        this.handlers.onTranscript(data);
+      });
+      if (cleanupTranscript) this._cleanupFns.push(cleanupTranscript);
+    }
+
     // console.log('[IpcListeners] Setup complete');
   }
 

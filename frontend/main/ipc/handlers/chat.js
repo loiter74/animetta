@@ -127,9 +127,9 @@ function registerChatHandlers(ipcBridge) {
   let audioChunkCount = 0;
   ipcMain.on('chat:sendAudioChunk', (event, audioData) => {
     audioChunkCount++;
-    // Log every 50 chunks (~1.5 seconds at 30ms/chunk) to avoid console spam
-    if (audioChunkCount % 50 === 0) {
-      console.log(`[ChatHandler] Audio chunks sent: ${audioChunkCount}, samples: ${audioData?.length || 0}`);
+    // Log every 500 chunks (~15 seconds at 30ms/chunk) to reduce console noise
+    if (audioChunkCount % 500 === 0) {
+      console.log(`[ChatHandler] Audio chunks: ${audioChunkCount}`);
     }
     ipcBridge.sendToBackend('raw_audio_data', { audio: audioData });
   });
