@@ -50,6 +50,7 @@ class MemoryManager:
         self.chroma = ChromaStore(
             persist_dir=self.config.chroma_path,
             collection_name=f"memory_{self.config.agent_id}",
+            embedding_dim=512,
         )
 
         # 初始化 MEMORY.md 基础文件
@@ -379,37 +380,28 @@ class MemoryManager:
 
     # ── 会话上下文加载 ────────────────────────────────────
 
-    def load_session_context(self) -> str:
-        """
-        加载会话启动时的记忆上下文.
-
-        参考 OpenClaw: 加载 MEMORY.md + 今天日志 + 昨天日志.
-
-        Returns:
-            组合后的记忆上下文文本
-        """
+    def load_session_context(self, query: str = "", max_results: int = 5) -> str:
         parts = []
 
-        # 长期记忆
+        # 1. MEMORY.md 核心人格记忆（保留全量，通常不大）
         memory_content = self.get("MEMORY.md")
         if memory_content.strip():
-            parts.append("# Long-term Memory (MEMORY.md)\n" + memory_content)
+            parts.append("# 长期记忆\n" + memory_content)
 
-        # 今天日志
+        # 2. 今天日志（保留，保证当天连续性）
         today = datetime.now()
         today_log = self.get(f"memory/{today.strftime('%Y-%m-%d')}.md")
         if today_log.strip():
-            parts.append(f"# Today's Log ({today.strftime('%Y-%m-%d')})\n" + today_log)
+            parts.append(f"# 今日日志\n" + today_log)
 
-        # 昨天日志
-        from datetime import timedelta
-
-        yesterday = today - timedelta(days=1)
-        yesterday_log = self.get(f"memory/{yesterday.strftime('%Y-%m-%d')}.md")
-        if yesterday_log.strip():
-            parts.append(
-                f"# Yesterday's Log ({yesterday.strftime('%Y-%m-%d')})\n" + yesterday_log
-            )
+        # 3. 语义检索相关历史记忆（核心新增）
+        if query and self._embedder is not None:
+            results = self.search(query, max_results=max_results, min_score=0.3)
+            if results:
+                snippets = "\n\n".join(
+                    f"[{r.path}]\n{r.text}" for r in results
+                )
+                parts.append(f"# 相关历史记忆\n{snippets}")
 
         return "\n\n---\n\n".join(parts) if parts else ""
 

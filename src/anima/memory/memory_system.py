@@ -283,17 +283,17 @@ class MemorySystem:
             return self.manager.search(query, max_results=max_results)
         return []
 
-    def load_session_context(self) -> str:
+    def load_session_context(self, query: str = "") -> str:
         """
         加载会话启动时的记忆上下文
-
-        Returns:
-            组合后的记忆上下文文本
+        Args:
+            query: 当前用户输入，用于语义检索相关记忆
         """
         if self.manager:
-            return self.manager.load_session_context()
+            return self.manager.load_session_context(query=query)
         return ""
-
+    
+    
     def should_flush(self, current_tokens: int, context_window: int) -> bool:
         """
         判断是否需要触发记忆 flush

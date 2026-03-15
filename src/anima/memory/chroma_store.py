@@ -22,7 +22,13 @@ from .models import Chunk
 
 logger = logging.getLogger(__name__)
 
+from chromadb import EmbeddingFunction, Embeddings
 
+class _PassthroughEmbeddingFunction(EmbeddingFunction):
+    """占位用，实际 embedding 由外部传入，不走这里"""
+    def __call__(self, input):
+        raise NotImplementedError("Embeddings must be provided externally")
+    
 class ChromaStore:
     """Chroma 向量数据库封装."""
 
@@ -30,6 +36,7 @@ class ChromaStore:
         self,
         persist_dir: str,
         collection_name: str = "memory_chunks",
+        embedding_dim: int = 512,
         embedding_function: Any | None = None,
     ):
         """
@@ -51,7 +58,7 @@ class ChromaStore:
         self.collection = self.client.get_or_create_collection(
             name=collection_name,
             metadata={"hnsw:space": "cosine"},  # 余弦距离
-            embedding_function=embedding_function,
+            embedding_function=_PassthroughEmbeddingFunction(),
         )
         logger.info(
             f"Chroma collection '{collection_name}' ready, "
