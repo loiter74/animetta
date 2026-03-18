@@ -1,143 +1,182 @@
 # Anima
 
-> AI 虚拟伴侣 / VTuber 框架
-
-一个可配置的 AI 虚拟形象框架，支持 Live2D 模型、语音交互和多种 LLM 服务商。
-
----
-
-## 特性
-
-- **插件化架构** - 使用装饰器注册新服务，零修改扩展 LLM/ASR/TTS/VAD
-- **流式响应** - 支持 LLM 流式对话和 TTS 实时合成
-- **事件驱动** - 基于 EventBus 的解耦架构，支持优先级和异常隔离
-- **记忆系统** - Chroma + SQLite 混合检索，支持长期记忆
-- **Live2D 支持** - 表情同步、唇同步、动作控制
-
----
-
-## 演示
-
-### Anima Chat Demo
+<div align="center">
 
 ![Anima Chat Demo](assets/demo/anima-chat-preview.gif)
 
-**[点击查看完整演示 →](assets/demo/anima-chat-demo.gif)** (1.2MB GIF)
+**打造你的专属 AI 虚拟角色！** 🎭
 
-**演示内容：**
-- ✅ **AI 实时对话** - 自然语言理解与生成
-- ✅ **Live2D 角色联动** - 姿态、表情随对话变化
-- ✅ **流畅交互体验** - 低延迟响应，视觉反馈丰富
-- ✅ **双模态输入** - 支持文本和语音输入
+支持 Live2D 动画、实时语音交互，可自由切换不同 AI 模型
 
-## 支持的服务商
-
-| 类型 | 服务商 |
-|------|--------|
-| **LLM** | GLM, OpenAI, Ollama, Local LoRA |
-| **ASR** | FasterWhisper, GLM, OpenAI |
-| **TTS** | Edge TTS, GLM, OpenAI, ChatTTS |
-| **VAD** | Silero |
+</div>
 
 ---
 
-## 快速开始
+## ✨ 为什么选择 Anima？
 
-### 安装依赖
+<div align="center">
+
+### 🎭 会"动"的虚拟角色
+
+Live2D 角色会根据对话内容改变表情和动作，仿佛有真正的灵魂
+
+### 💬 自然流畅的对话
+
+支持文本和语音双模态输入，像和朋友聊天一样自然
+
+### 🔄 随心切换 AI 模型
+
+无需修改代码，一键切换不同的 LLM/ASR/TTS 服务商
+
+</div>
+
+---
+
+## 🚀 3 步开始体验
+
+### 1️⃣ 安装依赖
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 配置
+### 2️⃣ 配置 API Key
 
-创建 `.env` 文件：
+创建 `.env` 文件，添加你的 API 密钥：
 
 ```bash
 GLM_API_KEY=your_api_key_here
 ```
 
-### 运行
+### 3️⃣ 启动应用
 
 ```bash
-# 一键启动
 python scripts/start.py
-
-# 或手动启动后端
-python -m anima.socketio_server
 ```
 
-后端运行在 `http://localhost:12394`
+打开桌面应用，开始和你的 AI 角色聊天吧！
 
 ---
 
-## 配置说明
+## 🎮 核心特性
 
-### 切换服务商
+### 智能对话引擎
+- AI 实时理解并生成自然语言回复
+- 支持流式输出，边说边显示
+- 长期记忆功能，记住你们的对话历史
+
+### 生动角色表现
+- **表情同步** - 角色会根据对话情绪展现不同表情
+- **唇型同步** - 说话时嘴巴动作与语音完美匹配
+- **动作控制** - 支持自定义触发动作和姿势
+
+### 灵活配置选择
+- **多种 AI 模型** - GLM、OpenAI、Ollama、本地模型等
+- **语音输入输出** - 可选语音识别和合成服务
+- **自定义人设** - 创建独一无二的角色性格
+
+---
+
+## 🛠️ 支持的服务
+
+| 类型 | 支持的服务 |
+|:----:|:----------|
+| **🧠 AI 模型** | GLM、OpenAI、Ollama、本地 LoRA |
+| **🎤 语音识别** | FasterWhisper、GLM、OpenAI |
+| **🔊 语音合成** | Edge TTS、GLM、OpenAI、ChatTTS |
+| **🎯 语音检测** | Silero VAD |
+
+---
+
+## 📝 配置示例
+
+### 切换 AI 模型
 
 编辑 `config/config.yaml`：
 
 ```yaml
 services:
-  agent: glm           # LLM: glm, openai, ollama, local_lora
-  asr: faster_whisper  # ASR: faster_whisper, glm, openai
-  tts: edge            # TTS: edge, glm, openai, chattts
-  vad: silero          # VAD: silero
+  agent: glm           # 可选: glm, openai, ollama, local_lora
+  asr: faster_whisper  # 可选: faster_whisper, glm, openai
+  tts: edge            # 可选: edge, glm, openai, chattts
 ```
 
-### 人设配置
+### 自定义角色性格
 
-人设文件位于 `config/personas/`：
+创建 `config/personas/my-character.yaml`：
 
 ```yaml
-# config/personas/neuro-vtuber.yaml
-identity: "Neuro-sama"
-personality: "好奇、活泼、喜欢游戏"
-speaking_style: "使用网络用语和emoji，偶尔提到游戏"
+identity: "你的角色名"
+personality: "活泼开朗，喜欢开玩笑"
+speaking_style: "使用轻松的语气，偶尔加emoji"
 ```
 
 ---
 
-## 项目结构
+## 🎬 完整演示
+
+**[点击查看高清演示 →](assets/demo/anima-chat-demo.gif)** (1.2MB GIF)
+
+演示内容：
+- ✅ AI 实时对话响应
+- ✅ Live2D 角色表情和动作变化
+- ✅ 流畅的低延迟交互体验
+- ✅ 文本和语音双模态输入
+
+---
+
+## 🛠️ 技术栈
+
+**后端**: Python、FastAPI、Socket.IO
+
+**前端**: Electron、原生 JS、pixi-live2d-display
+
+**AI 服务**: GLM、OpenAI、FasterWhisper、Silero VAD、Chroma
+
+---
+
+## 📚 详细文档
+
+<details>
+<summary><b>📖 展开开发者文档</b></summary>
+
+### 项目结构
 
 ```
 src/anima/
-├── socketio_server.py    # Socket.IO 主入口
-├── service_context.py    # 服务容器
-├── config/               # 配置系统 (YAML + Pydantic)
+├── socketio_server.py    # 主服务器入口
+├── service_context.py    # 服务容器管理
+├── config/               # 配置系统
 │   ├── core/registry.py  # 服务注册表
 │   └── providers/        # 服务商配置类
 ├── adapters/             # 通道适配器层
-│   ├── base.py           # ChannelAdapter 基类
-│   └── implementations/  # DesktopLive2DChatter
-├── services/             # 服务实现
-│   ├── llm/              # LLM 服务
-│   ├── asr/              # 语音识别
-│   ├── tts/              # 语音合成
-│   ├── vad/              # 语音活动检测
-│   └── live2d/           # Live2D 控制
-├── pipeline/             # 责任链处理
-│   ├── base.py           # PipelineStep 基类
-│   └── steps/            # ASR/文本清洗/情感提取
+├── services/             # 服务实现 (LLM/ASR/TTS/VAD)
+├── pipeline/             # 数据处理管道
 ├── events/               # 事件驱动架构
-│   ├── bus.py            # EventBus
-│   ├── router.py         # EventRouter
-│   └── models.py         # OutputEvent
 ├── handlers/             # 事件处理器
-│   ├── text.py           # TextHandler
-│   └── unified.py        # UnifiedEventHandler
-├── memory/               # 对话记忆
-│   ├── memory_manager.py # 核心管理器
-│   ├── chroma_store.py   # 向量存储
-│   └── sqlite_store.py   # FTS5 存储
-└── utils/                # 工具函数
+├── memory/               # 对话记忆系统
+└── avatar/               # Live2D 表情分析
 ```
 
----
+### 数据流架构
 
-## 扩展开发
+```
+用户输入 (文本/音频)
+    ↓
+InputPipeline (语音识别 → 文本清洗)
+    ↓
+Agent (LLM 流式对话)
+    ↓
+OutputPipeline (句子分割 → TTS 合成 → 情感提取)
+    ↓
+EventBus (按优先级分发事件)
+    ↓
+前端渲染 (文字显示 + 语音播放 + Live2D 动作)
+```
 
-### 添加新的 LLM 服务
+### 扩展开发
+
+#### 添加新的 LLM 服务
 
 1. 创建配置类：
 
@@ -179,65 +218,18 @@ llm:
     model: "my-model"
 ```
 
-详细指南：[添加新服务](docs/development/adding-services.md)
-
----
-
-## 架构设计
-
-### 数据流
-
-```
-用户输入 (文本/音频)
-    ↓
-InputPipeline (ASR → 清洗 → 情感提取)
-    ↓
-Agent (LLM 流式对话)
-    ↓
-OutputPipeline (句子分割 → TTS 合成)
-    ↓
-EventBus (按优先级分发事件)
-    ↓
-Handlers (文本/音频/表情处理)
-    ↓
-前端渲染
-```
-
-### 设计模式
-
-| 模式 | 应用场景 |
-|------|----------|
-| Factory | 服务创建 (LLMFactory, ASRFactory) |
-| Strategy | 情感分析器、TTS 调度 |
-| Provider Registry | 服务商自动注册 |
-| Observer | EventBus 事件系统 |
-| Pipeline | 输入/输出数据处理 |
-| Orchestrator | 对话流程编排 |
-
----
-
-## 文档
-
-- [快速开始](docs/development/quickstart.md)
-- [添加服务](docs/development/adding-services.md)
+更多文档：
+- [快速开始指南](docs/development/quickstart.md)
+- [添加新服务](docs/development/adding-services.md)
 - [数据流设计](docs/architecture/data-flow.md)
-- [事件系统](docs/architecture/event-system.md) - **面试重点**
+- [事件系统](docs/architecture/event-system.md)
 - [设计模式](docs/architecture/patterns.md)
 - [内存系统](docs/modules/memory.md)
-- [实现计划](docs/plans/history.md)
+
+</details>
 
 ---
 
-## 技术栈
+## 📄 许可证
 
-**后端**: Python, FastAPI, Socket.IO
-
-**前端**: Electron, vanilla JS/HTML/CSS, pixi-live2d-display
-
-**AI/ML**: GLM, OpenAI, FasterWhisper, Silero VAD, Chroma
-
----
-
-## 许可证
-
-MIT License
+MIT License - 自由使用、修改和分发
