@@ -100,23 +100,10 @@ class UnifiedEventHandler(BaseHandler):
         """
         处理音频 + 表情事件
         """
-        # DEBUG: 打印事件详情
-        logger.debug(
-            f"[{self.name}] DEBUG event: type={type(event).__name__}, "
-            f"data_type={type(event.data).__name__}, data={repr(event.data)[:200]}, "
-            f"metadata_type={type(event.metadata).__name__}, metadata={repr(event.metadata)[:200]}"
-        )
-
         # 使用统一的提取方法
         data, metadata = self.extract_dict_data(
             event,
             required_keys=self.REQUIRED_DATA_KEYS,
-        )
-
-        # DEBUG: 打印提取后的值
-        logger.debug(
-            f"[{self.name}] DEBUG extracted: data_type={type(data).__name__}, "
-            f"metadata_type={type(metadata).__name__}, metadata={repr(metadata)[:200]}"
         )
 
         if data is None:

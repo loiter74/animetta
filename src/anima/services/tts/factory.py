@@ -44,6 +44,17 @@ class TTSFactory:
                 speed=kwargs.get("speed", 1.0),
                 volume=kwargs.get("volume", 1.0)
             )
+        elif provider == "chattts":
+            from .implementations.chattts_tts import ChatTTSTTS
+            return ChatTTSTTS(
+                model_path=kwargs.get("model_path", "E:/anima_data/models/ChatTTS"),
+                device=kwargs.get("device", "cpu"),
+                compile=kwargs.get("compile", False),
+                speaker_seed=kwargs.get("speaker_seed", 42),
+                temperature=kwargs.get("temperature", 0.3),
+                top_p=kwargs.get("top_p", 0.7),
+                top_k=kwargs.get("top_k", 20),
+            )
         elif provider == "mock":
             from .implementations.mock_tts import MockTTS
             return MockTTS()
@@ -55,4 +66,4 @@ class TTSFactory:
     @staticmethod
     def get_available_providers() -> List[str]:
         """获取所有可用的提供商列表"""
-        return ["mock", "openai", "edge_tts", "glm"]
+        return ["mock", "openai", "edge_tts", "glm", "chattts"]

@@ -29,21 +29,9 @@ class TextHandler(BaseHandler):
 
     async def handle(self, event: "OutputEvent") -> None:
         """处理文本事件"""
-        # DEBUG: 打印事件详情
-        logger.info(
-            f"[{self.name}] DEBUG event: type={type(event).__name__}, "
-            f"data_type={type(event.data).__name__}, data={repr(event.data)[:100]}, "
-            f"metadata_type={type(event.metadata).__name__}, metadata={repr(event.metadata)[:100]}"
-        )
-
         # 使用统一的提取方法
         text, metadata = self.extract_event_data(event, expect_data_type=str)
 
-        # DEBUG: 打印提取后的值
-        logger.debug(
-            f"[{self.name}] DEBUG extracted: text_type={type(text).__name__}, "
-            f"metadata_type={type(metadata).__name__}, metadata={repr(metadata)[:100]}"
-        )
         if text is None:
             return
 

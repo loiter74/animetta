@@ -154,9 +154,6 @@ class DesktopLive2DChatter(ChannelAdapter):
 
         try:
             event_type = event.type
-            print(f"[DEBUG] send() 收到事件: {event_type}")  # ← 加这行
-
-
             # sentence 事件由 TextHandler 处理，避免重复发送
             if event_type == "sentence":
                 # 跳过，由 TextHandler 处理

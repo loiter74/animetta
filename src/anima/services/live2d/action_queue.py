@@ -150,7 +150,9 @@ class Live2DActionQueue:
 
         # 启动处理
         if not self._is_processing:
-            asyncio.create_task(self._process_queue())
+            self._process_task = asyncio.create_task(self._process_queue())
+            # 添加错误处理
+            self._process_task.add_done_callback(self._handle_task_exception)
 
         return {"ok": True, "queue_size": len(self.queue)}
 

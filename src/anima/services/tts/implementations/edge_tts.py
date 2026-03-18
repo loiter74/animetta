@@ -76,33 +76,55 @@ class EdgeTTS(TTSInterface):
         # 使用传入的音色或默认音色
         actual_voice = voice or self.voice
 
-        # 如果没有指定输出路径，创建临时文件
+        # 使用传入的音色或默认音色
+        actual_voice = voice or self.voice
+
+        # 如果没有指定输出路径，使用内存临时文件
         if output_path is None:
-            output_path = tempfile.mktemp(suffix=".mp3")
+            import io
+            output_buffer = io.BytesIO()
+            output_path_is_temp = True
         else:
             output_path = Path(output_path)
+            output_path_is_temp = False
 
         try:
-            # 创建 communicate 实例并保存到文件
+            # 创建 communicate 实例并保存到文件/内存
             communicate_instance = edge_tts.Communicate(text, actual_voice)
 
-            # 使用 stream 方法获取音频数据并保存
-            with open(output_path, "wb") as f:
+            if output_path_is_temp:
+                # 直接写入内存，不创建临时文件
                 async for chunk in communicate_instance.stream():
                     if chunk["type"] == "audio":
-                        f.write(chunk["data"])
-
-            logger.debug(f"Edge TTS 合成完成: {len(text)} 字符 -> {output_path}")
-
-            # 读取音频数据
-            with open(output_path, 'rb') as f:
-                audio_data = f.read()
-
-            return audio_data if kwargs.get('return_bytes', False) else str(output_path)
+                        output_buffer.write(chunk["data"])
+                
+                audio_data = output_buffer.getvalue()
+                logger.debug(f"Edge TTS 合成完成: {len(text)} 字符 -> 内存 ({len(audio_data)} bytes)")
+                
+                # 如果明确要求返回路径，则写入临时文件
+                if not kwargs.get('return_bytes', False):
+                    temp_file = tempfile.mktemp(suffix=".mp3")
+                    with open(temp_file, "wb") as f:
+                        f.write(audio_data)
+                    return temp_file
+                return audio_data
+            else:
+                # 保存到文件
+                with open(output_path, "wb") as f:
+                    async for chunk in communicate_instance.stream():
+                        if chunk["type"] == "audio":
+                            f.write(chunk["data"])
+                
+                logger.debug(f"Edge TTS 合成完成: {len(text)} 字符 -> {output_path}")
+                return str(output_path)
 
         except Exception as e:
             logger.error(f"Edge TTS 合成失败: {e}")
             raise
+        finally:
+            # 清理内存缓冲区
+            if output_path_is_temp and 'output_buffer' in locals():
+                output_buffer.close()
 
     async def close(self) -> None:
         """清理资源（Edge TTS 不需要清理）"""

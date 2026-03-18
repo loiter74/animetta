@@ -27,6 +27,7 @@ asr:
     language: zh
     device: cuda
     compute_type: float16
+    download_root: "E:/anima_data/models/whisper"  # 模型存储在 E 盘
     beam_size: 5
     vad_filter: true  # 启用 VAD 过滤静音，提升识别效果
     vad_parameters:
@@ -80,6 +81,17 @@ tts:
     response_format: "mp3"
     speed: 1.0
 
+  # ChatTTS（开源对话式语音合成）
+  chattts:
+    type: chattts
+    model_path: "E:/anima_data/models/ChatTTS"  # 模型文件路径
+    device: cpu  # cuda / cpu
+    compile: false  # Windows 建议关闭
+    speaker_seed: 42  # 固定音色，None 则随机
+    temperature: 0.3
+    top_p: 0.7
+    top_k: 20
+
   # Mock（测试用）
   mock:
     type: mock
@@ -127,7 +139,7 @@ llm:
       base_model_name: "E:/anima_data/models/huggingface/models--Qwen--Qwen2.5-7B-Instruct/snapshots/a09a35458c702b33eeacc393d103063234e8bc28"
       # 使用 style_transfer 训练的 LoRA（与 7B 模型兼容）
       lora_path: "E:/anima_data/models/style_transfer/final/lora"
-      device: cuda  # cuda / cpu
+      device: cpu  # cuda / cpu
       max_new_tokens: 512
       temperature: 0.8
       top_p: 0.9

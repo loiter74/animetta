@@ -31,7 +31,19 @@ class Colors:
     @staticmethod
     def enabled():
         """Check if colors are supported"""
-        return platform.system() != "Windows" or os.getenv('TERM')
+        if platform.system() != "Windows":
+            return True
+        # Windows: 支持 Windows 10+ 终端、WT_SESSION、VS Code 等
+        if os.getenv('WT_SESSION') or os.getenv('TERM') or os.getenv('TERM_PROGRAM'):
+            return True
+        # 尝试启用 ANSI 支持（Windows 10+）
+        try:
+            import ctypes
+            kernel32 = ctypes.windll.kernel32
+            kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
+            return True
+        except:
+            return False
 
 
 def info(msg):
@@ -168,15 +180,34 @@ class ProcessManager:
 
         return True
 
+    def _get_venv_python(self, project_root):
+        """获取虚拟环境中的 Python，如果没有则使用系统 Python"""
+        venv_paths = [
+            project_root / ".venv" / "Scripts" / "python.exe",  # Windows
+            project_root / ".venv" / "bin" / "python",          # Unix
+            project_root / "venv" / "Scripts" / "python.exe",   # Windows (alternate name)
+            project_root / "venv" / "bin" / "python",           # Unix (alternate name)
+        ]
+        for venv_python in venv_paths:
+            if venv_python.exists():
+                return str(venv_python)
+        return sys.executable
+
     def start_backend(self, project_root):
         """启动后端 Socket.IO 服务"""
         info("启动后端 Socket.IO 服务 (端口 12394)...")
 
+        # 使用 venv 中的 Python（如果存在）
+        python_exe = self._get_venv_python(project_root)
+        if python_exe != sys.executable:
+            info(f"使用虚拟环境: {python_exe}")
+
         src_path = project_root / "src"
         env = os.environ.copy()
         env['PYTHONPATH'] = str(src_path)
+        env['PYTHONIOENCODING'] = 'utf-8'
 
-        cmd = [sys.executable, '-m', 'anima.socketio_server']
+        cmd = [python_exe, '-m', 'anima.socketio_server']
 
         try:
             # 不使用 CREATE_NEW_PROCESS_GROUP，让子进程继承信号处理
@@ -196,11 +227,14 @@ class ProcessManager:
         """启动 Web 配置界面"""
         info(f"启动 Web 配置界面 (端口 {port})...")
 
+        # 使用 venv 中的 Python（如果存在）
+        python_exe = self._get_venv_python(project_root)
+
         # 使用正斜杠避免 Windows 路径转义问题
         web_dir = project_root / "frontend" / "web"
         web_dir_str = str(web_dir).replace('\\', '/')
 
-        cmd = [sys.executable, '-c', f'''
+        cmd = [python_exe, '-c', f'''
 import sys
 import os
 from http.server import HTTPServer, SimpleHTTPRequestHandler
@@ -332,11 +366,12 @@ server.serve_forever()
                 else:
                     process.terminate()
                     process.wait(timeout=3)
-            except:
+            except Exception as e:
+                # 尝试强制终止
                 try:
                     process.kill()
-                except:
-                    pass
+                except Exception:
+                    pass  # 进程可能已经结束
 
         # 额外清理：确保端口被释放
         for name, process, port in self.processes:
@@ -432,7 +467,7 @@ def main():
 
     try:
         # 启动后端
-        if not args.no_backend and not args.backend_only:
+        if not args.no_backend:
             pm.start_backend(project_root)
             time.sleep(2)
 

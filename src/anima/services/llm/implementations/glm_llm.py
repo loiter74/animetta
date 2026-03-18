@@ -68,10 +68,12 @@ class GLMLLM(LLMInterface):
         self.instance_id = str(uuid.uuid4())[:8]
         self.call_count = 0
 
-        # 验证 API Key
-        if not api_key or api_key.strip() == "" or api_key == "${LLM_API_KEY}":
+        # 验证 API Key（检查环境变量模板是否被展开）
+        if not api_key or api_key.strip() == "" or api_key.startswith("${"):
             raise ValueError(
-                "GLM API Key 未设置！请设置环境变量 LLM_API_KEY "
+                f"GLM API Key 未设置或未正确展开！"
+                f"当前值: {api_key[:20] if api_key else 'None'}... "
+                f"请设置环境变量 GLM_API_KEY "
                 "或在配置文件中提供有效的 api_key"
             )
 

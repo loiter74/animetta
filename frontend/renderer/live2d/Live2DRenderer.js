@@ -20,7 +20,7 @@ class SimpleAudioPlayer {
   }
 
   async play(data) {
-    console.log('[AudioPlayer] play() 被调用, audio_data:', !!data?.audio_data); // ← 加这行
+    console.log('[AudioPlayer] play() 被调用, audio_data:', !!data?.audio_data, 'volumes:', data?.volumes?.length);
     const { audio_data, format, volumes, expressions } = data || {};
     if (!audio_data) return;
 
@@ -32,12 +32,18 @@ class SimpleAudioPlayer {
       const blob = new Blob([buffer], { type: `audio/${format || 'mp3'}` });
       const url = URL.createObjectURL(blob);
       const audio = new Audio(url);
+
+      // 启动口型同步（如果提供了 volumes）
+      if (volumes && Array.isArray(volumes) && volumes.length > 0) {
+        this.opts.onPlaybackStart?.(volumes);
+      }
+
       await audio.play();
       audio.onended = () => {
         this.opts.onPlaybackEnd?.();
         URL.revokeObjectURL(url);
       };
-    } catch {
+    } catch (e) {
       console.error('[AudioPlayer] ❌ 播放失败:', e.name, e.message);
     }
   }
@@ -68,7 +74,11 @@ export class Live2DRenderer {
 
     // 创建音频播放器
     this.audioPlayer = new SimpleAudioPlayer({
-      onPlaybackEnd: () => this.expressionController.setMouthTarget(0),
+      onPlaybackStart: (volumes) => this._startLipSync(volumes),
+      onPlaybackEnd: () => {
+        this._stopLipSync();
+        this.expressionController.setMouthTarget(0);
+      },
     });
 
     // 创建配置管理
@@ -144,6 +154,53 @@ export class Live2DRenderer {
     this.backgroundManager.handleResize();
   }
 
+  // ====== 口型同步 ======
+  _startLipSync(volumes) {
+    // volumes 是 50Hz 采样的音量包络数组
+    // 每 20ms 一个采样点
+    if (!Array.isArray(volumes) || volumes.length === 0) {
+      console.warn('[Live2DRenderer] 无效的 volumes 数据');
+      return;
+    }
+
+    console.log('[Live2DRenderer] 启动口型同步，采样点数:', volumes.length);
+
+    const sampleInterval = 1000 / 50; // 50Hz = 20ms 间隔
+    let index = 0;
+
+    // 清除之前的定时器
+    this._stopLipSync();
+
+    // 创建定时器队列
+    this._lipSyncTimers = [];
+
+    const scheduleNext = () => {
+      if (index >= volumes.length) {
+        console.log('[Live2DRenderer] 口型同步完成');
+        return;
+      }
+
+      const value = volumes[index];
+      this.expressionController.setMouthTarget(value);
+
+      index++;
+      if (index < volumes.length) {
+        const timerId = setTimeout(scheduleNext, sampleInterval);
+        this._lipSyncTimers.push(timerId);
+      }
+    };
+
+    // 立即开始第一个
+    scheduleNext();
+  }
+
+  _stopLipSync() {
+    if (this._lipSyncTimers) {
+      this._lipSyncTimers.forEach(timerId => clearTimeout(timerId));
+      this._lipSyncTimers = [];
+    }
+  }
+
   // === 公共 API ===
   setExpression(name) { this.expressionController.setExpression(name); }
   playMotion(group, index) { this.expressionController.playMotion(group, index); }
@@ -164,6 +221,7 @@ export class Live2DRenderer {
 
   destroy() {
     window.removeEventListener('resize', this._handleResize);
+    this._stopLipSync();
     this.expressionController?.destroy();
     this.backgroundManager?.destroy();
     this.ipcBridge = null;

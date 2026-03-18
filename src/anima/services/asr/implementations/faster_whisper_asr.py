@@ -113,6 +113,21 @@ class FasterWhisperASR(ASRInterface):
 
         return self._model
 
+    async def preload(self) -> None:
+        """
+        预加载模型
+
+        在服务启动时调用，提前加载模型到内存，避免首次使用时的延迟。
+        """
+        logger.info(f"预加载 Faster-Whisper 模型: {self.model_name}...")
+
+        # 在线程池中运行模型加载（CPU 密集型操作）
+        import asyncio
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, self._get_model)
+
+        logger.info(f"✅ Faster-Whisper 模型预加载完成")
+
     async def transcribe(
         self,
         audio_data: Union[bytes, str, Path, list, np.ndarray],

@@ -16,6 +16,20 @@
 
 ---
 
+## 演示
+
+### Anima Chat Demo
+
+![Anima Chat Demo](assets/demo/anima-chat-preview.gif)
+
+**[点击查看完整演示 →](assets/demo/anima-chat-demo.gif)** (1.2MB GIF)
+
+**演示内容：**
+- ✅ **AI 实时对话** - 自然语言理解与生成
+- ✅ **Live2D 角色联动** - 姿态、表情随对话变化
+- ✅ **流畅交互体验** - 低延迟响应，视觉反馈丰富
+- ✅ **双模态输入** - 支持文本和语音输入
+
 ## 支持的服务商
 
 | 类型 | 服务商 |

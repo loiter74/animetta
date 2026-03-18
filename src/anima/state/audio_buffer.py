@@ -93,7 +93,8 @@ class AudioBufferManager:
             session_id: 会话 ID
         """
         if session_id in self._buffers:
-            self._buffers[session_id] = np.array([], dtype=np.float32)
+            # 删除旧数组以释放内存，而不是设置为空数组
+            del self._buffers[session_id]
             logger.debug(f"已清空会话 {session_id} 的音频缓冲区")
     
     def pop(self, session_id: str) -> Optional[np.ndarray]:

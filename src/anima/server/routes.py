@@ -94,11 +94,14 @@ class RouteHandlers:
         # 使用全局配置或加载默认配置
         config = self.global_config or AppConfig.load()
 
+        # 创建单一的 send_callback（避免重复创建）
+        send_callback = self._make_send_callback(sid)
+
         # 获取或创建上下文
         ctx = await self.session_manager.get_or_create_context(
             sid,
             config,
-            self._make_send_callback(sid)
+            send_callback
         )
 
         # 获取 Live2D 配置
@@ -108,7 +111,7 @@ class RouteHandlers:
         orchestrator = await self.session_manager.get_or_create_orchestrator(
             sid,
             ctx,
-            self._make_send_callback(sid),
+            send_callback,
             live2d_config
         )
 
@@ -117,7 +120,7 @@ class RouteHandlers:
             sid,
             ctx,
             orchestrator,
-            self._make_send_callback(sid)
+            send_callback
         )
 
         return adapter

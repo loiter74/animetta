@@ -7,7 +7,7 @@ from .factory import LLMFactory
 
 # 导入实现以触发 ProviderRegistry 注册
 try:
-    from .implementations import mock_agent, glm_agent
+    from .implementations import mock_llm, glm_llm
 except ImportError:
     pass
 

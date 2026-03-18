@@ -8,6 +8,7 @@ from .mock import MockTTSConfig
 from .openai import OpenAITTSConfig
 from .edge import EdgeTTSConfig
 from .glm import GLMTTSConfig
+from .chattts import ChatTTSConfig
 
 __all__ = [
     "TTSBaseConfig",
@@ -15,11 +16,12 @@ __all__ = [
     "OpenAITTSConfig",
     "EdgeTTSConfig",
     "GLMTTSConfig",
+    "ChatTTSConfig",
     "TTSConfig",
 ]
 
 # Discriminated Union 类型
 TTSConfig = Annotated[
-    Union[MockTTSConfig, OpenAITTSConfig, EdgeTTSConfig, GLMTTSConfig],
+    Union[MockTTSConfig, OpenAITTSConfig, EdgeTTSConfig, GLMTTSConfig, ChatTTSConfig],
     Field(discriminator="type")
 ]

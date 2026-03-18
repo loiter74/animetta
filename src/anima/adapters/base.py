@@ -155,6 +155,11 @@ class ChannelAdapter(ABC):
 
     def _subscribe_output(self) -> None:
         """订阅输出事件"""
+        # 检查是否已经订阅，避免重复订阅
+        if self._output_subscription is not None and self._output_subscription.is_active:
+            logger.debug(f"[{self.channel_type}] Already subscribed to output events, skipping")
+            return
+
         self._output_subscription = self.event_bus.subscribe_all(
             self._handle_output_event
         )
