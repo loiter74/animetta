@@ -21,7 +21,7 @@ class SimpleAudioPlayer {
 
   async play(data) {
     console.log('[AudioPlayer] play() 被调用, audio_data:', !!data?.audio_data, 'volumes:', data?.volumes?.length);
-    const { audio_data, format, volumes, expressions } = data || {};
+    const { audio_data, format, volumes, expressions, return_to_idle } = data || {};
     if (!audio_data) return;
 
     // 打印 volumes 数组的首尾值用于调试
@@ -44,13 +44,23 @@ class SimpleAudioPlayer {
         this.opts.onPlaybackStart?.(audio, volumes);
       }
 
-      await audio.play();
-
-      audio.onended = () => {
-        console.log('[AudioPlayer] audio.onended 触发');
+      // 处理音频播放结束时的 idle 恢复
+      const onEnded = () => {
+        console.log('[AudioPlayer] audio.onended 触发, return_to_idle:', return_to_idle);
         this.opts.onPlaybackEnd?.();
+
+        // 如果标记了 return_to_idle，在音频播放结束后恢复 idle 表情
+        if (return_to_idle) {
+          console.log('[AudioPlayer] 音频播放结束，恢复 idle 表情');
+          this.opts.onReturnToIdle?.();
+        }
+
         URL.revokeObjectURL(url);
       };
+
+      audio.onended = onEnded;
+      await audio.play();
+
     } catch (e) {
       console.error('[AudioPlayer] ❌ 播放失败:', e.name, e.message);
     }
@@ -86,6 +96,10 @@ export class Live2DRenderer {
       onPlaybackEnd: () => {
         this._stopLipSync();
         this.expressionController.setMouthTarget(0);
+      },
+      onReturnToIdle: () => {
+        // 音频播放结束后恢复 idle 表情
+        this.expressionController.setExpression('idle');
       },
     });
 
@@ -137,7 +151,15 @@ export class Live2DRenderer {
     });
 
     this.ipcBridge.on('audio:with-expression', (data) => {
-      this.audioPlayer.play(data);
+      // 处理新的参数映射模式
+      if (data.use_parameter_mapping && data.expressions?.frames) {
+        console.log('[Renderer] 使用参数映射模式, frames:', data.expressions.frames.length);
+        this._playParameterTimeline(data);
+      } else {
+        // 传统模式：只播放音频和口型同步
+        console.log('[Renderer] 使用传统模式');
+        this.audioPlayer.play(data);
+      }
     });
 
     this.ipcBridge.on('audio:stream', (data) => {
@@ -145,6 +167,32 @@ export class Live2DRenderer {
         this.expressionController.setMouthTarget(data.volume);
       }
     });
+  }
+
+  /**
+   * 播放参数时间轴（参数映射模式）
+   * @param {Object} data - { audio_data, format, volumes, expressions, use_parameter_mapping, return_to_idle }
+   */
+  async _playParameterTimeline(data) {
+    const { audio_data, format, volumes, expressions, return_to_idle } = data;
+
+    // 1. 启动音频播放和口型同步
+    this.audioPlayer.play({
+      audio_data,
+      format,
+      volumes,
+      expressions,
+      return_to_idle  // 传递 return_to_idle 标志
+    });
+
+    // 2. 启动表情时间轴播放
+    if (expressions?.frames) {
+      // 等待音频开始播放
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // 启动参数时间轴
+      this.expressionController.playParameterTimeline(expressions);
+    }
   }
 
   async loadModel(modelPath) {

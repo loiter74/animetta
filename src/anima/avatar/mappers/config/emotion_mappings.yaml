@@ -1,0 +1,163 @@
+# 情绪参数映射配置
+# 将情绪标签映射到 Live2D 模型参数
+#
+# 参数说明：
+# - ParamMouthOpenY: 嘴巴开合度 (0.0 = 闭合, 1.0 = 完全张开)
+# - ParamMouthForm: 嘴巴形状 (-1.0 ~ 1.0)
+# - ParamEyeLOpen / ParamEyeROpen: 左右眼睛开合 (0.0 = 闭合, 1.0 = 完全睁开)
+# - ParamEyebrowLY / ParamEyebrowRY: 左右眉毛上下 (-1.0 ~ 1.0)
+# - ParamAngleX / ParamAngleY / ParamAngleZ: 头部旋转角度 (弧度)
+# - ParamBodyAngleX: 身体前后倾斜
+
+emotions:
+  # 开心 - 微笑
+  happy:
+    ParamMouthOpenY: 0.6
+    ParamMouthForm: 0.3
+    ParamEyebrowLY: 0.4
+    ParamEyebrowRY: 0.4
+    ParamEyeLOpen: 0.95
+    ParamEyeROpen: 0.95
+    ParamEyeBallY: -0.1
+    ParamAngleX: -0.05
+
+  # 悲伤 - 低垂
+  sad:
+    ParamMouthOpenY: 0.2
+    ParamMouthForm: -0.2
+    ParamEyebrowLY: -0.3
+    ParamEyebrowRY: -0.3
+    ParamEyeLOpen: 0.6
+    ParamEyeROpen: 0.6
+    ParamAngleX: 0.15
+
+  # 生气 - 紧锁
+  angry:
+    ParamMouthOpenY: 0.3
+    ParamMouthForm: 0.1
+    ParamEyebrowLY: -0.6
+    ParamEyebrowRY: -0.6
+    ParamEyeLOpen: 0.8
+    ParamEyeROpen: 0.8
+    ParamAngleX: -0.1
+    ParamAngleY: 0.15
+    ParamAngleZ: 0.1
+
+  # 惊讶 - 张大嘴
+  surprised:
+    ParamMouthOpenY: 0.7
+    ParamMouthForm: 0.0
+    ParamEyebrowLY: 0.5
+    ParamEyebrowRY: 0.5
+    ParamEyeLOpen: 1.0
+    ParamEyeROpen: 1.0
+    ParamAngleX: -0.15
+
+  # 中性 - 默认状态
+  neutral:
+    ParamMouthOpenY: 0.0
+    ParamEyebrowLY: 0.0
+    ParamEyebrowRY: 0.0
+    ParamEyeLOpen: 0.85
+    ParamEyeROpen: 0.85
+    ParamAngleX: 0.0
+    ParamAngleY: 0.0
+    ParamAngleZ: 0.0
+
+  # 思考 - 眉毛不对称
+  thinking:
+    ParamMouthOpenY: 0.15
+    ParamEyebrowLY: -0.2
+    ParamEyebrowRY: 0.1
+    ParamEyeLOpen: 0.7
+    ParamEyeROpen: 0.7
+    ParamEyeBallY: 0.3
+    ParamAngleX: 0.1
+    ParamAngleY: -0.1
+    ParamAngleZ: 0.15
+
+  # 困惑 - 歪头
+  confused:
+    ParamMouthOpenY: 0.2
+    ParamMouthForm: 0.3
+    ParamEyebrowLY: 0.2
+    ParamEyebrowRY: 0.2
+    ParamEyeLOpen: 0.7
+    ParamEyeROpen: 0.7
+    ParamAngleZ: 0.2
+
+  # 喜爱 - 温柔
+  love:
+    ParamMouthOpenY: 0.4
+    ParamMouthForm: 0.2
+    ParamEyebrowLY: 0.2
+    ParamEyebrowRY: 0.2
+    ParamEyeLOpen: 0.8
+    ParamEyeROpen: 0.8
+    ParamEyeBallY: -0.1
+    ParamAngleY: -0.1
+
+  # 害羞 - 脸红转头
+  shy:
+    ParamMouthOpenY: 0.1
+    ParamMouthForm: 0.1
+    ParamEyebrowLY: -0.1
+    ParamEyebrowRY: -0.1
+    ParamEyeLOpen: 0.7
+    ParamEyeROpen: 0.7
+    ParamEyeBallY: 0.4
+    ParamAngleX: 0.2
+    ParamAngleY: 0.15
+
+  # 兴奋 - 大笑
+  excited:
+    ParamMouthOpenY: 0.8
+    ParamMouthForm: 0.4
+    ParamEyebrowLY: 0.6
+    ParamEyebrowRY: 0.6
+    ParamEyeLOpen: 1.0
+    ParamEyeROpen: 1.0
+    ParamAngleX: -0.1
+    ParamBodyAngleX: 0.1
+
+  # 怀疑 - 眯眼
+  suspicious:
+    ParamMouthOpenY: 0.15
+    ParamEyebrowLY: -0.3
+    ParamEyebrowRY: -0.1
+    ParamEyeLOpen: 0.6
+    ParamEyeROpen: 0.6
+    ParamEyeBallX: -0.2
+    ParamAngleY: 0.1
+
+  # 疲惫 - 眼皮下垂
+  tired:
+    ParamMouthOpenY: 0.1
+    ParamEyebrowLY: -0.2
+    ParamEyebrowRY: -0.2
+    ParamEyeLOpen: 0.5
+    ParamEyeROpen: 0.5
+    ParamAngleX: 0.1
+    ParamAngleY: 0.0
+
+  # 得意 - 昂首
+  proud:
+    ParamMouthOpenY: 0.3
+    ParamMouthForm: 0.2
+    ParamEyebrowLY: 0.3
+    ParamEyebrowRY: 0.3
+    ParamEyeLOpen: 0.9
+    ParamEyeROpen: 0.9
+    ParamAngleX: -0.1
+    ParamAngleZ: -0.05
+
+  # 无奈 - 叹气
+  resigned:
+    ParamMouthOpenY: 0.25
+    ParamMouthForm: -0.1
+    ParamEyebrowLY: -0.15
+    ParamEyebrowRY: -0.15
+    ParamEyeLOpen: 0.65
+    ParamEyeROpen: 0.65
+    ParamAngleX: 0.1
+    ParamAngleZ: 0.05

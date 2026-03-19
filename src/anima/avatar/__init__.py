@@ -20,6 +20,17 @@ from .factory import (
     create_timeline_strategy,
 )
 
+# 参数映射器（新增）
+from .mappers.base import (
+    IEmotionParamMapper,
+    ParameterState,
+    ExpressionFrame
+)
+from .mappers.emotion_param_mapper import (
+    EmotionParamMapper,
+    DEFAULT_EMOTION_MAPPINGS
+)
+
 # 保留的工具类
 from .analyzers.audio import AudioAnalyzer
 from .prompts import EmotionPromptBuilder
@@ -39,6 +50,12 @@ __all__ = [
     "TimelineStrategyFactory",
     "create_emotion_analyzer",
     "create_timeline_strategy",
+    # 新架构 - 参数映射器
+    "IEmotionParamMapper",
+    "ParameterState",
+    "ExpressionFrame",
+    "EmotionParamMapper",
+    "DEFAULT_EMOTION_MAPPINGS",
     # 工具类
     "AudioAnalyzer",
     "EmotionPromptBuilder",

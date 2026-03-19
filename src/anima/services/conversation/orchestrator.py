@@ -38,12 +38,12 @@ class ConversationResult:
 class ConversationOrchestrator:
     """
     对话编排器
-    
+
     整合对话流程：ASR -> Agent -> TTS
     使用 EventRouter 管理 Handler 的事件订阅
     使用 InputPipeline 处理输入
     使用 OutputPipeline 处理输出
-    
+
     使用示例:
         orchestrator = ConversationOrchestrator(
             asr_engine=asr,
@@ -52,20 +52,20 @@ class ConversationOrchestrator:
             websocket_send=websocket_send,
             session_id="session-001",
         )
-        
+
         # 注册 Handler
         orchestrator.register_handler("sentence", text_handler)
-        
+
         # 启动编排器
         orchestrator.start()
-        
+
         # 处理输入
         result = await orchestrator.process_input("你好")
-        
+
         # 停止编排器
         orchestrator.stop()
     """
-    
+
     def __init__(
         self,
         asr_engine: Optional["ASRInterface"] = None,
@@ -123,7 +123,7 @@ class ConversationOrchestrator:
 
         # 序列计数器（用于事件）
         self._seq_counter = 0
-    
+
     def _setup_default_pipeline(self) -> None:
         """
         组装默认的管线步骤
@@ -170,7 +170,7 @@ class ConversationOrchestrator:
         text_clean_step = TextCleanStep()
         self.input_pipeline.add_step(text_clean_step)
         logger.debug(f"[{self.session_id}] 添加输入步骤: TextCleanStep")
-    
+
     def register_handler(
         self,
         event_type: str,
@@ -179,12 +179,12 @@ class ConversationOrchestrator:
     ) -> "ConversationOrchestrator":
         """
         注册 Handler 到事件类型
-        
+
         Args:
             event_type: 事件类型（如 "sentence", "audio", "tool_call"）
             handler: Handler 实例
             priority: 优先级
-            
+
         Returns:
             self（支持链式调用）
         """
@@ -194,7 +194,7 @@ class ConversationOrchestrator:
             f"{event_type} -> {handler.__class__.__name__}"
         )
         return self
-    
+
     def register_many(
         self,
         event_types: list,
@@ -203,44 +203,44 @@ class ConversationOrchestrator:
     ) -> "ConversationOrchestrator":
         """
         将同一个 Handler 注册到多个事件类型
-        
+
         Args:
             event_types: 事件类型列表
             handler: Handler 实例
             priority: 优先级
-            
+
         Returns:
             self
         """
         self.event_router.register_many(event_types, handler, priority)
         return self
-    
+
     def add_input_step(self, step) -> "ConversationOrchestrator":
         """
         添加输入管线步骤
-        
+
         Args:
             step: PipelineStep 实例
-            
+
         Returns:
             self（支持链式调用）
         """
         self.input_pipeline.add_step(step)
         return self
-    
+
     def add_output_step(self, step) -> "ConversationOrchestrator":
         """
         添加输出管线步骤
-        
+
         Args:
             step: PipelineStep 实例
-            
+
         Returns:
-            self（支持链式调用）
+            self
         """
         self.output_pipeline.add_step(step)
         return self
-    
+
     async def start(self) -> None:
         """启动编排器（连接 EventRouter 到 EventBus）"""
         if self._is_running:
@@ -285,13 +285,13 @@ class ConversationOrchestrator:
 
         except Exception as e:
             logger.warning(f"[{self.session_id}] 加载启动记忆失败: {e}")
-    
+
     def stop(self) -> None:
         """停止编排器（清理所有订阅）"""
         self.event_router.clear()
         self._is_running = False
         logger.info(f"[{self.session_id}] 编排器已停止")
-    
+
     def interrupt(self) -> None:
         """打断当前处理"""
         self._interrupted = True
@@ -301,7 +301,7 @@ class ConversationOrchestrator:
         self._emit_expression_sync("surprised")
 
         logger.info(f"[{self.session_id}] 编排器收到打断信号")
-    
+
     async def process_input(
         self,
         raw_input: Union[str, np.ndarray],
@@ -310,23 +310,23 @@ class ConversationOrchestrator:
     ) -> ConversationResult:
         """
         处理输入（文本或音频）
-        
+
         Args:
             raw_input: 输入内容（文本字符串或音频 numpy 数组）
             metadata: 元数据
             from_name: 发送者名称
-            
+
         Returns:
             ConversationResult: 处理结果
         """
         if not self._is_running:
             logger.warning(f"[{self.session_id}] 编排器未启动，自动启动")
             await self.start()
-        
+
         self._is_processing = True
         self._interrupted = False
         self.output_pipeline.reset()
-        
+
         try:
             # 使用 InputPipeline 处理输入
             ctx = await self.input_pipeline.execute(
@@ -334,14 +334,14 @@ class ConversationOrchestrator:
                 metadata=metadata,
                 from_name=from_name,
             )
-            
+
             # 检查是否有错误
             if ctx.error:
                 return ConversationResult(
                     success=False,
                     error=ctx.error
                 )
-            
+
             # 检查是否被中断
             if self._interrupted:
                 return ConversationResult(
@@ -349,7 +349,7 @@ class ConversationOrchestrator:
                     error="处理被中断",
                     metadata={"interrupted": True}
                 )
-            
+
             # 获取处理后的文本
             text = ctx.text
             if not text:
@@ -357,14 +357,14 @@ class ConversationOrchestrator:
                     success=False,
                     error="无法获取有效的输入文本"
                 )
-            
+
             logger.info(f"[Memory] 注入上下文长度: {len(ctx.memory_context or '')}")
             logger.info(f"[Memory] 上下文内容: {(ctx.memory_context or '')[:200]}")
             # 处理对话
             result = await self._process_conversation(ctx, text)
-            
+
             return result
-            
+
         except Exception as e:
             logger.error(f"[{self.session_id}] 处理输入时出错: {e}")
             return ConversationResult(
@@ -373,7 +373,7 @@ class ConversationOrchestrator:
             )
         finally:
             self._is_processing = False
-    
+
     async def _process_conversation(
         self,
         ctx: "PipelineContext",
@@ -418,7 +418,7 @@ class ConversationOrchestrator:
         await self._emit_expression("speaking")
 
         try:
-            
+
             agent_stream = self.agent.chat_stream(text)  # text 保持干净，只有用户输入
             response_text = await self.output_pipeline.process(ctx, agent_stream)
         finally:
@@ -482,15 +482,15 @@ class ConversationOrchestrator:
             except Exception as e:
                 logger.warning(f"[{self.session_id}] 记忆存储失败: {e}")
 
-        # 发送空闲表情
-        await self._emit_expression("idle")
+        # 不再自动发送 idle，由前端在音频播放结束时处理
+        # await self._emit_expression("idle")  # 已移除，避免覆盖表情
 
         return ConversationResult(
             success=True,
             response_text=response_text,
             audio_path=audio_path,
         )
-    
+
     async def _synthesize_audio(
         self,
         text: str,
@@ -554,6 +554,7 @@ class ConversationOrchestrator:
             "audio_path": audio_path,
             "emotions": emotions,
             "text": text,
+            "return_to_idle": True  # 标志前端在音频播放结束后恢复 idle
         }
 
         event = OutputEvent(
@@ -570,7 +571,7 @@ class ConversationOrchestrator:
             f"[{self.session_id}] 发送 audio_with_expression 事件: "
             f"{len(emotions)} 个表情"
         )
-    
+
     async def _emit_event(self, event_type: str, data: Any) -> None:
         """
         发送事件到 EventBus
@@ -638,12 +639,12 @@ class ConversationOrchestrator:
         except RuntimeError:
             # 如果没有事件循环，无法发送
             logger.debug(f"[{self.session_id}] 无法发送表情事件：没有事件循环")
-    
+
     @property
     def is_running(self) -> bool:
         """编排器是否正在运行"""
         return self._is_running
-    
+
     @property
     def is_processing(self) -> bool:
         """是否正在处理输入"""

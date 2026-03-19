@@ -1,8 +1,8 @@
 """
 统一事件处理器（增强版）
 
-整合情绪分析、时间轴计算和音频处理。
-使用新的 IEmotionAnalyzer 和 ITimelineStrategy 接口。
+整合情绪分析、时间轴计算、参数映射和音频处理。
+使用新的 IEmotionAnalyzer、ITimelineStrategy 和 IEmotionParamMapper 接口。
 
 event.data 格式: dict
     - audio_path: str (必需) - 音频文件路径
@@ -13,12 +13,14 @@ event.data 格式: dict
 import base64
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, Dict, Any, List
+from typing import TYPE_CHECKING, Optional, Dict, Any, List, Union
 from loguru import logger
 
 from .base import BaseHandler
 from anima.avatar.analyzers.base import IEmotionAnalyzer, EmotionData
 from anima.avatar.strategies.base import ITimelineStrategy, TimelineSegment
+from anima.avatar.mappers.base import IEmotionParamMapper, ExpressionFrame
+from anima.avatar.mappers.emotion_param_mapper import EmotionParamMapper
 from anima.avatar.analyzers.audio import AudioAnalyzer
 from anima.avatar.factory import (
     create_emotion_analyzer,
@@ -33,7 +35,7 @@ class UnifiedEventHandler(BaseHandler):
     """
     统一事件处理器
 
-    整合情绪分析、时间轴计算和音频处理功能。
+    整合情绪分析、时间轴计算、参数映射和音频处理功能。
     处理 audio_with_expression 事件。
 
     event.data 格式:
@@ -55,18 +57,24 @@ class UnifiedEventHandler(BaseHandler):
         analyzer_config: Optional[Dict[str, Any]] = None,
         strategy_type: str = "position_based",
         strategy_config: Optional[Dict[str, Any]] = None,
-        sample_rate: int = 50
+        mapper_type: str = "emotion_param_mapper",
+        mapper_config: Optional[Dict[str, Any]] = None,
+        sample_rate: int = 50,
+        use_parameter_mapping: bool = True
     ):
         """
         初始化处理器
 
         Args:
             websocket_send: WebSocket 发送函数
-            analyzer_type: 情绪分析器类型（"llm_tag_analyzer" 或 "keyword_analyzer"）
+            analyzer_type: 情绪分析器类型
             analyzer_config: 情绪分析器配置
-            strategy_type: 时间轴策略类型（"position_based", "duration_based", "intensity_based"）
+            strategy_type: 时间轴策略类型
             strategy_config: 时间轴策略配置
+            mapper_type: 参数映射器类型
+            mapper_config: 参数映射器配置
             sample_rate: 音量包络采样率（Hz）
+            use_parameter_mapping: 是否使用参数映射（默认 True）
         """
         super().__init__(websocket_send)
 
@@ -91,6 +99,22 @@ class UnifiedEventHandler(BaseHandler):
         except Exception as e:
             logger.error(f"[{self.name}] 创建时间轴策略失败: {e}")
             raise
+
+        # 创建参数映射器
+        self.use_parameter_mapping = use_parameter_mapping
+        if use_parameter_mapping:
+            try:
+                self.param_mapper = EmotionParamMapper(
+                    mappings=mapper_config.get("mappings") if mapper_config else None,
+                    default_duration=mapper_config.get("default_duration", 0.3) if mapper_config else 0.3
+                )
+                logger.info(f"[{self.name}] 使用参数映射器: {self.param_mapper.name}")
+                logger.info(f"[{self.name}] 支持的情绪: {self.param_mapper.get_supported_emotions()}")
+            except Exception as e:
+                logger.error(f"[{self.name}] 创建参数映射器失败: {e}")
+                raise
+        else:
+            self.param_mapper = None
 
         # 创建音频分析器
         self.audio_analyzer = AudioAnalyzer(sample_rate=sample_rate)
@@ -140,11 +164,10 @@ class UnifiedEventHandler(BaseHandler):
             # 3. 提取或使用提供的情绪
             extract_start = time.time()
             if provided_emotions:
-                # 使用提供的情绪列表
-                emotions = provided_emotions
+                # 标准化为字符串列表
+                emotions = self._normalize_emotions(provided_emotions)
                 logger.debug(f"[{self.name}] 使用提供的情绪: {emotions}")
             else:
-                # 从文本提取情绪
                 emotion_data = self.analyzer.extract(text)
                 emotions = self._extract_emotion_list(emotion_data)
                 logger.debug(
@@ -175,8 +198,13 @@ class UnifiedEventHandler(BaseHandler):
                 f"(耗时: {(time.time() - volume_start)*1000:.1f}ms)"
             )
 
-            # 6. 构建表情时间轴数据（包含 intensity）
-            expressions_data = self._build_expressions_data(timeline_segments, duration)
+            # 6. 构建表情数据
+            if self.use_parameter_mapping and self.param_mapper:
+                # 使用参数映射：生成参数帧序列
+                expressions_data = self._build_parameter_frames(timeline_segments, duration)
+            else:
+                # 传统模式：只发送表情名
+                expressions_data = self._build_expressions_data(timeline_segments, duration)
 
             # 7. 发送统一消息
             await self.send({
@@ -187,6 +215,7 @@ class UnifiedEventHandler(BaseHandler):
                 "expressions": expressions_data,
                 "text": text,
                 "seq": seq,
+                "use_parameter_mapping": self.use_parameter_mapping,
             })
 
             total_time = time.time() - start_time
@@ -195,7 +224,8 @@ class UnifiedEventHandler(BaseHandler):
                 f"[{self.name}] 事件处理成功 (seq: {seq}) "
                 f"- 总耗时: {total_time*1000:.1f}ms, "
                 f"音频: {duration:.2f}s, "
-                f"片段: {len(timeline_segments)}"
+                f"片段: {len(timeline_segments)}, "
+                f"模式: {'参数映射' if self.use_parameter_mapping else '传统表情'}"
             )
 
         except Exception as e:
@@ -210,7 +240,38 @@ class UnifiedEventHandler(BaseHandler):
                 "seq": seq
             })
 
-    def _extract_emotion_list(self, emotion_data: EmotionData) -> list:
+    def _normalize_emotions(self, emotions: List[Union[str, Dict[str, Any]]]) -> List[str]:
+        """
+        标准化情绪列表为字符串列表
+
+        支持两种格式：
+        - 字符串: ["happy", "sad"]
+        - 字典: [{"emotion": "happy", "position": 3}, ...]
+
+        Args:
+            emotions: 情绪列表（可能是字符串或字典）
+
+        Returns:
+            List[str]: 标准化后的情绪字符串列表
+        """
+        normalized = []
+
+        for item in emotions:
+            if isinstance(item, str):
+                normalized.append(item)
+            elif isinstance(item, dict):
+                # 从字典中提取 emotion 字段
+                emotion = item.get("emotion")
+                if emotion:
+                    normalized.append(emotion)
+                else:
+                    logger.warning(f"[{self.name}] 情绪字典缺少 'emotion' 字段: {item}")
+            else:
+                logger.warning(f"[{self.name}] 未知情绪类型: {type(item)}")
+
+        return normalized if normalized else ["neutral"]
+
+    def _extract_emotion_list(self, emotion_data: EmotionData) -> List[str]:
         """
         从 EmotionData 中提取情绪列表
 
@@ -222,18 +283,19 @@ class UnifiedEventHandler(BaseHandler):
         """
         # 如果有时间轴，从时间轴提取情绪
         if emotion_data.timeline:
-            return [item["emotion"] for item in emotion_data.timeline]
+            return [item.get("emotion", item) if isinstance(item, dict) else item
+                    for item in emotion_data.timeline]
 
         # 否则，返回只包含主要情绪的列表
         return [emotion_data.primary] if emotion_data.primary else ["neutral"]
 
     def _build_expressions_data(
         self,
-        segments: list,
+        segments: List[TimelineSegment],
         total_duration: float
     ) -> Dict[str, Any]:
         """
-        构建表情时间轴数据
+        构建表情时间轴数据（传统模式）
 
         Args:
             segments: TimelineSegment 列表
@@ -244,9 +306,57 @@ class UnifiedEventHandler(BaseHandler):
         """
         return {
             "segments": [
-                seg.to_frontend_format()  # 使用 TimelineSegment 的方法，包含 intensity
+                seg.to_frontend_format()
                 for seg in segments
             ],
+            "total_duration": total_duration
+        }
+
+    def _build_parameter_frames(
+        self,
+        segments: List[TimelineSegment],
+        total_duration: float
+    ) -> Dict[str, Any]:
+        """
+        构建参数帧序列（参数映射模式）
+
+        Args:
+            segments: TimelineSegment 列表
+            total_duration: 总时长
+
+        Returns:
+            Dict: 参数帧数据
+        """
+        frames = []
+
+        for segment in segments:
+            # 确保 segment.emotion 是字符串
+            emotion = segment.emotion
+            if isinstance(emotion, dict):
+                emotion = emotion.get("emotion", "neutral")
+
+            # 使用参数映射器将情绪转换为参数帧
+            frame = self.param_mapper.map_emotion(
+                emotion=str(emotion),
+                intensity=segment.intensity
+            )
+
+            # 更新时间信息
+            frame.timestamp = segment.start_time
+
+            # 更新每个参数的 duration
+            for param in frame.parameters:
+                param.duration = segment.duration
+
+            frames.append({
+                "timestamp": frame.timestamp,
+                "duration": segment.duration,
+                "parameters": [p.to_dict() for p in frame.parameters],
+                "intensity": frame.intensity
+            })
+
+        return {
+            "frames": frames,
             "total_duration": total_duration
         }
 
@@ -284,5 +394,7 @@ class UnifiedEventHandler(BaseHandler):
         return {
             "analyzer": self.analyzer.name,
             "strategy": self.strategy.name,
-            "sample_rate": self._sample_rate
+            "mapper": self.param_mapper.name if self.param_mapper else None,
+            "sample_rate": self._sample_rate,
+            "use_parameter_mapping": self.use_parameter_mapping
         }
