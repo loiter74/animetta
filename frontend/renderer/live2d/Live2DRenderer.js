@@ -24,6 +24,11 @@ class SimpleAudioPlayer {
     const { audio_data, format, volumes, expressions } = data || {};
     if (!audio_data) return;
 
+    // 打印 volumes 数组的首尾值用于调试
+    if (volumes && volumes.length > 0) {
+      console.log('[AudioPlayer] volumes 首值:', volumes[0].toFixed(3), '尾值:', volumes[volumes.length - 1].toFixed(3));
+    }
+
     // 播放音频
     try {
       const binary = atob(audio_data);
@@ -33,13 +38,16 @@ class SimpleAudioPlayer {
       const url = URL.createObjectURL(blob);
       const audio = new Audio(url);
 
-      // 启动口型同步（如果提供了 volumes）
+      // 启动口型同步（如果提供了 volumes），传递 audio 对象用于时间同步
+      // 必须在 play() 之前设置监听器，否则会错过 playing 事件
       if (volumes && Array.isArray(volumes) && volumes.length > 0) {
-        this.opts.onPlaybackStart?.(volumes);
+        this.opts.onPlaybackStart?.(audio, volumes);
       }
 
       await audio.play();
+
       audio.onended = () => {
+        console.log('[AudioPlayer] audio.onended 触发');
         this.opts.onPlaybackEnd?.();
         URL.revokeObjectURL(url);
       };
@@ -74,7 +82,7 @@ export class Live2DRenderer {
 
     // 创建音频播放器
     this.audioPlayer = new SimpleAudioPlayer({
-      onPlaybackStart: (volumes) => this._startLipSync(volumes),
+      onPlaybackStart: (audio, volumes) => this._startLipSync(audio, volumes),
       onPlaybackEnd: () => {
         this._stopLipSync();
         this.expressionController.setMouthTarget(0);
@@ -155,49 +163,87 @@ export class Live2DRenderer {
   }
 
   // ====== 口型同步 ======
-  _startLipSync(volumes) {
-    // volumes 是 50Hz 采样的音量包络数组
-    // 每 20ms 一个采样点
+  _startLipSync(audio, volumes) {
+    // volumes 是 50Hz 采样的音量包络数组，每 20ms 一个采样点
     if (!Array.isArray(volumes) || volumes.length === 0) {
       console.warn('[Live2DRenderer] 无效的 volumes 数据');
       return;
     }
 
-    console.log('[Live2DRenderer] 启动口型同步，采样点数:', volumes.length);
+    console.log('[Live2DRenderer] 启动口型同步，采样点数:', volumes.length, '音频时长:', audio.duration.toFixed(2) + 's');
 
-    const sampleInterval = 1000 / 50; // 50Hz = 20ms 间隔
-    let index = 0;
+    const intervalMs = 20; // 原始采样间隔
+    let animFrameId = null;
+    let lastIndex = -1;
+    let hasStarted = false;
 
-    // 清除之前的定时器
+    // 清除之前的同步
     this._stopLipSync();
 
-    // 创建定时器队列
-    this._lipSyncTimers = [];
-
-    const scheduleNext = () => {
-      if (index >= volumes.length) {
-        console.log('[Live2DRenderer] 口型同步完成');
+    const tick = () => {
+      // 检查音频是否已结束
+      if (audio.ended) {
+        console.log('[Live2DRenderer] 音频已结束，停止同步');
+        if (animFrameId) cancelAnimationFrame(animFrameId);
+        this.expressionController.setMouthTarget(0);
         return;
       }
 
-      const value = volumes[index];
-      this.expressionController.setMouthTarget(value);
-
-      index++;
-      if (index < volumes.length) {
-        const timerId = setTimeout(scheduleNext, sampleInterval);
-        this._lipSyncTimers.push(timerId);
+      // 检查音频是否暂停
+      if (audio.paused) {
+        // 如果还没开始播放，继续等待
+        if (!hasStarted) {
+          animFrameId = requestAnimationFrame(tick);
+          return;
+        }
+        // 如果已经开始了但现在暂停，停止同步
+        console.log('[Live2DRenderer] 音频已暂停，停止同步');
+        if (animFrameId) cancelAnimationFrame(animFrameId);
+        this.expressionController.setMouthTarget(0);
+        return;
       }
+
+      // 音频正在播放，标记为已开始
+      if (!hasStarted) {
+        hasStarted = true;
+        console.log('[Live2DRenderer] 音频开始播放，duration:', audio.duration.toFixed(2) + 's');
+      }
+
+      const currentMs = audio.currentTime * 1000;
+      const index = Math.floor(currentMs / intervalMs);
+
+      // 更新口型：如果在 volumes 范围内，使用对应的值；否则归零
+      if (index !== lastIndex) {
+        if (index < volumes.length) {
+          const volume = volumes[index];
+          this.expressionController.setMouthTarget(volume);
+          lastIndex = index;
+        } else {
+          // 超出 volumes 范围，归零
+          if (lastIndex < volumes.length) {
+            console.log('[Live2DRenderer] 播放完所有 volume 数据 (index:', index, '>= volumes.length:', volumes.length + ')，归零口型');
+          }
+          this.expressionController.setMouthTarget(0);
+          lastIndex = index;
+        }
+      }
+
+      animFrameId = requestAnimationFrame(tick);
     };
 
-    // 立即开始第一个
-    scheduleNext();
+    // 立即启动 tick 循环
+    animFrameId = requestAnimationFrame(tick);
+
+    // 保存 cancel 函数供 _stopLipSync 调用
+    this._lipSyncCancel = () => {
+      if (animFrameId) cancelAnimationFrame(animFrameId);
+    };
   }
 
   _stopLipSync() {
-    if (this._lipSyncTimers) {
-      this._lipSyncTimers.forEach(timerId => clearTimeout(timerId));
-      this._lipSyncTimers = [];
+    if (this._lipSyncCancel) {
+      this._lipSyncCancel();
+      this._lipSyncCancel = null;
     }
   }
 

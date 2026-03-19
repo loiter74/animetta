@@ -27,14 +27,17 @@ export class ExpressionController {
   // ====== LipSync ======
   setMouthTarget(value) {
     this.targetMouth = Math.max(0, Math.min(1, value));
+    console.log('[ExpressionController] setMouthTarget:', value.toFixed(3), 'current mouthValue:', this.mouthValue.toFixed(3));
   }
 
   _update() {
     const model = this.modelLoader?.model;
     if (!model) return;
 
-    // 平滑插值
-    this.mouthValue += (this.targetMouth - this.mouthValue) * 0.3;
+    // 快速响应的平滑插值：基础系数 0.5，根据差距动态调整
+    const delta = Math.abs(this.targetMouth - this.mouthValue);
+    const factor = 0.5 + 0.4 * Math.min(delta / 0.3, 1.0);
+    this.mouthValue += (this.targetMouth - this.mouthValue) * factor;
 
     // 检测口型参数
     if (!this._mouthParam) {

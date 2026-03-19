@@ -47,7 +47,8 @@ class AudioAnalyzer:
     def compute_volume_envelope(
         self,
         audio_path: str,
-        normalize: bool = True
+        normalize: bool = True,
+        gain: float = 1.8
     ) -> List[float]:
         """
         计算音频的音量包络
@@ -55,6 +56,7 @@ class AudioAnalyzer:
         Args:
             audio_path: 音频文件路径
             normalize: 是否归一化到 [0.0, 1.0]
+            gain: 增益系数，用于提升口型幅度（默认 1.8）
 
         Returns:
             音量数组，每个值代表一个采样点的 RMS 音量
@@ -99,9 +101,13 @@ class AudioAnalyzer:
                 else:
                     volumes = [0.0] * len(volumes)
 
+                # 应用增益并限制在 [0, 1] 范围内
+                if gain != 1.0:
+                    volumes = [min(1.0, v * gain) for v in volumes]
+
             logger.debug(
                 f"[AudioAnalyzer] 计算了 {len(volumes)} 个音量采样点 "
-                f"({duration_ms/1000:.2f}s 音频, {self.sample_rate} Hz)"
+                f"({duration_ms/1000:.2f}s 音频, {self.sample_rate} Hz, gain={gain})"
             )
 
             return volumes
@@ -151,16 +157,17 @@ class AudioAnalyzer:
 
 
 # 便捷函数
-def compute_volume_envelope(audio_path: str, sample_rate: int = 50) -> List[float]:
+def compute_volume_envelope(audio_path: str, sample_rate: int = 50, gain: float = 1.8) -> List[float]:
     """
     便捷函数：计算音频音量包络
 
     Args:
         audio_path: 音频文件路径
         sample_rate: 采样率（Hz）
+        gain: 增益系数
 
     Returns:
         音量数组 [0.0, 1.0]
     """
     analyzer = AudioAnalyzer(sample_rate=sample_rate)
-    return analyzer.compute_volume_envelope(audio_path)
+    return analyzer.compute_volume_envelope(audio_path, gain=gain)
