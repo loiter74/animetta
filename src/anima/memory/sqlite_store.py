@@ -23,13 +23,26 @@ class SQLiteStore:
     """SQLite 元数据 + FTS5 关键词搜索存储."""
 
     def __init__(self, db_path: str):
+        logger.info(f"[SQLiteStore] >>> 开始初始化: db_path={db_path}")
         self.db_path = db_path
         Path(db_path).parent.mkdir(parents=True, exist_ok=True)
+        logger.info(f"[SQLiteStore] 父目录已确认")
+
+        logger.info(f"[SQLiteStore] 创建 SQLite 连接...")
         self.conn = sqlite3.connect(db_path)
         self.conn.row_factory = sqlite3.Row
+        logger.info(f"[SQLiteStore] ✅ 连接已创建")
+
+        logger.info(f"[SQLiteStore] 设置 PRAGMA journal_mode=WAL...")
         self.conn.execute("PRAGMA journal_mode=WAL")
+        logger.info(f"[SQLiteStore] ✅ WAL 模式已设置")
+
         self.conn.execute("PRAGMA foreign_keys=ON")
+        logger.info(f"[SQLiteStore] 外键已启用")
+
+        logger.info(f"[SQLiteStore] 创建表结构...")
         self._create_tables()
+        logger.info(f"[SQLiteStore] ✅ 所有表已创建")
 
     def _create_tables(self):
         """创建核心表结构."""

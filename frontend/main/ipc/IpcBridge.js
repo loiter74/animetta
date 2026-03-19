@@ -65,7 +65,10 @@ class IpcBridge {
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionDelay: 3000,
-      reconnectionAttempts: Infinity
+      reconnectionAttempts: Infinity,
+      // 匹配服务器端的 ping 超时配置
+      pingTimeout: 120000,  // 120 秒（毫秒）
+      pingInterval: 30000   // 30 秒（毫秒）
     });
 
     this.socket.on('connect', () => {

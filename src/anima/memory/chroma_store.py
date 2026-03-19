@@ -49,13 +49,17 @@ class ChromaStore:
             embedding_function: Chroma 的 EmbeddingFunction 实例.
                 如果为 None, 需要在 upsert 时手动传入 embeddings.
         """
+        logger.info(f"[ChromaStore] >>> 开始初始化: persist_dir={persist_dir}, collection={collection_name}")
         self.embedding_dim = embedding_dim
         Path(persist_dir).mkdir(parents=True, exist_ok=True)
+        logger.info(f"[ChromaStore] 持久化目录已确认: {persist_dir}")
 
+        logger.info(f"[ChromaStore] 创建 PersistentClient...")
         self.client = chromadb.PersistentClient(
             path=persist_dir,
             settings=Settings(anonymized_telemetry=False),
         )
+        logger.info(f"[ChromaStore] ✅ PersistentClient 创建完成")
 
         # 维度检测：检查已有 collection 的 embedding 维度是否匹配
         try:

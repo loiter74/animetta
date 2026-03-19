@@ -37,29 +37,44 @@ class MemoryManager:
             config: 完整配置. 也可以用 kwargs 快速构建:
                 MemoryManager(workspace_dir="~/.myagent/workspace")
         """
+        logger.info("[MemoryManager] >>> 开始初始化记忆管理器")
+
         if config is None:
             config = MemoryConfig(**kwargs)
         self.config = config.resolve_paths()
+        logger.info(f"[MemoryManager] 配置路径已解析: workspace={self.config.workspace_dir}")
 
         ws = Path(self.config.workspace_dir)
         ws.mkdir(parents=True, exist_ok=True)
         (ws / "memory").mkdir(exist_ok=True)
+        logger.info(f"[MemoryManager] 工作目录已创建: {ws}")
 
         # 初始化存储层
+        logger.info("[MemoryManager] >>> 步骤 1/4: 初始化 SQLiteStore...")
         self.sqlite = SQLiteStore(self.config.db_path)
+        logger.info("[MemoryManager] ✅ SQLiteStore 初始化完成")
+
+        logger.info("[MemoryManager] >>> 步骤 2/4: 初始化 ChromaStore...")
         self.chroma = ChromaStore(
             persist_dir=self.config.chroma_path,
             collection_name=f"memory_{self.config.agent_id}",
             embedding_dim=512,
         )
+        logger.info("[MemoryManager] ✅ ChromaStore 初始化完成")
+
+        logger.info("[MemoryManager] ✅ ChromaStore 初始化完成")
 
         # 初始化 MEMORY.md 基础文件
+        logger.info("[MemoryManager] >>> 步骤 3/4: 初始化 MEMORY.md...")
         memory_file = ws / "MEMORY.md"
         if not memory_file.exists():
             memory_file.write_text("# Long-term Memory\n\n重要对话和用户偏好记录。\n", encoding="utf-8")
             logger.info(f"Created MEMORY.md at {memory_file}")
+        else:
+            logger.info(f"[MemoryManager] MEMORY.md 已存在: {memory_file}")
 
         # 尝试加载 sentence-transformers 用于 embedding
+        logger.info("[MemoryManager] >>> 步骤 4/4: 加载 Embedding 模型...")
         self._embedder = None
         try:
             from sentence_transformers import SentenceTransformer
@@ -68,16 +83,19 @@ class MemoryManager:
             import os
             os.environ['CUDA_VISIBLE_DEVICES'] = ''
 
+            logger.info(f"[MemoryManager] 开始加载 embedding 模型: {self.config.embedding.model_name}")
+            start_time = time.time()
+
             self._embedder = SentenceTransformer(self.config.embedding.model_name, device='cpu')
-            logger.info(f"Loaded embedding model: {self.config.embedding.model_name} (CPU)")
+
+            elapsed = time.time() - start_time
+            logger.info(f"[MemoryManager] ✅ Embedding 模型加载完成 (耗时: {elapsed:.2f}秒)")
+            logger.info(f"[MemoryManager] ✅ 所有初始化步骤完成！")
         except ImportError:
             logger.warning(
                 "sentence-transformers not installed. "
                 "Vector search disabled, falling back to keyword-only."
             )
-        except Exception as e:
-            logger.warning(f"Failed to load embedding model: {e}")
-            self._embedder = None
         except Exception as e:
             logger.warning(f"Failed to load embedding model: {e}")
             self._embedder = None
@@ -327,7 +345,7 @@ class MemoryManager:
             min_score: 最低分数阈值
 
         Returns:
-            按相关性降序排列的 SearchResult 列表
+            按相关性降序排列的 SearchResult 刀表
         """
         query_embedding = None
         if self._embedder is not None:
@@ -381,6 +399,11 @@ class MemoryManager:
     # ── 会话上下文加载 ────────────────────────────────────
 
     def load_session_context(self, query: str = "", max_results: int = 5) -> str:
+        """
+        加载会话启动时的记忆上下文 (同步版本，避免阻塞)
+
+        简化版本：只加载 MEMORY.md 和今日日志，不做向量搜索
+        """
         parts = []
 
         # 1. MEMORY.md 核心人格记忆（保留全量，通常不大）
@@ -394,14 +417,8 @@ class MemoryManager:
         if today_log.strip():
             parts.append(f"# 今日日志\n" + today_log)
 
-        # 3. 语义检索相关历史记忆（核心新增）
-        if query and self._embedder is not None:
-            results = self.search(query, max_results=max_results, min_score=0.3)
-            if results:
-                snippets = "\n\n".join(
-                    f"[{r.path}]\n{r.text}" for r in results
-                )
-                parts.append(f"# 相关历史记忆\n{snippets}")
+        # 注意：跳过向量搜索，避免加载 SentenceTransformer 卡住
+        # 如果需要语义搜索，可以在后台异步加载后再补充
 
         return "\n\n---\n\n".join(parts) if parts else ""
 

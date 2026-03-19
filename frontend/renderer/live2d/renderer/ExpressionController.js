@@ -75,7 +75,8 @@ export class ExpressionController {
   setModel(model) {
     this.model = model;
     this._mouthParam = null; // 重置缓存
-    logEvent('MODEL', 'Model loaded', model?._model??.name || 'unknown');
+    const modelName = model && model._model && model._model.name ? model._model.name : 'unknown';
+    logEvent('MODEL', 'Model loaded', modelName);
   }
 
   setExpression(name) {
@@ -134,9 +135,11 @@ export class ExpressionController {
     if (!model) return;
 
     model.interactive = true;
-    model.on('pointertap', () => {
+    // 保存处理器引用用于清理
+    this._tapHandler = () => {
       callback ? callback() : this.playMotion('Tap', 0);
-    });
+    };
+    model.on('pointertap', this._tapHandler);
   }
 
   // ====== TimelinePlayer ======
@@ -192,5 +195,12 @@ export class ExpressionController {
     logEvent('DESTROY', 'ExpressionController destroying');
     this.ticker.remove(this._update);
     this.timelinePlayer.destroy();
+
+    // 清理 pointertap 事件监听器
+    const model = this.model || this.modelLoader?.model;
+    if (model && this._tapHandler) {
+      model.off('pointertap', this._tapHandler);
+      this._tapHandler = null;
+    }
   }
 }

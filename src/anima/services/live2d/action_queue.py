@@ -103,6 +103,9 @@ class Live2DActionQueue:
         # 动作执行回调
         self._execute_callback: Optional[callable] = None
 
+        # 任务跟踪（用于清理）
+        self._process_task: Optional[asyncio.Task] = None
+
     def set_execute_callback(self, callback: callable):
         """设置动作执行回调"""
         self._execute_callback = callback
@@ -206,6 +209,34 @@ class Live2DActionQueue:
             await self._execute_callback(action)
         else:
             logger.warning(f"[ActionQueue] 没有设置执行回调，动作未执行: {action.action_id}")
+
+    def _handle_task_exception(self, task: asyncio.Task):
+        """处理任务异常（防止任务泄漏）"""
+        try:
+            # 如果任务有异常，这里会重新抛出
+            exception = task.exception()
+            if exception:
+                logger.error(f"[ActionQueue] 任务异常: {exception}", exc_info=exception)
+        except asyncio.CancelledError:
+            logger.debug("[ActionQueue] 任务被取消")
+        except Exception as e:
+            logger.error(f"[ActionQueue] 处理任务异常时出错: {e}", exc_info=e)
+
+    async def stop(self):
+        """停止队列处理并清理资源"""
+        # 取消正在进行的任务
+        if self._process_task and not self._process_task.done():
+            self._process_task.cancel()
+            try:
+                await self._process_task
+            except asyncio.CancelledError:
+                pass
+
+        # 清空队列
+        self.queue.clear()
+        self._is_processing = False
+        self._current_action = None
+        logger.debug("[ActionQueue] 队列已停止")
 
     def clear(self):
         """清空队列"""

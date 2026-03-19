@@ -152,10 +152,19 @@ class ServiceContext:
             disable_update=getattr(asr_config, 'disable_update', True),
         )
 
-        # 预加载模型（避免首次使用时延迟）
+        # 预加载模型（后台异步执行，不阻塞初始化）
         if hasattr(self.asr_engine, 'preload'):
-            logger.info(f"[{self.session_id}] 预加载 ASR 模型...")
+            logger.info(f"[{self.session_id}] 后台预加载 ASR 模型...")
+            import asyncio
+            asyncio.create_task(self._preload_asr_background())
+
+    async def _preload_asr_background(self) -> None:
+        """后台预加载 ASR 模型，不阻塞初始化流程"""
+        try:
             await self.asr_engine.preload()
+            logger.info(f"[{self.session_id}] ✅ ASR 模型预加载完成")
+        except Exception as e:
+            logger.warning(f"[{self.session_id}] ASR 模型预加载失败: {e}")
 
     async def init_tts(self, tts_config: TTSConfig) -> None:
         """

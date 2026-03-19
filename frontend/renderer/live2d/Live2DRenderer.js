@@ -17,12 +17,18 @@ class SimpleAudioPlayer {
     this.opts = opts;
     this.ctx = null;
     this.source = null;
+    this._currentAudio = null;
+    this._currentBlobUrl = null;
+    this._onEndedHandler = null;
   }
 
   async play(data) {
     console.log('[AudioPlayer] play() 被调用, audio_data:', !!data?.audio_data, 'volumes:', data?.volumes?.length);
     const { audio_data, format, volumes, expressions, return_to_idle } = data || {};
     if (!audio_data) return;
+
+    // 清理之前的音频资源（防止内存泄漏）
+    this._cleanupCurrentAudio();
 
     // 打印 volumes 数组的首尾值用于调试
     if (volumes && volumes.length > 0) {
@@ -36,7 +42,11 @@ class SimpleAudioPlayer {
       for (let o = 0; o < binary.length; o++) buffer[o] = binary.charCodeAt(o);
       const blob = new Blob([buffer], { type: `audio/${format || 'mp3'}` });
       const url = URL.createObjectURL(blob);
+      this._currentBlobUrl = url;
       const audio = new Audio(url);
+
+      // 保存当前音频引用
+      this._currentAudio = audio;
 
       // 启动口型同步（如果提供了 volumes），传递 audio 对象用于时间同步
       // 必须在 play() 之前设置监听器，否则会错过 playing 事件
@@ -44,8 +54,8 @@ class SimpleAudioPlayer {
         this.opts.onPlaybackStart?.(audio, volumes);
       }
 
-      // 处理音频播放结束时的 idle 恢复
-      const onEnded = () => {
+      // 创建并保存 onended 处理器（用于清理）
+      this._onEndedHandler = () => {
         console.log('[AudioPlayer] audio.onended 触发, return_to_idle:', return_to_idle);
         this.opts.onPlaybackEnd?.();
 
@@ -55,15 +65,41 @@ class SimpleAudioPlayer {
           this.opts.onReturnToIdle?.();
         }
 
-        URL.revokeObjectURL(url);
+        // 清理资源
+        this._cleanupCurrentAudio();
       };
+      audio.onended = this._onEndedHandler;
 
-      audio.onended = onEnded;
       await audio.play();
 
     } catch (e) {
       console.error('[AudioPlayer] ❌ 播放失败:', e.name, e.message);
+      // 确保在错误时也清理资源
+      this._cleanupCurrentAudio();
     }
+  }
+
+  /**
+   * 清理当前音频资源（防止内存泄漏）
+   */
+  _cleanupCurrentAudio() {
+    if (this._currentAudio) {
+      this._currentAudio.onended = null;
+      this._currentAudio = null;
+    }
+    if (this._currentBlobUrl) {
+      URL.revokeObjectURL(this._currentBlobUrl);
+      this._currentBlobUrl = null;
+    }
+    this._onEndedHandler = null;
+  }
+
+  /**
+   * 销毁播放器，释放所有资源
+   */
+  destroy() {
+    this._cleanupCurrentAudio();
+    this.opts = null;
   }
 }
 
@@ -318,7 +354,12 @@ export class Live2DRenderer {
     this._stopLipSync();
     this.expressionController?.destroy();
     this.backgroundManager?.destroy();
+    // 确保 ipcBridge 正确销毁
+    this.ipcBridge?.destroy();
     this.ipcBridge = null;
+    // 销毁音频播放器
+    this.audioPlayer?.destroy();
+    this.audioPlayer = null;
     this.modelLoader?.unload();
     this.pixiApp?.destroy();
     delete window.live2dRenderer;

@@ -48,6 +48,9 @@ class WebSocketServer:
             cors_credentials=True,
             logger=False,  # Disable default logging (we handle our own)
             engineio_logger=False,  # Disable default engine.io logging
+            # 增加 ping 超时配置以提高稳定性
+            ping_timeout=120,  # 等待客户端 ping 响应的时间（秒）
+            ping_interval=30,  # 发送 ping 的间隔（秒）
         )
 
         # 创建 ASGI 应用

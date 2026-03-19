@@ -30,6 +30,22 @@ async function init() {
   }
 }
 
+/**
+ * 清理资源（页面卸载时调用）
+ */
+function cleanup() {
+  if (renderer) {
+    console.log('[Live2D] Cleaning up...');
+    renderer.destroy();
+    renderer = null;
+  }
+}
+
+// 页面卸载时清理
+window.addEventListener('beforeunload', cleanup);
+// 页面隐藏时也清理（可选，针对单页应用）
+window.addEventListener('pagehide', cleanup);
+
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
 } else {
