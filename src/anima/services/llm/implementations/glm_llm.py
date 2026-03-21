@@ -1,14 +1,13 @@
 """
 GLM (智谱AI) LLM 实现
-使用 zai-sdk 调用智谱 AI 的 GLM 模型
+使用 zhipuai SDK 调用智谱 AI 的 GLM 模型
 """
 
 from typing import AsyncIterator, List, Dict, Any, Optional, TYPE_CHECKING
 from loguru import logger
-from zai import ZhipuAiClient
+from zhipuai import ZhipuAI
 import asyncio
-import time
-import uuid
+import json
 
 from ..interface import LLMInterface
 from anima.config.core.registry import ProviderRegistry
@@ -20,420 +19,246 @@ if TYPE_CHECKING:
 
 @ProviderRegistry.register_service("llm", "glm")
 class GLMLLM(LLMInterface):
-    """
-    智谱 AI GLM 模型 LLM 实现
-
-    使用 zai-sdk 调用 GLM-4、GLM-5 等模型
-    支持深度思考模式和流式输出
-    """
+    """GLM (智谱 AI) LLM 实现"""
 
     def __init__(
         self,
-        api_key: str,
-        model: str = "glm-4-flash",
-        system_prompt: str = "",
-        temperature: float = 0.7,
-        max_tokens: int = 4096,
-        enable_thinking: bool = False,
-        max_retries: int = 3,
-        retry_delay: float = 1.0,
-        timeout: int = 60,
-        **kwargs
+        config: GLMLLMConfig,
     ):
-        """
-        初始化 GLM LLM
-
-        Args:
-            api_key: 智谱 AI API Key
-            model: 模型名称 (glm-4, glm-4-flash, glm-5 等)
-            system_prompt: 系统提示词
-            temperature: 温度参数
-            max_tokens: 最大生成 token 数
-            enable_thinking: 是否启用深度思考模式
-            max_retries: 最大重试次数
-            retry_delay: 重试延迟（秒）
-            timeout: 请求超时时间（秒）
-        """
-        self.api_key = api_key
-        self.model = model
-        self.system_prompt = system_prompt
-        self.temperature = temperature
-        self.max_tokens = max_tokens
-        self.enable_thinking = enable_thinking
-        self.max_retries = max_retries
-        self.retry_delay = retry_delay
-        self.timeout = timeout
-
-        # 生成唯一实例ID，用于日志追踪
-        self.instance_id = str(uuid.uuid4())[:8]
-        self.call_count = 0
-
-        # 验证 API Key（检查环境变量模板是否被展开）
-        if not api_key or api_key.strip() == "" or api_key.startswith("${"):
-            raise ValueError(
-                f"GLM API Key 未设置或未正确展开！"
-                f"当前值: {api_key[:20] if api_key else 'None'}... "
-                f"请设置环境变量 GLM_API_KEY "
-                "或在配置文件中提供有效的 api_key"
-            )
-
-        # 对话历史
-        self.history: List[Dict[str, str]] = []
-
-        # 初始化客户端
-        try:
-            self.client = ZhipuAiClient(api_key=api_key)
-            logger.info(f"[GLMLLM-{self.instance_id}] 初始化完成: model={model}, thinking={enable_thinking}")
-        except Exception as e:
-            logger.error(f"[GLMLLM-{self.instance_id}] 客户端初始化失败: {e}")
-            raise
+        self.config = config
+        self.client = None
+        self._conversation_history: List[Dict[str, Any]] = []
+        self._call_count = 0
 
     @classmethod
-    def from_config(cls, config: "LLMBaseConfig", system_prompt: str = "", **kwargs) -> "GLMLLM":
-        """
-        从配置对象创建实例
+    def from_config(cls, config: GLMLLMConfig, **kwargs):
+        """从配置创建实例"""
+        return cls(config=config)
 
-        Args:
-            config: GLMLLMConfig 配置对象
-            system_prompt: 系统提示词
-            **kwargs: 额外参数（忽略）
-
-        Returns:
-            GLMLLM 实例
-
-        Raises:
-            TypeError: 如果配置类型不匹配
-        """
-        logger.debug(f"[GLMLLM.from_config] 开始创建实例")
-        logger.debug(f"[GLMLLM.from_config] Config type: {type(config).__name__}")
-        logger.debug(f"[GLMLLM.from_config] API Key from config: {config.api_key[:10] if config.api_key else 'None'}...")
-
-        if not isinstance(config, GLMLLMConfig):
-            raise TypeError(f"GLMLLM 需要 GLMLLMConfig，收到: {type(config)}")
-
-        logger.debug(f"[GLMLLM.from_config] 调用构造函数...")
-
-        try:
-            instance = cls(
-                api_key=config.api_key,
-                model=config.model,
-                system_prompt=system_prompt,
-                temperature=config.temperature,
-                max_tokens=config.max_tokens,
-                enable_thinking=config.enable_thinking,
-                max_retries=getattr(config, 'max_retries', 3),
-                retry_delay=getattr(config, 'retry_delay', 1.0),
-                timeout=getattr(config, 'timeout', 60),
-            )
-            logger.info(f"[GLMLLM.from_config] 实例创建成功")
-            return instance
-        except ValueError as ve:
-            logger.error(f"[GLMLLM.from_config] 验证失败: {ve}")
-            raise
-
-    def _build_messages(self, user_input: str) -> List[Dict[str, str]]:
-        """
-        构建消息列表
-        
-        Args:
-            user_input: 用户输入
-            
-        Returns:
-            List[Dict[str, str]]: 完整的消息列表
-        """
-        messages = []
-        
-        # 添加系统提示词
-        if self.system_prompt:
-            messages.append({
-                "role": "system",
-                "content": self.system_prompt
-            })
-        
-        # 添加历史对话
-        messages.extend(self.history)
-        
-        # 添加当前用户输入
-        messages.append({
-            "role": "user",
-            "content": user_input
-        })
-        
-        return messages
-
-    async def chat(self, user_input: str, **kwargs) -> str:
-        """
-        与 GLM 模型进行对话
-
-        Args:
-            user_input: 用户输入
-            **kwargs: 额外参数
-
-        Returns:
-            str: 模型回复
-        """
-        # 调用计数
-        self.call_count += 1
-        call_id = f"{self.instance_id}-{self.call_count}"
-
-        # 记录调用开始
-        start_time = time.time()
-        input_length = len(user_input)
-        history_length = len(self.history)
-
-        logger.info(f"[GLMLLM:{call_id}] ═══════════════════════════════════")
-        logger.info(f"[GLMLLM:{call_id}] 🔵 开始调用")
-        logger.info(f"[GLMLLM:{call_id}] 模型: {self.model}")
-        logger.info(f"[GLMLLM:{call_id}] 输入: {user_input[:100]}{'...' if input_length > 100 else ''} (长度: {input_length})")
-        logger.info(f"[GLMLLM:{call_id}] 历史轮数: {history_length // 2}")
-        logger.info(f"[GLMLLM:{call_id}] 参数: temperature={kwargs.get('temperature', self.temperature)}, "
-                   f"max_tokens={kwargs.get('max_tokens', self.max_tokens)}, "
-                   f"thinking={self.enable_thinking}")
-
-        messages = self._build_messages(user_input)
-
-        # 构建请求参数
-        request_params = {
-            "model": kwargs.get("model", self.model),
-            "messages": messages,
-            "temperature": kwargs.get("temperature", self.temperature),
-            "max_tokens": kwargs.get("max_tokens", self.max_tokens),
-            "timeout": kwargs.get("timeout", self.timeout),
-        }
-
-        # 启用深度思考模式
-        if self.enable_thinking:
-            request_params["thinking"] = {"type": "enabled"}
-
-        last_error = None
-
-        # 重试机制
-        for attempt in range(self.max_retries):
+    async def _ensure_client(self):
+        """确保客户端已初始化"""
+        if self.client is None:
             try:
-                logger.debug(f"[GLMLLM:{call_id}] 尝试 {attempt + 1}/{self.max_retries}")
-
-                # zai-sdk 是同步的，需要在异步环境中运行
-                loop = asyncio.get_event_loop()
-
-                # 使用 asyncio.wait_for 添加超时
-                response = await asyncio.wait_for(
-                    loop.run_in_executor(
-                        None,
-                        lambda: self.client.chat.completions.create(**request_params)
-                    ),
-                    timeout=self.timeout
-                )
-
-                assistant_message = response.choices[0].message.content
-
-                # 更新历史
-                self.history.append({"role": "user", "content": user_input})
-                self.history.append({"role": "assistant", "content": assistant_message})
-
-                # 计算耗时和token信息
-                elapsed_time = time.time() - start_time
-                output_length = len(assistant_message)
-
-                # 记录调用成功
-                logger.info(f"[GLMLLM:{call_id}] 🟢 调用成功")
-                logger.info(f"[GLMLLM:{call_id}] 耗时: {elapsed_time:.2f}秒")
-                logger.info(f"[GLMLLM:{call_id}] 输出: {assistant_message[:100]}{'...' if output_length > 100 else ''} (长度: {output_length})")
-                if hasattr(response.usage, 'prompt_tokens'):
-                    logger.info(f"[GLMLLM:{call_id}] Tokens: prompt={response.usage.prompt_tokens}, "
-                               f"completion={response.usage.completion_tokens}, "
-                               f"total={response.usage.total_tokens}")
-                logger.info(f"[GLMLLM:{call_id}] ═══════════════════════════════════")
-
-                return assistant_message
-
-            except asyncio.TimeoutError:
-                last_error = f"请求超时（超过 {self.timeout} 秒）"
-                logger.warning(f"[GLMLLM:{call_id}] ⏱️ 请求超时，尝试 {attempt + 1}/{self.max_retries}")
-
+                self.client = ZhipuAI(api_key=self.config.api_key)
+                logger.info(f"[GLM] ZhipuAI 客户端已初始化")
             except Exception as e:
-                error_type = type(e).__name__
-                error_msg = str(e)
+                logger.error(f"[GLM] ZhipuAI 客户端初始化失败: {e}")
+                raise
 
-                # 详细错误分类
-                if "Connection" in error_msg or "connection" in error_msg:
-                    last_error = f"网络连接错误: {error_msg}"
-                    logger.warning(f"[GLMLLM:{call_id}] 🔌 连接错误，尝试 {attempt + 1}/{self.max_retries}: {error_msg[:100]}")
-                elif "401" in error_msg or "Unauthorized" in error_msg:
-                    last_error = "API Key 无效或未授权，请检查 LLM_API_KEY 环境变量"
-                    logger.error(f"[GLMLLM:{call_id}] 🔑 API Key 错误: {error_msg}")
-                    raise ValueError(last_error) from e
-                elif "429" in error_msg:
-                    last_error = f"API 请求频率超限: {error_msg}"
-                    logger.warning(f"[GLMLLM:{call_id}] ⚠️ 频率限制，尝试 {attempt + 1}/{self.max_retries}")
-                elif "500" in error_msg or "502" in error_msg or "503" in error_msg:
-                    last_error = f"GLM 服务器错误: {error_msg}"
-                    logger.warning(f"[GLMLLM:{call_id}] 🖥️ 服务器错误，尝试 {attempt + 1}/{self.max_retries}")
-                else:
-                    last_error = f"{error_type}: {error_msg}"
-                    logger.warning(f"[GLMLLM:{call_id}] ❌ 请求失败，尝试 {attempt + 1}/{self.max_retries}: {error_msg[:100]}")
-
-            # 如果不是最后一次尝试，等待后重试
-            if attempt < self.max_retries - 1:
-                wait_time = self.retry_delay * (attempt + 1)  # 递增延迟
-                logger.debug(f"[GLMLLM:{call_id}] 等待 {wait_time} 秒后重试...")
-                await asyncio.sleep(wait_time)
-
-        # 所有重试都失败
-        elapsed_time = time.time() - start_time
-        error_msg = f"GLM 对话失败，已重试 {self.max_retries} 次。最后错误: {last_error}"
-        logger.error(f"[GLMLLM:{call_id}] 🔴 调用失败 (耗时: {elapsed_time:.2f}秒)")
-        logger.error(f"[GLMLLM:{call_id}] 错误: {last_error}")
-        logger.info(f"[GLMLLM:{call_id}] ═══════════════════════════════════")
-        raise ConnectionError(error_msg)
-
-    async def chat_stream(self, user_input: str, **kwargs) -> AsyncIterator[str]:
+    async def chat_stream(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        tools: Optional[List[Any]] = None,
+    ) -> AsyncIterator[str]:
         """
-        流式对话
+        流式聊天接口
 
         Args:
-            user_input: 用户输入
-            **kwargs: 额外参数
+            prompt: 用户提示词
+            system_prompt: 系统提示词（可选）
+            tools: 工具列表（如果对话历史中有工具调用）
 
         Yields:
-            str: 模型回复的文本片段
+            str: 流式文本块
         """
-        # 调用计数
-        self.call_count += 1
-        call_id = f"{self.instance_id}-{self.call_count}"
+        await self._ensure_client()
 
-        # 记录调用开始
-        start_time = time.time()
-        input_length = len(user_input)
-        history_length = len(self.history)
+        # 构建消息列表
+        messages = []
 
-        logger.info(f"[GLMLLM:{call_id}] ═══════════════════════════════════")
-        logger.info(f"[GLMLLM:{call_id}] 🔵 开始流式调用")
-        logger.info(f"[GLMLLM:{call_id}] 模型: {self.model}")
-        logger.info(f"[GLMLLM:{call_id}] 输入: {user_input[:100]}{'...' if input_length > 100 else ''} (长度: {input_length})")
-        logger.info(f"[GLMLLM:{call_id}] 历史轮数: {history_length // 2}")
-        logger.info(f"[GLMLLM:{call_id}] 参数: temperature={kwargs.get('temperature', self.temperature)}, "
-                   f"max_tokens={kwargs.get('max_tokens', self.max_tokens)}, "
-                   f"thinking={self.enable_thinking}")
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
 
-        messages = self._build_messages(user_input)
+        # 添加对话历史
+        for msg in self._conversation_history:
+            messages.append(msg)
 
-        # 构建请求参数
-        request_params = {
-            "model": kwargs.get("model", self.model),
-            "messages": messages,
-            "temperature": kwargs.get("temperature", self.temperature),
-            "max_tokens": kwargs.get("max_tokens", self.max_tokens),
-            "stream": True,
-            "timeout": kwargs.get("timeout", self.timeout),
-        }
+        # 添加当前用户消息
+        messages.append({"role": "user", "content": prompt})
 
-        # 启用深度思考模式
-        if self.enable_thinking:
-            request_params["thinking"] = {"type": "enabled"}
+        # 检查是否需要传递工具（如果历史中有 tool_calls）
+        has_tool_calls_in_history = any(
+            msg.get("role") == "assistant" and "tool_calls" in msg
+            for msg in self._conversation_history
+        )
 
-        full_response = ""
-        last_error = None
+        glm_tools = None
+        if has_tool_calls_in_history and tools:
+            glm_tools = []
+            for tool in tools:
+                if hasattr(tool, 'args_schema') and tool.args_schema:
+                    parameters = tool.args_schema.schema()
+                else:
+                    parameters = {"type": "object", "properties": {}, "required": []}
+                glm_tools.append({
+                    "type": "function",
+                    "function": {
+                        "name": tool.name,
+                        "description": tool.description,
+                        "parameters": parameters,
+                    }
+                })
 
-        # 重试机制
-        for attempt in range(self.max_retries):
-            try:
-                logger.debug(f"[GLMLLM:{call_id}] 流式尝试 {attempt + 1}/{self.max_retries}")
+        logger.debug(f"[GLM] 发送消息，历史记录数: {len(self._conversation_history)}, 工具数: {len(glm_tools) if glm_tools else 0}")
 
-                # 在线程池中运行同步流式调用，带超时
-                loop = asyncio.get_event_loop()
-
-                def sync_stream():
-                    return self.client.chat.completions.create(**request_params)
-
-                # 使用 asyncio.wait_for 添加超时
-                response = await asyncio.wait_for(
-                    loop.run_in_executor(None, sync_stream),
-                    timeout=self.timeout
+        try:
+            def _create_stream():
+                return self.client.chat.completions.create(
+                    model=self.config.model,
+                    messages=messages,
+                    tools=glm_tools if glm_tools else None,
+                    stream=True,
+                    temperature=self.config.temperature,
                 )
 
-                # 处理流式响应
-                chunk_count = 0
-                for chunk in response:
-                    chunk_count += 1
+            response = await asyncio.to_thread(_create_stream)
 
-                    # 处理思考内容
-                    if hasattr(chunk.choices[0].delta, 'reasoning_content') and chunk.choices[0].delta.reasoning_content:
-                        reasoning = chunk.choices[0].delta.reasoning_content
-                        full_response += reasoning
-                        yield reasoning
+            full_response = ""
 
-                    # 处理正式回复
-                    if chunk.choices[0].delta.content:
-                        content = chunk.choices[0].delta.content
+            for chunk in response:
+                if hasattr(chunk, 'choices') and chunk.choices:
+                    delta = chunk.choices[0].delta
+                    if hasattr(delta, 'content') and delta.content:
+                        content = delta.content
                         full_response += content
                         yield content
+                elif hasattr(chunk, 'content') and chunk.content:
+                    full_response += chunk.content
+                    yield chunk.content
 
-                # 成功完成，更新历史
-                self.history.append({"role": "user", "content": user_input})
-                self.history.append({"role": "assistant", "content": full_response})
+            self._conversation_history.append({"role": "user", "content": prompt})
+            self._conversation_history.append({"role": "assistant", "content": full_response})
 
-                # 计算耗时
-                elapsed_time = time.time() - start_time
-                output_length = len(full_response)
+            self._call_count += 1
 
-                logger.info(f"[GLMLLM:{call_id}] 🟢 流式调用成功")
-                logger.info(f"[GLMLLM:{call_id}] 耗时: {elapsed_time:.2f}秒")
-                logger.info(f"[GLMLLM:{call_id}] 输出: {full_response[:100]}{'...' if output_length > 100 else ''} (长度: {output_length})")
-                logger.info(f"[GLMLLM:{call_id}] 分块数: {chunk_count}")
-                logger.info(f"[GLMLLM:{call_id}] ═══════════════════════════════════")
-                return
+            if self._call_count % 100 == 0 and len(self._conversation_history) > 100:
+                self._conversation_history = self._conversation_history[-50:]
 
-            except asyncio.TimeoutError:
-                last_error = f"请求超时（超过 {self.timeout} 秒）"
-                logger.warning(f"GLM 流式请求超时，尝试 {attempt + 1}/{self.max_retries}")
+        except Exception as e:
+            logger.error(f"[GLM] 聊天失败: {e}")
+            raise
 
-            except Exception as e:
-                error_type = type(e).__name__
-                error_msg = str(e)
+    def clear_history(self):
+        """清空对话历史"""
+        self._conversation_history = []
+        logger.debug("[GLM] 对话历史已清空")
 
-                # 详细错误分类
-                if "Connection" in error_msg or "connection" in error_msg:
-                    last_error = f"网络连接错误: {error_msg}"
-                    logger.warning(f"GLM 连接错误，尝试 {attempt + 1}/{self.max_retries}: {error_msg}")
-                elif "401" in error_msg or "Unauthorized" in error_msg:
-                    last_error = "API Key 无效或未授权，请检查 LLM_API_KEY 环境变量"
-                    logger.error(f"GLM API Key 错误: {error_msg}")
-                    # 认证错误不需要重试
-                    raise ValueError(last_error) from e
-                elif "429" in error_msg:
-                    last_error = f"API 请求频率超限: {error_msg}"
-                    logger.warning(f"GLM 频率限制，尝试 {attempt + 1}/{self.max_retries}")
-                elif "500" in error_msg or "502" in error_msg or "503" in error_msg:
-                    last_error = f"GLM 服务器错误: {error_msg}"
-                    logger.warning(f"GLM 服务器错误，尝试 {attempt + 1}/{self.max_retries}")
+    @property
+    def max_tokens(self) -> Optional[int]:
+        """获取最大 token 数"""
+        return self.config.max_tokens
+
+    def set_max_tokens(self, max_tokens: int):
+        """设置最大 token 数"""
+        self.config.max_tokens = max_tokens
+
+    async def chat(
+        self,
+        user_input: str,
+        system_prompt: Optional[str] = None,
+        tools: Optional[List[Any]] = None,
+    ) -> str:
+        """
+        非流式对话
+
+        Args:
+            user_input: 用户输入
+            system_prompt: 系统提示词
+            tools: 工具列表（如果对话历史中有工具调用）
+
+        Returns:
+            str: LLM 回复
+        """
+        await self._ensure_client()
+
+        # 构建消息列表
+        messages = []
+
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+
+        # 添加对话历史
+        for msg in self._conversation_history:
+            # 复制消息，避免修改原始数据
+            messages.append(msg.copy() if isinstance(msg, dict) else msg)
+
+        # 添加当前用户消息
+        messages.append({"role": "user", "content": user_input})
+
+        # 检查是否需要传递工具（如果历史中有 tool_calls）
+        has_tool_calls_in_history = any(
+            msg.get("role") == "assistant" and "tool_calls" in msg
+            for msg in self._conversation_history
+        )
+
+        # 如果历史中有工具调用，且没有传入工具，尝试从工具调用中推断
+        glm_tools = None
+        if has_tool_calls_in_history and tools:
+            glm_tools = []
+            for tool in tools:
+                if hasattr(tool, 'args_schema') and tool.args_schema:
+                    parameters = tool.args_schema.schema()
                 else:
-                    last_error = f"{error_type}: {error_msg}"
-                    logger.warning(f"GLM 请求失败，尝试 {attempt + 1}/{self.max_retries}: {error_msg}")
+                    parameters = {
+                        "type": "object",
+                        "properties": {},
+                        "required": [],
+                    }
+                tool_schema = {
+                    "type": "function",
+                    "function": {
+                        "name": tool.name,
+                        "description": tool.description,
+                        "parameters": parameters,
+                    }
+                }
+                glm_tools.append(tool_schema)
 
-            # 如果不是最后一次尝试，等待后重试
-            if attempt < self.max_retries - 1:
-                wait_time = self.retry_delay * (attempt + 1)  # 递增延迟
-                logger.debug(f"等待 {wait_time} 秒后重试...")
-                await asyncio.sleep(wait_time)
+        try:
+            def _create_completion():
+                return self.client.chat.completions.create(
+                    model=self.config.model,
+                    messages=messages,
+                    tools=glm_tools if glm_tools else None,
+                    stream=False,
+                    temperature=self.config.temperature,
+                )
 
-        # 所有重试都失败
-        error_msg = f"GLM 流式对话失败，已重试 {self.max_retries} 次。最后错误: {last_error}"
-        logger.error(error_msg)
-        raise ConnectionError(error_msg)
+            # 在线程池中运行同步 API
+            response = await asyncio.to_thread(_create_completion)
+
+            # 获取回复
+            full_response = response.choices[0].message.content if hasattr(response, 'choices') else str(response)
+
+            # 保存对话历史
+            self._conversation_history.append({"role": "user", "content": user_input})
+            self._conversation_history.append({"role": "assistant", "content": full_response})
+
+            self._call_count += 1
+
+            # 定期清理历史记录
+            if self._call_count % 100 == 0 and len(self._conversation_history) > 100:
+                self._conversation_history = self._conversation_history[-50:]
+
+            return full_response
+
+        except Exception as e:
+            logger.error(f"[GLM] 聊天失败: {e}")
+            raise
 
     def set_system_prompt(self, prompt: str) -> None:
-        """设置系统提示词"""
-        self.system_prompt = prompt
-        logger.debug(f"系统提示词已更新: {prompt[:50]}...")
+        """设置系统提示词（存储在对话历史的开头）"""
+        # 移除旧的系统提示词
+        self._conversation_history = [msg for msg in self._conversation_history if msg.get("role") != "system"]
+        # 添加新的系统提示词
+        if prompt:
+            self._conversation_history.insert(0, {"role": "system", "content": prompt})
+        logger.debug(f"[GLM] 系统提示词已更新: {prompt[:50]}...")
 
     def get_history(self) -> List[Dict[str, Any]]:
         """获取对话历史"""
-        return self.history.copy()
-
-    def clear_history(self) -> None:
-        """清空对话历史"""
-        self.history.clear()
-        logger.debug("对话历史已清空")
+        return self._conversation_history.copy()
 
     def handle_interrupt(self, heard_response: str = "") -> None:
         """
@@ -444,18 +269,196 @@ class GLMLLM(LLMInterface):
         """
         if heard_response:
             # 保存部分回复到历史
-            if self.history and self.history[-1].get("role") == "user":
-                self.history.append({
+            if self._conversation_history and self._conversation_history[-1].get("role") == "user":
+                # 添加部分 AI 回复
+                self._conversation_history.append({
                     "role": "assistant",
                     "content": heard_response
                 })
-                self.history.append({
+                # 添加打断标记
+                self._conversation_history.append({
                     "role": "system",
                     "content": "[用户打断了对话]"
                 })
-            logger.info(f"GLMLLM 处理打断，已保存部分回复: {heard_response[:50]}...")
+
+        logger.info(f"[GLM] 对话被打断，已保存部分回复: {heard_response[:50] if heard_response else '(空)'}...")
+
+    def supports_tool_calls(self) -> bool:
+        """检查是否支持工具调用"""
+        # GLM-4 系列模型支持工具调用
+        return self.config.model.startswith("glm-4")
+
+    def _convert_langchain_message_to_glm(self, msg: Any) -> Dict[str, Any]:
+        """
+        将 LangChain 消息转换为 GLM API 格式
+
+        Args:
+            msg: LangChain 消息对象
+
+        Returns:
+            Dict: GLM API 格式的消息
+        """
+        from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, ToolMessage
+
+        if isinstance(msg, SystemMessage):
+            return {"role": "system", "content": msg.content}
+
+        elif isinstance(msg, HumanMessage):
+            return {"role": "user", "content": msg.content}
+
+        elif isinstance(msg, AIMessage):
+            glm_msg = {"role": "assistant", "content": msg.content or ""}
+
+            # 转换 tool_calls
+            if hasattr(msg, 'tool_calls') and msg.tool_calls:
+                tool_calls_for_glm = []
+                for tc in msg.tool_calls:
+                    # tc 可能是字典或对象
+                    if isinstance(tc, dict):
+                        tc_id = tc.get("id", "")
+                        tc_name = tc.get("name", "")
+                        tc_args = tc.get("args", {})
+                    else:
+                        tc_id = getattr(tc, 'id', '')
+                        tc_name = getattr(tc, 'name', '')
+                        tc_args = getattr(tc, 'args', {})
+
+                    # arguments 必须是 JSON 字符串
+                    arguments_str = tc_args if isinstance(tc_args, str) else json.dumps(tc_args, ensure_ascii=False)
+
+                    tool_calls_for_glm.append({
+                        "id": tc_id,
+                        "type": "function",
+                        "function": {
+                            "name": tc_name,
+                            "arguments": arguments_str,
+                        }
+                    })
+
+                glm_msg["tool_calls"] = tool_calls_for_glm
+
+            return glm_msg
+
+        elif isinstance(msg, ToolMessage):
+            # GLM API: tool 消息格式
+            return {
+                "role": "tool",
+                "tool_call_id": msg.tool_call_id,
+                "content": msg.content,
+            }
+
         else:
-            logger.info("GLMLLM 收到打断信号")
+            # 未知类型，尝试作为用户消息处理
+            return {"role": "user", "content": str(msg.content) if hasattr(msg, 'content') else str(msg)}
+
+    async def chat_with_tools(
+        self,
+        user_input: str,
+        tools: List[Any],
+        langchain_history: List[Any],
+        system_prompt: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """
+        带工具调用的对话（LangGraph 专用）
+
+        Args:
+            user_input: 用户输入
+            tools: 工具列表（LangChain BaseTool 对象）
+            system_prompt: 系统提示词
+            langchain_history: LangChain 格式的历史消息（包含 ToolMessage）
+
+        Returns:
+            Dict: 包含 content 和 tool_calls 的字典
+        """
+        await self._ensure_client()
+
+        logger.debug(f"[GLM] chat_with_tools 调用: tools={len(tools)}, user_input={user_input[:50]}")
+
+        # 将 LangChain 工具转换为 GLM 格式
+        glm_tools = []
+        for tool in tools:
+            # 获取参数 schema
+            if hasattr(tool, 'args_schema') and tool.args_schema:
+                parameters = tool.args_schema.schema()
+            else:
+                # 默认参数 schema（即使没有参数也需要正确格式）
+                parameters = {
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                }
+
+            glm_tools.append({
+                "type": "function",
+                "function": {
+                    "name": tool.name,
+                    "description": tool.description,
+                    "parameters": parameters,
+                }
+            })
+
+        # 构建消息列表
+        messages = []
+
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+
+        # 转换 LangChain 历史消息为 GLM 格式
+        for msg in langchain_history:
+            glm_msg = self._convert_langchain_message_to_glm(msg)
+            messages.append(glm_msg)
+            logger.debug(f"[GLM] 转换历史消息: {type(msg).__name__} -> {glm_msg.get('role')}")
+
+        # 添加当前用户消息
+        messages.append({"role": "user", "content": user_input})
+
+        logger.debug(f"[GLM] 发送消息（工具模式），工具数: {len(glm_tools)}, 历史数: {len(messages)}")
+
+        try:
+            def _create_completion():
+                return self.client.chat.completions.create(
+                    model=self.config.model,
+                    messages=messages,
+                    tools=glm_tools,
+                    tool_choice="auto",
+                    stream=False,
+                    temperature=self.config.temperature,
+                )
+
+            # 在线程池中运行同步 API
+            response = await asyncio.to_thread(_create_completion)
+
+            # 解析响应
+            message = response.choices[0].message
+            content = message.content or ""
+
+            # 检查是否有工具调用
+            tool_calls = []
+
+            if hasattr(message, 'tool_calls') and message.tool_calls:
+                for tc in message.tool_calls:
+                    tool_calls.append({
+                        "id": tc.id,
+                        "name": tc.function.name,
+                        "args": json.loads(tc.function.arguments) if isinstance(tc.function.arguments, str) else tc.function.arguments,
+                    })
+
+                logger.info(f"[GLM] LLM 请求 {len(tool_calls)} 个工具调用")
+
+            if tool_calls:
+                return {
+                    "content": content or "正在调用工具...",
+                    "tool_calls": tool_calls,
+                }
+            else:
+                return {
+                    "content": content,
+                    "tool_calls": None,
+                }
+
+        except Exception as e:
+            logger.error(f"[GLM] 工具调用失败: {e}")
+            raise
 
     def set_memory_from_history(
         self,
@@ -469,11 +472,10 @@ class GLMLLM(LLMInterface):
             conf_uid: 配置 UID
             history_uid: 历史 UID
         """
-        # TODO: 实现从文件/数据库加载历史记录
-        logger.debug(f"set_memory_from_history: conf_uid={conf_uid}, history_uid={history_uid}")
-        pass
+        # TODO: 实现从持久化存储加载历史
+        logger.info(f"[GLM] 尝试从历史恢复记忆: conf_uid={conf_uid}, history_uid={history_uid}")
 
-    async def close(self) -> None:
-        """清理资源"""
-        # zai-sdk 的客户端不需要显式关闭
-        logger.info("GLMLLM 资源已释放")
+    async def close(self):
+        """关闭连接"""
+        self.client = None
+        logger.info("[GLM] 连接已关闭")
