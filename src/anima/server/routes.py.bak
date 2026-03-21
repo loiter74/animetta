@@ -113,9 +113,6 @@ class RouteHandlers:
             socketio=self.sio,  # 传递 socketio 实例
 )
 
-        # 确保音频处理器已创建
-        await self.session_manager.get_or_create_audio_processor(sid, ctx)
-
         return orchestrator
 
     async def broadcast_to_desktop_clients(
@@ -223,24 +220,9 @@ class RouteHandlers:
             logger.debug(f"[{sid}] 收到空音频数据")
             return
 
-        # 首次接收时打印日志（使用属性标记）
-        if not hasattr(self, '_raw_audio_first_sids'):
-            self._raw_audio_first_sids = set()
-        
-        if sid not in self._raw_audio_first_sids:
-            self._raw_audio_first_sids.add(sid)
-            logger.info(f"[{sid}] [RAW_AUDIO] 开始接收音频数据")
-
         try:
-            # 确保 orchestrator 和音频处理器被创建
-            await self._get_or_create_orchestrator(sid)
-            
-            # 获取音频处理器
-            processor = self.session_manager.get_audio_processor(sid)
-            if processor:
-                await processor.process_chunk(audio_chunk)
-            else:
-                logger.error(f"[{sid}] 音频处理器未创建")
+            # TODO: 实现 VAD 音频累积和处理
+            pass
 
         except Exception as e:
             logger.error(f"[{sid}] VAD 处理出错: {e}", exc_info=True)
@@ -250,10 +232,9 @@ class RouteHandlers:
         logger.info(f"[{sid}] 音频输入结束")
 
         try:
-            # 获取音频处理器
-            processor = self.session_manager.get_audio_processor(sid)
-            if processor:
-                await processor.process_end()
+            orchestrator = await self._get_or_create_orchestrator(sid)
+            # TODO: 处理累积的音频数据
+            # await orchestrator.process_audio(...)
 
         except Exception as e:
             logger.error(f"[{sid}] 处理音频时出错: {e}")

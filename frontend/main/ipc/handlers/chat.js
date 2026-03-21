@@ -55,7 +55,7 @@ function registerChatHandlers(ipcBridge) {
    */
   ipcMain.handle('chat:stopVoiceInput', async (event) => {
     try {
-      ipcBridge.sendToBackend('voice_stop', {});
+      ipcBridge.sendToBackend('mic_audio_end', {});
       return { ok: true };
     } catch (error) {
       console.error('[ChatHandler] Failed to stop voice input:', error);

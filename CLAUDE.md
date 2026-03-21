@@ -7,9 +7,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Anima is a configurable AI virtual companion / VTuber framework with Live2D avatar support. It features:
 - Plugin-based architecture with decorator-based service registration
 - Profile-driven configuration (switch between LLM/ASR/TTS providers)
+- **LangGraph state graph for dialogue orchestration** (migrated from EventBus)
 - Streaming response support for LLM and TTS
 - Memory system with vector storage for long-term context
-- Pipeline-based data processing with event-driven architecture
+- Tool calling support with MCP protocol integration
 
 ## Commands
 
@@ -56,60 +57,54 @@ npm run build:win    # Build for Windows
 
 ```
 src/anima/
-├── socketio_server.py    # Main entry point, WebSocket handlers
+├── socketio_server.py    # Main entry point, WebSocket server
 ├── service_context.py    # Service container, manages ASR/TTS/LLM instances
 ├── config/               # Configuration loading (YAML + Pydantic)
 │   ├── app.py           # AppConfig - main configuration class
 │   ├── persona.py       # PersonaConfig - character personality
 │   ├── providers/       # Provider-specific config classes (ASR/TTS/LLM/VAD)
 │   └── core/registry.py # Service registry for plugin architecture
-├── adapters/             # Channel adapter layer (input/output abstraction)
-│   ├── base.py          # ChannelAdapter base class
-│   ├── registry.py      # AdapterRegistry singleton
-│   └── implementations/ # DesktopLive2DChatter (Electron desktop)
+├── graph/                # LangGraph state graph (NEW ARCHITECTURE)
+│   ├── state.py         # AgentState definition
+│   ├── builder.py       # StateGraph builder
+│   ├── orchestrator.py  # LangGraphOrchestrator
+│   ├── config_store.py  # Configuration storage for nodes
+│   └── nodes/           # Graph nodes
+│       ├── asr_node.py      # Speech recognition node
+│       ├── llm_node.py      # LLM reasoning node (with RAG + tools)
+│       ├── tts_node.py      # Speech synthesis node
+│       ├── emotion_node.py  # Emotion analysis node
+│       ├── output_node.py   # Output to frontend + memory storage
+│       └── tool_node.py     # Tool execution node
+├── tools/                # Tool calling system
+│   ├── base.py          # Built-in tools
+│   ├── config.py        # Tool configuration loader
+│   └── mcp_bridge.py    # MCP protocol bridge
 ├── services/             # Service implementations
 │   ├── asr/             # Speech recognition (FasterWhisper, GLM, OpenAI)
 │   ├── tts/             # Speech synthesis (Edge TTS, GLM, OpenAI)
 │   ├── llm/             # Language models (GLM, OpenAI, Ollama, LocalLoRA)
+│   │   └── langchain_adapter.py  # LangChain ChatModel adapter
 │   ├── vad/             # Voice activity detection (Silero)
 │   ├── live2d/          # Live2D action queue, viseme sync, preset loader
-│   └── conversation/    # Orchestrator for dialogue flow
-├── pipeline/             # Chain-of-responsibility processing
-│   ├── base.py          # PipelineStep base class
-│   └── steps/           # Individual pipeline steps (ASR, text clean, etc.)
-├── events/               # Event-driven architecture
-│   ├── bus.py           # EventBus for pub/sub
-│   ├── router.py        # EventRouter for handler registration
-│   └── models.py        # OutputEvent, EventType definitions
-├── handlers/             # Event handlers
-│   ├── base.py          # Handler base classes
-│   ├── registry.py      # Handler registration utilities
-│   ├── text.py          # TextHandler (output)
-│   ├── unified.py       # UnifiedEventHandler (audio + expression)
-│   ├── input_handler.py # InputHandler (INPUT_* → Orchestrator)
-│   └── adapters/        # Socket adapter handlers
+│   └── audio/           # Audio processing utilities
 ├── memory/               # Conversation memory (OpenClaw-style architecture)
-│   ├── memory_system.py # Unified memory interface (backward compatible)
+│   ├── memory_system.py # Unified memory interface
 │   ├── memory_manager.py # Core manager (index/sync/search)
 │   ├── memory_turn.py   # Memory turn data structure
-│   ├── config.py        # Configuration (ChunkConfig, SearchConfig, MemoryConfig)
+│   ├── config.py        # Configuration (ChunkConfig, SearchConfig)
 │   ├── models.py        # Data models (Chunk, SearchResult, FileEntry)
 │   ├── chunker.py       # Markdown sliding-window chunking
 │   ├── sqlite_store.py  # SQLite FTS5 + metadata storage
 │   ├── chroma_store.py  # Chroma vector storage
-│   ├── hybrid_search.py # Hybrid search (vector 70% + keyword 30%)
-│   └── tools.py         # Agent tool interfaces (memory_search/memory_get)
+│   └── hybrid_search.py # Hybrid search (vector 70% + keyword 30%)
 ├── avatar/               # Live2D expression analysis
 │   ├── analyzers/       # Keyword-based and LLM-based emotion extraction
 │   └── strategies/      # Duration, intensity, position-based strategies
-├── state/                # Runtime state management
-│   ├── audio_buffer.py  # Audio buffer management
-│   └── tts_task_manager.py
 ├── server/               # Server lifecycle management
 │   ├── lifecycle.py     # Server startup/shutdown
-│   ├── session.py       # Session management
-│   ├── websocket.py     # WebSocket handlers
-│   ├── routes.py        # HTTP routes
+│   ├── session.py       # Session management (orchestrator factory)
+│   ├── routes.py        # WebSocket route handlers
 │   ├── desktop.py       # Desktop-specific routes
 │   └── live2d.py        # Live2D-specific routes
 └── utils/                # Helpers (env, logging, auto-config)
@@ -135,33 +130,197 @@ frontend/
 └── package.json          # Dependencies: electron, pixi.js, pixi-live2d-display
 ```
 
-### Data Flow
+### Data Flow (LangGraph Architecture)
 
 ```
-External Input (WebSocket from Electron/Frontend)
+User Input (WebSocket)
     ↓
-Adapter Layer: DesktopLive2DChatter
-    │   ├── send_text() → EventBus.emit(INPUT_TEXT)
-    │   ├── send_audio() → EventBus.emit(INPUT_AUDIO)
-    │   ├── handle_audio_chunk() → VAD detection → buffer accumulation
-    │   └── handle_audio_end() → EventBus.emit(INPUT_AUDIO)
-    ↓
-EventBus → InputHandler → Orchestrator.process_input()
-    ↓
-Orchestrator's InputPipeline: ASRStep → TextCleanStep → LocalLLMStep
-    ↓
-Agent.chat_stream() → LLM streaming response
-    ↓
-Orchestrator's OutputPipeline: Sentence splitting → TTS synthesis → EmotionExtraction
-    ↓
-EventBus.emit(sentence/audio/expression/control)
-    ↓
-Adapter.send(event) → WebSocket emit
-    ↓
-Frontend: Text display + Audio playback + Live2D sync
+[START] → route_input()
+    │
+    ├── (audio) → [asr_node] → speech recognition
+    │                       → updates state["user_text"]
+    │
+    └── (text) ──────────────────→ [llm_node]
+                                      │
+                                      ├── RAG: retrieves memory context
+                                      ├── Builds prompt with persona
+                                      ├── Calls LLM with tools
+                                      │
+                             ┌────────┴────────┐
+                             │                 │
+                       (tool_calls)     (direct reply)
+                             │                 │
+                        [tool_node]      [tts_node]
+                             │                 │
+                        execute tools     TTS synthesis
+                             │                 │
+                        results ──────────────┤
+                                               ↓
+                                         [emotion_node]
+                                               ↓
+                                         [output_node]
+                                               ↓
+                                    Socket.IO → Frontend
+                                               ↓
+                                    Store to memory
+                                               ↓
+                                         [END]
 ```
 
-**Note:** The Orchestrator creates and manages InputPipeline/OutputPipeline internally. Each Orchestrator instance has its own EventBus and EventRouter for isolated session handling.
+**Note:** Each node reads/updates `AgentState` (TypedDict). The `LangGraphOrchestrator` manages graph execution via `graph.astream()` or `graph.ainvoke()`.
+
+## LangGraph Architecture
+
+### AgentState
+
+The central state object passed between nodes:
+
+```python
+class AgentState(TypedDict):
+    # Input
+    input_type: str                    # 'text' or 'audio'
+    raw_audio: Optional[bytes]         # Audio data
+    user_text: str                     # User text (from input or ASR)
+
+    # LLM conversation
+    messages: Annotated[Sequence[BaseMessage], add_messages]  # Message history
+    system_prompt: Optional[str]       # System prompt with persona
+
+    # Tool calling
+    tool_calls: Optional[List[Dict]]   # Tool requests from LLM
+    tool_results: Optional[List[Dict]] # Tool execution results
+
+    # Output
+    response_text: str                 # Final LLM response
+    response_chunks: List[str]         # Streaming chunks
+    tts_audio: Optional[bytes/str]     # TTS audio data
+    emotion: Optional[str]             # Emotion label
+
+    # Metadata
+    session_id: str
+    persona: Optional[Dict]
+    channel_id: Optional[str]
+    user_id: Optional[str]
+    user_name: Optional[str]
+    metadata: Dict[str, Any]
+```
+
+### Node Implementation Pattern
+
+All nodes follow this pattern:
+
+```python
+async def my_node(state: AgentState, config: RunnableConfig) -> AgentState:
+    """
+    Node function
+
+    Args:
+        state: Current state (read/write)
+        config: LangGraph config (contains _config with service_context, etc.)
+
+    Returns:
+        Updated state (or partial state dict)
+    """
+    # Get service context from internal config
+    internal_config = state.get("_config", {})
+    service_context = internal_config.get("service_context")
+
+    # Read from state
+    user_text = state.get("user_text", "")
+
+    # Process...
+    result = process(user_text)
+
+    # Return updated state
+    return {"response_text": result}
+```
+
+### Graph Builder
+
+```python
+from anima.graph.builder import build_graph
+
+# Build graph with tools
+graph = build_graph(
+    checkpointer=MemorySaver(),  # Optional state persistence
+    enable_tools=True,
+    tools=langchain_tools,
+    tools_map=tools_map,
+)
+
+# Compile and use
+compiled = graph.compile()
+result = await compiled.ainvoke(initial_state)
+```
+
+### Orchestrator Usage
+
+```python
+from anima.graph.orchestrator import LangGraphOrchestratorFactory
+
+# Create orchestrator
+orchestrator = await LangGraphOrchestratorFactory.create(
+    session_id="user-123",
+    service_context=service_context,
+    socketio=sio,
+    emotion_analyzer=emotion_analyzer,
+    enable_tools=True,  # Enable tool calling
+    tools_config=tools_config,
+)
+
+# Process input
+await orchestrator.process_text(text="你好", user_id="user", user_name="Alice")
+await orchestrator.process_audio(audio_data=b"...")
+```
+
+## Tool System
+
+### Built-in Tools
+
+| Tool | Parameters | Description |
+|------|------------|-------------|
+| `web_search` | `query: str`, `num_results: int` | Internet search |
+| `get_weather` | `city: str` | Weather query |
+| `read_file` | `file_path: str`, `max_length: int` | Read file contents |
+| `get_current_time` | `timezone: str` | Get current time |
+| `list_directory` | `directory: str` | List directory |
+| `calculator` | `expression: str` | Math calculation |
+
+### Tool Configuration
+
+`config/tools.yaml`:
+```yaml
+builtin_tools:
+  - web_search
+  - calculator
+
+mcp_servers:
+  - name: "filesystem"
+    transport: "stdio"
+    command: "npx"
+    args: ["-y", "@modelcontextprotocol/server-filesystem", "./data"]
+
+tool_settings:
+  max_tool_calls_per_turn: 5
+  tool_execution_timeout: 30
+```
+
+### Custom Tool Example
+
+```python
+from langchain_core.tools import tool
+
+@tool
+async def my_tool(param: str) -> str:
+    """Tool description for LLM."""
+    return f"Result: {param}"
+
+# Register in orchestrator
+tools, tools_map = create_tool_registry(
+    builtin_enabled=["calculator"],
+    extra_tools=[my_tool],
+)
+```
 
 ## Memory System Architecture
 
@@ -181,110 +340,27 @@ Hybrid search combining:
 - **Vector semantic search** (70% weight): Finds conceptually similar content
 - **BM25 keyword search** (30% weight): Finds exact keyword matches
 
-### Chunking
+### RAG Integration
 
-Sliding window chunking with:
-- Target: ~400 tokens per chunk
-- Overlap: 80 tokens between chunks
-- Incremental indexing based on file hash detection
-
-### Key Components
+Memory is automatically integrated into the LangGraph flow:
+- **Retrieval**: In `llm_node.py`, before LLM call: `_retrieve_memory_context()`
+- **Storage**: In `output_node.py`, after response: `_store_conversation_to_memory()`
 
 ```python
-# Storing a conversation turn
-await memory.store_turn(MemoryTurn(
-    session_id="session-001",
-    user_input="Hello",
-    agent_response="Hi there!",
-    emotions=["happy"],
-    importance=0.5,  # High importance (>=0.7) also saved to MEMORY.md
-))
-
-# Retrieving context
-results = await memory.retrieve_context(
-    query="what did we talk about",
-    session_id="session-001",
+# llm_node.py - RAG retrieval
+memory_context = await memory.retrieve_context(
+    query=state["user_text"],
+    session_id=state["session_id"],
     max_turns=5,
 )
-```
 
-### Graceful Degradation
-
-If MemoryManager initialization fails (missing dependencies, etc.), the system falls back to pure in-memory mode with a warning log.
-
-## EventBus Architecture
-
-The EventBus is the central communication hub. All components communicate through it.
-
-### Subscription Pattern
-```python
-# Subscribe to specific event type
-sub = event_bus.subscribe("sentence", handler, priority=EventPriority.HIGH)
-
-# Subscribe to all events
-sub = event_bus.subscribe_all(handler)
-
-# Unsubscribe
-event_bus.unsubscribe(sub)
-```
-
-### Event Types
-
-**Input Events** (from Adapter to Orchestrator):
-- `INPUT_TEXT` - Text input from user
-- `INPUT_AUDIO` - Audio input (after VAD/accumulation)
-- `INTERRUPT` - User interruption signal
-
-**Output Events** (from Orchestrator to Adapter):
-- `sentence` - Text sentence (streaming)
-- `audio` - TTS audio data
-- `audio_with_expression` - Audio combined with Live2D expression
-- `control` - Control signals (conversation-start, conversation-end, etc.)
-- `expression` - Live2D expression/motion command
-- `tool_call` - Tool execution request
-
-### OutputEvent Structure
-```python
-@dataclass
-class OutputEvent:
-    type: str                    # Event type
-    data: Any                    # Event payload
-    seq: int = 0                 # Sequence number for ordering
-    metadata: Dict[str, Any] = field(default_factory=dict)  # channel_id, session_id, etc.
-```
-
-### Event Data Format Conventions
-
-**IMPORTANT:** Handlers must be defensive about `event.data` and `event.metadata` types.
-
-| Event Type | `data` Type | `metadata` Keys |
-|------------|-------------|-----------------|
-| `sentence` | `str` (text content) | `is_complete: bool` (optional, marks end) |
-| `audio` | `dict` with `path: str` | - |
-| `audio_with_expression` | `dict` with `audio_path`, `emotions`, `text` | - |
-| `expression` | `str` (expression name) | `timestamp: float` |
-| `control` | `dict` with `signal: str` | - |
-| `INPUT_TEXT` | `dict` with `content`, `user_id`, `user_name` | `channel_id`, `session_id` |
-| `INPUT_AUDIO` | `dict` with `content` (audio array), `sample_rate` | `channel_id`, `session_id` |
-| `INTERRUPT` | `dict` with `heard_text` | `channel_id`, `session_id` |
-
-**Handler Implementation Pattern:**
-```python
-async def handle(self, event: "OutputEvent") -> None:
-    # Defensive type checking for data
-    data = event.data
-    if not isinstance(data, dict):
-        logger.error(f"[{self.name}] Expected dict, got {type(data).__name__}")
-        return
-
-    value = data.get("key", default)
-
-    # Defensive type checking for metadata
-    metadata = event.metadata
-    if isinstance(metadata, dict):
-        flag = metadata.get("flag", False)
-    else:
-        flag = False
+# output_node.py - Memory storage
+await memory.store_turn(MemoryTurn(
+    session_id=state["session_id"],
+    user_input=state["user_text"],
+    agent_response=state["response_text"],
+    emotions=[state.get("emotion")],
+))
 ```
 
 ## Configuration
@@ -307,11 +383,7 @@ system:
 Contains detailed configurations for all service providers (ASR, TTS, LLM, VAD).
 
 ### Personas (`config/personas/`)
-Define character personality, speaking style, and behavior rules. Each persona includes:
-- Identity and personality traits
-- Speaking style and catchphrases
-- Response examples
-- Emoji and emotion tag usage
+Define character personality, speaking style, and behavior rules.
 
 ### Environment Variables (`.env`)
 ```bash
@@ -321,13 +393,10 @@ ANIMA_BASE_MODEL_PATH=xxx # For local LoRA
 ANIMA_LORA_PATH=xxx       # For local LoRA
 ```
 
-### Local Model Paths
-- Base 7B model: `E:/anima_data/models/huggingface/models--Qwen--Qwen2.5-7B-Instruct/...`
-- Style transfer LoRA: `E:/anima_data/models/style_transfer/final/lora`
-
 ## Key Patterns
 
-### Adding a New Service Provider (LLM/ASR/TTS/VAD)
+### Adding a New Service Provider
+
 1. Create config class in `src/anima/config/providers/llm/my_llm.py`
 2. Create service in `src/anima/services/llm/implementations/my_llm.py`
 3. Register with decorators:
@@ -342,108 +411,67 @@ class MyLLMAgent(LLMInterface):
     def from_config(cls, config, **kwargs):
         return cls(api_key=config.api_key, model=config.model)
 ```
-4. Add config in `config/services.yaml` under `llm:` section
-5. Update `src/anima/services/llm/implementations/__init__.py` to export the class
 
-**Service Factory Pattern:**
+### Adding a New Graph Node
+
+1. Create node function in `src/anima/graph/nodes/my_node.py`:
 ```python
-# Type-safe creation from config
-engine = LLMFactory.create_from_config(config=llm_config, system_prompt=prompt)
+from anima.graph.state import AgentState
+from langgraph.graph import RunnableConfig
 
-# Or with explicit provider
-engine = ASRFactory.create(provider="faster_whisper", model="large-v3", ...)
+async def my_node(state: AgentState, config: RunnableConfig) -> AgentState:
+    # Get internal config
+    internal_config = state.get("_config", {})
+    service_context = internal_config.get("service_context")
+
+    # Process
+    result = process_data(state["input_field"])
+
+    # Return updated state
+    return {"output_field": result}
 ```
 
-### Pipeline Steps
-All pipeline steps inherit from `PipelineStep` and implement `async def process(self, ctx: PipelineContext)`:
-
-**PipelineContext fields:**
-- `raw_input: Union[str, np.ndarray]` - Original input (text or audio)
-- `text: str` - Processed text (filled by ASR or direct text input)
-- `from_name: str` - Sender name
-- `metadata: Dict[str, Any]` - Extra data (skip_history, skip_memory, etc.)
-- `response: str` - Agent response (filled by AgentStep)
-- `skip_remaining: bool` - Skip subsequent steps
-
+2. Register in `src/anima/graph/nodes/__init__.py`:
 ```python
-class MyStep(PipelineStep):
-    @property
-    def name(self) -> str:
-        return "my_step"
-
-    async def process(self, ctx: PipelineContext) -> None:
-        # Modify ctx in place
-        ctx.text = process_text(ctx.text)
-        # Skip remaining steps if needed
-        ctx.skip()
+from .my_node import my_node
 ```
 
-### Event Handlers
-Register handlers with `EventRouter`:
+3. Add to graph in `src/anima/graph/builder.py`:
 ```python
-# Create router and register handlers
-router = EventRouter(event_bus)
-router.register("sentence", TextHandler(), priority=EventPriority.HIGH)
-router.register("audio_with_expression", AudioExpressionHandler())
-router.setup()  # Connect to EventBus
-
-# Or use decorator pattern
-@router.on("sentence", priority=EventPriority.HIGH)
-async def handle_sentence(event: OutputEvent):
-    await websocket.send(json.dumps({...}))
+graph.add_node("my_node", my_node)
+graph.add_edge("previous_node", "my_node")
 ```
 
-### Channel Adapters
-Adapters convert external input to EventBus events and forward EventBus output to clients.
+### ConfigStore Pattern
 
-**Key principle:** Adapters only depend on EventBus, not on Orchestrator directly.
+LangGraph's config system doesn't pass all needed data to nodes. Use `ConfigStore` for node access:
 
 ```python
-from anima.adapters import ChannelAdapter, AdapterCapabilities
+from anima.graph.config_store import ConfigStore
 
-class DesktopLive2DChatter(ChannelAdapter):
-    """Electron desktop app adapter with Live2D + voice/text chat"""
+# Set config (in orchestrator)
+ConfigStore.set(session_id, "service_context", service_context)
+ConfigStore.set(session_id, "socketio", sio)
 
-    @property
-    def channel_type(self) -> str:
-        return "desktop_live2d"
-
-    @property
-    def capabilities(self) -> AdapterCapabilities:
-        return AdapterCapabilities(
-            text_input=True,
-            voice_input=True,  # with VAD
-            audio_output=True,
-            streaming=True,
-            interrupt=True,
-        )
-
-    async def start(self) -> None:
-        self._subscribe_output()  # Subscribe to EventBus output events
-        self._is_running = True
-
-    async def stop(self) -> None:
-        self._unsubscribe_output()
-        self._is_running = False
-
-    async def send(self, event: OutputEvent) -> None:
-        """Send output event to client (called by EventBus)"""
-        await self._send_callback(event.to_dict())
-
-    # Input methods emit to EventBus
-    async def send_text(self, text: str, **kwargs) -> None:
-        await self._emit_input(event_type="INPUT_TEXT", content=text, ...)
-
-    async def send_interrupt(self, heard_text: str = "") -> None:
-        await self.event_bus.emit(OutputEvent(type="INTERRUPT", ...))
+# Get config (in node)
+service_context = ConfigStore.get(state["session_id"], "service_context")
 ```
 
-**Usage in socketio_server.py:**
-```python
-adapter = await get_or_create_adapter(sid)
-await adapter.handle_text_input(text=text, ...)
-await adapter.handle_audio_chunk(audio_chunk)
-```
+## WebSocket Events
+
+**Client → Server:**
+- `text_input` - `{text: string, from_name?: string}`
+- `raw_audio_data` - `{audio: float32[]}` (VAD mode)
+- `mic_audio_end` - Signal end of audio input
+- `interrupt_signal` - `{heard_text?: string}`
+
+**Server → Client:**
+- `text` - `{text: string, seq: number}`
+- `audio` - `{data: base64, format: string}`
+- `audio_with_expression` - `{audio_path: str, text: str, emotions: [], volumes: []}`
+- `expression` - `{expression: str}`
+- `control` - `{signal: string}` (conversation-start, conversation-end, interrupt)
+- `transcript` - `{text: string, is_final: boolean}`
 
 ## Ports
 
@@ -451,28 +479,31 @@ await adapter.handle_audio_chunk(audio_chunk)
 - Web Config: 8080 (HTTP)
 - Frontend: Electron desktop app (no port)
 
-## WebSocket Events
-
-Frontend-backend communication via Socket.IO:
-
-**Client → Server:**
-- `text_input` - `{text: string, from_name?: string}`
-- `audio_data` - `{audio: float32[], sample_rate: number}`
-- `audio_end` - Signal end of audio input
-- `interrupt` - `{heard_text?: string}`
-
-**Server → Client:**
-- `text` - `{text: string, seq: number}`
-- `audio` - `{data: base64, format: string}`
-- `control` - `{signal: string}` (conversation-start, conversation-end, interrupt)
-- `transcript` - `{text: string, is_final: boolean}`
-
 ## Skills
 
 Use the `live2d` skill when working with Live2D models, expressions, lip sync, or the pixi-live2d-display library.
 
-## Implementation Plans
+## Migration Notes
 
-- [ADAPTER_MCP_IMPLEMENTATION_PLAN.md](docs/plans/ADAPTER_MCP_IMPLEMENTATION_PLAN.md)
-  - Adapter Layer: Input abstraction for multiple channels ✓ (implemented)
-  - MCP Layer: Tool integration with permission management (planned)
+### From EventBus to LangGraph (Completed)
+
+The following modules have been **removed**:
+- `src/anima/pipeline/` - Pipeline processing
+- `src/anima/events/` - EventBus system
+- `src/anima/handlers/` - Event handlers
+- `src/anima/adapters/` - Adapter layer
+- `src/anima/core/` - Core abstractions
+- `src/anima/services/conversation/` - Old orchestrator
+- `src/anima/state/` - Old state modules
+
+Replaced by:
+- `src/anima/graph/` - LangGraph state graph
+- `src/anima/tools/` - Tool system with MCP support
+
+See [docs/LANGGRAPH_MIGRATION_COMPLETE.md](docs/LANGGRAPH_MIGRATION_COMPLETE.md) for details.
+
+## Related Documentation
+
+- [LangGraph Migration Complete](docs/LANGGRAPH_MIGRATION_COMPLETE.md)
+- [Tools System](docs/TOOLS.md)
+- [Live2D System](MEMORY.md#live2d-lip-sync-system-2025-03)

@@ -340,15 +340,15 @@ class SileroStateMachine:
                 self.miss_count = 0
             else:
                 self.miss_count += 1
-                # 注释掉频繁的DEBUG日志
-                # if self._chunk_count % 100 == 1 or self.miss_count % 10 == 1:
-                #     logger.debug(f"[VAD State Machine] ACTIVE: miss_count={self.miss_count}/{self.vad.required_misses}")
+                # 每 50 个块打印 miss_count 状态
+                if self._chunk_count % 50 == 0 and self.miss_count > 0:
+                    logger.info(f"[VAD] ACTIVE: miss_count={self.miss_count}/{self.vad.required_misses}, prob={smoothed_prob:.3f}")
                 if self.miss_count >= self.vad.required_misses:
                     # 检测到语音暂停
                     self.state = VADState.INACTIVE
                     self.miss_count = 0
                     self._inactive_start_time = None  # 重置超时计时
-                    logger.debug(f"[VAD] 语音暂停 (ACTIVE→INACTIVE)")
+                    logger.info(f"[VAD] 语音暂停 (ACTIVE→INACTIVE)")
 
         elif self.state == VADState.INACTIVE:
             # 暂停状态：等待语音继续或结束
@@ -358,11 +358,19 @@ class SileroStateMachine:
             import time
             if self._inactive_start_time is None:
                 self._inactive_start_time = time.time()
+                logger.debug(f"[VAD] 进入 INACTIVE 状态，开始超时计时")
 
             inactive_duration = time.time() - self._inactive_start_time
+            
+            # 每 1 秒打印一次状态
+            # 每 0.5 秒打印一次状态
+            if not hasattr(self, "_last_logged_duration") or inactive_duration - self._last_logged_duration >= 0.5:
+                logger.info(f"[VAD] INACTIVE 状态已持续 {inactive_duration:.1f}s (超时阈值: {self._inactive_timeout}s)")
+                self._last_logged_duration = inactive_duration
+            
             if inactive_duration > self._inactive_timeout:
                 # 超时强制结束
-                logger.debug(f"[VAD] INACTIVE 超时 ({inactive_duration:.2f}s)，强制结束")
+                logger.info(f"[VAD] INACTIVE 超时 ({inactive_duration:.2f}s)，强制结束")
                 self.state = VADState.IDLE
                 self._inactive_start_time = None
                 self.miss_count = 0
@@ -389,20 +397,26 @@ class SileroStateMachine:
 
             if is_speech:
                 self.hit_count += 1
-                if self.hit_count >= self.vad.required_hits:
+                # 🔥 大幅提高阈值：需要 10 次连续语音才会转回 ACTIVE（约 0.3 秒）
+                # 这样可以防止噪音导致的状态循环
+                if self.hit_count >= 10:
                     # 语音继续
                     self.state = VADState.ACTIVE
                     self.hit_count = 0
                     self.miss_count = 0
                     self._inactive_start_time = None
-                    logger.debug(f"[VAD] 语音继续 (INACTIVE→ACTIVE)")
+                    logger.info(f"[VAD] 语音继续 (INACTIVE→ACTIVE), hit_count={self.hit_count}")
+                # 每 100 个块打印一次状态
+                elif self._chunk_count % 100 == 0:
+                    logger.info(f"[VAD] INACTIVE: hit_count={self.hit_count}/{self.vad.required_hits * 2}, prob={smoothed_prob:.3f}")
             else:
                 self.hit_count = 0
                 self.miss_count += 1
-                # 注释掉频繁的DEBUG日志
-                # if self._chunk_count % 100 == 1 or self.miss_count % 10 == 1:
-                #     logger.debug(f"[VAD State Machine] INACTIVE: miss_count={self.miss_count}/{self.vad.required_misses}, duration={inactive_duration:.2f}s")
-                if self.miss_count >= self.vad.required_misses:
+                # 每 50 个块打印一次 miss_count
+                if self._chunk_count % 50 == 0 and self.miss_count > 0:
+                    logger.info(f"[VAD] INACTIVE: miss_count={self.miss_count}/8, prob={smoothed_prob:.3f}")
+                # 🔥 降低阈值：8 次（约 0.25 秒）而不是 16 次
+                if self.miss_count >= 8:
                     # 语音完全结束
                     self.state = VADState.IDLE
                     self.miss_count = 0

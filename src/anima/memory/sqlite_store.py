@@ -12,11 +12,14 @@ SQLite 存储层.
 
 from __future__ import annotations
 
+import logging
 import sqlite3
 import time
 from pathlib import Path
 
 from .models import Chunk, FileEntry
+
+logger = logging.getLogger(__name__)
 
 
 class SQLiteStore:

@@ -1,0 +1,216 @@
+"""
+Anima 工具基类和工具注册表
+"""
+
+from typing import Dict, List, Any, Optional
+from loguru import logger
+from langchain_core.tools import tool
+
+
+@tool
+async def web_search(query: str, num_results: int = 5) -> str:
+    """搜索互联网获取实时信息"""
+    import os
+    import httpx
+
+    tavily_api_key = os.getenv("TAVILY_API_KEY")
+    if tavily_api_key:
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    "https://api.tavily.com/search",
+                    json={
+                        "api_key": tavily_api_key,
+                        "query": query,
+                        "max_results": min(num_results, 10),
+                        "search_depth": "basic",
+                    },
+                    headers={"Content-Type": "application/json"},
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    results = data.get("results", [])
+                    if results:
+                        formatted = f"Search results for '{query}':\n\n"
+                        for i, r in enumerate(results[:num_results], 1):
+                            title = r.get("title", "N/A")
+                            url = r.get("url", "")
+                            snippet = r.get("content", "")[:150]
+                            formatted += f"{i}. {title}\n{snippet}...\nURL: {url}\n\n"
+                        logger.info(f"[web_search] Tavily success")
+                        return formatted
+        except Exception as e:
+            logger.warning(f"[web_search] Tavily failed: {e}")
+
+    # DuckDuckGo fallback
+    try:
+        from langchain_community.tools import DuckDuckGoSearchRun
+        search = DuckDuckGoSearchRun()
+        import asyncio
+        loop = asyncio.get_event_loop()
+        results_text = await loop.run_in_executor(None, search.run, query)
+        return f"Search results (DuckDuckGo) for '{query}':\n\n{results_text}"
+    except Exception as e:
+        logger.warning(f"[web_search] DuckDuckGo failed: {e}")
+
+    return "Search service unavailable. Please set TAVILY_API_KEY environment variable."
+
+
+@tool
+async def get_weather(city: str) -> str:
+    """查询指定城市的当前天气信息"""
+    import os
+    import httpx
+
+    amap_api_key = os.getenv("AMAP_API_KEY")
+    if amap_api_key:
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                geo_url = "https://restapi.amap.com/v3/geocode/geo"
+                geo_response = await client.get(geo_url, params={"key": amap_api_key, "address": city})
+                geo_data = geo_response.json()
+                if geo_data.get("status") == "1" and geo_data.get("geocodes"):
+                    adcode = geo_data["geocodes"][0].get("adcode")
+                    if adcode:
+                        weather_url = "https://restapi.amap.com/v3/weather/weatherInfo"
+                        weather_response = await client.get(weather_url, params={"key": amap_api_key, "city": adcode, "extensions": "base"})
+                        weather_data = weather_response.json()
+                        if weather_data.get("status") == "1" and weather_data.get("lives"):
+                            live = weather_data["lives"][0]
+                            result = f"Weather for {live.get('province', '')}{live.get('city', '')}: "
+                            result += f"{live.get('weather', '')}, {live.get('temperature', '')}C"
+                            return result
+        except Exception as e:
+            logger.warning(f"[get_weather] Amap failed: {e}")
+
+    # Mock data fallback
+    mock = {"Beijing": "Sunny, 15-25C", "Shanghai": "Cloudy, 18-26C", "Guangzhou": "Rain, 22-30C"}
+    return mock.get(city, f"Weather data unavailable for {city}")
+
+
+@tool
+async def read_file(file_path: str, max_length: int = 2000) -> str:
+    """读取用户本地文件的内容"""
+    try:
+        from pathlib import Path
+        path = Path(file_path)
+        if not path.is_absolute():
+            from anima.config.app import AppConfig
+            config = AppConfig()
+            path = config.base_path / file_path
+        if path.exists() and path.is_file():
+            content = path.read_text(encoding="utf-8")
+            if len(content) > max_length:
+                content = content[:max_length] + f"\n... (truncated)"
+            return f"File content:\n```\n{content}\n```"
+        return f"File not found: {file_path}"
+    except Exception as e:
+        return f"Failed to read file: {str(e)}"
+
+
+@tool
+async def get_current_time(timezone: str = "Asia/Shanghai") -> str:
+    """获取当前时间"""
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+    try:
+        tz = ZoneInfo(timezone)
+        now = datetime.now(tz)
+        return f"Current time ({timezone}): {now.strftime('%Y-%m-%d %H:%M:%S')}"
+    except:
+        return f"Current local time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+
+
+@tool
+async def list_directory(directory: str = ".") -> str:
+    """列出目录中的文件和子目录"""
+    try:
+        from pathlib import Path
+        path = Path(directory)
+        if not path.is_absolute():
+            from anima.config.app import AppConfig
+            config = AppConfig()
+            path = config.base_path / directory
+        if path.exists() and path.is_dir():
+            items = [("[DIR]" if i.is_dir() else "[FILE]") + f" {i.name}" for i in sorted(path.iterdir())]
+            return "Directory contents:\n" + "\n".join(items) if items else "(empty)"
+        return f"Directory not found: {directory}"
+    except Exception as e:
+        return f"Failed to list directory: {str(e)}"
+
+
+@tool
+async def calculator(expression: str) -> str:
+    """执行数学计算"""
+    try:
+        import ast
+        import operator as op
+        operators = {ast.Add: op.add, ast.Sub: op.sub, ast.Mult: op.mul, ast.Div: op.truediv, ast.Pow: op.pow, ast.USub: op.neg}
+        def eval_node(n):
+            if isinstance(n, ast.Constant): return n.value
+            elif isinstance(n, ast.BinOp): return operators[type(n.op)](eval_node(n.left), eval_node(n.right))
+            elif isinstance(n, ast.UnaryOp): return operators[type(n.op)](eval_node(n.operand))
+            elif isinstance(n, ast.Expression): return eval_node(n.body)
+            else: raise TypeError(f"Unsupported: {type(n)}")
+        tree = ast.parse(expression, mode='eval')
+        result = eval_node(tree)
+        return f"Result: {expression} = {result}"
+    except Exception as e:
+        return f"Calculation failed: {str(e)}"
+
+
+# 工具列表
+_BUILTIN_TOOLS = [web_search, get_weather, read_file, get_current_time, list_directory, calculator]
+
+
+def get_builtin_tools() -> List[Any]:
+    return _BUILTIN_TOOLS.copy()
+
+
+def get_tools_map(tools: Optional[List[Any]] = None) -> Dict[str, Any]:
+    if tools is None:
+        tools = _BUILTIN_TOOLS
+    return {tool.name: tool for tool in tools}
+
+
+def create_tool_registry(builtin_enabled: Optional[List[str]] = None, extra_tools: Optional[List[Any]] = None) -> tuple:
+    tools = []
+    if builtin_enabled is None:
+        tools.extend(_BUILTIN_TOOLS)
+    else:
+        tools_map = get_tools_map(_BUILTIN_TOOLS)
+        for name in builtin_enabled:
+            if name in tools_map:
+                tools.append(tools_map[name])
+    if extra_tools:
+        tools.extend(extra_tools)
+    tools_map = get_tools_map(tools)
+    logger.info(f"[Tool Registry] Registered {len(tools)} tools: {list(tools_map.keys())}")
+    return tools, tools_map
+
+
+def load_tools_from_config(config: Dict[str, Any]) -> tuple:
+    builtin_enabled = config.get("builtin_tools")
+    extra_tools = []
+
+    # LangChain tools
+    lc_config = config.get("langchain_tools", {})
+    if lc_config:
+        try:
+            from .langchain_tools import load_langchain_tools
+            lc_tools = load_langchain_tools(lc_config.get("enabled", []))
+            extra_tools.extend(lc_tools)
+        except Exception as e:
+            logger.error(f"[LangChain Tools] Failed: {e}")
+
+    # MCP tools
+    mcp_servers = config.get("mcp_servers", [])
+    if mcp_servers:
+        try:
+            from .mcp_bridge import load_mcp_tools
+            mcp_tools = load_mcp_tools(mcp_servers)
+            extra_tools.extend(mcp_tools)
+        except Exception as e:
+            logger.error(f"[MCP Tools] Failed: {e}")
+
+    return create_tool_registry(builtin_enabled=builtin_enabled, extra_tools=extra_tools)

@@ -6,6 +6,8 @@
 from typing import Callable, Optional
 from loguru import logger
 
+from .services.audio import AudioProcessorInterface
+from .services.audio.implementations.vad_audio_processor import VADAudioProcessor
 from .config import AppConfig, ASRConfig, TTSConfig, AgentConfig, PersonaConfig, VADConfig
 from .services import ASRInterface, TTSInterface, LLMInterface
 from .services.asr import ASRFactory
@@ -40,6 +42,7 @@ class ServiceContext:
         self.vad_engine: Optional[VADInterface] = None
 
         # 记忆系统
+        self.audio_processor: Optional[AudioProcessorInterface] = None  # 音频处理器（VAD）
         self.memory_system: Optional[MemorySystem] = None
 
         # 会话状态
@@ -82,6 +85,7 @@ class ServiceContext:
         await self.init_llm(config.agent, config.get_persona(), app_config=config)
         await self.init_local_llm(config.local_llm, app_config=config)
         await self.init_vad(config.vad)
+        await self.init_audio_processor()
         await self.init_memory()
 
         logger.info(f"[{self.session_id}] 服务加载完成")
@@ -330,6 +334,25 @@ class ServiceContext:
             logger.error(f"[{self.session_id}] ❌ VAD 引擎创建失败: {e}")
             self.vad_engine = None
 
+    async def init_audio_processor(self) -> None:
+        """
+        初始化音频处理器（如果需要）
+        
+        音频处理器用于 VAD 语音活动检测和音频累积
+        """
+        if hasattr(self, 'audio_processor') and self.audio_processor is not None:
+            logger.debug(f"[{self.session_id}] AudioProcessor 已初始化，跳过")
+            return
+        
+        if self.vad_engine is None:
+            logger.debug(f"[{self.session_id}] 没有 VAD 引擎，跳过音频处理器初始化")
+            return
+        
+        # 注意：音频处理器由 SessionManager 管理，这里只是预留接口
+        # 实际创建在 SessionManager.get_or_create_audio_processor 中完成
+        logger.debug(f"[{self.session_id}] 音频处理器将由 SessionManager 创建")
+    
+    
     async def init_memory(self) -> None:
         """
         初始化记忆系统
@@ -368,6 +391,9 @@ class ServiceContext:
 
             self.memory_system = MemorySystem(config)
 
+            # 启动异步任务
+            await self.memory_system.start()
+
             # 同步索引现有记忆文件
             self.memory_system.sync()
 
@@ -387,6 +413,13 @@ class ServiceContext:
         """关闭并清理所有资源"""
         logger.info(f"[{self.session_id}] 正在关闭服务上下文...")
 
+        # 先关闭记忆系统（可能有未完成的异步写入）
+        if self.memory_system:
+            await self.memory_system.stop()
+            self.memory_system.close()
+            self.memory_system = None
+            logger.info(f"[{self.session_id}] 记忆系统已关闭")
+
         if self.asr_engine:
             await self.asr_engine.close()
             self.asr_engine = None
@@ -403,9 +436,11 @@ class ServiceContext:
             await self.vad_engine.close()
             self.vad_engine = None
 
-        if self.memory_system:
-            self.memory_system.close()
-            self.memory_system = None
+        # 清理音频处理器
+        if hasattr(self, 'audio_processor') and self.audio_processor:
+            if hasattr(self.audio_processor, 'reset'):
+                self.audio_processor.reset()
+            self.audio_processor = None
 
         logger.info(f"[{self.session_id}] 服务上下文已关闭")
 

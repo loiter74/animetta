@@ -1,0 +1,53 @@
+# Anima 工具配置
+# 默认只启用不需要 API Key 的工具
+
+# ========================================
+# 内置工具配置（不需要 Key）
+# ========================================
+builtin_tools:
+  - web_search      # 使用 DuckDuckGo（免费），无需 Key
+  - read_file       # 读取本地文件
+  - get_current_time # 获取时间
+  - list_directory  # 列出目录
+  - calculator      # 数学计算
+  # - get_weather     # 需要 AMAP_API_KEY 或 OPENWEATHER_API_KEY，否则返回模拟数据
+
+# ========================================
+# LangChain 工具配置（不需要 Key）
+# ========================================
+langchain_tools:
+  enabled:
+    - wikipedia       # 维基百科搜索
+    - ddg_search      # DuckDuckGo 搜索
+    # - python_repl     # Python 代码执行（可选，有安全风险）
+
+# ========================================
+# 自定义工具配置（不需要 Key）
+# ========================================
+custom_tools:
+  enabled:
+    - url_preview     # URL 预览
+  # - translate       # 需要 DEEPL_API_KEY
+  # - send_email      # 需要 SMTP_USER, SMTP_PASSWORD
+  # - image_gen       # 需要 OPENAI_API_KEY 或 REPLICATE_API_TOKEN
+
+# ========================================
+# MCP 服务器配置（不需要 Key）
+# ========================================
+mcp_servers:
+  - name: "filesystem"
+    transport: "stdio"
+    command: "npx"
+    args: ["-y", "@modelcontextprotocol/server-filesystem", "./data"]
+    env: {}
+
+# ========================================
+# 工具调用配置
+# ========================================
+tool_settings:
+  enable_tools: true
+  max_tool_calls_per_turn: 5
+  tool_execution_timeout: 30
+  retry_on_failure: true
+  max_retries: 2
+  log_tool_calls: true
