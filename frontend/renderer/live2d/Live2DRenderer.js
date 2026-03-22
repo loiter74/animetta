@@ -1,8 +1,3 @@
-/**
- * Live2DRenderer - 主入口
- * 整合所有模块，对外唯一接口
- */
-
 import { PixiApp } from './core/PixiApp.js';
 import { ModelLoader } from './core/ModelLoader.js';
 import { ScaleManager } from './renderer/ScaleManager.js';
@@ -11,7 +6,6 @@ import { ExpressionController } from './renderer/ExpressionController.js';
 import { IpcBridge } from './bridge/IpcBridge.js';
 import { DisplayConfig } from './config/index.js';
 
-// 简化: 不依赖外部模块，内联实现
 class SimpleAudioPlayer {
   constructor(opts) {
     this.opts = opts;
@@ -23,19 +17,16 @@ class SimpleAudioPlayer {
   }
 
   async play(data) {
-    console.log('[AudioPlayer] play() 被调用, audio_data:', !!data?.audio_data, 'volumes:', data?.volumes?.length);
+    console.log('[AudioPlayer] play() called, audio_data:', !!data?.audio_data, 'volumes:', data?.volumes?.length);
     const { audio_data, format, volumes, expressions, return_to_idle } = data || {};
     if (!audio_data) return;
 
-    // 清理之前的音频资源（防止内存泄漏）
     this._cleanupCurrentAudio();
 
-    // 打印 volumes 数组的首尾值用于调试
     if (volumes && volumes.length > 0) {
-      console.log('[AudioPlayer] volumes 首值:', volumes[0].toFixed(3), '尾值:', volumes[volumes.length - 1].toFixed(3));
+      console.log('[AudioPlayer] volumes first:', volumes[0].toFixed(3), 'last:', volumes[volumes.length - 1].toFixed(3));
     }
 
-    // 播放音频
     try {
       const binary = atob(audio_data);
       const buffer = new Uint8Array(binary.length);
@@ -45,27 +36,21 @@ class SimpleAudioPlayer {
       this._currentBlobUrl = url;
       const audio = new Audio(url);
 
-      // 保存当前音频引用
       this._currentAudio = audio;
 
-      // 启动口型同步（如果提供了 volumes），传递 audio 对象用于时间同步
-      // 必须在 play() 之前设置监听器，否则会错过 playing 事件
       if (volumes && Array.isArray(volumes) && volumes.length > 0) {
         this.opts.onPlaybackStart?.(audio, volumes);
       }
 
-      // 创建并保存 onended 处理器（用于清理）
       this._onEndedHandler = () => {
-        console.log('[AudioPlayer] audio.onended 触发, return_to_idle:', return_to_idle);
+        console.log('[AudioPlayer] audio.onended triggered, return_to_idle:', return_to_idle);
         this.opts.onPlaybackEnd?.();
 
-        // 如果标记了 return_to_idle，在音频播放结束后恢复 idle 表情
         if (return_to_idle) {
-          console.log('[AudioPlayer] 音频播放结束，恢复 idle 表情');
+          console.log('[AudioPlayer] Playback ended, restoring idle expression');
           this.opts.onReturnToIdle?.();
         }
 
-        // 清理资源
         this._cleanupCurrentAudio();
       };
       audio.onended = this._onEndedHandler;
@@ -73,15 +58,21 @@ class SimpleAudioPlayer {
       await audio.play();
 
     } catch (e) {
-      console.error('[AudioPlayer] ❌ 播放失败:', e.name, e.message);
-      // 确保在错误时也清理资源
+      console.error('[AudioPlayer] ❌ Playback failed:', e.name, e.message);
       this._cleanupCurrentAudio();
     }
   }
 
-  /**
-   * 清理当前音频资源（防止内存泄漏）
-   */
+  stop() {
+    console.log('[AudioPlayer] stop() called');
+    if (this._currentAudio) {
+      this._currentAudio.pause();
+      this._currentAudio.currentTime = 0;
+    }
+    this._cleanupCurrentAudio();
+    this.opts.onPlaybackEnd?.();
+  }
+
   _cleanupCurrentAudio() {
     if (this._currentAudio) {
       this._currentAudio.onended = null;
@@ -94,9 +85,6 @@ class SimpleAudioPlayer {
     this._onEndedHandler = null;
   }
 
-  /**
-   * 销毁播放器，释放所有资源
-   */
   destroy() {
     this._cleanupCurrentAudio();
     this.opts = null;
@@ -114,19 +102,15 @@ export class Live2DRenderer {
   async init() {
     console.log('[Live2DRenderer] Initializing...');
 
-    // 创建 PIXI 应用
     this.pixiApp = new PixiApp(this.canvas, this.container);
     this.app = await this.pixiApp.create();
 
-    // 创建模型加载器
     this.modelLoader = new ModelLoader(this.app, this.container);
 
-    // 创建渲染器
     this.scaleManager = new ScaleManager(this.app, this.modelLoader);
     this.backgroundManager = new BackgroundManager(this.app, this.container);
     this.expressionController = new ExpressionController(this.app.ticker, this.modelLoader);
 
-    // 创建音频播放器
     this.audioPlayer = new SimpleAudioPlayer({
       onPlaybackStart: (audio, volumes) => this._startLipSync(audio, volumes),
       onPlaybackEnd: () => {
@@ -134,28 +118,22 @@ export class Live2DRenderer {
         this.expressionController.setMouthTarget(0);
       },
       onReturnToIdle: () => {
-        // 音频播放结束后恢复 idle 表情
         this.expressionController.setExpression('idle');
       },
     });
 
-    // 创建配置管理
     this.displayConfig = new DisplayConfig();
     await this._loadConfig();
 
-    // 创建 IPC 桥接
     this.ipcBridge = new IpcBridge();
     this._setupIpcListeners();
 
-    // 监听窗口大小变化
     window.addEventListener('resize', this._handleResize);
 
-    // 暴露全局引用
     window.live2dRenderer = this;
 
     console.log('[Live2DRenderer] Initialized');
 
-    // 加载默认模型
     await this._loadDefaultModel();
   }
 
@@ -182,18 +160,16 @@ export class Live2DRenderer {
 
   _setupIpcListeners() {
     this.ipcBridge.on('live2d:action', (data) => {
-      console.log('[Renderer] 收到 audio:with-expression');
+      console.log('[Renderer] Received audio:with-expression');
       this.expressionController.execute(data);
     });
 
     this.ipcBridge.on('audio:with-expression', (data) => {
-      // 处理新的参数映射模式
       if (data.use_parameter_mapping && data.expressions?.frames) {
-        console.log('[Renderer] 使用参数映射模式, frames:', data.expressions.frames.length);
+        console.log('[Renderer] Using parameter mapping mode, frames:', data.expressions.frames.length);
         this._playParameterTimeline(data);
       } else {
-        // 传统模式：只播放音频和口型同步
-        console.log('[Renderer] 使用传统模式');
+        console.log('[Renderer] Using legacy mode');
         this.audioPlayer.play(data);
       }
     });
@@ -203,30 +179,26 @@ export class Live2DRenderer {
         this.expressionController.setMouthTarget(data.volume);
       }
     });
+
+    this.ipcBridge.on('audio:stop', () => {
+      console.log('[Renderer] Received stop_audio event');
+      this.stopAudio();
+    });
   }
 
-  /**
-   * 播放参数时间轴（参数映射模式）
-   * @param {Object} data - { audio_data, format, volumes, expressions, use_parameter_mapping, return_to_idle }
-   */
   async _playParameterTimeline(data) {
     const { audio_data, format, volumes, expressions, return_to_idle } = data;
 
-    // 1. 启动音频播放和口型同步
     this.audioPlayer.play({
       audio_data,
       format,
       volumes,
       expressions,
-      return_to_idle  // 传递 return_to_idle 标志
+      return_to_idle
     });
 
-    // 2. 启动表情时间轴播放
     if (expressions?.frames) {
-      // 等待音频开始播放
       await new Promise(resolve => setTimeout(resolve, 100));
-
-      // 启动参数时间轴
       this.expressionController.playParameterTimeline(expressions);
     }
   }
@@ -246,66 +218,56 @@ export class Live2DRenderer {
     this.backgroundManager.handleResize();
   }
 
-  // ====== 口型同步 ======
   _startLipSync(audio, volumes) {
-    // volumes 是 50Hz 采样的音量包络数组，每 20ms 一个采样点
     if (!Array.isArray(volumes) || volumes.length === 0) {
-      console.warn('[Live2DRenderer] 无效的 volumes 数据');
+      console.warn('[Live2DRenderer] Invalid volumes data');
       return;
     }
 
-    console.log('[Live2DRenderer] 启动口型同步，采样点数:', volumes.length, '音频时长:', audio.duration.toFixed(2) + 's');
+    console.log('[Live2DRenderer] Starting lip sync, samples:', volumes.length, 'duration:', audio.duration.toFixed(2) + 's');
 
-    const intervalMs = 20; // 原始采样间隔
+    const intervalMs = 20;
     let animFrameId = null;
     let lastIndex = -1;
     let hasStarted = false;
 
-    // 清除之前的同步
     this._stopLipSync();
 
     const tick = () => {
-      // 检查音频是否已结束
       if (audio.ended) {
-        console.log('[Live2DRenderer] 音频已结束，停止同步');
+        console.log('[Live2DRenderer] Audio ended, stopping sync');
         if (animFrameId) cancelAnimationFrame(animFrameId);
         this.expressionController.setMouthTarget(0);
         return;
       }
 
-      // 检查音频是否暂停
       if (audio.paused) {
-        // 如果还没开始播放，继续等待
         if (!hasStarted) {
           animFrameId = requestAnimationFrame(tick);
           return;
         }
-        // 如果已经开始了但现在暂停，停止同步
-        console.log('[Live2DRenderer] 音频已暂停，停止同步');
+        console.log('[Live2DRenderer] Audio paused, stopping sync');
         if (animFrameId) cancelAnimationFrame(animFrameId);
         this.expressionController.setMouthTarget(0);
         return;
       }
 
-      // 音频正在播放，标记为已开始
       if (!hasStarted) {
         hasStarted = true;
-        console.log('[Live2DRenderer] 音频开始播放，duration:', audio.duration.toFixed(2) + 's');
+        console.log('[Live2DRenderer] Audio started, duration:', audio.duration.toFixed(2) + 's');
       }
 
       const currentMs = audio.currentTime * 1000;
       const index = Math.floor(currentMs / intervalMs);
 
-      // 更新口型：如果在 volumes 范围内，使用对应的值；否则归零
       if (index !== lastIndex) {
         if (index < volumes.length) {
           const volume = volumes[index];
           this.expressionController.setMouthTarget(volume);
           lastIndex = index;
         } else {
-          // 超出 volumes 范围，归零
           if (lastIndex < volumes.length) {
-            console.log('[Live2DRenderer] 播放完所有 volume 数据 (index:', index, '>= volumes.length:', volumes.length + ')，归零口型');
+            console.log('[Live2DRenderer] Played all volume data (index:', index, '>= volumes.length:', volumes.length + ')');
           }
           this.expressionController.setMouthTarget(0);
           lastIndex = index;
@@ -315,10 +277,8 @@ export class Live2DRenderer {
       animFrameId = requestAnimationFrame(tick);
     };
 
-    // 立即启动 tick 循环
     animFrameId = requestAnimationFrame(tick);
 
-    // 保存 cancel 函数供 _stopLipSync 调用
     this._lipSyncCancel = () => {
       if (animFrameId) cancelAnimationFrame(animFrameId);
     };
@@ -331,11 +291,17 @@ export class Live2DRenderer {
     }
   }
 
-  // === 公共 API ===
   setExpression(name) { this.expressionController.setExpression(name); }
   playMotion(group, index) { this.expressionController.playMotion(group, index); }
   setMouthOpen(value) { this.expressionController.setMouthTarget(value); }
   executeAction(action) { this.expressionController.execute(action); }
+
+  stopAudio() {
+    console.log('[Live2DRenderer] stopAudio() called');
+    this.audioPlayer?.stop();
+    this._stopLipSync();
+    this.expressionController.setMouthTarget(0);
+  }
 
   zoom(delta) { this.scaleManager.zoom(delta); }
   setScaleStrategy(strategy) { this.scaleManager.setStrategy(strategy); }
@@ -354,10 +320,8 @@ export class Live2DRenderer {
     this._stopLipSync();
     this.expressionController?.destroy();
     this.backgroundManager?.destroy();
-    // 确保 ipcBridge 正确销毁
     this.ipcBridge?.destroy();
     this.ipcBridge = null;
-    // 销毁音频播放器
     this.audioPlayer?.destroy();
     this.audioPlayer = null;
     this.modelLoader?.unload();

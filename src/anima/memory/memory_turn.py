@@ -1,8 +1,4 @@
-"""
-记忆数据模型
-
-MemoryTurn - 单次对话数据结构
-"""
+"""记忆数据模型 - MemoryTurn"""
 
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -11,19 +7,7 @@ from typing import List, Optional, Dict, Any
 
 @dataclass
 class MemoryTurn:
-    """
-    单次对话数据
-
-    Attributes:
-        turn_id: 唯一标识符
-        session_id: 会话 ID
-        timestamp: 时间戳
-        user_input: 用户输入
-        agent_response: Agent 回复
-        emotions: Live2D 表情列表
-        metadata: 元数据
-        importance: 重要性评分 (0-1)
-    """
+    """单次对话数据"""
     turn_id: str
     session_id: str
     timestamp: datetime
@@ -34,7 +18,6 @@ class MemoryTurn:
     importance: float = 0.5
 
     def to_dict(self) -> Dict[str, Any]:
-        """转换为字典"""
         return {
             "turn_id": self.turn_id,
             "session_id": self.session_id,
@@ -48,7 +31,6 @@ class MemoryTurn:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "MemoryTurn":
-        """从字典创建"""
         return cls(
             turn_id=data["turn_id"],
             session_id=data["session_id"],

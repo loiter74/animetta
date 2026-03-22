@@ -1,8 +1,4 @@
-"""
-LangGraph 图构建器
-
-负责构建 StateGraph，定义节点、边和路由逻辑。
-"""
+"""LangGraph 状态图构建器"""
 
 from typing import Dict, Any, Optional, Literal, List
 from loguru import logger
@@ -10,55 +6,25 @@ from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.memory import MemorySaver
 
 from .state import AgentState
-from .nodes import (
-    asr_node,
-    llm_node,
-    tts_node,
-    emotion_node,
-    output_node,
-)
-from .nodes import tool_node  # Phase 3: 导入工具节点
+from .nodes import asr_node, llm_node, tts_node, emotion_node, output_node, tool_node
 
 
 def route_input(state: AgentState) -> Literal["asr", "llm"]:
-    """
-    根据输入类型决定起始节点
-
-    Args:
-        state: 当前状态
-
-    Returns:
-        str: 下一个节点名称 ("asr" 或 "llm")
-    """
+    """根据输入类型决定起始节点"""
     input_type = state.get("input_type", "text")
-
     if input_type == "audio" and state.get("raw_audio"):
         logger.debug(f"[路由] 音频输入 -> ASR 节点")
         return "asr"
-
     logger.debug(f"[路由] 文本输入 -> LLM 节点")
     return "llm"
 
 
 def should_use_tools(state: AgentState) -> Literal["tools", "tts"]:
-    """
-    检查 LLM 是否请求了工具调用
-
-    Phase 3: 检查 state["tool_calls"] 是否存在
-
-    Args:
-        state: 当前状态
-
-    Returns:
-        str: 下一个节点名称 ("tools" 或 "tts")
-    """
-    # Phase 3: 支持工具调用
+    """检查 LLM 是否请求了工具调用"""
     tool_calls = state.get("tool_calls")
-
     if tool_calls:
         logger.debug(f"[路由] LLM 请求工具调用 -> 工具节点")
         return "tools"
-
     logger.debug(f"[路由] LLM 直接回复 -> TTS 节点")
     return "tts"
 
@@ -71,15 +37,6 @@ def build_graph(
 ) -> StateGraph:
     """
     构建 LangGraph 状态图
-
-    Args:
-        checkpointer: 检查点保存器（用于状态持久化）
-        enable_tools: 是否启用工具调用（Phase 3）
-        tools: 工具列表（LangChain Tool 对象）
-        tools_map: 工具名称到工具对象的映射
-
-    Returns:
-        StateGraph: 编译后的状态图
 
     图结构:
         [START]
@@ -107,69 +64,39 @@ def build_graph(
     if enable_tools:
         logger.info(f"[LangGraph] 工具调用已启用，加载 {len(tools or [])} 个工具")
 
-    # 创建状态图
     graph = StateGraph(AgentState)
 
-    # ========================================
     # 注册节点
-    # ========================================
     graph.add_node("asr", asr_node)
     graph.add_node("llm", llm_node)
     graph.add_node("tts", tts_node)
     graph.add_node("emotion", emotion_node)
     graph.add_node("output", output_node)
 
-    # 工具节点（Phase 3 实现）
     if enable_tools:
         graph.add_node("tools", tool_node)
         logger.info("[LangGraph] 工具节点已注册")
 
-    # ========================================
-    # 设置入口点（条件路由）
-    # ========================================
-    graph.set_conditional_entry_point(
-        route_input,
-        {
-            "asr": "asr",
-            "llm": "llm",
-        }
-    )
+    # 设置入口点
+    graph.set_conditional_entry_point(route_input, {"asr": "asr", "llm": "llm"})
 
-    # ========================================
     # 添加边
-    # ========================================
-    # ASR → LLM
     graph.add_edge("asr", "llm")
 
-    # LLM → 条件分支（是否调用工具）
     if enable_tools:
-        graph.add_conditional_edges(
-            "llm",
-            should_use_tools,
-            {
-                "tools": "tools",
-                "tts": "tts",
-            }
-        )
-        # 工具执行 → 回到 LLM（Agent 循环）
+        graph.add_conditional_edges("llm", should_use_tools, {"tools": "tools", "tts": "tts"})
         graph.add_edge("tools", "llm")
         logger.info("[LangGraph] 工具循环已配置: llm -> tools -> llm")
     else:
-        # 不启用工具时，LLM 直接到 TTS
         graph.add_edge("llm", "tts")
 
-    # TTS → 情感分析 → 输出 → 结束
     graph.add_edge("tts", "emotion")
     graph.add_edge("emotion", "output")
     graph.add_edge("output", END)
 
     logger.info("[LangGraph] 状态图构建完成")
 
-    # ========================================
-    # 编译图
-    # ========================================
     compiled_graph = graph.compile(checkpointer=checkpointer)
-
     logger.info("[LangGraph] 状态图编译完成")
     return compiled_graph
 
@@ -184,18 +111,14 @@ def create_default_graph(
     创建默认配置的状态图
 
     Args:
-        enable_memory: 是否启用内存检查点（用于断点恢复）
+        enable_memory: 是否启用内存检查点
         enable_tools: 是否启用工具调用
-        tools: 工具列表（当 enable_tools=True 时必需）
-        tools_map: 工具映射（当 enable_tools=True 时必需）
-
-    Returns:
-        StateGraph: 编译后的状态图
+        tools: 工具列表
+        tools_map: 工具映射
     """
     checkpointer = None
 
     if enable_memory:
-        # 使用内存检查点（生产环境应使用数据库检查点）
         checkpointer = MemorySaver()
         logger.info("[LangGraph] 内存检查点已启用")
 
@@ -211,13 +134,7 @@ def create_default_graph(
 
 
 def visualize_graph(graph: StateGraph, output_path: str = "graph.png") -> None:
-    """
-    可视化状态图（需要安装 graphviz）
-
-    Args:
-        graph: 状态图
-        output_path: 输出图片路径
-    """
+    """可视化状态图（需要安装 graphviz）"""
     try:
         from IPython.display import Image, display
 
@@ -235,11 +152,6 @@ def visualize_graph(graph: StateGraph, output_path: str = "graph.png") -> None:
 
 
 def print_graph_structure(graph: StateGraph) -> None:
-    """
-    打印图结构（用于调试）
-
-    Args:
-        graph: 状态图
-    """
+    """打印图结构（用于调试）"""
     logger.info("[LangGraph] 图结构:")
     logger.info(str(graph.get_graph().print_ascii()))

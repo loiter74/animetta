@@ -1,8 +1,4 @@
-"""
-WebSocket 路由定义
-定义所有 Socket.IO 事件处理器
-使用 LangGraph 编排器处理对话
-"""
+"""WebSocket 路由定义 - 使用 LangGraph 编排器处理对话"""
 
 import json
 import time
@@ -19,11 +15,7 @@ if TYPE_CHECKING:
 
 
 class RouteHandlers:
-    """
-    路由处理器集合
-
-    使用 LangGraph 编排器处理所有事件。
-    """
+    """路由处理器集合"""
 
     def __init__(
         self,
@@ -32,25 +24,13 @@ class RouteHandlers:
         desktop_manager: Optional[DesktopClientManager] = None,
         live2d_manager: Optional[Live2DManager] = None
     ):
-        """
-        初始化路由处理器
-
-        Args:
-            sio: Socket.IO 服务器实例
-            session_manager: 会话管理器
-            desktop_manager: 桌面客户端管理器
-            live2d_manager: Live2D 管理器
-        """
         self.sio = sio
         self.session_manager = session_manager
         self.desktop_manager = desktop_manager or DesktopClientManager()
         self.live2d_manager = live2d_manager or Live2DManager()
 
-        # 全局配置引用（由外部设置）
         self.global_config = None
         self.user_settings = None
-
-        # 设置 Live2D 执行回调
         self._setup_live2d_callback()
 
     def _setup_live2d_callback(self) -> None:
@@ -60,7 +40,6 @@ class RouteHandlers:
                 "action": action.action,
                 "action_id": action.action_id
             })
-
         self.live2d_manager.set_execute_callback(execute_action)
 
     def set_global_config(self, config) -> None:
@@ -70,10 +49,6 @@ class RouteHandlers:
     def set_user_settings(self, user_settings) -> None:
         """设置用户设置"""
         self.user_settings = user_settings
-
-    # ========================================
-    # 辅助方法
-    # ========================================
 
     def _make_send_callback(self, sid: str):
         async def send_callback(data):
@@ -88,32 +63,25 @@ class RouteHandlers:
         from anima.config import AppConfig
         from anima.config.live2d import get_live2d_config
 
-        # 使用全局配置或加载默认配置
         config = self.global_config or AppConfig.load()
-
-        # 创建单一的 send_callback（避免重复创建）
         send_callback = self._make_send_callback(sid)
 
-        # 获取或创建上下文
         ctx = await self.session_manager.get_or_create_context(
             sid,
             config,
             send_callback
         )
 
-        # 获取 Live2D 配置
         live2d_config = get_live2d_config()
 
-        # 获取或创建编排器
         orchestrator = await self.session_manager.get_or_create_orchestrator(
             sid,
             ctx,
             send_callback,
             live2d_config,
-            socketio=self.sio,  # 传递 socketio 实例
-)
+            socketio=self.sio,
+        )
 
-        # 确保音频处理器已创建
         await self.session_manager.get_or_create_audio_processor(sid, ctx)
 
         return orchestrator
@@ -124,25 +92,14 @@ class RouteHandlers:
         event: str,
         data: dict
     ) -> None:
-        """
-        广播消息到指定类型的桌面客户端
-
-        Args:
-            client_type: 客户端类型 ("live2d", "chat", "web")
-            event: 事件名称
-            data: 事件数据
-        """
+        """广播消息到指定类型的桌面客户端"""
         sids = self.desktop_manager.get_clients_by_type(client_type)
         for sid in sids:
             await self.sio.emit(event, data, to=sid)
 
-    # ========================================
     # 连接事件
-    # ========================================
-
     async def on_connect(self, sid: str, environ: dict) -> None:
         """客户端连接事件"""
-        # 检测客户端类型
         client_type = environ.get("HTTP_USER_AGENT", "")
         is_electron = "electron" in client_type.lower()
 
@@ -152,20 +109,17 @@ class RouteHandlers:
         print(f"{'='*60}\n")
         logger.info(f"客户端已连接: {sid} (类型: {'Electron' if is_electron else 'Web'})")
 
-        # 保存会话信息
         await self.sio.save_session(sid, {
             'connected_at': time.time(),
             'is_electron': is_electron
         })
 
-        # 发送欢迎消息
         await self.sio.emit('connection-established', {
             'message': '连接成功',
             'sid': sid,
             'server_time': asyncio.get_event_loop().time()
         }, to=sid)
 
-        # 对于 Web 客户端，发送启动麦克风信号
         if not is_electron:
             await self.sio.emit('control', {
                 'type': 'control',
@@ -176,17 +130,10 @@ class RouteHandlers:
     async def on_disconnect(self, sid: str) -> None:
         """客户端断开事件"""
         logger.info(f"客户端已断开: {sid}")
-
-        # 注销桌面客户端
         self.desktop_manager.unregister(sid)
-
-        # 清理会话资源
         await self.session_manager.cleanup_session(sid)
 
-    # ========================================
     # 对话事件
-    # ========================================
-
     async def on_text_input(self, sid: str, data: dict) -> None:
         """处理文本输入"""
         text = data.get('text', '')
@@ -203,17 +150,12 @@ class RouteHandlers:
                 user_name=data.get('from_name', 'User'),
                 channel_id=sid,
             )
-
         except Exception as e:
             logger.error(f"[{sid}] 处理文本输入时出错: {e}")
             await self.sio.emit('error', {
                 'type': 'error',
                 'message': str(e)
             }, to=sid)
-
-    async def on_mic_audio_data(self, sid: str, data: dict) -> None:
-        """处理音频数据流（非 VAD 模式）- 已废弃，使用 VAD 模式"""
-        logger.debug(f"[{sid}] 收到非 VAD 音频数据（已废弃）")
 
     async def on_raw_audio_data(self, sid: str, data: dict) -> None:
         """处理原始音频数据用于 VAD 检测"""
@@ -223,19 +165,16 @@ class RouteHandlers:
             logger.debug(f"[{sid}] 收到空音频数据")
             return
 
-        # 首次接收时打印日志（使用属性标记）
         if not hasattr(self, '_raw_audio_first_sids'):
             self._raw_audio_first_sids = set()
-        
+
         if sid not in self._raw_audio_first_sids:
             self._raw_audio_first_sids.add(sid)
             logger.info(f"[{sid}] [RAW_AUDIO] 开始接收音频数据")
 
         try:
-            # 确保 orchestrator 和音频处理器被创建
             await self._get_or_create_orchestrator(sid)
-            
-            # 获取音频处理器
+
             processor = self.session_manager.get_audio_processor(sid)
             if processor:
                 await processor.process_chunk(audio_chunk)
@@ -250,7 +189,6 @@ class RouteHandlers:
         logger.info(f"[{sid}] 音频输入结束")
 
         try:
-            # 获取音频处理器
             processor = self.session_manager.get_audio_processor(sid)
             if processor:
                 await processor.process_end()
@@ -263,25 +201,25 @@ class RouteHandlers:
             }, to=sid)
 
     async def on_interrupt_signal(self, sid: str, data: dict) -> None:
-        """打断信号"""
+        """打断信号 - 停止 LLM 生成和音频播放"""
         heard_response = data.get('text', '')
         logger.info(f"[{sid}] 收到打断信号，已听到的回复: {heard_response[:50] if heard_response else '(空)'}...")
 
-        # TODO: 实现打断功能
+        from anima.graph.interrupt_handler import get_interrupt_handler
+        interrupt_handler = get_interrupt_handler()
+        interrupt_handler.set_interrupt(sid)
+
+        await self.sio.emit('stop_audio', {}, to=sid)
+
         await self.sio.emit('control', {
             'type': 'control',
             'text': 'interrupted'
         }, to=sid)
 
-    # ========================================
     # 历史记录事件
-    # ========================================
-
     async def on_fetch_history_list(self, sid: str, data: dict) -> None:
         """获取聊天历史列表"""
         logger.info(f"[{sid}] 请求聊天历史列表")
-
-        # TODO: 从持久化存储获取历史列表
         histories = []
 
         await self.sio.emit('history-list', {
@@ -293,8 +231,6 @@ class RouteHandlers:
         """获取特定历史记录"""
         history_uid = data.get('history_uid')
         logger.info(f"[{sid}] 请求历史记录: {history_uid}")
-
-        # TODO: 从持久化存储获取历史记录
         messages = []
 
         await self.sio.emit('history-data', {
@@ -319,30 +255,20 @@ class RouteHandlers:
         """创建新的对话历史"""
         logger.info(f"[{sid}] 创建新对话历史")
 
-        # TODO: 创建新的历史记录
-
         await self.sio.emit('new-history-created', {
             'type': 'new-history-created',
             'history_uid': 'new_history_001'
         }, to=sid)
 
-    # ========================================
     # 配置事件
-    # ========================================
-
     async def on_switch_config(self, sid: str, data: dict) -> None:
         """切换配置"""
         config_name = data.get('file', 'default')
         logger.info(f"[{sid}] 切换配置: {config_name}")
 
         try:
-            # 清理旧的编排器
             if sid in self.session_manager.orchestrators:
                 del self.session_manager.orchestrators[sid]
-
-            # TODO: 加载新配置
-            # new_config = load_config(config_name)
-            # await ctx.handle_config_switch(new_config)
 
             await self.sio.emit('config-switched', {
                 'type': 'config-switched',
@@ -375,18 +301,12 @@ class RouteHandlers:
             'message': f'日志级别已设置为 {logger_manager.get_level()}' if success else '设置失败'
         }, to=sid)
 
-    # ========================================
     # 心跳检测
-    # ========================================
-
     async def on_heartbeat(self, sid: str, data: dict) -> None:
         """心跳检测"""
         await self.sio.emit('heartbeat-ack', {}, to=sid)
 
-    # ========================================
     # 桌面客户端事件
-    # ========================================
-
     async def on_desktop_register(self, sid: str, data: dict) -> None:
         """Electron 桌面客户端注册"""
         client_type = data.get('client_type', 'web')
@@ -457,18 +377,7 @@ def register_routes(
     desktop_manager: Optional[DesktopClientManager] = None,
     live2d_manager: Optional[Live2DManager] = None
 ) -> RouteHandlers:
-    """
-    注册所有路由到 Socket.IO 服务器
-
-    Args:
-        sio: Socket.IO 服务器实例
-        session_manager: 会话管理器
-        desktop_manager: 桌面客户端管理器
-        live2d_manager: Live2D 管理器
-
-    Returns:
-        RouteHandlers: 路由处理器实例
-    """
+    """注册所有路由到 Socket.IO 服务器"""
     handlers = RouteHandlers(
         sio,
         session_manager,
@@ -482,7 +391,6 @@ def register_routes(
 
     # 对话事件
     sio.on('text_input', handlers.on_text_input)
-    sio.on('mic_audio_data', handlers.on_mic_audio_data)
     sio.on('raw_audio_data', handlers.on_raw_audio_data)
     sio.on('mic_audio_end', handlers.on_mic_audio_end)
     sio.on('interrupt_signal', handlers.on_interrupt_signal)

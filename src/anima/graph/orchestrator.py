@@ -31,6 +31,7 @@ from pathlib import Path
 from .state import AgentState, create_initial_state
 from .builder import create_default_graph
 from .config_store import ConfigStore
+from .interrupt_handler import get_interrupt_handler
 
 
 class LangGraphOrchestrator:
@@ -232,6 +233,10 @@ class LangGraphOrchestrator:
 
         logger.info(f"[{self.session_id}] [LangGraph] 处理文本输入: {text[:50]}...")
 
+        # 新对话开始前清除打断信号
+        interrupt_handler = get_interrupt_handler()
+        interrupt_handler.clear_interrupt(self.session_id)
+
         try:
             # 创建初始状态
             initial_state = create_initial_state(
@@ -291,6 +296,10 @@ class LangGraphOrchestrator:
             return {"error": "编排器未启动"}
 
         logger.info(f"[{self.session_id}] [LangGraph] 处理音频输入: {len(audio_data)} bytes")
+
+        # 新对话开始前清除打断信号
+        interrupt_handler = get_interrupt_handler()
+        interrupt_handler.clear_interrupt(self.session_id)
 
         try:
             # 创建初始状态
