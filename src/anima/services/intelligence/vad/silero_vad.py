@@ -8,8 +8,8 @@ from typing import Union
 import numpy as np
 from loguru import logger
 
-from ..interface import VADInterface, VADState, VADResult
-from ....config.core.registry import ProviderRegistry
+from .interface import VADInterface, VADState, VADResult
+from anima.config.core.registry import ProviderRegistry
 
 
 @ProviderRegistry.register_service("vad", "silero")

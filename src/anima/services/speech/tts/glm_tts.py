@@ -9,9 +9,9 @@ import os
 
 from loguru import logger
 
-from ..interface import TTSInterface
-from ....config.core.registry import ProviderRegistry
-from ....config.providers.tts.glm import GLMTTSConfig
+from .interface import TTSInterface
+from anima.config.core.registry import ProviderRegistry
+from anima.config.providers.tts.glm import GLMTTSConfig
 
 
 @ProviderRegistry.register_service("tts", "glm")

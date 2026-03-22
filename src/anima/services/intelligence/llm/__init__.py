@@ -5,6 +5,9 @@ LLM 服务实现模块
 装饰器在模块导入时执行注册
 """
 
+from .interface import LLMInterface
+from .factory import LLMFactory
+
 # MockLLM 无外部依赖
 from .mock_llm import MockLLM
 
@@ -38,7 +41,7 @@ def get_llm_class(provider: str):
     获取 LLM 实现类（用于延迟加载）
 
     Args:
-        provider: 提供商名称
+        provider: 提供者名称
 
     Returns:
         LLM 类，如果不可用则返回 None
@@ -57,6 +60,8 @@ def get_llm_class(provider: str):
 
 
 __all__ = [
+    "LLMInterface",
+    "LLMFactory",
     "MockLLM",
     "GLMLLM",
     "OpenAILLM",

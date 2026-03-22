@@ -1,11 +1,19 @@
 """
-VAD 实现模块
+VAD (语音活动检测) 模块
 """
 
-from .silero_vad import SileroVAD
-from .mock_vad import MockVAD
+from .interface import VADInterface, VADState, VADResult
+from .factory import VADFactory
+
+# 导入实现以触发 ProviderRegistry 注册
+try:
+    from .implementations import mock_vad, silero_vad
+except ImportError:
+    pass
 
 __all__ = [
-    "SileroVAD",
-    "MockVAD",
+    "VADInterface",
+    "VADState",
+    "VADResult",
+    "VADFactory",
 ]

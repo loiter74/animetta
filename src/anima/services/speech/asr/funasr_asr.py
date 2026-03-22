@@ -19,8 +19,8 @@ from pathlib import Path
 import numpy as np
 from loguru import logger
 
-from ..interface import ASRInterface
-from ....config.core.registry import ProviderRegistry
+from .interface import ASRInterface
+from anima.config.core.registry import ProviderRegistry
 
 
 @ProviderRegistry.register_service("asr", "funasr")

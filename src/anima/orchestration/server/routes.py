@@ -205,7 +205,7 @@ class RouteHandlers:
         heard_response = data.get('text', '')
         logger.info(f"[{sid}] 收到打断信号，已听到的回复: {heard_response[:50] if heard_response else '(空)'}...")
 
-        from anima.graph.interrupt_handler import get_interrupt_handler
+        from anima.orchestration.graph.interrupt_handler import get_interrupt_handler
         interrupt_handler = get_interrupt_handler()
         interrupt_handler.set_interrupt(sid)
 

@@ -9,7 +9,7 @@ from typing import List, Optional
 from datetime import datetime
 from loguru import logger
 
-from .memory_turn import MemoryTurn
+from ..models.turns import MemoryTurn
 
 
 class MemoryScorer:

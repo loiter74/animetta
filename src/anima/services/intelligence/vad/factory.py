@@ -6,7 +6,7 @@ from typing import List
 from loguru import logger
 
 from .interface import VADInterface
-from ...config.core.registry import ProviderRegistry
+from anima.config.core.registry import ProviderRegistry
 
 
 class VADFactory:

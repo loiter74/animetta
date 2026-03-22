@@ -21,13 +21,13 @@
 """
 
 # 核心类
-from .memory_turn import MemoryTurn
-from .memory_system import MemorySystem
+from .models.turns import MemoryTurn
+from .system import MemorySystem
 
 # 新版记忆系统组件
 from .config import MemoryConfig, ChunkConfig, SearchConfig, EmbeddingConfig
-from .memory_manager import MemoryManager
-from .models import SearchResult, Chunk, FileEntry, MemoryFlushSignal
+from .manager import MemoryManager
+from .models.base import SearchResult, Chunk, FileEntry, MemoryFlushSignal
 from .tools import get_tool_schemas, execute_tool
 
 __all__ = [

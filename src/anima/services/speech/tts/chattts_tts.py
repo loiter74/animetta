@@ -11,9 +11,9 @@ import numpy as np
 
 from loguru import logger
 
-from ..interface import TTSInterface
-from ....config.core.registry import ProviderRegistry
-from ....config.providers.tts.chattts import ChatTTSConfig
+from .interface import TTSInterface
+from anima.config.core.registry import ProviderRegistry
+from anima.config.providers.tts.chattts import ChatTTSConfig
 
 
 @ProviderRegistry.register_service("tts", "chattts")

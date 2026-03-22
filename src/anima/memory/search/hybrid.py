@@ -14,10 +14,10 @@
 
 from __future__ import annotations
 
-from .config import SearchConfig
-from .models import SearchResult
-from .sqlite_store import SQLiteStore
-from .chroma_store import ChromaStore
+from ..config import SearchConfig
+from ..models.base import SearchResult
+from ..storage.sqlite import SQLiteStore
+from ..storage.chroma import ChromaStore
 
 
 def hybrid_search(

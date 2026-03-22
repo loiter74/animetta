@@ -1,20 +1,21 @@
 """
 服务模块
 
-按服务种类组织：
-- llm: LLM 服务
-- asr: 语音识别服务
-- tts: 语音合成服务
-- vad: 语音活动检测
-- audio: 音频处理服务（VAD + 累积）
+重组后的结构：
+- speech/asr: 语音识别服务
+- speech/tts: 语音合成服务
+- intelligence/llm: 大语言模型
+- intelligence/vad: 语音活动检测
+- audio: 音频处理服务
+- live2d: Live2D 控制
 """
 
-from .llm import LLMInterface, LLMFactory
-from .asr import ASRInterface, ASRFactory
-from .tts import TTSInterface, TTSFactory
-from .vad import VADInterface, VADFactory
+from .intelligence.llm import LLMInterface, LLMFactory
+from .speech.asr import ASRInterface, ASRFactory
+from .speech.tts import TTSInterface, TTSFactory
+from .intelligence.vad import VADInterface, VADFactory
 from .audio import AudioProcessorInterface
-from .audio.implementations.vad_audio_processor import VADAudioProcessor
+from .audio.vad_audio_processor import VADAudioProcessor
 
 __all__ = [
     # LLM

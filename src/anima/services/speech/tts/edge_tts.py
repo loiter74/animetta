@@ -9,9 +9,9 @@ import asyncio
 
 from loguru import logger
 
-from ..interface import TTSInterface
-from ....config.core.registry import ProviderRegistry
-from ....config.providers.tts.edge import EdgeTTSConfig
+from .interface import TTSInterface
+from anima.config.core.registry import ProviderRegistry
+from anima.config.providers.tts.edge import EdgeTTSConfig
 
 
 @ProviderRegistry.register_service("tts", "edge")

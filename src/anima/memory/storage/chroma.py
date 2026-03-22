@@ -18,7 +18,7 @@ from typing import Any
 import chromadb
 from chromadb.config import Settings
 
-from .models import Chunk
+from ..models.base import Chunk
 
 logger = logging.getLogger(__name__)
 

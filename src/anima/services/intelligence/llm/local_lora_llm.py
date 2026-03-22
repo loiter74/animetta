@@ -10,8 +10,8 @@ from typing import AsyncIterator, Dict, Optional
 import torch
 from loguru import logger
 
-from ..interface import LLMInterface
-from ....config.core.registry import ProviderRegistry
+from .interface import LLMInterface
+from anima.config.core.registry import ProviderRegistry
 
 
 @ProviderRegistry.register_service("llm", "local_lora")

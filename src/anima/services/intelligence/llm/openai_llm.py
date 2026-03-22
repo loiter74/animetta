@@ -7,9 +7,9 @@ from typing import AsyncIterator, List, Dict, Any, Optional, TYPE_CHECKING
 from loguru import logger
 from openai import AsyncOpenAI
 
-from ..interface import LLMInterface
-from ....config.core.registry import ProviderRegistry
-from ....config import OpenAILLMConfig
+from .interface import LLMInterface
+from anima.config.core.registry import ProviderRegistry
+from anima.config import OpenAILLMConfig
 
 if TYPE_CHECKING:
     from anima.config.providers.llm.base import LLMBaseConfig

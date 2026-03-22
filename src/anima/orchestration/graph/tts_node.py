@@ -3,8 +3,8 @@
 from typing import Dict, Any, Optional
 from loguru import logger
 
-from ..state import AgentState
-from ..config_store import get_service_context
+from .state import AgentState
+from .config_store import get_service_context
 
 
 async def tts_node(

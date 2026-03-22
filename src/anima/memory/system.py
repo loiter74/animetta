@@ -5,11 +5,11 @@ from datetime import datetime
 from loguru import logger
 import asyncio
 
-from .memory_turn import MemoryTurn
+from .models.turns import MemoryTurn
 from .config import MemoryConfig
-from .memory_manager import MemoryManager
-from .models import SearchResult
-from .scorer import MemoryScorer
+from .manager import MemoryManager
+from .models.base import SearchResult
+from .search.scorer import MemoryScorer
 from .stores import ShortTermMemory, LongTermMemory
 
 
@@ -121,7 +121,7 @@ class MemorySystem:
         """从 Markdown 格式中提取用户输入"""
         lines = text.split("\n")
         for line in lines:
-            if line.startswith("**User:**):
+            if line.startswith("**User:**"):
                 return line[9:].strip()
             elif line.startswith("User: "):
                 return line[6:].strip()

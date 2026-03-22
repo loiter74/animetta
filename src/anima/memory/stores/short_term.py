@@ -8,7 +8,7 @@ from typing import Dict, List
 from collections import deque
 from loguru import logger
 
-from ..memory_turn import MemoryTurn
+from ..models.turns import MemoryTurn
 
 
 class ShortTermMemory:

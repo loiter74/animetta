@@ -13,7 +13,7 @@ from __future__ import annotations
 import hashlib
 from dataclasses import dataclass
 
-from .config import ChunkConfig
+from ..config import ChunkConfig
 
 
 @dataclass

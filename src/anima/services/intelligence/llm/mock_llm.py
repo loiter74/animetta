@@ -7,9 +7,9 @@ import time
 import uuid
 from loguru import logger
 
-from ..interface import LLMInterface
-from ....config.core.registry import ProviderRegistry
-from ....config import MockLLMConfig
+from .interface import LLMInterface
+from anima.config.core.registry import ProviderRegistry
+from anima.config import MockLLMConfig
 
 if TYPE_CHECKING:
     from anima.config.providers.llm.base import LLMBaseConfig

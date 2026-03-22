@@ -5,8 +5,8 @@
 """
 
 from .processor import AudioProcessorInterface
-from .implementations.vad_audio_processor import VADAudioProcessor
-from .implementations.simple_vad_processor import SimpleVADProcessor
+from .vad_audio_processor import VADAudioProcessor
+from .simple_vad_processor import SimpleVADProcessor
 
 __all__ = [
     "AudioProcessorInterface",

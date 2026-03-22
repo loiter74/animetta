@@ -5,9 +5,9 @@ Mock ASR 实现 - 用于测试和开发
 from typing import Union
 from pathlib import Path
 
-from ..interface import ASRInterface
-from ....config.core.registry import ProviderRegistry
-from ....config.providers.asr.mock import MockASRConfig
+from .interface import ASRInterface
+from anima.config.core.registry import ProviderRegistry
+from anima.config.providers.asr.mock import MockASRConfig
 
 
 @ProviderRegistry.register_service("asr", "mock")

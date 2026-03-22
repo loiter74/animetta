@@ -9,9 +9,9 @@ import io
 
 from loguru import logger
 
-from ..interface import ASRInterface
-from ....config.core.registry import ProviderRegistry
-from ....config.providers.asr.glm import GLMASRConfig
+from .interface import ASRInterface
+from anima.config.core.registry import ProviderRegistry
+from anima.config.providers.asr.glm import GLMASRConfig
 
 
 @ProviderRegistry.register_service("asr", "glm")

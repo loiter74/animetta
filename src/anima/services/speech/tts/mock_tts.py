@@ -5,9 +5,9 @@ Mock TTS 实现 - 用于测试和开发
 from typing import Union, Optional
 from pathlib import Path
 
-from ..interface import TTSInterface
-from ....config.core.registry import ProviderRegistry
-from ....config.providers.tts.mock import MockTTSConfig
+from .interface import TTSInterface
+from anima.config.core.registry import ProviderRegistry
+from anima.config.providers.tts.mock import MockTTSConfig
 
 
 @ProviderRegistry.register_service("tts", "mock")

@@ -8,7 +8,7 @@ from loguru import logger
 from zhipuai import ZhipuAI
 import asyncio
 
-from ..interface import LLMInterface
+from .interface import LLMInterface
 from anima.config.core.registry import ProviderRegistry
 from anima.config import GLMLLMConfig
 from .glm_message_converter import GLMMessageConverter, GLMToolConverter

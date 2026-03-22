@@ -9,8 +9,8 @@ import numpy as np
 from typing import List, Optional, Any, Callable, Dict
 from loguru import logger
 
-from ..processor import AudioProcessorInterface
-from ....services.vad import VADInterface
+from .processor import AudioProcessorInterface
+from ..intelligence.vad import VADInterface
 
 
 class VADAudioProcessor(AudioProcessorInterface):

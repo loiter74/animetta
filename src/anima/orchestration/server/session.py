@@ -8,7 +8,7 @@ from typing import Dict, Optional, Callable, Any
 from loguru import logger
 from pathlib import Path
 
-from ..service_context import ServiceContext
+from ...core.service_context import ServiceContext
 
 
 class SessionManager:

@@ -9,9 +9,9 @@ from datetime import datetime
 from typing import List, Optional
 from loguru import logger
 
-from ..memory_turn import MemoryTurn
+from ..models.turns import MemoryTurn
 from ..models import SearchResult
-from ..memory_manager import MemoryManager
+from ..manager import MemoryManager
 
 
 class LongTermMemory:

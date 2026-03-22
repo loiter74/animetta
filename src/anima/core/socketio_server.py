@@ -45,7 +45,7 @@ import asyncio
 from anima.config import AppConfig
 from anima.config.user_settings import UserSettings
 from anima.utils.logger_manager import logger_manager
-from anima.server import WebSocketServer, create_server
+from anima.orchestration.server import WebSocketServer, create_server
 
 
 # 全局配置

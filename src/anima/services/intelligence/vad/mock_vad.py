@@ -6,9 +6,9 @@ from typing import Union
 import numpy as np
 from loguru import logger
 
-from ..interface import VADInterface, VADState, VADResult
-from ....config.core.registry import ProviderRegistry
-from ....config.providers.vad.mock import MockVADConfig
+from .interface import VADInterface, VADState, VADResult
+from anima.config.core.registry import ProviderRegistry
+from anima.config.providers.vad.mock import MockVADConfig
 
 
 @ProviderRegistry.register_service("vad", "mock")

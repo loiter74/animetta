@@ -6,7 +6,7 @@ import numpy as np
 from typing import List, Optional, Callable
 from loguru import logger
 
-from ....services.vad import VADInterface
+from ..intelligence.vad import VADInterface
 
 
 class SimpleVADProcessor:

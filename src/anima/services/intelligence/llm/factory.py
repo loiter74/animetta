@@ -5,8 +5,8 @@ LLM 服务工厂 - 根据配置自动创建 LLM 服务实例
 from loguru import logger
 
 from .interface import LLMInterface
-from ...config.core.registry import ProviderRegistry
-from ...config import LLMConfig
+from anima.config.core.registry import ProviderRegistry
+from anima.config import LLMConfig
 
 
 class LLMFactory:
@@ -65,7 +65,7 @@ class LLMFactory:
         Returns:
             LLMInterface: LLM 服务实例
         """
-        from ...config import (
+        from anima.config import (
             MockLLMConfig,
             OpenAILLMConfig,
             GLMLLMConfig,

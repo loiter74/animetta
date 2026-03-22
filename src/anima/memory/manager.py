@@ -17,11 +17,11 @@ from datetime import datetime
 from pathlib import Path
 
 from .config import MemoryConfig
-from .chunker import chunk_markdown, RawChunk
-from .models import Chunk, FileEntry, SearchResult
-from .sqlite_store import SQLiteStore
-from .chroma_store import ChromaStore
-from .hybrid_search import hybrid_search
+from .models.chunks import chunk_markdown, RawChunk
+from .models.base import Chunk, FileEntry, SearchResult
+from .storage.sqlite import SQLiteStore
+from .storage.chroma import ChromaStore
+from .search.hybrid import hybrid_search
 
 logger = logging.getLogger(__name__)
 

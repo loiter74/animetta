@@ -17,7 +17,7 @@ import sqlite3
 import time
 from pathlib import Path
 
-from .models import Chunk, FileEntry
+from ..models.base import Chunk, FileEntry
 
 logger = logging.getLogger(__name__)
 

@@ -19,7 +19,7 @@ from .config import (
     PersonaConfig,
     SystemConfig,
 )
-from .service_context import ServiceContext
+from .core.service_context import ServiceContext
 from .services import ASRInterface, TTSInterface, LLMInterface
 
 __all__ = [

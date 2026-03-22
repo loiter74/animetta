@@ -3,7 +3,7 @@
 from typing import Dict, Any, Optional
 from loguru import logger
 
-from ..state import AgentState
+from .state import AgentState
 
 
 async def emotion_node(

@@ -57,7 +57,7 @@ class ToolManager:
     async def _create_chat_model(self) -> Optional[Any]:
         """创建 LangChain ChatModel"""
         try:
-            from anima.services.llm.langchain_adapter import create_chat_model_from_service
+            from anima.services.intelligence.llm.langchain_adapter import create_chat_model_from_service
 
             chat_model = create_chat_model_from_service(
                 llm_service=self.service_context.llm_engine,

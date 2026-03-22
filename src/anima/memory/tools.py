@@ -13,7 +13,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from .memory_manager import MemoryManager
+from .manager import MemoryManager
 
 
 # ── Tool Schema (用于 function calling) ─────────────────
