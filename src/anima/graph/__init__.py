@@ -4,6 +4,7 @@ from .state import AgentState, create_initial_state
 from .builder import build_graph, create_default_graph
 from .orchestrator import LangGraphOrchestrator, LangGraphOrchestratorFactory
 from .interrupt_handler import InterruptHandler, get_interrupt_handler
+from .tool_manager import ToolManager
 
 __all__ = [
     "AgentState",
@@ -14,4 +15,5 @@ __all__ = [
     "LangGraphOrchestratorFactory",
     "InterruptHandler",
     "get_interrupt_handler",
+    "ToolManager",
 ]
