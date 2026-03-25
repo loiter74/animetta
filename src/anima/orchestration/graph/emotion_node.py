@@ -2,20 +2,21 @@
 
 from typing import Dict, Any, Optional
 from loguru import logger
+from langgraph.types import RunnableConfig
 
 from .state import AgentState
 
 
-def _get_from_config(config: Optional[Dict[str, Any]], key: str) -> Optional[Any]:
+def _get_from_config(config: Optional[RunnableConfig], key: str) -> Optional[Any]:
     """从 LangGraph config 获取值"""
     if config:
-        return config["configurable"] if config else {}.get(key)
+        return config.get("configurable", {}).get(key)
     return None
 
 
 async def emotion_node(
     state: AgentState,
-    config: Optional[Dict[str, Any]] = None,
+    config: Optional[RunnableConfig] = None,
 ) -> Dict[str, Any]:
     """
     情感分析节点

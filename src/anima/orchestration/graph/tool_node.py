@@ -4,11 +4,12 @@ from typing import Dict, Any, List, Optional
 from loguru import logger
 from langchain_core.messages import ToolMessage
 import json
+from langgraph.types import RunnableConfig
 
 from .state import AgentState
 
 
-def _get_from_config(config: Optional[Dict[str, Any]], key: str) -> Optional[Any]:
+def _get_from_config(config: Optional[RunnableConfig], key: str) -> Optional[Any]:
     """从 LangGraph config 获取值"""
     if config:
         return config.get("configurable", {}).get(key)
@@ -17,7 +18,7 @@ def _get_from_config(config: Optional[Dict[str, Any]], key: str) -> Optional[Any
 
 async def tool_node(
     state: AgentState,
-    config: Optional[Dict[str, Any]] = None,
+    config: Optional[RunnableConfig] = None,
 ) -> Dict[str, Any]:
     """
     工具执行节点

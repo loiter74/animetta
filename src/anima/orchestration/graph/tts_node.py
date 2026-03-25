@@ -2,20 +2,21 @@
 
 from typing import Dict, Any, Optional
 from loguru import logger
+from langgraph.types import RunnableConfig
 
 from .state import AgentState
 
 
-def _get_service_context(config: Optional[Dict[str, Any]]) -> Optional[Any]:
+def _get_service_context(config: Optional[RunnableConfig]) -> Optional[Any]:
     """从 LangGraph config 获取 service_context"""
     if config:
-        return config["configurable"] if config else {}.get("service_context")
+        return config.get("configurable", {}).get("service_context")
     return None
 
 
 async def tts_node(
     state: AgentState,
-    config: Optional[Dict[str, Any]] = None,
+    config: Optional[RunnableConfig] = None,
 ) -> Dict[str, Any]:
     """
     TTS 语音合成节点

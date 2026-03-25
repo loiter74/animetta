@@ -5,20 +5,21 @@ from typing import Dict, Any, Optional
 from loguru import logger
 from datetime import datetime
 import os
+from langgraph.types import RunnableConfig
 
 from .state import AgentState
 
 
-def _get_from_config(config: Optional[Dict[str, Any]], key: str) -> Optional[Any]:
+def _get_from_config(config: Optional[RunnableConfig], key: str) -> Optional[Any]:
     """从 LangGraph config 获取值"""
     if config:
-        return config["configurable"] if config else {}.get(key)
+        return config.get("configurable", {}).get(key)
     return None
 
 
 async def output_node(
     state: AgentState,
-    config: Optional[Dict[str, Any]] = None,
+    config: Optional[RunnableConfig] = None,
 ) -> Dict[str, Any]:
     """
     输出分发节点
@@ -78,7 +79,7 @@ async def output_node(
 
 async def _store_conversation_to_memory(
     state: AgentState,
-    config: Optional[Dict[str, Any]],
+    config: Optional[RunnableConfig],
 ) -> None:
     """将本轮对话存储到记忆系统"""
     session_id = state.get("session_id", "unknown")

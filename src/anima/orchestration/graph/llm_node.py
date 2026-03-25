@@ -3,6 +3,7 @@
 from typing import Dict, Any, List, Optional
 from loguru import logger
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, ToolMessage
+from langgraph.types import RunnableConfig
 
 from .state import AgentState
 from .interrupt_handler import get_interrupt_handler
@@ -12,10 +13,10 @@ from .interrupt_handler import get_interrupt_handler
 # RAG 记忆检索辅助函数
 # ========================================
 
-def _get_memory_system(config: Optional[Dict[str, Any]]) -> Optional[Any]:
+def _get_memory_system(config: Optional[RunnableConfig]) -> Optional[Any]:
     """从 LangGraph config 获取 memory_system"""
     if config:
-        service_context = config["configurable"] if config else {}.get("service_context")
+        service_context = config.get("configurable", {}).get("service_context")
         if service_context and hasattr(service_context, "memory_system"):
             return service_context.memory_system
     return None
@@ -65,7 +66,7 @@ def _format_memory_context(memory_turns: List[Any], max_items: int = 5) -> str:
 async def _retrieve_memory_context(
     session_id: str,
     query: str,
-    config: Optional[Dict[str, Any]],
+    config: Optional[RunnableConfig],
     max_turns: int = 5,
 ) -> str:
     """
@@ -136,23 +137,23 @@ def _enrich_system_prompt(
     return "\n\n---\n\n".join(parts)
 
 
-def _get_service_context(config: Optional[Dict[str, Any]]) -> Optional[Any]:
+def _get_service_context(config: Optional[RunnableConfig]) -> Optional[Any]:
     """从 LangGraph config 获取 service_context"""
     if config:
-        return config["configurable"] if config else {}.get("service_context")
+        return config.get("configurable", {}).get("service_context")
     return None
 
 
-def _get_config_value(config: Optional[Dict[str, Any]], key: str, default: Any = None) -> Any:
+def _get_config_value(config: Optional[RunnableConfig], key: str, default: Any = None) -> Any:
     """从 LangGraph config 获取配置值"""
     if config:
-        return config["configurable"] if config else {}.get(key, default)
+        return config.get("configurable", {}).get(key, default)
     return default
 
 
 async def llm_node(
     state: AgentState,
-    config: Optional[Dict[str, Any]] = None,
+    config: Optional[RunnableConfig] = None,
 ) -> Dict[str, Any]:
     """
     LLM 推理节点
@@ -196,7 +197,7 @@ async def _llm_with_tools(
     state: AgentState,
     service_context: Any,
     chat_model: Any,
-    config: Optional[Dict[str, Any]] = None,
+    config: Optional[RunnableConfig] = None,
 ) -> Dict[str, Any]:
     """使用工具调用模式"""
     user_text = state.get("user_text", "")
@@ -269,7 +270,7 @@ async def _llm_without_tools(
     session_id: str,
     state: AgentState,
     service_context: Any,
-    config: Optional[Dict[str, Any]] = None,
+    config: Optional[RunnableConfig] = None,
 ) -> Dict[str, Any]:
     """使用流式模式（无工具）"""
     user_text = state.get("user_text", "")
