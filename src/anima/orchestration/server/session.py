@@ -268,7 +268,7 @@ class SessionManager:
             AudioProcessor: 音频处理器实例
         """
         if sid not in self.audio_processors:
-            from ..services.audio.implementations.simple_vad_processor import SimpleVADProcessor
+            from ...services.audio.simple_vad_processor import SimpleVADProcessor
 
             async def on_speech_end(audio_data):
                 # 语音结束时，调用 orchestrator 处理音频

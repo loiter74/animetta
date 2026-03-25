@@ -13,7 +13,6 @@ from loguru import logger
 
 from .state import AgentState, create_initial_state
 from .builder import create_default_graph
-from .config_store import ConfigStore
 from .interrupt_handler import get_interrupt_handler
 from .tool_manager import ToolManager
 
@@ -45,19 +44,15 @@ class LangGraphOrchestrator:
         # 初始化工具管理器
         self.tool_manager: Optional[ToolManager] = None
 
-        # 构建配置
-        self.config = {
+        # 构建 LangGraph 配置（通过 config 参数传递给节点）
+        self._langgraph_config = {
             "configurable": {
                 "service_context": service_context,
                 "socketio": socketio,
                 "emotion_analyzer": emotion_analyzer,
+                "thread_id": self.session_id,
             }
         }
-
-        # 存储到 ConfigStore
-        ConfigStore.set(self.session_id, "service_context", service_context)
-        ConfigStore.set(self.session_id, "socketio", socketio)
-        ConfigStore.set(self.session_id, "emotion_analyzer", emotion_analyzer)
 
         logger.info(f"[{self.session_id}] [LangGraph] 编排器初始化完成")
 
@@ -99,15 +94,12 @@ class LangGraphOrchestrator:
         success = await self.tool_manager.load_tools(self.tools_config)
 
         if success:
-            # 更新配置
-            self.config["configurable"].update(self.tool_manager.get_config())
-            ConfigStore.set(self.session_id, "enable_tools", True)
-            ConfigStore.set(self.session_id, "chat_model", self.tool_manager.chat_model)
-            ConfigStore.set(self.session_id, "tools_map", self.tool_manager.tools_map)
-            logger.info(f"[{self.session_id}] [LangGraph] 工具配置已存储到 ConfigStore")
+            # 更新 LangGraph 配置
+            self._langgraph_config["configurable"].update(self.tool_manager.get_config())
+            logger.info(f"[{self.session_id}] [LangGraph] 工具配置已添加到 LangGraph config")
         else:
             self.enable_tools = False
-            ConfigStore.set(self.session_id, "enable_tools", False)
+            logger.warning(f"[{self.session_id}] [LangGraph] 工具加载失败，工具调用已禁用")
 
     async def stop(self) -> None:
         """停止编排器"""
@@ -118,7 +110,6 @@ class LangGraphOrchestrator:
             await self.tool_manager.cleanup()
 
         self._is_running = False
-        ConfigStore.remove(self.session_id)
         logger.info(f"[{self.session_id}] [LangGraph] 编排器已停止")
 
     async def process_text(
@@ -214,16 +205,11 @@ class LangGraphOrchestrator:
         if metadata:
             initial_state["metadata"] = metadata
 
-        initial_state["_config"] = self.config
         return initial_state
 
     async def _run_graph(self, initial_state: AgentState) -> Dict[str, Any]:
-        """运行状态图"""
-        invoke_config = {
-            "configurable": {"thread_id": self.session_id}
-        }
-
-        return await self.graph.ainvoke(initial_state, config=invoke_config)
+        """运行状态图，通过 LangGraph config 传递服务上下文"""
+        return await self.graph.ainvoke(initial_state, config=self._langgraph_config)
 
     def _clean_result(self, final_state: Dict[str, Any]) -> Dict[str, Any]:
         """清理返回值"""

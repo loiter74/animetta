@@ -18,7 +18,7 @@ from loguru import logger
 # 加载 .env 文件中的环境变量（必须在其他导入之前）
 try:
     from dotenv import load_dotenv
-    env_path = Path(__file__).parent.parent.parent / '.env'
+    env_path = Path(__file__).parent.parent.parent.parent / '.env'
     if env_path.exists():
         load_dotenv(env_path, override=True)
         logger.info(f"[OK] 已加载环境变量文件: {env_path}")
@@ -113,7 +113,7 @@ def run_server():
 
     # Run uvicorn server - use factory function to ensure proper initialization
     uvicorn.run(
-        "anima.socketio_server:get_asgi_app",
+        "anima.core.socketio_server:get_asgi_app",
         host=global_config.system.host,
         port=global_config.system.port,
         log_level="info",

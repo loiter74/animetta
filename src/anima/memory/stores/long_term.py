@@ -12,6 +12,7 @@ from loguru import logger
 from ..models.turns import MemoryTurn
 from ..models import SearchResult
 from ..manager import MemoryManager
+from ..oral_worker import OralMemoryWorker
 
 
 class LongTermMemory:
@@ -34,7 +35,14 @@ class LongTermMemory:
         self._manager = manager
         self._write_queue: asyncio.Queue = asyncio.Queue()
         self._writer_task: Optional[asyncio.Task] = None
+        self._oral_worker: Optional[OralMemoryWorker] = None
         logger.info("[LongTermMemory] 初始化完成")
+
+    def set_oral_worker(self, worker: OralMemoryWorker) -> None:
+        """设置口语化 Worker"""
+        self._oral_worker = worker
+        self._manager._oral_worker = worker
+        logger.info("[LongTermMemory] 口语化 Worker 已设置")
 
     async def start(self) -> None:
         """启动异步写入任务"""

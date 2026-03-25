@@ -7,12 +7,18 @@ from datetime import datetime
 import os
 
 from .state import AgentState
-from .config_store import get_socketio, get_service_context
+
+
+def _get_from_config(config: Optional[Dict[str, Any]], key: str) -> Optional[Any]:
+    """从 LangGraph config 获取值"""
+    if config:
+        return config["configurable"] if config else {}.get(key)
+    return None
 
 
 async def output_node(
     state: AgentState,
-    config: Optional[Any] = None,
+    config: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
     输出分发节点
@@ -24,7 +30,7 @@ async def output_node(
 
     logger.info(f"[{session_id}] [输出节点] 开始分发...")
 
-    sio = get_socketio(session_id)
+    sio = _get_from_config(config, "socketio")
     if not sio:
         logger.error(f"[{session_id}] [输出节点] Socket.IO 未配置")
         return {"error": "Socket.IO 未配置"}
@@ -72,13 +78,13 @@ async def output_node(
 
 async def _store_conversation_to_memory(
     state: AgentState,
-    config: Dict[str, Any],
+    config: Optional[Dict[str, Any]],
 ) -> None:
     """将本轮对话存储到记忆系统"""
     session_id = state.get("session_id", "unknown")
 
     try:
-        service_context = get_service_context(session_id)
+        service_context = _get_from_config(config, "service_context")
         if not service_context:
             return
 

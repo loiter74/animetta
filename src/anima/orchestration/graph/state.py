@@ -43,9 +43,6 @@ class AgentState(TypedDict):
     should_retry: bool
     retry_count: int
 
-    # 内部配置
-    _config: Optional[Dict[str, Any]]
-
 
 def create_initial_state(
     session_id: str,

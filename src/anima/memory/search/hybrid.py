@@ -60,6 +60,7 @@ def hybrid_search(
 
     # ── 1. 向量检索 ──────────────────────────────────────
     vector_candidates: dict[int, float] = {}  # rowid -> similarity
+    vector_metadata: dict[int, dict] = {}  # rowid -> metadata (包含 oral_version)
     try:
         if query_embedding is not None:
             v_results = chroma_store.vector_search(
@@ -69,10 +70,11 @@ def hybrid_search(
             v_results = chroma_store.vector_search(
                 query_text=query, n_results=pool_size
             )
-        for chroma_id, distance in v_results:
+        for chroma_id, distance, metadata in v_results:
             rowid = int(chroma_id)
             similarity = max(0.0, 1.0 - distance)  # 余弦距离 -> 相似度
             vector_candidates[rowid] = similarity
+            vector_metadata[rowid] = metadata
     except Exception:
         pass  # 向量搜索失败时降级为纯关键词搜索
 
@@ -108,9 +110,16 @@ def hybrid_search(
         chunk = sqlite_store.get_chunk_by_rowid(rowid)
         if chunk is None:
             continue
+
+        # 从 Chroma metadata 获取口语化版本
+        metadata = vector_metadata.get(rowid, {})
+        oral_version = metadata.get("oral_version", "") or None
+
+        # 优先使用口语化版本，如果没有则使用原始文本
+        display_text = oral_version if oral_version else chunk.text
         results.append(
             SearchResult(
-                text=chunk.text,
+                text=display_text,
                 path=chunk.path,
                 start_line=chunk.start_line,
                 end_line=chunk.end_line,
@@ -118,6 +127,7 @@ def hybrid_search(
                 source=chunk.source,
                 vector_score=vec_score,
                 keyword_score=kw_score,
+                oral_version=oral_version,
             )
         )
 

@@ -24,7 +24,7 @@ class TTSFactory:
             TTSInterface: TTS 实例
         """
         if provider == "openai":
-            from .implementations.openai_tts import OpenAITTS
+            from .openai_tts import OpenAITTS
             return OpenAITTS(
                 api_key=kwargs.get("api_key"),
                 model=kwargs.get("model", "tts-1"),
@@ -32,10 +32,10 @@ class TTSFactory:
                 base_url=kwargs.get("base_url")
             )
         elif provider == "edge" or provider == "edge_tts":
-            from .implementations.edge_tts import EdgeTTS
+            from .edge_tts import EdgeTTS
             return EdgeTTS(voice=kwargs.get("voice"))
         elif provider == "glm":
-            from .implementations.glm_tts import GLMTTS
+            from .glm_tts import GLMTTS
             return GLMTTS(
                 api_key=kwargs.get("api_key"),
                 model=kwargs.get("model", "glm-tts"),
@@ -45,7 +45,7 @@ class TTSFactory:
                 volume=kwargs.get("volume", 1.0)
             )
         elif provider == "chattts":
-            from .implementations.chattts_tts import ChatTTSTTS
+            from .chattts_tts import ChatTTSTTS
             return ChatTTSTTS(
                 model_path=kwargs.get("model_path", "E:/anima_data/models/ChatTTS"),
                 device=kwargs.get("device", "cpu"),
@@ -56,11 +56,11 @@ class TTSFactory:
                 top_k=kwargs.get("top_k", 20),
             )
         elif provider == "mock":
-            from .implementations.mock_tts import MockTTS
+            from .mock_tts import MockTTS
             return MockTTS()
         else:
             logger.warning(f"未知的 TTS 提供商: {provider}，使用 Mock 实现")
-            from .implementations.mock_tts import MockTTS
+            from .mock_tts import MockTTS
             return MockTTS()
     
     @staticmethod

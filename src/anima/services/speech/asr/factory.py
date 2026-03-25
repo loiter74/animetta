@@ -27,7 +27,7 @@ class ASRFactory:
             ValueError: 未知的提供商
         """
         if provider == "openai":
-            from .implementations.openai_asr import OpenAIASR
+            from .openai_asr import OpenAIASR
             return OpenAIASR(
                 api_key=kwargs.get("api_key"),
                 model=kwargs.get("model", "whisper-1"),
@@ -35,7 +35,7 @@ class ASRFactory:
                 base_url=kwargs.get("base_url")
             )
         elif provider == "funasr":
-            from .implementations.funasr_asr import FunASRASR
+            from .funasr_asr import FunASRASR
             return FunASRASR(
                 model=kwargs.get("model", "paraformer-zh"),
                 language=kwargs.get("language", "zh"),
@@ -49,14 +49,14 @@ class ASRFactory:
                 disable_update=kwargs.get("disable_update", True)
             )
         elif provider == "glm":
-            from .implementations.glm_asr import GLMASR
+            from .glm_asr import GLMASR
             return GLMASR(
                 api_key=kwargs.get("api_key"),
                 model=kwargs.get("model", "glm-asr-2512"),
                 stream=kwargs.get("stream", False)
             )
         elif provider == "faster_whisper":
-            from .implementations.faster_whisper_asr import FasterWhisperASR
+            from .faster_whisper_asr import FasterWhisperASR
             return FasterWhisperASR(
                 model=kwargs.get("model", "distil-large-v3"),
                 language=kwargs.get("language", "zh"),
@@ -68,11 +68,11 @@ class ASRFactory:
                 vad_parameters=kwargs.get("vad_parameters", {})
             )
         elif provider == "mock":
-            from .implementations.mock_asr import MockASR
+            from .mock_asr import MockASR
             return MockASR()
         else:
             logger.warning(f"未知的 ASR 提供商: {provider}，使用 Mock 实现")
-            from .implementations.mock_asr import MockASR
+            from .mock_asr import MockASR
             return MockASR()
     
     @staticmethod

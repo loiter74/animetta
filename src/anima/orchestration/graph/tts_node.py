@@ -4,12 +4,18 @@ from typing import Dict, Any, Optional
 from loguru import logger
 
 from .state import AgentState
-from .config_store import get_service_context
+
+
+def _get_service_context(config: Optional[Dict[str, Any]]) -> Optional[Any]:
+    """从 LangGraph config 获取 service_context"""
+    if config:
+        return config["configurable"] if config else {}.get("service_context")
+    return None
 
 
 async def tts_node(
     state: AgentState,
-    config: Optional[Any] = None,
+    config: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
     TTS 语音合成节点
@@ -26,7 +32,7 @@ async def tts_node(
         logger.warning(f"[{session_id}] [TTS节点] 无回复文本，跳过")
         return {"tts_audio": None}
 
-    service_context = get_service_context(session_id)
+    service_context = _get_service_context(config)
     if not service_context:
         logger.error(f"[{session_id}] [TTS节点] service_context 未配置")
         return {"error": "service_context 未配置", "tts_audio": None}

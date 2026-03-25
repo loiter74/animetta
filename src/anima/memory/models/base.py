@@ -17,6 +17,7 @@ class Chunk:
     end_line: int
     content_hash: str  # SHA-256, 用于去重和缓存
     chunk_index: int  # 在文件内的序号
+    oral_version: str | None = None  # 口语化版本（可选）
 
 
 @dataclass
@@ -42,6 +43,7 @@ class SearchResult:
     source: str
     vector_score: float = 0.0
     keyword_score: float = 0.0
+    oral_version: str | None = None  # 口语化版本（如果有）
 
 
 @dataclass

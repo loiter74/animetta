@@ -10,6 +10,8 @@
 
 from __future__ import annotations
 
+import re
+
 import hashlib
 import logging
 import time
@@ -99,6 +101,9 @@ class MemoryManager:
         except Exception as e:
             logger.warning(f"Failed to load embedding model: {e}")
             self._embedder = None
+
+        # 口语化 Worker (由 MemorySystem 设置)
+        self._oral_worker = None
 
     # ── 文件读写 ──────────────────────────────────────────
 
@@ -215,6 +220,35 @@ class MemoryManager:
 
         logger.info(f"Sync complete: {indexed} indexed, {skipped} unchanged")
 
+
+    def _generate_oral_version(self, text: str) -> str | None:
+        """
+        生成口语化版本（使用简单规则）
+
+        Args:
+            text: 原始文本
+
+        Returns:
+            口语化版本，如果不能转换则返回 None
+        """
+        # 简单的规则转换
+        patterns = [
+            (r"^\*\*User\*\*[:\s]+(.+)", r"我记得你说过"),
+            (r"^User[:\s]+(.+)", r"我记得你说过"),
+            (r"^\*\*AI\*\*[:\s]+(.+)", r"我之前回复过"),
+            (r"^AI[:\s]+(.+)", r"我之前回复过"),
+            (r"^- 用户说[:\：](.+)", r"我记得你提到过"),
+        ]
+
+        text_stripped = text.strip()
+        for pattern, replacement in patterns:
+            match = re.match(pattern, text_stripped)
+            if match:
+                return match.expand(replacement)
+
+        # 如果没有匹配的模式，返回 None（使用原始文本）
+        return None
+
     def _index_file(self, relative_path: str, source: str) -> bool:
         """
         对单个文件进行增量索引.
@@ -245,9 +279,11 @@ class MemoryManager:
         if not raw_chunks:
             return False
 
-        # 构建 Chunk 对象
-        chunks = [
-            Chunk(
+        # 构建 Chunk 对象（添加口语化版本）
+        chunks = []
+        for rc in raw_chunks:
+            oral = self._generate_oral_version(rc.text)
+            chunks.append(Chunk(
                 text=rc.text,
                 path=relative_path,
                 source=source,
@@ -255,9 +291,8 @@ class MemoryManager:
                 end_line=rc.end_line,
                 content_hash=rc.content_hash,
                 chunk_index=rc.chunk_index,
-            )
-            for rc in raw_chunks
-        ]
+                oral_version=oral,
+            ))
 
         # 事务性更新: 先删旧的 chunks 和 vectors
         self.sqlite.delete_chunks_by_path(relative_path)
@@ -284,7 +319,57 @@ class MemoryManager:
         self.chroma.upsert_chunks(chunks, rowids, embeddings)
 
         logger.info(f"Indexed {relative_path}: {len(chunks)} chunks")
+
+        # 提交口语化任务到 Worker (异步)
+        self._submit_oral_tasks(chunks, rowids, relative_path)
+
         return True
+
+    def _submit_oral_tasks(self, chunks: list[Chunk], rowids: list[int], relative_path: str) -> None:
+        """提交口语化转换任务到 Worker"""
+        if not self._oral_worker:
+            return
+
+        import asyncio
+
+        async def _submit():
+            for chunk, rowid in zip(chunks, rowids):
+                # 只处理没有 oral_version 的 chunk
+                if not chunk.oral_version:
+                    try:
+                        await self._oral_worker.submit(
+                            text=chunk.text,
+                            content_hash=chunk.content_hash,
+                            session_id=relative_path,
+                            callback=self._create_oral_callback(rowid, chunk.content_hash),
+                        )
+                    except Exception as e:
+                        logger.debug(f"[MemoryManager] 提交口语化任务失败: {e}")
+
+        # 在事件循环中运行
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                asyncio.create_task(_submit())
+            else:
+                asyncio.run(_submit())
+        except Exception as e:
+            logger.debug(f"[MemoryManager] 无法提交口语化任务: {e}")
+
+    def _create_oral_callback(self, rowid: int, content_hash: str):
+        """创建口语化完成回调"""
+        def _callback(oral_version: str):
+            # 更新 Chroma metadata
+            try:
+                self.chroma.collection.update(
+                    ids=[str(rowid)],
+                    metadatas=[{"oral_version": oral_version}]
+                )
+                logger.debug(f"[MemoryManager] 更新 oral_version: rowid={rowid}")
+            except Exception as e:
+                logger.warning(f"[MemoryManager] 更新 oral_version 失败: {e}")
+
+        return _callback
 
     def _compute_embeddings(self, chunks: list[Chunk]) -> list[list[float]] | None:
         """

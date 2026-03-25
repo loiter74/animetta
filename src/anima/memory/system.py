@@ -11,6 +11,7 @@ from .manager import MemoryManager
 from .models.base import SearchResult
 from .search.scorer import MemoryScorer
 from .stores import ShortTermMemory, LongTermMemory
+from .oral_worker import OralMemoryWorker
 
 
 class MemorySystem:
@@ -32,6 +33,8 @@ class MemorySystem:
         self._short_term = ShortTermMemory(max_turns=config.get("short_term_max_turns", 20))
 
         self._long_term: Optional[LongTermMemory] = None
+        self._oral_worker: Optional[OralMemoryWorker] = None
+
         try:
             manager = MemoryManager(config=memory_config)
             self._long_term = LongTermMemory(manager)
@@ -39,14 +42,38 @@ class MemorySystem:
         except Exception as e:
             logger.warning(f"[MemorySystem] 降级为纯短期记忆模式: {e}")
 
+        # 初始化口语化 Worker
+        llm_client = config.get("llm_client")
+        if llm_client:
+            self._oral_worker = OralMemoryWorker(
+                llm_client=llm_client,
+                queue_size=config.get("oral_queue_size", 1000),
+                max_retries=config.get("oral_max_retries", 2),
+                batch_size=config.get("oral_batch_size", 5),
+            )
+            logger.info("[MemorySystem] 口语化 Worker 已初始化")
+        else:
+            logger.info("[MemorySystem] 未配置 LLM 客户端，口语化功能使用规则后备方案")
+
     async def start(self) -> None:
         """启动记忆系统"""
         if self._long_term:
             await self._long_term.start()
             logger.info("[MemorySystem] 长期记忆已启动")
 
+        if self._oral_worker:
+            await self._oral_worker.start()
+            # 将 Worker 设置给 LongTermMemory
+            if self._long_term:
+                self._long_term.set_oral_worker(self._oral_worker)
+            logger.info("[MemorySystem] 口语化 Worker 已启动")
+
     async def stop(self) -> None:
         """停止记忆系统"""
+        if self._oral_worker:
+            await self._oral_worker.stop()
+            logger.info("[MemorySystem] 口语化 Worker 已停止")
+
         if self._long_term:
             await self._long_term.stop()
         self._short_term.clear_all()
@@ -180,8 +207,23 @@ class MemorySystem:
         if self._long_term:
             self._long_term.sync()
 
+    def get_oral_worker(self) -> Optional[OralMemoryWorker]:
+        """获取口语化 Worker（供 MemoryManager 使用）"""
+        return self._oral_worker
+
     def close(self) -> None:
         """关闭记忆系统"""
+        if self._oral_worker:
+            import asyncio
+            try:
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    asyncio.create_task(self._oral_worker.stop())
+                else:
+                    asyncio.run(self._oral_worker.stop())
+            except Exception as e:
+                logger.warning(f"[MemorySystem] 关闭 Worker 失败: {e}")
+
         if self._long_term:
             self._long_term.close()
         self._short_term.clear_all()

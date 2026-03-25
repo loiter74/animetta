@@ -207,7 +207,7 @@ class ProcessManager:
         env['PYTHONPATH'] = str(src_path)
         env['PYTHONIOENCODING'] = 'utf-8'
 
-        cmd = [python_exe, '-m', 'anima.socketio_server']
+        cmd = [python_exe, '-m', 'anima.core.socketio_server']
 
         try:
             # 不使用 CREATE_NEW_PROCESS_GROUP，让子进程继承信号处理

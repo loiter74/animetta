@@ -8,6 +8,13 @@ import json
 from .state import AgentState
 
 
+def _get_from_config(config: Optional[Dict[str, Any]], key: str) -> Optional[Any]:
+    """从 LangGraph config 获取值"""
+    if config:
+        return config.get("configurable", {}).get(key)
+    return None
+
+
 async def tool_node(
     state: AgentState,
     config: Optional[Dict[str, Any]] = None,
@@ -27,10 +34,7 @@ async def tool_node(
 
     logger.info(f"[{session_id}] [工具节点] 执行 {len(tool_calls)} 个工具调用")
 
-    if config is None:
-        config = state.get("_config", {})
-
-    tools_map = (config if config else {}).get("configurable", {}).get("tools_map", {})
+    tools_map = _get_from_config(config, "tools_map")
 
     if not tools_map:
         logger.error(f"[{session_id}] [工具节点] tools_map 未配置")

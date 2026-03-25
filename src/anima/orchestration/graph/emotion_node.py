@@ -6,9 +6,16 @@ from loguru import logger
 from .state import AgentState
 
 
+def _get_from_config(config: Optional[Dict[str, Any]], key: str) -> Optional[Any]:
+    """从 LangGraph config 获取值"""
+    if config:
+        return config["configurable"] if config else {}.get(key)
+    return None
+
+
 async def emotion_node(
     state: AgentState,
-    config: Optional[Any] = None,
+    config: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
     情感分析节点
@@ -25,23 +32,20 @@ async def emotion_node(
         logger.warning(f"[{session_id}] [情感节点] 无回复文本，使用默认情感")
         return {"emotion": "neutral"}
 
-    if config is None:
-        config = state.get("_config", {})
+    # 从 config 获取 emotion_analyzer
+    emotion_analyzer = _get_from_config(config, "emotion_analyzer")
+
+    if not emotion_analyzer:
+        # 尝试从 service_context 获取
+        service_context = _get_from_config(config, "service_context")
+        if service_context and hasattr(service_context, "emotion_analyzer"):
+            emotion_analyzer = service_context.emotion_analyzer
+
+    if not emotion_analyzer:
+        logger.debug(f"[{session_id}] [情感节点] 无情感分析器，使用默认情感")
+        return {"emotion": "neutral"}
 
     try:
-        emotion_analyzer = (config if config else {}).get("configurable", {}).get("emotion_analyzer")
-
-        if not emotion_analyzer:
-            logger.debug(f"[{session_id}] [情感节点] 情感分析器未配置，尝试从 service_context 获取")
-
-            service_context = (config if config else {}).get("configurable", {}).get("service_context")
-
-            if service_context and hasattr(service_context, "emotion_analyzer"):
-                emotion_analyzer = service_context.emotion_analyzer
-            else:
-                logger.debug(f"[{session_id}] [情感节点] 无情感分析器，使用默认情感")
-                return {"emotion": "neutral"}
-
         logger.debug(f"[{session_id}] [情感节点] 调用情感分析器...")
 
         result = emotion_analyzer.extract(response_text)

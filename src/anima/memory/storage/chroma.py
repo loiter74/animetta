@@ -119,6 +119,7 @@ class ChromaStore:
                 "end_line": c.end_line,
                 "content_hash": c.content_hash,
                 "chunk_index": c.chunk_index,
+                "oral_version": c.oral_version or "",  # 口语化版本
             }
             for c in chunks
         ]
@@ -144,12 +145,13 @@ class ChromaStore:
         query_embedding: list[float] | None = None,
         n_results: int = 24,
         where: dict | None = None,
-    ) -> list[tuple[str, float]]:
+    ) -> list[tuple[str, float, dict]]:
         """
         向量语义搜索.
 
         Returns:
-            [(chroma_id, distance), ...] — distance 越小越相似 (余弦距离).
+            [(chroma_id, distance, metadata), ...] — distance 越小越相似 (余弦距离).
+            metadata 包含 oral_version 等字段.
             注意: Chroma 返回的是距离而非相似度, 需要转换: similarity = 1 - distance
         """
         kwargs: dict[str, Any] = {"n_results": n_results}
@@ -166,9 +168,9 @@ class ChromaStore:
         results = self.collection.query(**kwargs)
 
         pairs = []
-        if results["ids"] and results["distances"]:
-            for doc_id, dist in zip(results["ids"][0], results["distances"][0]):
-                pairs.append((doc_id, dist))
+        if results["ids"] and results["distances"] and results["metadatas"]:
+            for doc_id, dist, meta in zip(results["ids"][0], results["distances"][0], results["metadatas"][0]):
+                pairs.append((doc_id, dist, meta or {}))
         return pairs
 
     def count(self) -> int:

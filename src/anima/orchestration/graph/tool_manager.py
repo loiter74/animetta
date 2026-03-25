@@ -72,7 +72,12 @@ class ToolManager:
             return None
 
     def get_config(self) -> Dict[str, Any]:
-        """获取工具配置，用于存储到 ConfigStore"""
+        """
+        获取工具配置，用于添加到 LangGraph config
+
+        Returns:
+            包含工具相关配置的字典
+        """
         return {
             "tools": self.tools,
             "tools_map": self.tools_map,
