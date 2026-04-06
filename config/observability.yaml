@@ -1,0 +1,23 @@
+# Anima 可观测性配置
+# 支持同时启用 LangSmith 和 LangFuse, 互不冲突
+
+# ========================================
+# LangSmith - LangChain 官方可观测平台
+# https://smith.langchain.com/
+# 注册后获取 API Key, 填入下方或通过环境变量设置
+# ========================================
+langsmith:
+  enabled: false
+  # api_key: "lsv2_pt_xxx"       # 或通过环境变量 LANGCHAIN_API_KEY 设置
+  project: "anima"                # 项目名称
+  # endpoint: "https://api.smith.langchain.com"  # 默认
+
+# ========================================
+# LangFuse - 开源 LLM 可观测平台
+# https://langfuse.com/
+# 支持自托管或云服务, 数据完全可控
+# ========================================
+langfuse:
+  enabled: true
+  host: "https://us.cloud.langfuse.com"  # 或自托管地址
+  debug: false

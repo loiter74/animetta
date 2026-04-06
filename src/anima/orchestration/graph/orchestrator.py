@@ -15,6 +15,7 @@ from .state import AgentState, create_initial_state
 from .builder import create_default_graph
 from .interrupt_handler import get_interrupt_handler
 from .tool_manager import ToolManager
+from .observability import get_observability
 
 
 class LangGraphOrchestrator:
@@ -53,6 +54,15 @@ class LangGraphOrchestrator:
                 "thread_id": self.session_id,
             }
         }
+
+        # 初始化可观测性
+        obs = get_observability()
+        if not obs._initialized:
+            obs.initialize()
+
+        self._callbacks = obs.callbacks
+        if self._callbacks:
+            logger.info(f"[{self.session_id}] [LangGraph] 可观测性回调: {len(self._callbacks)} 个")
 
         logger.info(f"[{self.session_id}] [LangGraph] 编排器初始化完成")
 
@@ -209,7 +219,11 @@ class LangGraphOrchestrator:
 
     async def _run_graph(self, initial_state: AgentState) -> Dict[str, Any]:
         """运行状态图，通过 LangGraph config 传递服务上下文"""
-        return await self.graph.ainvoke(initial_state, config=self._langgraph_config)
+        run_config = dict(self._langgraph_config)
+        callbacks = self._callbacks or get_observability().callbacks
+        if callbacks:
+            run_config["callbacks"] = callbacks
+        return await self.graph.ainvoke(initial_state, config=run_config)
 
     def _clean_result(self, final_state: Dict[str, Any]) -> Dict[str, Any]:
         """清理返回值"""

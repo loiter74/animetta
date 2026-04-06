@@ -132,11 +132,11 @@ class SessionManager:
         """加载工具配置"""
         try:
             import yaml
-            # 修复路径：从 src/anima/server/session.py 到项目根目录的 config/tools.yaml
-            # __file__ = .../src/anima/server/session.py
+            # 修复路径：从 src/anima/orchestration/server/session.py 到项目根目录的 config/tools.yaml
+            # __file__ = .../src/anima/orchestration/server/session.py
             # 需要：.../config/tools.yaml
-            # 所以需要向上 4 级到项目根目录
-            config_path = Path(__file__).parent.parent.parent.parent / "config" / "tools.yaml"
+            # 所以需要向上 5 级到项目根目录（orchestration/server -> orchestration -> anima -> src -> project_root）
+            config_path = Path(__file__).parent.parent.parent.parent.parent / "config" / "tools.yaml"
 
             logger.info(f"[_load_tools_config] 配置文件路径: {config_path}")
             logger.info(f"[_load_tools_config] 文件是否存在: {config_path.exists()}")

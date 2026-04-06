@@ -102,7 +102,7 @@ def validate_tools_config(config: Dict[str, Any]) -> bool:
             if "command" not in server:
                 logger.error(f"[工具配置] MCP 服务器 {server['name']} 缺少 command 字段")
                 return False
-        elif transport == "sse":
+        elif transport in ("sse", "streamable_http"):
             if "url" not in server:
                 logger.error(f"[工具配置] MCP 服务器 {server['name']} 缺少 url 字段")
                 return False

@@ -49,6 +49,9 @@ langchain-community>=0.3.0
 # MCP (Model Context Protocol) - 工具协议
 mcp>=0.1.0
 
+# 可观测性 (Observability)
+langfuse>=4.0.0
+
 # JWT - 兼容 zhipuai 和 mcp 的版本
 # 注意：zhipuai 声称需要 <2.9.0，但实际测试 2.10.x 可正常工作
 pyjwt>=2.10.0

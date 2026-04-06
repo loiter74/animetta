@@ -26,6 +26,8 @@ class GLMLLM(LLMInterface):
         self.client = None
         self._conversation_history: List[Dict[str, Any]] = []
         self._call_count = 0
+        self._total_input_tokens = 0
+        self._total_output_tokens = 0
 
     @classmethod
     def from_config(cls, config: GLMLLMConfig, **kwargs):
@@ -98,6 +100,9 @@ class GLMLLM(LLMInterface):
             response = await asyncio.to_thread(_create_completion)
             full_response = response.choices[0].message.content
 
+            # Token 追踪
+            self._track_usage(response)
+
             self._update_history(user_input, full_response)
             return full_response
 
@@ -134,11 +139,40 @@ class GLMLLM(LLMInterface):
                 )
 
             response = await asyncio.to_thread(_create_completion)
+
+            # Token 追踪
+            self._track_usage(response)
+
             return GLMToolConverter.parse_tool_response(response.choices[0].message)
 
         except Exception as e:
             logger.error(f"[GLM] 工具调用失败: {e}")
             raise
+
+    def _track_usage(self, response: Any) -> None:
+        """追踪 token 消耗"""
+        try:
+            usage = getattr(response, "usage", None)
+            if usage:
+                input_tokens = getattr(usage, "prompt_tokens", 0) or 0
+                output_tokens = getattr(usage, "completion_tokens", 0) or 0
+                self._total_input_tokens += input_tokens
+                self._total_output_tokens += output_tokens
+                logger.debug(
+                    f"[GLM] Token 使用: input={input_tokens}, output={output_tokens}, "
+                    f"累计 input={self._total_input_tokens}, output={self._total_output_tokens}"
+                )
+        except Exception as e:
+            logger.debug(f"[GLM] Token 追踪失败: {e}")
+
+    def get_token_usage(self) -> Dict[str, int]:
+        """获取累计 token 使用量"""
+        return {
+            "input_tokens": self._total_input_tokens,
+            "output_tokens": self._total_output_tokens,
+            "total_tokens": self._total_input_tokens + self._total_output_tokens,
+            "call_count": self._call_count,
+        }
 
     def _build_messages(
         self,

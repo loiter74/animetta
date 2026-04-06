@@ -34,19 +34,16 @@ class LLMChatModelAdapter(BaseChatModel):
     LangChain ChatModel 适配器
 
     包装现有的 LLMInterface 实现，使其兼容 LangChain 的 BaseChatModel 协议。
-    注意：此适配器不处理工具调用，工具调用由 llm_node.py 直接处理。
     """
 
     llm_service: LLMInterface = Field(description="现有的 LLM 服务实例")
-
-    # 支持的工具列表（用于 bind_tools）
     bound_tools: Sequence[BaseTool] = Field(default_factory=list, description="绑定的工具列表")
+    model_name: str = Field(default="unknown", description="模型名称 (用于 LangSmith/LangFuse 追踪)")
 
     # LangChain 必需字段
     @property
     def _llm_type(self) -> str:
-        """返回 LLM 类型标识"""
-        return f"anima_llm_adapter_{self.llm_service.__class__.__name__}"
+        return f"anima_{self.model_name}"
 
     @property
     def lc_secrets(self) -> Dict[str, str]:
@@ -163,4 +160,10 @@ def create_chat_model_from_service(
     Returns:
         BaseChatModel: LangChain ChatModel 实例
     """
-    return LLMChatModelAdapter(llm_service=llm_service)
+    model_name = "unknown"
+    if hasattr(llm_service, "config") and hasattr(llm_service.config, "model"):
+        model_name = llm_service.config.model
+    elif hasattr(llm_service, "config") and hasattr(llm_service.config, "type"):
+        model_name = llm_service.config.type
+
+    return LLMChatModelAdapter(llm_service=llm_service, model_name=model_name)

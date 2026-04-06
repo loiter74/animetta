@@ -1,48 +1,57 @@
 # Anima 工具配置
-# 默认只启用不需要 API Key 的工具
 
 # ========================================
-# 内置工具配置（不需要 Key）
+# 内置工具（不需要 API Key）
 # ========================================
 builtin_tools:
-  - web_search      # 使用 DuckDuckGo（免费），无需 Key
+  - web_search      # DuckDuckGo 搜索（免费）
   - read_file       # 读取本地文件
   - get_current_time # 获取时间
   - list_directory  # 列出目录
   - calculator      # 数学计算
-  # - get_weather     # 需要 AMAP_API_KEY 或 OPENWEATHER_API_KEY，否则返回模拟数据
+  # - get_weather     # 需要 AMAP_API_KEY，否则返回模拟数据
 
 # ========================================
-# LangChain 工具配置（不需要 Key）
+# LangChain 工具
 # ========================================
 langchain_tools:
   enabled:
-    - wikipedia       # 维基百科搜索
-    - ddg_search      # DuckDuckGo 搜索
-    # - python_repl     # Python 代码执行（可选，有安全风险）
+    - wikipedia
+    - ddg_search
+    # - python_repl     # 有安全风险
 
 # ========================================
-# 自定义工具配置（不需要 Key）
+# 自定义工具
 # ========================================
 custom_tools:
   enabled:
-    - url_preview     # URL 预览
+    - url_preview
   # - translate       # 需要 DEEPL_API_KEY
-  # - send_email      # 需要 SMTP_USER, SMTP_PASSWORD
-  # - image_gen       # 需要 OPENAI_API_KEY 或 REPLICATE_API_TOKEN
+  # - send_email      # 需要 SMTP 配置
+  # - image_gen       # 需要 OPENAI_API_KEY
 
 # ========================================
-# MCP 服务器配置（不需要 Key）
+# MCP 服务器
+# 支持三种传输方式: stdio, sse, streamable_http
 # ========================================
 mcp_servers:
   - name: "filesystem"
     transport: "stdio"
     command: "npx"
     args: ["-y", "@modelcontextprotocol/server-filesystem", "./data"]
-    env: {}
+
+  # SSE 示例:
+  # - name: "remote-search"
+  #   transport: "sse"
+  #   url: "http://localhost:8080/sse"
+
+  # Streamable HTTP 示例:
+  # - name: "remote-tools"
+  #   transport: "streamable_http"
+  #   url: "http://localhost:8080/mcp"
 
 # ========================================
-# 工具调用配置
+# 工具调用设置
 # ========================================
 tool_settings:
   enable_tools: true

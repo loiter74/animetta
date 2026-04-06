@@ -203,14 +203,22 @@ def load_tools_from_config(config: Dict[str, Any]) -> tuple:
         except Exception as e:
             logger.error(f"[LangChain Tools] Failed: {e}")
 
-    # MCP tools
-    mcp_servers = config.get("mcp_servers", [])
-    if mcp_servers:
+    # Custom tools
+    custom_config = config.get("custom_tools", {})
+    if custom_config:
         try:
-            from .mcp_bridge import load_mcp_tools
-            mcp_tools = load_mcp_tools(mcp_servers)
-            extra_tools.extend(mcp_tools)
+            from .custom_tools import get_custom_tools
+            enabled_custom = custom_config.get("enabled", [])
+            if enabled_custom:
+                all_custom = get_custom_tools()
+                custom_tools_map = {tool.name: tool for tool in all_custom}
+                for name in enabled_custom:
+                    if name in custom_tools_map:
+                        extra_tools.append(custom_tools_map[name])
+                        logger.info(f"[Custom Tools] 已加载工具: {name}")
+                    else:
+                        logger.warning(f"[Custom Tools] 未找到工具: {name}")
         except Exception as e:
-            logger.error(f"[MCP Tools] Failed: {e}")
+            logger.error(f"[Custom Tools] Failed: {e}")
 
     return create_tool_registry(builtin_enabled=builtin_enabled, extra_tools=extra_tools)
