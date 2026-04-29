@@ -29,7 +29,7 @@
 
 ## 6. End-to-End Verification
 
-- [ ] 6.1 Start backend: `python -m anima.core.socketio_server` — verify no import errors, logs show "统计 handler 已注入"
-- [ ] 6.2 Send a text message via frontend chat, then verify API returns data: `curl http://localhost:12394/api/stats/overview`, `curl http://localhost:12394/api/stats/nodes`, `curl http://localhost:12394/api/stats/traces`
-- [ ] 6.3 Open `http://localhost:12394/stats/` in browser — verify KPI cards, chart, traces table render with real data
-- [ ] 6.4 Click a trace row — verify modal opens with trace detail and span list
+- [x] 6.1 Start backend: `python -m anima.core.socketio_server` — verify no import errors, logs show "统计 handler 已注入"
+- [x] 6.2 Send a text message via frontend chat, then verify API returns data: `curl http://localhost:12394/api/stats/overview`, `curl http://localhost:12394/api/stats/nodes`, `curl http://localhost:12394/api/stats/traces`
+- [x] 6.3 Open `http://localhost:12394/stats/` in browser — verify KPI cards, chart, traces table render with real data
+- [x] 6.4 Click a trace row — verify modal opens with trace detail and span list
