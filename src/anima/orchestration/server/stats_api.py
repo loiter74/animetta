@@ -4,10 +4,16 @@ from pathlib import Path
 from loguru import logger
 
 from starlette.requests import Request
-from starlette.responses import JSONResponse, HTMLResponse
-from starlette.routing import Route
+from starlette.responses import JSONResponse
+from starlette.routing import Mount, Route
+from starlette.staticfiles import StaticFiles
 
 from ..graph.stats_store import get_stats_store
+
+# Dashboard 前端文件目录
+STATS_FRONTEND_DIR = str(
+    Path(__file__).parent.parent.parent.parent.parent / "frontend" / "stats"
+)
 
 
 async def stats_overview(request: Request) -> JSONResponse:
@@ -59,17 +65,6 @@ async def stats_trace_detail(request: Request) -> JSONResponse:
         return JSONResponse({"error": str(e)}, status_code=500)
 
 
-async def stats_dashboard(request: Request) -> HTMLResponse:
-    """GET /stats/ — 仪表盘页面"""
-    dashboard_path = (
-        Path(__file__).parent.parent.parent.parent.parent
-        / "frontend" / "stats" / "index.html"
-    )
-    if dashboard_path.exists():
-        return HTMLResponse(dashboard_path.read_text(encoding="utf-8"))
-    return HTMLResponse("<h1>Dashboard not found</h1><p>请先构建前端: frontend/stats/index.html</p>")
-
-
 def get_stats_routes():
     """返回统计 API 的路由列表"""
     return [
@@ -77,5 +72,5 @@ def get_stats_routes():
         Route("/api/stats/nodes", stats_nodes),
         Route("/api/stats/traces", stats_traces),
         Route("/api/stats/traces/{trace_id}", stats_trace_detail),
-        Route("/stats/", stats_dashboard),
+        Mount("/stats", app=StaticFiles(directory=STATS_FRONTEND_DIR, html=True), name="stats_dashboard"),
     ]
