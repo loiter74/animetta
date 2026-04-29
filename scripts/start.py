@@ -525,9 +525,18 @@ def main():
         print()
         info("按 Ctrl+C 停止所有服务\n")
 
-        # 等待进程
-        for name, process, _ in pm.processes:
-            process.wait()
+        # 等待进程（用超时循环，Windows 上才能响应 Ctrl+C）
+        while True:
+            all_stopped = True
+            for name, process, _ in pm.processes:
+                if process.poll() is None:
+                    all_stopped = False
+                    try:
+                        process.wait(timeout=0.5)
+                    except subprocess.TimeoutExpired:
+                        pass
+            if all_stopped:
+                break
 
     except KeyboardInterrupt:
         pm.stop_all()
