@@ -53,9 +53,7 @@ def _get_default_config() -> Dict[str, Any]:
         "builtin_tools": [
             "web_search",
             "get_weather",
-            "read_file",
             "get_current_time",
-            "list_directory",
             "calculator",
         ],
         "mcp_servers": [],
@@ -82,8 +80,8 @@ def validate_tools_config(config: Dict[str, Any]) -> bool:
     # 验证内置工具
     builtin_tools = config.get("builtin_tools", [])
     valid_builtin = {
-        "web_search", "get_weather", "read_file",
-        "get_current_time", "list_directory", "calculator",
+        "web_search", "get_weather",
+        "get_current_time", "calculator",
     }
 
     for tool in builtin_tools:

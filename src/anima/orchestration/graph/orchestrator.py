@@ -16,6 +16,7 @@ from .builder import create_default_graph
 from .interrupt_handler import get_interrupt_handler
 from .tool_manager import ToolManager
 from .observability import get_observability
+from .stats_handler import StatsCallbackHandler
 
 
 class LangGraphOrchestrator:
@@ -63,6 +64,14 @@ class LangGraphOrchestrator:
         self._callbacks = obs.callbacks
         if self._callbacks:
             logger.info(f"[{self.session_id}] [LangGraph] 可观测性回调: {len(self._callbacks)} 个")
+
+        # 统计 handler
+        self._stats_handler = StatsCallbackHandler()
+        if self._callbacks:
+            self._callbacks.append(self._stats_handler)
+        else:
+            self._callbacks = [self._stats_handler]
+        logger.info(f"[{self.session_id}] [LangGraph] 统计 handler 已注入")
 
         logger.info(f"[{self.session_id}] [LangGraph] 编排器初始化完成")
 
@@ -219,11 +228,23 @@ class LangGraphOrchestrator:
 
     async def _run_graph(self, initial_state: AgentState) -> Dict[str, Any]:
         """运行状态图，通过 LangGraph config 传递服务上下文"""
+        # 开始 trace
+        input_type = initial_state.get("input_type", "text")
+        user_text = initial_state.get("user_text", "")
+        self._stats_handler.start_trace(self.session_id, input_type, user_text)
+
         run_config = dict(self._langgraph_config)
         callbacks = self._callbacks or get_observability().callbacks
         if callbacks:
             run_config["callbacks"] = callbacks
-        return await self.graph.ainvoke(initial_state, config=run_config)
+
+        try:
+            result = await self.graph.ainvoke(initial_state, config=run_config)
+            self._stats_handler.finish_trace(status="success")
+            return result
+        except Exception as e:
+            self._stats_handler.finish_trace(status="error", error_msg=str(e)[:500])
+            raise
 
     def _clean_result(self, final_state: Dict[str, Any]) -> Dict[str, Any]:
         """清理返回值"""

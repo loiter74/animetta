@@ -370,6 +370,71 @@ class RouteHandlers:
         logger.info(f"[Desktop][Chat] 语音输入停止")
         await self.sio.emit('desktop.voice_stopped', {}, to=sid)
 
+    # 记忆整理事件
+    async def on_memory_organize(self, sid: str, data: dict) -> None:
+        """触发记忆自动整理"""
+        logger.info(f"[{sid}] 收到记忆整理请求")
+
+        try:
+            ctx = self.session_manager.get_context(sid)
+            if not ctx or not ctx.memory_system:
+                await self.sio.emit('memory.organize.result', {
+                    'type': 'error',
+                    'message': '记忆系统未初始化'
+                }, to=sid)
+                return
+
+            memory_system = ctx.memory_system
+            if not memory_system._wiki_manager:
+                await self.sio.emit('memory.organize.result', {
+                    'type': 'error',
+                    'message': 'Wiki 管理器未初始化'
+                }, to=sid)
+                return
+
+            from anima.memory.wiki.organizer import WikiOrganizer
+
+            # Get LLM client from service context
+            llm_client = None
+            if ctx.llm_engine:
+                # Use the LLMInterface directly (has async chat method)
+                llm_client = ctx.llm_engine
+
+            organizer = WikiOrganizer(
+                wiki=memory_system._wiki_manager,
+                llm_client=llm_client,
+            )
+
+            async def progress_callback(text, pct):
+                await self.sio.emit('memory.organize.progress', {
+                    'text': text,
+                    'progress': pct,
+                }, to=sid)
+
+            result = await organizer.organize(progress_callback=progress_callback)
+
+            await self.sio.emit('memory.organize.result', {
+                'type': 'success',
+                'merges': result.get('merges', 0),
+                'synthesis': result.get('synthesis', 0),
+                'updates': result.get('updates', 0),
+                'errors': result.get('errors', []),
+            }, to=sid)
+
+            logger.info(
+                f"[{sid}] 记忆整理完成: "
+                f"merges={result.get('merges', 0)}, "
+                f"synthesis={result.get('synthesis', 0)}, "
+                f"updates={result.get('updates', 0)}"
+            )
+
+        except Exception as e:
+            logger.error(f"[{sid}] 记忆整理失败: {e}", exc_info=True)
+            await self.sio.emit('memory.organize.result', {
+                'type': 'error',
+                'message': str(e),
+            }, to=sid)
+
 
 def register_routes(
     sio: "AsyncServer",
@@ -414,6 +479,9 @@ def register_routes(
     sio.on('desktop_chat_message', handlers.on_desktop_chat_message)
     sio.on('desktop_voice_start', handlers.on_desktop_voice_start)
     sio.on('desktop_voice_stop', handlers.on_desktop_voice_stop)
+
+    # 记忆整理事件
+    sio.on('memory_organize', handlers.on_memory_organize)
 
     logger.info("WebSocket 路由已注册")
     return handlers

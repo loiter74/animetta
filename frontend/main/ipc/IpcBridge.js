@@ -125,6 +125,15 @@ class IpcBridge {
       console.log('[IpcBridge] stop_audio event');
       this.sendToWindow('live2d', 'audio:stop', data);
     });
+
+    this.socket.on('memory.organize.progress', (data) => {
+      this.sendToWindow('chat', 'memory:organize-progress', data);
+    });
+
+    this.socket.on('memory.organize.result', (data) => {
+      console.log('[IpcBridge] memory organize result:', data.type);
+      this.sendToWindow('chat', 'memory:organize-result', data);
+    });
   }
 
   /**

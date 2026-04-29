@@ -147,6 +147,83 @@ body {
   color: var(--text-secondary);
 }
 
+/* Memory Organize Button */
+.memory-organize-btn {
+  margin-left: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 11px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.memory-organize-btn:hover {
+  background: rgba(233, 69, 96, 0.2);
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+.memory-organize-btn:active {
+  transform: scale(0.95);
+}
+
+.memory-organize-btn.organizing {
+  background: var(--accent);
+  color: white;
+  pointer-events: none;
+  animation: pulse 1.5s infinite;
+}
+
+.memory-organize-btn .organize-icon {
+  font-size: 13px;
+}
+
+.memory-organize-btn .organize-text {
+  font-size: 11px;
+}
+
+/* Memory organize progress toast */
+.memory-progress {
+  position: fixed;
+  top: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  background: rgba(15, 52, 96, 0.95);
+  border: 1px solid var(--accent);
+  border-radius: 20px;
+  color: var(--text-primary);
+  font-size: 12px;
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: fadeIn 0.3s ease;
+}
+
+.memory-progress .progress-bar {
+  width: 80px;
+  height: 4px;
+  background: var(--bg-primary);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.memory-progress .progress-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
 .status-dot {
   width: 8px;
   height: 8px;

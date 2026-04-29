@@ -1,8 +1,5 @@
-"""
-记忆存储实现
-"""
+"""记忆存储实现"""
 
 from .short_term import ShortTermMemory
-from .long_term import LongTermMemory
 
-__all__ = ["ShortTermMemory", "LongTermMemory"]
+__all__ = ["ShortTermMemory"]

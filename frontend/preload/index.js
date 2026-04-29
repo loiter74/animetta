@@ -94,6 +94,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
       const listener = (_event, data) => callback(data);
       ipcRenderer.on('chat:transcript', listener);
       return () => ipcRenderer.removeListener('chat:transcript', listener);
+    },
+
+    // Memory organize
+    organizeMemory: () => ipcRenderer.invoke('chat:organizeMemory'),
+    onMemoryOrganizeProgress: (callback) => {
+      const listener = (_event, data) => callback(data);
+      ipcRenderer.on('memory:organize-progress', listener);
+      return () => ipcRenderer.removeListener('memory:organize-progress', listener);
+    },
+    onMemoryOrganizeResult: (callback) => {
+      const listener = (_event, data) => callback(data);
+      ipcRenderer.on('memory:organize-result', listener);
+      return () => ipcRenderer.removeListener('memory:organize-result', listener);
     }
   },
 

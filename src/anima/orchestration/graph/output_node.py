@@ -103,7 +103,7 @@ async def _store_conversation_to_memory(
         emotions = [emotion] if emotion else []
         metadata = state.get("metadata", {})
 
-        from ...memory.memory_turn import MemoryTurn
+        from ...memory.models.turns import MemoryTurn
 
         turn = MemoryTurn(
             turn_id=f"{session_id}_{int(datetime.now().timestamp())}",

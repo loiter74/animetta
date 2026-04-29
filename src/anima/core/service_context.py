@@ -247,7 +247,7 @@ class ServiceContext:
     async def init_memory(self) -> None:
         """初始化记忆系统"""
         try:
-            memory_config_path = Path(__file__).parent.parent.parent / "config" / "features" / "memory.yaml"
+            memory_config_path = Path(__file__).parent.parent.parent.parent / "config" / "features" / "memory.yaml"
             if not memory_config_path.exists():
                 logger.info(f"[{self.session_id}] 记忆系统配置文件不存在: {memory_config_path}")
                 return

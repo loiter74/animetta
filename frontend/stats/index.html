@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anima Pipeline Dashboard</title>
+    <link rel="stylesheet" href="stats.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head>
+<body>
+    <header>
+        <h1>Anima Pipeline Dashboard</h1>
+        <span class="auto-refresh">Auto-refresh: <span id="refresh-status">ON</span></span>
+    </header>
+
+    <section class="kpi-cards">
+        <div class="card">
+            <div class="card-label">Total Requests</div>
+            <div class="card-value" id="total-requests">-</div>
+        </div>
+        <div class="card">
+            <div class="card-label">Success Rate</div>
+            <div class="card-value" id="success-rate">-</div>
+        </div>
+        <div class="card">
+            <div class="card-label">P95 Latency</div>
+            <div class="card-value" id="p95-latency">-</div>
+        </div>
+    </section>
+
+    <section class="chart-section">
+        <h2>Node Performance</h2>
+        <div class="chart-container">
+            <canvas id="node-chart"></canvas>
+        </div>
+    </section>
+
+    <section class="traces-section">
+        <h2>Recent Traces</h2>
+        <div class="traces-table-wrap">
+            <table id="traces-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Type</th>
+                        <th>Input</th>
+                        <th>Duration</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="traces-body"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Trace Detail Modal -->
+    <div id="trace-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Trace Detail</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="trace-detail"></div>
+        </div>
+    </div>
+
+    <script src="stats.js"></script>
+</body>
+</html>

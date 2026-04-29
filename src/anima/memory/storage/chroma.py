@@ -65,17 +65,24 @@ class ChromaStore:
         try:
             existing = self.client.get_collection(collection_name)
             if existing.count() > 0:
-                # 获取一个样本检查维度
+                existing_dim = None
+                # 方法1: peek
                 sample = existing.peek(limit=1)
                 if sample.get("embeddings") and len(sample["embeddings"]) > 0:
                     existing_dim = len(sample["embeddings"][0])
-                    if existing_dim != embedding_dim:
-                        logger.warning(
-                            f"Chroma collection '{collection_name}' dimension mismatch: "
-                            f"existing={existing_dim}, expected={embedding_dim}. "
-                            f"Deleting and recreating..."
-                        )
-                        self.client.delete_collection(collection_name)
+                # 方法2: get 一条记录
+                if existing_dim is None:
+                    got = existing.get(limit=1, include=["embeddings"])
+                    if got.get("embeddings") and len(got["embeddings"]) > 0:
+                        existing_dim = len(got["embeddings"][0])
+
+                if existing_dim is not None and existing_dim != embedding_dim:
+                    logger.warning(
+                        f"Chroma collection '{collection_name}' dimension mismatch: "
+                        f"existing={existing_dim}, expected={embedding_dim}. "
+                        f"Deleting and recreating..."
+                    )
+                    self.client.delete_collection(collection_name)
         except Exception as e:
             logger.debug(f"Chroma dimension check skipped: {e}")
 

@@ -20,6 +20,7 @@ export class ChatWindow {
       speakingIndicator: document.getElementById('speaking-indicator'),
       styleTransferSwitch: document.getElementById('style-transfer-switch'),
       styleTransferStatus: document.getElementById('style-transfer-status'),
+      memoryOrganizeBtn: document.getElementById('memory-organize-btn'),
     };
 
     this.ui = {
@@ -45,6 +46,8 @@ export class ChatWindow {
       onSpeaking: (isSpeaking) => this._setSpeaking(isSpeaking),
       onStyleTransfer: (enabled) => this._setStyleTransfer(enabled),
       onTranscript: (data) => this._handleTranscript(data),
+      onMemoryProgress: (data) => this._handleMemoryProgress(data),
+      onMemoryResult: (data) => this._handleMemoryResult(data),
     });
 
     this.audioCapture = new AudioCapture({
@@ -80,6 +83,12 @@ export class ChatWindow {
     if (this.elements.styleTransferSwitch) {
       this.elements.styleTransferSwitch.addEventListener('change', () => {
         this._toggleStyleTransfer();
+      });
+    }
+
+    if (this.elements.memoryOrganizeBtn) {
+      this.elements.memoryOrganizeBtn.addEventListener('click', () => {
+        this._triggerMemoryOrganize();
       });
     }
 
@@ -307,6 +316,103 @@ export class ChatWindow {
         console.error('[ChatWindow] Failed to update style transfer:', error);
       }
     }
+  }
+
+  async _triggerMemoryOrganize() {
+    if (this._memoryOrganizing) return;
+
+    this._memoryOrganizing = true;
+    const btn = this.elements.memoryOrganizeBtn;
+    if (btn) {
+      btn.classList.add('organizing');
+      btn.querySelector('.organize-text').textContent = '整理中...';
+    }
+
+    try {
+      if (window.electronAPI && window.electronAPI.chat) {
+        await window.electronAPI.chat.organizeMemory();
+      } else {
+        this._showError('Electron API not available');
+        this._resetOrganizeButton();
+      }
+    } catch (error) {
+      console.error('[ChatWindow] Failed to trigger memory organize:', error);
+      this._showError('记忆整理失败');
+      this._resetOrganizeButton();
+    }
+  }
+
+  _resetOrganizeButton() {
+    this._memoryOrganizing = false;
+    const btn = this.elements.memoryOrganizeBtn;
+    if (btn) {
+      btn.classList.remove('organizing');
+      btn.querySelector('.organize-text').textContent = '记忆整理';
+    }
+    this._removeMemoryProgress();
+  }
+
+  _handleMemoryProgress(data) {
+    this._showMemoryProgress(data.text, data.progress);
+  }
+
+  _handleMemoryResult(data) {
+    this._removeMemoryProgress();
+
+    if (data.type === 'error') {
+      this._showError(`记忆整理失败: ${data.message}`);
+    } else {
+      const parts = [];
+      if (data.merges) parts.push(`${data.merges} 个合并`);
+      if (data.synthesis) parts.push(`${data.synthesis} 个合成`);
+      if (data.updates) parts.push(`${data.updates} 个更新`);
+      const msg = parts.length > 0
+        ? `记忆整理完成: ${parts.join(', ')}`
+        : '记忆整理完成: 没有需要更改的内容';
+      this._showSuccess(msg);
+    }
+
+    this._resetOrganizeButton();
+  }
+
+  _showMemoryProgress(text, progress) {
+    let el = document.getElementById('memory-progress');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'memory-progress';
+      el.className = 'memory-progress';
+      el.innerHTML = `
+        <span class="progress-text">${text}</span>
+        <div class="progress-bar">
+          <div class="progress-bar-fill"></div>
+        </div>
+      `;
+      document.getElementById('chat-app').appendChild(el);
+    }
+    el.querySelector('.progress-text').textContent = text;
+    el.querySelector('.progress-bar-fill').style.width = `${progress}%`;
+  }
+
+  _removeMemoryProgress() {
+    const el = document.getElementById('memory-progress');
+    if (el) el.remove();
+  }
+
+  _showSuccess(message) {
+    const el = document.createElement('div');
+    el.className = 'message assistant success';
+
+    const content = document.createElement('div');
+    content.className = 'message-content';
+    content.style.background = '#4ade80';
+    content.style.color = '#1a1a2e';
+    content.textContent = message;
+
+    el.appendChild(content);
+    this.ui.messageList.appendChild(el);
+    this.ui.messageList.scrollToBottom();
+
+    setTimeout(() => el.remove(), 5000);
   }
 
   async _checkConnection() {

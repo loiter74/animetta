@@ -89,26 +89,6 @@ async def get_weather(city: str) -> str:
 
 
 @tool
-async def read_file(file_path: str, max_length: int = 2000) -> str:
-    """读取用户本地文件的内容"""
-    try:
-        from pathlib import Path
-        path = Path(file_path)
-        if not path.is_absolute():
-            from anima.config.app import AppConfig
-            config = AppConfig()
-            path = config.base_path / file_path
-        if path.exists() and path.is_file():
-            content = path.read_text(encoding="utf-8")
-            if len(content) > max_length:
-                content = content[:max_length] + f"\n... (truncated)"
-            return f"File content:\n```\n{content}\n```"
-        return f"File not found: {file_path}"
-    except Exception as e:
-        return f"Failed to read file: {str(e)}"
-
-
-@tool
 async def get_current_time(timezone: str = "Asia/Shanghai") -> str:
     """获取当前时间"""
     from datetime import datetime
@@ -119,24 +99,6 @@ async def get_current_time(timezone: str = "Asia/Shanghai") -> str:
         return f"Current time ({timezone}): {now.strftime('%Y-%m-%d %H:%M:%S')}"
     except:
         return f"Current local time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-
-
-@tool
-async def list_directory(directory: str = ".") -> str:
-    """列出目录中的文件和子目录"""
-    try:
-        from pathlib import Path
-        path = Path(directory)
-        if not path.is_absolute():
-            from anima.config.app import AppConfig
-            config = AppConfig()
-            path = config.base_path / directory
-        if path.exists() and path.is_dir():
-            items = [("[DIR]" if i.is_dir() else "[FILE]") + f" {i.name}" for i in sorted(path.iterdir())]
-            return "Directory contents:\n" + "\n".join(items) if items else "(empty)"
-        return f"Directory not found: {directory}"
-    except Exception as e:
-        return f"Failed to list directory: {str(e)}"
 
 
 @tool
@@ -160,7 +122,7 @@ async def calculator(expression: str) -> str:
 
 
 # 工具列表
-_BUILTIN_TOOLS = [web_search, get_weather, read_file, get_current_time, list_directory, calculator]
+_BUILTIN_TOOLS = [web_search, get_weather, get_current_time, calculator]
 
 
 def get_builtin_tools() -> List[Any]:

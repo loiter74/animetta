@@ -4,29 +4,29 @@
 # 内置工具（不需要 API Key）
 # ========================================
 builtin_tools:
-  - web_search      # DuckDuckGo 搜索（免费）
-  - read_file       # 读取本地文件
+  - web_search      # Tavily + DuckDuckGo 双 fallback 搜索
   - get_current_time # 获取时间
-  - list_directory  # 列出目录
   - calculator      # 数学计算
   # - get_weather     # 需要 AMAP_API_KEY，否则返回模拟数据
+  # - read_file       # 已由 MCP filesystem 替代，更安全
+  # - list_directory  # 已由 MCP filesystem 替代，更安全
 
 # ========================================
 # LangChain 工具
 # ========================================
 langchain_tools:
-  enabled:
-    - wikipedia
-    - ddg_search
-    # - python_repl     # 有安全风险
+  enabled: []
+    # - python_repl     # 有安全风险，按需启用
+    # - wikipedia       # 与 web_search 功能重叠
+    # - ddg_search      # 与 web_search 的 fallback 重复
 
 # ========================================
 # 自定义工具
 # ========================================
 custom_tools:
-  enabled:
-    - url_preview
-  # - translate       # 需要 DEEPL_API_KEY
+  enabled: []
+  # - url_preview     # 按需启用
+  # - translate       # LLM 自身多语言能力足够
   # - send_email      # 需要 SMTP 配置
   # - image_gen       # 需要 OPENAI_API_KEY
 
@@ -37,8 +37,14 @@ custom_tools:
 mcp_servers:
   - name: "filesystem"
     transport: "stdio"
-    command: "npx"
-    args: ["-y", "@modelcontextprotocol/server-filesystem", "./data"]
+    sandbox:
+      type: "docker"
+      image: "anima-mcp-filesystem"
+      mounts:
+        - "./data:/data:rw"
+      memory: "128m"
+      cpus: "0.5"
+    args: ["/data"]  # ENTRYPOINT 参数，容器内的允许目录
 
   # SSE 示例:
   # - name: "remote-search"

@@ -165,6 +165,83 @@ class MCPManager:
         self.clients: List[MCPClient] = []
         self.tools: List[Any] = []
 
+    def _build_docker_command(
+        self, sandbox: Dict[str, Any], args: List[str]
+    ) -> tuple:
+        """
+        构建 Docker 沙箱启动命令
+
+        将原始 command/args 包装在 docker run 中，实现 OS 层隔离。
+
+        安全边界:
+        - --network none: 禁止网络访问
+        - --cap-drop ALL: 移除所有 Linux capabilities
+        - --security-opt no-new-privileges: 禁止权限提升
+        - --read-only: 只读根文件系统
+        - --pids-limit: 防止 fork bomb
+        - --memory/--cpus: 资源限制
+        - 非 root 用户运行 (Dockerfile 中 USER mcp)
+        - 仅挂载指定目录 (应用层白名单 + OS 层硬边界)
+
+        Args:
+            sandbox: 沙箱配置字典
+            args: 传递给容器 ENTRYPOINT 的参数
+
+        Returns:
+            (command, args) 元组
+        """
+        from pathlib import Path
+
+        image = sandbox.get("image", "anima-mcp-filesystem")
+        mounts = sandbox.get("mounts", [])
+        memory = sandbox.get("memory", "128m")
+        cpus = sandbox.get("cpus", "0.5")
+
+        docker_args = [
+            "run", "--rm", "-i",
+            # 网络: 完全禁止
+            "--network", "none",
+            # 权限: 降到最低
+            "--cap-drop", "ALL",
+            "--security-opt", "no-new-privileges",
+            # 文件系统: 只读根
+            "--read-only",
+            "--tmpfs", "/tmp:noexec,nosuid,size=64m",
+            # 资源限制
+            "--memory", memory,
+            "--cpus", cpus,
+            "--pids-limit", "64",
+            # 清理超时
+            "--stop-timeout", "5",
+        ]
+
+        # 解析并解析卷挂载路径
+        project_root = Path(__file__).parent.parent.parent.parent
+        for mount_spec in mounts:
+            parts = mount_spec.split(":")
+            if len(parts) < 2:
+                logger.warning(f"[MCP Docker] 无效的挂载格式: {mount_spec}")
+                continue
+
+            host_path = Path(parts[0])
+            if not host_path.is_absolute():
+                host_path = project_root / host_path
+
+            container_path = parts[1]
+            mode = parts[2] if len(parts) > 2 else "rw"
+
+            resolved = str(host_path.resolve())
+            docker_args.extend(["-v", f"{resolved}:{container_path}:{mode}"])
+            logger.info(f"[MCP Docker] 挂载: {resolved} -> {container_path} ({mode})")
+
+        # 镜像名
+        docker_args.append(image)
+
+        # 传递给 ENTRYPOINT 的参数
+        docker_args.extend(args)
+
+        return "docker", docker_args
+
     async def load(self, server_configs: List[Dict[str, Any]]) -> List[Any]:
         """连接所有服务器并加载工具"""
         if not MCP_AVAILABLE:
@@ -178,7 +255,19 @@ class MCPManager:
             # 提取传输层参数
             kwargs = {}
             if transport == "stdio":
-                kwargs = {k: cfg[k] for k in ("command", "args", "env") if k in cfg}
+                sandbox = cfg.get("sandbox")
+
+                if sandbox and sandbox.get("type") == "docker":
+                    # Docker 沙箱: 用 docker run 包装原始命令
+                    command, args = self._build_docker_command(
+                        sandbox=sandbox,
+                        args=cfg.get("args", []),
+                    )
+                    kwargs = {"command": command, "args": args}
+                else:
+                    # 原生模式: 直接运行 (npx / node)
+                    kwargs = {k: cfg[k] for k in ("command", "args", "env") if k in cfg}
+
             elif transport in ("sse", "streamable_http"):
                 kwargs = {k: cfg[k] for k in ("url", "headers", "timeout") if k in cfg}
                 if transport == "sse" and "sse_read_timeout" in cfg:

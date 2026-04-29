@@ -4,57 +4,8 @@ LangChain 内置工具集成
 提供 LangChain 自带的工具的集成和加载。
 """
 
-from typing import List, Any, Dict, Optional
+from typing import List, Any, Optional
 from loguru import logger
-from langchain_core.tools import tool
-
-
-def get_wikipedia_tool() -> Any:
-    """
-    获取维基百科搜索工具
-
-    Returns:
-        WikipediaQueryRun 工具实例
-    """
-    try:
-        from langchain_community.tools import WikipediaQueryRun
-        from langchain_community.utilities import WikipediaAPIWrapper
-
-        wikipedia = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper(
-            lang="zh",
-            doc_content_chars_max=1000,
-        ))
-
-        # 转换为 LangChain 工具格式
-        from langchain_core.tools import StructuredTool
-        from pydantic import BaseModel, Field
-
-        class WikipediaInput(BaseModel):
-            query: str = Field(description="要搜索的关键词")
-
-        async def wikipedia_search(query: str) -> str:
-            """搜索维基百科获取信息"""
-            try:
-                import asyncio
-                loop = asyncio.get_event_loop()
-                result = await loop.run_in_executor(None, wikipedia.run, query)
-                return f"📖 维基百科搜索结果「{query}」：\n\n{result}"
-            except Exception as e:
-                return f"维基百科搜索失败: {str(e)}"
-
-        return StructuredTool.from_coro(
-            name="wikipedia",
-            description="搜索维基百科获取详细信息。适用于查询人物、地点、历史事件、科学概念等。",
-            func=wikipedia_search,
-            args_schema=WikipediaInput,
-        )
-
-    except ImportError:
-        logger.warning("[LangChainTools] Wikipedia 未安装，请运行: pip install langchain-community wikipedia")
-        return None
-    except Exception as e:
-        logger.error(f"[LangChainTools] Wikipedia 加载失败: {e}")
-        return None
 
 
 def get_python_repl_tool() -> Any:
@@ -104,54 +55,9 @@ def get_python_repl_tool() -> Any:
         return None
 
 
-def get_ddg_search_tool() -> Any:
-    """
-    获取 DuckDuckGo 搜索工具
-
-    Returns:
-        DuckDuckGo 搜索工具实例
-    """
-    try:
-        from langchain_community.tools import DuckDuckGoSearchRun
-
-        search = DuckDuckGoSearchRun()
-
-        from langchain_core.tools import StructuredTool
-        from pydantic import BaseModel, Field
-
-        class DDGInput(BaseModel):
-            query: str = Field(description="要搜索的关键词")
-
-        async def ddg_search(query: str) -> str:
-            """使用 DuckDuckGo 搜索互联网"""
-            try:
-                import asyncio
-                loop = asyncio.get_event_loop()
-                result = await loop.run_in_executor(None, search.run, query)
-                return f"🔍 DuckDuckGo 搜索结果「{query}」：\n\n{result}"
-            except Exception as e:
-                return f"DuckDuckGo 搜索失败: {str(e)}"
-
-        return StructuredTool.from_coro(
-            name="ddg_search",
-            description="使用 DuckDuckGo 搜索互联网。无需 API Key，免费使用。",
-            func=ddg_search,
-            args_schema=DDGInput,
-        )
-
-    except ImportError:
-        logger.warning("[LangChainTools] DuckDuckGo 未安装，请运行: pip install langchain-community")
-        return None
-    except Exception as e:
-        logger.error(f"[LangChainTools] DuckDuckGo 加载失败: {e}")
-        return None
-
-
 # 工具注册表
 _LANGCHAIN_TOOL_GETTERS = {
-    "wikipedia": get_wikipedia_tool,
     "python_repl": get_python_repl_tool,
-    "ddg_search": get_ddg_search_tool,
 }
 
 

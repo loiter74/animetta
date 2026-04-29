@@ -4,55 +4,8 @@
 提供额外的实用工具。
 """
 
-from typing import Optional
 from loguru import logger
 from langchain_core.tools import tool
-
-
-@tool
-async def translate(text: str, target_lang: str = "en") -> str:
-    """翻译文本到目标语言
-
-    Args:
-        text: 要翻译的文本
-        target_lang: 目标语言代码（如 en, zh, ja, ko, fr, de 等）
-
-    Returns:
-        str: 翻译结果
-    """
-    import os
-    import httpx
-
-    # 检查是否有翻译 API Key
-    deepl_api_key = os.getenv("DEEPL_API_KEY")
-
-    if deepl_api_key:
-        try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                response = await client.post(
-                    "https://api-free.deepl.com/v2/translate",
-                    json={
-                        "text": [text],
-                        "target_lang": target_lang.upper(),
-                    },
-                    headers={"Authorization": f"DeepL-Auth-Key {deepl_api_key}"},
-                )
-                if response.status_code == 200:
-                    data = response.json()
-                    result = data["translations"][0]["text"]
-                    logger.info(f"[translate] DeepL translation success")
-                    return f"Translation to {target_lang}:\n{result}"
-        except Exception as e:
-            logger.warning(f"[translate] DeepL failed: {e}")
-
-    # 降级方案：使用简单的文本标记
-    lang_names = {
-        "en": "English", "zh": "Chinese", "ja": "Japanese", "ko": "Korean",
-        "fr": "French", "de": "German", "es": "Spanish", "ru": "Russian"
-    }
-    target_name = lang_names.get(target_lang, target_lang)
-
-    return f"Translation to {target_name} (mock):\n'{text}'\n\nNote: Please set DEEPL_API_KEY for real translation.\nGet free API: https://www.deepl.com/pro-api/"
 
 
 @tool
@@ -240,7 +193,7 @@ async def image_gen(prompt: str, size: str = "1024x1024") -> str:
 
 
 # 导出工具列表
-CUSTOM_TOOLS = [translate, url_preview, send_email, image_gen]
+CUSTOM_TOOLS = [url_preview, send_email, image_gen]
 
 
 def get_custom_tools() -> list:

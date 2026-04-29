@@ -7,12 +7,15 @@ from typing import Optional
 
 import socketio
 from loguru import logger
+from starlette.applications import Starlette
+from starlette.routing import Mount
 
 from .session import SessionManager
 from .routes import register_routes, RouteHandlers
 from .lifecycle import LifecycleManager
 from .desktop import DesktopClientManager
 from .live2d import Live2DManager
+from .stats_api import get_stats_routes
 
 
 class WebSocketServer:
@@ -32,7 +35,13 @@ class WebSocketServer:
             ping_interval=30,
         )
 
-        self.asgi_app = socketio.ASGIApp(self.sio)
+        # Socket.IO ASGI + Stats API 路由
+        sio_app = socketio.ASGIApp(self.sio)
+        stats_routes = get_stats_routes()
+
+        self.asgi_app = Starlette(
+            routes=stats_routes + [Mount("/", app=sio_app)],
+        )
         self.session_manager = SessionManager()
         self.desktop_manager = DesktopClientManager()
         self.live2d_manager = Live2DManager()

@@ -154,6 +154,20 @@ function registerChatHandlers(ipcBridge) {
     }
   });
 
+  /**
+   * Trigger memory organization
+   */
+  ipcMain.handle('chat:organizeMemory', async (event) => {
+    try {
+      console.log('[ChatHandler] Triggering memory organization');
+      ipcBridge.sendToBackend('memory_organize', {});
+      return { ok: true };
+    } catch (error) {
+      console.error('[ChatHandler] Failed to trigger memory organize:', error);
+      return { ok: false, error: error.message };
+    }
+  });
+
   console.log('[ChatHandler] Handlers registered');
 }
 

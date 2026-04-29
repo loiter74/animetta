@@ -54,6 +54,22 @@ export class IpcListeners {
       if (cleanupTranscript) this._cleanupFns.push(cleanupTranscript);
     }
 
+    // Listen for memory organize progress
+    if (window.electronAPI.chat.onMemoryOrganizeProgress) {
+      const cleanupMemProgress = window.electronAPI.chat.onMemoryOrganizeProgress((data) => {
+        this.handlers.onMemoryProgress(data);
+      });
+      if (cleanupMemProgress) this._cleanupFns.push(cleanupMemProgress);
+    }
+
+    // Listen for memory organize result
+    if (window.electronAPI.chat.onMemoryOrganizeResult) {
+      const cleanupMemResult = window.electronAPI.chat.onMemoryOrganizeResult((data) => {
+        this.handlers.onMemoryResult(data);
+      });
+      if (cleanupMemResult) this._cleanupFns.push(cleanupMemResult);
+    }
+
     // console.log('[IpcListeners] Setup complete');
   }
 
