@@ -1,5 +1,6 @@
 """Pipeline 统计数据存储 - SQLite"""
 
+import asyncio
 import aiosqlite
 from typing import Optional, Dict, Any, List
 from pathlib import Path
@@ -234,13 +235,17 @@ class StatsStore:
             await self._db.close()
 
 
-# 全局单例
+# 全局单例（带异步锁防竞态）
 _store: Optional[StatsStore] = None
+_store_lock = asyncio.Lock()
 
 
 async def get_stats_store() -> StatsStore:
     global _store
-    if _store is None:
-        _store = StatsStore()
-        await _store.init()
+    if _store is not None:
+        return _store
+    async with _store_lock:
+        if _store is None:
+            _store = StatsStore()
+            await _store.init()
     return _store
