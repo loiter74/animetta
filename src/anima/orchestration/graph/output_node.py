@@ -38,6 +38,9 @@ async def output_node(
 
     to = channel_id or session_id
 
+    # 发送 conversation-start 信号
+    await sio.emit("control", {"signal": "conversation-start"}, to=to)
+
     # 存储对话到记忆系统
     await _store_conversation_to_memory(state=state, config=config)
 
@@ -50,12 +53,19 @@ async def output_node(
         await sio.emit("sentence", {"text": "", "is_complete": True}, to=to)
         logger.debug(f"[{session_id}] [输出节点] ✅ 已发送流结束标记")
 
+    # 发送表情事件
+    emotion = state.get("emotion")
+    if emotion:
+        await sio.emit("expression", {"emotion": emotion}, to=to)
+        logger.debug(f"[{session_id}] [输出节点] 已发送表情: {emotion}")
+
     # 发送音频数据
     tts_audio = state.get("tts_audio")
     if tts_audio:
         try:
             audio_data = None
             format = "mp3"
+            volumes = []
 
             if isinstance(tts_audio, bytes):
                 audio_data = base64.b64encode(tts_audio).decode("utf-8")
@@ -63,18 +73,36 @@ async def output_node(
                 if os.path.exists(tts_audio):
                     with open(tts_audio, "rb") as f:
                         audio_data = base64.b64encode(f.read()).decode("utf-8")
-                else:
-                    logger.warning(f"[{session_id}] [输出节点] 音频文件不存在: {tts_audio}")
+
+                    # 计算音量包络用于口型同步
+                    volumes = _compute_volumes(tts_audio)
 
             if audio_data:
-                await sio.emit("audio_with_expression", {"audio_data": audio_data, "format": format}, to=to)
-                logger.info(f"[{session_id}] [输出节点] ✅ 已发送音频数据")
+                payload = {"audio_data": audio_data, "format": format}
+                if volumes:
+                    payload["volumes"] = volumes
+                await sio.emit("audio_with_expression", payload, to=to)
+                logger.info(f"[{session_id}] [输出节点] ✅ 已发送音频数据 (volumes: {len(volumes)} samples)")
 
         except Exception as e:
             logger.error(f"[{session_id}] [输出节点] 音频处理失败: {e}")
 
+    # 发送 conversation-end 信号
+    await sio.emit("control", {"signal": "conversation-end"}, to=to)
+
     logger.info(f"[{session_id}] [输出节点] 分发完成")
     return {}
+
+
+def _compute_volumes(audio_path: str) -> list:
+    """计算音频文件的音量包络用于口型同步"""
+    try:
+        from anima.avatar.analyzers.audio import AudioAnalyzer
+        analyzer = AudioAnalyzer()
+        return analyzer.compute_volume_envelope(audio_path, normalize=True, gain=1.8)
+    except Exception as e:
+        logger.debug(f"[output_node] 计算 volumes 失败: {e}")
+        return []
 
 
 async def _store_conversation_to_memory(

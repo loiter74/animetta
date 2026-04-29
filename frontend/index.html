@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' blob: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' ws://localhost:* http://localhost:*">
+    <title>Anima Desktop</title>
+
+    <!-- Live2D Cubism Core (must load before pixi-live2d-display) -->
+    <script src="/live2d/live2dcubismcore.min.js"></script>
+
+    <!-- pixi.js (global, required by pixi-live2d-display) -->
+    <script src="/node_modules/pixi.js/dist/browser/pixi.min.js"></script>
+
+    <!-- pixi-live2d-display (Cubism4 runtime) -->
+    <script src="/node_modules/pixi-live2d-display/dist/cubism4.min.js"></script>
+  </head>
+  <body class="bg-$c-bg text-$c-text overflow-hidden">
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -272,8 +272,8 @@ server.serve_forever()
             error(f"启动 Web 配置失败: {e}")
 
     def start_desktop_app(self, project_root, dev_mode=False):
-        """启动 Electron 桌面应用"""
-        info("启动 Electron 桌面应用...")
+        """启动 Electron 桌面应用 (Vue 3 + electron-vite)"""
+        info("启动 Electron 桌面应用 (electron-vite)...")
 
         frontend_dir = project_root / "frontend"
 
@@ -282,15 +282,13 @@ server.serve_forever()
         if not node_modules.exists():
             warn("检测到前端依赖未安装，正在安装...")
             subprocess.run(
-                ["npm", "install"],
+                ["pnpm", "install"],
                 cwd=frontend_dir,
                 shell=True,
                 check=True
             )
 
-        cmd = ["npm", "run", "dev"]
-        if dev_mode:
-            cmd = ["npm", "run", "dev", "--", "--dev"]
+        cmd = ["pnpm", "run", "dev"]
 
         try:
             process = subprocess.Popen(

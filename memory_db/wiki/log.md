@@ -15,3 +15,4 @@
 | 2026-04-29 22:43 | merge | synthesis/2026-04-08-user-profile.md | from: entities/小明.md, entities/25.md, entities/团子.md, concepts/dislike-加班.md |
 | 2026-04-29 22:43 | synthesis | synthesis/user-profile.md | sources: synthesis/2026-04-08-user-profile.md, synthesis/legacy-memory.md |
 | 2026-04-29 22:43 | organize | all | 1 merged; 1 synthesis; 2 updated |
+| 2026-04-30 00:21 | ingest | Eh61y-01v4QA5GKbAAAD_1777479660 | basic |

@@ -1,75 +1,38 @@
 {
-  "name": "electron-live2d",
-  "version": "1.0.0",
-  "description": "Anima Desktop - Electron Live2D + Chat Application",
-  "main": "main/index.js",
+  "name": "anima-desktop",
+  "version": "2.0.0",
+  "description": "Anima Desktop - AI Virtual Companion with Live2D",
+  "main": "./out/main/index.js",
   "scripts": {
-    "start": "electron .",
-    "dev": "electron . --dev",
-    "build": "electron-builder",
-    "build:win": "electron-builder --win",
-    "build:mac": "electron-builder --mac",
-    "build:linux": "electron-builder --linux"
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "typecheck": "vue-tsc --noEmit",
+    "postinstall": "electron-builder install-app-deps"
   },
-  "keywords": [
-    "electron",
-    "live2d",
-    "anima",
-    "desktop"
-  ],
-  "author": "Anima Project",
-  "license": "MIT",
   "dependencies": {
-    "electron": "^30.0.0",
+    "@electron-toolkit/preload": "^3.0.1",
+    "@electron-toolkit/utils": "^3.0.0",
     "electron-store": "^8.2.0",
+    "pinia": "^2.2.0",
     "pixi-live2d-display": "^0.4.0",
     "pixi.js": "^6.5.10",
     "socket.io-client": "^4.8.3",
-    "ws": "^8.19.0"
+    "vue": "^3.5.0"
   },
   "devDependencies": {
+    "@electron-toolkit/tsconfig": "^1.0.1",
     "@types/node": "^20.0.0",
+    "@vitejs/plugin-vue": "^5.2.0",
+    "electron": "^33.0.0",
     "electron-builder": "^25.0.0",
-    "eslint": "^9.0.0",
-    "eslint-config-prettier": "^9.0.0",
-    "prettier": "^3.0.0",
-    "typescript": "^5.7.3"
-  },
-  "build": {
-    "appId": "com.anima.desktop",
-    "productName": "Anima Desktop",
-    "directories": {
-      "output": "dist",
-      "buildResources": "resources"
-    },
-    "files": [
-      "main/**/*",
-      "renderer/**/*",
-      "preload/**/*",
-      "resources/**/*",
-      "package.json"
-    ],
-    "win": {
-      "target": [
-        "nsis",
-        "portable"
-      ],
-      "icon": "resources/icons/icon.ico"
-    },
-    "mac": {
-      "target": [
-        "dmg",
-        "zip"
-      ],
-      "icon": "resources/icons/icon.icns"
-    },
-    "linux": {
-      "target": [
-        "AppImage",
-        "deb"
-      ],
-      "icon": "resources/icons/icon.png",
-      "category": "Utility"
-    }
+    "electron-vite": "^5.0.0",
+    "typescript": "^5.7.0",
+    "unocss": "^0.64.0",
+    "@unocss/preset-uno": "^0.64.0",
+    "@unocss/preset-icons": "^0.64.0",
+    "@unocss/transformer-directives": "^0.64.0",
+    "vite": "^6.0.0",
+    "vue-tsc": "^2.2.0"
   }
 }

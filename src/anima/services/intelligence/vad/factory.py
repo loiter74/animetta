@@ -35,7 +35,7 @@ class VADFactory:
             logger.error(f"创建 VAD 服务失败 (type={config.type}): {type(e).__name__}: {e}")
             # 降级到 Mock 实现
             logger.warning(f"降级使用 MockVAD (原配置: {config.type})")
-            from .implementations.mock_vad import MockVAD
+            from .mock_vad import MockVAD
             return MockVAD(
                 sample_rate=getattr(config, 'sample_rate', 16000),
                 db_threshold=-30.0,
@@ -60,7 +60,7 @@ class VADFactory:
         """
         if provider == "silero":
             try:
-                from .implementations.silero_vad import SileroVAD
+                from .silero_vad import SileroVAD
                 return SileroVAD(
                     sample_rate=kwargs.get("sample_rate", 16000),
                     prob_threshold=kwargs.get("prob_threshold", 0.15),
@@ -72,7 +72,7 @@ class VADFactory:
             except ImportError as e:
                 logger.warning(f"silero-vad 未安装，降级使用 Mock VAD: {e}")
                 logger.info("提示: 运行 'pip install silero-vad' 安装 silero-vad")
-                from .implementations.mock_vad import MockVAD
+                from .mock_vad import MockVAD
                 return MockVAD(
                     sample_rate=kwargs.get("sample_rate", 16000),
                     db_threshold=kwargs.get("db_threshold", -30.0),
@@ -81,12 +81,12 @@ class VADFactory:
                 )
             except Exception as e:
                 logger.error(f"初始化 Silero VAD 失败，降级使用 Mock VAD: {e}")
-                from .implementations.mock_vad import MockVAD
+                from .mock_vad import MockVAD
                 return MockVAD(
                     sample_rate=kwargs.get("sample_rate", 16000),
                 )
         elif provider == "mock":
-            from .implementations.mock_vad import MockVAD
+            from .mock_vad import MockVAD
             return MockVAD(
                 sample_rate=kwargs.get("sample_rate", 16000),
                 db_threshold=kwargs.get("db_threshold", -30.0),
@@ -95,7 +95,7 @@ class VADFactory:
             )
         else:
             logger.warning(f"未知的 VAD 提供商: {provider}，使用 Mock 实现")
-            from .implementations.mock_vad import MockVAD
+            from .mock_vad import MockVAD
             return MockVAD()
     
     @staticmethod

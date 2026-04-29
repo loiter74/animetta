@@ -43,12 +43,12 @@ python -m anima.socketio_server
 pip install -r requirements.txt
 
 # Install frontend dependencies (from frontend/)
-cd frontend && npm install
+cd frontend && pnpm install
 
 # Run Electron app (from frontend/)
-npm run dev          # Development mode with dev tools
-npm start            # Production mode
-npm run build:win    # Build for Windows
+pnpm dev              # Development mode with HMR
+pnpm build            # Build for production
+pnpm typecheck        # TypeScript type checking
 ```
 
 ## Architecture
@@ -110,25 +110,39 @@ src/anima/
 └── utils/                # Helpers (env, logging, auto-config)
 ```
 
-### Frontend (Electron)
+### Frontend (Electron + Vue 3 + TypeScript)
 
-Pure Electron app with vanilla JS/HTML/CSS (no React/Next.js).
+Electron desktop app built with Vue 3, TypeScript, UnoCSS, and Pinia.
+
+**Tech Stack:** electron-vite, Vue 3 (Composition API), TypeScript, UnoCSS, Pinia, pixi.js
 
 ```
 frontend/
-├── main/                  # Electron main process
-│   ├── index.js          # Application entry point
-│   ├── windows/          # Window management (Live2DWindow, ChatWindow)
-│   ├── ipc/              # Inter-process communication handlers
-│   └── config/           # App configuration
-├── renderer/             # Renderer processes (vanilla JS/HTML/CSS)
-│   ├── chat/             # Chat window
-│   ├── live2d/           # Live2D viewer (pixi-live2d-display)
-│   └── shared/           # Shared utilities and constants
-├── preload/
-│   └── index.js          # Preload script (context bridge)
-└── package.json          # Dependencies: electron, pixi.js, pixi-live2d-display
+├── electron/              # Electron main process (TypeScript)
+│   ├── main.ts           # Application entry point
+│   ├── preload.ts        # Context bridge (exposes window.electronAPI)
+│   ├── ipc-bridge.ts     # Socket.IO client ↔ IPC relay
+│   └── window-manager.ts # BrowserWindow creation
+├── src/                   # Vue 3 renderer process
+│   ├── App.vue           # Root component
+│   ├── main.ts           # Vue entry (Pinia + UnoCSS)
+│   ├── components/       # Vue components
+│   │   ├── chat/         # ChatPanel, MessageList, InputBar, VoiceButton
+│   │   ├── live2d/       # Live2DRenderer, PopOutButton, useLive2D
+│   │   ├── layout/       # AppLayout, TitleBar
+│   │   └── shared/       # GlassPanel, AnimatedButton
+│   ├── composables/      # Vue Composables (useSocket, useChat, useVoice)
+│   ├── stores/           # Pinia stores (chat, connection)
+│   ├── types/            # TypeScript types (chat, live2d, socket-events)
+│   └── styles/           # Global styles + animations
+├── public/live2d/        # Live2D models + Cubism Core
+├── electron.vite.config.ts
+├── uno.config.ts         # UnoCSS theme (anime color tokens)
+├── tsconfig.json
+└── package.json
 ```
+
+**Architecture:** Single window with Live2D + Chat side-by-side. Live2D can be popped out to a separate window. Socket.IO runs in main process, events relayed to renderer via IPC.
 
 ### Data Flow (LangGraph Architecture)
 
@@ -484,6 +498,14 @@ service_context = ConfigStore.get(state["session_id"], "service_context")
 Use the `live2d` skill when working with Live2D models, expressions, lip sync, or the pixi-live2d-display library.
 
 ## Migration Notes
+
+### From Vanilla JS to Vue 3 + TypeScript (Completed)
+
+The frontend was migrated from pure Electron + vanilla JS/HTML/CSS to Vue 3 + TypeScript + electron-vite.
+
+- Old frontend backed up at `frontend-legacy/`
+- New frontend at `frontend/` (Vue 3 + TypeScript + UnoCSS + Pinia)
+- See `openspec/changes/vue3-frontend-migration/` for design decisions and task tracking
 
 ### From EventBus to LangGraph (Completed)
 

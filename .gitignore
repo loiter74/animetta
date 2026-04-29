@@ -54,6 +54,10 @@ node_modules/
 .pnpm-store/
 .next/
 out/
+dist/
+
+# Legacy frontend (vanilla JS, replaced by Vue 3)
+frontend-legacy/
 
 # Environment
 .env

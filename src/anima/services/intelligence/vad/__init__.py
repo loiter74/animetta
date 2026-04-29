@@ -7,7 +7,7 @@ from .factory import VADFactory
 
 # 导入实现以触发 ProviderRegistry 注册
 try:
-    from .implementations import mock_vad, silero_vad
+    from . import silero_vad, mock_vad
 except ImportError:
     pass
 

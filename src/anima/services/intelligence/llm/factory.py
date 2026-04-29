@@ -49,7 +49,7 @@ class LLMFactory:
             logger.error(f"创建 LLM 服务失败 (type={config.type}): {type(e).__name__}: {e}")
             # 降级到 Mock 实现
             logger.warning(f"降级使用 MockLLM (原配置: {config.type})")
-            from .implementations.mock_llm import MockLLM
+            from .mock_llm import MockLLM
             return MockLLM(system_prompt=system_prompt)
 
     @staticmethod
