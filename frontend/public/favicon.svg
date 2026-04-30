@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <style>
+    .logo { fill: #a78bfa; }
+    @media (prefers-color-scheme: light) {
+      .logo { fill: #7c3aed; }
+    }
+  </style>
+  <rect width="32" height="32" rx="6" fill="none"/>
+  <!-- Stylized 'A' with a sparkle -->
+  <path class="logo" d="M16 4L6 28h4l2-5.5h8l2 5.5h4L16 4zm-2 15l2-6 2 6h-4z"/>
+  <!-- Small sparkle dot -->
+  <circle class="logo" cx="22" cy="10" r="1.5" opacity="0.8"/>
+</svg>

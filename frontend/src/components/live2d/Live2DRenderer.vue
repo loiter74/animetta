@@ -9,6 +9,9 @@ const live2d = useLive2D(canvasRef)
 onMounted(async () => {
   await live2d.init()
 
+  // Expose resetView globally for SettingsPanel button
+  ;(window as any).__live2dResetView = () => live2d.resetView()
+
   // Load default model; user can load others via external API
   try {
     await live2d.loadModel('live2d/haru/haru_greeter_t03.model3.json')
@@ -45,7 +48,6 @@ function handleWheel(e: WheelEvent): void {
   e.preventDefault()
   const sensitivity = 0.0015
   const delta = -e.deltaY * sensitivity
-  console.log('[Live2D] wheel deltaY:', e.deltaY, 'delta:', delta.toFixed(4))
   live2d.zoom(delta)
 }
 </script>
@@ -62,6 +64,16 @@ function handleWheel(e: WheelEvent): void {
   >
     <canvas ref="canvasRef" class="w-full h-full" />
 
+    <!-- Reset button (always on top when model loaded) -->
+    <button
+      v-if="live2d.isLoaded.value"
+      class="absolute top-2 left-2 z-50 px-2.5 py-1 rounded-lg bg-c-bg/60 backdrop-blur-sm text-11px text-c-text-dim hover:text-c-accent hover:bg-c-bg/80 transition-colors border border-c-border/30"
+      title="复位位置和缩放"
+      @click.stop="live2d.resetView()"
+    >
+      ↺ 复位
+    </button>
+
     <!-- Dragging indicator -->
     <div
       v-if="live2d.isDragging.value"
@@ -70,13 +82,22 @@ function handleWheel(e: WheelEvent): void {
       拖拽移动中
     </div>
 
-    <!-- HUD: zoom & position info (only when model loaded) -->
+    <!-- HUD: zoom & position info + reset button (only when model loaded) -->
     <div
       v-if="live2d.modelInfo.value"
-      class="absolute bottom-2 right-2 px-2 py-1 rounded bg-c-bg/50 backdrop-blur-sm text-10px text-c-text-muted pointer-events-none leading-tight"
+      class="absolute bottom-2 right-2 flex items-center gap-1"
     >
-      <div>缩放 {{ live2d.modelInfo.value.userScale }}x</div>
-      <div>位置 {{ live2d.modelInfo.value.position }}</div>
+      <button
+        class="px-2 py-1 rounded bg-c-bg/50 backdrop-blur-sm text-10px text-c-text-muted hover:text-c-accent hover:bg-c-bg/80 transition-colors pointer-events-auto"
+        title="复位位置和缩放"
+      @click.stop="live2d.resetView()"
+      >
+        ↺ 复位
+      </button>
+      <div class="px-2 py-1 rounded bg-c-bg/50 backdrop-blur-sm text-10px text-c-text-muted pointer-events-none leading-tight">
+        <div>缩放 {{ live2d.modelInfo.value.userScale }}x</div>
+        <div>位置 {{ live2d.modelInfo.value.position }}</div>
+      </div>
     </div>
 
     <!-- Loading state -->

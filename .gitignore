@@ -84,3 +84,4 @@ training_data/datasets/raw/
 # Stats database
 data/stats.db
 data/stats.db-*
+.gstack/

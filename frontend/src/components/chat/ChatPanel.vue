@@ -75,15 +75,19 @@ watch(() => store.memoryOrganizing, (organizing) => {
       </button>
     </div>
 
-    <!-- Memory progress bar -->
+    <!-- Memory progress bar with stage detail -->
     <div
       v-if="memoryProgress"
-      class="px-3 py-1.5 bg-c-card/60 border-b border-c-border/40 flex items-center gap-2 text-xs text-c-text-dim animate-fade-in shrink-0"
+      class="px-3 py-2 bg-c-card/60 border-b border-c-border/40 space-y-1.5 animate-fade-in shrink-0"
     >
-      <span class="flex-1 truncate">{{ memoryProgress }}</span>
-      <div class="w-16 h-1 bg-c-bg rounded-full overflow-hidden">
+      <div class="flex items-center gap-2 text-xs">
+        <span class="animate-pulse">🧠</span>
+        <span class="text-c-text-dim flex-1 truncate">{{ memoryProgress }}</span>
+        <span class="text-c-text-muted tabular-nums">{{ memoryProgressPercent }}%</span>
+      </div>
+      <div class="w-full h-1 bg-c-bg rounded-full overflow-hidden">
         <div
-          class="h-full bg-c-accent rounded-full transition-all duration-300"
+          class="h-full bg-gradient-to-r from-c-accent/60 to-c-accent rounded-full transition-all duration-500 ease-out"
           :style="{ width: memoryProgressPercent + '%' }"
         />
       </div>

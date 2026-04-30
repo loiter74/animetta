@@ -10,4 +10,8 @@ declare module 'pixi-live2d-display' {
   export const Live2DModel: any
 }
 
-export {}
+// Global functions exposed by components for cross-component communication
+interface Window {
+  __setAppBg: (url: string) => void
+  __live2dResetView: () => void
+}

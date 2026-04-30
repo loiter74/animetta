@@ -2,6 +2,11 @@ import { ref, onMounted, onUnmounted, type Ref } from 'vue'
 import type { Live2DAction, AudioWithExpression } from '@/types/live2d'
 import { getSocket } from '@/composables/useSocket'
 
+// ===== User Preferences (edit these to change initial Live2D view) =====
+const INITIAL_POS_X = 1108
+const INITIAL_POS_Y = 2100
+const INITIAL_SCALE = 3.5
+
 // Mouth parameter candidates (Cubism 3/4)
 const MOUTH_PARAMS = ['ParamMouthOpenY', 'ParamMouthOpen', 'PARAM_MOUTH_OPEN']
 
@@ -35,14 +40,18 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
 
   // Scale state
   let strategy = 'fit'
-  let userScale = 1.0
-  let baseBounds: { width: number; height: number } | null = null // cached initial model bounds
+  let userScale = 1.5
+  let baseBounds: { width: number; height: number } | null = null
 
   // Drag state
   let dragStartX = 0
   let dragStartY = 0
   let modelStartX = 0
   let modelStartY = 0
+
+  // Track canvas size ratio for proportional resize
+  let lastCanvasW = 0
+  let lastCanvasH = 0
 
   // Audio
   let currentAudio: HTMLAudioElement | null = null
@@ -83,6 +92,8 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
       // LipSync ticker
       app.ticker.add(tickLipSync)
       setupSocketListeners()
+      lastCanvasW = app.screen.width
+      lastCanvasH = app.screen.height
     } catch (e) {
       loadError.value = 'pixi.js 初始化失败: ' + (e as Error).message
       isLoading.value = false
@@ -133,8 +144,7 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
 
       model = await Live2DModel.from(modelPath)
       model.anchor.set(0.5, 0.5)
-      model.x = app.screen.width / 2
-      model.y = app.screen.height / 2
+      // Will be overridden after applyScale below to user's preferred position
       model.interactive = true
 
       app.stage.addChild(model)
@@ -153,6 +163,11 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
       const initialBounds = model.getBounds()
       baseBounds = { width: initialBounds.width, height: initialBounds.height }
 
+      applyScale()
+      // Apply default user-preferred position and scale
+      model.x = INITIAL_POS_X
+      model.y = INITIAL_POS_Y
+      userScale = INITIAL_SCALE
       applyScale()
       isLoaded.value = true
       isLoading.value = false
@@ -189,19 +204,28 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
     }
 
     model.scale.set((scales[strategy] || scales.fit) * userScale)
+    console.log(`[Live2D] scale=${userScale.toFixed(2)}x pos=(${model.x.toFixed(0)},${model.y.toFixed(0)})`)
     // NOTE: Do NOT reset model.x/model.y/anchor here — position is
     // managed by drag interaction. Only centerModel() changes position.
   }
 
   /**
    * Handle container resize (e.g. DevTools open/close).
-   * Resizes renderer and re-centers model position.
+   * Resizes renderer and adjusts model position proportionally.
+   * Does NOT re-center — preserves user's drag offset.
    * Does NOT change scale.
    */
   function handleResize(): void {
     if (!app || !container) return
+    const oldW = lastCanvasW || app.screen.width
+    const oldH = lastCanvasH || app.screen.height
     app.renderer.resize(container.clientWidth, container.clientHeight)
-    centerModel()
+    if (model) {
+      model.x *= app.screen.width / oldW
+      model.y *= app.screen.height / oldH
+    }
+    lastCanvasW = app.screen.width
+    lastCanvasH = app.screen.height
   }
 
   /** Center model in the current canvas. Preserves userScale. */
@@ -236,6 +260,7 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
   function stopDrag(): void {
     if (!isDragging.value) return
     isDragging.value = false
+    console.log(`[Live2D] pos=(${model.x.toFixed(0)},${model.y.toFixed(0)}) scale=${userScale.toFixed(2)}x`)
   }
 
   // ===== Expression =====
@@ -474,14 +499,20 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
     stopDrag,
     /** Scroll-wheel zoom. Positive delta = zoom in, negative = zoom out. Range 0.05x – 10x. */
     zoom(delta: number) {
-      const oldScale = userScale
       userScale = Math.max(0.05, Math.min(10.0, userScale * Math.exp(delta)))
-      console.log('[Live2D] zoom:', oldScale.toFixed(4), '→', userScale.toFixed(4), 'delta:', delta.toFixed(4))
       applyScale()
       updateModelInfo()
     },
-    /** Reset zoom to 1x and re-center the model */
-    resetView() { userScale = 1.0; applyScale(); centerModel(); updateModelInfo() },
+    /** Reset to user's preferred initial position and scale */
+    resetView() {
+      userScale = INITIAL_SCALE
+      applyScale()
+      if (model) {
+        model.x = INITIAL_POS_X
+        model.y = INITIAL_POS_Y
+      }
+      updateModelInfo()
+    },
     setScaleStrategy(s: string) { if (STRATEGIES[s]) { strategy = s; applyScale(); updateModelInfo() } },
     // Mouse focus (eye/head tracking)
     focus(x: number, y: number) {

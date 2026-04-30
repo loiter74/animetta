@@ -302,6 +302,59 @@ class RouteHandlers:
         }, to=sid)
 
     # 心跳检测
+    async def on_get_config(self, sid: str, data: dict) -> None:
+        """返回当前配置（脱敏）给前端"""
+        logger.info(f"[{sid}] 请求配置数据")
+        from anima.config.app import AppConfig
+        from anima.config.live2d import Live2DConfig
+        import os
+
+        config = self.global_config or AppConfig.load()
+
+        # Read available personas from filesystem
+        personas_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), 'config', 'personas')
+        available_personas = []
+        if os.path.isdir(personas_dir):
+            available_personas = sorted([
+                f.replace('.yaml', '') for f in os.listdir(personas_dir)
+                if f.endswith('.yaml')
+            ])
+
+        # Read live2d config
+        try:
+            live2d_cfg = Live2DConfig.load()
+            live2d_model_path = live2d_cfg.model.path
+        except Exception:
+            live2d_model_path = '/live2d/haru/haru_greeter_t03.model3.json'
+
+        # Build safe config (NO api keys, NO secrets)
+        config_data = {
+            "persona": config.persona,
+            "services": {
+                "asr": config.services.asr,
+                "tts": config.services.tts,
+                "agent": config.services.agent,
+                "vad": config.services.vad,
+            },
+            "active_services": {
+                "asr": config.asr.type if config.asr else None,
+                "tts": config.tts.type if config.tts else None,
+                "llm": config.agent.llm_config.type if config.agent and config.agent.llm_config else None,
+                "vad": config.vad.type if config.vad else None,
+            },
+            "system": {
+                "host": config.system.host,
+                "port": config.system.port,
+                "log_level": config.system.log_level,
+            },
+            "live2d": {
+                "model_path": live2d_model_path,
+                "enabled": True,
+            },
+            "available_personas": available_personas,
+        }
+        await self.sio.emit('config_data', config_data, to=sid)
+
     async def on_heartbeat(self, sid: str, data: dict) -> None:
         """心跳检测"""
         await self.sio.emit('heartbeat-ack', {}, to=sid)
@@ -469,6 +522,9 @@ def register_routes(
     # 配置事件
     sio.on('switch_config', handlers.on_switch_config)
     sio.on('set_log_level', handlers.on_set_log_level)
+
+    # 配置事件（读取）
+    sio.on('get_config', handlers.on_get_config)
 
     # 心跳检测
     sio.on('heartbeat', handlers.on_heartbeat)
