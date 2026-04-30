@@ -1,4 +1,5 @@
 import { ref, onUnmounted } from 'vue'
+import { getSocket } from './useSocket'
 
 export function useVoice() {
   const isRecording = ref(false)
@@ -57,13 +58,14 @@ export function useVoice() {
         for (let i = 0; i < input.length; i++) sum += input[i] * input[i]
         volume.value = Math.sqrt(sum / input.length)
 
-        // Buffer and send chunks
+        // Buffer and send chunks directly via socket
         resampleBuffer.push(...resampled)
+        const socket = getSocket()
         while (resampleBuffer.length >= CHUNK_SIZE) {
           const chunk = resampleBuffer.splice(0, CHUNK_SIZE)
           chunkCount++
-          if (window.electronAPI?.chat) {
-            window.electronAPI.chat.sendAudioChunk(Array.from(chunk))
+          if (socket?.connected) {
+            socket.emit('raw_audio_data', { audio: chunk })
           }
         }
       }
@@ -72,8 +74,6 @@ export function useVoice() {
       gainNode.connect(scriptProcessor)
       scriptProcessor.connect(audioContext.destination)
 
-      // Notify backend
-      await window.electronAPI?.chat?.startVoiceInput()
       isRecording.value = true
     } catch (err: any) {
       error.value = err.message
@@ -98,7 +98,11 @@ export function useVoice() {
     gainNode = null
     resampleBuffer = []
 
-    await window.electronAPI?.chat?.stopVoiceInput()
+    // Signal end of audio input
+    const socket = getSocket()
+    if (socket?.connected) {
+      socket.emit('mic_audio_end', {})
+    }
   }
 
   function toggle(): void {

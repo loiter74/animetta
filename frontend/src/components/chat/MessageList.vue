@@ -2,6 +2,7 @@
 import { ref, watch, nextTick } from 'vue'
 import { useChatStore } from '@/stores/chat'
 import MessageBubble from './MessageBubble.vue'
+import WelcomeScreen from './WelcomeScreen.vue'
 
 const store = useChatStore()
 const listRef = ref<HTMLElement | null>(null)
@@ -27,15 +28,12 @@ watch(() => store.lastMessage?.text, scrollToBottom)
 <template>
   <div
     ref="listRef"
-    class="overflow-y-auto px-4 py-3"
+    class="overflow-y-auto px-3 py-2"
     :class="$attrs.class"
     @scroll="handleScroll"
   >
-    <!-- Empty state -->
-    <div v-if="store.messages.length === 0" class="flex flex-col items-center justify-center h-full text-$c-text-muted">
-      <p class="text-lg mb-2">✨ Start a conversation</p>
-      <p class="text-sm">Type a message below or click the mic to speak</p>
-    </div>
+    <!-- Welcome screen (empty state) -->
+    <WelcomeScreen v-if="store.messages.length === 0" />
 
     <!-- Messages -->
     <MessageBubble
@@ -47,7 +45,8 @@ watch(() => store.lastMessage?.text, scrollToBottom)
 </template>
 
 <style scoped>
-::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
 </style>

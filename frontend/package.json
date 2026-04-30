@@ -2,18 +2,18 @@
   "name": "anima-desktop",
   "version": "2.0.0",
   "description": "Anima Desktop - AI Virtual Companion with Live2D",
-  "main": "./out/main/index.js",
+  "type": "module",
   "scripts": {
-    "dev": "electron-vite dev",
-    "build": "electron-vite build",
-    "preview": "electron-vite preview",
-    "typecheck": "vue-tsc --noEmit",
-    "postinstall": "electron-builder install-app-deps"
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
-    "@electron-toolkit/preload": "^3.0.1",
-    "@electron-toolkit/utils": "^3.0.0",
-    "electron-store": "^8.2.0",
+    "@pixi/core": "6.5.10",
+    "@pixi/display": "6.5.10",
+    "@pixi/math": "6.5.10",
+    "@pixi/utils": "6.5.10",
     "pinia": "^2.2.0",
     "pixi-live2d-display": "^0.4.0",
     "pixi.js": "^6.5.10",
@@ -21,17 +21,9 @@
     "vue": "^3.5.0"
   },
   "devDependencies": {
-    "@electron-toolkit/tsconfig": "^1.0.1",
-    "@types/node": "^20.0.0",
     "@vitejs/plugin-vue": "^5.2.0",
-    "electron": "^33.0.0",
-    "electron-builder": "^25.0.0",
-    "electron-vite": "^5.0.0",
     "typescript": "^5.7.0",
     "unocss": "^0.64.0",
-    "@unocss/preset-uno": "^0.64.0",
-    "@unocss/preset-icons": "^0.64.0",
-    "@unocss/transformer-directives": "^0.64.0",
     "vite": "^6.0.0",
     "vue-tsc": "^2.2.0"
   }

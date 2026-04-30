@@ -1,5 +1,6 @@
 import { ref, onMounted, onUnmounted, type Ref } from 'vue'
 import type { Live2DAction, AudioWithExpression } from '@/types/live2d'
+import { getSocket } from '@/composables/useSocket'
 
 // Mouth parameter candidates (Cubism 3/4)
 const MOUTH_PARAMS = ['ParamMouthOpenY', 'ParamMouthOpen', 'PARAM_MOUTH_OPEN']
@@ -20,6 +21,7 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
   const isLoading = ref(false)
   const loadError = ref<string>('')
   const modelInfo = ref<Record<string, string> | null>(null)
+  const isDragging = ref(false)
 
   let app: any = null // PIXI.Application
   let model: any = null // Live2DModel
@@ -32,8 +34,15 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
   let lipSyncCancel: (() => void) | null = null
 
   // Scale state
-  let strategy = 'contain'
+  let strategy = 'fit'
   let userScale = 1.0
+  let baseBounds: { width: number; height: number } | null = null // cached initial model bounds
+
+  // Drag state
+  let dragStartX = 0
+  let dragStartY = 0
+  let modelStartX = 0
+  let modelStartY = 0
 
   // Audio
   let currentAudio: HTMLAudioElement | null = null
@@ -48,38 +57,47 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
   let timelineRaf: number | null = null
   let currentParams = new Map<string, { currentValue: number; targetValue: number; startTime: number; duration: number; startValue: number }>()
 
-  function init(): void {
+  async function init(): Promise<void> {
     if (!canvasRef.value) return
     container = canvasRef.value.parentElement
 
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const PIXI = require('pixi.js')
+    try {
+      // Dynamic import: pixi.js is optional for the app
+      const PIXI = await import('pixi.js')
 
-    app = new PIXI.Application({
-      view: canvasRef.value,
-      width: container?.clientWidth || 400,
-      height: container?.clientHeight || 600,
-      transparent: true,
-      autoDensity: true,
-      resolution: window.devicePixelRatio || 1,
-      antialias: true,
-      backgroundAlpha: 0,
-      preserveDrawingBuffer: true
-    })
+      // Required: pixi-live2d-display references window.PIXI.Ticker internally
+      ;(window as any).PIXI = PIXI
 
-    // LipSync ticker
-    app.ticker.add(tickLipSync)
-    setupIpcListeners()
+      app = new PIXI.Application({
+        view: canvasRef.value,
+        width: container?.clientWidth || 400,
+        height: container?.clientHeight || 600,
+        transparent: true,
+        autoDensity: true,
+        resolution: window.devicePixelRatio || 1,
+        antialias: true,
+        backgroundAlpha: 0,
+        preserveDrawingBuffer: true
+      })
+
+      // LipSync ticker
+      app.ticker.add(tickLipSync)
+      setupSocketListeners()
+    } catch (e) {
+      loadError.value = 'pixi.js 初始化失败: ' + (e as Error).message
+      isLoading.value = false
+    }
   }
 
-  function setupIpcListeners(): void {
-    if (!window.electronAPI) return
+  function setupSocketListeners(): void {
+    const socket = getSocket()
+    if (!socket) return
 
-    window.electronAPI.live2d?.onAction?.((data) => {
+    socket.on('live2d.action', (data: unknown) => {
       executeAction(data as Live2DAction)
     })
 
-    window.electronAPI.live2d?.onAudioWithExpression?.((data) => {
+    socket.on('audio_with_expression', (data: unknown) => {
       const d = data as any
       if (d.use_parameter_mapping && d.expressions?.frames) {
         playParameterTimeline(d)
@@ -88,16 +106,17 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
       }
     })
 
-    window.electronAPI.live2d?.onAudioStream?.((data) => {
-      const d = data as any
-      if (d.volume !== undefined) {
-        setMouthTarget(d.volume)
-      }
-    })
-
-    window.electronAPI.live2d?.onStopAudio?.(() => {
+    socket.on('stop_audio', () => {
       stopAudio()
     })
+  }
+
+  function teardownSocketListeners(): void {
+    const socket = getSocket()
+    if (!socket) return
+    socket.off('live2d.action')
+    socket.off('audio_with_expression')
+    socket.off('stop_audio')
   }
 
   // ===== Model =====
@@ -109,8 +128,8 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
     try {
       unloadModel()
 
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { Live2DModel } = require('pixi-live2d-display')
+      // Dynamic import: Live2D is optional, app works without it
+      const { Live2DModel } = await import('pixi-live2d-display/cubism4')
 
       model = await Live2DModel.from(modelPath)
       model.anchor.set(0.5, 0.5)
@@ -129,6 +148,10 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
         }
         check()
       })
+
+      // Cache initial bounds (before any scaling) as the stable reference
+      const initialBounds = model.getBounds()
+      baseBounds = { width: initialBounds.width, height: initialBounds.height }
 
       applyScale()
       isLoaded.value = true
@@ -153,30 +176,66 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
   // ===== Scale =====
 
   function applyScale(): void {
-    if (!model || !app) return
+    if (!model || !app || !baseBounds) return
     const canvas = { width: app.screen.width, height: app.screen.height }
-    const bounds = model.getBounds()
-    if (!bounds?.width) return
+    // Use cached initial bounds as stable reference — NEVER real-time getBounds()
+    // because getBounds() changes as scale changes, creating a feedback loop.
+    const b = baseBounds
 
     const scales: Record<string, number> = {
-      fit: Math.min(canvas.width / bounds.width, canvas.height / bounds.height),
-      contain: canvas.height / bounds.height,
-      cover: Math.max(canvas.width / bounds.width, canvas.height / bounds.height)
+      fit: Math.min(canvas.width / b.width, canvas.height / b.height),
+      contain: canvas.height / b.height,
+      cover: Math.max(canvas.width / b.width, canvas.height / b.height)
     }
 
-    const scale = (scales[strategy] || scales.fit) * userScale
-    model.scale.set(scale)
-
-    const cfg = STRATEGIES[strategy]
-    model.anchor.set(cfg.anchor[0], cfg.anchor[1])
-    model.x = canvas.width / 2
-    model.y = cfg.yRatio === 1.0 ? canvas.height : canvas.height / 2
+    model.scale.set((scales[strategy] || scales.fit) * userScale)
+    // NOTE: Do NOT reset model.x/model.y/anchor here — position is
+    // managed by drag interaction. Only centerModel() changes position.
   }
 
+  /**
+   * Handle container resize (e.g. DevTools open/close).
+   * Resizes renderer and re-centers model position.
+   * Does NOT change scale.
+   */
   function handleResize(): void {
     if (!app || !container) return
     app.renderer.resize(container.clientWidth, container.clientHeight)
-    applyScale()
+    centerModel()
+  }
+
+  /** Center model in the current canvas. Preserves userScale. */
+  function centerModel(): void {
+    if (!model || !app) return
+    const cfg = STRATEGIES[strategy]
+    model.x = app.screen.width / 2
+    model.y = cfg.yRatio === 1.0 ? app.screen.height : app.screen.height / 2
+    updateModelInfo()
+  }
+
+  // ===== Drag =====
+
+  function startDrag(clientX: number, clientY: number): void {
+    if (!model) return
+    isDragging.value = true
+    dragStartX = clientX
+    dragStartY = clientY
+    modelStartX = model.x
+    modelStartY = model.y
+  }
+
+  function onDrag(clientX: number, clientY: number): void {
+    if (!isDragging.value || !model) return
+    const dx = clientX - dragStartX
+    const dy = clientY - dragStartY
+    model.x = modelStartX + dx
+    model.y = modelStartY + dy
+    updateModelInfo()
+  }
+
+  function stopDrag(): void {
+    if (!isDragging.value) return
+    isDragging.value = false
   }
 
   // ===== Expression =====
@@ -381,6 +440,7 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
   function destroy(): void {
     stopAudio()
     timelinePlaying = false
+    teardownSocketListeners()
     if (timelineRaf) cancelAnimationFrame(timelineRaf)
     if (app) { app.ticker.remove(tickLipSync); unloadModel(); app.destroy(true); app = null }
     window.removeEventListener('resize', handleResize)
@@ -400,6 +460,7 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
     isLoading,
     loadError,
     modelInfo,
+    isDragging,
     init,
     loadModel,
     handleResize,
@@ -408,9 +469,25 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
     setMouthTarget,
     executeAction,
     stopAudio,
-    zoom(delta: number) { userScale = Math.max(0.1, Math.min(3.0, userScale + delta * 0.1)); applyScale() },
-    resetScale() { userScale = 1.0; applyScale() },
-    setScaleStrategy(s: string) { if (STRATEGIES[s]) { strategy = s; applyScale() } },
+    startDrag,
+    onDrag,
+    stopDrag,
+    /** Scroll-wheel zoom. Positive delta = zoom in, negative = zoom out. Range 0.05x – 10x. */
+    zoom(delta: number) {
+      const oldScale = userScale
+      userScale = Math.max(0.05, Math.min(10.0, userScale * Math.exp(delta)))
+      console.log('[Live2D] zoom:', oldScale.toFixed(4), '→', userScale.toFixed(4), 'delta:', delta.toFixed(4))
+      applyScale()
+      updateModelInfo()
+    },
+    /** Reset zoom to 1x and re-center the model */
+    resetView() { userScale = 1.0; applyScale(); centerModel(); updateModelInfo() },
+    setScaleStrategy(s: string) { if (STRATEGIES[s]) { strategy = s; applyScale(); updateModelInfo() } },
+    // Mouse focus (eye/head tracking)
+    focus(x: number, y: number) {
+      if (!model) return
+      model.focus(x, y)
+    },
     destroy
   }
 }

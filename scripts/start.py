@@ -271,16 +271,25 @@ server.serve_forever()
         except Exception as e:
             error(f"启动 Web 配置失败: {e}")
 
-    def start_desktop_app(self, project_root, dev_mode=False):
-        """启动 Electron 桌面应用 (Vue 3 + electron-vite)"""
-        info("启动 Electron 桌面应用 (electron-vite)...")
+    def start_frontend_vite(self, project_root):
+        """启动 Vite 前端开发服务器"""
+        info("启动 Vite 前端 (Vue 3 + Vite)...")
 
         frontend_dir = project_root / "frontend"
 
-        # 检查依赖
+        # 检查并安装前端依赖
         node_modules = frontend_dir / "node_modules"
+        needs_install = False
         if not node_modules.exists():
             warn("检测到前端依赖未安装，正在安装...")
+            needs_install = True
+        else:
+            key_dept = frontend_dir / "node_modules" / "@vitejs" / "plugin-vue"
+            if not key_dept.exists():
+                info("检测到依赖变更，正在更新...")
+                needs_install = True
+
+        if needs_install:
             subprocess.run(
                 ["pnpm", "install"],
                 cwd=frontend_dir,
@@ -298,10 +307,10 @@ server.serve_forever()
                 stdout=None,
                 stderr=None,
             )
-            self.processes.append(("桌面应用", process, None))
+            self.processes.append(("前端", process, None))
             return process
         except Exception as e:
-            error(f"启动桌面应用失败: {e}")
+            error(f"启动前端失败: {e}")
 
     def start_frontend_dev(self, project_root, pkg_manager):
         """启动 Next.js 开发服务器"""
@@ -474,14 +483,11 @@ def main():
             pm.start_web_config(project_root, args.web_port)
             time.sleep(1)
 
-        # 启动应用
+        # 启动前端
         if not args.no_app and not args.backend_only:
-            if args.mode == 'desktop':
-                pm.start_desktop_app(project_root, dev_mode=args.dev)
-            else:
-                if not pkg_manager:
-                    error("Web 模式需要 pnpm/npm")
-                pm.start_frontend_dev(project_root, pkg_manager)
+            if not pkg_manager:
+                error("前端需要 pnpm/npm")
+            pm.start_frontend_vite(project_root)
 
         # 等待服务就绪
         print()

@@ -32,14 +32,14 @@ function sendMessage(): void {
 </script>
 
 <template>
-  <div class="px-4 py-3 border-t border-$c-border flex gap-2 items-end">
+  <div class="px-4 py-3 border-t border-c-border flex gap-2 items-end">
     <textarea
       ref="textareaRef"
       v-model="inputText"
-      class="flex-1 bg-$c-panel/60 border border-$c-border rounded-xl px-3 py-2.5 text-sm text-$c-text
-             placeholder-$c-text-muted/50 resize-none min-h-10 max-h-30
-             outline-none transition-colors focus:border-$c-accent/40"
-      placeholder="Type a message..."
+      class="flex-1 bg-c-panel/60 border border-c-border rounded-xl px-3 py-2.5 text-sm text-c-text
+             placeholder-c-text-muted/50 resize-none min-h-10 max-h-30
+             outline-none transition-colors focus:border-c-accent/40"
+      placeholder="输入消息..."
       rows="1"
       @input="handleInput"
       @keydown="handleKeydown"

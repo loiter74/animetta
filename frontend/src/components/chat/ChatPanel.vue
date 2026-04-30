@@ -1,34 +1,35 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import MessageList from './MessageList.vue'
 import InputBar from './InputBar.vue'
 import TypingIndicator from './TypingIndicator.vue'
 import SpeakingIndicator from './SpeakingIndicator.vue'
 import { useChat } from '@/composables/useChat'
 import { useChatStore } from '@/stores/chat'
+import { getSocket } from '@/composables/useSocket'
 
-const { sendText, sendInterrupt, toggleStyleTransfer, organizeMemory } = useChat()
+const { sendText, sendInterrupt, organizeMemory } = useChat()
 const store = useChatStore()
 
 // Memory organize progress
 const memoryProgress = ref('')
 const memoryProgressPercent = ref(0)
 
-// Style transfer toggle
-const styleTransferOn = ref(false)
-
-// Memory progress listener (set up once)
-if (window.electronAPI?.chat?.onMemoryProgress) {
-  window.electronAPI.chat.onMemoryProgress((data: any) => {
+// Memory progress listener (via socket)
+onMounted(() => {
+  const socket = getSocket()
+  if (!socket) return
+  socket.on('memory.organize.progress', (data: any) => {
     memoryProgress.value = data.text || ''
     memoryProgressPercent.value = data.progress || 0
   })
-}
+})
 
-function handleStyleTransferToggle(): void {
-  styleTransferOn.value = !styleTransferOn.value
-  toggleStyleTransfer(styleTransferOn.value)
-}
+onUnmounted(() => {
+  const socket = getSocket()
+  if (!socket) return
+  socket.off('memory.organize.progress')
+})
 
 async function handleMemoryOrganize(): Promise<void> {
   await organizeMemory()
@@ -44,43 +45,27 @@ watch(() => store.memoryOrganizing, (organizing) => {
 </script>
 
 <template>
-  <div class="flex flex-col h-full glass m-2">
-    <!-- Toolbar -->
-    <div class="flex items-center gap-2 px-4 py-2 border-b border-$c-border text-xs">
-      <!-- Style Transfer -->
-      <button
-        class="flex items-center gap-1.5 px-2 py-1 rounded-lg transition-all"
-        :class="styleTransferOn ? 'bg-$c-accent text-white' : 'bg-$c-panel/50 text-$c-text-dim hover:bg-$c-accent-soft'"
-        @click="handleStyleTransferToggle"
-      >
-        <span>🎭</span>
-        <span>风格迁移</span>
-        <span
-          class="text-10px font-bold px-1 rounded"
-          :class="styleTransferOn ? 'bg-white/20' : 'bg-$c-card'"
-        >
-          {{ styleTransferOn ? 'ON' : 'OFF' }}
-        </span>
-      </button>
-
+  <div class="flex flex-col h-full">
+    <!-- Compact toolbar -->
+    <div class="flex items-center gap-1.5 px-3 py-1.5 border-b border-c-border/60 text-xs shrink-0">
       <!-- Memory organize -->
       <button
-        class="flex items-center gap-1.5 px-2 py-1 rounded-lg transition-all"
+        class="flex items-center gap-1 px-2 py-1 rounded-lg transition-all"
         :class="store.memoryOrganizing
-          ? 'bg-$c-accent text-white pointer-events-none animate-pulse'
-          : 'bg-$c-panel/50 text-$c-text-dim hover:bg-$c-accent-soft'"
+          ? 'bg-c-accent/20 text-c-accent pointer-events-none animate-pulse'
+          : 'text-c-text-dim hover:bg-c-panel/50'"
         @click="handleMemoryOrganize"
       >
         <span>🧠</span>
-        <span>{{ store.memoryOrganizing ? '整理中...' : '记忆整理' }}</span>
+        <span>{{ store.memoryOrganizing ? '整理中...' : '记忆' }}</span>
       </button>
 
       <div class="flex-1" />
 
-      <!-- Interrupt button (only when streaming) -->
+      <!-- Interrupt button -->
       <button
         v-if="store.lastMessage?.status === 'streaming'"
-        class="flex items-center gap-1 px-2 py-1 rounded-lg bg-$c-error/20 text-$c-error hover:bg-$c-error/30 transition-all"
+        class="flex items-center gap-1 px-2 py-1 rounded-lg bg-c-error/15 text-c-error hover:bg-c-error/25 transition-all"
         @click="sendInterrupt"
       >
         <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
@@ -93,12 +78,12 @@ watch(() => store.memoryOrganizing, (organizing) => {
     <!-- Memory progress bar -->
     <div
       v-if="memoryProgress"
-      class="px-4 py-1.5 bg-$c-card/80 border-b border-$c-border flex items-center gap-2 text-xs text-$c-text-dim animate-fade-in"
+      class="px-3 py-1.5 bg-c-card/60 border-b border-c-border/40 flex items-center gap-2 text-xs text-c-text-dim animate-fade-in shrink-0"
     >
-      <span class="flex-1">{{ memoryProgress }}</span>
-      <div class="w-20 h-1 bg-$c-bg rounded-full overflow-hidden">
+      <span class="flex-1 truncate">{{ memoryProgress }}</span>
+      <div class="w-16 h-1 bg-c-bg rounded-full overflow-hidden">
         <div
-          class="h-full bg-$c-accent rounded-full transition-all duration-300"
+          class="h-full bg-c-accent rounded-full transition-all duration-300"
           :style="{ width: memoryProgressPercent + '%' }"
         />
       </div>

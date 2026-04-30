@@ -1,117 +1,100 @@
 import { onMounted, onUnmounted } from 'vue'
 import { useChatStore } from '@/stores/chat'
 import type { LlmChunk, Transcript } from '@/types/chat'
+import { getSocket } from './useSocket'
 
 export function useChat() {
   const store = useChatStore()
   const cleanups: (() => void)[] = []
 
   onMounted(() => {
-    if (!window.electronAPI?.chat) return
+    const socket = getSocket()
+    if (!socket) return
 
-    // Listen for LLM chunks
-    cleanups.push(
-      window.electronAPI.chat.onLlmChunk((data) => {
-        const chunk = data as LlmChunk
-        store.isTyping = false
+    // Listen for streaming LLM chunks
+    socket.on('sentence', (data: { text: string; seq: number }) => {
+      store.isTyping = false
 
-        if (chunk.is_complete) {
-          store.finalizeResponse()
-          return
-        }
-
-        if (chunk.seq === 0 || store.lastMessage?.status !== 'streaming') {
-          store.resetResponse(chunk.seq)
-        }
-
-        store.bufferChunk(chunk.seq, chunk.text)
-        store.processBufferedChunks()
-
-        if (!store.lastMessage || store.lastMessage.status !== 'streaming') {
-          store.scheduleFlush(() => store.updateStreamingMessage())
-          return
-        }
-        store.updateStreamingMessage()
-      })
-    )
-
-    // Listen for complete
-    cleanups.push(
-      window.electronAPI.chat.onComplete(() => {
+      if (data.text === '' || (data as any).is_complete) {
         store.finalizeResponse()
-      })
-    )
+        return
+      }
 
-    // Listen for transcript
-    cleanups.push(
-      window.electronAPI.chat.onTranscript((data) => {
-        const t = data as Transcript
-        if (!t.text?.trim()) return
-        store.createMessage('user', t.text, 'voice')
-        store.isTyping = true
-      })
-    )
+      if (data.seq === 0 || store.lastMessage?.status !== 'streaming') {
+        store.resetResponse(data.seq)
+      }
 
-    // Style transfer sync
-    cleanups.push(
-      window.electronAPI.chat.onStyleTransfer((enabled) => {
-        store.styleTransferEnabled = enabled
-      })
-    )
+      store.bufferChunk(data.seq, data.text)
+      store.processBufferedChunks()
 
-    // Memory organize
-    cleanups.push(
-      window.electronAPI.chat.onMemoryProgress(() => {
-        // Handled in component
-      })
-    )
-    cleanups.push(
-      window.electronAPI.chat.onMemoryResult(() => {
-        store.memoryOrganizing = false
-      })
-    )
+      if (!store.lastMessage || store.lastMessage.status !== 'streaming') {
+        store.scheduleFlush(() => store.updateStreamingMessage())
+        return
+      }
+      store.updateStreamingMessage()
+    })
+
+    // Listen for conversation end
+    socket.on('control', (data: { signal: string }) => {
+      if (data.signal === 'conversation-end') {
+        store.finalizeResponse()
+      }
+    })
+
+    // Listen for transcript (ASR result)
+    socket.on('transcript', (data: Transcript) => {
+      if (!data.text?.trim()) return
+      store.createMessage('user', data.text, 'voice')
+      store.isTyping = true
+    })
+
+    // Memory organize progress
+    socket.on('memory.organize.progress', () => {
+      // Handled in component for UI display
+    })
+
+    // Memory organize result
+    socket.on('memory.organize.result', () => {
+      store.memoryOrganizing = false
+    })
   })
 
   onUnmounted(() => {
-    cleanups.forEach((fn) => fn())
+    const socket = getSocket()
+    if (!socket) return
+    socket.off('sentence')
+    socket.off('control')
+    socket.off('transcript')
+    socket.off('memory.organize.progress')
+    socket.off('memory.organize.result')
   })
 
   async function sendText(text: string): Promise<void> {
-    if (!window.electronAPI?.chat) return
+    const socket = getSocket()
+    if (!socket) return
 
     store.createMessage('user', text, 'text')
     store.isTyping = true
 
-    await window.electronAPI.chat.sendMessage({
-      text,
-      timestamp: Date.now()
-    })
+    socket.emit('text_input', { text })
   }
 
   async function sendInterrupt(): Promise<void> {
-    if (!window.electronAPI?.chat) return
-    // Backend uses text_input with empty or a special interrupt event
-    // For now, we can just finalize locally
     store.finalizeResponse()
   }
 
-  async function toggleStyleTransfer(enabled: boolean): Promise<void> {
-    if (!window.electronAPI?.chat) return
-    store.styleTransferEnabled = enabled
-    await window.electronAPI.chat.setStyleTransfer(enabled)
-  }
-
   async function organizeMemory(): Promise<void> {
-    if (!window.electronAPI?.chat) return
+    const socket = getSocket()
+    if (!socket) return
+
     store.memoryOrganizing = true
-    await window.electronAPI.chat.organizeMemory()
+    socket.emit('memory_organize', {})
   }
 
   return {
     store,
     sendText,
     sendInterrupt,
-    toggleStyleTransfer,
     organizeMemory
   }
 }

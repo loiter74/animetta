@@ -8,7 +8,7 @@ useSocket()
 </script>
 
 <template>
-  <div class="flex flex-col h-screen w-screen overflow-hidden bg-$c-bg text-$c-text">
+  <div class="flex flex-col h-screen w-screen overflow-hidden bg-c-bg text-c-text">
     <TitleBar />
     <AppLayout />
   </div>

@@ -1,21 +1,54 @@
-import { onMounted, onUnmounted } from 'vue'
+import { io, Socket } from 'socket.io-client'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useConnectionStore } from '@/stores/connection'
+import type { ConnectionStatus } from '@/types/socket-events'
 
+const SOCKET_URL = 'http://localhost:12394'
+
+let socket: Socket | null = null
+let _initialized = false
+
+/**
+ * Create a singleton Socket.IO connection to the Anima backend.
+ * Call once at app startup. Composables import the socket ref for use.
+ */
 export function useSocket() {
   const store = useConnectionStore()
-  let cleanup: (() => void) | null = null
+
+  if (!_initialized && !socket) {
+    socket = io(SOCKET_URL, {
+      path: '/socket.io/',
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionDelay: 3000,
+      reconnectionAttempts: Infinity,
+      timeout: 120000
+    })
+
+    socket.on('connect', () => {
+      store.setStatus('connected')
+    })
+
+    socket.on('disconnect', () => {
+      store.setStatus('disconnected')
+    })
+
+    socket.on('connect_error', (err) => {
+      store.setStatus('error', err.message)
+    })
+
+    _initialized = true
+  }
 
   onMounted(() => {
-    if (!window.electronAPI?.connection) return
-
-    cleanup = window.electronAPI.connection.onStatus((data) => {
-      store.setStatus(data.status, data.message)
-    })
+    // Pull initial status
+    store.setStatus(socket?.connected ? 'connected' : 'disconnected')
   })
 
-  onUnmounted(() => {
-    cleanup?.()
-  })
+  return { socket, connectionStatus: store.status }
+}
 
-  return { connectionStatus: store.status }
+/** Get the global socket instance for use in composables */
+export function getSocket(): Socket | null {
+  return socket
 }
