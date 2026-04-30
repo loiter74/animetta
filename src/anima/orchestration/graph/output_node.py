@@ -53,11 +53,29 @@ async def output_node(
         await sio.emit("sentence", {"text": "", "is_complete": True}, to=to)
         logger.debug(f"[{session_id}] [输出节点] ✅ 已发送流结束标记")
 
-    # 发送表情事件
+    # 发送表情事件 — 同时发送 motion 指令给前端
     emotion = state.get("emotion")
     if emotion:
         await sio.emit("expression", {"emotion": emotion}, to=to)
         logger.debug(f"[{session_id}] [输出节点] 已发送表情: {emotion}")
+
+        # 将情绪映射为 Live2D motion 指令（用于 Hiyori 等无 expression 文件的模型）
+        EMOTION_MOTION_MAP = {
+            "happy": 3,
+            "sad": 1,
+            "angry": 2,
+            "surprised": 4,
+            "neutral": 0,
+            "thinking": 5,
+        }
+        motion_idx = EMOTION_MOTION_MAP.get(emotion)
+        if motion_idx is not None:
+            await sio.emit("live2d.action", {
+                "type": "motion",
+                "group": "Idle",
+                "index": motion_idx,
+            }, to=to)
+            logger.debug(f"[{session_id}] [输出节点] 已发送 Live2D motion: Idle[{motion_idx}] 对应 {emotion}")
 
     # 发送音频数据
     tts_audio = state.get("tts_audio")

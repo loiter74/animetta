@@ -2,10 +2,11 @@ import { ref, onMounted, onUnmounted, type Ref } from 'vue'
 import type { Live2DAction, AudioWithExpression } from '@/types/live2d'
 import { getSocket } from '@/composables/useSocket'
 
-// ===== User Preferences (edit these to change initial Live2D view) =====
-const INITIAL_POS_X = 1108
-const INITIAL_POS_Y = 2100
-const INITIAL_SCALE = 3.5
+// ===== Model Configuration (edit these to change model) =====
+export const MODEL_PATH = 'live2d/hiyori/Hiyori.model3.json'
+const INITIAL_POS_X = 1120
+const INITIAL_POS_Y = 1662
+const INITIAL_SCALE = 2.59
 
 // Mouth parameter candidates (Cubism 3/4)
 const MOUTH_PARAMS = ['ParamMouthOpenY', 'ParamMouthOpen', 'PARAM_MOUTH_OPEN']
@@ -143,6 +144,17 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
       const { Live2DModel } = await import('pixi-live2d-display/cubism4')
 
       model = await Live2DModel.from(modelPath)
+      // Disable idle group to prevent random idle motion cycling,
+      // then play motion[0] (Hiyori_m01: gentle head sway with ParamAngleX)
+      // on loop for a natural subtle swaying effect.
+      try {
+        model.internalModel?.motionManager?.stopAllMotions()
+        if (model.internalModel?.motionManager?.groups) {
+          model.internalModel.motionManager.groups.idle = '_none'
+        }
+      } catch {}
+      // Play the gentlest motion on loop (m01 has natural head sway + breathing)
+      try { model.motion("Idle", 0) } catch {}
       model.anchor.set(0.5, 0.5)
       // Will be overridden after applyScale below to user's preferred position
       model.interactive = true
@@ -187,6 +199,8 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
       isLoaded.value = false
     }
   }
+
+  // ===== Scale =====
 
   // ===== Scale =====
 
@@ -260,7 +274,6 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
   function stopDrag(): void {
     if (!isDragging.value) return
     isDragging.value = false
-    console.log(`[Live2D] pos=(${model.x.toFixed(0)},${model.y.toFixed(0)}) scale=${userScale.toFixed(2)}x`)
   }
 
   // ===== Expression =====

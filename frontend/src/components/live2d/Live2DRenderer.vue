@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useLive2D } from './useLive2D'
+import { MODEL_PATH } from './useLive2D'
 
 const containerRef = ref<HTMLDivElement | null>(null)
 const canvasRef = ref<HTMLCanvasElement | null>(null)
@@ -14,7 +15,7 @@ onMounted(async () => {
 
   // Load default model; user can load others via external API
   try {
-    await live2d.loadModel('live2d/haru/haru_greeter_t03.model3.json')
+    await live2d.loadModel(MODEL_PATH)
   } catch {
     // Model not found is OK, user can load one later
   }
