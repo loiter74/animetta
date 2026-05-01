@@ -1,13 +1,13 @@
 """
-Socket.IO 服务端入口点
-使用 server/ 模块组件构建服务器
+Socket.IO server entry point
+Uses server/ module components to build the server
 """
 
 import os
 import sys
 from pathlib import Path
 
-# 修复模块导入路径：将 src 目录添加到 Python 路径
+# Fix module import path: add src directory to Python path
 current_dir = Path(__file__).resolve().parent
 src_dir = current_dir.parent  # C:\Users\30262\Project\Anima\src
 if str(src_dir) not in sys.path:
@@ -15,29 +15,29 @@ if str(src_dir) not in sys.path:
 
 from loguru import logger
 
-# 加载 .env 文件中的环境变量（必须在其他导入之前）
+# Load environment variables from .env file (must be before other imports)
 try:
     from dotenv import load_dotenv
     env_path = Path(__file__).parent.parent.parent.parent / '.env'
     if env_path.exists():
         load_dotenv(env_path, override=True)
-        logger.info(f"[OK] 已加载环境变量文件: {env_path}")
+        logger.info(f"[OK] Environment variables loaded from: {env_path}")
         glm_key = os.getenv("GLM_API_KEY")
         if glm_key:
-            logger.info(f"[OK] GLM_API_KEY 已从 .env 加载: {glm_key[:20]}... (长度: {len(glm_key)})")
+            logger.info(f"[OK] GLM_API_KEY loaded from .env: {glm_key[:20]}... (length: {len(glm_key)})")
         else:
-            logger.error("[WARNING] .env 文件已加载，但 GLM_API_KEY 仍未设置！")
+            logger.error("[WARNING] .env file loaded, but GLM_API_KEY is still not set!")
     else:
-        logger.warning(f".env 文件不存在: {env_path}，将使用系统环境变量")
+        logger.warning(f".env file not found: {env_path}, using system environment variables")
 except ImportError:
-    logger.info("python-dotenv 未安装，使用系统环境变量")
+    logger.info("python-dotenv not installed, using system environment variables")
 
-# 最终验证关键环境变量
+# Final verification of key environment variables
 glm_key = os.getenv("GLM_API_KEY")
 if glm_key:
-    logger.info(f"[OK] GLM_API_KEY 在运行时可用: {glm_key[:20]}...")
+    logger.info(f"[OK] GLM_API_KEY available at runtime: {glm_key[:20]}...")
 else:
-    logger.error("[WARNING] GLM_API_KEY 在运行时不可用，GLM将降级到MockLLM")
+    logger.error("[WARNING] GLM_API_KEY not available at runtime, GLM will fall back to MockLLM")
 
 import uvicorn
 import asyncio
@@ -48,24 +48,24 @@ from anima.utils.logger_manager import logger_manager
 from anima.orchestration.server import WebSocketServer, create_server
 
 
-# 全局配置
+# Global configuration
 global_config: AppConfig = None
 
-# 用户配置
+# User settings
 user_settings = UserSettings(Path(__file__).parent.parent.parent)
 
-# 应用用户配置的日志级别
+# Apply user-configured log level
 initial_log_level = user_settings.get_log_level()
 logger_manager.set_level(initial_log_level)
-logger.info(f"应用用户日志级别配置: {initial_log_level}")
+logger.info(f"Applying user log level configuration: {initial_log_level}")
 
 
 def init_config(config_path: str = None) -> None:
     """
-    初始化全局配置
+    Initialize global configuration
 
     Args:
-        config_path: YAML 配置文件路径（可选）
+        config_path: YAML configuration file path (optional)
     """
     global global_config
 
@@ -74,41 +74,43 @@ def init_config(config_path: str = None) -> None:
     else:
         global_config = AppConfig.load()
 
-    logger.info(f"配置加载完成: {global_config.system.host}:{global_config.system.port}")
+    logger.info(f"Configuration loaded: {global_config.system.host}:{global_config.system.port}")
 
 
 def run_server():
-    """运行服务器 using uvicorn (ASGI mode)"""
+    """Run the server using uvicorn (ASGI mode)"""
     import atexit
 
-    # 初始化配置
-    init_config(None)
+    # Initialize configuration
+    init_config()
 
-    # 创建服务器
-    server = create_server(global_config)
-    server.set_user_settings(user_settings)
+    # Create server
+    _server = create_server(global_config)
+    _server.set_user_settings(user_settings)
 
-    # 注册退出时的清理函数
+    # Register cleanup function on exit
     def cleanup_on_exit():
-        logger.info("服务器关闭中...")
+        logger.info("Server shutting down...")
         try:
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            loop.run_until_complete(server.stop())
+            loop.run_until_complete(_server.stop())
             loop.close()
+        except NameError:
+            pass  # server not initialized
         except Exception as e:
-            logger.error(f"清理资源时出错: {e}")
-        logger.info("服务器已关闭")
+            logger.error(f"Error cleaning up resources: {e}")
+        logger.info("Server shut down")
 
     atexit.register(cleanup_on_exit)
 
     logger.info("=" * 50)
-    logger.info("启动 Socket.IO 服务器...")
+    logger.info("Starting Socket.IO server...")
     logger.info(f"Host: {global_config.system.host}")
     logger.info(f"Port: {global_config.system.port}")
     logger.info(f"Socket.IO async_mode: asgi (uvicorn)")
     logger.info("=" * 50)
-    logger.info(f"访问 http://{global_config.system.host}:{global_config.system.port} 测试")
+    logger.info(f"Visit http://{global_config.system.host}:{global_config.system.port} to test")
     logger.info(f"WebSocket URL: ws://{global_config.system.host}:{global_config.system.port}/socket.io/")
 
     # Run uvicorn server - use factory function to ensure proper initialization
@@ -121,22 +123,26 @@ def run_server():
     )
 
 
-# 创建 ASGI 应用（供 uvicorn 导入）
+# Create ASGI application (for uvicorn import)
 _server: WebSocketServer = None
 asgi_app = None
 
 
 def get_asgi_app():
-    """获取 ASGI 应用（延迟初始化）"""
+    """Get ASGI application (lazy initialization)"""
     global _server, asgi_app, global_config, user_settings
 
     if asgi_app is None:
-        # 初始化配置
-        init_config(None)
+        # Initialize configuration
 
-        # 创建服务器
+        # Create server
         _server = create_server(global_config)
         _server.set_user_settings(user_settings)
+
+        # Start background model warmup (non-blocking - models load while server accepts connections)
+        # warmup() is safe to call even if no services are registered yet
+        logger.info("Starting background model warmup...")
+        asyncio.ensure_future(_server.model_manager.warmup())
 
         asgi_app = _server.get_app()
 
