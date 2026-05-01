@@ -1,4 +1,4 @@
-"""LangGraph 状态图构建器"""
+"""LangGraph state graph builder"""
 
 from typing import Dict, Any, Optional, Literal, List
 from loguru import logger
@@ -10,22 +10,22 @@ from . import asr_node, llm_node, tts_node, emotion_node, output_node, tool_node
 
 
 def route_input(state: AgentState) -> Literal["asr", "llm"]:
-    """根据输入类型决定起始节点"""
+    """Determine the starting node based on input type"""
     input_type = state.get("input_type", "text")
     if input_type == "audio" and state.get("raw_audio"):
-        logger.debug(f"[路由] 音频输入 -> ASR 节点")
+        logger.debug(f"[Router] Audio input -> ASR node")
         return "asr"
-    logger.debug(f"[路由] 文本输入 -> LLM 节点")
+    logger.debug(f"[Router] Text input -> LLM node")
     return "llm"
 
 
 def should_use_tools(state: AgentState) -> Literal["tools", "tts"]:
-    """检查 LLM 是否请求了工具调用"""
+    """Check if LLM requested tool calls"""
     tool_calls = state.get("tool_calls")
     if tool_calls:
-        logger.debug(f"[路由] LLM 请求工具调用 -> 工具节点")
+        logger.debug(f"[Router] LLM requested tool calls -> Tool node")
         return "tools"
-    logger.debug(f"[路由] LLM 直接回复 -> TTS 节点")
+    logger.debug(f"[Router] LLM direct reply -> TTS node")
     return "tts"
 
 
@@ -36,37 +36,37 @@ def build_graph(
     tools_map: Optional[Dict[str, Any]] = None,
 ) -> StateGraph:
     """
-    构建 LangGraph 状态图
+    Build the LangGraph state graph
 
-    图结构:
+    Graph structure:
         [START]
            |
-           +--(音频输入)--> [asr_node]
-           |                  |
-           +--(文本输入)------+-> [llm_node]
-                                     |
-                            +--------+--------+
-                            |                 |
-                      (有工具调用)      (直接回复)
-                            |                 |
-                        [tool_node]      [tts_node]
-                            |                 |
-                            +-------+---------+
-                                    |
-                               [emotion_node]
-                                    |
-                               [output_node]
-                                    |
-                                  [END]
+           +--(audio input)--> [asr_node]
+           |                      |
+           +--(text input)--------+-> [llm_node]
+                                          |
+                                 +--------+--------+
+                                 |                 |
+                           (tool call)     (direct reply)
+                                 |                 |
+                             [tool_node]      [tts_node]
+                                 |                 |
+                                 +-------+---------+
+                                         |
+                                    [emotion_node]
+                                         |
+                                    [output_node]
+                                         |
+                                       [END]
     """
-    logger.info("[LangGraph] 开始构建状态图...")
+    logger.info("[LangGraph] Building state graph...")
 
     if enable_tools:
-        logger.info(f"[LangGraph] 工具调用已启用，加载 {len(tools or [])} 个工具")
+        logger.info(f"[LangGraph] Tool calls enabled, loading {len(tools or [])} tools")
 
     graph = StateGraph(AgentState)
 
-    # 注册节点
+    # Register nodes
     graph.add_node("asr", asr_node)
     graph.add_node("llm", llm_node)
     graph.add_node("tts", tts_node)
@@ -75,18 +75,18 @@ def build_graph(
 
     if enable_tools:
         graph.add_node("tools", tool_node)
-        logger.info("[LangGraph] 工具节点已注册")
+        logger.info("[LangGraph] Tool node registered")
 
-    # 设置入口点
+    # Set entry point
     graph.set_conditional_entry_point(route_input, {"asr": "asr", "llm": "llm"})
 
-    # 添加边
+    # Add edges
     graph.add_edge("asr", "llm")
 
     if enable_tools:
         graph.add_conditional_edges("llm", should_use_tools, {"tools": "tools", "tts": "tts"})
         graph.add_edge("tools", "llm")
-        logger.info("[LangGraph] 工具循环已配置: llm -> tools -> llm")
+        logger.info("[LangGraph] Tool loop configured: llm -> tools -> llm")
     else:
         graph.add_edge("llm", "tts")
 
@@ -94,10 +94,10 @@ def build_graph(
     graph.add_edge("emotion", "output")
     graph.add_edge("output", END)
 
-    logger.info("[LangGraph] 状态图构建完成")
+    logger.info("[LangGraph] State graph built")
 
     compiled_graph = graph.compile(checkpointer=checkpointer)
-    logger.info("[LangGraph] 状态图编译完成")
+    logger.info("[LangGraph] State graph compiled")
     return compiled_graph
 
 
@@ -108,22 +108,22 @@ def create_default_graph(
     tools_map: Optional[Dict[str, Any]] = None,
 ) -> StateGraph:
     """
-    创建默认配置的状态图
+    Create a state graph with default configuration
 
     Args:
-        enable_memory: 是否启用内存检查点
-        enable_tools: 是否启用工具调用
-        tools: 工具列表
-        tools_map: 工具映射
+        enable_memory: Whether to enable memory checkpoints
+        enable_tools: Whether to enable tool calls
+        tools: List of tools
+        tools_map: Tool mapping
     """
     checkpointer = None
 
     if enable_memory:
         checkpointer = MemorySaver()
-        logger.info("[LangGraph] 内存检查点已启用")
+        logger.info("[LangGraph] Memory checkpoint enabled")
 
     if enable_tools and not tools:
-        logger.warning("[LangGraph] 启用工具但未提供工具列表，工具节点将无法工作")
+        logger.warning("[LangGraph] Tools enabled but no tool list provided, tool node will not work")
 
     return build_graph(
         checkpointer=checkpointer,
@@ -134,7 +134,7 @@ def create_default_graph(
 
 
 def visualize_graph(graph: StateGraph, output_path: str = "graph.png") -> None:
-    """可视化状态图（需要安装 graphviz）"""
+    """Visualize the state graph (requires graphviz)"""
     try:
         from IPython.display import Image, display
 
@@ -143,15 +143,15 @@ def visualize_graph(graph: StateGraph, output_path: str = "graph.png") -> None:
         with open(output_path, "wb") as f:
             f.write(img_data)
 
-        logger.info(f"[LangGraph] 图已保存到: {output_path}")
+        logger.info(f"[LangGraph] Graph saved to: {output_path}")
 
     except ImportError:
-        logger.warning("[LangGraph] 无法可视化: 缺少 graphviz 或 IPython")
+        logger.warning("[LangGraph] Cannot visualize: missing graphviz or IPython")
     except Exception as e:
-        logger.error(f"[LangGraph] 可视化失败: {e}")
+        logger.error(f"[LangGraph] Visualization failed: {e}")
 
 
 def print_graph_structure(graph: StateGraph) -> None:
-    """打印图结构（用于调试）"""
-    logger.info("[LangGraph] 图结构:")
+    """Print graph structure (for debugging)"""
+    logger.info("[LangGraph] Graph structure:")
     logger.info(str(graph.get_graph().print_ascii()))

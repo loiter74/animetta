@@ -1,10 +1,10 @@
 """
 LangGraph Orchestrator
 
-负责：
-1. 管理 LangGraph 状态图的生命周期
-2. 提供与现有系统兼容的接口
-3. 处理状态图的执行和结果返回
+Responsibilities:
+1. Manage the lifecycle of the LangGraph state graph
+2. Provide interfaces compatible with the existing system
+3. Handle state graph execution and result return
 """
 
 import asyncio
@@ -20,7 +20,7 @@ from .stats_handler import StatsCallbackHandler
 
 
 class LangGraphOrchestrator:
-    """LangGraph 编排器"""
+    """LangGraph orchestrator"""
 
     def __init__(
         self,
@@ -43,10 +43,10 @@ class LangGraphOrchestrator:
         self.graph = None
         self._is_running = False
 
-        # 初始化工具管理器
+        # Initialize tool manager
         self.tool_manager: Optional[ToolManager] = None
 
-        # 构建 LangGraph 配置（通过 config 参数传递给节点）
+        # Build LangGraph config (passed to nodes via config parameter)
         self._langgraph_config = {
             "configurable": {
                 "service_context": service_context,
@@ -56,43 +56,43 @@ class LangGraphOrchestrator:
             }
         }
 
-        # 初始化可观测性
+        # Initialize observability
         obs = get_observability()
         if not obs._initialized:
             obs.initialize()
 
         self._callbacks = obs.callbacks
         if self._callbacks:
-            logger.info(f"[{self.session_id}] [LangGraph] 可观测性回调: {len(self._callbacks)} 个")
+            logger.info(f"[{self.session_id}] [LangGraph] Observability callbacks: {len(self._callbacks)}")
 
-        # 统计 handler
+        # Stats handler
         self._stats_handler = StatsCallbackHandler()
         if self._callbacks:
             self._callbacks.append(self._stats_handler)
         else:
             self._callbacks = [self._stats_handler]
-        logger.info(f"[{self.session_id}] [LangGraph] 统计 handler 已注入")
+        logger.info(f"[{self.session_id}] [LangGraph] Stats handler injected")
 
-        logger.info(f"[{self.session_id}] [LangGraph] 编排器初始化完成")
+        logger.info(f"[{self.session_id}] [LangGraph] Orchestrator initialized")
 
     async def start(self) -> None:
-        """启动编排器"""
+        """Start the orchestrator"""
         if self._is_running:
-            logger.warning(f"[{self.session_id}] [LangGraph] 编排器已在运行")
+            logger.warning(f"[{self.session_id}] [LangGraph] Orchestrator is already running")
             return
 
-        logger.info(f"[{self.session_id}] [LangGraph] 正在构建状态图...")
+        logger.info(f"[{self.session_id}] [LangGraph] Building state graph...")
         logger.info(f"[{self.session_id}] [LangGraph] self.enable_tools={self.enable_tools}")
 
         try:
-            # 加载工具
+            # Load tools
             if self.enable_tools:
-                logger.info(f"[{self.session_id}] [LangGraph] 工具已启用，开始加载...")
+                logger.info(f"[{self.session_id}] [LangGraph] Tools enabled, loading...")
                 await self._load_tools()
             else:
-                logger.warning(f"[{self.session_id}] [LangGraph] 工具未启用")
+                logger.warning(f"[{self.session_id}] [LangGraph] Tools not enabled")
 
-            # 创建状态图
+            # Create state graph
             self.graph = create_default_graph(
                 enable_memory=False,
                 enable_tools=self.enable_tools,
@@ -101,27 +101,27 @@ class LangGraphOrchestrator:
             )
 
             self._is_running = True
-            logger.info(f"[{self.session_id}] [LangGraph] 状态图已启动")
+            logger.info(f"[{self.session_id}] [LangGraph] State graph started")
 
         except Exception as e:
-            logger.error(f"[{self.session_id}] [LangGraph] 启动失败: {e}")
+            logger.error(f"[{self.session_id}] [LangGraph] Start failed: {e}")
             raise
 
     async def _load_tools(self) -> None:
-        """加载工具"""
+        """Load tools"""
         self.tool_manager = ToolManager(self.session_id, self.service_context)
         success = await self.tool_manager.load_tools(self.tools_config)
 
         if success:
-            # 更新 LangGraph 配置
+            # Update LangGraph config
             self._langgraph_config["configurable"].update(self.tool_manager.get_config())
-            logger.info(f"[{self.session_id}] [LangGraph] 工具配置已添加到 LangGraph config")
+            logger.info(f"[{self.session_id}] [LangGraph] Tool config added to LangGraph config")
         else:
             self.enable_tools = False
-            logger.warning(f"[{self.session_id}] [LangGraph] 工具加载失败，工具调用已禁用")
+            logger.warning(f"[{self.session_id}] [LangGraph] Tool loading failed, tool calls disabled")
 
     async def stop(self) -> None:
-        """停止编排器"""
+        """Stop the orchestrator"""
         if not self._is_running:
             return
 
@@ -129,7 +129,7 @@ class LangGraphOrchestrator:
             await self.tool_manager.cleanup()
 
         self._is_running = False
-        logger.info(f"[{self.session_id}] [LangGraph] 编排器已停止")
+        logger.info(f"[{self.session_id}] [LangGraph] Orchestrator stopped")
 
     async def process_text(
         self,
@@ -139,13 +139,13 @@ class LangGraphOrchestrator:
         channel_id: Optional[str] = None,
         **metadata,
     ) -> Dict[str, Any]:
-        """处理文本输入"""
+        """Process text input"""
         if not self._is_running:
-            return {"error": "编排器未启动"}
+            return {"error": "Orchestrator not started"}
 
-        logger.info(f"[{self.session_id}] [LangGraph] 处理文本输入: {text[:50]}...")
+        logger.info(f"[{self.session_id}] [LangGraph] Processing text input: {text[:50]}...")
 
-        # 清除打断信号
+        # Clear interrupt signal
         get_interrupt_handler().clear_interrupt(self.session_id)
 
         try:
@@ -162,7 +162,7 @@ class LangGraphOrchestrator:
             return self._clean_result(final_state)
 
         except Exception as e:
-            logger.error(f"[{self.session_id}] [LangGraph] 处理文本失败: {e}")
+            logger.error(f"[{self.session_id}] [LangGraph] Text processing failed: {e}")
             return {"error": str(e), "response_text": ""}
 
     async def process_audio(
@@ -173,11 +173,11 @@ class LangGraphOrchestrator:
         channel_id: Optional[str] = None,
         **metadata,
     ) -> Dict[str, Any]:
-        """处理音频输入"""
+        """Process audio input"""
         if not self._is_running:
-            return {"error": "编排器未启动"}
+            return {"error": "Orchestrator not started"}
 
-        logger.info(f"[{self.session_id}] [LangGraph] 处理音频输入: {len(audio_data)} bytes")
+        logger.info(f"[{self.session_id}] [LangGraph] Processing audio input: {len(audio_data)} bytes")
 
         get_interrupt_handler().clear_interrupt(self.session_id)
 
@@ -195,7 +195,7 @@ class LangGraphOrchestrator:
             return self._clean_result(final_state)
 
         except Exception as e:
-            logger.error(f"[{self.session_id}] [LangGraph] 处理音频失败: {e}")
+            logger.error(f"[{self.session_id}] [LangGraph] Audio processing failed: {e}")
             return {"error": str(e), "response_text": ""}
 
     def _create_initial_state(
@@ -208,7 +208,7 @@ class LangGraphOrchestrator:
         user_name: Optional[str] = None,
         metadata: Optional[Dict] = None,
     ) -> AgentState:
-        """创建初始状态"""
+        """Create initial state"""
         initial_state = create_initial_state(
             session_id=self.session_id,
             input_type=input_type,
@@ -227,8 +227,8 @@ class LangGraphOrchestrator:
         return initial_state
 
     async def _run_graph(self, initial_state: AgentState) -> Dict[str, Any]:
-        """运行状态图，通过 LangGraph config 传递服务上下文"""
-        # 开始 trace
+        """Run the state graph, passing service context through LangGraph config"""
+        # Start trace
         input_type = initial_state.get("input_type", "text")
         user_text = initial_state.get("user_text", "")
         self._stats_handler.start_trace(self.session_id, input_type, user_text)
@@ -247,7 +247,7 @@ class LangGraphOrchestrator:
             raise
 
     def _clean_result(self, final_state: Dict[str, Any]) -> Dict[str, Any]:
-        """清理返回值"""
+        """Clean up return value"""
         return {
             "response_text": final_state.get("response_text", ""),
             "response_chunks": final_state.get("response_chunks", []),
@@ -257,7 +257,7 @@ class LangGraphOrchestrator:
         }
 
     def _get_persona_dict(self) -> Optional[Dict[str, Any]]:
-        """获取人设配置字典"""
+        """Get persona config dict"""
         if self.service_context and hasattr(self.service_context, "config"):
             persona = self.service_context.config.get_persona()
             if persona:
@@ -272,7 +272,7 @@ class LangGraphOrchestrator:
         return {}
 
     def _get_system_prompt(self) -> Optional[str]:
-        """获取系统提示词"""
+        """Get system prompt"""
         if self.service_context and hasattr(self.service_context, "config"):
             return self.service_context.config.get_system_prompt()
         return None
@@ -282,7 +282,7 @@ class LangGraphOrchestrator:
 
 
 class LangGraphOrchestratorFactory:
-    """LangGraph 编排器工厂"""
+    """LangGraph orchestrator factory"""
 
     _instances: Dict[str, LangGraphOrchestrator] = {}
 
@@ -297,7 +297,7 @@ class LangGraphOrchestratorFactory:
         enable_memory: bool = True,
         tools_config: Optional[Dict[str, Any]] = None,
     ) -> LangGraphOrchestrator:
-        """创建编排器实例"""
+        """Create orchestrator instance"""
         orchestrator = LangGraphOrchestrator(
             service_context=service_context,
             socketio=socketio,

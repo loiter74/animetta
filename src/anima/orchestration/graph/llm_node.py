@@ -1,4 +1,4 @@
-"""LLM 推理节点 - 支持工具调用和流式输出"""
+"""LLM inference node - supports tool calls and streaming output"""
 
 from typing import Dict, Any, List, Optional
 from loguru import logger
@@ -10,11 +10,11 @@ from .interrupt_handler import get_interrupt_handler
 
 
 # ========================================
-# RAG 记忆检索辅助函数
+# RAG memory retrieval helper functions
 # ========================================
 
 def _get_memory_system(config: Optional[RunnableConfig]) -> Optional[Any]:
-    """从 LangGraph config 获取 memory_system"""
+    """Get memory_system from LangGraph config"""
     if config:
         service_context = config.get("configurable", {}).get("service_context")
         if service_context and hasattr(service_context, "memory_system"):
@@ -24,24 +24,24 @@ def _get_memory_system(config: Optional[RunnableConfig]) -> Optional[Any]:
 
 def _format_memory_context(memory_turns: List[Any], max_items: int = 5) -> str:
     """
-    格式化记忆上下文为文本
+    Format memory context as text
 
     Args:
-        memory_turns: MemoryTurn 对象列表
-        max_items: 最大显示条数
+        memory_turns: List of MemoryTurn objects
+        max_items: Maximum number of items to display
 
     Returns:
-        格式化的记忆文本
+        Formatted memory text
     """
     if not memory_turns:
         return ""
 
-    # 只取前 max_items 条
+    # Only take the first max_items entries
     selected = memory_turns[:max_items]
 
-    lines = ["## 相关记忆"]
+    lines = ["## Related Memories"]
     for i, turn in enumerate(selected, 1):
-        # 优先使用口语化版本（如果有）
+        # Prefer oral version if available
         if hasattr(turn, "metadata"):
             oral = turn.metadata.get("oral_version")
         else:
@@ -53,12 +53,12 @@ def _format_memory_context(memory_turns: List[Any], max_items: int = 5) -> str:
         if oral:
             lines.append(f"{i}. {oral}")
         else:
-            # 兼容旧数据：没有口语化版本时使用原始文本
+            # Compatible with old data: use original text when no oral version
             if user_text and agent_text:
-                lines.append(f"{i}. 你说过：{user_text}")
-                lines.append(f"   我回复：{agent_text}")
+                lines.append(f"{i}. You said: {user_text}")
+                lines.append(f"   I replied: {agent_text}")
             elif user_text:
-                lines.append(f"{i}. 你说过：{user_text}")
+                lines.append(f"{i}. You said: {user_text}")
 
     return "\n".join(lines) if len(lines) > 1 else ""
 
@@ -70,20 +70,20 @@ async def _retrieve_memory_context(
     max_turns: int = 5,
 ) -> str:
     """
-    检索记忆上下文
+    Retrieve memory context
 
     Args:
-        session_id: 会话 ID
-        query: 查询文本（用户输入）
+        session_id: Session ID
+        query: Query text (user input)
         config: LangGraph config
-        max_turns: 最大检索轮数
+        max_turns: Maximum number of turns to retrieve
 
     Returns:
-        格式化的记忆文本
+        Formatted memory text
     """
     memory_system = _get_memory_system(config)
     if not memory_system:
-        logger.debug(f"[{session_id}] [LLM节点] MemorySystem 未配置，跳过 RAG")
+        logger.debug(f"[{session_id}] [LLMNode] MemorySystem not configured, skipping RAG")
         return ""
 
     try:
@@ -95,15 +95,15 @@ async def _retrieve_memory_context(
 
         if memory_turns:
             context = _format_memory_context(memory_turns, max_items=max_turns)
-            logger.info(f"[{session_id}] [LLM节点] RAG 检索到 {len(memory_turns)} 条记忆")
-            logger.debug(f"[{session_id}] [LLM节点] 记忆上下文: {context[:200]}...")
+            logger.info(f"[{session_id}] [LLMNode] RAG retrieved {len(memory_turns)} memory entries")
+            logger.debug(f"[{session_id}] [LLMNode] Memory context: {context[:200]}...")
             return context
         else:
-            logger.debug(f"[{session_id}] [LLM节点] RAG 未检索到相关记忆")
+            logger.debug(f"[{session_id}] [LLMNode] RAG found no related memories")
             return ""
 
     except Exception as e:
-        logger.warning(f"[{session_id}] [LLM节点] RAG 检索失败: {e}")
+        logger.warning(f"[{session_id}] [LLMNode] RAG retrieval failed: {e}")
         return ""
 
 
@@ -112,14 +112,14 @@ def _enrich_system_prompt(
     memory_context: str,
 ) -> str:
     """
-    将记忆上下文注入到 system prompt
+    Inject memory context into the system prompt
 
     Args:
-        base_prompt: 基础 system prompt
-        memory_context: 记忆上下文文本
+        base_prompt: Base system prompt
+        memory_context: Memory context text
 
     Returns:
-        增强后的 system prompt
+        Enriched system prompt
     """
     if not memory_context:
         return base_prompt or ""
@@ -128,24 +128,24 @@ def _enrich_system_prompt(
     if base_prompt:
         parts.append(base_prompt)
 
-    # 添加记忆上下文
+    # Add memory context
     parts.append(memory_context)
 
-    # 添加指令
-    parts.append("\n请参考以上记忆，自然地回答用户的问题。如果记忆中没有相关信息，就正常回答。")
+    # Add instruction
+    parts.append("\nPlease refer to the above memories and answer the user's question naturally. If no relevant information is in the memories, respond normally.")
 
     return "\n\n---\n\n".join(parts)
 
 
 def _get_service_context(config: Optional[RunnableConfig]) -> Optional[Any]:
-    """从 LangGraph config 获取 service_context"""
+    """Get service_context from LangGraph config"""
     if config:
         return config.get("configurable", {}).get("service_context")
     return None
 
 
 def _get_config_value(config: Optional[RunnableConfig], key: str, default: Any = None) -> Any:
-    """从 LangGraph config 获取配置值"""
+    """Get config value from LangGraph config"""
     if config:
         return config.get("configurable", {}).get(key, default)
     return default
@@ -156,33 +156,33 @@ async def llm_node(
     config: Optional[RunnableConfig] = None,
 ) -> Dict[str, Any]:
     """
-    LLM 推理节点
+    LLM inference node
 
-    输入: state["user_text"], state["messages"], state["persona"]
-    输出: state["messages"], state["response_text"], state["response_chunks"], state["tool_calls"]
+    Input: state["user_text"], state["messages"], state["persona"]
+    Output: state["messages"], state["response_text"], state["response_chunks"], state["tool_calls"]
     """
     session_id = state.get("session_id", "unknown")
     user_text = state.get("user_text", "")
     messages = list(state.get("messages", []))
 
-    logger.info(f"[{session_id}] [LLM节点] 开始处理...")
+    logger.info(f"[{session_id}] [LLMNode] Processing...")
 
-    # 验证输入
+    # Validate input
     if not user_text:
-        logger.warning(f"[{session_id}] [LLM节点] 无用户文本，跳过")
-        return {"error": "无用户文本", "response_text": "", "response_chunks": [], "tool_calls": None}
+        logger.warning(f"[{session_id}] [LLMNode] No user text, skipping")
+        return {"error": "No user text", "response_text": "", "response_chunks": [], "tool_calls": None}
 
     service_context = _get_service_context(config)
     if not service_context:
-        logger.error(f"[{session_id}] [LLM节点] service_context 未配置")
-        return {"error": "service_context 未配置", "response_text": "", "response_chunks": [], "tool_calls": None}
+        logger.error(f"[{session_id}] [LLMNode] service_context not configured")
+        return {"error": "service_context not configured", "response_text": "", "response_chunks": [], "tool_calls": None}
 
     llm_engine = service_context.llm_engine
     if not llm_engine:
-        logger.error(f"[{session_id}] [LLM节点] LLM 引擎未初始化")
-        return {"error": "LLM 引擎未初始化", "response_text": "", "response_chunks": [], "tool_calls": None}
+        logger.error(f"[{session_id}] [LLMNode] LLM engine not initialized")
+        return {"error": "LLM engine not initialized", "response_text": "", "response_chunks": [], "tool_calls": None}
 
-    # 检查是否启用工具
+    # Check if tools are enabled
     enable_tools = _get_config_value(config, "enable_tools", False)
     chat_model = _get_config_value(config, "chat_model", None)
 
@@ -199,18 +199,18 @@ async def _llm_with_tools(
     chat_model: Any,
     config: Optional[RunnableConfig] = None,
 ) -> Dict[str, Any]:
-    """使用工具调用模式"""
+    """Use tool calling mode"""
     user_text = state.get("user_text", "")
     messages = list(state.get("messages", []))
     llm_engine = service_context.llm_engine
 
-    logger.info(f"[{session_id}] [LLM节点] 使用工具调用模式")
+    logger.info(f"[{session_id}] [LLMNode] Using tool calling mode")
 
     system_prompt = state.get("system_prompt")
     if not system_prompt and service_context.config:
         system_prompt = service_context.config.get_system_prompt()
 
-    # 🆕 RAG: 检索记忆上下文
+    # RAG: retrieve memory context
     memory_context = await _retrieve_memory_context(
         session_id=session_id,
         query=user_text,
@@ -218,7 +218,7 @@ async def _llm_with_tools(
         max_turns=5,
     )
 
-    # 🆕 注入记忆到 system_prompt
+    # Inject memory into system_prompt
     enriched_prompt = _enrich_system_prompt(system_prompt, memory_context)
 
     bound_tools = getattr(chat_model, "bound_tools", []) or getattr(chat_model, "tools", [])
@@ -230,7 +230,7 @@ async def _llm_with_tools(
             user_text,
             tools=bound_tools,
             langchain_history=history_for_llm,
-            system_prompt=enriched_prompt,  # 🆕 使用增强的 prompt
+            system_prompt=enriched_prompt,  # Use enriched prompt
         )
 
         if isinstance(response, dict):
@@ -241,17 +241,17 @@ async def _llm_with_tools(
                     for tc in tool_calls
                 ]
 
-                ai_message = AIMessage(content=response.get("content", "") or "正在调用工具...", tool_calls=tool_calls)
+                ai_message = AIMessage(content=response.get("content", "") or "Calling tools...", tool_calls=tool_calls)
 
                 return {
-                    "response_text": response.get("content", "") or "正在调用工具...",
+                    "response_text": response.get("content", "") or "Calling tools...",
                     "response_chunks": [response.get("content", "") or ""],
                     "messages": [ai_message],
                     "tool_calls": formatted_tool_calls,
                 }
             else:
                 full_response = response.get("content", "")
-                logger.info(f"[{session_id}] [LLM节点] LLM 回复: {full_response[:100]}...")
+                logger.info(f"[{session_id}] [LLMNode] LLM response: {full_response[:100]}...")
                 ai_message = AIMessage(content=full_response)
 
                 return {
@@ -262,7 +262,7 @@ async def _llm_with_tools(
                 }
 
     except Exception as e:
-        logger.error(f"[{session_id}] [LLM节点] 工具调用失败: {e}")
+        logger.error(f"[{session_id}] [LLMNode] Tool call failed: {e}")
         return await _llm_without_tools(session_id, state, service_context, config)
 
 
@@ -272,16 +272,16 @@ async def _llm_without_tools(
     service_context: Any,
     config: Optional[RunnableConfig] = None,
 ) -> Dict[str, Any]:
-    """使用流式模式（无工具）"""
+    """Use streaming mode (no tools)"""
     user_text = state.get("user_text", "")
     llm_engine = service_context.llm_engine
     messages = list(state.get("messages", []))
 
-    logger.info(f"[{session_id}] [LLM节点] 使用流式模式（无工具）")
+    logger.info(f"[{session_id}] [LLMNode] Using streaming mode (no tools)")
 
     system_prompt = state.get("system_prompt", "")
 
-    # 🆕 RAG: 检索记忆上下文
+    # RAG: retrieve memory context
     memory_context = await _retrieve_memory_context(
         session_id=session_id,
         query=user_text,
@@ -289,7 +289,7 @@ async def _llm_without_tools(
         max_turns=5,
     )
 
-    # 🆕 注入记忆到 system_prompt
+    # Inject memory into system_prompt
     enriched_prompt = _enrich_system_prompt(system_prompt, memory_context)
 
     if not messages or not isinstance(messages[0], SystemMessage):
@@ -311,14 +311,14 @@ async def _llm_without_tools(
 
     async for chunk in llm_engine.chat_stream(user_text, system_prompt=enriched_prompt):
         if interrupt_handler.is_interrupted(session_id):
-            logger.warning(f"[{session_id}] [LLM节点] 检测到打断信号，停止生成")
+            logger.warning(f"[{session_id}] [LLMNode] Interrupt detected, stopping generation")
             break
         chunks.append(chunk)
         full_response += chunk
         if len(chunks) % 10 == 0:
-            logger.debug(f"[{session_id}] [LLM节点] 已接收 {len(chunks)} 个块...")
+            logger.debug(f"[{session_id}] [LLMNode] Received {len(chunks)} chunks...")
 
-    logger.info(f"[{session_id}] [LLM节点] LLM 回复: {full_response[:100]}...")
+    logger.info(f"[{session_id}] [LLMNode] LLM response: {full_response[:100]}...")
 
     ai_message = AIMessage(content=full_response)
 

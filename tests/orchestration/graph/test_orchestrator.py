@@ -73,7 +73,7 @@ class TestOrchestratorProcessText:
         """Calling process_text before start returns error."""
         result = await orchestrator.process_text(text="hello")
         assert "error" in result
-        assert "未启动" in result["error"]
+        assert "not started" in result["error"].lower() or "未启动" in result.get("error", "")
 
     @pytest.mark.asyncio
     async def test_process_text_returns_response(self, orchestrator):
@@ -96,7 +96,7 @@ class TestOrchestratorProcessAudio:
         """Calling process_audio before start returns error."""
         result = await orchestrator.process_audio(audio_data=b"fake_audio")
         assert "error" in result
-        assert "未启动" in result["error"]
+        assert "not started" in result["error"].lower() or "未启动" in result.get("error", "")
 
     @pytest.mark.asyncio
     async def test_process_audio_returns_response(self, orchestrator):

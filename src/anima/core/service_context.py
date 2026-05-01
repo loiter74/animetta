@@ -1,5 +1,5 @@
 """
-服务上下文 - 核心服务容器
+Service context - core service container
 """
 
 from typing import Callable, Optional
@@ -19,7 +19,7 @@ from anima.memory import MemorySystem
 
 
 class ServiceContext:
-    """服务上下文类"""
+    """Service context class"""
 
     def __init__(self):
         self.config: Optional[AppConfig] = None
@@ -58,11 +58,11 @@ class ServiceContext:
             f")"
         )
 
-    # 初始化方法
+    # Initialization methods
     async def load_from_config(self, config: AppConfig) -> None:
-        """从配置加载所有服务"""
+        """Load all services from config"""
         self.config = config
-        logger.info(f"[{self.session_id}] 正在从配置加载服务...")
+        logger.info(f"[{self.session_id}] Loading services from config...")
 
         await self.init_asr(config.asr)
         await self.init_tts(config.tts)
@@ -73,10 +73,10 @@ class ServiceContext:
         await self.init_memory()
         await self.init_emotion_analyzer(config)
 
-        # 预加载对话 tokenizer，避免首次使用时下载/加载延迟
+        # Preload conversation tokenizer to avoid download/load delay on first use
         await self._preload_tokenizers()
 
-        logger.info(f"[{self.session_id}] 服务加载完成")
+        logger.info(f"[{self.session_id}] Services loaded")
 
     async def load_cache(
         self,
@@ -86,23 +86,23 @@ class ServiceContext:
         llm_engine: Optional[LLMInterface] = None,
         send_text: Optional[Callable] = None,
     ) -> None:
-        """从缓存加载服务（复用已有实例）"""
+        """Load services from cache (reuse existing instances)"""
         self.config = config
         self.asr_engine = asr_engine
         self.tts_engine = tts_engine
         self.llm_engine = llm_engine
         self.send_text = send_text
-        logger.debug(f"[{self.session_id}] 从缓存加载服务上下文")
+        logger.debug(f"[{self.session_id}] Loading service context from cache")
 
     async def init_asr(self, asr_config: ASRConfig) -> None:
-        """初始化 ASR 服务"""
+        """Initialize ASR service"""
         if self.asr_engine is not None:
-            logger.debug(f"[{self.session_id}] ASR 已初始化，跳过")
+            logger.debug(f"[{self.session_id}] ASR already initialized, skipping")
             return
 
         provider = asr_config.type
         model = getattr(asr_config, 'model', 'default')
-        logger.info(f"[{self.session_id}] 初始化 ASR: {provider}/{model}")
+        logger.info(f"[{self.session_id}] Initializing ASR: {provider}/{model}")
 
         self.asr_engine = ASRFactory.create(
             provider=provider,
@@ -127,40 +127,40 @@ class ServiceContext:
         )
 
         if hasattr(self.asr_engine, 'preload'):
-            logger.info(f"[{self.session_id}] 后台预加载 ASR 模型...")
+            logger.info(f"[{self.session_id}] Preloading ASR model in background...")
             import asyncio
             asyncio.create_task(self._preload_asr_background())
 
     async def _preload_asr_background(self) -> None:
-        """后台预加载 ASR 模型"""
+        """Preload ASR model in background"""
         try:
             await self.asr_engine.preload()
-            logger.info(f"[{self.session_id}] ASR 模型预加载完成")
+            logger.info(f"[{self.session_id}] ASR model preloaded")
         except Exception as e:
-            logger.warning(f"[{self.session_id}] ASR 模型预加载失败: {e}")
+            logger.warning(f"[{self.session_id}] ASR model preload failed: {e}")
 
     async def _preload_tokenizers(self) -> None:
-        """预加载对话 tokenizer（tiktoken 等），避免首次对话时下载/加载延迟"""
+        """Preload conversation tokenizer (tiktoken, etc.) to avoid download/load delay on first use"""
         try:
             import tiktoken
             import asyncio
             loop = asyncio.get_event_loop()
             await loop.run_in_executor(None, lambda: tiktoken.get_encoding("cl100k_base"))
-            logger.info(f"[{self.session_id}] ✅ tiktoken tokenizer 预加载完成")
+            logger.info(f"[{self.session_id}] tiktoken tokenizer preloaded")
         except ImportError:
-            logger.debug(f"[{self.session_id}] tiktoken 未安装，跳过预加载")
+            logger.debug(f"[{self.session_id}] tiktoken not installed, skipping preload")
         except Exception as e:
-            logger.warning(f"[{self.session_id}] tokenizer 预加载失败 (不影响运行): {e}")
+            logger.warning(f"[{self.session_id}] Tokenizer preload failed (does not affect operation): {e}")
 
     async def init_tts(self, tts_config: TTSConfig) -> None:
-        """初始化 TTS 服务"""
+        """Initialize TTS service"""
         if self.tts_engine is not None:
-            logger.debug(f"[{self.session_id}] TTS 已初始化，跳过")
+            logger.debug(f"[{self.session_id}] TTS already initialized, skipping")
             return
 
         provider = tts_config.type
         model = getattr(tts_config, 'model', 'default')
-        logger.info(f"[{self.session_id}] 初始化 TTS: {provider}/{model}")
+        logger.info(f"[{self.session_id}] Initializing TTS: {provider}/{model}")
 
         self.tts_engine = TTSFactory.create(
             provider=provider,
@@ -174,41 +174,41 @@ class ServiceContext:
         )
 
     async def init_llm(self, agent_config: AgentConfig, persona_config: PersonaConfig, app_config: AppConfig = None) -> None:
-        """初始化 LLM 服务"""
+        """Initialize LLM service"""
         if self.llm_engine is not None:
-            logger.debug(f"[{self.session_id}] LLM 已初始化，跳过")
+            logger.debug(f"[{self.session_id}] LLM already initialized, skipping")
             return
 
         llm_config = agent_config.llm_config
-        logger.info(f"[{self.session_id}] 初始化 LLM: {llm_config.type}/{llm_config.model}")
+        logger.info(f"[{self.session_id}] Initializing LLM: {llm_config.type}/{llm_config.model}")
 
         if app_config:
             live2d_prompt = self._get_live2d_prompt()
             system_prompt = app_config.get_system_prompt(live2d_prompt=live2d_prompt)
             persona_name = app_config.persona
-            logger.info(f"[{self.session_id}] 使用人设: {persona_name}")
+            logger.info(f"[{self.session_id}] Using persona: {persona_name}")
         else:
             system_prompt = self._build_system_prompt(agent_config, persona_config)
 
         self.llm_engine = LLMFactory.create_from_config(config=llm_config, system_prompt=system_prompt)
-        logger.info(f"[{self.session_id}] LLM 创建完成: {type(self.llm_engine).__name__}")
+        logger.info(f"[{self.session_id}] LLM created: {type(self.llm_engine).__name__}")
 
     async def init_local_llm(self, llm_config, app_config: AppConfig = None) -> None:
-        """初始化本地 LLM 服务（无 persona）"""
+        """Initialize local LLM service (no persona)"""
         if self.local_llm_engine is not None:
-            logger.debug(f"[{self.session_id}] Local LLM 已初始化，跳过")
+            logger.debug(f"[{self.session_id}] Local LLM already initialized, skipping")
             return
 
         if llm_config is None:
-            logger.info(f"[{self.session_id}] Local LLM 配置为空，跳过初始化")
+            logger.info(f"[{self.session_id}] Local LLM config is empty, skipping initialization")
             return
 
-        logger.info(f"[{self.session_id}] 初始化本地LLM: {llm_config.type}/{llm_config.model}")
+        logger.info(f"[{self.session_id}] Initializing local LLM: {llm_config.type}/{llm_config.model}")
         self.local_llm_engine = LLMFactory.create_from_config(config=llm_config, system_prompt="")
-        logger.info(f"[{self.session_id}] 本地LLM创建完成: {type(self.local_llm_engine).__name__}")
+        logger.info(f"[{self.session_id}] Local LLM created: {type(self.local_llm_engine).__name__}")
 
     def _get_live2d_prompt(self) -> Optional[str]:
-        """获取 Live2D 表情提示词"""
+        """Get Live2D emotion prompt"""
         try:
             from anima.config.live2d import get_live2d_config
             from anima.avatar.prompts import EmotionPromptBuilder
@@ -220,59 +220,59 @@ class ServiceContext:
             builder = EmotionPromptBuilder.from_config({"valid_emotions": live2d_config.valid_emotions})
             return builder.build_prompt()
         except Exception as e:
-            logger.warning(f"获取 Live2D 提示词失败: {e}")
+            logger.warning(f"Failed to get Live2D prompt: {e}")
             return None
 
     def _build_system_prompt(self, agent_config: AgentConfig, persona_config: PersonaConfig) -> str:
-        """构建系统提示词（备用方法）"""
+        """Build system prompt (fallback method)"""
         return persona_config.build_system_prompt()
 
     async def init_vad(self, vad_config: VADConfig) -> None:
-        """初始化 VAD 服务"""
+        """Initialize VAD service"""
         if self.vad_engine is not None:
-            logger.debug(f"[{self.session_id}] VAD 已初始化，跳过")
+            logger.debug(f"[{self.session_id}] VAD already initialized, skipping")
             return
 
         provider = vad_config.type
-        logger.info(f"[{self.session_id}] 正在初始化 VAD 引擎: {provider}")
+        logger.info(f"[{self.session_id}] Initializing VAD engine: {provider}")
 
         try:
             self.vad_engine = VADFactory.create_from_config(vad_config)
-            logger.info(f"[{self.session_id}] VAD 引擎创建成功: {type(self.vad_engine).__name__}")
+            logger.info(f"[{self.session_id}] VAD engine created: {type(self.vad_engine).__name__}")
 
             if hasattr(self.vad_engine, 'prob_threshold'):
-                logger.info(f"[{self.session_id}] VAD 配置: "
+                logger.info(f"[{self.session_id}] VAD config: "
                            f"prob_threshold={self.vad_engine.prob_threshold}, "
                            f"db_threshold={self.vad_engine.db_threshold}, "
                            f"required_hits={self.vad_engine.required_hits}, "
                            f"required_misses={self.vad_engine.required_misses}")
         except Exception as e:
-            logger.error(f"[{self.session_id}] VAD 引擎创建失败: {e}")
+            logger.error(f"[{self.session_id}] VAD engine creation failed: {e}")
             self.vad_engine = None
 
     async def init_audio_processor(self) -> None:
-        """初始化音频处理器"""
+        """Initialize audio processor"""
         if hasattr(self, 'audio_processor') and self.audio_processor is not None:
-            logger.debug(f"[{self.session_id}] AudioProcessor 已初始化，跳过")
+            logger.debug(f"[{self.session_id}] AudioProcessor already initialized, skipping")
             return
         if self.vad_engine is None:
-            logger.debug(f"[{self.session_id}] 没有 VAD 引擎，跳过音频处理器初始化")
+            logger.debug(f"[{self.session_id}] No VAD engine, skipping audio processor initialization")
             return
-        logger.debug(f"[{self.session_id}] 音频处理器将由 SessionManager 创建")
+        logger.debug(f"[{self.session_id}] Audio processor will be created by SessionManager")
 
     async def init_memory(self) -> None:
-        """初始化记忆系统"""
+        """Initialize memory system"""
         try:
             memory_config_path = Path(__file__).parent.parent.parent.parent / "config" / "features" / "memory.yaml"
             if not memory_config_path.exists():
-                logger.info(f"[{self.session_id}] 记忆系统配置文件不存在: {memory_config_path}")
+                logger.info(f"[{self.session_id}] Memory system config file not found: {memory_config_path}")
                 return
 
             with open(memory_config_path, 'r', encoding='utf-8') as f:
                 memory_config = yaml.safe_load(f)
 
             if not memory_config.get('memory', {}).get('enabled', False):
-                logger.info(f"[{self.session_id}] 记忆系统未启用")
+                logger.info(f"[{self.session_id}] Memory system not enabled")
                 return
 
             mem_cfg = memory_config['memory']
@@ -289,11 +289,11 @@ class ServiceContext:
             await self.memory_system.start()
             self.memory_system.sync()
 
-            logger.info(f"[{self.session_id}] 记忆系统初始化完成")
-            logger.info(f"[{self.session_id}] 工作目录: {config['workspace_dir']}")
+            logger.info(f"[{self.session_id}] Memory system initialized")
+            logger.info(f"[{self.session_id}] Workspace directory: {config['workspace_dir']}")
 
         except Exception as e:
-            logger.warning(f"[{self.session_id}] 记忆系统初始化失败: {e}")
+            logger.warning(f"[{self.session_id}] Memory system initialization failed: {e}")
             self.memory_system = None
 
     async def init_emotion_analyzer(self, config: AppConfig) -> None:

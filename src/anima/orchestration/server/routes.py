@@ -1,4 +1,4 @@
-"""WebSocket 路由定义 - 使用 LangGraph 编排器处理对话"""
+"""WebSocket route definitions - handle conversations using the LangGraph orchestrator"""
 
 import json
 import time
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 
 class RouteHandlers:
-    """路由处理器集合"""
+    """Collection of route handlers"""
 
     def __init__(
         self,
@@ -34,7 +34,7 @@ class RouteHandlers:
         self._setup_live2d_callback()
 
     def _setup_live2d_callback(self) -> None:
-        """设置 Live2D 动作执行回调"""
+        """Set up Live2D action execution callback"""
         async def execute_action(action):
             await self.broadcast_to_desktop_clients("live2d", "live2d.action", {
                 "action": action.action,
@@ -43,11 +43,10 @@ class RouteHandlers:
         self.live2d_manager.set_execute_callback(execute_action)
 
     def set_global_config(self, config) -> None:
-        """设置全局配置"""
-        self.global_config = config
+        """Set global config"""
 
     def set_user_settings(self, user_settings) -> None:
-        """设置用户设置"""
+        """Set user settings"""
         self.user_settings = user_settings
 
     def _make_send_callback(self, sid: str):
@@ -59,7 +58,7 @@ class RouteHandlers:
         return send_callback
 
     async def _get_or_create_orchestrator(self, sid: str):
-        """获取或创建 LangGraph 编排器"""
+        """Get or create LangGraph orchestrator"""
         from anima.config import AppConfig
         from anima.config.live2d import get_live2d_config
 
@@ -92,22 +91,22 @@ class RouteHandlers:
         event: str,
         data: dict
     ) -> None:
-        """广播消息到指定类型的桌面客户端"""
+        """Broadcast message to desktop clients of a specified type"""
         sids = self.desktop_manager.get_clients_by_type(client_type)
         for sid in sids:
             await self.sio.emit(event, data, to=sid)
 
-    # 连接事件
+    # Connection events
     async def on_connect(self, sid: str, environ: dict) -> None:
-        """客户端连接事件"""
+        """Client connection event"""
         client_type = environ.get("HTTP_USER_AGENT", "")
         is_electron = "electron" in client_type.lower()
 
         print(f"\n{'='*60}")
-        print(f"[OK] 客户端已连接: {sid}")
-        print(f"     类型: {'Electron' if is_electron else 'Web'}")
+        print(f"[OK] Client connected: {sid}")
+        print(f"     Type: {'Electron' if is_electron else 'Web'}")
         print(f"{'='*60}\n")
-        logger.info(f"客户端已连接: {sid} (类型: {'Electron' if is_electron else 'Web'})")
+        logger.info(f"Client connected: {sid} (Type: {'Electron' if is_electron else 'Web'})")
 
         await self.sio.save_session(sid, {
             'connected_at': time.time(),
@@ -115,7 +114,7 @@ class RouteHandlers:
         })
 
         await self.sio.emit('connection-established', {
-            'message': '连接成功',
+            'message': 'Connection successful',
             'sid': sid,
             'server_time': asyncio.get_event_loop().time()
         }, to=sid)
@@ -125,19 +124,19 @@ class RouteHandlers:
                 'type': 'control',
                 'text': 'start-mic'
             }, to=sid)
-            print(f"[OK] 已发送 start-mic 信号给客户端 {sid}")
+            print(f"[OK] Sent start-mic signal to client {sid}")
 
     async def on_disconnect(self, sid: str) -> None:
-        """客户端断开事件"""
-        logger.info(f"客户端已断开: {sid}")
+        """Client disconnect event"""
+        logger.info(f"Client disconnected: {sid}")
         self.desktop_manager.unregister(sid)
         await self.session_manager.cleanup_session(sid)
 
-    # 对话事件
+    # Conversation events
     async def on_text_input(self, sid: str, data: dict) -> None:
-        """处理文本输入"""
+        """Handle text input"""
         text = data.get('text', '')
-        logger.info(f"[{sid}] 收到文本输入: {text}")
+        logger.info(f"[{sid}] Received text input: {text}")
 
         if not text:
             return
@@ -151,18 +150,18 @@ class RouteHandlers:
                 channel_id=sid,
             )
         except Exception as e:
-            logger.error(f"[{sid}] 处理文本输入时出错: {e}")
+            logger.error(f"[{sid}] Error processing text input: {e}")
             await self.sio.emit('error', {
                 'type': 'error',
                 'message': str(e)
             }, to=sid)
 
     async def on_raw_audio_data(self, sid: str, data: dict) -> None:
-        """处理原始音频数据用于 VAD 检测"""
+        """Handle raw audio data for VAD detection"""
         audio_chunk = data.get('audio', [])
 
         if not audio_chunk:
-            logger.debug(f"[{sid}] 收到空音频数据")
+            logger.debug(f"[{sid}] Received empty audio data")
             return
 
         if not hasattr(self, '_raw_audio_first_sids'):
@@ -170,7 +169,7 @@ class RouteHandlers:
 
         if sid not in self._raw_audio_first_sids:
             self._raw_audio_first_sids.add(sid)
-            logger.info(f"[{sid}] [RAW_AUDIO] 开始接收音频数据")
+            logger.info(f"[{sid}] [RAW_AUDIO] Starting to receive audio data")
 
         try:
             await self._get_or_create_orchestrator(sid)
@@ -179,14 +178,14 @@ class RouteHandlers:
             if processor:
                 await processor.process_chunk(audio_chunk)
             else:
-                logger.error(f"[{sid}] 音频处理器未创建")
+                logger.error(f"[{sid}] Audio processor not created")
 
         except Exception as e:
-            logger.error(f"[{sid}] VAD 处理出错: {e}", exc_info=True)
+            logger.error(f"[{sid}] VAD processing error: {e}", exc_info=True)
 
     async def on_mic_audio_end(self, sid: str, data: dict) -> None:
-        """音频输入结束事件"""
-        logger.info(f"[{sid}] 音频输入结束")
+        """Audio input end event"""
+        logger.info(f"[{sid}] Audio input ended")
 
         try:
             processor = self.session_manager.get_audio_processor(sid)
@@ -194,16 +193,16 @@ class RouteHandlers:
                 await processor.process_end()
 
         except Exception as e:
-            logger.error(f"[{sid}] 处理音频时出错: {e}")
+            logger.error(f"[{sid}] Error processing audio: {e}")
             await self.sio.emit('error', {
                 'type': 'error',
                 'message': str(e)
             }, to=sid)
 
     async def on_interrupt_signal(self, sid: str, data: dict) -> None:
-        """打断信号 - 停止 LLM 生成和音频播放"""
+        """Interrupt signal - stop LLM generation and audio playback"""
         heard_response = data.get('text', '')
-        logger.info(f"[{sid}] 收到打断信号，已听到的回复: {heard_response[:50] if heard_response else '(空)'}...")
+        logger.info(f"[{sid}] Received interrupt signal, heard response: {heard_response[:50] if heard_response else '(empty)'}...")
 
         from anima.orchestration.graph.interrupt_handler import get_interrupt_handler
         interrupt_handler = get_interrupt_handler()
@@ -216,21 +215,15 @@ class RouteHandlers:
             'text': 'interrupted'
         }, to=sid)
 
-    # 历史记录事件
+    # History events
     async def on_fetch_history_list(self, sid: str, data: dict) -> None:
-        """获取聊天历史列表"""
-        logger.info(f"[{sid}] 请求聊天历史列表")
-        histories = []
-
-        await self.sio.emit('history-list', {
-            'type': 'history-list',
-            'histories': histories
-        }, to=sid)
+        """Fetch chat history list"""
+        logger.info(f"[{sid}] Requested chat history list")
 
     async def on_fetch_history(self, sid: str, data: dict) -> None:
-        """获取特定历史记录"""
+        """Fetch specific history record"""
         history_uid = data.get('history_uid')
-        logger.info(f"[{sid}] 请求历史记录: {history_uid}")
+        logger.info(f"[{sid}] Requested history: {history_uid}")
         messages = []
 
         await self.sio.emit('history-data', {
@@ -239,32 +232,32 @@ class RouteHandlers:
         }, to=sid)
 
     async def on_clear_history(self, sid: str, data: dict) -> None:
-        """清空对话历史"""
-        logger.info(f"[{sid}] 清空对话历史")
+        """Clear conversation history"""
+        logger.info(f"[{sid}] Clearing conversation history")
 
         ctx = self.session_manager.get_context(sid)
         if ctx and ctx.llm_engine:
             ctx.llm_engine.clear_history()
-            logger.info(f"[{sid}] 对话历史已清空")
+            logger.info(f"[{sid}] Conversation history cleared")
 
             await self.sio.emit('history-cleared', {
                 'type': 'history-cleared'
             }, to=sid)
 
     async def on_create_new_history(self, sid: str, data: dict) -> None:
-        """创建新的对话历史"""
-        logger.info(f"[{sid}] 创建新对话历史")
+        """Create new conversation history"""
+        logger.info(f"[{sid}] Creating new conversation history")
 
         await self.sio.emit('new-history-created', {
             'type': 'new-history-created',
             'history_uid': 'new_history_001'
         }, to=sid)
 
-    # 配置事件
+    # Config events
     async def on_switch_config(self, sid: str, data: dict) -> None:
-        """切换配置"""
+        """Switch config"""
         config_name = data.get('file', 'default')
-        logger.info(f"[{sid}] 切换配置: {config_name}")
+        logger.info(f"[{sid}] Switching config: {config_name}")
 
         try:
             if sid in self.session_manager.orchestrators:
@@ -272,22 +265,22 @@ class RouteHandlers:
 
             await self.sio.emit('config-switched', {
                 'type': 'config-switched',
-                'message': f'已切换到配置: {config_name}'
+                'message': f'Switched to config: {config_name}'
             }, to=sid)
 
         except Exception as e:
-            logger.error(f"[{sid}] 切换配置时出错: {e}")
+            logger.error(f"[{sid}] Error switching config: {e}")
             await self.sio.emit('error', {
                 'type': 'error',
                 'message': str(e)
             }, to=sid)
 
     async def on_set_log_level(self, sid: str, data: dict) -> None:
-        """设置后端日志级别"""
+        """Set backend log level"""
         from anima.utils.logger_manager import logger_manager
 
         level = data.get('level', 'INFO').upper()
-        logger.info(f"[{sid}] 请求设置日志级别为: {level}")
+        logger.info(f"[{sid}] Requested to set log level to: {level}")
 
         success = logger_manager.set_level(level)
 
@@ -298,13 +291,13 @@ class RouteHandlers:
             'type': 'log_level_changed',
             'success': success,
             'level': logger_manager.get_level(),
-            'message': f'日志级别已设置为 {logger_manager.get_level()}' if success else '设置失败'
+            'message': f'Log level set to {logger_manager.get_level()}' if success else 'Setting failed'
         }, to=sid)
 
-    # 心跳检测
+    # Heartbeat
     async def on_get_config(self, sid: str, data: dict) -> None:
-        """返回当前配置（脱敏）给前端"""
-        logger.info(f"[{sid}] 请求配置数据")
+        """Return current config (sanitized) to frontend"""
+        logger.info(f"[{sid}] Requested config data")
         from anima.config.app import AppConfig
         from anima.config.live2d import Live2DConfig
         import os
@@ -356,12 +349,12 @@ class RouteHandlers:
         await self.sio.emit('config_data', config_data, to=sid)
 
     async def on_heartbeat(self, sid: str, data: dict) -> None:
-        """心跳检测"""
+        """Heartbeat check"""
         await self.sio.emit('heartbeat-ack', {}, to=sid)
 
-    # 桌面客户端事件
+    # Desktop client events
     async def on_desktop_register(self, sid: str, data: dict) -> None:
-        """Electron 桌面客户端注册"""
+        """Electron desktop client registration"""
         client_type = data.get('client_type', 'web')
 
         if not self.desktop_manager.register(sid, client_type):
@@ -377,7 +370,7 @@ class RouteHandlers:
         }, to=sid)
 
     async def on_desktop_live2d_action(self, sid: str, data: dict) -> None:
-        """处理来自 Electron 的 Live2D 动作请求"""
+        """Handle Live2D action request from Electron"""
         action_data = data.get('action', {})
         action_id = data.get('action_id', '')
         queue_policy = data.get('queue_policy', 'append')
@@ -393,9 +386,9 @@ class RouteHandlers:
         await self.sio.emit('desktop.action_queued', result, to=sid)
 
     async def on_desktop_chat_message(self, sid: str, data: dict) -> None:
-        """处理来自 Electron Chat 窗口的聊天消息"""
+        """Handle chat message from Electron Chat window"""
         text = data.get('text', '')
-        logger.info(f"[Desktop][Chat] 收到消息: {text[:50]}...")
+        logger.info(f"[Desktop][Chat] Received message: {text[:50]}...")
 
         try:
             orchestrator = await self._get_or_create_orchestrator(sid)
@@ -407,33 +400,33 @@ class RouteHandlers:
             )
 
         except Exception as e:
-            logger.error(f"[{sid}] 处理桌面聊天消息时出错: {e}")
+            logger.error(f"[{sid}] Error processing desktop chat message: {e}")
             await self.sio.emit('error', {
                 'type': 'error',
                 'message': str(e)
             }, to=sid)
 
     async def on_desktop_voice_start(self, sid: str, data: dict) -> None:
-        """开始语音输入"""
-        logger.info(f"[Desktop][Chat] 语音输入开始")
+        """Start voice input"""
+        logger.info(f"[Desktop][Chat] Voice input started")
         await self.sio.emit('desktop.voice_started', {}, to=sid)
 
     async def on_desktop_voice_stop(self, sid: str, data: dict) -> None:
-        """停止语音输入"""
-        logger.info(f"[Desktop][Chat] 语音输入停止")
+        """Stop voice input"""
+        logger.info(f"[Desktop][Chat] Voice input stopped")
         await self.sio.emit('desktop.voice_stopped', {}, to=sid)
 
-    # 记忆整理事件
+    # Memory organization events
     async def on_memory_organize(self, sid: str, data: dict) -> None:
-        """触发记忆自动整理"""
-        logger.info(f"[{sid}] 收到记忆整理请求")
+        """Trigger memory organization"""
+        logger.info(f"[{sid}] Received memory organization request")
 
         try:
             ctx = self.session_manager.get_context(sid)
             if not ctx or not ctx.memory_system:
                 await self.sio.emit('memory.organize.result', {
                     'type': 'error',
-                    'message': '记忆系统未初始化'
+                    'message': 'Memory system not initialized'
                 }, to=sid)
                 return
 
@@ -441,7 +434,7 @@ class RouteHandlers:
             if not memory_system._wiki_manager:
                 await self.sio.emit('memory.organize.result', {
                     'type': 'error',
-                    'message': 'Wiki 管理器未初始化'
+                    'message': 'Wiki manager not initialized'
                 }, to=sid)
                 return
 
@@ -475,14 +468,14 @@ class RouteHandlers:
             }, to=sid)
 
             logger.info(
-                f"[{sid}] 记忆整理完成: "
+                f"[{sid}] Memory organization complete: "
                 f"merges={result.get('merges', 0)}, "
                 f"synthesis={result.get('synthesis', 0)}, "
                 f"updates={result.get('updates', 0)}"
             )
 
         except Exception as e:
-            logger.error(f"[{sid}] 记忆整理失败: {e}", exc_info=True)
+            logger.error(f"[{sid}] Memory organization failed: {e}", exc_info=True)
             await self.sio.emit('memory.organize.result', {
                 'type': 'error',
                 'message': str(e),
@@ -495,7 +488,7 @@ def register_routes(
     desktop_manager: Optional[DesktopClientManager] = None,
     live2d_manager: Optional[Live2DManager] = None
 ) -> RouteHandlers:
-    """注册所有路由到 Socket.IO 服务器"""
+    """Register all routes to the Socket.IO server"""
     handlers = RouteHandlers(
         sio,
         session_manager,
@@ -503,41 +496,41 @@ def register_routes(
         live2d_manager
     )
 
-    # 连接事件
+    # Connection events
     sio.on('connect', handlers.on_connect)
     sio.on('disconnect', handlers.on_disconnect)
 
-    # 对话事件
+    # Conversation events
     sio.on('text_input', handlers.on_text_input)
     sio.on('raw_audio_data', handlers.on_raw_audio_data)
     sio.on('mic_audio_end', handlers.on_mic_audio_end)
     sio.on('interrupt_signal', handlers.on_interrupt_signal)
 
-    # 历史记录事件
+    # History events
     sio.on('fetch_history_list', handlers.on_fetch_history_list)
     sio.on('fetch_history', handlers.on_fetch_history)
     sio.on('clear_history', handlers.on_clear_history)
     sio.on('create_new_history', handlers.on_create_new_history)
 
-    # 配置事件
+    # Config events
     sio.on('switch_config', handlers.on_switch_config)
     sio.on('set_log_level', handlers.on_set_log_level)
 
-    # 配置事件（读取）
+    # Config events (read)
     sio.on('get_config', handlers.on_get_config)
 
-    # 心跳检测
+    # Heartbeat
     sio.on('heartbeat', handlers.on_heartbeat)
 
-    # 桌面客户端事件
+    # Desktop client events
     sio.on('desktop_register', handlers.on_desktop_register)
     sio.on('desktop_live2d_action', handlers.on_desktop_live2d_action)
     sio.on('desktop_chat_message', handlers.on_desktop_chat_message)
     sio.on('desktop_voice_start', handlers.on_desktop_voice_start)
     sio.on('desktop_voice_stop', handlers.on_desktop_voice_stop)
 
-    # 记忆整理事件
+    # Memory organization events
     sio.on('memory_organize', handlers.on_memory_organize)
 
-    logger.info("WebSocket 路由已注册")
+    logger.info("WebSocket routes registered")
     return handlers
