@@ -53,6 +53,11 @@ class StatsCallbackHandler(BaseCallbackHandler):
         self, serialized: Dict[str, Any], inputs: Dict[str, Any], *,
         run_id: Any, parent_run_id: Any = None, **kwargs: Any
     ) -> None:
+        # Guard: LangGraph internal chains may pass None serialized/inputs
+        if not serialized or not isinstance(serialized, dict):
+            return
+        if inputs is None:
+            inputs = {}
         name = serialized.get("name") or kwargs.get("name") or ""
         if name not in KNOWN_NODES:
             return

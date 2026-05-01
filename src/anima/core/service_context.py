@@ -309,7 +309,7 @@ class ServiceContext:
 
             self.emotion_analyzer = EmotionAnalyzerFactory.create(
                 name="keyword_analyzer",
-                valid_emotions=live2d_config.valid_emotions
+                config={"valid_emotions": live2d_config.valid_emotions}
             )
             logger.info(f"[{self.session_id}] 表情分析器初始化完成")
 
