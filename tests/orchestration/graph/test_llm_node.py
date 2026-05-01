@@ -1,0 +1,256 @@
+"""Tests for LLM reasoning node — tool-calling and streaming paths."""
+
+import pytest
+from unittest.mock import AsyncMock, MagicMock
+from langgraph.types import RunnableConfig
+
+from anima.orchestration.graph.state import create_initial_state
+
+
+def _make_config(service_context=None, enable_tools=False, chat_model=None):
+    """Helper to build a RunnableConfig with test overrides."""
+    configurable = {}
+    if service_context:
+        configurable["service_context"] = service_context
+    if enable_tools:
+        configurable["enable_tools"] = True
+    if chat_model:
+        configurable["chat_model"] = chat_model
+    return RunnableConfig(configurable=configurable)
+
+
+# ── Empty / error inputs ──────────────────────────────────────────
+
+
+class TestLLMNodeErrors:
+    """Edge cases and invalid inputs."""
+
+    @pytest.mark.asyncio
+    async def test_empty_user_text_returns_error(self):
+        """Empty user_text should immediately return an error without calling LLM."""
+        from anima.orchestration.graph.llm_node import llm_node
+
+        state = create_initial_state(
+            session_id="test-session",
+            user_text="",
+        )
+        result = await llm_node(state)
+        assert result.get("error") is not None
+        assert "无用户文本" in result["error"]
+
+    @pytest.mark.asyncio
+    async def test_no_service_context_returns_error(self):
+        """Missing service_context in config returns error."""
+        from anima.orchestration.graph.llm_node import llm_node
+
+        state = create_initial_state(
+            session_id="test-session",
+            user_text="你好",
+        )
+        # Config without service_context
+        config = RunnableConfig(configurable={})
+        result = await llm_node(state, config)
+        assert result.get("error") is not None
+        assert "service_context" in result["error"]
+
+    @pytest.mark.asyncio
+    async def test_no_llm_engine_returns_error(self, mock_service_context):
+        """Service context without llm_engine returns error."""
+        from anima.orchestration.graph.llm_node import llm_node
+
+        ctx = MagicMock()
+        ctx.llm_engine = None
+        ctx.config = None
+
+        state = create_initial_state(
+            session_id="test-session",
+            user_text="你好",
+        )
+        config = _make_config(service_context=ctx)
+        result = await llm_node(state, config)
+        assert result.get("error") is not None
+        assert "LLM 引擎未初始化" in result["error"]
+
+
+# ── Streaming path (no tools) ─────────────────────────────────────
+
+
+class TestLLMNodeWithoutTools:
+    """Normal streaming response, no tool calling."""
+
+    @pytest.mark.asyncio
+    async def test_streaming_returns_response_text(self, mock_service_context):
+        """llm_node returns response_text from streaming LLM."""
+        from anima.orchestration.graph.llm_node import llm_node
+
+        async def _chat_stream(user_text, system_prompt=""):
+            yield "Hello"
+            yield " world"
+
+        mock_service_context.llm_engine.chat_stream = _chat_stream
+
+        state = create_initial_state(
+            session_id="test-session",
+            user_text="Hi there",
+            system_prompt="You are a helpful assistant.",
+        )
+        config = _make_config(service_context=mock_service_context)
+        result = await llm_node(state, config)
+
+        assert result.get("response_text") == "Hello world"
+        assert result["response_chunks"] == ["Hello", " world"]
+        assert result["tool_calls"] is None
+
+    @pytest.mark.asyncio
+    async def test_streaming_empty_response(self, mock_service_context):
+        """Empty stream should result in empty response_text."""
+        from anima.orchestration.graph.llm_node import llm_node
+
+        async def _chat_stream(user_text, system_prompt=""):
+            if False:
+                yield
+            return
+
+        mock_service_context.llm_engine.chat_stream = _chat_stream
+
+        state = create_initial_state(
+            session_id="test-session",
+            user_text="hello",
+        )
+        config = _make_config(service_context=mock_service_context)
+        result = await llm_node(state, config)
+
+        assert result.get("response_text") == ""
+        assert result["response_chunks"] == []
+        assert result["messages"] is not None
+
+    @pytest.mark.asyncio
+    async def test_streaming_injects_system_prompt(self, mock_service_context):
+        """System prompt from state should be passed to LLM."""
+        from anima.orchestration.graph.llm_node import llm_node
+
+        captured_system_prompt = None
+
+        async def _chat_stream(user_text, system_prompt=""):
+            nonlocal captured_system_prompt
+            captured_system_prompt = system_prompt
+            yield "response"
+
+        mock_service_context.llm_engine.chat_stream = _chat_stream
+
+        state = create_initial_state(
+            session_id="test-session",
+            user_text="hello",
+            system_prompt="Be funny",
+        )
+        config = _make_config(service_context=mock_service_context)
+        await llm_node(state, config)
+
+        # Verify system_prompt was passed to the LLM
+        assert captured_system_prompt is not None
+        assert "Be funny" in captured_system_prompt
+
+
+# ── Tool-calling path ─────────────────────────────────────────────
+
+
+class TestLLMNodeWithTools:
+    """Tool-augmented LLM responses."""
+
+    @pytest.mark.asyncio
+    async def test_tool_call_returns_tool_calls(self, mock_service_context):
+        """When LLM returns tool_calls, they should be in the result."""
+        from anima.orchestration.graph.llm_node import llm_node
+
+        mock_chat_model = MagicMock()
+        mock_chat_model.bound_tools = [
+            MagicMock(name="web_search", description="Search the web"),
+            MagicMock(name="calculator", description="Do math"),
+        ]
+
+        mock_service_context.llm_engine.chat_with_tools = AsyncMock(
+            return_value={
+                "content": "Let me search for that",
+                "tool_calls": [
+                    {"id": "call_1", "name": "web_search", "args": {"query": "weather"}},
+                ],
+            }
+        )
+
+        state = create_initial_state(
+            session_id="test-session",
+            user_text="What is the weather?",
+        )
+        config = _make_config(
+            service_context=mock_service_context,
+            enable_tools=True,
+            chat_model=mock_chat_model,
+        )
+        result = await llm_node(state, config)
+
+        assert result["tool_calls"] is not None
+        assert len(result["tool_calls"]) == 1
+        assert result["tool_calls"][0]["name"] == "web_search"
+        assert result["tool_calls"][0]["args"]["query"] == "weather"
+
+    @pytest.mark.asyncio
+    async def test_tool_call_without_tools_returns_text(self, mock_service_context):
+        """When LLM returns content without tool_calls, response_text is set."""
+        from anima.orchestration.graph.llm_node import llm_node
+
+        mock_chat_model = MagicMock()
+        mock_chat_model.bound_tools = []
+
+        mock_service_context.llm_engine.chat_with_tools = AsyncMock(
+            return_value={
+                "content": "The weather is sunny today!",
+            }
+        )
+
+        state = create_initial_state(
+            session_id="test-session",
+            user_text="What is the weather?",
+        )
+        config = _make_config(
+            service_context=mock_service_context,
+            enable_tools=True,
+            chat_model=mock_chat_model,
+        )
+        result = await llm_node(state, config)
+
+        assert result["tool_calls"] is None
+        assert result["response_text"] == "The weather is sunny today!"
+
+    @pytest.mark.asyncio
+    async def test_tool_call_error_falls_back_to_streaming(self, mock_service_context):
+        """When chat_with_tools raises, it should fall back to streaming path."""
+        from anima.orchestration.graph.llm_node import llm_node
+
+        mock_chat_model = MagicMock()
+        mock_chat_model.bound_tools = [MagicMock(name="web_search")]
+
+        # Tool path raises
+        mock_service_context.llm_engine.chat_with_tools = AsyncMock(
+            side_effect=Exception("API error")
+        )
+
+        # Streaming path works
+        async def _chat_stream(user_text, system_prompt=""):
+            yield "Fallback response"
+
+        mock_service_context.llm_engine.chat_stream = _chat_stream
+
+        state = create_initial_state(
+            session_id="test-session",
+            user_text="What is the weather?",
+        )
+        config = _make_config(
+            service_context=mock_service_context,
+            enable_tools=True,
+            chat_model=mock_chat_model,
+        )
+        # Should not raise — falls back to streaming
+        result = await llm_node(state, config)
+
+        assert result["tool_calls"] is None
+        assert result["response_text"] == "Fallback response"
