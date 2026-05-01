@@ -61,9 +61,9 @@ def mock_vad():
 def mock_socketio():
     """Mock Socket.IO server for testing event emission."""
     mock = MagicMock()
-    mock.emit = MagicMock()
-    mock.enter_room = MagicMock()
-    mock.leave_room = MagicMock()
+    mock.emit = AsyncMock()
+    mock.enter_room = AsyncMock()
+    mock.leave_room = AsyncMock()
     return mock
 
 
