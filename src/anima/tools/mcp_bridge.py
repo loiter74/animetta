@@ -80,7 +80,7 @@ class MCPClient:
             return True
 
         except Exception as e:
-            logger.error(f"[MCP:{self.name}] 连接失败: {e}")
+            logger.warning(f"[MCP:{self.name}] 连接失败 (服务可能不可用): {e}")
             await self.disconnect()
             return False
 
