@@ -1,6 +1,6 @@
 """
-ChatTTS 实现 - 开源对话式语音合成
-模型存放在本地磁盘，启动时加载到显存
+ChatTTS implementation - open-source conversational speech synthesis
+Model stored on local disk, loaded to GPU memory at startup
 """
 
 from typing import Union, Optional
@@ -19,9 +19,9 @@ from anima.config.providers.tts.chattts import ChatTTSConfig
 @ProviderRegistry.register_service("tts", "chattts")
 class ChatTTSTTS(TTSInterface):
     """
-    ChatTTS 实现
-    专为对话场景设计的语音合成，支持中英文
-    模型从本地磁盘加载到 GPU 显存推理
+    ChatTTS implementation
+    Speech synthesis designed for dialogue scenarios, supports Chinese and English
+    Model loaded from local disk to GPU memory for inference
     """
 
     SAMPLE_RATE = 24000
@@ -37,16 +37,16 @@ class ChatTTSTTS(TTSInterface):
         top_k: int = 20,
     ):
         """
-        初始化 ChatTTS
+        Initialize ChatTTS
 
         Args:
-            model_path: 模型文件路径（如 E:/models/ChatTTS）
-            device: 推理设备 cuda / cpu
-            compile: 是否启用 torch.compile（Windows 建议 False）
-            speaker_seed: 说话人音色种子，固定后声音一致
-            temperature: 生成温度
-            top_p: nucleus sampling
-            top_k: top-k sampling
+            model_path: Model file path (e.g. E:/models/ChatTTS)
+            device: Inference device cuda / cpu
+            compile: Whether to enable torch.compile (Windows: recommended False)
+            speaker_seed: Speaker voice seed, consistent voice when fixed
+            temperature: Generation temperature
+            top_p: Nucleus sampling
+            top_k: Top-k sampling
         """
         self.model_path = model_path
         self.device = device
@@ -60,7 +60,7 @@ class ChatTTSTTS(TTSInterface):
         self._speaker_embedding = None
 
     def _ensure_loaded(self):
-        """懒加载：首次调用时将模型从磁盘加载到显存"""
+        """Lazy-load: loads model from disk to GPU memory on first call"""
         if self._chat is not None:
             return
 
@@ -68,12 +68,12 @@ class ChatTTSTTS(TTSInterface):
             import ChatTTS
             import torch
         except ImportError as e:
-            logger.error("未安装 ChatTTS，请运行: pip install ChatTTS")
+            logger.error("ChatTTS not installed, please run: pip install ChatTTS")
             raise ImportError(
                 "ChatTTS 未安装，请运行: pip install ChatTTS"
             ) from e
 
-        logger.info(f"正在从 {self.model_path} 加载 ChatTTS 模型到 {self.device}...")
+        logger.info(f"Loading ChatTTS model from {self.model_path} to {self.device}...")
 
         self._chat = ChatTTS.Chat()
         self._chat.load(
@@ -83,32 +83,46 @@ class ChatTTSTTS(TTSInterface):
             compile=self.compile,
         )
 
-        # 固定说话人音色，确保每次生成的声音一致
+        # Fix speaker voice to ensure consistent output each time
         if self.speaker_seed is not None:
             import torch
             torch.manual_seed(self.speaker_seed)
             self._speaker_embedding = self._chat.sample_random_speaker()
-            logger.info(f"已固定说话人音色 (seed={self.speaker_seed})")
+            logger.info(f"Speaker voice fixed (seed={self.speaker_seed})")
 
-        logger.info("ChatTTS 模型加载完成")
+        logger.info("ChatTTS model loaded successfully")
+
+    async def preload(self) -> None:
+        """Preload the ChatTTS model from disk to GPU (idempotent)"""
+        if self._chat is not None:
+            logger.debug(f"ChatTTS model already loaded, skipping preload")
+            return
+
+        logger.info(f"Preloading ChatTTS model from {self.model_path}...")
+
+        import asyncio
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, self._ensure_loaded)
+
+        logger.info(f"ChatTTS model preloaded successfully")
 
     @staticmethod
     def _clean_text(text: str) -> str:
         """
-        清洗文本，只保留 ChatTTS 能处理的字符
-        ChatTTS 对标点非常敏感，只支持很有限的标点符号
+        Clean text, keep only characters ChatTTS can handle
+        ChatTTS is very sensitive to punctuation, only supports a limited set
         """
         import re
 
-        # 移除 emoji（修复正则表达式范围错误）
-        # 注意：范围必须是递增的，否则会匹配所有字符
+        # Remove emoji (fixed regex range error)
+        # Note: ranges must be ascending, otherwise all characters will match
         emoji_ranges = [
             '\U0001F600-\U0001F64F',  # Emoticons
             '\U0001F300-\U0001F5FF',  # Symbols & Pictographs
             '\U0001F680-\U0001F6FF',  # Transport & Map
             '\U0001F1E0-\U0001F1FF',  # Flags (Regional Indicator Symbols)
             '\U00002702-\U000027B0',  # Dingbats
-            '\U000024C2-\U000025FF',  # Enclosed characters (修复范围)
+            '\U000024C2-\U000025FF',  # Enclosed characters (fixed range)
             '\U00002300-\U000023FF',  # Miscellaneous Technical
             '\U00002B50-\U00002BFF',  # Misc Symbols and Arrows
             '\U0000FE00-\U0000FE0F',  # Variation Selectors
@@ -119,29 +133,29 @@ class ChatTTSTTS(TTSInterface):
         emoji_pattern = re.compile('[' + ''.join(emoji_ranges) + ']+', flags=re.UNICODE)
         text = emoji_pattern.sub('', text)
 
-        # 句末标点 -> 逗号
+        # Sentence-ending punctuation -> comma
         for char in ['。', '！', '？', '!', '?', '；', ';']:
             text = text.replace(char, '，')
 
-        # 移除所有其他标点（使用字符循环避免正则表达式编码问题）
+        # Remove all other punctuation (use character loop to avoid regex encoding issues)
         punctuation_to_remove = '：:「」『』""''""（）()[]【】《》~——…·•'
         for char in punctuation_to_remove:
             text = text.replace(char, '')
 
-        # 去掉多余逗号，只修剪首尾的逗号
+        # Remove extra commas, only trim leading/trailing commas
         while '，，' in text:
             text = text.replace('，，', '，')
-        # 删除首尾的逗号（全角和半角）
+        # Delete leading/trailing commas (full-width and half-width)
         text = text.strip('，')
         text = text.strip(',')
 
-        # 去掉多余空白
+        # Remove extra whitespace
         text = re.sub(r'\s+', ' ', text).strip()
 
         return text
 
     def _build_params(self):
-        """构建推理参数"""
+        """Build inference parameters"""
         import ChatTTS
 
         params = ChatTTS.Chat.InferCodeParams(
@@ -153,16 +167,16 @@ class ChatTTSTTS(TTSInterface):
         return params
 
     def _wav_to_bytes(self, wav_array: np.ndarray) -> bytes:
-        """将 numpy 音频数组转为 WAV 格式字节流"""
+        """Convert numpy audio array to WAV format byte stream"""
         import struct
 
-        # 归一化并转 int16
+        # Normalize and convert to int16
         if wav_array.dtype != np.int16:
-            # 裁剪到 [-1, 1] 防止溢出
+            # Clip to [-1, 1] to prevent overflow
             wav_array = np.clip(wav_array, -1.0, 1.0)
             wav_array = (wav_array * 32767).astype(np.int16)
 
-        # 构造 WAV 文件头
+        # Build WAV file header
         num_samples = len(wav_array)
         data_size = num_samples * 2  # int16 = 2 bytes
         channels = 1
@@ -197,25 +211,25 @@ class ChatTTSTTS(TTSInterface):
         **kwargs
     ) -> Union[bytes, str]:
         """
-        将文本合成为语音
+        Synthesize text to speech
 
         Args:
-            text: 要合成的文本
-            output_path: 输出文件路径（可选）
-            voice: 预留参数，ChatTTS 通过 speaker_seed 控制音色
-            **kwargs: 额外参数
+            text: Text to synthesize
+            output_path: Output file path (optional)
+            voice: Reserved parameter, ChatTTS uses speaker_seed for voice control
+            **kwargs: Additional parameters
 
         Returns:
-            Union[bytes, str]: 如果指定了 output_path，返回文件路径字符串
-                               否则返回 WAV 音频字节数据
+            Union[bytes, str]: If output_path is specified, returns the file path string
+                               Otherwise returns WAV audio byte data
         """
-        # 确保模型已加载
+        # Ensure model is loaded
         self._ensure_loaded()
 
-        # 清洗文本：全角标点、emoji 等 ChatTTS 不支持的字符
+        # Clean text: full-width punctuation, emoji, etc. that ChatTTS does not support
         cleaned_text = self._clean_text(text)
         if not cleaned_text:
-            logger.warning(f"ChatTTS 文本清洗后为空，原文: {text}")
+            logger.warning(f"ChatTTS text empty after cleaning, original: {text}")
             silence = np.zeros(self.SAMPLE_RATE, dtype=np.float32)
             audio_bytes = self._wav_to_bytes(silence)
             temp_file = tempfile.mktemp(suffix=".wav")
@@ -223,12 +237,12 @@ class ChatTTSTTS(TTSInterface):
                 f.write(audio_bytes)
             return temp_file
 
-        logger.debug(f"ChatTTS 清洗后文本: {cleaned_text}")
+        logger.debug(f"ChatTTS cleaned text: {cleaned_text}")
 
         try:
             params = self._build_params()
 
-            # ChatTTS.infer 是同步阻塞的，放到线程池避免阻塞事件循环
+            # ChatTTS.infer is synchronous blocking, place in thread pool to avoid blocking event loop
             import asyncio
             loop = asyncio.get_event_loop()
             wavs = await loop.run_in_executor(
@@ -239,9 +253,9 @@ class ChatTTSTTS(TTSInterface):
                 )
             )
 
-            # 检查返回结果是否有效
+            # Check if returned result is valid
             if wavs is None or len(wavs) == 0 or wavs[0] is None:
-                logger.warning("ChatTTS 返回空结果，使用静音替代")
+                logger.warning("ChatTTS returned empty result, using silence instead")
                 silence = np.zeros(self.SAMPLE_RATE, dtype=np.float32)
                 audio_bytes = self._wav_to_bytes(silence)
                 temp_file = tempfile.mktemp(suffix=".wav")
@@ -249,13 +263,13 @@ class ChatTTSTTS(TTSInterface):
                     f.write(audio_bytes)
                 return temp_file
 
-            # wavs[0] 是 numpy array
+            # wavs[0] is a numpy array
             wav_array = wavs[0]
             if wav_array.ndim > 1:
                 wav_array = wav_array.flatten()
 
             if len(wav_array) == 0:
-                logger.warning("ChatTTS 生成了空音频，使用静音替代")
+                logger.warning("ChatTTS generated empty audio, using silence instead")
                 silence = np.zeros(self.SAMPLE_RATE, dtype=np.float32)
                 audio_bytes = self._wav_to_bytes(silence)
                 temp_file = tempfile.mktemp(suffix=".wav")
@@ -271,23 +285,23 @@ class ChatTTSTTS(TTSInterface):
                 with open(output_path, "wb") as f:
                     f.write(audio_bytes)
                 logger.debug(
-                    f"ChatTTS 合成完成: {len(text)} 字符 -> {output_path}"
+                    f"ChatTTS synthesis complete: {len(text)} chars -> {output_path}"
                 )
                 return str(output_path)
             else:
-                # 写入临时文件并返回路径（与 EdgeTTS 行为一致）
+                # Write to temp file and return path (consistent with EdgeTTS behavior)
                 temp_file = tempfile.mktemp(suffix=".wav")
                 with open(temp_file, "wb") as f:
                     f.write(audio_bytes)
                 logger.debug(
-                    f"ChatTTS 合成完成: {len(text)} 字符 -> {temp_file}"
+                    f"ChatTTS synthesis complete: {len(text)} chars -> {temp_file}"
                 )
                 return temp_file
 
         except Exception as e:
             error_msg = str(e)
             if "narrow()" in error_msg:
-                logger.warning(f"ChatTTS narrow() 错误（已知问题），文本: {cleaned_text}")
+                logger.warning(f"ChatTTS narrow() error (known issue), text: {cleaned_text}")
                 silence = np.zeros(self.SAMPLE_RATE, dtype=np.float32)
                 audio_bytes = self._wav_to_bytes(silence)
                 if output_path is not None:
@@ -300,17 +314,17 @@ class ChatTTSTTS(TTSInterface):
                 with open(temp_file, "wb") as f:
                     f.write(audio_bytes)
                 return temp_file
-            logger.error(f"ChatTTS 合成失败: {e}")
+            logger.error(f"ChatTTS synthesis failed: {e}")
             raise
 
     async def close(self) -> None:
-        """释放显存资源"""
+        """Release GPU memory resources"""
         if self._chat is not None:
-            # 释放模型引用，让 GC 回收显存
+            # Release model references, let GC reclaim memory
             self._chat = None
             self._speaker_embedding = None
 
-            # 主动清理 CUDA 缓存
+            # Actively clear CUDA cache
             try:
                 import torch
                 if torch.cuda.is_available():
@@ -318,11 +332,11 @@ class ChatTTSTTS(TTSInterface):
             except Exception:
                 pass
 
-            logger.info("ChatTTS 资源已释放，显存已清理")
+            logger.info("ChatTTS resources released, GPU memory cleared")
 
     @classmethod
     def from_config(cls, config: ChatTTSConfig) -> "ChatTTSTTS":
-        """从配置创建实例"""
+        """Create instance from configuration"""
         return cls(
             model_path=config.model_path,
             device=config.device,
