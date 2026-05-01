@@ -368,6 +368,34 @@ class AppConfig(BaseConfig):
             except ValueError:
                 pass
 
+    def validate(self) -> None:
+        """Validate configuration — verify required providers are available."""
+        from anima.config.core.registry import ProviderRegistry
+
+        warnings = []
+
+        # Check LLM provider
+        if self.services.agent:
+            services = ProviderRegistry.list_services("llm")
+            if self.services.agent not in services:
+                warnings.append(f"LLM provider '{self.services.agent}' not registered")
+
+        # Check ASR provider
+        if self.services.asr:
+            services = ProviderRegistry.list_services("asr")
+            if self.services.asr not in services:
+                warnings.append(f"ASR provider '{self.services.asr}' not registered")
+
+        # Check TTS provider
+        if self.services.tts:
+            services = ProviderRegistry.list_services("tts")
+            if self.services.tts not in services:
+                warnings.append(f"TTS provider '{self.services.tts}' not registered")
+
+        if warnings:
+            for w in warnings:
+                logger.warning(f"[Config] {w}")
+
     @classmethod
     def load(cls, config_path: Optional[str] = None) -> "AppConfig":
         """
