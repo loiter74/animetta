@@ -8,6 +8,10 @@
 
 支持 Live2D 动画、实时语音交互，可自由切换不同 AI 模型
 
+[![Test](https://github.com/loiter74/Anima-LLM-Vtuber/actions/workflows/test.yml/badge.svg)](https://github.com/loiter74/Anima-LLM-Vtuber/actions/workflows/test.yml)
+![Python](https://img.shields.io/badge/python-3.12%20|%203.13-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+
 </div>
 
 ---
