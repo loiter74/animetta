@@ -2,6 +2,7 @@
 Service context - core service container
 """
 
+import asyncio
 from typing import Callable, Optional
 from loguru import logger
 from pathlib import Path
@@ -16,34 +17,36 @@ from anima.services.speech.tts import TTSFactory
 from anima.services.intelligence.llm import LLMFactory
 from anima.services.intelligence.vad import VADInterface, VADFactory
 from anima.memory import MemorySystem
+from anima.core.model_loading_manager import ModelLoadingManager
 
 
 class ServiceContext:
     """Service context class"""
 
-    def __init__(self):
+    def __init__(self, model_manager: Optional[ModelLoadingManager] = None):
         self.config: Optional[AppConfig] = None
+        self.model_manager = model_manager
 
-        # 服务实例
+        # Service instances
         self.asr_engine: Optional[ASRInterface] = None
         self.tts_engine: Optional[TTSInterface] = None
         self.llm_engine: Optional[LLMInterface] = None
         self.local_llm_engine: Optional[LLMInterface] = None
         self.vad_engine: Optional[VADInterface] = None
 
-        # 记忆系统
+        # Memory system
         self.audio_processor: Optional[AudioProcessorInterface] = None
         self.memory_system: Optional[MemorySystem] = None
 
-        # 会话状态
+        # Session state
         self.session_id: Optional[str] = None
         self.is_speaking: bool = False
         self.is_processing: bool = False
 
-        # 回调函数
+        # Callback functions
         self.send_text: Optional[Callable] = None
 
-        # 表情分析器
+        # Emotion analyzer
         self.emotion_analyzer = None
 
     def __str__(self) -> str:
@@ -75,6 +78,10 @@ class ServiceContext:
 
         # Preload conversation tokenizer to avoid download/load delay on first use
         await self._preload_tokenizers()
+
+        # Trigger preload for all registered services via model manager
+        if self.model_manager is not None:
+            asyncio.create_task(self.model_manager.warmup())
 
         logger.info(f"[{self.session_id}] Services loaded")
 
@@ -126,18 +133,8 @@ class ServiceContext:
             disable_update=getattr(asr_config, 'disable_update', True),
         )
 
-        if hasattr(self.asr_engine, 'preload'):
-            logger.info(f"[{self.session_id}] Preloading ASR model in background...")
-            import asyncio
-            asyncio.create_task(self._preload_asr_background())
-
-    async def _preload_asr_background(self) -> None:
-        """Preload ASR model in background"""
-        try:
-            await self.asr_engine.preload()
-            logger.info(f"[{self.session_id}] ASR model preloaded")
-        except Exception as e:
-            logger.warning(f"[{self.session_id}] ASR model preload failed: {e}")
+        if hasattr(self.asr_engine, 'preload') and self.model_manager is not None:
+            self.model_manager.register("asr", self.asr_engine.preload, "asr")
 
     async def _preload_tokenizers(self) -> None:
         """Preload conversation tokenizer (tiktoken, etc.) to avoid download/load delay on first use"""
@@ -173,6 +170,9 @@ class ServiceContext:
             volume=getattr(tts_config, 'volume', 1.0)
         )
 
+        if hasattr(self.tts_engine, 'preload') and self.model_manager is not None:
+            self.model_manager.register("tts", self.tts_engine.preload, "tts")
+
     async def init_llm(self, agent_config: AgentConfig, persona_config: PersonaConfig, app_config: AppConfig = None) -> None:
         """Initialize LLM service"""
         if self.llm_engine is not None:
@@ -192,6 +192,9 @@ class ServiceContext:
 
         self.llm_engine = LLMFactory.create_from_config(config=llm_config, system_prompt=system_prompt)
         logger.info(f"[{self.session_id}] LLM created: {type(self.llm_engine).__name__}")
+
+        if hasattr(self.llm_engine, 'preload') and self.model_manager is not None:
+            self.model_manager.register("llm", self.llm_engine.preload, "llm")
 
     async def init_local_llm(self, llm_config, app_config: AppConfig = None) -> None:
         """Initialize local LLM service (no persona)"""
@@ -239,6 +242,9 @@ class ServiceContext:
         try:
             self.vad_engine = VADFactory.create_from_config(vad_config)
             logger.info(f"[{self.session_id}] VAD engine created: {type(self.vad_engine).__name__}")
+
+            if hasattr(self.vad_engine, 'preload') and self.model_manager is not None:
+                self.model_manager.register("vad", self.vad_engine.preload, "vad")
 
             if hasattr(self.vad_engine, 'prob_threshold'):
                 logger.info(f"[{self.session_id}] VAD config: "
@@ -297,36 +303,36 @@ class ServiceContext:
             self.memory_system = None
 
     async def init_emotion_analyzer(self, config: AppConfig) -> None:
-        """初始化表情分析器"""
+        """Initialize emotion analyzer"""
         try:
             from anima.avatar.factory import EmotionAnalyzerFactory
             from anima.config.live2d import get_live2d_config
 
             live2d_config = get_live2d_config()
             if not live2d_config.enabled:
-                logger.info(f"[{self.session_id}] Live2D 未启用，跳过表情分析器初始化")
+                logger.info(f"[{self.session_id}] Live2D not enabled, skipping emotion analyzer initialization")
                 return
 
             self.emotion_analyzer = EmotionAnalyzerFactory.create(
                 name="keyword_analyzer",
                 config={"valid_emotions": live2d_config.valid_emotions}
             )
-            logger.info(f"[{self.session_id}] 表情分析器初始化完成")
+            logger.info(f"[{self.session_id}] Emotion analyzer initialized")
 
         except Exception as e:
-            logger.warning(f"[{self.session_id}] 表情分析器初始化失败: {e}")
+            logger.warning(f"[{self.session_id}] Emotion analyzer initialization failed: {e}")
             self.emotion_analyzer = None
 
-    # 生命周期管理
+    # Lifecycle management
     async def close(self) -> None:
-        """关闭并清理所有资源"""
-        logger.info(f"[{self.session_id}] 正在关闭服务上下文...")
+        """Close and clean up all resources"""
+        logger.info(f"[{self.session_id}] Shutting down service context...")
 
         if self.memory_system:
             await self.memory_system.stop()
             self.memory_system.close()
             self.memory_system = None
-            logger.info(f"[{self.session_id}] 记忆系统已关闭")
+            logger.info(f"[{self.session_id}] Memory system closed")
 
         if self.asr_engine:
             await self.asr_engine.close()
@@ -345,13 +351,13 @@ class ServiceContext:
                 self.audio_processor.reset()
             self.audio_processor = None
 
-        logger.info(f"[{self.session_id}] 服务上下文已关闭")
+        logger.info(f"[{self.session_id}] Service context closed")
 
-    # 核心业务流程
+    # Core business flow
     async def process_text_input(self, text: str) -> str:
-        """处理文本输入"""
+        """Process text input"""
         if not self.llm_engine:
-            raise RuntimeError("LLM 未初始化")
+            raise RuntimeError("LLM not initialized")
         self.is_processing = True
         try:
             response = await self.llm_engine.chat(text)
@@ -359,10 +365,10 @@ class ServiceContext:
         finally:
             self.is_processing = False
 
-    # 配置切换
+    # Configuration switching
     async def handle_config_switch(self, new_config: AppConfig) -> None:
-        """处理配置切换"""
-        logger.info(f"[{self.session_id}] 切换配置...")
+        """Handle configuration switch"""
+        logger.info(f"[{self.session_id}] Switching configuration...")
         await self.close()
         await self.load_from_config(new_config)
-        logger.info(f"[{self.session_id}] 配置切换完成")
+        logger.info(f"[{self.session_id}] Configuration switch complete")
