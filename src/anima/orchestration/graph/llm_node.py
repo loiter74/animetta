@@ -7,6 +7,7 @@ from langgraph.types import RunnableConfig
 
 from .state import AgentState
 from .interrupt_handler import get_interrupt_handler
+from .memory_middleware import MemoryMiddleware
 
 
 # ========================================
@@ -22,45 +23,17 @@ def _get_memory_system(config: Optional[RunnableConfig]) -> Optional[Any]:
     return None
 
 
-def _format_memory_context(memory_turns: List[Any], max_items: int = 5) -> str:
-    """
-    Format memory context as text
-
-    Args:
-        memory_turns: List of MemoryTurn objects
-        max_items: Maximum number of items to display
-
-    Returns:
-        Formatted memory text
-    """
-    if not memory_turns:
-        return ""
-
-    # Only take the first max_items entries
-    selected = memory_turns[:max_items]
-
-    lines = ["## Related Memories"]
-    for i, turn in enumerate(selected, 1):
-        # Prefer oral version if available
-        if hasattr(turn, "metadata"):
-            oral = turn.metadata.get("oral_version")
-        else:
-            oral = None
-
-        user_text = turn.user_input if hasattr(turn, "user_input") else ""
-        agent_text = turn.agent_response if hasattr(turn, "agent_response") else ""
-
-        if oral:
-            lines.append(f"{i}. {oral}")
-        else:
-            # Compatible with old data: use original text when no oral version
-            if user_text and agent_text:
-                lines.append(f"{i}. You said: {user_text}")
-                lines.append(f"   I replied: {agent_text}")
-            elif user_text:
-                lines.append(f"{i}. You said: {user_text}")
-
-    return "\n".join(lines) if len(lines) > 1 else ""
+def _get_memory_middleware(config: Optional[RunnableConfig]) -> Optional[MemoryMiddleware]:
+    """Get or create MemoryMiddleware from LangGraph config"""
+    if config:
+        existing = config.get("configurable", {}).get("memory_middleware")
+        if existing:
+            return existing
+        memory_system = _get_memory_system(config)
+        if memory_system:
+            middleware = MemoryMiddleware(memory_system=memory_system)
+            return middleware
+    return None
 
 
 async def _retrieve_memory_context(
@@ -70,7 +43,7 @@ async def _retrieve_memory_context(
     max_turns: int = 5,
 ) -> str:
     """
-    Retrieve memory context
+    Retrieve memory context via MemoryMiddleware
 
     Args:
         session_id: Session ID
@@ -79,31 +52,23 @@ async def _retrieve_memory_context(
         max_turns: Maximum number of turns to retrieve
 
     Returns:
-        Formatted memory text
+        Enriched system prompt with memory and profile
     """
-    memory_system = _get_memory_system(config)
-    if not memory_system:
-        logger.debug(f"[{session_id}] [LLMNode] MemorySystem not configured, skipping RAG")
+    middleware = _get_memory_middleware(config)
+    if not middleware:
+        logger.debug(f"[{session_id}] [LLMNode] MemoryMiddleware not available, skipping RAG")
         return ""
 
     try:
-        memory_turns = await memory_system.retrieve_context(
-            query=query,
+        enriched, metadata = await middleware.before_llm_call(
             session_id=session_id,
-            max_turns=max_turns,
+            user_input=query,
         )
-
-        if memory_turns:
-            context = _format_memory_context(memory_turns, max_items=max_turns)
-            logger.info(f"[{session_id}] [LLMNode] RAG retrieved {len(memory_turns)} memory entries")
-            logger.debug(f"[{session_id}] [LLMNode] Memory context: {context[:200]}...")
-            return context
-        else:
-            logger.debug(f"[{session_id}] [LLMNode] RAG found no related memories")
-            return ""
-
+        if metadata and metadata.get("memory_count", 0) > 0:
+            logger.info(f"[{session_id}] [LLMNode] Middleware injected {metadata['memory_count']} memories")
+        return enriched
     except Exception as e:
-        logger.warning(f"[{session_id}] [LLMNode] RAG retrieval failed: {e}")
+        logger.warning(f"[{session_id}] [LLMNode] MemoryMiddleware retrieval failed: {e}")
         return ""
 
 
@@ -114,26 +79,22 @@ def _enrich_system_prompt(
     """
     Inject memory context into the system prompt
 
+    Note: When MemoryMiddleware is active, memory_context is already
+    a fully-enriched prompt. This function is kept for backward compatibility.
+
     Args:
         base_prompt: Base system prompt
-        memory_context: Memory context text
+        memory_context: Memory context / enriched prompt text
 
     Returns:
         Enriched system prompt
     """
     if not memory_context:
         return base_prompt or ""
+    if not base_prompt:
+        return memory_context
 
-    parts = []
-    if base_prompt:
-        parts.append(base_prompt)
-
-    # Add memory context
-    parts.append(memory_context)
-
-    # Add instruction
-    parts.append("\nPlease refer to the above memories and answer the user's question naturally. If no relevant information is in the memories, respond normally.")
-
+    parts = [base_prompt, memory_context]
     return "\n\n---\n\n".join(parts)
 
 
@@ -149,6 +110,28 @@ def _get_config_value(config: Optional[RunnableConfig], key: str, default: Any =
     if config:
         return config.get("configurable", {}).get(key, default)
     return default
+
+
+def _notify_middleware_after(
+    session_id: str,
+    user_input: str,
+    response: str,
+    config: Optional[RunnableConfig],
+) -> None:
+    """非阻塞通知中间件 LLM 调用完成."""
+    try:
+        import asyncio
+        middleware = _get_memory_middleware(config)
+        if middleware:
+            asyncio.ensure_future(
+                middleware.after_llm_call(
+                    session_id=session_id,
+                    user_input=user_input,
+                    agent_response=response,
+                )
+            )
+    except Exception as e:
+        logger.debug(f"[{session_id}] [LLMNode] middleware after_llm_call notification failed: {e}")
 
 
 async def llm_node(
@@ -210,7 +193,7 @@ async def _llm_with_tools(
     if not system_prompt and service_context.config:
         system_prompt = service_context.config.get_system_prompt()
 
-    # RAG: retrieve memory context
+    # RAG + Profile: retrieve via MemoryMiddleware
     memory_context = await _retrieve_memory_context(
         session_id=session_id,
         query=user_text,
@@ -243,6 +226,9 @@ async def _llm_with_tools(
 
                 ai_message = AIMessage(content=response.get("content", "") or "Calling tools...", tool_calls=tool_calls)
 
+                # after_llm_call notification (非阻塞)
+                _notify_middleware_after(session_id, user_text, response.get("content", ""), config)
+
                 return {
                     "response_text": response.get("content", "") or "Calling tools...",
                     "response_chunks": [response.get("content", "") or ""],
@@ -253,6 +239,9 @@ async def _llm_with_tools(
                 full_response = response.get("content", "")
                 logger.info(f"[{session_id}] [LLMNode] LLM response: {full_response[:100]}...")
                 ai_message = AIMessage(content=full_response)
+
+                # after_llm_call notification (非阻塞)
+                _notify_middleware_after(session_id, user_text, full_response, config)
 
                 return {
                     "response_text": full_response,
@@ -321,6 +310,9 @@ async def _llm_without_tools(
     logger.info(f"[{session_id}] [LLMNode] LLM response: {full_response[:100]}...")
 
     ai_message = AIMessage(content=full_response)
+
+    # after_llm_call notification (非阻塞)
+    _notify_middleware_after(session_id, user_text, full_response, config)
 
     return {
         "response_text": full_response,

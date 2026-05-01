@@ -20,6 +20,7 @@ from .models.chunks import chunk_markdown, RawChunk
 from .models.base import Chunk, FileEntry, SearchResult
 from .storage.sqlite import SQLiteStore
 from .storage.chroma import ChromaStore
+from .storage.memory_entry_store import MemoryEntryStore
 from .search.hybrid import hybrid_search
 
 logger = logging.getLogger(__name__)
@@ -44,6 +45,7 @@ class MemoryManager:
             collection_name=f"memory_{self.config.agent_id}",
             embedding_dim=512,
         )
+        self.memory_entries = MemoryEntryStore(self.sqlite.conn)
 
         # Embedding 模型
         self._embedder = None

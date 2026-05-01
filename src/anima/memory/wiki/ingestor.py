@@ -16,6 +16,7 @@ from typing import Dict, List, Optional, Set, Tuple
 
 from ..models.turns import MemoryTurn
 from ..search.scorer import MemoryScorer
+from ..fact_extractor import FactExtractor
 from .manager import WikiManager
 from .models import PageType, WikiPage
 
@@ -80,10 +81,11 @@ class WikiIngestor:
     7. Append to operation log.
     """
 
-    def __init__(self, wiki: WikiManager, llm_client=None):
+    def __init__(self, wiki: WikiManager, llm_client=None, fact_extractor: Optional[FactExtractor] = None):
         self._wiki = wiki
         self._scorer = MemoryScorer()
         self._llm_client = llm_client
+        self._fact_extractor = fact_extractor
 
     # ── public API ──────────────────────────────────────────
 
@@ -115,10 +117,17 @@ class WikiIngestor:
         for ctype, cname in concepts:
             self._update_concept_page(ctype, cname, turn)
 
-        # 5. source summary
+        # 5. MemoryEntry 事实提取 (若配置了 fact_extractor)
+        if self._fact_extractor:
+            try:
+                await self._fact_extractor.extract_and_store(turn)
+            except Exception as e:
+                logger.warning(f"[Ingestor] MemoryEntry fact extraction failed: {e}")
+
+        # 6. source summary
         self._update_source_summary(turn)
 
-        # 6. index
+        # 7. index
         self._wiki.rebuild_index()
 
         # 7. log

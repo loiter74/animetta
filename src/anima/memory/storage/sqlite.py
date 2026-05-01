@@ -18,6 +18,7 @@ import time
 from pathlib import Path
 
 from ..models.base import Chunk, FileEntry
+from .memory_entry_store import MemoryEntryStore
 
 logger = logging.getLogger(__name__)
 
@@ -49,8 +50,7 @@ class SQLiteStore:
 
     def _create_tables(self):
         """创建核心表结构."""
-        self.conn.executescript(
-            """
+        all_ddl = """
             -- 已索引文件追踪
             CREATE TABLE IF NOT EXISTS files (
                 path         TEXT PRIMARY KEY,
@@ -108,7 +108,9 @@ class SQLiteStore:
                 created_at    REAL NOT NULL
             );
         """
-        )
+        # 追加 MemoryEntry + MemoryRelation 表
+        all_ddl += MemoryEntryStore.ddl()
+        self.conn.executescript(all_ddl)
         self.conn.commit()
 
     # ── 文件操作 ──────────────────────────────────────────
