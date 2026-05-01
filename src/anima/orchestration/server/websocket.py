@@ -1,4 +1,4 @@
-"""WebSocket 服务器 - Socket.IO 服务器初始化和配置"""
+"""WebSocket server - Socket.IO server initialization and configuration"""
 
 import os
 import sys
@@ -16,13 +16,14 @@ from .lifecycle import LifecycleManager
 from .desktop import DesktopClientManager
 from .live2d import Live2DManager
 from .stats_api import get_stats_routes
+from anima.core.model_loading_manager import ModelLoadingManager
 
 
 class WebSocketServer:
-    """WebSocket 服务器"""
+    """WebSocket server"""
 
     def __init__(self, config=None):
-        """初始化 WebSocket 服务器"""
+        """Initialize WebSocket server"""
         self.config = config
 
         self.sio = socketio.AsyncServer(
@@ -35,7 +36,7 @@ class WebSocketServer:
             ping_interval=30,
         )
 
-        # Socket.IO ASGI + Stats API 路由
+        # Socket.IO ASGI + Stats API routes
         sio_app = socketio.ASGIApp(self.sio)
         stats_routes = get_stats_routes()
 
@@ -43,6 +44,7 @@ class WebSocketServer:
             routes=stats_routes + [Mount("/", app=sio_app)],
         )
         self.session_manager = SessionManager()
+        self.model_manager = ModelLoadingManager()
         self.desktop_manager = DesktopClientManager()
         self.live2d_manager = Live2DManager()
         self.lifecycle = LifecycleManager()
@@ -52,59 +54,63 @@ class WebSocketServer:
         logger.info(f"[Socket.IO] CORS enabled: origins=*")
 
     def set_config(self, config) -> None:
-        """设置应用配置"""
+        """Set application config"""
         self.config = config
         if self.route_handlers:
             self.route_handlers.set_global_config(config)
 
     def set_user_settings(self, user_settings) -> None:
-        """设置用户设置"""
+        """Set user settings"""
         if self.route_handlers:
             self.route_handlers.set_user_settings(user_settings)
 
     def setup_routes(self) -> None:
-        """设置所有路由"""
+        """Set up all routes"""
         self.route_handlers = register_routes(
             self.sio,
             self.session_manager,
             self.desktop_manager,
             self.live2d_manager
         )
-        logger.info("WebSocket 路由已注册")
+
+        # Wire up model manager with Socket.IO for status events
+        self.model_manager._socketio = self.sio
+
+        logger.info("WebSocket routes registered")
 
     def setup_lifecycle(self) -> None:
-        """设置生命周期管理"""
+        """Set up lifecycle management"""
         import asyncio
 
         shutdown_event = asyncio.Event()
         self.lifecycle.setup_signal_handlers(shutdown_event)
         self.lifecycle.register_cleanup_callback(self._cleanup_all_resources)
-        logger.info("生命周期管理器已设置")
+        logger.info("Lifecycle manager set up")
 
     async def _cleanup_all_resources(self) -> None:
-        """清理所有资源"""
-        logger.info("开始清理所有资源...")
+        """Clean up all resources"""
+        logger.info("Starting to clean up all resources...")
         await self.session_manager.cleanup_all()
-        logger.info("所有资源已清理完成")
+        logger.info("All resources cleaned up")
 
     def get_app(self):
-        """获取 ASGI 应用"""
+        """Get the ASGI app"""
         return self.asgi_app
 
     async def start(self) -> None:
-        """启动服务器"""
+        """Start the server"""
         self.setup_routes()
         self.setup_lifecycle()
-        logger.info("WebSocket 服务器已启动")
+        logger.info("WebSocket server started")
 
     async def stop(self) -> None:
-        """停止服务器"""
+        """Stop the server"""
         await self._cleanup_all_resources()
-        logger.info("WebSocket 服务器已停止")
+        logger.info("WebSocket server stopped")
 
 
 def create_server(config=None) -> WebSocketServer:
-    """创建 WebSocket 服务器实例"""
+    """Create a WebSocket server instance"""
     server = WebSocketServer(config)
     server.setup_routes()
     server.setup_lifecycle()
