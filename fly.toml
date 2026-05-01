@@ -1,0 +1,47 @@
+# ── Anima Fly.io Deployment Configuration ────────────────────────────
+# Deploy: flyctl launch --ha=false --generate-name
+# Visit: https://your-app-name.fly.dev
+#
+# If "app name taken" error, use --generate-name to auto-generate
+
+app = "anima-demo"
+primary_region = "hkg"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[http_service]
+  internal_port = 12394
+  force_https = true
+  auto_stop_machines = "stop"    # Free tier: stop when idle
+  auto_start_machines = true     # Start on first request
+  min_machines_running = 0       # Scale to zero on free tier
+  max_machines_running = 1
+
+  [[http_service.ports]]
+    handlers = ["http"]
+    port = 80
+
+  [[http_service.ports]]
+    handlers = ["tls"]
+    port = 443
+
+  [[http_service.concurrency]]
+    type = "requests"
+    hard_limit = 25
+    soft_limit = 10
+
+[env]
+  ANIMA_HOST = "0.0.0.0"
+  ANIMA_PORT = "12394"
+  ANIMA_LOG_LEVEL = "INFO"
+  PYTHONPATH = "/app/src"
+
+[mounts]
+  source = "anima_data"
+  destination = "/app/data"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512
