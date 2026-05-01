@@ -193,6 +193,55 @@ class ProcessManager:
                 return str(venv_python)
         return sys.executable
 
+    def _get_tts_provider(self, project_root):
+        """从 config.yaml 读取 TTS 提供商"""
+        try:
+            import yaml
+            cfg_path = project_root / "config" / "config.yaml"
+            with open(cfg_path, encoding='utf-8') as f:
+                cfg = yaml.safe_load(f)
+            return (cfg or {}).get('services', {}).get('tts', 'edge')
+        except Exception:
+            return 'edge'
+
+    def start_vibe_voice_server(self, project_root):
+        """启动 VibeVoice TTS 本地推理服务"""
+        info("启动 VibeVoice TTS 服务 (端口 8765)...")
+
+        python_exe = self._get_venv_python(project_root)
+        server_script = project_root / "scripts" / "vibe_voice_server.py"
+        model_path = "E:/anima_data/models/VibeVoice/VibeVoice-1.5B"
+
+        if not server_script.exists():
+            warn(f"VibeVoice 服务脚本不存在: {server_script}")
+            return None
+
+        if not os.path.isdir(model_path):
+            warn(f"VibeVoice 模型目录不存在: {model_path}")
+            warn(f"请先运行: huggingface-cli download microsoft/VibeVoice-1.5B --local-dir {model_path}")
+            return None
+
+        cmd = [
+            python_exe, str(server_script),
+            "--port", "8765",
+            "--model", model_path,
+            "--device", "cuda",
+        ]
+
+        try:
+            process = subprocess.Popen(
+                cmd,
+                cwd=project_root,
+                stdout=None,
+                stderr=None,
+            )
+            self.processes.append(("VibeVoice TTS", process, 8765))
+            info("VibeVoice TTS 服务启动中 (模型加载约需 30-60 秒)...")
+            return process
+        except Exception as e:
+            warn(f"启动 VibeVoice TTS 服务失败: {e}")
+            return None
+
     def start_backend(self, project_root):
         """启动后端 Socket.IO 服务"""
         info("启动后端 Socket.IO 服务 (端口 12394)...")
@@ -418,6 +467,7 @@ def main():
     parser.add_argument('--web-port', type=int, default=8080, help='Web 配置界面端口')
     parser.add_argument('--install', action='store_true', help='安装依赖')
     parser.add_argument('--dev', action='store_true', help='开启开发者工具 (DevTools)')
+    parser.add_argument('--no-tts-server', action='store_true', help='不启动 TTS 本地推理服务')
 
     args = parser.parse_args()
 
@@ -468,11 +518,22 @@ def main():
     # 停止现有服务
     info("检查并停止现有服务...")
     pm.stop_processes_on_port(12394, "后端")
+    pm.stop_processes_on_port(8765, "VibeVoice TTS")
     pm.stop_processes_on_port(8080, "Web配置")
     pm.stop_processes_on_port(3000, "前端")
     print()
 
     try:
+        # 启动 VibeVoice TTS 服务（当配置为 vibe_voice 且未禁用时）
+        if not args.no_tts_server and not args.backend_only:
+            tts_provider = pm._get_tts_provider(project_root)
+            if tts_provider == "vibe_voice":
+                info(f"检测到 TTS 提供者为 {tts_provider}，启动本地推理服务...")
+                pm.start_vibe_voice_server(project_root)
+                time.sleep(3)  # 给模型加载一点启动时间
+            else:
+                info(f"TTS 提供者为 {tts_provider}，跳过 VibeVoice 服务启动")
+
         # 启动后端
         if not args.no_backend:
             pm.start_backend(project_root)

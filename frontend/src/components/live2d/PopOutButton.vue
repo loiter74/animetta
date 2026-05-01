@@ -7,7 +7,7 @@ defineEmits<{
 <template>
   <button
     class="w-7 h-7 flex items-center justify-center rounded-lg
-           text-c-text-dim hover:text-c-accent hover:bg-c-panel/50 transition-colors"
+           bg-c-bg/40 text-c-text-dim hover:text-c-accent hover:bg-c-bg/60 transition-colors"
     title="弹出 Live2D 窗口"
     @click="$emit('popout')"
   >

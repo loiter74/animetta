@@ -7,5 +7,14 @@ from .mock_tts import MockTTS
 from .glm_tts import GLMTTS
 from .edge_tts import EdgeTTS
 from .chattts_tts import ChatTTSTTS
+from .vibe_voice_tts import VibeVoiceTTS
 
-__all__ = ["TTSInterface", "TTSFactory", "MockTTS", "GLMTTS", "EdgeTTS", "ChatTTSTTS"]
+__all__ = [
+    "TTSInterface",
+    "TTSFactory",
+    "MockTTS",
+    "GLMTTS",
+    "EdgeTTS",
+    "ChatTTSTTS",
+    "VibeVoiceTTS",
+]

@@ -53,7 +53,7 @@ watch(() => store.memoryOrganizing, (organizing) => {
         class="flex items-center gap-1 px-2 py-1 rounded-lg transition-all"
         :class="store.memoryOrganizing
           ? 'bg-c-accent/20 text-c-accent pointer-events-none animate-pulse'
-          : 'text-c-text-dim hover:bg-c-panel/50'"
+          : 'bg-c-bg/40 text-c-text-dim hover:bg-c-panel/50'"
         @click="handleMemoryOrganize"
       >
         <span>🧠</span>

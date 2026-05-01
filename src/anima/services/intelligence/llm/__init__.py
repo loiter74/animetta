@@ -54,6 +54,8 @@ def get_llm_class(provider: str):
         return OllamaLLM
     elif provider == "openai":
         return OpenAILLM
+    elif provider == "deepseek":
+        return OpenAILLM
     elif provider == "local_lora":
         return LocalLoraLLM
     return None

@@ -55,6 +55,22 @@ class TTSFactory:
                 top_p=kwargs.get("top_p", 0.7),
                 top_k=kwargs.get("top_k", 20),
             )
+        elif provider == "vibe_voice":
+            from .vibe_voice_tts import VibeVoiceTTS
+            return VibeVoiceTTS(
+                api_key=kwargs.get("api_key"),
+                model=kwargs.get("model", "vibe-voice-1.5b"),
+                voice=kwargs.get("voice", "default"),
+                base_url=kwargs.get("base_url", "http://localhost:8765"),
+                # VibeVoice 专有参数（需在 services.yaml 中配置，
+                # 或通过修改 service_context.init_tts() 传入）
+                mode=kwargs.get("mode", "remote"),
+                model_size=kwargs.get("model_size", "1.5b"),
+                model_path=kwargs.get("model_path"),
+                device=kwargs.get("device", "cuda:0"),
+                num_speakers=kwargs.get("num_speakers", 1),
+                language=kwargs.get("language", "zh"),
+            )
         elif provider == "mock":
             from .mock_tts import MockTTS
             return MockTTS()
@@ -66,4 +82,4 @@ class TTSFactory:
     @staticmethod
     def get_available_providers() -> List[str]:
         """获取所有可用的提供商列表"""
-        return ["mock", "openai", "edge_tts", "glm", "chattts"]
+        return ["mock", "openai", "edge_tts", "glm", "chattts", "vibe_voice"]

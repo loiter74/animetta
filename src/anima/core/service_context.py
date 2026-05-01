@@ -73,6 +73,9 @@ class ServiceContext:
         await self.init_memory()
         await self.init_emotion_analyzer(config)
 
+        # 预加载对话 tokenizer，避免首次使用时下载/加载延迟
+        await self._preload_tokenizers()
+
         logger.info(f"[{self.session_id}] 服务加载完成")
 
     async def load_cache(
@@ -135,6 +138,19 @@ class ServiceContext:
             logger.info(f"[{self.session_id}] ASR 模型预加载完成")
         except Exception as e:
             logger.warning(f"[{self.session_id}] ASR 模型预加载失败: {e}")
+
+    async def _preload_tokenizers(self) -> None:
+        """预加载对话 tokenizer（tiktoken 等），避免首次对话时下载/加载延迟"""
+        try:
+            import tiktoken
+            import asyncio
+            loop = asyncio.get_event_loop()
+            await loop.run_in_executor(None, lambda: tiktoken.get_encoding("cl100k_base"))
+            logger.info(f"[{self.session_id}] ✅ tiktoken tokenizer 预加载完成")
+        except ImportError:
+            logger.debug(f"[{self.session_id}] tiktoken 未安装，跳过预加载")
+        except Exception as e:
+            logger.warning(f"[{self.session_id}] tokenizer 预加载失败 (不影响运行): {e}")
 
     async def init_tts(self, tts_config: TTSConfig) -> None:
         """初始化 TTS 服务"""
@@ -283,7 +299,7 @@ class ServiceContext:
     async def init_emotion_analyzer(self, config: AppConfig) -> None:
         """初始化表情分析器"""
         try:
-            from anima.avatar.analyzers import EmotionAnalyzerFactory
+            from anima.avatar.factory import EmotionAnalyzerFactory
             from anima.config.live2d import get_live2d_config
 
             live2d_config = get_live2d_config()
@@ -292,7 +308,7 @@ class ServiceContext:
                 return
 
             self.emotion_analyzer = EmotionAnalyzerFactory.create(
-                analyzer_type="keyword",
+                name="keyword_analyzer",
                 valid_emotions=live2d_config.valid_emotions
             )
             logger.info(f"[{self.session_id}] 表情分析器初始化完成")

@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 from typing import Optional, Dict, Any
 from pydantic import Field, PrivateAttr, TypeAdapter
+from dotenv import load_dotenv
 from loguru import logger
 
 from .core.base import BaseConfig
@@ -60,6 +61,45 @@ def expand_env_vars(value):
     elif isinstance(value, list):
         return [expand_env_vars(item) for item in value]
     return value
+
+
+def _load_env_file() -> None:
+    """
+    加载 .env 文件到环境变量
+
+    按优先级搜索:
+    1. 项目根目录的 .env（config/../）
+    2. 当前工作目录的 .env
+    3. 环境变量 ANIMA_ENV_FILE 指定的路径
+
+    确保 ${VAR} 语法在 YAML 配置中能正确展开。
+    """
+    # 避免重复加载
+    if hasattr(_load_env_file, '_loaded'):
+        return
+    _load_env_file._loaded = True
+
+    # 搜索路径（按优先级）
+    search_paths = [
+        Path.cwd() / ".env",                         # 当前工作目录
+        CONFIG_DIR.parent / ".env",                   # 项目根目录
+        Path(__file__).parent.parent.parent.parent / ".env",  # 项目根目录（绝对路径）
+    ]
+
+    env_path_env = os.getenv("ANIMA_ENV_FILE")
+    if env_path_env:
+        search_paths.insert(0, Path(env_path_env))
+
+    loaded_path = None
+    for p in search_paths:
+        if p.exists():
+            load_dotenv(dotenv_path=str(p), override=False)
+            loaded_path = p
+            logger.debug(f"[_load_env_file] 已加载 .env 文件: {p}")
+            break
+
+    if loaded_path is None:
+        logger.warning("[_load_env_file] 未找到 .env 文件，环境变量可能为空")
 
 
 CONFIG_DIR = Path(__file__).parent.parent.parent.parent / "config"
@@ -183,11 +223,15 @@ class AppConfig(BaseConfig):
         从 YAML 文件加载配置
         
         加载流程:
-        1. 读取主配置文件
-        2. 从 services/{type}/{name}.yaml 分别加载各服务
-        3. 展开环境变量
-        4. 应用环境变量覆盖
+        1. 加载 .env 文件（优先从项目根目录）
+        2. 读取主配置文件
+        3. 从 services/{type}/{name}.yaml 分别加载各服务
+        4. 展开环境变量 ${VAR}
+        5. 应用环境变量覆盖
         """
+        # 🆕 加载 .env 文件到环境变量（使 ${VAR} 语法生效）
+        _load_env_file()
+        
         path = Path(path)
         if not path.exists():
             raise FileNotFoundError(f"配置文件不存在: {path}")

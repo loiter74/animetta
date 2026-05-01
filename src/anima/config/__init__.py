@@ -23,6 +23,7 @@ from .providers.llm import (
     OpenAILLMConfig,
     GLMLLMConfig,
     OllamaLLMConfig,
+    DeepSeekLLMConfig,
 )
 
 # Providers - ASR
@@ -69,6 +70,7 @@ __all__ = [
     "OpenAILLMConfig",
     "GLMLLMConfig",
     "OllamaLLMConfig",
+    "DeepSeekLLMConfig",
     # ASR Providers
     "ASRConfig",
     "ASRBaseConfig",

@@ -23,14 +23,14 @@ const activeTab = ref<'chat' | 'settings'>('chat')
     <button
       v-if="isCollapsed"
       class="pointer-events-auto w-12 flex flex-col items-center pt-4 gap-3
-             bg-c-surface/60 backdrop-blur-xl border-l border-c-border rounded-l-2xl
-             text-c-text-dim hover:text-c-accent transition-colors"
+             bg-c-bg/60 backdrop-blur-xl border border-c-border/30 rounded-l-2xl
+             text-c-text-dim hover:text-c-accent hover:bg-c-bg/80 transition-colors"
       @click="isCollapsed = false"
     >
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M5 12h14M12 5l7 7-7 7" />
       </svg>
-      <span class="text-10px writing-mode-vertical">聊天</span>
+      <span class="text-10px writing-mode-vertical">{{ activeTab === 'chat' ? '聊天' : '设置' }}</span>
     </button>
 
     <!-- Main panel -->
@@ -48,7 +48,7 @@ const activeTab = ref<'chat' | 'settings'>('chat')
               class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
               :class="activeTab === 'chat'
                 ? 'bg-c-accent/20 text-c-accent'
-                : 'text-c-text-dim hover:text-c-text hover:bg-c-panel/50'"
+                : 'bg-c-bg/40 text-c-text-dim hover:text-c-text hover:bg-c-panel/50'"
               @click="activeTab = 'chat'"
             >
               💬 聊天
@@ -57,7 +57,7 @@ const activeTab = ref<'chat' | 'settings'>('chat')
               class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
               :class="activeTab === 'settings'
                 ? 'bg-c-accent/20 text-c-accent'
-                : 'text-c-text-dim hover:text-c-text hover:bg-c-panel/50'"
+                : 'bg-c-bg/40 text-c-text-dim hover:text-c-text hover:bg-c-panel/50'"
               @click="activeTab = 'settings'"
             >
               ⚙️ 设置
@@ -74,7 +74,7 @@ const activeTab = ref<'chat' | 'settings'>('chat')
           <!-- Collapse button -->
           <button
             class="w-7 h-7 flex items-center justify-center rounded-lg
-                   text-c-text-dim hover:text-c-text hover:bg-c-panel/50 transition-colors"
+                   bg-c-bg/40 text-c-text-dim hover:text-c-text hover:bg-c-bg/60 transition-colors"
             @click="isCollapsed = true"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

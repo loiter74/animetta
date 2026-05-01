@@ -92,6 +92,22 @@ tts:
     top_p: 0.7
     top_k: 20
 
+  # VibeVoice（Microsoft 开源长文本多说话人 TTS，需本地部署模型服务）
+  # 推荐部署方式: FastAPI 推理服务监听 localhost:8765，Anima 通过 remote 模式调用
+  # RTX 5090D 本地部署参考: openspec/changes/add-vibevoice-tts/design.md
+  vibe_voice:
+    type: vibe_voice
+    mode: remote                 # remote（HTTP API） / local（subprocess）
+    base_url: "http://localhost:8765"  # 推理服务地址（remote 模式）
+    api_key: ""
+    model: "vibe-voice-1.5b"
+    voice: "default"
+    model_size: "1.5b"           # 1.5b / 7b（local 模式）
+    model_path: "E:/anima_data/models/VibeVoice"  # 模型路径（local 模式）
+    device: "cuda:0"             # 推理设备（local 模式）
+    num_speakers: 1              # 说话人数 1-4
+    language: "zh"               # zh / en / mix
+
   # Mock（测试用）
   mock:
     type: mock
@@ -109,6 +125,17 @@ llm:
       api_key: "${GLM_API_KEY}"
       model: "glm-4-plus"  # 最新旗舰模型，744B 参数，Agent/Coding 能力 SOTA
       enable_thinking: false  # 关闭深度思考模式，加快响应速度
+
+  # DeepSeek（OpenAI API 兼容，推荐替代 GLM）
+  deepseek:
+    memory_enabled: true
+    llm_config:
+      type: deepseek
+      api_key: "${DEEPSEEK_API_KEY}"
+      model: "deepseek-v4-flash"  # deepseek-v4-flash / deepseek-v4-pro
+      base_url: "https://api.deepseek.com/v1"
+      temperature: 0.7
+      max_tokens: 4096
 
   # OpenAI
   openai:

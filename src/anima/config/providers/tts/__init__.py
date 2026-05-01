@@ -9,6 +9,7 @@ from .openai import OpenAITTSConfig
 from .edge import EdgeTTSConfig
 from .glm import GLMTTSConfig
 from .chattts import ChatTTSConfig
+from .vibe_voice import VibeVoiceTTSConfig
 
 __all__ = [
     "TTSBaseConfig",
@@ -17,11 +18,19 @@ __all__ = [
     "EdgeTTSConfig",
     "GLMTTSConfig",
     "ChatTTSConfig",
+    "VibeVoiceTTSConfig",
     "TTSConfig",
 ]
 
 # Discriminated Union 类型
 TTSConfig = Annotated[
-    Union[MockTTSConfig, OpenAITTSConfig, EdgeTTSConfig, GLMTTSConfig, ChatTTSConfig],
+    Union[
+        MockTTSConfig,
+        OpenAITTSConfig,
+        EdgeTTSConfig,
+        GLMTTSConfig,
+        ChatTTSConfig,
+        VibeVoiceTTSConfig,
+    ],
     Field(discriminator="type")
 ]

@@ -82,9 +82,21 @@ export const useChatStore = defineStore('chat', () => {
   function finalizeResponse(): void {
     processBufferedChunks(true)
     const last = messages.value[messages.value.length - 1]
-    if (last && last.status === 'streaming') {
+    if (last && last.role === 'assistant' && last.status === 'streaming') {
       last.text = currentResponse.value
       last.status = 'complete'
+    } else if (currentResponse.value) {
+      // 🐛 Fix: Backend sends full text + is_complete in quick succession.
+      // scheduleFlush (500ms) hasn't fired yet, so no streaming message exists.
+      // Create the assistant message directly.
+      const msg: ChatMessage = {
+        id: `msg-${Date.now()}-${++messageIdCounter}`,
+        role: 'assistant',
+        text: currentResponse.value,
+        timestamp: Date.now(),
+        status: 'complete'
+      }
+      messages.value.push(msg)
     }
     currentResponse.value = ''
     isTyping.value = false
