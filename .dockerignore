@@ -1,0 +1,15 @@
+__pycache__
+*.pyc
+.env
+.git
+.gitignore
+*.md
+docs/
+tests/
+frontend/
+node_modules/
+scripts/
+openspec/
+memory_db/
+*.db
+.gitkeep
