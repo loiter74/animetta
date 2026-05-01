@@ -1,18 +1,18 @@
 """
-Faster-Whisper ASR 实现 - 开源免费的语音识别
-基于 faster-whisper 项目：https://github.com/guillaumekln/faster-whisper
+Faster-Whisper ASR implementation - open-source free speech recognition
+Based on faster-whisper project: https://github.com/guillaumekln/faster-whisper
 
-支持多种模型：
-- tiny: 最快，准确率较低
-- base: 平衡速度和准确率
-- small: 较快，准确率中等
-- medium: 较慢，准确率高
-- large-v2: 最慢，准确率最高（推荐中文）
-- large-v3: 最新版本
+Supports multiple models:
+- tiny: fastest, lower accuracy
+- base: balances speed and accuracy
+- small: faster, moderate accuracy
+- medium: slower, high accuracy
+- large-v2: slowest, highest accuracy (recommended for Chinese)
+- large-v3: latest version
 
-支持中文模型：
-- distil-large-v3: 推荐，速度快且准确
-- distil-medium.en: 英文专用
+Supports Chinese models:
+- distil-large-v3: recommended, fast and accurate
+- distil-medium.en: English only
 """
 
 from typing import Union, Optional
@@ -27,11 +27,11 @@ from anima.config.core.registry import ProviderRegistry
 @ProviderRegistry.register_service("asr", "faster_whisper")
 class FasterWhisperASR(ASRInterface):
     """
-    Faster-Whisper ASR 实现
-    使用 OpenAI Whisper 模型的优化版本，速度快且完全离线运行
+    Faster-Whisper ASR implementation
+    Optimized version of the OpenAI Whisper model, fast and fully offline
     """
 
-    # 支持的模型列表
+    # Supported model list
     MODELS = {
         "tiny": "tiny",
         "base": "base",
@@ -41,14 +41,14 @@ class FasterWhisperASR(ASRInterface):
         "large-v3": "large-v3",
         "distil-small.en": "distil-small.en",
         "distil-medium.en": "distil-medium.en",
-        "distil-large-v3": "distil-large-v3",  # 推荐：支持多语言，速度快
+        "distil-large-v3": "distil-large-v3",  # Recommended: supports multiple languages, fast
         "systran/faster-whisper-large-v3": "systran/faster-whisper-large-v3",
     }
 
     def __init__(
         self,
         model: str = "distil-large-v3",
-        language: str = "zh",  # 默认中文
+        language: str = "zh",  # Default Chinese
         device: str = "auto",  # auto, cpu, cuda
         compute_type: str = "default",  # default, int8, float16, float32
         download_root: Optional[str] = None,
@@ -57,17 +57,17 @@ class FasterWhisperASR(ASRInterface):
         vad_parameters: dict = None,
     ):
         """
-        初始化 Faster-Whisper ASR
+        Initialize Faster-Whisper ASR
 
         Args:
-            model: 模型名称或路径（默认 distil-large-v3）
-            language: 语言代码（zh=中文, en=英文, ja=日语, etc.）
-            device: 运行设备（auto=自动检测, cpu=CPU, cuda=CUDA）
-            compute_type: 计算精度（default=自动, int8=量化, float16=半精度）
-            download_root: 模型下载目录
-            beam_size: 束搜索大小（1-10，越大越准确但越慢）
-            vad_filter: 是否使用 VAD 过滤静音
-            vad_parameters: VAD 参数
+            model: Model name or path (default distil-large-v3)
+            language: Language code (zh=Chinese, en=English, ja=Japanese, etc.)
+            device: Device (auto=auto-detect, cpu=CPU, cuda=CUDA)
+            compute_type: Compute type (default=auto, int8=quantization, float16=half precision)
+            download_root: Model download root directory
+            beam_size: Beam search size (1-10, larger is more accurate but slower)
+            vad_filter: Whether to use VAD to filter silence
+            vad_parameters: VAD parameters
         """
         self.model_name = model
         self.language = language
@@ -79,54 +79,54 @@ class FasterWhisperASR(ASRInterface):
         self.vad_parameters = vad_parameters or {}
         self._model = None
 
-        logger.info(f"Faster-Whisper ASR 初始化配置:")
-        logger.info(f"  模型: {model}")
-        logger.info(f"  语言: {language}")
-        logger.info(f"  设备: {device}")
-        logger.info(f"  计算精度: {compute_type}")
+        logger.info(f"Faster-Whisper ASR initialization config:")
+        logger.info(f"  Model: {model}")
+        logger.info(f"  Language: {language}")
+        logger.info(f"  Device: {device}")
+        logger.info(f"  Compute type: {compute_type}")
         logger.info(f"  Beam Size: {beam_size}")
-        logger.info(f"  VAD 过滤: {vad_filter}")
+        logger.info(f"  VAD filter: {vad_filter}")
 
     def _get_model(self):
-        """懒加载模型"""
+        """Lazy-load model"""
         if self._model is None:
             try:
                 from faster_whisper import WhisperModel
 
-                logger.info(f"正在加载 Faster-Whisper 模型: {self.model_name}...")
+                logger.info(f"Loading Faster-Whisper model: {self.model_name}...")
                 self._model = WhisperModel(
                     self.model_name,
                     device=self.device,
                     compute_type=self.compute_type,
                     download_root=self.download_root,
                 )
-                logger.info(f"✅ Faster-Whisper 模型加载完成")
+                logger.info(f"Faster-Whisper model loaded successfully")
 
             except ImportError:
-                logger.error("faster-whisper 未安装，请运行: pip install faster-whisper")
+                logger.error("faster-whisper not installed, please run: pip install faster-whisper")
                 raise ImportError(
                     "faster-whisper 未安装，请运行: pip install faster-whisper"
                 )
             except Exception as e:
-                logger.error(f"加载 Faster-Whisper 模型失败: {e}")
+                logger.error(f"Failed to load Faster-Whisper model: {e}")
                 raise
 
         return self._model
 
     async def preload(self) -> None:
-        """
-        预加载模型
+        """Preload the model (idempotent - safe to call multiple times)"""
+        if self._model is not None:
+            logger.debug(f"Faster-Whisper model already loaded, skipping preload")
+            return
 
-        在服务启动时调用，提前加载模型到内存，避免首次使用时的延迟。
-        """
-        logger.info(f"预加载 Faster-Whisper 模型: {self.model_name}...")
+        logger.info(f"Preloading Faster-Whisper model: {self.model_name}...")
 
-        # 在线程池中运行模型加载（CPU 密集型操作）
+        # Run model loading in thread pool (CPU-intensive operation)
         import asyncio
         loop = asyncio.get_event_loop()
         await loop.run_in_executor(None, self._get_model)
 
-        logger.info(f"✅ Faster-Whisper 模型预加载完成")
+        logger.info(f"Faster-Whisper model preloaded successfully")
 
     async def transcribe(
         self,
@@ -134,16 +134,16 @@ class FasterWhisperASR(ASRInterface):
         **kwargs
     ) -> str:
         """
-        将音频数据转录为文本
+        Transcribe audio data to text
 
         Args:
-            audio_data: 音频数据，可以是:
-                - bytes: WAV/MP3 等格式的字节数据
-                - str/Path: 音频文件路径
-                - list/numpy array: PCM 音频数据 (float32, range [-1.0, 1.0])
+            audio_data: Audio data, can be:
+                - bytes: Byte data in WAV/MP3 etc. format
+                - str/Path: Audio file path
+                - list/numpy array: PCM audio data (float32, range [-1.0, 1.0])
 
         Returns:
-            str: 识别出的文本
+            str: Recognized text
         """
         import asyncio
         import wave
@@ -152,30 +152,30 @@ class FasterWhisperASR(ASRInterface):
 
         model = self._get_model()
 
-        # 处理输入数据，转换为 numpy array
+        # Process input data, convert to numpy array
         if isinstance(audio_data, np.ndarray):
             audio_np = audio_data
         elif isinstance(audio_data, list):
             audio_np = np.array(audio_data, dtype=np.float32)
         elif isinstance(audio_data, (str, Path)):
-            # 从文件读取并解码
+            # Read and decode from file
             audio_np = await self._load_audio_file(str(audio_data))
         elif isinstance(audio_data, bytes):
-            # 从 bytes 解码音频
+            # Decode audio from bytes
             audio_np = await self._load_audio_bytes(audio_data)
         else:
-            raise ValueError(f"不支持的音频数据类型: {type(audio_data)}")
+            raise ValueError(f"Unsupported audio data type: {type(audio_data)}")
 
-        # 确保是 float32 格式
+        # Ensure float32 format
         if audio_np.dtype != np.float32:
             audio_np = audio_np.astype(np.float32)
 
-        # 限制范围到 [-1.0, 1.0]
+        # Clip range to [-1.0, 1.0]
         audio_np = np.clip(audio_np, -1.0, 1.0)
 
-        logger.debug(f"Faster-Whisper ASR 处理音频: {len(audio_np)} 采样点")
+        logger.debug(f"Faster-Whisper ASR processing audio: {len(audio_np)} samples")
 
-        # 在线程池中运行转录（CPU 密集型操作）
+        # Run transcription in thread pool (CPU-intensive operation)
         loop = asyncio.get_event_loop()
         result = await loop.run_in_executor(
             None,
@@ -183,14 +183,14 @@ class FasterWhisperASR(ASRInterface):
             audio_np
         )
 
-        logger.info(f"Faster-Whisper ASR 识别结果: {result}")
+        logger.info(f"Faster-Whisper ASR recognition result: {result}")
         return result
 
     def _transcribe_sync(self, audio_np: np.ndarray) -> str:
-        """同步转录方法"""
+        """Synchronous transcription method"""
         model = self._get_model()
 
-        # 配置参数
+        # Configure parameters
         parameters = {
             "beam_size": self.beam_size,
             "language": self.language if self.language else None,
@@ -198,7 +198,7 @@ class FasterWhisperASR(ASRInterface):
             "vad_filter": self.vad_filter,
         }
 
-        # 添加 VAD 参数
+        # Add VAD parameters
         if self.vad_filter:
             parameters.update({
                 "vad_parameters": {
@@ -207,16 +207,16 @@ class FasterWhisperASR(ASRInterface):
                 }
             })
 
-        # 记录语言配置
-        logger.debug(f"Faster-Whisper 配置 - language={self.language}, 参数={parameters}")
+        # Log language configuration
+        logger.debug(f"Faster-Whisper config - language={self.language}, parameters={parameters}")
 
-        # 执行转录
+        # Execute transcription
         segments, info = model.transcribe(audio_np, **parameters)
 
-        # 记录检测到的语言信息
-        logger.info(f"Faster-Whisper 检测信息: language='{info.language}', language_probability={info.language_probability:.2f}")
+        # Log detected language info
+        logger.info(f"Faster-Whisper detection info: language='{info.language}', language_probability={info.language_probability:.2f}")
 
-        # 提取文本
+        # Extract text
         text_parts = [segment.text for segment in segments]
 
         if not text_parts:
@@ -225,28 +225,28 @@ class FasterWhisperASR(ASRInterface):
             return "".join(text_parts).strip()
 
     async def _load_audio_file(self, file_path: str) -> np.ndarray:
-        """从文件加载音频"""
-        # 使用 pydub 加载音频（支持多种格式）
+        """Load audio from file"""
+        # Load audio using pydub (supports multiple formats)
         try:
             from pydub import AudioSegment
 
             audio_segment = AudioSegment.from_file(file_path)
             samples = np.array(audio_segment.get_array_of_samples(), dtype=np.float32)
 
-            # 归一化到 [-1.0, 1.0]
+            # Normalize to [-1.0, 1.0]
             if audio_segment.sample_width == 2:  # 16-bit
                 samples = samples / 32768.0
             elif audio_segment.sample_width == 4:  # 32-bit
                 samples = samples / 2147483648.0
 
-            # 转换为单声道
+            # Convert to mono
             if audio_segment.channels > 1:
                 samples = samples.reshape((-1, audio_segment.channels)).mean(axis=1)
 
-            # 重采样到 16kHz（如果需要）
+            # Resample to 16kHz (if needed)
             if audio_segment.frame_rate != 16000:
                 from pydub.utils import make_chunks
-                # 简单重采样方法（可以使用 librosa 或 resampy 获得更好效果）
+                # Simple resampling method (can use librosa or resampy for better results)
                 import fractions
                 ratio = 16000 / audio_segment.frame_rate
                 target_length = int(len(samples) * ratio)
@@ -256,12 +256,12 @@ class FasterWhisperASR(ASRInterface):
                     samples
                 )
 
-            logger.debug(f"加载音频文件: {file_path}, 采样点: {len(samples)}")
+            logger.debug(f"Loaded audio file: {file_path}, samples: {len(samples)}")
             return samples
 
         except ImportError:
-            logger.warning("pydub 未安装，使用 wave 模块（仅支持 WAV）")
-            # 降级到 wave 模块
+            logger.warning("pydub not installed, using wave module (only supports WAV)")
+            # Fallback to wave module
             import wave
 
             with wave.open(file_path, 'rb') as wf:
@@ -269,10 +269,10 @@ class FasterWhisperASR(ASRInterface):
                 frames = wf.readframes(wf.getnframes())
                 audio_data = np.frombuffer(frames, dtype=np.int16)
 
-                # 归一化并转 float32
+                # Normalize and convert to float32
                 samples = audio_data.astype(np.float32) / 32768.0
 
-                # 重采样到 16kHz
+                # Resample to 16kHz
                 if sample_rate != 16000:
                     ratio = 16000 / sample_rate
                     target_length = int(len(samples) * ratio)
@@ -285,10 +285,10 @@ class FasterWhisperASR(ASRInterface):
                 return samples
 
     async def _load_audio_bytes(self, audio_bytes: bytes) -> np.ndarray:
-        """从 bytes 加载音频"""
+        """Load audio from bytes"""
         import tempfile
 
-        # 写入临时文件
+        # Write to temp file
         with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp_file:
             tmp_file.write(audio_bytes)
             tmp_file.flush()
@@ -306,18 +306,18 @@ class FasterWhisperASR(ASRInterface):
         **kwargs
     ):
         """
-        流式识别音频，生成器返回文本块
+        Stream recognition of audio, generator returns text chunks
 
         Args:
-            audio_data: 音频数据
+            audio_data: Audio data
 
         Yields:
-            str: 识别的文本块
+            str: Recognized text chunks
         """
-        # Faster-Whisper 不支持真正的流式，但我们可以模拟
+        # Faster-Whisper does not support true streaming, but we can simulate it
         result = await self.transcribe(audio_data, **kwargs)
 
-        # 按句子分割返回
+        # Split by sentences and return
         import re
         sentences = re.split(r'[。！？.!?]', result)
 
@@ -327,13 +327,13 @@ class FasterWhisperASR(ASRInterface):
                 yield sentence
 
     async def close(self) -> None:
-        """清理资源"""
+        """Clean up resources"""
         self._model = None
-        logger.debug("Faster-Whisper ASR 资源已释放")
+        logger.debug("Faster-Whisper ASR resources released")
 
     @classmethod
     def from_config(cls, config, **kwargs):
-        """从配置创建实例"""
+        """Create instance from configuration"""
         return cls(
             model=config.get("model", "distil-large-v3"),
             language=config.get("language", "zh"),
