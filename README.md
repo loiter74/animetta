@@ -249,8 +249,7 @@ llm:
 更多文档：
 - [ARCHITECTURE.md](ARCHITECTURE.md) — 系统架构总览
 - [TESTING.md](TESTING.md) — 测试指南
-- [添加新服务](docs/development/adding-services.md)
-- [内存系统](docs/modules/memory.md)
+- [CONTRIBUTING.md](CONTRIBUTING.md) — 贡献指南
 - [Enterprise Upgrade Plan](docs/plans/2026-05-01-enterprise-upgrade-plan.md)
 
 </details>
