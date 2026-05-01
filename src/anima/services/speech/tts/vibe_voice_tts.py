@@ -1,11 +1,11 @@
 """
-VibeVoice TTS 实现 - Microsoft 开源长文本多说话人语音合成
+VibeVoice TTS implementation - Microsoft open-source long-text multi-speaker speech synthesis
 
-双模架构:
-- Remote 模式: 通过 httpx 调用本地 VibeVoice HTTP 推理服务 (推荐)
-- Local 模式: 通过 subprocess 调用本地模型推理 (备选)
+Dual-mode architecture:
+- Remote mode: Calls local VibeVoice HTTP inference service via httpx (recommended)
+- Local mode: Calls local model inference via subprocess (alternative)
 
-本地 RTX 5090D 建议用 Remote 模式 + 常驻 FastAPI 推理服务。
+For local RTX 5090D, Remote mode + persistent FastAPI inference service is recommended.
 """
 
 from typing import Union, Optional, AsyncGenerator
@@ -25,19 +25,19 @@ from anima.config.providers.tts.vibe_voice import VibeVoiceTTSConfig
 @ProviderRegistry.register_service("tts", "vibe_voice")
 class VibeVoiceTTS(TTSInterface):
     """
-    VibeVoice TTS 实现
+    VibeVoice TTS implementation
 
-    支持 remote（HTTP API）和 local（subprocess 推理）两种部署模式。
-    遵循 GLM TTS 的远程 API 调用模式，并扩展了本地推理支持。
+    Supports two deployment modes: remote (HTTP API) and local (subprocess inference).
+    Follows GLM TTS's remote API calling pattern, extended with local inference support.
 
-    Remote 模式:
-        通过 httpx.AsyncClient POST 到 {base_url}/tts
-        请求体: {"text": str, "voice": str, "language": str, "num_speakers": int}
-        响应: audio/wav bytes
+    Remote mode:
+        POST to {base_url}/tts via httpx.AsyncClient
+        Request body: {"text": str, "voice": str, "language": str, "num_speakers": int}
+        Response: audio/wav bytes
 
-    Local 模式:
-        通过 asyncio.create_subprocess_exec 调 vibe_infer.py
-        临时文件传递输出音频
+    Local mode:
+        Calls vibe_infer.py via asyncio.create_subprocess_exec
+        Output audio passed through temp file
     """
 
     def __init__(
@@ -54,19 +54,19 @@ class VibeVoiceTTS(TTSInterface):
         language: str = "zh",
     ):
         """
-        初始化 VibeVoice TTS
+        Initialize VibeVoice TTS
 
         Args:
-            api_key: API Key（remote 模式需要）
-            model: 模型名称标识
-            voice: 默认音色
-            base_url: 推理服务地址（remote 模式）
-            mode: 部署模式 "remote" / "local"
-            model_size: 模型大小 "1.5b" / "7b"（local 模式）
-            model_path: 模型权重路径（local 模式，默认 HuggingFace）
-            device: 推理设备（local 模式）
-            num_speakers: 说话人数 1-4
-            language: 语言
+            api_key: API Key (required for remote mode)
+            model: Model name identifier
+            voice: Default voice
+            base_url: Inference service address (remote mode)
+            mode: Deployment mode "remote" / "local"
+            model_size: Model size "1.5b" / "7b" (local mode)
+            model_path: Model weight path (local mode, default HuggingFace)
+            device: Inference device (local mode)
+            num_speakers: Number of speakers 1-4
+            language: Language
         """
         self.api_key = api_key
         self.model = model
@@ -81,29 +81,29 @@ class VibeVoiceTTS(TTSInterface):
         self._client = None
 
     def _get_client(self):
-        """懒加载 HTTP 客户端（remote 模式使用）"""
+        """Lazy-load HTTP client (used by remote mode)"""
         if self._client is None:
             try:
                 import httpx
                 self._client = httpx.AsyncClient(
                     base_url=self.base_url,
-                    timeout=180.0,  # 长文本合成可能较久
+                    timeout=180.0,  # Long text synthesis may take time
                     headers={
                         "Authorization": f"Bearer {self.api_key}" if self.api_key else "",
                         "Content-Type": "application/json",
                     },
                 )
                 logger.info(
-                    f"VibeVoice HTTP 客户端初始化 (base_url={self.base_url})"
+                    f"VibeVoice HTTP client initialized (base_url={self.base_url})"
                 )
             except ImportError as e:
-                logger.error("未安装 httpx，请运行: pip install httpx")
-                raise ImportError("httpx 未安装，请运行: pip install httpx") from e
+                logger.error("httpx not installed, please run: pip install httpx")
+                raise ImportError("httpx not installed，请运行: pip install httpx") from e
         return self._client
 
     @classmethod
     def from_config(cls, config: VibeVoiceTTSConfig, **kwargs) -> "VibeVoiceTTS":
-        """从配置对象创建实例（支持 ProviderRegistry.create_service 路径）"""
+        """Create instance from config object (supports ProviderRegistry.create_service path)"""
         return cls(
             api_key=config.api_key,
             model=getattr(config, "model", "vibe-voice-1.5b"),
@@ -125,24 +125,24 @@ class VibeVoiceTTS(TTSInterface):
         **kwargs,
     ) -> Union[bytes, str]:
         """
-        将文本合成为语音
+        Synthesize text to speech
 
         Args:
-            text: 要合成的文本
-            output_path: 输出文件路径（可选）
-            voice: 音色（可选，覆盖默认值）
-            **kwargs: 额外参数（可覆盖 num_speakers, language 等）
+            text: Text to synthesize
+            output_path: Output file path (optional)
+            voice: Voice (optional, overrides default)
+            **kwargs: Additional parameters (can override num_speakers, language, etc.)
 
         Returns:
-            Union[bytes, str]: 如果指定了 output_path，返回文件路径字符串
-                               否则返回音频字节数据
+            Union[bytes, str]: If output_path is specified, returns the file path string
+                               Otherwise returns audio byte data
         """
         if not text or not text.strip():
-            logger.warning("VibeVoice TTS 收到空文本，跳过合成")
+            logger.warning("VibeVoice TTS received empty text, skipping synthesis")
             return b"" if output_path is None else str(output_path)
 
         logger.debug(
-            f"VibeVoice TTS 合成: text_len={len(text)}, "
+            f"VibeVoice TTS synthesis: text_len={len(text)}, "
             f"mode={self.mode}, voice={voice or self.voice}"
         )
 
@@ -162,7 +162,7 @@ class VibeVoiceTTS(TTSInterface):
                     voice=voice or self.voice,
                 )
         except Exception as e:
-            logger.error(f"VibeVoice TTS 合成失败: {e}")
+            logger.error(f"VibeVoice TTS synthesis failed: {e}")
             raise
 
     async def _synthesize_remote(
@@ -173,7 +173,7 @@ class VibeVoiceTTS(TTSInterface):
         num_speakers: int,
         language: str,
     ) -> Union[bytes, str]:
-        """通过 HTTP API 合成语音"""
+        """Synthesize speech via HTTP API"""
         import httpx
 
         client = self._get_client()
@@ -192,10 +192,10 @@ class VibeVoiceTTS(TTSInterface):
             audio_data = response.content
 
             if not audio_data:
-                raise RuntimeError("VibeVoice 服务返回空音频数据")
+                raise RuntimeError("VibeVoice service returned empty audio data")
 
             logger.debug(
-                f"VibeVoice remote 合成成功: {len(audio_data)} bytes, "
+                f"VibeVoice remote synthesis successful: {len(audio_data)} bytes, "
                 f"voice={voice}, speakers={num_speakers}"
             )
 
@@ -204,18 +204,18 @@ class VibeVoiceTTS(TTSInterface):
                 output_path.parent.mkdir(parents=True, exist_ok=True)
                 with open(output_path, "wb") as f:
                     f.write(audio_data)
-                logger.info(f"VibeVoice 音频已保存到: {output_path}")
+                logger.info(f"VibeVoice audio saved to: {output_path}")
                 return str(output_path)
             return audio_data
 
         except httpx.ConnectError as e:
             raise ConnectionError(
-                f"无法连接到 VibeVoice 服务 ({self.base_url})。"
-                f"请确保推理服务已启动。"
+                f"Unable to connect to VibeVoice service ({self.base_url})."
+                f"Please ensure the inference service is running."
             ) from e
         except httpx.HTTPStatusError as e:
             raise RuntimeError(
-                f"VibeVoice 服务返回错误: {e.response.status_code} "
+                f"VibeVoice service returned error: {e.response.status_code} "
                 f"{e.response.text}"
             ) from e
 
@@ -225,14 +225,14 @@ class VibeVoiceTTS(TTSInterface):
         output_path: Optional[Union[str, Path]],
         voice: str,
     ) -> Union[bytes, str]:
-        """通过 subprocess 本地推理合成语音"""
+        """Synthesize speech via subprocess local inference"""
         if output_path:
             out_file = Path(output_path)
             out_file.parent.mkdir(parents=True, exist_ok=True)
         else:
             out_file = Path(tempfile.mktemp(suffix=".wav"))
 
-        # 构建推理命令
+        # Build inference command
         infer_script = self._find_infer_script()
         cmd = [
             "python", infer_script,
@@ -245,7 +245,7 @@ class VibeVoiceTTS(TTSInterface):
         if self.model_size:
             cmd.extend(["--model-size", self.model_size])
 
-        logger.debug(f"VibeVoice local 推理: {' '.join(cmd)}")
+        logger.debug(f"VibeVoice local inference: {' '.join(cmd)}")
 
         try:
             process = await asyncio.create_subprocess_exec(
@@ -256,32 +256,32 @@ class VibeVoiceTTS(TTSInterface):
             stdout, stderr = await process.communicate()
 
             if process.returncode != 0:
-                error_msg = stderr.decode() if stderr else "未知错误"
+                error_msg = stderr.decode() if stderr else "Unknown error"
                 raise RuntimeError(
-                    f"VibeVoice 本地推理失败 (exit={process.returncode}): {error_msg}"
+                    f"VibeVoice local inference failed (exit={process.returncode}): {error_msg}"
                 )
 
             if not out_file.exists() or out_file.stat().st_size == 0:
-                raise RuntimeError("VibeVoice 本地推理未生成音频文件")
+                raise RuntimeError("VibeVoice local inference did not generate audio file")
 
             logger.debug(
-                f"VibeVoice local 合成成功: {out_file.stat().st_size} bytes"
+                f"VibeVoice local synthesis successful: {out_file.stat().st_size} bytes"
             )
 
             if output_path:
                 return str(out_file)
             else:
                 audio_data = out_file.read_bytes()
-                out_file.unlink(missing_ok=True)  # 清理临时文件
+                out_file.unlink(missing_ok=True)  # Clean up temp file
                 return audio_data
 
         except FileNotFoundError as e:
             raise RuntimeError(
-                f"找不到 VibeVoice 推理脚本。请确保模型已下载并配置 model_path。"
+                f"VibeVoice inference script not found. Please ensure the model is downloaded and model_path is configured."
             ) from e
 
     def _find_infer_script(self) -> str:
-        """查找 VibeVoice 推理脚本路径"""
+        """Find VibeVoice inference script path"""
         candidates = [
             os.path.expanduser("~/VibeVoice/demo/tts_1p5b_inference.py"),
             os.path.expanduser("~/VibeVoice/demo/vibevoice_realtime_demo.py"),
@@ -297,7 +297,7 @@ class VibeVoiceTTS(TTSInterface):
             if os.path.isfile(candidate):
                 return candidate
 
-        # 默认返回，让调用方处理 FileNotFoundError
+        # Default return, let the caller handle FileNotFoundError
         return "vibe_infer.py"
 
     async def synthesize_stream(
@@ -307,15 +307,15 @@ class VibeVoiceTTS(TTSInterface):
         **kwargs,
     ) -> AsyncGenerator[bytes, None]:
         """
-        流式合成语音（Remote 模式支持流式响应）
+        Streaming speech synthesis (Remote mode supports streaming response)
 
         Yields:
-            bytes: 音频数据块
+            bytes: Audio data chunks
         """
         import httpx
 
         if self.mode != "remote":
-            # Local 模式不支持流式，fallback 到完整合成
+            # Local mode does not support streaming, fallback to full synthesis
             audio = await self._synthesize_local(
                 text=text,
                 output_path=None,
@@ -340,12 +340,12 @@ class VibeVoiceTTS(TTSInterface):
                     if chunk:
                         yield chunk
         except Exception as e:
-            logger.error(f"VibeVoice 流式合成失败: {e}")
+            logger.error(f"VibeVoice streaming synthesis failed: {e}")
             raise
 
     async def close(self) -> None:
-        """清理资源"""
+        """Clean up resources"""
         if self._client is not None:
             await self._client.aclose()
             self._client = None
-            logger.debug("VibeVoice HTTP 客户端已关闭")
+            logger.debug("VibeVoice HTTP client closed")

@@ -1,6 +1,6 @@
 """
-OpenAI LLM 实现
-使用 openai SDK 调用 OpenAI GPT 模型
+OpenAI LLM implementation
+Uses the openai SDK to call OpenAI GPT models
 """
 
 import json
@@ -21,10 +21,10 @@ if TYPE_CHECKING:
 @ProviderRegistry.register_service("llm", "deepseek")
 class OpenAILLM(LLMInterface):
     """
-    OpenAI GPT 模型 Agent 实现
+    OpenAI GPT model Agent implementation
     
-    使用官方 openai SDK 调用 GPT-4、GPT-3.5 等模型
-    支持流式输出和自定义 base_url（兼容其他 OpenAI API 兼容服务）
+    Uses the official openai SDK to call GPT-4, GPT-3.5, and other models
+    Supports streaming output and custom base_url (compatible with other OpenAI API-compatible services)
     """
     
     def __init__(
@@ -38,15 +38,15 @@ class OpenAILLM(LLMInterface):
         **kwargs
     ):
         """
-        初始化 OpenAI LLM
+        Initialize OpenAI LLM
         
         Args:
             api_key: OpenAI API Key
-            model: 模型名称 (gpt-4, gpt-4o, gpt-3.5-turbo 等)
-            system_prompt: 系统提示词
-            base_url: 自定义 API 端点（可选）
-            temperature: 温度参数
-            max_tokens: 最大生成 token 数
+            model: Model name (gpt-4, gpt-4o, gpt-3.5-turbo, etc.)
+            system_prompt: System prompt
+            base_url: Custom API endpoint (optional)
+            temperature: Temperature parameter
+            max_tokens: Maximum number of tokens to generate
         """
         self.api_key = api_key
         self.model = model
@@ -55,36 +55,36 @@ class OpenAILLM(LLMInterface):
         self.temperature = temperature
         self.max_tokens = max_tokens
         
-        # 对话历史
+        # Conversation history
         self.history: List[Dict[str, str]] = []
         
-        # 初始化异步客户端
+        # Initialize async client
         client_kwargs = {"api_key": api_key}
         if base_url:
             client_kwargs["base_url"] = base_url
         
         self.client = AsyncOpenAI(**client_kwargs)
         
-        logger.info(f"OpenAILLM 初始化完成: model={model}, base_url={base_url or 'default'}")
+        logger.info(f"OpenAILLM initialized: model={model}, base_url={base_url or 'default'}")
 
     @classmethod
     def from_config(cls, config: "LLMBaseConfig", system_prompt: str = "", **kwargs) -> "OpenAILLM":
         """
-        从配置对象创建实例
+        Create an instance from a configuration object
 
-        支持:
+        Supports:
         - OpenAILLMConfig (type: openai)
-        - DeepSeekLLMConfig (type: deepseek) — OpenAI API 兼容
+        - DeepSeekLLMConfig (type: deepseek) — OpenAI API compatible
 
         Args:
-            config: LLM 配置对象 (OpenAILLMConfig 或 DeepSeekLLMConfig)
-            system_prompt: 系统提示词
-            **kwargs: 额外参数（忽略）
+            config: LLM configuration object (OpenAILLMConfig or DeepSeekLLMConfig)
+            system_prompt: System prompt
+            **kwargs: Additional parameters (ignored)
 
         Returns:
-            OpenAILLM 实例
+            OpenAILLM instance
         """
-        # 从配置中提取公共字段（兼容 OpenAI / DeepSeek 等 OpenAI API 兼容服务）
+        # Extract common fields from config (compatible with OpenAI / DeepSeek and other OpenAI API-compatible services)
         api_key = getattr(config, 'api_key', '')
         model = getattr(config, 'model', 'gpt-4o-mini')
         base_url = getattr(config, 'base_url', None)
@@ -102,18 +102,18 @@ class OpenAILLM(LLMInterface):
 
     def _build_messages(self, user_input: str, system_prompt: Optional[str] = None) -> List[Dict[str, str]]:
         """
-        构建消息列表
+        Build messages list
 
         Args:
-            user_input: 用户输入
-            system_prompt: 动态系统提示词（覆盖 self.system_prompt，用于 RAG 记忆增强）
+            user_input: User input
+            system_prompt: Dynamic system prompt (overrides self.system_prompt, used for RAG memory enhancement)
 
         Returns:
-            List[Dict[str, str]]: 完整的消息列表
+            List[Dict[str, str]]: Complete messages list
         """
         messages = []
 
-        # 使用传入的 system_prompt（RAG 增强），否则用实例的默认提示词
+        # Use the passed-in system_prompt (RAG enhanced), otherwise use the instance default
         effective_prompt = system_prompt if system_prompt is not None else self.system_prompt
         if effective_prompt:
             messages.append({
@@ -121,10 +121,10 @@ class OpenAILLM(LLMInterface):
                 "content": effective_prompt
             })
         
-        # 添加历史对话
+        # Add conversation history
         messages.extend(self.history)
         
-        # 添加当前用户输入
+        # Add current user input
         messages.append({
             "role": "user",
             "content": user_input
@@ -134,14 +134,14 @@ class OpenAILLM(LLMInterface):
 
     async def chat(self, user_input: str, **kwargs) -> str:
         """
-        与 OpenAI 模型进行对话
+        Chat with the OpenAI model
 
         Args:
-            user_input: 用户输入
-            **kwargs: 支持 system_prompt — 动态覆盖系统提示词
+            user_input: User input
+            **kwargs: Supports system_prompt — dynamically overrides the system prompt
 
         Returns:
-            str: 模型回复
+            str: Model response
         """
         system_prompt = kwargs.get("system_prompt")
         messages = self._build_messages(user_input, system_prompt=system_prompt)
@@ -156,27 +156,27 @@ class OpenAILLM(LLMInterface):
             
             assistant_message = response.choices[0].message.content
             
-            # 更新历史
+            # Update history
             self.history.append({"role": "user", "content": user_input})
             self.history.append({"role": "assistant", "content": assistant_message})
             
-            logger.debug(f"OpenAI 回复: {assistant_message[:100]}...")
+            logger.debug(f"OpenAI response: {assistant_message[:100]}...")
             return assistant_message
             
         except Exception as e:
-            logger.error(f"OpenAI 对话异常: {e}")
+            logger.error(f"OpenAI chat error: {e}")
             raise
 
     async def chat_stream(self, user_input: str, **kwargs) -> AsyncIterator[str]:
         """
-        流式对话
+        Streaming chat
 
         Args:
-            user_input: 用户输入
-            **kwargs: 支持 system_prompt — 动态覆盖系统提示词（RAG 记忆增强）
+            user_input: User input
+            **kwargs: Supports system_prompt — dynamically overrides the system prompt (RAG memory enhancement)
 
         Yields:
-            str: 模型回复的文本片段
+            str: Text chunk of the model response
         """
         system_prompt = kwargs.get("system_prompt")
         messages = self._build_messages(user_input, system_prompt=system_prompt)
@@ -198,57 +198,57 @@ class OpenAILLM(LLMInterface):
                     full_response += content
                     yield content
             
-            # 更新历史
+            # Update history
             self.history.append({"role": "user", "content": user_input})
             self.history.append({"role": "assistant", "content": full_response})
             
         except Exception as e:
-            logger.error(f"OpenAI 流式对话异常: {e}")
+            logger.error(f"OpenAI streaming chat error: {e}")
             raise
 
     def set_system_prompt(self, prompt: str) -> None:
-        """设置系统提示词"""
+        """Set the system prompt"""
         self.system_prompt = prompt
-        logger.debug(f"系统提示词已更新: {prompt[:50]}...")
+        logger.debug(f"System prompt updated: {prompt[:50]}...")
 
     def get_history(self) -> List[Dict[str, Any]]:
-        """获取对话历史"""
+        """Get conversation history"""
         return self.history.copy()
 
     def clear_history(self) -> None:
-        """清空对话历史"""
+        """Clear conversation history"""
         self.history.clear()
-        logger.debug("对话历史已清空")
+        logger.debug("Conversation history cleared")
 
     async def close(self) -> None:
-        """清理资源"""
+        """Clean up resources"""
         await self.client.close()
-        logger.info("OpenAILLM 资源已释放")
+        logger.info("OpenAILLM resources released")
     
     def handle_interrupt(self, heard_response: str = "") -> None:
         """
-        处理用户打断
+        Handle user interruption
         
         Args:
-            heard_response: 用户听到的部分回复
+            heard_response: Partial response heard by the user
         """
         if heard_response:
-            # 保存部分回复到历史
+            # Save partial response to history
             if self.history and self.history[-1].get("role") == "user":
-                # 获取最后一个用户输入
+                # Get the last user input
                 last_user_input = self.history[-1].get("content", "")
-                # 添加部分 AI 回复
+                # Add partial AI response
                 self.history.append({
                     "role": "assistant",
                     "content": heard_response
                 })
-                # 添加打断标记
+                # Add interruption marker
                 self.history.append({
                     "role": "system",
-                    "content": "[用户打断了对话]"
+                    "content": "[user interrupted the conversation]"
                 })
         
-        logger.info(f"对话被打断，已保存部分回复: {heard_response[:50] if heard_response else '(空)'}...")
+        logger.info(f"Conversation interrupted, partial response saved: {heard_response[:50] if heard_response else '(empty)'}...")
     
     def set_memory_from_history(
         self, 
@@ -256,29 +256,29 @@ class OpenAILLM(LLMInterface):
         history_uid: str
     ) -> None:
         """
-        从历史记录恢复对话记忆
+        Restore conversation memory from history records
          
         Args:
-            conf_uid: 配置 UID
-            history_uid: 历史 UID
+            conf_uid: Config UID
+            history_uid: History UID
         """
-        # TODO: 实现从持久化存储加载历史
-        # 这里暂时只记录日志
-        logger.info(f"尝试从历史恢复记忆: conf_uid={conf_uid}, history_uid={history_uid}")
+        # TODO: Implement loading history from persistent storage
+        # For now, just log it
+        logger.info(f"Attempting to restore memory from history: conf_uid={conf_uid}, history_uid={history_uid}")
 
     # ================================================================
-    # LangGraph 工具调用接口
+    # LangGraph tool calling interface
     # ================================================================
 
     def _convert_tools_to_openai(self, tools: List[Any]) -> List[Dict[str, Any]]:
         """
-        将 LangChain 工具列表转换为 OpenAI API 格式
+        Convert a list of LangChain tools to OpenAI API format
 
         Args:
-            tools: LangChain BaseTool 对象列表
+            tools: List of LangChain BaseTool objects
 
         Returns:
-            OpenAI API 格式的工具列表
+            Tool list in OpenAI API format
         """
         openai_tools = []
         for tool in tools:
@@ -306,15 +306,15 @@ class OpenAILLM(LLMInterface):
         user_input: str,
     ) -> List[Dict[str, Any]]:
         """
-        从 LangChain 消息构建 OpenAI API 消息列表
+        Build an OpenAI API message list from LangChain messages
 
         Args:
-            langchain_history: LangChain 消息历史
-            system_prompt: 系统提示词
-            user_input: 用户输入
+            langchain_history: LangChain message history
+            system_prompt: System prompt
+            user_input: User input
 
         Returns:
-            OpenAI API 格式的消息列表
+            Message list in OpenAI API format
         """
         messages = []
 
@@ -362,16 +362,16 @@ class OpenAILLM(LLMInterface):
         system_prompt: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
-        带工具调用的对话（LangGraph 专用）
+        Conversation with tool calls (LangGraph specific)
 
         Args:
-            user_input: 用户输入
-            tools: LangChain 工具列表
-            langchain_history: LangChain 消息历史
-            system_prompt: 系统提示词
+            user_input: User input
+            tools: List of LangChain tools
+            langchain_history: LangChain message history
+            system_prompt: System prompt
 
         Returns:
-            Dict: 包含 content 和 tool_calls 的响应
+            Dict: Response containing content and tool_calls
         """
         openai_tools = self._convert_tools_to_openai(tools)
         messages = self._build_langchain_messages(langchain_history, system_prompt, user_input)
@@ -408,15 +408,15 @@ class OpenAILLM(LLMInterface):
                         "args": args,
                     })
 
-                logger.info(f"[OpenAI] 工具调用: {[tc['name'] for tc in tool_calls]}")
+                logger.info(f"[OpenAI] Tool calls: {[tc['name'] for tc in tool_calls]}")
                 return {
-                    "content": content or "正在调用工具...",
+                    "content": content or "Calling tool......",
                     "tool_calls": tool_calls,
                 }
 
-            logger.debug(f"[OpenAI] 回复: {content[:100]}...")
+            logger.debug(f"[OpenAI] Response: {content[:100]}...")
 
-            # 更新对话历史
+            # Update conversation history
             self.history.append({"role": "user", "content": user_input})
             self.history.append({"role": "assistant", "content": content})
 
@@ -426,5 +426,5 @@ class OpenAILLM(LLMInterface):
             }
 
         except Exception as e:
-            logger.error(f"[OpenAI] 工具调用失败: {e}")
+            logger.error(f"[OpenAI] Tool call failed: {e}")
             raise

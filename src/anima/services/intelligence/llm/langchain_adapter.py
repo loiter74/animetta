@@ -1,10 +1,10 @@
 """
-LangChain ChatModel 适配器
+LangChain ChatModel adapter
 
-将现有的 LLM 服务包装为 LangChain 的 BaseChatModel，
-使其支持 bind_tools() 等高级功能。
+Wraps existing LLM services as LangChain's BaseChatModel,
+enabling advanced features such as bind_tools().
 
-注意：实际工具调用由 llm_node.py 直接处理，此适配器仅用于基础对话。
+Note: Actual tool calls are handled directly by llm_node.py; this adapter is for basic conversation only.
 """
 
 from typing import Any, Dict, List, Optional, Iterator, AsyncIterator, Sequence, TypeVar, Union
@@ -16,13 +16,13 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.outputs import ChatResult, ChatGeneration
 from langchain_core.tools import BaseTool
 
-# Pydantic v1/v2 兼容性处理
+# Pydantic v1/v2 compatibility handling
 try:
     from pydantic import Field
 except ImportError:
     from pydantic.v1 import Field
 
-# 导入现有 LLM 接口
+# Import existing LLM interface
 from ..llm.interface import LLMInterface
 
 
@@ -31,23 +31,23 @@ GenericChatModel = TypeVar("GenericChatModel", bound="LLMChatModelAdapter")
 
 class LLMChatModelAdapter(BaseChatModel):
     """
-    LangChain ChatModel 适配器
+    LangChain ChatModel adapter
 
-    包装现有的 LLMInterface 实现，使其兼容 LangChain 的 BaseChatModel 协议。
+    Wraps an existing LLMInterface implementation to make it compatible with LangChain's BaseChatModel protocol.
     """
 
-    llm_service: LLMInterface = Field(description="现有的 LLM 服务实例")
-    bound_tools: Sequence[BaseTool] = Field(default_factory=list, description="绑定的工具列表")
-    model_name: str = Field(default="unknown", description="模型名称 (用于 LangSmith/LangFuse 追踪)")
+    llm_service: LLMInterface = Field(description="Existing LLM service instance")
+    bound_tools: Sequence[BaseTool] = Field(default_factory=list, description="Bound tool list")
+    model_name: str = Field(default="unknown", description="Model name (used for LangSmith/LangFuse tracing)")
 
-    # LangChain 必需字段
+    # LangChain required fields
     @property
     def _llm_type(self) -> str:
         return f"anima_{self.model_name}"
 
     @property
     def lc_secrets(self) -> Dict[str, str]:
-        """隐藏敏感信息"""
+        """Hide sensitive information"""
         return {}
 
     def _generate(
@@ -58,9 +58,9 @@ class LLMChatModelAdapter(BaseChatModel):
         **kwargs: Any,
     ) -> ChatResult:
         """
-        同步生成（委托给异步版本）
+        Synchronous generation (delegates to async version)
 
-        注意: 现有的 LLM 服务是异步的，这里通过 asyncio 转换
+        Note: The existing LLM service is async; this uses asyncio to bridge
         """
         import asyncio
         return asyncio.run(self._agenerate(messages, stop, run_manager, **kwargs))
@@ -73,18 +73,18 @@ class LLMChatModelAdapter(BaseChatModel):
         **kwargs: Any,
     ) -> ChatResult:
         """
-        异步生成响应
+        Asynchronously generate a response
 
         Args:
-            messages: 消息列表
-            stop: 停止词
-            run_manager: 回调管理器
-            **kwargs: 额外参数
+            messages: List of messages
+            stop: Stop words
+            run_manager: Callback manager
+            **kwargs: Additional parameters
 
         Returns:
-            ChatResult: 生成结果
+            ChatResult: Generation result
         """
-        # 提取用户输入（最后一条 HumanMessage）
+        # Extract user input (last HumanMessage)
         user_input = ""
         system_prompt = ""
 
@@ -95,16 +95,16 @@ class LLMChatModelAdapter(BaseChatModel):
                 user_input = msg.content
 
         if not user_input:
-            logger.warning("[LLM适配器] 未找到用户输入")
+            logger.warning("[LLM Adapter] No user input found")
             return ChatResult(
-                generations=[ChatGeneration(message=AIMessage(content="抱歉，我没有收到您的消息。"))]
+                generations=[ChatGeneration(message=AIMessage(content="Sorry, I didn't receive your message."))]
             )
 
-        # 设置系统提示词
+        # Set system prompt
         if system_prompt:
             self.llm_service.set_system_prompt(system_prompt)
 
-        # 调用现有 LLM 服务的流式接口
+        # Call existing LLM service's streaming interface
         chunks = []
         full_response = ""
 
@@ -113,15 +113,15 @@ class LLMChatModelAdapter(BaseChatModel):
                 chunks.append(chunk)
                 full_response += chunk
 
-                # 通知回调（支持流式输出）
+                # Notify callback (supports streaming output)
                 if run_manager:
                     await run_manager.on_llm_new_token(chunk)
 
         except Exception as e:
-            logger.error(f"[LLM适配器] 生成失败: {e}")
-            full_response = f"生成回复时出错: {str(e)}"
+            logger.error(f"[LLM Adapter] Generation failed: {e}")
+            full_response = f"Error generating response: {str(e)}"
 
-        # 构建 AI 消息
+        # Build AI message
         ai_message = AIMessage(content=full_response)
 
         return ChatResult(generations=[ChatGeneration(message=ai_message)])
@@ -132,16 +132,16 @@ class LLMChatModelAdapter(BaseChatModel):
         **kwargs: Any,
     ) -> "LLMChatModelAdapter":
         """
-        绑定工具（占位方法，实际工具调用由 llm_node.py 处理）
+        Bind tools (placeholder method; actual tool calls are handled by llm_node.py)
         """
-        logger.info(f"[LLM适配器 bind_tools] 调用，tools 数量: {len(tools)}")
+        logger.info(f"[LLM Adapter bind_tools] called, tools count: {len(tools)}")
 
-        # 直接设置 bound_tools
+        # Directly set bound_tools
         self.bound_tools = list(tools)
 
-        logger.info(f"[LLM适配器 bind_tools] 已设置 {len(self.bound_tools)} 个工具")
+        logger.info(f"[LLM Adapter bind_tools] set {len(self.bound_tools)} tools")
         for i, tool in enumerate(self.bound_tools):
-            logger.debug(f"[LLM适配器 bind_tools] tool[{i}]: {tool.name}")
+            logger.debug(f"[LLM Adapter bind_tools] tool[{i}]: {tool.name}")
 
         return self
 
@@ -151,14 +151,14 @@ def create_chat_model_from_service(
     enable_tooling: bool = False,
 ) -> BaseChatModel:
     """
-    从现有的 LLM 服务创建 LangChain ChatModel
+    Create a LangChain ChatModel from an existing LLM service
 
     Args:
-        llm_service: 现有的 LLM 服务实例
-        enable_tooling: 是否启用工具调用支持（占位参数，实际由 llm_node.py 处理）
+        llm_service: Existing LLM service instance
+        enable_tooling: Whether to enable tool call support (placeholder; actual handling by llm_node.py)
 
     Returns:
-        BaseChatModel: LangChain ChatModel 实例
+        BaseChatModel: LangChain ChatModel instance
     """
     model_name = "unknown"
     if hasattr(llm_service, "config") and hasattr(llm_service.config, "model"):
