@@ -131,11 +131,11 @@ speaking_style: "使用轻松的语气，偶尔加emoji"
 
 ## 🛠️ 技术栈
 
-**后端**: Python、FastAPI、Socket.IO
+**后端**: Python 3.13、FastAPI、Socket.IO、LangGraph、LangChain
 
-**前端**: Electron、原生 JS、pixi-live2d-display
+**前端**: Electron、Vue 3、TypeScript、UnoCSS、Pinia、pixi-live2d-display
 
-**AI 服务**: GLM、OpenAI、FasterWhisper、Silero VAD、Chroma
+**AI 服务**: GLM、OpenAI、DeepSeek、Ollama、FasterWhisper、Edge TTS、Silero VAD、Chroma
 
 ---
 
@@ -148,34 +148,58 @@ speaking_style: "使用轻松的语气，偶尔加emoji"
 
 ```
 src/anima/
-├── socketio_server.py    # 主服务器入口
-├── service_context.py    # 服务容器管理
-├── config/               # 配置系统
-│   ├── core/registry.py  # 服务注册表
-│   └── providers/        # 服务商配置类
-├── adapters/             # 通道适配器层
-├── services/             # 服务实现 (LLM/ASR/TTS/VAD)
-├── pipeline/             # 数据处理管道
-├── events/               # 事件驱动架构
-├── handlers/             # 事件处理器
-├── memory/               # 对话记忆系统
-└── avatar/               # Live2D 表情分析
+├── core/                  # 服务器入口 + 服务容器
+│   └── socketio_server.py
+├── config/                # 配置系统 (YAML + Pydantic)
+│   ├── core/registry.py   # 插件式服务注册表
+│   └── providers/         # LLM/ASR/TTS/VAD 配置类
+├── orchestration/         # LangGraph 状态图 (NEW)
+│   ├── graph/             # 状态图节点 + 编排器
+│   ├── server/            # WebSocket 路由 + 会话管理
+│   └── session_manager/
+├── services/              # 服务实现
+│   ├── speech/            # ASR + TTS
+│   ├── intelligence/      # LLM + VAD
+│   └── live2d/            # Live2D 动作队列
+├── tools/                 # 工具系统 (MCP + 内置)
+├── memory/                # Wiki 架构记忆系统
+│   ├── search/            # 混合搜索 (Vector + BM25)
+│   ├── storage/           # Chroma + SQLite
+│   └── wiki/              # Markdown 源
+├── avatar/                # Live2D 表情分析
+└── utils/                 # 工具函数
 ```
 
-### 数据流架构
+### 数据流架构 (LangGraph)
 
 ```
 用户输入 (文本/音频)
     ↓
-InputPipeline (语音识别 → 文本清洗)
-    ↓
-Agent (LLM 流式对话)
-    ↓
-OutputPipeline (句子分割 → TTS 合成 → 情感提取)
-    ↓
-EventBus (按优先级分发事件)
-    ↓
-前端渲染 (文字显示 + 语音播放 + Live2D 动作)
+[START] → route_input()
+    │
+    ├── (audio) → [asr_node] → 语音识别 → user_text
+    │
+    └── (text) ──────────────────→ [llm_node]
+                                      │
+                                  RAG 检索记忆
+                                      │
+                                  LLM 推理 (流式/工具)
+                                      │
+                             ┌────────┴────────┐
+                             │                 │
+                       (工具调用)         (直接回复)
+                             │                 │
+                        [tool_node]      [tts_node]
+                             │                 │
+                        执行结果 ←──────────────┤
+                                               ↓
+                                         [emotion_node]
+                                               ↓
+                                         [output_node]
+                                    ┌──────────┴──────────┐
+                                    ↓                     ↓
+                            Socket.IO 事件          记忆存储
+                              → 前端渲染           → SQLite/Chroma
 ```
 
 ### 扩展开发
@@ -223,12 +247,11 @@ llm:
 ```
 
 更多文档：
-- [快速开始指南](docs/development/quickstart.md)
+- [ARCHITECTURE.md](ARCHITECTURE.md) — 系统架构总览
+- [TESTING.md](TESTING.md) — 测试指南
 - [添加新服务](docs/development/adding-services.md)
-- [数据流设计](docs/architecture/data-flow.md)
-- [事件系统](docs/architecture/event-system.md)
-- [设计模式](docs/architecture/patterns.md)
 - [内存系统](docs/modules/memory.md)
+- [Enterprise Upgrade Plan](docs/plans/2026-05-01-enterprise-upgrade-plan.md)
 
 </details>
 
