@@ -1,15 +1,13 @@
 """配置基类模块"""
 
 from typing import ClassVar
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class BaseConfig(BaseModel):
     """所有配置的基类"""
-    
-    class Config:
-        extra = "forbid"  # 禁止额外字段
-        validate_default = True  # 验证默认值
+
+    model_config = ConfigDict(extra="forbid", validate_default=True)
 
 
 class ProviderConfig(BaseModel):
@@ -25,10 +23,8 @@ class ProviderConfig(BaseModel):
             model: str = "gpt-4o-mini"
     """
     type: str = Field(description="提供者类型，用于鉴别配置类型")
-    
-    class Config:
-        extra = "forbid"
-        validate_default = True
+
+    model_config = ConfigDict(extra="forbid", validate_default=True)
     
     @classmethod
     def get_provider_type(cls) -> str:

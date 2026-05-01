@@ -4,7 +4,7 @@ Local Lora LLM Configuration
 """
 
 from typing import Optional, Literal
-from pydantic import Field
+from pydantic import Field, ConfigDict
 
 from .base import LLMBaseConfig
 
@@ -53,8 +53,8 @@ class LocalLoraLLMConfig(LLMBaseConfig):
         description="Top-p 采样参数"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "type": "local_lora",
                 "base_model_name": "Qwen/Qwen2.5-7B-Instruct",
@@ -62,6 +62,7 @@ class LocalLoraLLMConfig(LLMBaseConfig):
                 "device": "cuda",
                 "max_new_tokens": 512,
                 "temperature": 0.7,
-                "top_p": 0.9
+                "top_p": 0.9,
             }
         }
+    )
