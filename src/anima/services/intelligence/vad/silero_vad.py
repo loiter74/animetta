@@ -1,6 +1,6 @@
 """
-Silero VAD 实现
-参考 Open-LLM-VTuber 的 VADEngine 和 StateMachine 实现
+Silero VAD implementation
+Based on Open-LLM-VTuber's VADEngine and StateMachine implementation
 """
 
 from collections import deque
@@ -15,13 +15,13 @@ from anima.config.core.registry import ProviderRegistry
 @ProviderRegistry.register_service("vad", "silero")
 class SileroVAD(VADInterface):
     """
-    基于 Silero 的语音活动检测实现
+    Silero-based voice activity detection implementation
 
-    使用状态机检测语音的开始和结束：
-    - IDLE -> ACTIVE: 检测到语音开始
-    - ACTIVE -> INACTIVE: 检测到语音暂停
-    - INACTIVE -> ACTIVE: 语音继续
-    - INACTIVE -> IDLE: 语音完全结束，输出累积的音频
+    Uses a state machine to detect speech start and end:
+    - IDLE -> ACTIVE: Speech start detected
+    - ACTIVE -> INACTIVE: Speech pause detected
+    - INACTIVE -> ACTIVE: Speech continues
+    - INACTIVE -> IDLE: Speech fully ended, output accumulated audio
     """
 
     def __init__(
@@ -33,7 +33,7 @@ class SileroVAD(VADInterface):
         required_misses: int = 2,
         smoothing_window: int = 12,
     ):
-        # 保存配置参数
+        # Save configuration parameters
         self.sample_rate = sample_rate
         self.prob_threshold = prob_threshold
         self.db_threshold = db_threshold
@@ -41,30 +41,30 @@ class SileroVAD(VADInterface):
         self.required_misses = required_misses
         self.smoothing_window = smoothing_window
 
-        # 窗口大小：16kHz 时为 512 采样点 (约 32ms)
+        # Window size: 512 samples at 16kHz (approx 32ms)
         self.window_size_samples = 512 if sample_rate == 16000 else 256
 
-        # 加载模型
+        # Load model
         self.model = self._load_vad_model()
 
-        # 状态机
+        # State machine
         self.state_machine = SileroStateMachine(self)
 
-        # 诊断日志标志（防止重复日志）
+        # Diagnostic log flags (prevent duplicate logs)
         self._vad_logged = False
         self._vad_int16_logged = False
         self._vad_normalized_logged = False
 
-        logger.info(f"✅ Silero VAD 初始化完成")
-        logger.info(f"   - 采样率: {sample_rate} Hz")
-        logger.info(f"   - 概率阈值: {prob_threshold}")
-        logger.info(f"   - 分贝阈值: {db_threshold}")
-        logger.info(f"   - 开始命中次数: {required_hits}")
-        logger.info(f"   - 结束未命中次数: {required_misses}")
+        logger.info(f"✅ Silero VAD initialization complete")
+        logger.info(f"   - Sample rate: {sample_rate} Hz")
+        logger.info(f"   - Probability threshold: {prob_threshold}")
+        logger.info(f"   - Decibel threshold: {db_threshold}")
+        logger.info(f"   - Required hits: {required_hits}")
+        logger.info(f"   - Required misses: {required_misses}")
 
     @classmethod
     def from_config(cls, config, **kwargs):
-        """从配置创建实例"""
+        """Create instance from configuration"""
         return cls(
             sample_rate=config.sample_rate,
             prob_threshold=config.prob_threshold,
@@ -75,41 +75,53 @@ class SileroVAD(VADInterface):
         )
 
     def _load_vad_model(self):
-        """加载 Silero VAD 模型"""
+        """Load Silero VAD model"""
         try:
             from silero_vad import load_silero_vad
-            logger.info("正在加载 Silero-VAD 模型...")
+            logger.info("Loading Silero-VAD model...")
             model = load_silero_vad()
-            logger.info("Silero-VAD 模型加载完成")
+            logger.info("Silero-VAD model loaded successfully")
             return model
         except ImportError:
-            logger.warning("silero-vad 未安装，请运行: pip install silero-vad")
+            logger.warning("silero-vad is not installed, please run: pip install silero-vad")
             raise
         except Exception as e:
-            logger.error(f"加载 Silero-VAD 模型失败: {e}")
+            logger.error(f"Failed to load Silero-VAD model: {e}")
             raise
+
+    async def preload(self) -> None:
+        """Preload is safe to call multiple times (model loaded eagerly in __init__)"""
+        if self.model is not None:
+            logger.debug("Silero-VAD model already loaded, skipping preload")
+            return
+
+        logger.info("Loading Silero-VAD model...")
+        import asyncio
+        loop = asyncio.get_event_loop()
+        self.model = await loop.run_in_executor(None, self._load_vad_model)
+        logger.info("Silero-VAD model preloaded")
 
     def detect_speech(self, audio_data: Union[list, np.ndarray]) -> VADResult:
         """
-        检测音频数据中的语音活动
+        Detect voice activity in audio data
 
-        处理流程：
-        1. 将音频分块（每块 512 采样点）
-        2. 对每块计算语音概率
-        3. 通过状态机判断语音开始/结束
+        Processing flow:
+        1. Split audio into chunks (512 samples each)
+        2. Calculate speech probability for each chunk
+        3. Use state machine to determine speech start/end
 
         Args:
-            audio_data: 音频数据（float32 列表或 numpy 数组，范围 [-1.0, 1.0] 或 int16 PCM）
+            audio_data: Audio data (float32 list or numpy array, range [-1.0, 1.0] or int16 PCM)
 
         Returns:
-            VADResult: 检测结果
+            VADResult: Detection result
         """
         import torch
 
-        # 转换为 numpy 数组并智能归一化
+        # Convert to numpy array with smart normalization
         audio_np = np.array(audio_data, dtype=np.float32)
 
-        # 🔥 诊断：记录原始音频数据范围（只记录第一个块，避免刷屏）
+        # Diagnostic: record original audio data range (only first chunk, avoid flooding)
         if not hasattr(self, '_vad_logged'):
             if len(audio_np) > 0:
                 orig_min = float(np.min(audio_np))
@@ -123,67 +135,67 @@ class SileroVAD(VADInterface):
         else:
             orig_min = orig_max = orig_abs_max = 0.0
 
-        # 检测是否为 int16 PCM 数据（值范围超出 [-1.0, 1.0]）
+        # Check if int16 PCM data (value range exceeds [-1.0, 1.0])
         is_int16 = False
         if len(audio_np) > 0 and np.max(np.abs(audio_np)) > 1.0:
-            # int16 PCM 数据，归一化到 [-1.0, 1.0]
+            # int16 PCM data, normalize to [-1.0, 1.0]
             if not hasattr(self, '_vad_int16_logged'):
-                logger.info(f"[VAD] ✅ 检测到 int16 PCM 数据格式，将自动归一化")
+                logger.info(f"[VAD] ✅ Detected int16 PCM data format, will auto-normalize")
                 self._vad_int16_logged = True
             audio_np = audio_np / 32767.0
             is_int16 = True
 
-        # 打印归一化后的信号幅度（只打印一次）
+        # Print normalized signal amplitude (only once)
         if not hasattr(self, '_vad_normalized_logged'):
             norm_min = float(np.min(audio_np)) if len(audio_np) > 0 else 0
             norm_max = float(np.max(audio_np)) if len(audio_np) > 0 else 0
             norm_rms = float(np.sqrt(np.mean(audio_np**2))) if len(audio_np) > 0 else 0
-            logger.info(f"[VAD] 📊 归一化后信号范围: [{norm_min:.4f}, {norm_max:.4f}], RMS: {norm_rms:.4f}")
-            logger.info(f"[VAD] 💡 提示：Silero VAD 在 RMS > 0.01 时工作良好，当前 RMS: {norm_rms:.4f}")
+            logger.info(f"[VAD] 📊 Normalized signal range: [{norm_min:.4f}, {norm_max:.4f}], RMS: {norm_rms:.4f}")
+            logger.info(f"[VAD] 💡 Tip: Silero VAD works well when RMS > 0.01, current RMS: {norm_rms:.4f}")
             self._vad_normalized_logged = True
 
-        # 🔥 关键修复：记录所有事件，返回最后一个重要事件
-        # 不要在遇到第一个事件时就返回，要处理完所有块
+        # Critical fix: record all events, return the last important event
+        # Do not return on first event, process all chunks
         speech_start_event = None
         speech_end_event = None
 
-        # 分块处理
+        # Chunk processing
         for i in range(0, len(audio_np), self.window_size_samples):
             chunk_np = audio_np[i: i + self.window_size_samples]
 
-            # 🔥 修复：不要跳过不完整的块，也要处理
+            # Fix: do not skip incomplete chunks, process them too
             if len(chunk_np) < self.window_size_samples:
-                # 最后一块可能不完整，填充零
+                # Last chunk may be incomplete, pad with zeros
                 padded_chunk = np.zeros(self.window_size_samples, dtype=np.float32)
                 padded_chunk[:len(chunk_np)] = chunk_np
                 chunk_np = padded_chunk
 
-            # 转换为 torch 张量
+            # Convert to torch tensor
             chunk_tensor = torch.Tensor(chunk_np)
 
-            # 计算语音概率
+            # Calculate speech probability
             with torch.no_grad():
                 speech_prob = self.model(chunk_tensor, self.sample_rate).item()
 
-            # 通过状态机处理
+            # Process through state machine
             result = self.state_machine.process(speech_prob, chunk_np)
 
-            # 记录事件，但不立即返回
+            # Record events without immediately returning
             if result is not None:
                 if result.is_speech_start:
                     speech_start_event = result
                 elif result.is_speech_end:
                     speech_end_event = result
 
-        # 返回优先级最高的事件：语音结束 > 语音开始 > 普通状态
+        # Return highest priority event: speech_end > speech_start > normal state
         if speech_end_event is not None:
-            # 只在 DEBUG 级别记录，避免刷屏
-            logger.debug(f"[VAD] 语音结束，音频长度: {len(speech_end_event.audio_data)} 字节")
+            # Only log at DEBUG level to avoid flooding
+            logger.debug(f"[VAD] Speech ended, audio length: {len(speech_end_event.audio_data)} bytes")
             return speech_end_event
         elif speech_start_event is not None:
             return speech_start_event
 
-        # 没有特殊事件，返回当前状态
+        # No special events, return current state
         return VADResult(
             audio_data=b"",
             is_speech_start=False,
@@ -192,62 +204,62 @@ class SileroVAD(VADInterface):
         )
 
     def reset(self) -> None:
-        """重置状态机"""
+        """Reset state machine"""
         self.state_machine = SileroStateMachine(self)
-        logger.debug("VAD 状态机已重置")
+        logger.debug("VAD state machine has been reset")
 
     def get_current_state(self) -> VADState:
-        """获取当前状态"""
+        """Get current state"""
         return self.state_machine.state
 
     async def close(self) -> None:
-        """清理资源"""
+        """Clean up resources"""
         self.reset()
-        logger.info("Silero VAD 资源已释放")
+        logger.info("Silero VAD resources released")
 
 
 class SileroStateMachine:
     """
-    Silero VAD 状态机
+    Silero VAD State Machine
 
-    状态转换：
-    IDLE -> ACTIVE: 连续命中 required_hits 次
-    ACTIVE -> INACTIVE: 连续未命中 required_misses 次
-    INACTIVE -> ACTIVE: 连续命中 required_hits 次
-    INACTIVE -> IDLE: 连续未命中 required_misses 次（输出音频）
+    State transitions:
+    IDLE -> ACTIVE: Consecutive hits reaching required_hits
+    ACTIVE -> INACTIVE: Consecutive misses reaching required_misses
+    INACTIVE -> ACTIVE: Consecutive hits reaching required_hits
+    INACTIVE -> IDLE: Consecutive misses reaching required_misses (output audio)
     """
 
     def __init__(self, vad_instance):
         self.state = VADState.IDLE
-        self.vad = vad_instance  # 保存 SileroVAD 实例的引用
+        self.vad = vad_instance  # Reference to SileroVAD instance
 
-        # 计数器
+        # Counters
         self.hit_count = 0
         self.miss_count = 0
 
-        # 累积的音频数据
+        # Accumulated audio data
         self.probs = []
         self.dbs = []
         self.bytes = bytearray()
 
-        # 平滑窗口
+        # Smoothing window
         self.prob_window = deque(maxlen=vad_instance.smoothing_window)
         self.db_window = deque(maxlen=vad_instance.smoothing_window)
 
-        # 预缓冲（保存语音开始前的一些音频）
+        # Pre-buffer (saves some audio before speech starts)
         self.pre_buffer = deque(maxlen=20)
 
-        # 诊断计数器
+        # Diagnostic counter
         self._chunk_count = 0
 
-        # INACTIVE 状态超时机制（秒）
+        # INACTIVE state timeout mechanism (seconds)
         self._inactive_start_time = None
-        self._inactive_timeout = 1.0  # INACTIVE 状态超过1秒就强制结束
+        self._inactive_timeout = 1.0  # Force end if INACTIVE exceeds 1 second
 
     @staticmethod
     def calculate_db(audio_data: np.ndarray) -> float:
-        """计算音频的分贝值"""
-        # 避免空数组或全零数组导致的 sqrt 警告
+        """Calculate audio decibel value"""
+        # Avoid sqrt warning on empty or all-zero arrays
         if audio_data is None or len(audio_data) == 0:
             return -np.inf
         mean_square = np.mean(np.square(audio_data))
@@ -257,72 +269,71 @@ class SileroStateMachine:
         return 20 * np.log10(rms + 1e-7)
 
     def get_smoothed_values(self, prob: float, db: float) -> tuple:
-        """获取平滑后的概率和分贝值"""
+        """Get smoothed probability and decibel values"""
         self.prob_window.append(prob)
         self.db_window.append(db)
         return np.mean(self.prob_window), np.mean(self.db_window)
 
     def update(self, chunk_bytes: bytes, prob: float, db: float) -> None:
-        """更新累积数据"""
+        """Update accumulated data"""
         self.probs.append(prob)
         self.dbs.append(db)
         self.bytes.extend(chunk_bytes)
 
     def reset_buffers(self) -> None:
-        """重置缓冲区"""
+        """Reset buffers"""
         self.probs.clear()
         self.dbs.clear()
         self.bytes.clear()
 
     def process(self, prob: float, float_chunk_np: np.ndarray) -> Union[VADResult, None]:
         """
-        处理音频块
+        Process an audio chunk
 
         Args:
-            prob: 语音概率
-            float_chunk_np: float32 音频块
+            prob: Speech probability
+            float_chunk_np: float32 audio chunk
 
         Returns:
-            VADResult 或 None（无特殊事件时）
+            VADResult or None (when no special event)
         """
-        # 转换为 int16 字节
+        # Convert to int16 bytes
         int_chunk_np = (float_chunk_np * 32767).astype(np.int16)
         chunk_bytes = int_chunk_np.tobytes()
 
-        # 计算分贝值
+        # Calculate decibel value
         db = self.calculate_db(int_chunk_np)
 
-        # 平滑处理
+        # Smoothing
         smoothed_prob, smoothed_db = self.get_smoothed_values(prob, db)
 
-        # 🔥 诊断日志：判断是否为语音
-        # 只使用 prob 判断，不使用 db（因为 db 可能为 -inf）
+        # Diagnostic log: determine if speech
+        # Use only prob for judgment, not db (because db may be -inf)
         is_speech = smoothed_prob >= self.vad.prob_threshold
         # is_speech = (
         #     smoothed_prob >= self.vad.prob_threshold and
         #     smoothed_db >= self.vad.db_threshold
         # )
 
-        # 每5个块打印一次诊断信息（更频繁）
         self._chunk_count += 1
 
-        # 诊断日志：每 100 个块打印一次（约 3 秒）
+        # Diagnostic log: print every 100 chunks (approx 3 seconds)
         if self._chunk_count % 100 == 1:
             logger.debug(f"[VAD] #{self._chunk_count}: state={self.state.value}, prob={smoothed_prob:.3f}/{self.vad.prob_threshold:.3f}, speech={is_speech}")
 
-        # 状态机处理
+        # State machine processing
         if self.state == VADState.IDLE:
-            # 空闲状态：等待语音开始
+            # Idle state: waiting for speech to start
             self.pre_buffer.append(chunk_bytes)
 
             if is_speech:
                 self.hit_count += 1
                 if self.hit_count >= self.vad.required_hits:
-                    # 检测到语音开始
+                    # Speech start detected
                     self.state = VADState.ACTIVE
                     self.update(chunk_bytes, smoothed_prob, smoothed_db)
                     self.hit_count = 0
-                    logger.debug(f"[VAD] 语音开始")
+                    logger.debug(f"[VAD] Speech started")
                     return VADResult(
                         audio_data=b"",
                         is_speech_start=True,
@@ -333,58 +344,57 @@ class SileroStateMachine:
                 self.hit_count = 0
 
         elif self.state == VADState.ACTIVE:
-            # 活跃状态：正在说话
+            # Active state: currently speaking
             self.update(chunk_bytes, smoothed_prob, smoothed_db)
 
             if is_speech:
                 self.miss_count = 0
             else:
                 self.miss_count += 1
-                # 每 50 个块打印 miss_count 状态
+                # Print miss_count status every 50 chunks
                 if self._chunk_count % 50 == 0 and self.miss_count > 0:
                     logger.info(f"[VAD] ACTIVE: miss_count={self.miss_count}/{self.vad.required_misses}, prob={smoothed_prob:.3f}")
                 if self.miss_count >= self.vad.required_misses:
-                    # 检测到语音暂停
+                    # Speech pause detected
                     self.state = VADState.INACTIVE
                     self.miss_count = 0
-                    self._inactive_start_time = None  # 重置超时计时
-                    logger.info(f"[VAD] 语音暂停 (ACTIVE→INACTIVE)")
+                    self._inactive_start_time = None  # Reset timeout timer
+                    logger.info(f"[VAD] Speech paused (ACTIVE→INACTIVE)")
 
         elif self.state == VADState.INACTIVE:
-            # 暂停状态：等待语音继续或结束
+            # Inactive state: waiting for speech to continue or end
             self.update(chunk_bytes, smoothed_prob, smoothed_db)
 
-            # 🔥 超时检查：如果 INACTIVE 状态持续超过超时时间，强制结束
+            # Timeout check: force end if INACTIVE exceeds timeout
             import time
             if self._inactive_start_time is None:
                 self._inactive_start_time = time.time()
-                logger.debug(f"[VAD] 进入 INACTIVE 状态，开始超时计时")
+                logger.debug(f"[VAD] Entered INACTIVE state, starting timeout timer")
 
             inactive_duration = time.time() - self._inactive_start_time
             
-            # 每 1 秒打印一次状态
-            # 每 0.5 秒打印一次状态
+            # Print status every 0.5 seconds
             if not hasattr(self, "_last_logged_duration") or inactive_duration - self._last_logged_duration >= 0.5:
-                logger.info(f"[VAD] INACTIVE 状态已持续 {inactive_duration:.1f}s (超时阈值: {self._inactive_timeout}s)")
+                logger.info(f"[VAD] INACTIVE state has lasted {inactive_duration:.1f}s (timeout threshold: {self._inactive_timeout}s)")
                 self._last_logged_duration = inactive_duration
             
             if inactive_duration > self._inactive_timeout:
-                # 超时强制结束
-                logger.info(f"[VAD] INACTIVE 超时 ({inactive_duration:.2f}s)，强制结束")
+                # Timeout, force end
+                logger.info(f"[VAD] INACTIVE timeout ({inactive_duration:.2f}s), forcing end")
                 self.state = VADState.IDLE
                 self._inactive_start_time = None
                 self.miss_count = 0
 
-                # 合并预缓冲和主缓冲区的音频
+                # Merge pre-buffer and main buffer audio
                 pre_bytes = b"".join(self.pre_buffer)
                 audio_data = pre_bytes + bytes(self.bytes)
 
                 self.reset_buffers()
                 self.pre_buffer.clear()
 
-                # 检查音频长度是否足够（至少0.5秒，约8000字节）
+                # Check if audio length is sufficient (at least 0.5s, approx 8000 bytes)
                 if len(audio_data) > 8000:
-                    logger.debug(f"[VAD] 语音结束 (超时), 音频: {len(audio_data)} 字节")
+                    logger.debug(f"[VAD] Speech ended (timeout), audio: {len(audio_data)} bytes")
                     return VADResult(
                         audio_data=audio_data,
                         is_speech_start=False,
@@ -392,46 +402,46 @@ class SileroStateMachine:
                         state=VADState.IDLE
                     )
                 else:
-                    logger.debug(f"[VAD] 音频太短 ({len(audio_data)} 字节)，丢弃")
+                    logger.debug(f"[VAD] Audio too short ({len(audio_data)} bytes), discarding")
                     return None
 
             if is_speech:
                 self.hit_count += 1
-                # 🔥 大幅提高阈值：需要 10 次连续语音才会转回 ACTIVE（约 0.3 秒）
-                # 这样可以防止噪音导致的状态循环
+                # Significantly raised threshold: need 10 consecutive speech frames to return to ACTIVE (approx 0.3s)
+                # This prevents state cycling caused by noise
                 if self.hit_count >= 10:
-                    # 语音继续
+                    # Speech continues
                     self.state = VADState.ACTIVE
                     self.hit_count = 0
                     self.miss_count = 0
                     self._inactive_start_time = None
-                    logger.info(f"[VAD] 语音继续 (INACTIVE→ACTIVE), hit_count={self.hit_count}")
-                # 每 100 个块打印一次状态
+                    logger.info(f"[VAD] Speech continued (INACTIVE→ACTIVE), hit_count={self.hit_count}")
+                # Print status every 100 chunks
                 elif self._chunk_count % 100 == 0:
                     logger.info(f"[VAD] INACTIVE: hit_count={self.hit_count}/{self.vad.required_hits * 2}, prob={smoothed_prob:.3f}")
             else:
                 self.hit_count = 0
                 self.miss_count += 1
-                # 每 50 个块打印一次 miss_count
+                # Print miss_count every 50 chunks
                 if self._chunk_count % 50 == 0 and self.miss_count > 0:
                     logger.info(f"[VAD] INACTIVE: miss_count={self.miss_count}/8, prob={smoothed_prob:.3f}")
-                # 🔥 降低阈值：8 次（约 0.25 秒）而不是 16 次
+                # Lowered threshold: 8 times (approx 0.25s) instead of 16
                 if self.miss_count >= 8:
-                    # 语音完全结束
+                    # Speech fully ended
                     self.state = VADState.IDLE
                     self.miss_count = 0
                     self._inactive_start_time = None
 
-                    # 合并预缓冲和主缓冲区的音频
+                    # Merge pre-buffer and main buffer audio
                     pre_bytes = b"".join(self.pre_buffer)
                     audio_data = pre_bytes + bytes(self.bytes)
 
                     self.reset_buffers()
                     self.pre_buffer.clear()
 
-                    # 检查音频长度是否足够（至少0.5秒，约8000字节）
+                    # Check if audio length is sufficient (at least 0.5s, approx 8000 bytes)
                     if len(audio_data) > 8000:
-                        logger.debug(f"[VAD] 语音结束 (INACTIVE→IDLE), 音频: {len(audio_data)} 字节")
+                        logger.debug(f"[VAD] Speech ended (INACTIVE→IDLE), audio: {len(audio_data)} bytes")
                         return VADResult(
                             audio_data=audio_data,
                             is_speech_start=False,
@@ -439,6 +449,6 @@ class SileroStateMachine:
                             state=VADState.IDLE
                         )
                     else:
-                        logger.debug(f"[VAD] 音频太短 ({len(audio_data)} 字节)，丢弃")
+                        logger.debug(f"[VAD] Audio too short ({len(audio_data)} bytes), discarding")
 
         return None
