@@ -65,9 +65,20 @@ async def stats_trace_detail(request: Request) -> JSONResponse:
         return JSONResponse({"error": str(e)}, status_code=500)
 
 
+async def health_check(request):
+    """统一健康检查端点"""
+    import time
+    return JSONResponse({
+        "status": "ok",
+        "service": "anima",
+        "timestamp": time.time(),
+    })
+
+
 def get_stats_routes():
     """返回统计 API 的路由列表"""
     return [
+        Route("/health", health_check),
         Route("/api/stats/overview", stats_overview),
         Route("/api/stats/nodes", stats_nodes),
         Route("/api/stats/traces", stats_traces),
