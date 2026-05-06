@@ -24,8 +24,9 @@ class StatsStore:
         Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
         self._db = await aiosqlite.connect(self.db_path)
         self._db.row_factory = aiosqlite.Row
-        # WAL mode allows concurrent reads + single writer without 'database is locked'
+        # WAL mode allows concurrent reads + single writer; busy_timeout retries instead of failing
         await self._db.execute("PRAGMA journal_mode=WAL")
+        await self._db.execute("PRAGMA busy_timeout=5000")
         await self._create_tables()
         await self._migrate_schema()
         logger.info(f"[StatsStore] Database initialized: {self.db_path}")

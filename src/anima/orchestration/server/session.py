@@ -30,6 +30,7 @@ class SessionManager:
         # Store orchestrator per session
         # Key: session_id, Value: LangGraphOrchestrator instance
         self.orchestrators: Dict[str, Any] = {}
+        self._orchestrator_lock = asyncio.Lock()
 
         # Store audio processor per session
         # Key: session_id, Value: AudioProcessor instance
@@ -108,7 +109,9 @@ class SessionManager:
         Returns:
             LangGraphOrchestrator: Orchestrator instance
         """
-        if sid not in self.orchestrators:
+        async with self._orchestrator_lock:
+            if sid in self.orchestrators:
+                return self.orchestrators[sid]
             logger.info(f"[{sid}] Creating new LangGraphOrchestrator")
 
             # Load tool settings from config
