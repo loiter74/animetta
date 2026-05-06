@@ -110,7 +110,7 @@ class AudioAnalyzer:
             return volumes
 
         except Exception as e:
-            logger.error(f"[AudioAnalyzer] Failed to analyze audio: {e}")
+            logger.warning(f"[AudioAnalyzer] Failed to analyze audio: {e}")
             return []
 
     def _load_audio(self, audio_path: str) -> "AudioSegment":
