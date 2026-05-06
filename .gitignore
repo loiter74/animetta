@@ -94,3 +94,7 @@ coverage/
 # Archives
 *.zip
 *.tar.gz
+
+# Other tools
+.gitnexus/
+Users30262Projectrtk-ai/
