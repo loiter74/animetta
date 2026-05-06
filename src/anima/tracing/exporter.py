@@ -47,7 +47,7 @@ class StatsSpanExporter(SpanExporter):
         try:
             store = await self._get_store()
         except Exception:
-            logger.warning("[StatsExporter] StatsStore not available", exc_info=True)
+            logger.warning("[StatsExporter] StatsStore not available")
             return
 
         for span in spans:
@@ -103,7 +103,7 @@ class StatsSpanExporter(SpanExporter):
                 output_summary=error_msg,
             )
         except Exception:
-            logger.warning(f"[StatsExporter] Failed to write span {span.name}", exc_info=True)
+            logger.warning(f"[StatsExporter] Failed to write span {span.name}")
 
     def shutdown(self) -> None:
         """No-op — StatsStore handles its own lifecycle."""
