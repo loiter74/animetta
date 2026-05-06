@@ -157,7 +157,6 @@ Examples:
         if not args.no_web_config and not args.backend_only:
             url = f"http://localhost:{args.web_port}"
             print(f"  Web Config:  {Colors.CYAN}{url}{Colors.NC}" if Colors.enabled() else f"  Web Config:  {url}")
-            urls.append((url, 3))
 
         if not args.no_frontend and not args.backend_only:
             url = "http://localhost:3000"
