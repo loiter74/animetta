@@ -124,13 +124,15 @@ class SimpleVADProcessor:
     async def process_end(self) -> None:
         """Manual end"""
         if self._is_speech and self._audio_buffer:
-            logger.info(f"[{self.session_id}] Manual end of speech input")
-            
-            if self.on_speech_end:
-                await self.on_speech_end(list(self._audio_buffer))
-            
+            # Reset state BEFORE callback to prevent duplicate triggers
             self._is_speech = False
+            speech_buffer = list(self._audio_buffer)
             self._audio_buffer.clear()
+
+            logger.info(f"[{self.session_id}] Manual end of speech input")
+
+            if self.on_speech_end:
+                await self.on_speech_end(speech_buffer)
     
     def reset(self) -> None:
         """Reset"""

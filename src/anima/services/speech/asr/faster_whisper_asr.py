@@ -194,6 +194,7 @@ class FasterWhisperASR(ASRInterface):
         parameters = {
             "beam_size": self.beam_size,
             "language": self.language if self.language else None,
+            "task": "transcribe",
             "condition_on_previous_text": False,
             "vad_filter": self.vad_filter,
         }
@@ -221,8 +222,18 @@ class FasterWhisperASR(ASRInterface):
 
         if not text_parts:
             return ""
-        else:
-            return "".join(text_parts).strip()
+
+        text = "".join(text_parts).strip()
+
+        # Convert Traditional Chinese to Simplified Chinese
+        try:
+            from opencc import OpenCC
+            converter = OpenCC('t2s')  # Traditional → Simplified
+            text = converter.convert(text)
+        except ImportError:
+            pass  # opencc not installed, skip conversion
+
+        return text
 
     async def _load_audio_file(self, file_path: str) -> np.ndarray:
         """Load audio from file"""
