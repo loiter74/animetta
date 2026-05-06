@@ -4,6 +4,7 @@ Manages client session lifecycle and resources
 Uses LangGraph orchestrator
 """
 
+import asyncio
 from typing import Dict, Optional, Callable, Any
 from loguru import logger
 from pathlib import Path
