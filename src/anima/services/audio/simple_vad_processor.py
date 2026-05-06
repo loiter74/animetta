@@ -105,19 +105,21 @@ class SimpleVADProcessor:
                 
                 # Conditions: speech long enough + silence long enough
                 if speech_duration >= self.min_speech_duration and silence_duration >= self.min_silence_duration:
+                    # Reset state BEFORE callback to prevent duplicate triggers
+                    # (next chunk must not see _is_speech=True while callback is awaited)
+                    self._is_speech = False
+                    self._speech_start_time = None
+                    self._silence_start_time = None
+                    speech_buffer = list(self._audio_buffer)
+                    self._audio_buffer.clear()
+
                     logger.info(
                         f"[{self.session_id}] 🎤 Speech ended: "
                         f"speech={speech_duration:.2f}s, silence={silence_duration:.2f}s, prob={prob:.3f}"
                     )
-                    
+
                     if self.on_speech_end:
-                        await self.on_speech_end(list(self._audio_buffer))
-                    
-                    # Reset
-                    self._is_speech = False
-                    self._speech_start_time = None
-                    self._silence_start_time = None
-                    self._audio_buffer.clear()
+                        await self.on_speech_end(speech_buffer)
     
     async def process_end(self) -> None:
         """Manual end"""
