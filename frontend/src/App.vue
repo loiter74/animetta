@@ -2,7 +2,6 @@
 import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import TitleBar from '@/components/layout/TitleBar.vue'
-import ModelLoadingOverlay from '@/components/shared/ModelLoadingOverlay.vue'
 import { useSocket } from '@/composables/useSocket'
 
 const router = useRouter()
@@ -32,9 +31,6 @@ onMounted(() => {
 </script>
 
 <template>
-  <!-- Model loading overlay (above everything) -->
-  <ModelLoadingOverlay />
-
   <div class="flex flex-col h-screen w-screen overflow-hidden bg-c-bg text-c-text relative">
     <div
       v-if="bgSrc"
