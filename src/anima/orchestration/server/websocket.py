@@ -44,7 +44,7 @@ class WebSocketServer:
         self.asgi_app = Starlette(
             routes=stats_routes + [Mount("/", app=sio_app)],
         )
-        self.session_manager = SessionManager()
+        self.session_manager = SessionManager(model_manager=self.model_manager)
         self.model_manager = ModelLoadingManager()
         self.desktop_manager = DesktopClientManager()
         self.live2d_manager = Live2DManager()
@@ -81,7 +81,7 @@ class WebSocketServer:
             return
 
         from anima.core.service_pool import ServicePool
-        await ServicePool.init(self.config)
+        await ServicePool.init(self.config, model_manager=self.model_manager)
 
     def setup_routes(self) -> None:
         """Set up all routes"""

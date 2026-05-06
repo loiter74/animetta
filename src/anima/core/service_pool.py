@@ -31,7 +31,7 @@ class ServicePool:
     # ── Lifecycle ──────────────────────────────────────────
 
     @classmethod
-    async def init(cls, config) -> None:
+    async def init(cls, config, model_manager=None) -> None:
         """Create all shareable engines from *config* and keep them alive.
 
         Spawns a temporary ServiceContext, loads all services, then
@@ -48,7 +48,7 @@ class ServicePool:
 
         from .service_context import ServiceContext
 
-        ctx = ServiceContext()
+        ctx = ServiceContext(model_manager=model_manager)
         ctx.session_id = "__pool__"
         try:
             await ctx.load_from_config(config)
