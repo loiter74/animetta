@@ -15,7 +15,7 @@ export function useVoice() {
   let chunkCount = 0
 
   const TARGET_SAMPLE_RATE = 16000
-  const CHUNK_SIZE = 480 // 30ms at 16kHz
+  const CHUNK_SIZE = 512 // 32ms at 16kHz (Silero VAD minimum is 512 samples)
 
   async function start(): Promise<void> {
     try {
