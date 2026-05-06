@@ -44,8 +44,8 @@ class WebSocketServer:
         self.asgi_app = Starlette(
             routes=stats_routes + [Mount("/", app=sio_app)],
         )
-        self.session_manager = SessionManager(model_manager=self.model_manager)
         self.model_manager = ModelLoadingManager()
+        self.session_manager = SessionManager(model_manager=self.model_manager)
         self.desktop_manager = DesktopClientManager()
         self.live2d_manager = Live2DManager()
         self.lifecycle = LifecycleManager()
