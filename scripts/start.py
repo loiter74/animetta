@@ -162,7 +162,7 @@ Examples:
         if not args.no_frontend and not args.backend_only:
             url = "http://localhost:3000"
             print(f"  Frontend:    {Colors.CYAN}{url}{Colors.NC}" if Colors.enabled() else f"  Frontend:    {url}")
-            # Don't auto-open frontend — Vite dev server opens it automatically
+            urls.append((url, 2))
 
         print()
         info("Press Ctrl+C to stop all services\n")
