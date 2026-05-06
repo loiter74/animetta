@@ -285,20 +285,10 @@ class FasterWhisperASR(ASRInterface):
                 return samples
 
     async def _load_audio_bytes(self, audio_bytes: bytes) -> np.ndarray:
-        """Load audio from bytes"""
-        import tempfile
-
-        # Write to temp file
-        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp_file:
-            tmp_file.write(audio_bytes)
-            tmp_file.flush()
-
-            try:
-                return await self._load_audio_file(tmp_file.name)
-            finally:
-                import os
-                if os.path.exists(tmp_file.name):
-                    os.unlink(tmp_file.name)
+        """Load int16 PCM audio bytes directly (no temp file / ffmpeg needed)."""
+        # VAD delivers 16kHz mono int16 PCM — decode directly to float32 [-1, 1]
+        audio_np = np.frombuffer(audio_bytes, dtype=np.int16).astype(np.float32) / 32768.0
+        return audio_np
 
     async def transcribe_stream(
         self,
