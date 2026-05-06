@@ -42,6 +42,7 @@ class LangGraphOrchestrator:
 
         self.graph = None
         self._is_running = False
+        self._processing_audio = False  # guard against concurrent audio processing
 
         # Initialize tool manager
         self.tool_manager: Optional[ToolManager] = None
@@ -177,6 +178,11 @@ class LangGraphOrchestrator:
         if not self._is_running:
             return {"error": "Orchestrator not started"}
 
+        if self._processing_audio:
+            logger.debug(f"[{self.session_id}] [LangGraph] Audio already processing, skipping")
+            return {"error": "Audio already processing"}
+
+        self._processing_audio = True
         logger.info(f"[{self.session_id}] [LangGraph] Processing audio input: {len(audio_data)} bytes")
 
         get_interrupt_handler().clear_interrupt(self.session_id)
@@ -197,6 +203,8 @@ class LangGraphOrchestrator:
         except Exception as e:
             logger.error(f"[{self.session_id}] [LangGraph] Audio processing failed: {e}")
             return {"error": str(e), "response_text": ""}
+        finally:
+            self._processing_audio = False
 
     def _create_initial_state(
         self,
