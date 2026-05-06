@@ -17,6 +17,7 @@ class StatsStore:
             )
         self.db_path = db_path
         self._db: Optional[aiosqlite.Connection] = None
+        self._write_lock = asyncio.Lock()
 
     async def init(self):
         """Initialize database connection and table structure"""
@@ -76,11 +77,12 @@ class StatsStore:
         self, trace_id: str, session_id: str, input_type: str, user_text: str
     ) -> None:
         truncated = user_text[:100] if user_text else ""
-        await self._db.execute(
-            "INSERT INTO traces (trace_id, session_id, input_type, user_text) VALUES (?, ?, ?, ?)",
-            (trace_id, session_id, input_type, truncated),
-        )
-        await self._db.commit()
+        async with self._write_lock:
+            await self._db.execute(
+                "INSERT INTO traces (trace_id, session_id, input_type, user_text) VALUES (?, ?, ?, ?)",
+                (trace_id, session_id, input_type, truncated),
+            )
+            await self._db.commit()
 
     async def finish_trace(
         self,
@@ -89,11 +91,12 @@ class StatsStore:
         status: str = "success",
         error_msg: str = None,
     ) -> None:
-        await self._db.execute(
-            "UPDATE traces SET total_duration_ms=?, status=?, error_msg=? WHERE trace_id=?",
-            (total_duration_ms, status, error_msg, trace_id),
-        )
-        await self._db.commit()
+        async with self._write_lock:
+            await self._db.execute(
+                "UPDATE traces SET total_duration_ms=?, status=?, error_msg=? WHERE trace_id=?",
+                (total_duration_ms, status, error_msg, trace_id),
+            )
+            await self._db.commit()
 
     async def create_span(
         self,
@@ -103,11 +106,12 @@ class StatsStore:
         parent_span_id: str = None,
         input_summary: str = None,
     ) -> None:
-        await self._db.execute(
-            "INSERT INTO spans (span_id, trace_id, parent_span_id, node_name, input_summary) VALUES (?, ?, ?, ?, ?)",
-            (span_id, trace_id, parent_span_id, node_name, input_summary),
-        )
-        await self._db.commit()
+        async with self._write_lock:
+            await self._db.execute(
+                "INSERT INTO spans (span_id, trace_id, parent_span_id, node_name, input_summary) VALUES (?, ?, ?, ?, ?)",
+                (span_id, trace_id, parent_span_id, node_name, input_summary),
+            )
+            await self._db.commit()
 
     async def finish_span(
         self,
@@ -116,11 +120,12 @@ class StatsStore:
         status: str = "success",
         output_summary: str = None,
     ) -> None:
-        await self._db.execute(
-            "UPDATE spans SET duration_ms=?, status=?, output_summary=? WHERE span_id=?",
-            (duration_ms, status, output_summary, span_id),
-        )
-        await self._db.commit()
+        async with self._write_lock:
+            await self._db.execute(
+                "UPDATE spans SET duration_ms=?, status=?, output_summary=? WHERE span_id=?",
+                (duration_ms, status, output_summary, span_id),
+            )
+            await self._db.commit()
 
     async def get_overview(self) -> Dict[str, Any]:
         cursor = await self._db.execute("""
