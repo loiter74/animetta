@@ -7,6 +7,31 @@ from pathlib import Path
 from loguru import logger
 
 
+def _retry_on_locked(max_retries: int = 3, delay: float = 0.5):
+    """Decorator: retry SQLite write on 'database is locked'."""
+    import functools
+
+    def decorator(fn):
+
+        @functools.wraps(fn)
+        async def wrapper(self, *args, **kwargs):
+            last_error = None
+            for attempt in range(max_retries):
+                try:
+                    return await fn(self, *args, **kwargs)
+                except Exception as e:
+                    if "database is locked" in str(e) and attempt < max_retries - 1:
+                        last_error = e
+                        await asyncio.sleep(delay * (attempt + 1))
+                        continue
+                    raise
+            raise last_error  # type: ignore[misc]
+
+        return wrapper
+
+    return decorator
+
+
 class StatsStore:
     """SQLite stats storage"""
 
@@ -78,6 +103,7 @@ class StatsStore:
         """)
         await self._db.commit()
 
+    @_retry_on_locked(max_retries=3, delay=0.5)
     async def create_trace(
         self, trace_id: str, session_id: str, input_type: str, user_text: str
     ) -> None:
@@ -89,6 +115,7 @@ class StatsStore:
             )
             await self._db.commit()
 
+    @_retry_on_locked(max_retries=3, delay=0.5)
     async def finish_trace(
         self,
         trace_id: str,
@@ -103,6 +130,7 @@ class StatsStore:
             )
             await self._db.commit()
 
+    @_retry_on_locked(max_retries=3, delay=0.5)
     async def create_span(
         self,
         span_id: str,
@@ -118,6 +146,7 @@ class StatsStore:
             )
             await self._db.commit()
 
+    @_retry_on_locked(max_retries=3, delay=0.5)
     async def finish_span(
         self,
         span_id: str,
