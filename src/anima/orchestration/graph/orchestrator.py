@@ -198,7 +198,17 @@ class LangGraphOrchestrator:
             )
 
             final_state = await self._run_graph(initial_state)
-            return self._clean_result(final_state)
+            result = self._clean_result(final_state)
+
+            # Emit transcript so frontend shows the recognized speech as a user message
+            user_text = result.get("user_text", "")
+            if user_text and self.socketio:
+                await self.socketio.emit("transcript", {
+                    "text": user_text,
+                    "is_final": True,
+                }, to=self.session_id)
+
+            return result
 
         except Exception as e:
             logger.error(f"[{self.session_id}] [LangGraph] Audio processing failed: {e}")
