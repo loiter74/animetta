@@ -103,6 +103,29 @@ tts:
     response_format: "mp3"
     speed: 1.0
 
+  # Kokoro TTS - GLaDOS 风格电子合成女声（推荐）
+  # 使用 Kokoro-82M 模型 + SoX 音频效果器实现 GLaDOS 风格电子合成感
+  # 注意：需安装 kokoro 和 misaki[zh] 依赖: pip install kokoro misaki[zh]
+  # 模型首次使用时从 HuggingFace 自动下载（~300MB）
+  kokoro_glados:
+    type: kokoro
+    voice: "zf_xiaobei"           # 中文女声：zf_xiaobei / zf_xiaoni / zf_xiaoxiao / zf_xiaoyi
+    # 中文男声：zm_yunjian / zm_yunxi / zm_yunxia / zm_yunyang
+    lang_code: "z"                # z=中文, a=美式英语
+    device: "cpu"                 # cpu / cuda
+    speed: 1.0                    # 语速 0.5-2.0
+    model_repo_id: "hexgrad/Kokoro-82M"
+    # GLaDOS 电子合成效果器参数
+    glados_effect:
+      enabled: true
+      pitch: -300                 # 音高偏移（负值=更低沉）
+      stretch: 1.05               # 语速拉伸（>1=更慢）
+      overdrive: 20               # 过载失真强度
+      chorus: "0.7 0.9 55 0.4 0.25 2 -t"  # 合唱/电子共振
+      bandpass: "300 3"           # 带通滤波（去除温暖感）
+      compand: "0.3,1 6:-70,-60,-20 -5 -90 0.2"  # 动态压限
+      gain: -3                    # 输出电平
+
   # ChatTTS（开源对话式语音合成）
   chattts:
     type: chattts

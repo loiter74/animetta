@@ -10,6 +10,7 @@ from .edge import EdgeTTSConfig
 from .glm import GLMTTSConfig
 from .chattts import ChatTTSConfig
 from .vibe_voice import VibeVoiceTTSConfig
+from .kokoro import KokoroTTSConfig
 
 __all__ = [
     "TTSBaseConfig",
@@ -19,6 +20,7 @@ __all__ = [
     "GLMTTSConfig",
     "ChatTTSConfig",
     "VibeVoiceTTSConfig",
+    "KokoroTTSConfig",
     "TTSConfig",
 ]
 
@@ -31,6 +33,7 @@ TTSConfig = Annotated[
         GLMTTSConfig,
         ChatTTSConfig,
         VibeVoiceTTSConfig,
+        KokoroTTSConfig,
     ],
     Field(discriminator="type")
 ]

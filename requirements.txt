@@ -12,6 +12,12 @@ numpy>=1.24.0
 torch>=2.0.0
 torchaudio>=2.0.0
 edge-tts>=6.1.0
+
+# Kokoro TTS (open-weight multilingual TTS, 82M params)
+# For Chinese support: pip install misaki[zh]
+# Models auto-download from HuggingFace on first use (~300MB)
+kokoro>=0.9.4
+
 python-dotenv>=1.0.0
 pydub>=0.25.0
 

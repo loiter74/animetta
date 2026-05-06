@@ -87,6 +87,17 @@ class TTSFactory:
                     top_p=kwargs.get("top_p", 0.7),
                     top_k=kwargs.get("top_k", 20),
                 )
+            elif provider == "kokoro":
+                from anima.config.providers.tts.kokoro import KokoroTTSConfig
+                return KokoroTTSConfig(
+                    voice=kwargs.get("voice", "zf_xiaobei"),
+                    model_repo_id=kwargs.get("model_repo_id", "hexgrad/Kokoro-82M"),
+                    model_path=kwargs.get("model_path"),
+                    device=kwargs.get("device", "cpu"),
+                    lang_code=kwargs.get("lang_code", "z"),
+                    speed=kwargs.get("speed", 1.0),
+                    glados_effect=kwargs.get("glados_effect"),
+                )
             elif provider == "vibe_voice":
                 from anima.config.providers.tts.vibe_voice import VibeVoiceTTSConfig
                 return VibeVoiceTTSConfig(

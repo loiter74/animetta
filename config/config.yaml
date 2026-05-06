@@ -13,7 +13,7 @@ persona: "neuro-vtuber"
 
 services:
   asr: faster_whisper  # FasterWhisper（本地语音识别）
-  tts: edge_neurosama  # Edge TTS - Neuro-sama 风格电子可爱音
+  tts: kokoro_glados  # Kokoro TTS - GLaDOS 风格电子合成音（需安装 kokoro 依赖）
   agent: deepseek  # 底座LLM：DeepSeek V4（OpenAI API 兼容）
   # local_llm: local_lora  # 本地LLM：LocalLoraLLM（简单应答，无persona，保留LoRA效果）- 已禁用
   vad: silero   # vad: silero / mock
