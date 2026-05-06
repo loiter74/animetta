@@ -47,6 +47,15 @@ async def asr_node(
     text = await asr_engine.transcribe(raw_audio)
     logger.info(f"[{session_id}] [ASRNode] Recognition result: {text[:50]}...")
 
+    # Emit transcript immediately so frontend shows user speech before LLM responds
+    if text:
+        try:
+            sio = config.get("configurable", {}).get("socketio") if config else None
+            if sio:
+                await sio.emit("transcript", {"text": text, "is_final": True}, to=session_id)
+        except Exception:
+            logger.debug(f"[{session_id}] [ASRNode] Failed to emit transcript")
+
     user_id = state.get("user_id")
     user_name = state.get("user_name")
 
