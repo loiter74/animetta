@@ -23,7 +23,7 @@ asr:
   # Faster-Whisper（开源免费）
   faster_whisper:
     type: faster_whisper
-    model: distil-large-v3  # 蒸馏版模型，更快且准确
+    model: large-v3  # 完整版模型，中文识别更好
     language: zh
     device: cuda
     compute_type: float16
