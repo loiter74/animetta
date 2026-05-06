@@ -1,7 +1,7 @@
 """
-会话管理
-管理客户端会话的生命周期和资源
-使用 LangGraph 编排器
+Session management
+Manages client session lifecycle and resources
+Uses LangGraph orchestrator
 """
 
 from typing import Dict, Optional, Callable, Any
@@ -13,29 +13,29 @@ from ...core.service_context import ServiceContext
 
 class SessionManager:
     """
-    会话管理器
+    Session manager
 
-    负责：
-    1. 管理所有客户端会话的 ServiceContext
-    2. 管理所有会话的 LangGraphOrchestrator
-    3. 创建和销毁会话资源
+    Responsibilities:
+    1. Manage ServiceContext for all client sessions
+    2. Manage LangGraphOrchestrator for all sessions
+    3. Create and destroy session resources
     """
 
     def __init__(self):
-        # 存储每个会话的 ServiceContext
-        # 键: session_id, 值: ServiceContext 实例
+        # Store ServiceContext per session
+        # Key: session_id, Value: ServiceContext instance
         self.contexts: Dict[str, ServiceContext] = {}
 
-        # 存储每个会话的编排器
-        # 键: session_id, 值: LangGraphOrchestrator 实例
+        # Store orchestrator per session
+        # Key: session_id, Value: LangGraphOrchestrator instance
         self.orchestrators: Dict[str, Any] = {}
 
-        # 存储每个会话的音频处理器
-        # 键: session_id, 值: AudioProcessor 实例
+        # Store audio processor per session
+        # Key: session_id, Value: AudioProcessor instance
         self.audio_processors: Dict[str, Any] = {}
 
     # ========================================
-    # Context 管理
+    # Context management
     # ========================================
 
     async def get_or_create_context(
@@ -45,34 +45,46 @@ class SessionManager:
         websocket_send: Callable
     ) -> ServiceContext:
         """
-        获取或创建指定会话的 ServiceContext
+        Get or create the ServiceContext for a given session
 
         Args:
             sid: session id
-            config: 应用配置
-            websocket_send: WebSocket 发送函数
+            config: Application config
+            websocket_send: WebSocket send function
 
         Returns:
-            ServiceContext: 该会话的服务上下文
+            ServiceContext: The service context for this session
         """
         if sid not in self.contexts:
-            logger.info(f"[{sid}] 创建新的 ServiceContext")
+            logger.info(f"[{sid}] Creating new ServiceContext")
             ctx = ServiceContext()
             ctx.session_id = sid
             ctx.send_text = websocket_send
 
-            await ctx.load_from_config(config)
+            # Use ServicePool when available — skips LLM/TTS/ASR init
+            from anima.core.service_pool import ServicePool
+            pool = ServicePool.get_context()
+            if pool:
+                logger.info(f"[{sid}] Using pooled engines (LLM/TTS/ASR)")
+                await ctx.load_cache(config=config, **pool)
+                await ctx.init_vad(config.vad)
+                await ctx.init_memory()
+                await ctx.init_emotion_analyzer(config)
+            else:
+                logger.info(f"[{sid}] Pool not available, full init")
+                await ctx.load_from_config(config)
+
             self.contexts[sid] = ctx
-            logger.info(f"为会话 {sid} 创建了新的 ServiceContext")
+            logger.info(f"Created new ServiceContext for session {sid}")
 
         return self.contexts[sid]
 
     def get_context(self, sid: str) -> Optional[ServiceContext]:
-        """获取会话上下文"""
+        """Get session context"""
         return self.contexts.get(sid)
 
     # ========================================
-    # Orchestrator 管理
+    # Orchestrator management
     # ========================================
 
     async def get_or_create_orchestrator(
@@ -84,172 +96,172 @@ class SessionManager:
         socketio=None,
     ):
         """
-        获取或创建指定会话的 LangGraph 编排器
+        Get or create the LangGraph orchestrator for a given session
 
         Args:
             sid: session id
             ctx: ServiceContext
-            websocket_send: WebSocket 发送函数
-            live2d_config: Live2D 配置
+            websocket_send: WebSocket send function
+            live2d_config: Live2D config
 
         Returns:
-            LangGraphOrchestrator: 编排器实例
+            LangGraphOrchestrator: Orchestrator instance
         """
         if sid not in self.orchestrators:
-            logger.info(f"[{sid}] 创建新的 LangGraphOrchestrator")
+            logger.info(f"[{sid}] Creating new LangGraphOrchestrator")
 
-            # 从配置加载工具设置
+            # Load tool settings from config
             tools_config = await self._load_tools_config()
 
-            # 创建 LangGraph Orchestrator
+            # Create LangGraph Orchestrator
             from ..graph.orchestrator import LangGraphOrchestratorFactory
 
-            # 详细调试日志
-            logger.info(f"[{sid}] tools_config 完整返回值: {tools_config}")
+            # Verbose debug logging
+            logger.info(f"[{sid}] tools_config full return value: {tools_config}")
             logger.info(f"[{sid}] tools_config.get('enable_tools', False): {tools_config.get('enable_tools', False)}")
 
-            # 确保 enable_tools 正确传递
+            # Ensure enable_tools is correctly passed
             enable_tools = tools_config.get("enable_tools", False)
-            logger.info(f"[{sid}] 工具配置状态: enable_tools={enable_tools}, 类型={type(enable_tools)}")
+            logger.info(f"[{sid}] Tool config status: enable_tools={enable_tools}, type={type(enable_tools)}")
 
             orchestrator = await LangGraphOrchestratorFactory.create(
                 session_id=sid,
                 service_context=ctx,
-                socketio=socketio,  # Socket.IO 实例用于发送消息
+                socketio=socketio,  # Socket.IO instance for sending messages
                 emotion_analyzer=ctx.emotion_analyzer if hasattr(ctx, 'emotion_analyzer') else None,
                 enable_tools=enable_tools,
                 enable_memory=True,
                 tools_config=tools_config.get("config", tools_config),
             )
 
-            logger.info(f"[{sid}] LangGraphOrchestrator 已创建")
+            logger.info(f"[{sid}] LangGraphOrchestrator created")
             self.orchestrators[sid] = orchestrator
-            logger.info(f"为会话 {sid} 创建了新的 LangGraphOrchestrator")
+            logger.info(f"Created new LangGraphOrchestrator for session {sid}")
 
         return self.orchestrators[sid]
 
     async def _load_tools_config(self) -> Dict[str, Any]:
-        """加载工具配置"""
+        """Load tools configuration"""
         try:
             import yaml
-            # 修复路径：从 src/anima/orchestration/server/session.py 到项目根目录的 config/tools.yaml
+            # Fix path: from src/anima/orchestration/server/session.py to project root config/tools.yaml
             # __file__ = .../src/anima/orchestration/server/session.py
-            # 需要：.../config/tools.yaml
-            # 所以需要向上 5 级到项目根目录（orchestration/server -> orchestration -> anima -> src -> project_root）
+            # Need: .../config/tools.yaml
+            # So need to go up 5 levels to project root (orchestration/server -> orchestration -> anima -> src -> project_root)
             config_path = Path(__file__).parent.parent.parent.parent.parent / "config" / "tools.yaml"
 
-            logger.info(f"[_load_tools_config] 配置文件路径: {config_path}")
-            logger.info(f"[_load_tools_config] 文件是否存在: {config_path.exists()}")
+            logger.info(f"[_load_tools_config] Config file path: {config_path}")
+            logger.info(f"[_load_tools_config] File exists: {config_path.exists()}")
 
             if config_path.exists():
                 with open(config_path, 'r', encoding='utf-8') as f:
                     tools_config = yaml.safe_load(f)
 
-                    # 详细调试日志
-                    logger.info(f"[_load_tools_config] 原始 YAML 解析结果类型: {type(tools_config)}")
-                    logger.info(f"[_load_tools_config] YAML 顶级键: {list(tools_config.keys()) if isinstance(tools_config, dict) else 'NOT A DICT'}")
+                    # Verbose debug logging
+                    logger.info(f"[_load_tools_config] Raw YAML parse result type: {type(tools_config)}")
+                    logger.info(f"[_load_tools_config] YAML top-level keys: {list(tools_config.keys()) if isinstance(tools_config, dict) else 'NOT A DICT'}")
 
-                    # 检查是否显式启用工具 - 修复配置路径
+                    # Check if tools are explicitly enabled - fix config path
                     tool_settings = tools_config.get("tool_settings", {})
-                    logger.info(f"[_load_tools_config] tool_settings 内容: {tool_settings}")
-                    logger.info(f"[_load_tools_config] tool_settings 类型: {type(tool_settings)}")
+                    logger.info(f"[_load_tools_config] tool_settings content: {tool_settings}")
+                    logger.info(f"[_load_tools_config] tool_settings type: {type(tool_settings)}")
 
                     enable_tools = tool_settings.get("enable_tools", False)
-                    logger.info(f"[_load_tools_config] enable_tools 原始值: {enable_tools}")
-                    logger.info(f"[_load_tools_config] enable_tools 类型: {type(enable_tools)}")
+                    logger.info(f"[_load_tools_config] enable_tools raw value: {enable_tools}")
+                    logger.info(f"[_load_tools_config] enable_tools type: {type(enable_tools)}")
 
-                    logger.info(f"[_load_tools_config] 工具调用 {'已启用' if enable_tools else '未启用'}")
+                    logger.info(f"[_load_tools_config] Tool calls {'enabled' if enable_tools else 'disabled'}")
 
                     result = {
                         "enable_tools": enable_tools,
                         "config": tools_config,
                     }
-                    logger.info(f"[_load_tools_config] 返回结果 enable_tools: {result['enable_tools']}")
+                    logger.info(f"[_load_tools_config] Returning enable_tools: {result['enable_tools']}")
                     return result
             else:
-                logger.info(f"工具配置文件不存在: {config_path}")
+                logger.info(f"Tools config file does not exist: {config_path}")
                 return {"enable_tools": False, "config": {}}
 
         except Exception as e:
-            logger.error(f"[_load_tools_config] 加载工具配置失败: {e}")
+            logger.error(f"[_load_tools_config] Failed to load tools config: {e}")
             import traceback
             logger.error(traceback.format_exc())
             return {"enable_tools": False, "config": {}}
 
     def get_orchestrator(self, sid: str) -> Optional[Any]:
-        """获取会话编排器"""
+        """Get session orchestrator"""
         return self.orchestrators.get(sid)
 
     # ========================================
-    # 清理方法
+    # Cleanup methods
     # ========================================
 
     async def cleanup_session(self, sid: str) -> None:
         """
-        清理指定会话的所有资源
+        Clean up all resources for a given session
 
         Args:
             sid: session id
         """
-        # 停止编排器
+        # Stop orchestrator
         if sid in self.orchestrators:
             orchestrator = self.orchestrators[sid]
             if hasattr(orchestrator, 'stop'):
                 await orchestrator.stop()
             del self.orchestrators[sid]
 
-        # 清理音频处理器
+        # Clean up audio processor
         if sid in self.audio_processors:
             processor = self.audio_processors[sid]
             if hasattr(processor, 'reset'):
                 processor.reset()
             del self.audio_processors[sid]
 
-        # 清理上下文
+        # Clean up context
         if sid in self.contexts:
             ctx = self.contexts[sid]
             await ctx.close()
             del self.contexts[sid]
-            logger.info(f"已清理会话 {sid} 的所有资源")
+            logger.info(f"Cleaned up all resources for session {sid}")
 
     async def cleanup_all(self) -> None:
-        """清理所有会话"""
-        logger.info("清理所有会话...")
+        """Clean up all sessions"""
+        logger.info("Cleaning up all sessions...")
 
-        # 停止所有编排器
+        # Stop all orchestrators
         for sid, orchestrator in list(self.orchestrators.items()):
             try:
                 if hasattr(orchestrator, 'stop'):
                     await orchestrator.stop()
-                logger.debug(f"[{sid}] 编排器已停止")
+                logger.debug(f"[{sid}] Orchestrator stopped")
             except Exception as e:
-                logger.error(f"[{sid}] 停止编排器时出错: {e}")
+                logger.error(f"[{sid}] Error stopping orchestrator: {e}")
         self.orchestrators.clear()
 
-        # 关闭所有上下文
+        # Close all contexts
         for sid, ctx in list(self.contexts.items()):
             try:
                 await ctx.close()
-                logger.debug(f"[{sid}] 上下文已关闭")
+                logger.debug(f"[{sid}] Context closed")
             except Exception as e:
-                logger.error(f"[{sid}] 关闭上下文时出错: {e}")
-        # 清理所有音频处理器
+                logger.error(f"[{sid}] Error closing context: {e}")
+        # Clean up all audio processors
         for sid, processor in list(self.audio_processors.items()):
             try:
                 if hasattr(processor, 'reset'):
                     processor.reset()
-                logger.debug(f"[{sid}] AudioProcessor 已重置")
+                logger.debug(f"[{sid}] AudioProcessor reset")
             except Exception as e:
-                logger.error(f"[{sid}] 重置 AudioProcessor 时出错: {e}")
+                logger.error(f"[{sid}] Error resetting AudioProcessor: {e}")
         self.audio_processors.clear()
 
         self.contexts.clear()
 
-        logger.info("所有会话已清理")
+        logger.info("All sessions cleaned up")
 
 
     def get_audio_processor(self, sid: str) -> Optional[Any]:
-        """获取会话的音频处理器"""
+        """Get session audio processor"""
         return self.audio_processors.get(sid)
 
     async def get_or_create_audio_processor(
@@ -258,24 +270,24 @@ class SessionManager:
         ctx: ServiceContext,
     ):
         """
-        获取或创建音频处理器
+        Get or create an audio processor
 
         Args:
             sid: session id
             ctx: ServiceContext
 
         Returns:
-            AudioProcessor: 音频处理器实例
+            AudioProcessor: Audio processor instance
         """
         if sid not in self.audio_processors:
             from ...services.audio.simple_vad_processor import SimpleVADProcessor
 
             async def on_speech_end(audio_data):
-                # 语音结束时，调用 orchestrator 处理音频
+                # When speech ends, call orchestrator to process audio
                 orchestrator = self.get_orchestrator(sid)
                 if orchestrator:
                     import numpy as np
-                    # 转换为 bytes
+                    # Convert to bytes
                     audio_bytes = (np.array(audio_data, dtype=np.float32) * 32768).astype(np.int16).tobytes()
                     await orchestrator.process_audio(audio_bytes)
 
@@ -286,12 +298,12 @@ class SessionManager:
             )
 
             self.audio_processors[sid] = processor
-            logger.info(f"[{sid}] AudioProcessor 已创建")
+            logger.info(f"[{sid}] AudioProcessor created")
 
         return self.audio_processors[sid]
 
 
     @property
     def session_count(self) -> int:
-        """获取活跃会话数"""
+        """Get active session count"""
         return len(self.contexts)

@@ -160,6 +160,12 @@ def create_chat_model_from_service(
     Returns:
         BaseChatModel: LangChain ChatModel instance
     """
+    # Dynamic proxies (e.g. TracingProxy) wrap LLMInterface for OTel tracing
+    # but fail Pydantic's strict isinstance(LLMInterface) check in
+    # LLMChatModelAdapter.  Unwrap before passing to the adapter.
+    if hasattr(llm_service, "_target"):
+        llm_service = llm_service._target
+
     model_name = "unknown"
     if hasattr(llm_service, "config") and hasattr(llm_service.config, "model"):
         model_name = llm_service.config.model

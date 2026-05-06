@@ -335,12 +335,12 @@ class FasterWhisperASR(ASRInterface):
     def from_config(cls, config, **kwargs):
         """Create instance from configuration"""
         return cls(
-            model=config.get("model", "distil-large-v3"),
-            language=config.get("language", "zh"),
-            device=config.get("device", "auto"),
-            compute_type=config.get("compute_type", "default"),
-            download_root=config.get("download_root"),
-            beam_size=config.get("beam_size", 5),
-            vad_filter=config.get("vad_filter", True),
-            vad_parameters=config.get("vad_parameters", {}),
+            model=getattr(config, "model", "distil-large-v3"),
+            language=getattr(config, "language", "zh"),
+            device=getattr(config, "device", "auto"),
+            compute_type=getattr(config, "compute_type", "default"),
+            download_root=getattr(config, "download_root", None),
+            beam_size=getattr(config, "beam_size", 5),
+            vad_filter=getattr(config, "vad_filter", True),
+            vad_parameters=getattr(config, "vad_parameters", {}),
         )

@@ -231,7 +231,11 @@ class LangGraphOrchestrator:
         # Start trace
         input_type = initial_state.get("input_type", "text")
         user_text = initial_state.get("user_text", "")
-        self._stats_handler.start_trace(self.session_id, input_type, user_text)
+        trace_id = self._stats_handler.start_trace(self.session_id, input_type, user_text)
+
+        # Attach OTel context so TracingProxy spans inherit this trace_id
+        from anima.tracing import attach_trace_context, detach_trace_context
+        _token = attach_trace_context(trace_id)
 
         run_config = dict(self._langgraph_config)
         callbacks = self._callbacks or get_observability().callbacks
@@ -245,6 +249,8 @@ class LangGraphOrchestrator:
         except Exception as e:
             self._stats_handler.finish_trace(status="error", error_msg=str(e)[:500])
             raise
+        finally:
+            detach_trace_context(_token)
 
     def _clean_result(self, final_state: Dict[str, Any]) -> Dict[str, Any]:
         """Clean up return value"""
@@ -258,7 +264,7 @@ class LangGraphOrchestrator:
 
     def _get_persona_dict(self) -> Optional[Dict[str, Any]]:
         """Get persona config dict"""
-        if self.service_context and hasattr(self.service_context, "config"):
+        if self.service_context and self.service_context.config:
             persona = self.service_context.config.get_persona()
             if persona:
                 return {
@@ -273,7 +279,7 @@ class LangGraphOrchestrator:
 
     def _get_system_prompt(self) -> Optional[str]:
         """Get system prompt"""
-        if self.service_context and hasattr(self.service_context, "config"):
+        if self.service_context and self.service_context.config:
             return self.service_context.config.get_system_prompt()
         return None
 
