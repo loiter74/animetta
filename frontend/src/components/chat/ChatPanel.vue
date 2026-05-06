@@ -103,6 +103,6 @@ watch(() => store.memoryOrganizing, (organizing) => {
     <MessageList class="flex-1" />
 
     <!-- Input -->
-    <InputBar />
+    <InputBar :sendText="sendText" />
   </div>
 </template>

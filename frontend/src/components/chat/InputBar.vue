@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import VoiceButton from './VoiceButton.vue'
-import { useChat } from '@/composables/useChat'
 
-const { sendText } = useChat()
+const { sendText } = defineProps<{ sendText: (text: string) => void }>()
 const inputText = ref('')
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
 
