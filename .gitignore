@@ -84,4 +84,13 @@ training_data/datasets/raw/
 # Stats database
 data/stats.db
 data/stats.db-*
+data/stats.db.tmp
 .gstack/
+
+# Coverage
+.coverage
+coverage/
+
+# Archives
+*.zip
+*.tar.gz
