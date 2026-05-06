@@ -88,19 +88,17 @@ async def output_node(
             volumes = []
 
             if isinstance(tts_audio, str) and os.path.exists(tts_audio):
-                # ── Parallel: trim_silence, compute_volumes, read_file are independent ──
+                # ── Trim leading silence first, then parallel read + volumes ──
                 loop = asyncio.get_running_loop()
-                (
-                    trimmed_path,
-                    raw_bytes,
-                    vol_result,
-                ) = await asyncio.gather(
-                    loop.run_in_executor(None, _trim_leading_silence, tts_audio),
-                    loop.run_in_executor(None, partial(_read_file_bytes, tts_audio)),
-                    loop.run_in_executor(None, _compute_volumes, tts_audio),
+                trimmed_path = await loop.run_in_executor(
+                    None, _trim_leading_silence, tts_audio)
+                audio_source = trimmed_path or tts_audio
+
+                (raw_bytes, vol_result) = await asyncio.gather(
+                    loop.run_in_executor(None, partial(_read_file_bytes, audio_source)),
+                    loop.run_in_executor(None, _compute_volumes, audio_source),
                 )
 
-                audio_source = trimmed_path or tts_audio
                 ext = os.path.splitext(audio_source)[1].lower()
                 format = ext.lstrip('.') if ext else "mp3"
                 audio_data = base64.b64encode(raw_bytes).decode("utf-8")

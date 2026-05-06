@@ -98,9 +98,9 @@ class AudioAnalyzer:
                 else:
                     volumes = [0.0] * len(volumes)
 
-                # Apply gain and clamp to [0, 1] range
-                if gain != 1.0:
-                    volumes = [min(1.0, v * gain) for v in volumes]
+            # Apply gain and clamp to [0, 1] range (always, even without normalize)
+            if volumes and gain != 1.0:
+                volumes = [min(1.0, v * gain) for v in volumes]
 
             logger.debug(
                 f"[AudioAnalyzer] Calculated {len(volumes)} volume samples "

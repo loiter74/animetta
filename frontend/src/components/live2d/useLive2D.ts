@@ -322,6 +322,11 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
   function startLipSync(audio: HTMLAudioElement, volumes: number[]): void {
     stopLipSync()
     _lipSyncRafActive = true
+
+    // Stop idle motion that may override mouth parameters via motionManager
+    try {
+      model?.internalModel?.motionManager?.stopAllMotions()
+    } catch {}
     const intervalMs = 20
     let lastIndex = -1
     let hasStarted = false
@@ -389,6 +394,8 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
     lipSyncCancel = null
     _lipSyncRafActive = false
     setMouthTarget(0)
+    // Restart idle motion for head sway now that lip sync is done
+    try { model?.motion?.("Idle", 0) } catch {}
   }
 
   // ===== Audio =====
