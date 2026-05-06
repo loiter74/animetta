@@ -87,7 +87,11 @@ class MCPClient:
     async def disconnect(self):
         """Disconnect"""
         if self._exit_stack:
-            await self._exit_stack.aclose()
+            try:
+                await self._exit_stack.aclose()
+            except RuntimeError:
+                # anyio cancel scope cross-task issue (Python 3.13 + anyio compat)
+                pass
             self._exit_stack = None
             self.session = None
             logger.info(f"[MCP:{self.name}] Disconnected")
