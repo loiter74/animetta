@@ -12,17 +12,13 @@ from .state import AgentState, log_timing
 # Regex: emotion tags like [happy], [sad], [angry] etc.
 _EMOTION_TAG_RE = re.compile(r'\[[\w-]+\]')
 
-# Regex: common Kaomoji / 颜文字 like (｀・ω・´), (°▽°), ( ˘ω˘ ), ✌️ etc.
-_KAOMOJI_RE = re.compile(r'[\(（\[［][\s\-〜～]*[^\x00-\x7F]{1,4}[\s\-〜～]*[^\x00-\x7F]{0,4}[\s\-〜～]*[\)）\]］]')
-
-# Regex: Unicode Emoji ranges (covering most emoji used in conversations)
+# Regex: Unicode Emoji ranges (only safe ranges that don't overlap with CJK)
 _EMOJI_RE = re.compile(
     '[\U0001F600-\U0001F64F'   # Emoticons
     '\U0001F300-\U0001F5FF'   # Misc symbols & pictographs
     '\U0001F680-\U0001F6FF'   # Transport & map
-    '\U0001F1E0-\U0001F1FF'   # Flags
+    '\U0001F1E0-\U0001F1FF'   # Flags (regional indicators)
     '\U00002702-\U000027B0'   # Dingbats
-    '\U000024C2-\U0001F251'   # Enclosed chars
     '\U0001F900-\U0001F9FF'   # Supplemental symbols
     '\U0001FA00-\U0001FA6F'   # Chess symbols
     '\U0001FA70-\U0001FAFF'   # Symbols extended-A
@@ -34,9 +30,8 @@ _EMOJI_RE = re.compile(
 
 
 def _clean_text_for_tts(text: str) -> str:
-    """Remove emoji, emotion tags, and 颜文字 from text before TTS synthesis."""
+    """Remove emoji and emotion tags from text before TTS synthesis."""
     text = _EMOTION_TAG_RE.sub('', text)
-    text = _KAOMOJI_RE.sub('', text)
     text = _EMOJI_RE.sub('', text)
     # Collapse multiple spaces into one
     text = re.sub(r'  +', ' ', text).strip()
