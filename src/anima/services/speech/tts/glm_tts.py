@@ -1,5 +1,5 @@
 """
-GLM TTS 实现 - 使用智谱 AI GLM TTS API
+GLM TTS implementation - uses Zhipu AI GLM TTS API
 """
 
 from typing import Union, Optional
@@ -17,8 +17,8 @@ from anima.config.providers.tts.glm import GLMTTSConfig
 @ProviderRegistry.register_service("tts", "glm")
 class GLMTTS(TTSInterface):
     """
-    GLM TTS 实现
-    使用智谱 AI 的 GLM TTS API 进行语音合成
+    GLM TTS implementation
+    Uses Zhipu AI's GLM TTS API for speech synthesis
     """
 
     def __init__(
@@ -31,15 +31,15 @@ class GLMTTS(TTSInterface):
         volume: float = 1.0,
     ):
         """
-        初始化 GLM TTS 客户端
+        Initialize GLM TTS client
 
         Args:
-            api_key: 智谱 AI API Key
-            model: TTS 模型，默认为 glm-tts
-            voice: 音色，可选 male/female
-            response_format: 输出格式，支持 wav/mp3/pcm
-            speed: 语速，范围 0.5-2.0
-            volume: 音量，范围 0.5-2.0
+            api_key: Zhipu AI API Key
+            model: TTS model, defaults to glm-tts
+            voice: Voice, options: male/female
+            response_format: Output format, supports wav/mp3/pcm
+            speed: Speaking speed, range 0.5-2.0
+            volume: Volume, range 0.5-2.0
         """
         self.api_key = api_key
         self.model = model
@@ -49,15 +49,27 @@ class GLMTTS(TTSInterface):
         self.volume = volume
         self._client = None
 
+    @classmethod
+    def from_config(cls, config, **kwargs):
+        """Create instance from configuration (supports ProviderRegistry.create_service path)"""
+        return cls(
+            api_key=config.api_key,
+            model=getattr(config, "model", "glm-tts"),
+            voice=config.voice,
+            response_format=getattr(config, "response_format", "wav"),
+            speed=getattr(config, "speed", 1.0),
+            volume=getattr(config, "volume", 1.0),
+        )
+
     def _get_client(self):
-        """懒加载客户端"""
+        """Lazy-load client"""
         if self._client is None:
             try:
                 from zai import ZhipuAiClient
                 self._client = ZhipuAiClient(api_key=self.api_key)
-                logger.info("GLM TTS 客户端初始化成功")
+                logger.info("GLM TTS client initialized successfully")
             except ImportError as e:
-                logger.error("未安装 zai-sdk，请运行: pip install zai-sdk")
+                logger.error("zai-sdk not installed, please run: pip install zai-sdk")
                 raise ImportError(
                     "zai-sdk 未安装，请运行: pip install zai-sdk"
                 ) from e
@@ -75,45 +87,45 @@ class GLMTTS(TTSInterface):
         **kwargs
     ) -> Union[bytes, str]:
         """
-        将文本合成为语音
+        Synthesize text to speech
 
         Args:
-            text: 要合成的文本
-            output_path: 输出文件路径（可选）
-            voice: 音色（可选，覆盖默认值）
-            speed: 语速（可选，覆盖默认值）
-            volume: 音量（可选，覆盖默认值）
-            response_format: 输出格式（可选，覆盖默认值）
-            stream: 是否使用流式调用
-            **kwargs: 额外参数
+            text: Text to synthesize
+            output_path: Output file path (optional)
+            voice: Voice (optional, overrides default)
+            speed: Speaking speed (optional, overrides default)
+            volume: Volume (optional, overrides default)
+            response_format: Output format (optional, overrides default)
+            stream: Whether to use streaming
+            **kwargs: Additional parameters
 
         Returns:
-            Union[bytes, str]: 如果指定了 output_path，返回文件路径字符串
-                               否则返回音频字节数据
+            Union[bytes, str]: If output_path is specified, returns the file path string
+                               Otherwise returns audio byte data
         """
         client = self._get_client()
         
-        # 使用传入参数或默认值
+        # Use passed parameters or defaults
         actual_voice = voice or self.voice
         actual_speed = speed if speed is not None else self.speed
         actual_volume = volume if volume is not None else self.volume
         actual_format = response_format or self.response_format
 
-        logger.debug(f"GLM TTS 合成文本: {text[:50]}... (voice={actual_voice}, format={actual_format})")
+        logger.debug(f"GLM TTS synthesizing text: {text[:50]}... (voice={actual_voice}, format={actual_format})")
 
         try:
             if stream:
-                # 流式调用
+                # Streaming call
                 return await self._synthesize_stream(
                     client, text, output_path, actual_voice, actual_format, actual_speed, actual_volume
                 )
             else:
-                # 非流式调用
+                # Non-streaming call
                 return await self._synthesize_sync(
                     client, text, output_path, actual_voice, actual_format, actual_speed, actual_volume
                 )
         except Exception as e:
-            logger.error(f"GLM TTS 合成失败: {e}")
+            logger.error(f"GLM TTS synthesis failed: {e}")
             raise
 
     async def _synthesize_sync(
@@ -126,10 +138,10 @@ class GLMTTS(TTSInterface):
         speed: float,
         volume: float
     ) -> Union[bytes, str]:
-        """非流式合成"""
+        """Non-streaming synthesis"""
         import asyncio
         
-        # 在线程池中执行同步调用
+        # Execute synchronous call in thread pool
         loop = asyncio.get_event_loop()
         
         def _call_api():
@@ -146,20 +158,20 @@ class GLMTTS(TTSInterface):
         response = await loop.run_in_executor(None, _call_api)
 
         if output_path:
-            # 保存到文件
+            # Save to file
             output_path = Path(output_path)
             output_path.parent.mkdir(parents=True, exist_ok=True)
             response.stream_to_file(str(output_path))
-            logger.info(f"GLM TTS 音频已保存到: {output_path}")
+            logger.info(f"GLM TTS audio saved to: {output_path}")
             return str(output_path)
         else:
-            # 返回字节数据
+            # Return byte data
             import io
             buffer = io.BytesIO()
             for chunk in response.iter_bytes():
                 buffer.write(chunk)
             audio_data = buffer.getvalue()
-            logger.debug(f"GLM TTS 返回音频数据: {len(audio_data)} bytes")
+            logger.debug(f"GLM TTS returning audio data: {len(audio_data)} bytes")
             return audio_data
 
     async def _synthesize_stream(
@@ -172,7 +184,7 @@ class GLMTTS(TTSInterface):
         speed: float,
         volume: float
     ) -> Union[bytes, str]:
-        """流式合成"""
+        """Streaming synthesis"""
         import asyncio
         import base64
         import io
@@ -194,7 +206,7 @@ class GLMTTS(TTSInterface):
 
         response = await loop.run_in_executor(None, _call_api)
 
-        # 收集所有音频数据
+        # Collect all audio data
         audio_chunks = []
         
         for chunk in response:
@@ -204,23 +216,23 @@ class GLMTTS(TTSInterface):
                     break
                 audio_delta = choice.delta.content
                 if audio_delta:
-                    # 解码 base64 数据
+                    # Decode base64 data
                     audio_data = base64.b64decode(audio_delta)
                     audio_chunks.append(audio_data)
 
-        # 合并所有音频数据
+        # Merge all audio data
         all_audio = b''.join(audio_chunks)
         
         if output_path:
-            # 保存到文件
+            # Save to file
             output_path = Path(output_path)
             output_path.parent.mkdir(parents=True, exist_ok=True)
             with open(output_path, 'wb') as f:
                 f.write(all_audio)
-            logger.info(f"GLM TTS 流式音频已保存到: {output_path}")
+            logger.info(f"GLM TTS streaming audio saved to: {output_path}")
             return str(output_path)
         else:
-            logger.debug(f"GLM TTS 流式返回音频数据: {len(all_audio)} bytes")
+            logger.debug(f"GLM TTS streaming returning audio data: {len(all_audio)} bytes")
             return all_audio
 
     async def synthesize_stream(
@@ -232,16 +244,16 @@ class GLMTTS(TTSInterface):
         **kwargs
     ):
         """
-        流式合成语音，生成器返回音频块
+        Streaming speech synthesis, generator yields audio chunks
 
         Args:
-            text: 要合成的文本
-            voice: 音色
-            speed: 语速
-            volume: 音量
+            text: Text to synthesize
+            voice: Voice
+            speed: Speaking speed
+            volume: Volume
 
         Yields:
-            bytes: 音频数据块
+            bytes: Audio data chunks
         """
         import base64
         import asyncio
@@ -276,11 +288,11 @@ class GLMTTS(TTSInterface):
                     return
                 audio_delta = choice.delta.content
                 if audio_delta:
-                    # 解码 base64 数据并 yield
+                    # Decode base64 data and yield
                     audio_data = base64.b64decode(audio_delta)
                     yield audio_data
 
     async def close(self) -> None:
-        """清理资源"""
+        """Clean up resources"""
         self._client = None
-        logger.debug("GLM TTS 客户端已关闭")
+        logger.debug("GLM TTS client closed")

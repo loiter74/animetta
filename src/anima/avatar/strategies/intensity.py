@@ -1,8 +1,8 @@
 """
-强度基础时间轴策略
+Intensity-based timeline strategy
 
-根据情绪强度计算时间轴片段。
-强度高的情绪会获得更多的时间和更高的强度值。
+Calculates timeline segments based on emotion intensity.
+High-intensity emotions get more time and higher intensity values.
 """
 
 from typing import List, Optional, Dict, Any
@@ -13,23 +13,23 @@ from .base import ITimelineStrategy, TimelineSegment, TimelineConfig
 
 class IntensityBasedStrategy(ITimelineStrategy):
     """
-    基于强度的时间轴策略
+    Intensity-based timeline strategy
 
-    根据情绪强度分配时间和设置强度值。
-    不同情绪有不同的默认强度，也可以自定义。
+    Allocates time and sets intensity values based on emotion intensity.
+    Different emotions have different default intensities, which can be customized.
 
-    功能:
-    - 不同情绪有不同的强度值
-    - 强度高的情绪获得更多时间
-    - 支持自定义情绪强度映射
-    - 支持强度阈值过滤
-    - 支持平滑过渡
+    Features:
+    - Different emotions have different intensity values
+    - High-intensity emotions get more time
+    - Supports custom emotion intensity mapping
+    - Supports intensity threshold filtering
+    - Supports smooth transitions
 
     Attributes:
-        config: 时间轴配置
-        emotion_intensities: 情绪强度映射 (0.0 - 1.0)
-        min_intensity: 最小强度阈值（低于此值的情绪会被过滤）
-        intensity_factor: 强度对时间分配的影响因子（0.0 - 1.0）
+        config: Timeline configuration
+        emotion_intensities: Emotion intensity mapping (0.0 - 1.0)
+        min_intensity: Minimum intensity threshold (emotions below this are filtered)
+        intensity_factor: Intensity's influence on time allocation (0.0 - 1.0)
 
     Example:
         >>> strategy = IntensityBasedStrategy(
@@ -40,19 +40,19 @@ class IntensityBasedStrategy(ITimelineStrategy):
         ...     text="I'm happy sad and surprised",
         ...     audio_duration=9.0
         ... )
-        >>> # 高强度情绪（如 surprised）会获得更多时间
+        >>> # High-intensity emotions (e.g., surprised) get more time
     """
 
-    # 默认情绪强度值（0.0 - 1.0）
+    # Default emotion intensity values (0.0 - 1.0)
     DEFAULT_EMOTION_INTENSITIES = {
-        "happy": 0.8,          # 高强度
-        "sad": 0.6,            # 中等强度
-        "angry": 0.9,          # 很高强度
-        "surprised": 0.95,     # 极高强度（时间短但强烈）
-        "thinking": 0.4,       # 较低强度
-        "neutral": 0.3,        # 低强度
-        "listening": 0.3,      # 低强度
-        "speaking": 0.7,       # 中高强度
+        "happy": 0.8,          # High intensity
+        "sad": 0.6,            # Medium intensity
+        "angry": 0.9,          # Very high intensity
+        "surprised": 0.95,     # Extremely high intensity (short but strong)
+        "thinking": 0.4,       # Lower intensity
+        "neutral": 0.3,        # Low intensity
+        "listening": 0.3,      # Low intensity
+        "speaking": 0.7,       # Medium-high intensity
     }
 
     def __init__(
@@ -64,14 +64,14 @@ class IntensityBasedStrategy(ITimelineStrategy):
         enable_smoothing: bool = True
     ):
         """
-        初始化策略
+        Initialize the strategy
 
         Args:
-            config: 时间轴配置
-            emotion_intensities: 自定义情绪强度映射
-            min_intensity: 最小强度阈值（低于此值的情绪会被过滤）
-            intensity_factor: 强度对时间分配的影响因子（0.0 = 无影响，1.0 = 完全影响）
-            enable_smoothing: 是否启用平滑过渡
+            config: Timeline configuration
+            emotion_intensities: Custom emotion intensity mapping
+            min_intensity: Minimum intensity threshold (emotions below this are filtered)
+            intensity_factor: Intensity's influence on time allocation (0.0 = no influence, 1.0 = full influence)
+            enable_smoothing: Whether to enable smooth transitions
         """
         self.config = config or TimelineConfig()
         self._emotion_intensities = emotion_intensities or self.DEFAULT_EMOTION_INTENSITIES.copy()
@@ -88,69 +88,69 @@ class IntensityBasedStrategy(ITimelineStrategy):
         **kwargs
     ) -> List[TimelineSegment]:
         """
-        计算情绪时间轴
+        Calculate the emotion timeline
 
         Args:
-            emotions: 情绪列表
-            text: 文本内容
-            audio_duration: 音频时长
-            config: 可选的配置
-            **kwargs: 额外参数
+            emotions: List of emotions
+            text: Text content
+            audio_duration: Audio duration
+            config: Optional configuration
+            **kwargs: Additional parameters
 
         Returns:
-            List[TimelineSegment]: 时间轴片段列表
+            List[TimelineSegment]: List of timeline segments
 
         Raises:
-            ValueError: 当输入参数无效时
+            ValueError: When input parameters are invalid
         """
         timeline_config = config or self.config
 
-        # 验证输入
+        # Validate input
         if not self.validate_input(emotions, text, audio_duration):
-            raise ValueError(f"无效的输入参数")
+            raise ValueError(f"Invalid input parameters")
 
         try:
-            # 情况 1: 没有情绪
+            # Case 1: No emotions
             if not emotions:
-                logger.debug(f"[{self.name}] 没有情绪，使用默认情绪")
+                logger.debug(f"[{self.name}] No emotions, using default emotion")
                 return self._create_default_segment(
                     timeline_config.default_emotion,
                     audio_duration
                 )
 
-            # 情况 2: 根据强度分配时间和强度值
+            # Case 2: Allocate time and intensity based on intensity values
             segments = self._calculate_intensity_segments(
                 emotions,
                 audio_duration,
                 timeline_config
             )
 
-            # 可选：合并相邻相同情绪
+            # Optional: Merge adjacent same emotions
             if self._enable_smoothing:
                 segments = self.merge_adjacent_same_emotion(segments)
 
-            # 确保完整覆盖
+            # Ensure full coverage
             segments = self.ensure_full_coverage(
                 segments,
                 audio_duration,
                 timeline_config.default_emotion
             )
 
-            # 应用最小强度过滤
+            # Apply minimum intensity filter
             segments = self._filter_low_intensity_segments(
                 segments,
                 timeline_config.min_segment_duration
             )
 
             logger.debug(
-                f"[{self.name}] 计算了 {len(segments)} 个时间轴片段, "
-                f"总时长 {audio_duration:.2f}s"
+                f"[{self.name}] Calculated {len(segments)} timeline segments, "
+                f"total duration {audio_duration:.2f}s"
             )
 
             return segments
 
         except Exception as e:
-            logger.error(f"[{self.name}] 计算时间轴失败: {e}")
+            logger.error(f"[{self.name}] Failed to calculate timeline: {e}")
             return self._create_default_segment(
                 timeline_config.default_emotion,
                 audio_duration
@@ -163,23 +163,23 @@ class IntensityBasedStrategy(ITimelineStrategy):
         config: TimelineConfig
     ) -> List[TimelineSegment]:
         """
-        根据强度计算时间分配和强度值
+        Calculate time allocation and intensity values based on intensity
 
         Args:
-            emotions: 情绪列表
-            audio_duration: 音频时长
-            config: 时间轴配置
+            emotions: List of emotions
+            audio_duration: Audio duration
+            config: Timeline configuration
 
         Returns:
-            List[TimelineSegment]: 时间轴片段列表
+            List[TimelineSegment]: List of timeline segments
         """
-        # 获取每个情绪的强度
+        # Get intensity for each emotion
         intensities = []
         for emotion in emotions:
             intensity = self._emotion_intensities.get(emotion, 0.5)
             intensities.append(intensity)
 
-        # 过滤低强度情绪
+        # Filter low-intensity emotions
         filtered_emotions = []
         filtered_intensities = []
         for emotion, intensity in zip(emotions, intensities):
@@ -188,21 +188,21 @@ class IntensityBasedStrategy(ITimelineStrategy):
                 filtered_intensities.append(intensity)
             else:
                 logger.debug(
-                    f"[{self.name}] 过滤低强度情绪: {emotion} ({intensity:.2f})"
+                    f"[{self.name}] Filtering low-intensity emotion: {emotion} ({intensity:.2f})"
                 )
 
-        # 如果所有情绪都被过滤，使用默认情绪
+        # If all emotions were filtered, use default emotion
         if not filtered_emotions:
             return self._create_default_segment(config.default_emotion, audio_duration)
 
-        # 计算加权强度（考虑 intensity_factor）
-        # intensity_factor = 0.0 时，所有情绪平均分配时间
-        # intensity_factor = 1.0 时，完全按强度比例分配时间
+        # Calculate weighted intensity (considering intensity_factor)
+        # intensity_factor = 0.0: all emotions get equal time
+        # intensity_factor = 1.0: fully proportional to intensity
         if self._intensity_factor == 0.0:
-            # 平均分配
+            # Equal distribution
             weights = [1.0] * len(filtered_emotions)
         else:
-            # 按强度分配，但考虑 intensity_factor
+            # Distribute by intensity, but consider intensity_factor
             base_weights = [1.0] * len(filtered_emotions)
             intensity_weights = filtered_intensities
             weights = [
@@ -212,7 +212,7 @@ class IntensityBasedStrategy(ITimelineStrategy):
 
         total_weight = sum(weights)
 
-        # 根据权重分配时间
+        # Allocate time based on weights
         segments = []
         current_time = 0.0
 
@@ -221,7 +221,7 @@ class IntensityBasedStrategy(ITimelineStrategy):
             filtered_intensities,
             weights
         )):
-            # 计算持续时间
+            # Calculate duration
             if total_weight == 0:
                 duration = audio_duration / len(filtered_emotions)
             else:
@@ -230,7 +230,7 @@ class IntensityBasedStrategy(ITimelineStrategy):
             start_time = current_time
             end_time = current_time + duration
 
-            # 最后一个情绪延伸到音频结束
+            # Last emotion extends to end of audio
             if i == len(filtered_emotions) - 1:
                 end_time = audio_duration
 
@@ -238,7 +238,7 @@ class IntensityBasedStrategy(ITimelineStrategy):
                 emotion=emotion,
                 start_time=start_time,
                 end_time=end_time,
-                intensity=intensity  # 使用情绪的强度值
+                intensity=intensity  # Use emotion's intensity value
             ))
 
             current_time = end_time
@@ -254,14 +254,14 @@ class IntensityBasedStrategy(ITimelineStrategy):
         min_duration: float
     ) -> List[TimelineSegment]:
         """
-        过滤掉强度低或时间短的时间段
+        Filter out segments with low intensity or short duration
 
         Args:
-            segments: 时间轴片段列表
-            min_duration: 最小时长
+            segments: List of timeline segments
+            min_duration: Minimum duration
 
         Returns:
-            List[TimelineSegment]: 过滤后的片段列表
+            List[TimelineSegment]: Filtered segment list
         """
         filtered = []
         for segment in segments:
@@ -269,12 +269,12 @@ class IntensityBasedStrategy(ITimelineStrategy):
                 filtered.append(segment)
             else:
                 logger.debug(
-                    f"[{self.name}] 跳过太短的情绪片段: "
+                    f"[{self.name}] Skipping too short emotion segment: "
                     f"{segment.emotion} ({segment.duration:.3f}s)"
                 )
 
         if not filtered and segments:
-            # 保留强度最高的片段
+            # Keep the segment with the highest intensity
             highest = max(segments, key=lambda s: s.intensity)
             return [highest]
 
@@ -286,27 +286,27 @@ class IntensityBasedStrategy(ITimelineStrategy):
         duration: float
     ) -> List[TimelineSegment]:
         """
-        创建默认时间轴片段
+        Create a default timeline segment
 
         Args:
-            emotion: 情绪名称
-            duration: 时长
+            emotion: Emotion name
+            duration: Duration
 
         Returns:
-            List[TimelineSegment]: 包含单个片段的列表
+            List[TimelineSegment]: List containing a single segment
         """
         return [
             TimelineSegment(
                 emotion=emotion,
                 start_time=0.0,
                 end_time=duration,
-                intensity=0.5  # 默认中等强度
+                intensity=0.5  # Default medium intensity
             )
         ]
 
     @property
     def name(self) -> str:
-        """策略名称"""
+        """Strategy name"""
         return "intensity_based"
 
     def validate_input(
@@ -316,65 +316,65 @@ class IntensityBasedStrategy(ITimelineStrategy):
         audio_duration: float
     ) -> bool:
         """
-        验证输入参数
+        Validate input parameters
 
         Args:
-            emotions: 情绪列表
-            text: 文本内容
-            audio_duration: 音频时长
+            emotions: List of emotions
+            text: Text content
+            audio_duration: Audio duration
 
         Returns:
-            bool: 是否有效
+            bool: Whether valid
         """
         if not isinstance(audio_duration, (int, float)) or audio_duration <= 0:
-            logger.warning(f"[{self.name}] 无效的音频时长: {audio_duration}")
+            logger.warning(f"[{self.name}] Invalid audio duration: {audio_duration}")
             return False
 
         if not isinstance(text, str):
-            logger.warning(f"[{self.name}] 无效的文本类型: {type(text)}")
+            logger.warning(f"[{self.name}] Invalid text type: {type(text)}")
             return False
 
         if emotions is None:
-            logger.warning(f"[{self.name}] 情绪列表为 None")
+            logger.warning(f"[{self.name}] Emotions list is None")
             return False
 
         return True
 
     def set_emotion_intensity(self, emotion: str, intensity: float) -> None:
         """
-        设置情绪的强度值
+        Set the intensity value for an emotion
 
         Args:
-            emotion: 情绪名称
-            intensity: 强度值（0.0 - 1.0）
+            emotion: Emotion name
+            intensity: Intensity value (0.0 - 1.0)
         """
         if not 0.0 <= intensity <= 1.0:
-            raise ValueError(f"强度值必须在 0.0 - 1.0 之间: {intensity}")
+            raise ValueError(f"Intensity value must be between 0.0 - 1.0: {intensity}")
 
         self._emotion_intensities[emotion] = intensity
-        logger.debug(f"[{self.name}] 设置 {emotion} 的强度为 {intensity}")
+        logger.debug(f"[{self.name}] Set intensity for {emotion} to {intensity}")
 
     def get_emotion_intensity(self, emotion: str) -> float:
         """
-        获取情绪的强度值
+        Get the intensity value for an emotion
 
         Args:
-            emotion: 情绪名称
+            emotion: Emotion name
 
         Returns:
-            float: 强度值，如果不存在则返回 0.5
+            float: Intensity value, returns 0.5 if not found
         """
         return self._emotion_intensities.get(emotion, 0.5)
 
     def get_segment_info(self, segments: List[TimelineSegment]) -> Dict[str, Any]:
         """
-        获取时间轴片段的统计信息
+        Get statistics for timeline segments
 
         Args:
-            segments: 时间轴片段列表
+            segments: List of timeline segments
 
         Returns:
-            Dict: 统计信息
+            Dict: Statistics
         """
         if not segments:
             return {
@@ -393,12 +393,12 @@ class IntensityBasedStrategy(ITimelineStrategy):
             emotion_counts[seg.emotion] = emotion_counts.get(seg.emotion, 0) + 1
             emotion_durations[seg.emotion] = emotion_durations.get(seg.emotion, 0.0) + seg.duration
 
-            # 记录强度（取平均值）
+            # Record intensity (take average)
             if seg.emotion not in emotion_intensities:
                 emotion_intensities[seg.emotion] = []
             emotion_intensities[seg.emotion].append(seg.intensity)
 
-        # 计算平均强度
+        # Calculate average intensity
         avg_intensities = {
             emotion: sum(intensities) / len(intensities)
             for emotion, intensities in emotion_intensities.items()

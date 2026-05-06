@@ -1,6 +1,6 @@
 """
-GLM 消息格式转换器
-处理 LangChain 消息与 GLM API 格式之间的转换
+GLM message format converter
+Handles conversion between LangChain messages and GLM API format
 """
 
 import json
@@ -9,18 +9,18 @@ from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, Tool
 
 
 class GLMMessageConverter:
-    """LangChain 消息到 GLM API 格式的转换器"""
+    """Converts LangChain messages to GLM API format"""
 
     @staticmethod
     def convert_to_glm(msg: Any) -> Dict[str, Any]:
         """
-        将 LangChain 消息转换为 GLM API 格式
+        Convert a LangChain message to GLM API format
 
         Args:
-            msg: LangChain 消息对象
+            msg: LangChain message object
 
         Returns:
-            Dict: GLM API 格式的消息
+            Dict: Message in GLM API format
         """
         if isinstance(msg, SystemMessage):
             return GLMMessageConverter._convert_system(msg)
@@ -55,7 +55,7 @@ class GLMMessageConverter:
 
     @staticmethod
     def _convert_tool_call(tc: Any) -> Dict[str, Any]:
-        """转换单个工具调用"""
+        """Convert a single tool call"""
         if isinstance(tc, dict):
             tc_id = tc.get("id", "")
             tc_name = tc.get("name", "")
@@ -91,18 +91,18 @@ class GLMMessageConverter:
 
 
 class GLMToolConverter:
-    """LangChain 工具到 GLM API 格式的转换器"""
+    """Converts LangChain tools to GLM API format"""
 
     @staticmethod
     def convert_tools(tool_list: list[Any]) -> list[Dict[str, Any]]:
         """
-        将 LangChain 工具列表转换为 GLM 格式
+        Convert a list of LangChain tools to GLM format
 
         Args:
-            tool_list: LangChain BaseTool 对象列表
+            tool_list: List of LangChain BaseTool objects
 
         Returns:
-            List[Dict]: GLM API 格式的工具列表
+            List[Dict]: Tool list in GLM API format
         """
         glm_tools = []
 
@@ -122,7 +122,7 @@ class GLMToolConverter:
 
     @staticmethod
     def _get_tool_parameters(tool: Any) -> Dict[str, Any]:
-        """获取工具参数 schema"""
+        """Get tool parameter schema"""
         if hasattr(tool, 'args_schema') and tool.args_schema:
             return tool.args_schema.schema()
         return {
@@ -134,13 +134,13 @@ class GLMToolConverter:
     @staticmethod
     def parse_tool_response(message: Any) -> Dict[str, Any]:
         """
-        解析 GLM API 响应中的工具调用
+        Parse tool calls from a GLM API response
 
         Args:
-            message: GLM API 返回的消息对象
+            message: GLM API response message object
 
         Returns:
-            Dict: 包含 content 和 tool_calls 的字典
+            Dict: Dictionary containing content and tool_calls
         """
         content = message.content or ""
         tool_calls = []

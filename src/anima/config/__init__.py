@@ -1,14 +1,14 @@
 """
-配置模块（重构版）
-使用插件化 Provider 架构 + Pydantic Discriminated Unions
+Configuration module (refactored)
+Uses plugin-based Provider architecture + Pydantic Discriminated Unions
 
-架构:
-- core/: 核心基础设施（BaseConfig, ProviderRegistry）
-- providers/: 提供者配置（LLM/ASR/TTS 各类实现）
-- agent.py: Agent 配置（组合 LLM）
-- persona.py: 人设配置（含头像等）
-- system.py: 系统配置
-- app.py: 应用总配置
+Architecture:
+- core/: Core infrastructure (BaseConfig, ProviderRegistry)
+- providers/: Provider configurations (LLM/ASR/TTS implementations)
+- agent.py: Agent configuration (combined LLM)
+- persona.py: Persona configuration (includes avatar, etc.)
+- system.py: System configuration
+- app.py: Application configuration
 """
 
 # Core

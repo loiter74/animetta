@@ -1,4 +1,4 @@
-"""LLM 提供者配置模块"""
+"""LLM provider configuration module"""
 
 from typing import Annotated, Union
 from pydantic import Field
@@ -11,7 +11,7 @@ from .ollama import OllamaLLMConfig
 from .local_lora_llm import LocalLoraLLMConfig
 from .deepseek import DeepSeekLLMConfig
 
-# 导出所有配置类
+# Export all configuration classes
 __all__ = [
     "LLMBaseConfig",
     "MockLLMConfig",
@@ -23,7 +23,7 @@ __all__ = [
     "LLMConfig",
 ]
 
-# Discriminated Union 类型 - Pydantic 会根据 type 字段自动选择正确的类
+# Discriminated Union type - Pydantic will automatically select the correct class based on the type field
 LLMConfig = Annotated[
     Union[MockLLMConfig, OpenAILLMConfig, GLMLLMConfig, OllamaLLMConfig, LocalLoraLLMConfig, DeepSeekLLMConfig],
     Field(discriminator="type")

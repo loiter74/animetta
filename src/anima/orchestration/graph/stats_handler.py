@@ -1,17 +1,18 @@
-"""Pipeline 统计 Callback Handler - 采集 LangGraph 节点执行耗时"""
+"""Pipeline stats Callback Handler - collect LangGraph node execution timing"""
 
 import time
 import uuid
 import asyncio
 import threading
-from typing import Any, Dict, Optional
+from contextlib import asynccontextmanager
+from typing import Any, Dict, Optional, List, AsyncIterator
 from loguru import logger
 
 from langchain_core.callbacks import BaseCallbackHandler
 
-from .stats_store import get_stats_store
+from .stats_store import get_stats_store, StatsStore
 
-# 已知的业务节点名（过滤 LangGraph 内部节点）
+# Known business node names (filter out LangGraph internal nodes)
 KNOWN_NODES = frozenset({
     "asr_node", "llm_node", "tts_node", "emotion_node",
     "output_node", "tool_node",
@@ -19,8 +20,103 @@ KNOWN_NODES = frozenset({
 })
 
 
+# ---------------------------------------------------------------------------
+# NodeTimer – lightweight sub-node checkpoint timer
+# ---------------------------------------------------------------------------
+
+class NodeTimer:
+    """Records named checkpoints within a graph node.
+    
+    Usage inside any node::
+    
+        timer = NodeTimer("llm_node", trace_id, parent_span_id)
+        with timer.checkpoint("rag_retrieval"):
+            memories = await retrieve(...)
+        with timer.checkpoint("llm_api_call"):
+            response = await llm.chat(...)
+        await timer.finish()
+    
+    All checkpoints are flushed to StatsStore on finish().
+    """
+
+    def __init__(
+        self,
+        node_name: str,
+        trace_id: str,
+        parent_span_id: Optional[str] = None,
+    ):
+        self.node_name = node_name
+        self.trace_id = trace_id
+        self.parent_span_id = parent_span_id
+        self._checkpoints: List[dict] = []
+        self._active: Optional[dict] = None
+        self._done = False
+
+    # -- context manager checkpoint (sync start async end) --
+
+    @asynccontextmanager
+    async def checkpoint(self, label: str) -> AsyncIterator[None]:
+        """Time a sub-operation within the node."""
+        started = time.perf_counter()
+        try:
+            yield
+        finally:
+            elapsed_ms = (time.perf_counter() - started) * 1000
+            self._checkpoints.append({
+                "label": label,
+                "duration_ms": round(elapsed_ms, 2),
+            })
+
+    # -- manual timing helpers --
+
+    def mark(self, label: str) -> None:
+        """Record an instant checkpoint (zero duration marker)."""
+        self._checkpoints.append({
+            "label": label,
+            "duration_ms": 0.0,
+        })
+
+    async def time(self, label: str, coro) -> Any:
+        """Await *coro* while timing it under *label*."""
+        started = time.perf_counter()
+        try:
+            return await coro
+        finally:
+            elapsed_ms = (time.perf_counter() - started) * 1000
+            self._checkpoints.append({
+                "label": label,
+                "duration_ms": round(elapsed_ms, 2),
+            })
+
+    async def finish(self) -> None:
+        """Write all buffered checkpoints as sub-spans and reset."""
+        if self._done:
+            return
+        self._done = True
+        if not self._checkpoints:
+            return
+        try:
+            store = await get_stats_store()
+            for cp in self._checkpoints:
+                span_id = f"{self.trace_id}_{cp['label']}_{uuid.uuid4().hex[:8]}"
+                await store.create_span(
+                    span_id=span_id,
+                    trace_id=self.trace_id,
+                    node_name=f"{self.node_name}.{cp['label']}",
+                    parent_span_id=self.parent_span_id,
+                    input_summary="",
+                )
+                await store.finish_span(
+                    span_id=span_id,
+                    duration_ms=cp["duration_ms"],
+                    status="success",
+                )
+        except Exception as e:
+            logger.debug(f"[NodeTimer] flush failed: {e}")
+
+
 class StatsCallbackHandler(BaseCallbackHandler):
-    """采集 LangGraph 节点执行耗时"""
+    """Collect LangGraph node execution timing"""
 
     def __init__(self):
         self._active_spans: Dict[str, dict] = {}
@@ -29,7 +125,7 @@ class StatsCallbackHandler(BaseCallbackHandler):
         self._lock = threading.Lock()
 
     def start_trace(self, session_id: str, input_type: str, user_text: str) -> str:
-        """开始一次 trace（在 orchestrator 层调用）"""
+        """Start a trace (called from orchestrator layer)"""
         self._trace_id = str(uuid.uuid4())
         self._trace_start = time.perf_counter()
         self._active_spans.clear()
@@ -39,7 +135,7 @@ class StatsCallbackHandler(BaseCallbackHandler):
         return self._trace_id
 
     def finish_trace(self, status: str = "success", error_msg: str = None):
-        """结束一次 trace"""
+        """Finish a trace"""
         if not self._trace_id or not self._trace_start:
             return
         duration = (time.perf_counter() - self._trace_start) * 1000
@@ -47,7 +143,7 @@ class StatsCallbackHandler(BaseCallbackHandler):
             self._async_finish_trace(duration, status, error_msg)
         )
 
-    # -- LangChain Callback 接口 --
+    # -- LangChain Callback interface --
 
     def on_chain_start(
         self, serialized: Dict[str, Any], inputs: Dict[str, Any], *,
@@ -107,7 +203,7 @@ class StatsCallbackHandler(BaseCallbackHandler):
             )
         )
 
-    # -- 异步存储方法 --
+    # -- Async storage methods --
 
     async def _async_create_trace(
         self, session_id: str, input_type: str, user_text: str
@@ -116,7 +212,7 @@ class StatsCallbackHandler(BaseCallbackHandler):
             store = await get_stats_store()
             await store.create_trace(self._trace_id, session_id, input_type, user_text)
         except Exception as e:
-            logger.warning(f"[StatsHandler] 创建 trace 失败: {e}")
+            logger.warning(f"[StatsHandler] Failed to create trace: {e}")
 
     async def _async_finish_trace(
         self, duration: float, status: str, error_msg: str
@@ -125,7 +221,7 @@ class StatsCallbackHandler(BaseCallbackHandler):
             store = await get_stats_store()
             await store.finish_trace(self._trace_id, duration, status, error_msg)
         except Exception as e:
-            logger.warning(f"[StatsHandler] 完成 trace 失败: {e}")
+            logger.warning(f"[StatsHandler] Failed to finish trace: {e}")
 
     async def _async_create_span(
         self, span_id: str, trace_id: str, node_name: str, input_summary: str
@@ -134,7 +230,7 @@ class StatsCallbackHandler(BaseCallbackHandler):
             store = await get_stats_store()
             await store.create_span(span_id, trace_id, node_name, input_summary=input_summary)
         except Exception as e:
-            logger.warning(f"[StatsHandler] 创建 span 失败: {e}")
+            logger.warning(f"[StatsHandler] Failed to create span: {e}")
 
     async def _async_finish_span(
         self, span_id: str, duration: float, output_summary: str,
@@ -144,17 +240,30 @@ class StatsCallbackHandler(BaseCallbackHandler):
             store = await get_stats_store()
             await store.finish_span(span_id, duration, status, output_summary)
         except Exception as e:
-            logger.warning(f"[StatsHandler] 完成 span 失败: {e}")
+            logger.warning(f"[StatsHandler] Failed to finish span: {e}")
 
-    # -- 辅助方法 --
+    # -- Helper methods --
 
     @staticmethod
     def _schedule_async(coro):
-        """在线程安全的异步上下文中调度协程"""
+        """Schedule a coroutine in a thread-safe async context.
+        
+        Uses run_coroutine_threadsafe when a loop is running to avoid
+        "loop already running" errors, and falls back to run_until_complete
+        when no loop is available (e.g. in unit tests or startup).
+        """
+        try:
+            loop = asyncio.get_running_loop()
+            if loop.is_running():
+                asyncio.run_coroutine_threadsafe(coro, loop)
+                return
+        except RuntimeError:
+            pass
+        # No running loop — create one or use existing
         try:
             loop = asyncio.get_event_loop()
             if loop.is_running():
-                asyncio.ensure_future(coro)
+                asyncio.run_coroutine_threadsafe(coro, loop)
             else:
                 loop.run_until_complete(coro)
         except RuntimeError:

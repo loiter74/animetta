@@ -1,4 +1,4 @@
-"""记忆存储实现"""
+"""Memory storage implementations"""
 
 from .sqlite import SQLiteStore
 from .chroma import ChromaStore

@@ -1,4 +1,4 @@
-"""语音服务模块 - ASR + TTS"""
+"""Speech service module - ASR + TTS"""
 
 from .asr import ASRInterface, ASRFactory
 from .tts import TTSInterface, TTSFactory

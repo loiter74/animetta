@@ -1,5 +1,5 @@
 """
-Anima 工具基类和工具注册表
+Anima tool base classes and tool registry
 """
 
 from typing import Dict, List, Any, Optional
@@ -9,7 +9,7 @@ from langchain_core.tools import tool
 
 @tool
 async def web_search(query: str, num_results: int = 5) -> str:
-    """搜索互联网获取实时信息"""
+    """Search the Internet for real-time information"""
     import os
     import httpx
 
@@ -58,7 +58,7 @@ async def web_search(query: str, num_results: int = 5) -> str:
 
 @tool
 async def get_weather(city: str) -> str:
-    """查询指定城市的当前天气信息"""
+    """Get current weather for a specified city"""
     import os
     import httpx
 
@@ -90,7 +90,7 @@ async def get_weather(city: str) -> str:
 
 @tool
 async def get_current_time(timezone: str = "Asia/Shanghai") -> str:
-    """获取当前时间"""
+    """Get the current time"""
     from datetime import datetime
     from zoneinfo import ZoneInfo
     try:
@@ -103,7 +103,7 @@ async def get_current_time(timezone: str = "Asia/Shanghai") -> str:
 
 @tool
 async def calculator(expression: str) -> str:
-    """执行数学计算"""
+    """Execute mathematical calculations"""
     try:
         import ast
         import operator as op
@@ -121,7 +121,7 @@ async def calculator(expression: str) -> str:
         return f"Calculation failed: {str(e)}"
 
 
-# 工具列表
+# Tool list
 _BUILTIN_TOOLS = [web_search, get_weather, get_current_time, calculator]
 
 
@@ -177,9 +177,9 @@ def load_tools_from_config(config: Dict[str, Any]) -> tuple:
                 for name in enabled_custom:
                     if name in custom_tools_map:
                         extra_tools.append(custom_tools_map[name])
-                        logger.info(f"[Custom Tools] 已加载工具: {name}")
+                        logger.info(f"[Custom Tools] Loaded tool: {name}")
                     else:
-                        logger.warning(f"[Custom Tools] 未找到工具: {name}")
+                        logger.warning(f"[Custom Tools] Tool not found: {name}")
         except Exception as e:
             logger.error(f"[Custom Tools] Failed: {e}")
 

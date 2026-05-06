@@ -1,5 +1,5 @@
 """
-GLM ASR 实现 - 使用智谱 AI GLM ASR API
+GLM ASR implementation - uses Zhipu AI GLM ASR API
 """
 
 from typing import Union, Optional
@@ -17,32 +17,32 @@ from anima.config.providers.asr.glm import GLMASRConfig
 @ProviderRegistry.register_service("asr", "glm")
 class GLMASR(ASRInterface):
     """
-    GLM ASR 实现
-    使用智谱 AI 的 GLM ASR API 进行语音识别
+    GLM ASR implementation
+    Uses Zhipu AI's GLM ASR API for speech recognition
     """
 
     @staticmethod
     def _convert_to_supported_audio_bytes(audio_data, sample_rate: int = 16000) -> tuple[bytes, str]:
         """
-        将音频数据转换为 GLM ASR 支持的格式
+        Convert audio data to a format supported by GLM ASR
 
-        GLM ASR 支持的格式: MP3, WAV (需要特定编码), FLAC, M4A, OGG
+        GLM ASR supported formats: MP3, WAV (with specific encoding), FLAC, M4A, OGG
 
         Args:
-            audio_data: 可以是以下类型之一:
+            audio_data: Can be one of the following types:
                 - numpy array (float32, range [-1.0, 1.0])
                 - list of floats
-                - bytes (已经是音频格式)
-            sample_rate: 采样率，默认 16000
+                - bytes (already in audio format)
+            sample_rate: Sample rate, default 16000
 
         Returns:
-            tuple[bytes, str]: (音频数据, 文件扩展名)
+            tuple[bytes, str]: (audio data, file extension)
         """
-        # 如果已经是 bytes，假设是支持的格式
+        # If already bytes, assume it's a supported format
         if isinstance(audio_data, bytes):
             return audio_data, "mp3"
 
-        # 转换为 numpy array
+        # Convert to numpy array
         try:
             import numpy as np
             if isinstance(audio_data, list):
@@ -50,40 +50,40 @@ class GLMASR(ASRInterface):
             else:
                 audio_np = audio_data
         except ImportError:
-            logger.error("需要安装 numpy: pip install numpy")
+            logger.error("numpy is required, install: pip install numpy")
             raise
 
-        # 尝试使用 pydub 转换为 MP3 (更可靠)
+        # Try to convert to MP3 using pydub (more reliable)
         try:
             from pydub import AudioSegment
             import io
 
-            # 将 numpy array 转换为 AudioSegment
+            # Convert numpy array to AudioSegment
             if audio_np.dtype == np.float32 or audio_np.dtype == np.float64:
                 audio_np = np.clip(audio_np, -1.0, 1.0)
                 int16_data = (audio_np * 32767).astype(np.int16)
             else:
                 int16_data = audio_np.astype(np.int16)
 
-            # 创建 AudioSegment
+            # Create AudioSegment
             audio_segment = AudioSegment(
                 data=int16_data.tobytes(),
                 sample_width=2,  # 16-bit
                 frame_rate=sample_rate,
-                channels=1  # 单声道
+                channels=1  # Mono
             )
 
-            # 导出为 MP3
+            # Export as MP3
             mp3_buffer = io.BytesIO()
             audio_segment.export(mp3_buffer, format="mp3", bitrate="64k")
             mp3_buffer.seek(0)
 
-            logger.debug(f"音频转换为 MP3: {len(mp3_buffer.getvalue())} 字节")
+            logger.debug(f"Audio converted to MP3: {len(mp3_buffer.getvalue())} bytes")
             return mp3_buffer.getvalue(), "mp3"
 
         except ImportError:
-            logger.warning("pydub 未安装，使用 WAV 格式 (pip install pydub)")
-            # 降级到 WAV 格式
+            logger.warning("pydub not installed, using WAV format (pip install pydub)")
+            # Fallback to WAV format
             import wave
 
             if audio_np.dtype == np.float32 or audio_np.dtype == np.float64:
@@ -110,27 +110,36 @@ class GLMASR(ASRInterface):
         stream: bool = False,
     ):
         """
-        初始化 GLM ASR 客户端
+        Initialize GLM ASR client
 
         Args:
-            api_key: 智谱 AI API Key
-            model: ASR 模型，默认为 glm-asr-2512
-            stream: 是否使用流式调用
+            api_key: Zhipu AI API Key
+            model: ASR model, defaults to glm-asr-2512
+            stream: Whether to use streaming call
         """
         self.api_key = api_key
         self.model = model
         self.stream = stream
         self._client = None
 
+    @classmethod
+    def from_config(cls, config, **kwargs):
+        """Create instance from configuration (supports ProviderRegistry.create_service path)"""
+        return cls(
+            api_key=config.api_key,
+            model=getattr(config, "model", "glm-asr-2512"),
+            stream=getattr(config, "stream", False),
+        )
+
     def _get_client(self):
-        """懒加载客户端"""
+        """Lazy-load client"""
         if self._client is None:
             try:
                 from zai import ZhipuAiClient
                 self._client = ZhipuAiClient(api_key=self.api_key)
-                logger.info("GLM ASR 客户端初始化成功")
+                logger.info("GLM ASR client initialized successfully")
             except ImportError as e:
-                logger.error("未安装 zai-sdk，请运行: pip install zai-sdk")
+                logger.error("zai-sdk not installed, please run: pip install zai-sdk")
                 raise ImportError(
                     "zai-sdk 未安装，请运行: pip install zai-sdk"
                 ) from e
@@ -143,37 +152,37 @@ class GLMASR(ASRInterface):
         **kwargs
     ) -> str:
         """
-        将音频数据转录为文本
+        Transcribe audio data to text
 
         Args:
-            audio_data: 音频数据，可以是:
-                - bytes: 原始音频字节 (支持格式)
-                - str/Path: 音频文件路径
-                - list/numpy array: PCM 音频数据 (float32, range [-1.0, 1.0])
-            stream: 是否使用流式调用（可选，覆盖默认值）
-            **kwargs: 额外参数
+            audio_data: Audio data, can be:
+                - bytes: Raw audio bytes (supported formats)
+                - str/Path: Audio file path
+                - list/numpy array: PCM audio data (float32, range [-1.0, 1.0])
+            stream: Whether to use streaming call (optional, overrides default)
+            **kwargs: Additional parameters
 
         Returns:
-            str: 识别出的文本
+            str: Recognized text
         """
         client = self._get_client()
 
-        # 使用传入参数或默认值
+        # Use passed parameter or default
         use_stream = stream if stream is not None else self.stream
 
-        # 处理输入数据，获取音频 bytes 和扩展名
+        # Process input data, get audio bytes and extension
         if isinstance(audio_data, bytes):
             audio_bytes, ext = audio_data, "mp3"
         elif isinstance(audio_data, (str, Path)):
-            # 从文件读取
+            # Read from file
             with open(str(audio_data), 'rb') as f:
                 audio_bytes = f.read()
             ext = Path(audio_data).suffix.lstrip('.')
         else:
-            # 转换为支持的音频格式
+            # Convert to supported audio format
             audio_bytes, ext = self._convert_to_supported_audio_bytes(audio_data)
 
-        logger.debug(f"GLM ASR 处理音频数据: {len(audio_bytes)} 字节, 格式: {ext} (stream={use_stream})")
+        logger.debug(f"GLM ASR processing audio: {len(audio_bytes)} bytes, format: {ext} (stream={use_stream})")
 
         try:
             if use_stream:
@@ -181,21 +190,21 @@ class GLMASR(ASRInterface):
             else:
                 result = await self._transcribe_sync(client, audio_bytes, ext)
 
-            logger.info(f"GLM ASR 识别结果: {result}")
+            logger.info(f"GLM ASR recognition result: {result}")
             return result
 
         finally:
-            pass  # bytes 不需要清理
+            pass  # bytes dont need cleanup
 
     async def _transcribe_sync(self, client, audio_bytes: bytes, ext: str = "mp3") -> str:
-        """非流式识别"""
+        """Non-streaming recognition"""
         import asyncio
         import io
 
         loop = asyncio.get_event_loop()
 
         def _call_api():
-            # 创建命名 BytesIO，添加 name 属性
+            # Create named BytesIO, add name attribute
             class NamedBytesIO(io.BytesIO):
                 def __init__(self, data, name):
                     super().__init__(data)
@@ -211,7 +220,7 @@ class GLMASR(ASRInterface):
 
         response = await loop.run_in_executor(None, _call_api)
 
-        # 提取文本结果
+        # Extract text result
         if hasattr(response, 'text'):
             return response.text
         elif isinstance(response, dict):
@@ -220,14 +229,14 @@ class GLMASR(ASRInterface):
             return str(response)
 
     async def _transcribe_stream(self, client, audio_bytes: bytes, ext: str = "mp3") -> str:
-        """流式识别"""
+        """Streaming recognition"""
         import asyncio
         import io
 
         loop = asyncio.get_event_loop()
 
         def _call_api():
-            # 创建命名 BytesIO，添加 name 属性
+            # Create named BytesIO, add name attribute
             class NamedBytesIO(io.BytesIO):
                 def __init__(self, data, name):
                     super().__init__(data)
@@ -243,10 +252,10 @@ class GLMASR(ASRInterface):
 
         response = await loop.run_in_executor(None, _call_api)
 
-        # 收集所有文本（如果是流式响应）
+        # Collect all text (if streaming response)
         full_text = []
 
-        # 检查是否是可迭代的流式响应
+        # Check if it's an iterable streaming response
         if hasattr(response, '__iter__') and not isinstance(response, (str, bytes, dict)):
             for chunk in response:
                 if hasattr(chunk, 'text'):
@@ -262,7 +271,7 @@ class GLMASR(ASRInterface):
                             if content:
                                 full_text.append(content)
         else:
-            # 非流式响应，直接提取文本
+            # Non-streaming response, extract text directly
             if hasattr(response, 'text'):
                 return response.text
             elif isinstance(response, dict):
@@ -278,20 +287,20 @@ class GLMASR(ASRInterface):
         **kwargs
     ):
         """
-        流式识别音频，生成器返回文本块
+        Stream recognition of audio, generator returns text chunks
 
         Args:
-            audio_data: 音频数据
+            audio_data: Audio data
 
         Yields:
-            str: 识别的文本块
+            str: Recognized text chunks
         """
         import asyncio
         import io
 
         client = self._get_client()
 
-        # 处理输入数据，获取音频 bytes 和扩展名
+        # Process input data, get audio bytes and extension
         if isinstance(audio_data, bytes):
             audio_bytes, ext = audio_data, "mp3"
         elif isinstance(audio_data, (str, Path)):
@@ -304,7 +313,7 @@ class GLMASR(ASRInterface):
         loop = asyncio.get_event_loop()
 
         def _call_api():
-            # 创建命名 BytesIO，添加 name 属性
+            # Create named BytesIO, add name attribute
             class NamedBytesIO(io.BytesIO):
                 def __init__(self, data, name):
                     super().__init__(data)
@@ -335,6 +344,6 @@ class GLMASR(ASRInterface):
                 yield text
 
     async def close(self) -> None:
-        """清理资源"""
+        """Clean up resources"""
         self._client = None
-        logger.debug("GLM ASR 客户端已关闭")
+        logger.debug("GLM ASR client closed")

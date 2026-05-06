@@ -1,1 +1,1 @@
-# 默认映射配置在 emotion_mappings.yaml 中
+# Default mapping configuration is in emotion_mappings.yaml

@@ -1,11 +1,11 @@
 """
-Live2D 模块
-提供基于情感内容的 Live2D 表情控制
+Live2D Module
+Provides Live2D expression control based on emotional content.
 
-新架构使用插件式情绪分析器和策略模式。
+The new architecture uses pluggable emotion analyzers and the strategy pattern.
 """
 
-# 新的插件式架构
+# New pluggable architecture
 from .analyzers.base import IEmotionAnalyzer, EmotionData
 from .analyzers.llm_tag import (
     StandaloneLLMTagAnalyzer,
@@ -20,7 +20,7 @@ from .factory import (
     create_timeline_strategy,
 )
 
-# 参数映射器（新增）
+# Parameter mapper (new)
 from .mappers.base import (
     IEmotionParamMapper,
     ParameterState,
@@ -31,32 +31,32 @@ from .mappers.emotion_param_mapper import (
     DEFAULT_EMOTION_MAPPINGS
 )
 
-# 保留的工具类
+# Retained utility classes
 from .analyzers.audio import AudioAnalyzer
 from .prompts import EmotionPromptBuilder
 
 __all__ = [
-    # 新架构 - 分析器
+    # New architecture - analyzers
     "IEmotionAnalyzer",
     "EmotionData",
     "StandaloneLLMTagAnalyzer",
     "EmotionTag",
     "EmotionExtractionResult",
-    # 新架构 - 策略
+    # New architecture - strategies
     "ITimelineStrategy",
     "TimelineSegment",
-    # 新架构 - 工厂
+    # New architecture - factory
     "EmotionAnalyzerFactory",
     "TimelineStrategyFactory",
     "create_emotion_analyzer",
     "create_timeline_strategy",
-    # 新架构 - 参数映射器
+    # New architecture - parameter mapper
     "IEmotionParamMapper",
     "ParameterState",
     "ExpressionFrame",
     "EmotionParamMapper",
     "DEFAULT_EMOTION_MAPPINGS",
-    # 工具类
+    # Utility classes
     "AudioAnalyzer",
     "EmotionPromptBuilder",
 ]

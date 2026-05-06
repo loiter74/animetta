@@ -133,7 +133,10 @@ def get_asgi_app():
     global _server, asgi_app, global_config, user_settings
 
     if asgi_app is None:
-        # Initialize configuration
+        # Ensure config is loaded (needed when run as uvicorn subprocess)
+        global global_config
+        if global_config is None:
+            init_config()
 
         # Create server
         _server = create_server(global_config)
@@ -143,6 +146,11 @@ def get_asgi_app():
         # warmup() is safe to call even if no services are registered yet
         logger.info("Starting background model warmup...")
         asyncio.ensure_future(_server.model_manager.warmup())
+
+        # Pre-warm all services so the first real user request doesn't pay cold-start cost.
+        # This creates a throwaway ServiceContext that triggers all imports and model loading.
+        logger.info("Starting service pre-warmup (cold-start mitigation)...")
+        asyncio.ensure_future(_server.prewarm_services())
 
         asgi_app = _server.get_app()
 

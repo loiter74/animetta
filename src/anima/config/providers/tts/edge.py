@@ -1,4 +1,4 @@
-"""Edge TTS 提供者配置"""
+"""Edge TTS provider configuration"""
 
 from typing import Literal
 from pydantic import Field
@@ -9,6 +9,9 @@ from .base import TTSBaseConfig
 
 @ProviderRegistry.register("tts", "edge")
 class EdgeTTSConfig(TTSBaseConfig):
-    """Edge TTS 配置（微软免费 TTS）"""
+    """Edge TTS configuration (Microsoft free TTS)"""
     type: Literal["edge"] = "edge"
-    voice: str = Field(default="zh-CN-XiaoxiaoNeural", description="声音/音色")
+    voice: str = Field(default="zh-CN-XiaoxiaoNeural", description="Voice name, e.g. zh-CN-XiaoxiaoNeural")
+    rate: str | None = Field(default=None, description="Speech rate adjustment, e.g. '+15%', '-10%'")
+    pitch: str | None = Field(default=None, description="Voice pitch adjustment, e.g. '+60Hz', '+30%'")
+    preset: str | None = Field(default=None, description="Voice preset: 'neurosama' for electronic cute voice")

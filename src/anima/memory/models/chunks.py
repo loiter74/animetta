@@ -1,11 +1,10 @@
 """
-Markdown 分块算法.
+Markdown chunking algorithm.
 
-参考 OpenClaw 的 internal.ts:144-215 实现:
-- 滑动窗口, 目标 ~400 token/块
-- 80 token 重叠, 保留上下文连续性
-- 按行边界分割, 记录起止行号
-- SHA-256 去重
+Reference OpenClaw's internal.ts:144-215 implementation:
+- Sliding window, target ~400 tokens/chunk
+- 80 token overlap to preserve context continuity
+- SHA-256 deduplication
 """
 
 from __future__ import annotations
@@ -18,8 +17,7 @@ from ..config import ChunkConfig
 
 @dataclass
 class RawChunk:
-    """分块结果 (未关联文件路径)."""
-
+    """Raw chunking result"""
     text: str
     start_line: int  # 1-based
     end_line: int  # 1-based, inclusive
@@ -32,17 +30,17 @@ def chunk_markdown(
     config: ChunkConfig | None = None,
 ) -> list[RawChunk]:
     """
-    将 Markdown 内容按滑动窗口分块.
+    Chunk Markdown content using a sliding window.
 
-    算法:
-    1. 按行拆分
-    2. 从当前位置累积行, 直到达到 target_chars
-    3. 记录块的起止行号
-    4. 回退 overlap_chars 个字符作为下一块的起点
-    5. 对每块内容做 SHA-256 哈希
+    Algorithm:
+    1. Split by lines
+    2. Accumulate lines from current position until target_chars reached
+    3. Record chunk start and end line numbers
+    4. Roll back overlap_chars characters as start of next chunk
+    5. Compute SHA-256 hash for each chunk
 
     Returns:
-        按顺序排列的 RawChunk 列表
+        List of RawChunk objects in order
     """
     if config is None:
         config = ChunkConfig()
@@ -56,10 +54,10 @@ def chunk_markdown(
 
     chunks: list[RawChunk] = []
     chunk_idx = 0
-    line_idx = 0  # 当前处理到的行 (0-based)
+    line_idx = 0  # Current processing line (0-based)
 
     while line_idx < len(lines):
-        # 累积行直到达到目标大小
+        # Accumulate lines until target size reached
         buf_lines: list[str] = []
         buf_chars = 0
         start_line = line_idx  # 0-based
@@ -82,7 +80,7 @@ def chunk_markdown(
         chunks.append(
             RawChunk(
                 text=text,
-                start_line=start_line + 1,  # 转 1-based
+                start_line=start_line + 1,  # Convert to 1-based
                 end_line=start_line + len(buf_lines),  # 1-based, inclusive
                 content_hash=content_hash,
                 chunk_index=chunk_idx,
@@ -90,7 +88,7 @@ def chunk_markdown(
         )
         chunk_idx += 1
 
-        # 回退 overlap: 从当前位置往回找, 使下一块起点有重叠
+        # Roll back by overlap: search backward from current position so the next chunk starts with overlap
         if line_idx < len(lines):
             overlap_chars_remaining = overlap
             backtrack = 0
@@ -100,7 +98,7 @@ def chunk_markdown(
                     break
                 overlap_chars_remaining -= line_len
                 backtrack += 1
-            # 回退行指针
+            # Rewind line pointer
             line_idx = max(start_line + 1, line_idx - backtrack)
 
     return chunks

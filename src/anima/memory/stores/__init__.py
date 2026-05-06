@@ -1,4 +1,4 @@
-"""记忆存储实现"""
+"""Memory storage implementations"""
 
 from .short_term import ShortTermMemory
 

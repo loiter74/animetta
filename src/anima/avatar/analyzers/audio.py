@@ -1,6 +1,6 @@
 """
-音频分析器
-计算音频的音量包络用于口型同步
+Audio Analyzer
+Calculates audio volume envelope for lip sync
 """
 
 import math
@@ -14,32 +14,32 @@ try:
     PYDUB_AVAILABLE = True
 except ImportError:
     PYDUB_AVAILABLE = False
-    logger.warning("[AudioAnalyzer] pydub 不可用，请运行: pip install pydub")
+    logger.warning("[AudioAnalyzer] pydub not available, please run: pip install pydub")
 
 
 class AudioAnalyzer:
     """
-    音频分析器
+    Audio Analyzer
 
-    计算音频的 RMS 音量包络，用于 Live2D 口型同步
+    Calculates RMS volume envelope of audio for Live2D lip sync
 
-    采样率: 50 Hz (每 20ms 一个采样点)
-    输出范围: [0.0, 1.0] (归一化音量)
+    Sample rate: 50 Hz (one sample every 20ms)
+    Output range: [0.0, 1.0] (normalized volume)
     """
 
-    # 默认采样率: 50 Hz = 每 20ms 一个采样点
+    # Default sample rate: 50 Hz = one sample every 20ms
     DEFAULT_SAMPLE_RATE = 50  # Hz
     SAMPLE_INTERVAL_MS = 1000 / DEFAULT_SAMPLE_RATE  # 20ms
 
     def __init__(self, sample_rate: int = DEFAULT_SAMPLE_RATE):
         """
-        初始化音频分析器
+        Initialize the audio analyzer
 
         Args:
-            sample_rate: 采样率（Hz），默认 50 Hz
+            sample_rate: Sample rate (Hz), default 50 Hz
         """
         if not PYDUB_AVAILABLE:
-            raise RuntimeError("pydub 不可用，请运行: pip install pydub")
+            raise RuntimeError("pydub not available, please run: pip install pydub")
 
         self.sample_rate = sample_rate
         self.sample_interval_ms = 1000 / sample_rate
@@ -48,52 +48,49 @@ class AudioAnalyzer:
         self,
         audio_path: str,
         normalize: bool = True,
-        gain: float = 1.8
+        gain: float = 1.8,
+        use_peak: bool = False,
     ) -> List[float]:
         """
-        计算音频的音量包络
+        Calculate the volume envelope of audio
 
         Args:
-            audio_path: 音频文件路径
-            normalize: 是否归一化到 [0.0, 1.0]
-            gain: 增益系数，用于提升口型幅度（默认 1.8）
+            audio_path: Audio file path
+            normalize: Whether to normalize to [0.0, 1.0]
+            gain: Gain factor to boost lip-sync amplitude (default 1.8)
+            use_peak: Use peak amplitude instead of RMS (more responsive)
 
         Returns:
-            音量数组，每个值代表一个采样点的 RMS 音量
+            Volume array, each value represents volume of one sample
         """
         try:
-            # 加载音频文件
+            # Load audio file
             audio = self._load_audio(audio_path)
 
-            # 计算采样点数量
+            # Calculate number of samples
             duration_ms = len(audio)
             num_samples = int(duration_ms / self.sample_interval_ms)
 
             if num_samples == 0:
-                logger.warning(f"[AudioAnalyzer] 音频太短: {audio_path}")
+                logger.warning(f"[AudioAnalyzer] Audio too short: {audio_path}")
                 return []
 
-            # 计算每个采样点的 RMS 音量
+            # Calculate volume for each sample
             volumes = []
             for i in range(num_samples):
                 start_ms = int(i * self.sample_interval_ms)
                 end_ms = int((i + 1) * self.sample_interval_ms)
 
-                # 提取片段
+                # Extract segment
                 segment = audio[start_ms:end_ms]
 
-                # 计算 RMS 音量
-                rms = segment.rms
-
-                # 转换为分贝（避免零值）
-                if rms > 0:
-                    db = 20 * math.log10(rms)
+                # Use peak amplitude (more responsive) or RMS (smoother)
+                if use_peak:
+                    volumes.append(float(segment.max) / 32768.0)
                 else:
-                    db = -float('inf')
+                    volumes.append(segment.rms)
 
-                volumes.append(rms)
-
-            # 归一化
+            # Normalize
             if normalize and volumes:
                 max_volume = max(volumes)
                 if max_volume > 0:
@@ -101,73 +98,73 @@ class AudioAnalyzer:
                 else:
                     volumes = [0.0] * len(volumes)
 
-                # 应用增益并限制在 [0, 1] 范围内
+                # Apply gain and clamp to [0, 1] range
                 if gain != 1.0:
                     volumes = [min(1.0, v * gain) for v in volumes]
 
             logger.debug(
-                f"[AudioAnalyzer] 计算了 {len(volumes)} 个音量采样点 "
-                f"({duration_ms/1000:.2f}s 音频, {self.sample_rate} Hz, gain={gain})"
+                f"[AudioAnalyzer] Calculated {len(volumes)} volume samples "
+                f"({duration_ms/1000:.2f}s audio, {self.sample_rate} Hz, gain={gain})"
             )
 
             return volumes
 
         except Exception as e:
-            logger.error(f"[AudioAnalyzer] 分析音频失败: {e}")
+            logger.error(f"[AudioAnalyzer] Failed to analyze audio: {e}")
             return []
 
     def _load_audio(self, audio_path: str) -> "AudioSegment":
         """
-        加载音频文件
+        Load an audio file
 
         Args:
-            audio_path: 音频文件路径
+            audio_path: Audio file path
 
         Returns:
-            AudioSegment 对象
+            AudioSegment object
         """
         path = Path(audio_path)
         if not path.exists():
-            raise FileNotFoundError(f"音频文件不存在: {audio_path}")
+            raise FileNotFoundError(f"Audio file not found: {audio_path}")
 
-        # pydub 自动检测格式
+        # pydub auto-detects format
         audio = AudioSegment.from_file(audio_path)
 
-        # 转换为单声道（便于计算）
+        # Convert to mono (easier to compute)
         audio = audio.set_channels(1)
 
         return audio
 
     def get_audio_duration(self, audio_path: str) -> float:
         """
-        获取音频时长（秒）
+        Get audio duration (seconds)
 
         Args:
-            audio_path: 音频文件路径
+            audio_path: Audio file path
 
         Returns:
-            时长（秒）
+            Duration in seconds
         """
         try:
             audio = self._load_audio(audio_path)
             return len(audio) / 1000.0  # ms → s
         except Exception as e:
-            logger.error(f"[AudioAnalyzer] 获取音频时长失败: {e}")
+            logger.error(f"[AudioAnalyzer] Failed to get audio duration: {e}")
             return 0.0
 
 
-# 便捷函数
+# Convenience function
 def compute_volume_envelope(audio_path: str, sample_rate: int = 50, gain: float = 1.8) -> List[float]:
     """
-    便捷函数：计算音频音量包络
+    Convenience function: calculate audio volume envelope
 
     Args:
-        audio_path: 音频文件路径
-        sample_rate: 采样率（Hz）
-        gain: 增益系数
+        audio_path: Audio file path
+        sample_rate: Sample rate (Hz)
+        gain: Gain factor
 
     Returns:
-        音量数组 [0.0, 1.0]
+        Volume array [0.0, 1.0]
     """
     analyzer = AudioAnalyzer(sample_rate=sample_rate)
     return analyzer.compute_volume_envelope(audio_path, gain=gain)

@@ -1,41 +1,42 @@
 """
-VAD 工厂 - 根据配置创建 VAD 实例
+VAD Factory - Create VAD instances based on configuration
 """
 
 from typing import List
 from loguru import logger
 
 from .interface import VADInterface
+from .mock_vad import MockVAD
 from anima.config.core.registry import ProviderRegistry
+from anima.tracing import TracingProxy
 
 
 class VADFactory:
-    """VAD 服务工厂类"""
+    """VAD Service Factory"""
 
     @staticmethod
     def create_from_config(config, **kwargs) -> VADInterface:
         """
-        根据配置对象创建 VAD 实例（使用 ProviderRegistry）
+        Create VAD instance from config object (using ProviderRegistry)
 
         Args:
-            config: VAD 配置对象
-            **kwargs: 额外参数
+            config: VAD configuration object
+            **kwargs: Additional parameters
 
         Returns:
-            VADInterface: VAD 实例
+            VADInterface: VAD instance
 
         Raises:
-            ValueError: 如果找不到对应的服务实现
+            ValueError: If no corresponding service implementation is found
         """
         try:
             vad = ProviderRegistry.create_service("vad", config)
-            logger.info(f"VAD 服务创建成功: type={config.type}")
-            return vad
+            logger.info(f"VAD service created successfully: type={config.type}")
+            return TracingProxy(vad, service_name="vad")
         except Exception as e:
-            logger.error(f"创建 VAD 服务失败 (type={config.type}): {type(e).__name__}: {e}")
-            # 降级到 Mock 实现
-            logger.warning(f"降级使用 MockVAD (原配置: {config.type})")
-            from .mock_vad import MockVAD
+            logger.error(f"Failed to create VAD service (type={config.type}): {type(e).__name__}: {e}")
+            # Degrade to Mock implementation
+            logger.warning(f"Degraded to using MockVAD (original config: {config.type})")
             return MockVAD(
                 sample_rate=getattr(config, 'sample_rate', 16000),
                 db_threshold=-30.0,
@@ -46,17 +47,17 @@ class VADFactory:
     @staticmethod
     def create(provider: str, **kwargs) -> VADInterface:
         """
-        根据提供商创建 VAD 实例
+        Create VAD instance by provider
         
         Args:
-            provider: 提供商名称
-            **kwargs: 传递给具体实现的参数
+            provider: Provider name
+            **kwargs: Parameters passed to the implementation
             
         Returns:
-            VADInterface: VAD 实例
+            VADInterface: VAD instance
             
         Raises:
-            ValueError: 未知的提供商
+            ValueError: Unknown provider
         """
         if provider == "silero":
             try:
@@ -70,8 +71,8 @@ class VADFactory:
                     smoothing_window=kwargs.get("smoothing_window", 12),
                 )
             except ImportError as e:
-                logger.warning(f"silero-vad 未安装，降级使用 Mock VAD: {e}")
-                logger.info("提示: 运行 'pip install silero-vad' 安装 silero-vad")
+                logger.warning(f"silero-vad is not installed, falling back to Mock VAD: {e}")
+                logger.info("Tip: Run 'pip install silero-vad' to install silero-vad")
                 from .mock_vad import MockVAD
                 return MockVAD(
                     sample_rate=kwargs.get("sample_rate", 16000),
@@ -80,7 +81,7 @@ class VADFactory:
                     min_silence_duration=kwargs.get("min_silence_duration", 15),
                 )
             except Exception as e:
-                logger.error(f"初始化 Silero VAD 失败，降级使用 Mock VAD: {e}")
+                logger.error(f"Failed to initialize Silero VAD, falling back to Mock VAD: {e}")
                 from .mock_vad import MockVAD
                 return MockVAD(
                     sample_rate=kwargs.get("sample_rate", 16000),
@@ -94,11 +95,11 @@ class VADFactory:
                 min_silence_duration=kwargs.get("min_silence_duration", 15),
             )
         else:
-            logger.warning(f"未知的 VAD 提供商: {provider}，使用 Mock 实现")
+            logger.warning(f"Unknown VAD provider: {provider}, using Mock implementation")
             from .mock_vad import MockVAD
             return MockVAD()
     
     @staticmethod
     def get_available_providers() -> List[str]:
-        """获取所有可用的提供商列表"""
+        """Get a list of all available providers"""
         return ["mock", "silero"]

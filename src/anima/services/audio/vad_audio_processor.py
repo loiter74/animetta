@@ -1,7 +1,7 @@
 """
-VAD 音频处理器实现
+VAD audio processor implementation
 
-基于 VAD 的语音活动检测和音频累积
+VAD-based voice activity detection and audio accumulation
 """
 
 import time
@@ -15,13 +15,13 @@ from ..intelligence.vad import VADInterface
 
 class VADAudioProcessor(AudioProcessorInterface):
     """
-    VAD 音频处理器
+    VAD Audio Processor
 
-    负责：
-    - 接收音频数据流
-    - 使用 VAD 进行语音活动检测
-    - 累积有效语音片段
-    - 触发 ASR 转录和 LLM 对话
+    Responsibilities:
+    - Receive audio data stream
+    - Perform voice activity detection using VAD
+    - Accumulate valid speech segments
+    - Trigger ASR transcription and LLM conversation
     """
 
     def __init__(
@@ -34,15 +34,15 @@ class VADAudioProcessor(AudioProcessorInterface):
         vad_timeout_seconds: float = 30.0,
     ):
         """
-        初始化 VAD 音频处理器
+        Initialize the VAD audio processor
 
         Args:
-            session_id: 会话 ID
-            vad_engine: VAD 引擎
-            on_speech_start: 语音开始回调
-            on_speech_end: 语音结束回调，参数为累积的音频数据
-            sample_rate: 采样率
-            vad_timeout_seconds: VAD 超时时间（秒）
+            session_id: Session ID
+            vad_engine: VAD engine
+            on_speech_start: Speech start callback
+            on_speech_end: Speech end callback, receives accumulated audio data
+            sample_rate: Sample rate
+            vad_timeout_seconds: VAD timeout (seconds)
         """
         self.session_id = session_id
         self.vad_engine = vad_engine
@@ -51,81 +51,81 @@ class VADAudioProcessor(AudioProcessorInterface):
         self.sample_rate = sample_rate
         self.vad_timeout_seconds = vad_timeout_seconds
 
-        # 音频缓冲区
+        # Audio buffer
         self._audio_buffer: List[float] = []
 
-        # VAD 状态追踪
+        # VAD state tracking
         self._vad_active_start_time: Optional[float] = None
         self._vad_chunk_count = 0
         self._is_speaking = False
         self._last_speech_time: Optional[float] = None
 
-        # 统计
+        # Statistics
         self._total_chunks = 0
         self._speech_chunks = 0
         
-        # 强制超时机制
+        # Force timeout mechanism
         self._first_audio_time: Optional[float] = None
-        self._max_audio_duration = 30.0  # 最大音频时长（秒）
+        self._max_audio_duration = 30.0  # Maximum audio duration (seconds)
 
     async def process_chunk(self, audio_data: List[float]) -> None:
         """
-        处理音频数据块
+        Process audio data chunk
 
         Args:
-            audio_data: 音频数据（float32 列表）
+            audio_data: Audio data (float32 list)
         """
         if not audio_data:
             return
 
         self._total_chunks += 1
 
-        # 调试日志：每 500 个块输出一次
+        # Debug log: output every 500 chunks
         if self._total_chunks % 500 == 0:
             logger.info(f"[{self.session_id}] [AudioProcessor] Audio chunks: {self._total_chunks}")
         
-        # 音频时长进度日志：每 10 秒输出一次
-        if self._is_speaking and self._first_audio_time and self._total_chunks % 333 == 0:  # 约 10 秒
+        # Audio duration progress log: output every 10 seconds
+        if self._is_speaking and self._first_audio_time and self._total_chunks % 333 == 0:  # approx 10 seconds
             audio_duration = time.time() - self._first_audio_time
-            logger.info(f"[{self.session_id}] [AudioProcessor] 音频时长: {audio_duration:.1f}s / {self._max_audio_duration:.1f}s")
+            logger.info(f"[{self.session_id}] [AudioProcessor] Audio duration: {audio_duration:.1f}s / {self._max_audio_duration:.1f}s")
 
-        # 如果没有 VAD 引擎，直接累积
+        # If no VAD engine, accumulate directly
         if not self.vad_engine:
             self._audio_buffer.extend(audio_data)
             if self._total_chunks == 1:
                 logger.warning(f"[{self.session_id}] No VAD engine, audio will accumulate until manual end")
             return
 
-        # VAD 检测
+        # VAD detection
         try:
             result = self.vad_engine.detect_speech(audio_data)
             current_time = time.time()
 
-            # 处理 VAD 状态
+            # Handle VAD state
             if result.state.value == 'ACTIVE':
                 self._handle_vad_active(current_time, audio_data)
             elif result.state.value == 'IDLE':
                 self._handle_vad_idle(current_time)
 
-            # 处理 VAD 事件
+            # Handle VAD events
             if result.is_speech_start:
                 await self._handle_speech_start()
 
             if result.is_speech_end and len(self._audio_buffer) > 1024:
                 await self._handle_speech_end()
             
-            # 强制超时检查：不管 VAD 状态如何，超过最大时长就结束
+            # Force timeout check: regardless of VAD state, end if exceeds max duration
             if self._is_speaking and self._first_audio_time:
                 audio_duration = current_time - self._first_audio_time
                 if audio_duration > self._max_audio_duration:
-                    logger.warning(f"[{self.session_id}] 强制超时 ({audio_duration:.1f}s)，结束语音")
+                    logger.warning(f"[{self.session_id}] Force timeout ({audio_duration:.1f}s), ending speech")
                     await self._handle_speech_end()
 
         except Exception as e:
             logger.error(f"[{self.session_id}] VAD error: {e}", exc_info=True)
 
     async def process_end(self) -> None:
-        """处理音频输入结束"""
+        """Handle audio input end"""
         if not self._audio_buffer:
             logger.warning(f"[{self.session_id}] No audio data to process")
             return
@@ -133,11 +133,11 @@ class VADAudioProcessor(AudioProcessorInterface):
         audio_duration = len(self._audio_buffer) / self.sample_rate
         logger.info(f"[{self.session_id}] Audio end: {audio_duration:.2f}s, {len(self._audio_buffer)} samples")
 
-        # 触发语音结束
+        # Trigger speech end
         await self._handle_speech_end()
 
     def reset(self) -> None:
-        """重置处理器状态"""
+        """Reset processor state"""
         self._audio_buffer.clear()
         self._vad_active_start_time = None
         self._vad_chunk_count = 0
@@ -146,20 +146,20 @@ class VADAudioProcessor(AudioProcessorInterface):
         logger.debug(f"[{self.session_id}] Audio processor reset")
 
     def is_speaking(self) -> bool:
-        """是否正在检测到语音"""
+        """Whether speech is currently being detected"""
         return self._is_speaking
 
     # ========================================
-    # 内部方法
+    # Internal methods
     # ========================================
 
     def _handle_vad_active(self, current_time: float, audio_data: List[float]) -> None:
-        """处理 VAD 活跃状态"""
+        """Handle VAD active state"""
         if self._vad_active_start_time is None:
             self._vad_active_start_time = current_time
             self._vad_chunk_count = 0
         
-        # 记录首次音频时间
+        # Record first audio time
         if self._first_audio_time is None:
             self._first_audio_time = current_time
 
@@ -167,38 +167,38 @@ class VADAudioProcessor(AudioProcessorInterface):
         self._is_speaking = True
         self._last_speech_time = current_time
 
-        # 累积音频数据
+        # Accumulate audio data
         self._audio_buffer.extend(audio_data)
 
-        # 检查超时
+        # Check timeout
         active_duration = current_time - self._vad_active_start_time
         if active_duration > self.vad_timeout_seconds:
             logger.warning(
                 f"[{self.session_id}] VAD active for {active_duration:.1f}s, "
                 f"exceeds timeout {self.vad_timeout_seconds}s"
             )
-            # 强制结束
+            # Force end
             self._vad_active_start_time = None
 
     def _handle_vad_idle(self, current_time: float) -> None:
-        """处理 VAD 空闲状态"""
-        # 检查是否需要清除状态
+        """Handle VAD idle state"""
+        # Check if state needs to be cleared
         if self._vad_active_start_time is not None:
             idle_duration = current_time - self._last_speech_time if self._last_speech_time else 0
 
-            # 超过静音阈值，清除 VAD 活跃状态
-            if idle_duration > 2.0:  # 2秒静音后清除
+            # Exceeds silence threshold, clear VAD active state
+            if idle_duration > 2.0:  # Clear after 2 seconds of silence
                 self._clear_vad_state()
 
     def _clear_vad_state(self) -> None:
-        """清除 VAD 活跃状态"""
+        """Clear VAD active state"""
         if self._vad_active_start_time is not None:
             logger.debug(f"[{self.session_id}] Clearing VAD active state after {self._vad_chunk_count} chunks")
             self._vad_active_start_time = None
             self._vad_chunk_count = 0
 
     async def _handle_speech_start(self) -> None:
-        """处理语音开始"""
+        """Handle speech start"""
         if self._is_speaking:
             return
 
@@ -214,11 +214,11 @@ class VADAudioProcessor(AudioProcessorInterface):
                 logger.error(f"[{self.session_id}] Error in speech_start callback: {e}")
 
     async def _handle_speech_end(self, audio_data: Optional[List[float]] = None) -> None:
-        """处理语音结束"""
+        """Handle speech end"""
         if not self._is_speaking:
             return
 
-        # 使用累积的音频数据
+        # Use accumulated audio data
         if audio_data is None:
             audio_data = list(self._audio_buffer)
 
@@ -231,10 +231,10 @@ class VADAudioProcessor(AudioProcessorInterface):
         )
 
         self._is_speaking = False
-        self._first_audio_time = None  # 重置首次音频时间
+        self._first_audio_time = None  # Reset first audio time
         self._clear_vad_state()
 
-        # 触发回调
+        # Trigger callback
         if self.on_speech_end:
             try:
                 result = await self.on_speech_end(audio_data)
@@ -244,7 +244,7 @@ class VADAudioProcessor(AudioProcessorInterface):
                 logger.error(f"[{self.session_id}] Error in speech_end callback: {e}")
 
     def get_stats(self) -> Dict[str, Any]:
-        """获取统计信息"""
+        """Get statistics"""
         return {
             "total_chunks": self._total_chunks,
             "speech_chunks": self._speech_chunks,

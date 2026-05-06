@@ -1,13 +1,13 @@
 """
-SQLite 存储层.
+SQLite storage layer.
 
-负责:
-- 文件元数据 (files 表): 追踪已索引文件及其哈希
-- 文本块元数据 (chunks 表): 存储块文本、路径、行号
-- FTS5 全文索引 (chunks_fts): 支持 BM25 关键词搜索
-- Embedding 缓存 (embedding_cache): 按内容哈希缓存, 避免重复计算
+Responsibilities:
+- File metadata (files table): tracks indexed files and their hashes
+- Text chunk metadata (chunks table): stores chunk text, path, line numbers
+- FTS5 full-text index (chunks_fts): supports BM25 keyword search
+- Embedding cache (embedding_cache): caches by content hash, avoids recomputation
 
-参考 OpenClaw 的 memory-schema.ts 和 manager.ts
+References OpenClaw's memory-schema.ts and manager.ts
 """
 
 from __future__ import annotations
@@ -24,32 +24,32 @@ logger = logging.getLogger(__name__)
 
 
 class SQLiteStore:
-    """SQLite 元数据 + FTS5 关键词搜索存储."""
+    """SQLite metadata + FTS5 keyword search storage."""
 
     def __init__(self, db_path: str):
-        logger.info(f"[SQLiteStore] >>> 开始初始化: db_path={db_path}")
+        logger.info(f"[SQLiteStore] >>> Initializing: db_path={db_path}")
         self.db_path = db_path
         Path(db_path).parent.mkdir(parents=True, exist_ok=True)
-        logger.info(f"[SQLiteStore] 父目录已确认")
+        logger.info(f"[SQLiteStore] Parent directory confirmed")
 
-        logger.info(f"[SQLiteStore] 创建 SQLite 连接...")
+        logger.info(f"[SQLiteStore] Creating SQLite connection...")
         self.conn = sqlite3.connect(db_path)
         self.conn.row_factory = sqlite3.Row
-        logger.info(f"[SQLiteStore] ✅ 连接已创建")
+        logger.info(f"[SQLiteStore] ✅ Connection created")
 
-        logger.info(f"[SQLiteStore] 设置 PRAGMA journal_mode=WAL...")
+        logger.info(f"[SQLiteStore] Setting PRAGMA journal_mode=WAL...")
         self.conn.execute("PRAGMA journal_mode=WAL")
-        logger.info(f"[SQLiteStore] ✅ WAL 模式已设置")
+        logger.info(f"[SQLiteStore] ✅ WAL mode set")
 
         self.conn.execute("PRAGMA foreign_keys=ON")
-        logger.info(f"[SQLiteStore] 外键已启用")
+        logger.info(f"[SQLiteStore] Foreign keys enabled")
 
-        logger.info(f"[SQLiteStore] 创建表结构...")
+        logger.info(f"[SQLiteStore] Creating tables...")
         self._create_tables()
-        logger.info(f"[SQLiteStore] ✅ 所有表已创建")
+        logger.info(f"[SQLiteStore] ✅ All tables created")
 
     def _create_tables(self):
-        """创建核心表结构."""
+        """Create core table structures."""
         all_ddl = """
             -- 已索引文件追踪
             CREATE TABLE IF NOT EXISTS files (
@@ -108,15 +108,15 @@ class SQLiteStore:
                 created_at    REAL NOT NULL
             );
         """
-        # 追加 MemoryEntry + MemoryRelation 表
+        # Append MemoryEntry + MemoryRelation tables
         all_ddl += MemoryEntryStore.ddl()
         self.conn.executescript(all_ddl)
         self.conn.commit()
 
-    # ── 文件操作 ──────────────────────────────────────────
+    # ── File operations ──────────────────────────────────
 
     def get_file_entry(self, path: str) -> FileEntry | None:
-        """获取文件索引记录."""
+        """Get file index record."""
         row = self.conn.execute(
             "SELECT * FROM files WHERE path = ?", (path,)
         ).fetchone()
@@ -131,7 +131,7 @@ class SQLiteStore:
         )
 
     def upsert_file(self, entry: FileEntry):
-        """插入或更新文件记录."""
+        """Insert or update a file record."""
         self.conn.execute(
             """
             INSERT INTO files (path, source, file_hash, indexed_at, chunk_count)
@@ -146,15 +146,15 @@ class SQLiteStore:
         )
         self.conn.commit()
 
-    # ── 块操作 ────────────────────────────────────────────
+    # ── Chunk operations ─────────────────────────────────
 
     def delete_chunks_by_path(self, path: str):
-        """删除某文件的所有块 (级联删除也会清理 FTS)."""
+        """Delete all chunks for a file (cascade delete also cleans up FTS)."""
         self.conn.execute("DELETE FROM chunks WHERE path = ?", (path,))
         self.conn.commit()
 
     def insert_chunks(self, chunks: list[Chunk]) -> list[int]:
-        """批量插入块, 返回 rowid 列表."""
+        """Batch insert chunks, returns list of rowids."""
         cur = self.conn.cursor()
         rowids = []
         for c in chunks:
@@ -170,7 +170,7 @@ class SQLiteStore:
         return rowids
 
     def get_chunk_by_rowid(self, rowid: int) -> Chunk | None:
-        """按 rowid 获取块."""
+        """Get chunk by rowid."""
         row = self.conn.execute(
             "SELECT * FROM chunks WHERE id = ?", (rowid,)
         ).fetchone()
@@ -186,14 +186,14 @@ class SQLiteStore:
             chunk_index=row["chunk_index"],
         )
 
-    # ── FTS5 BM25 搜索 ───────────────────────────────────
+    # ── FTS5 BM25 Search ────────────────────────────────
 
     def keyword_search(self, query: str, limit: int = 24) -> list[tuple[int, float]]:
         """
-        FTS5 BM25 关键词搜索.
+        FTS5 BM25 keyword search.
 
         Returns:
-            [(rowid, bm25_rank), ...] — rank 越小越好 (SQLite FTS5 的 rank 是负数, 绝对值越大越相关)
+            [(rowid, bm25_rank), ...] — smaller rank is better (SQLite FTS5 rank is negative, larger absolute value = more relevant)
         """
         rows = self.conn.execute(
             """
@@ -208,10 +208,10 @@ class SQLiteStore:
         ).fetchall()
         return [(row["id"], row["rank"]) for row in rows]
 
-    # ── Embedding 缓存 ───────────────────────────────────
+    # ── Embedding cache ─────────────────────────────────
 
     def get_cached_hashes(self, content_hashes: list[str], model_name: str) -> set[str]:
-        """检查哪些内容哈希已有缓存的 embedding."""
+        """Check which content hashes have cached embeddings."""
         if not content_hashes:
             return set()
         placeholders = ",".join("?" for _ in content_hashes)
@@ -225,7 +225,7 @@ class SQLiteStore:
         return {row["content_hash"] for row in rows}
 
     def mark_embedded(self, content_hashes: list[str], model_name: str):
-        """标记这些内容已完成 embedding."""
+        """Mark these contents as having completed embedding."""
         now = time.time()
         self.conn.executemany(
             """
@@ -236,7 +236,7 @@ class SQLiteStore:
         )
         self.conn.commit()
 
-    # ── 生命周期 ──────────────────────────────────────────
+    # ── Lifecycle ─────────────────────────────────────────
 
     def close(self):
         self.conn.close()

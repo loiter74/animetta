@@ -1,35 +1,35 @@
 """
-LLM 服务实现模块
+LLM service implementation module
 
-按需导入，缺少依赖的实现会被跳过
-装饰器在模块导入时执行注册
+Import on demand; implementations with missing dependencies are skipped
+Decorators execute registration at module import time
 """
 
 from .interface import LLMInterface
 from .factory import LLMFactory
 
-# MockLLM 无外部依赖
+# MockLLM has no external dependencies
 from .mock_llm import MockLLM
 
-# GLMLLM 使用 zai-sdk（可选依赖）
+# GLMLLM uses zai-sdk (optional dependency)
 try:
     from .glm_llm import GLMLLM
 except ImportError:
     GLMLLM = None  # type: ignore
 
-# OllamaLLM 需要 ollama 包（可选依赖）
+# OllamaLLM requires the ollama package (optional dependency)
 try:
     from .ollama_llm import OllamaLLM
 except ImportError:
     OllamaLLM = None  # type: ignore
 
-# OpenAILLM 需要 openai 包（可选依赖）
+# OpenAILLM requires the openai package (optional dependency)
 try:
     from .openai_llm import OpenAILLM
 except ImportError:
     OpenAILLM = None  # type: ignore
 
-# LocalLoraLLM 需要 transformers 和 peft（可选依赖）
+# LocalLoraLLM requires transformers and peft (optional dependencies)
 try:
     from .local_lora_llm import LocalLoraLLM
 except ImportError:
@@ -38,13 +38,13 @@ except ImportError:
 
 def get_llm_class(provider: str):
     """
-    获取 LLM 实现类（用于延迟加载）
+    Get the LLM implementation class (for lazy loading)
 
     Args:
-        provider: 提供者名称
+        provider: Provider name
 
     Returns:
-        LLM 类，如果不可用则返回 None
+        LLM class, or None if unavailable
     """
     if provider == "mock":
         return MockLLM

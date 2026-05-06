@@ -1,6 +1,6 @@
 """
-表情提示词构建器
-为 LLM 生成表情使用指导
+Emotion Prompt Builder
+Generates expression usage guidelines for the LLM
 """
 
 from typing import List, Optional, Dict
@@ -9,12 +9,12 @@ from pathlib import Path
 
 class EmotionPromptBuilder:
     """
-    表情提示词构建器
+    Emotion Prompt Builder
 
-    生成包含表情使用指导的系统提示，帮助 LLM 正确使用表情标签
+    Generates system prompts with expression usage guidelines to help the LLM correctly use emotion tags
     """
 
-    # 默认表情定义
+    # Default emotion definitions
     DEFAULT_EMOTIONS: Dict[str, str] = {
         "happy": "开心、快乐、愉快",
         "sad": "难过、悲伤、失落",
@@ -30,21 +30,21 @@ class EmotionPromptBuilder:
         language: str = "zh"
     ):
         """
-        初始化提示词构建器
+        Initialize the prompt builder
 
         Args:
-            emotions: 表情字典 {emotion_name: description}
-            language: 语言 ("zh" 或 "en")
+            emotions: Emotion dictionary {emotion_name: description}
+            language: Language ("zh" or "en")
         """
         self.emotions = emotions or self.DEFAULT_EMOTIONS
         self.language = language
 
     def build_prompt(self) -> str:
         """
-        构建表情使用指导提示词
+        Build the expression usage guideline prompt
 
         Returns:
-            格式化的提示词文本
+            Formatted prompt text
         """
         if self.language == "zh":
             return self._build_zh_prompt()
@@ -52,7 +52,7 @@ class EmotionPromptBuilder:
             return self._build_en_prompt()
 
     def _build_zh_prompt(self) -> str:
-        """构建中文提示词"""
+        """Build Chinese prompt"""
         lines = [
             "# Live2D 表情使用指南",
             "",
@@ -93,7 +93,7 @@ class EmotionPromptBuilder:
         return "\n".join(lines)
 
     def _build_en_prompt(self) -> str:
-        """构建英文提示词"""
+        """Build English prompt"""
         lines = [
             "# Live2D Expression Guide",
             "",
@@ -129,7 +129,7 @@ class EmotionPromptBuilder:
         return "\n".join(lines)
 
     def _get_examples(self) -> List[str]:
-        """获取中文示例"""
+        """Get Chinese examples"""
         examples = []
 
         if "happy" in self.emotions:
@@ -150,7 +150,7 @@ class EmotionPromptBuilder:
         return examples
 
     def _get_examples_en(self) -> List[str]:
-        """获取英文示例"""
+        """Get English examples"""
         examples = []
 
         if "happy" in self.emotions:
@@ -173,39 +173,39 @@ class EmotionPromptBuilder:
     @classmethod
     def from_config(cls, config: dict) -> "EmotionPromptBuilder":
         """
-        从配置创建构建器
+        Create a builder from configuration
 
         Args:
-            config: 配置字典，包含 valid_emotions 列表
+            config: Configuration dict containing valid_emotions list
 
         Returns:
-            EmotionPromptBuilder 实例
+            EmotionPromptBuilder instance
         """
         valid_emotions = config.get("valid_emotions", [])
         emotions = {}
 
-        # 使用默认描述
+        # Use default descriptions
         for emotion in valid_emotions:
             if emotion in cls.DEFAULT_EMOTIONS:
                 emotions[emotion] = cls.DEFAULT_EMOTIONS[emotion]
             else:
-                emotions[emotion] = emotion  # 使用名称作为描述
+                emotions[emotion] = emotion  # Use name as description
 
         return cls(emotions=emotions)
 
 
 def load_prompt_template(template_path: str) -> str:
     """
-    从文件加载提示词模板
+    Load a prompt template from a file
 
     Args:
-        template_path: 模板文件路径
+        template_path: Template file path
 
     Returns:
-        模板内容
+        Template content
     """
     path = Path(template_path)
     if path.exists():
         return path.read_text(encoding="utf-8")
     else:
-        raise FileNotFoundError(f"提示词模板不存在: {template_path}")
+        raise FileNotFoundError(f"Prompt template not found: {template_path}")

@@ -1,4 +1,4 @@
-"""提供者配置模块"""
+"""Provider configuration module"""
 
 from .llm import LLMConfig, LLMBaseConfig
 from .asr import ASRConfig, ASRBaseConfig

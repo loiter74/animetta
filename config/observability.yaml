@@ -21,3 +21,13 @@ langfuse:
   enabled: true
   host: "https://us.cloud.langfuse.com"  # 或自托管地址
   debug: false
+
+# ========================================
+# OTel Tracing - 应用内全链路追踪
+# 基于 OpenTelemetry SDK, 数据写入 StatsStore SQLite
+# ========================================
+tracing:
+  enabled: true                    # 关闭时使用 NoOpTracerProvider, 零开销
+  service_name: "anima"           # 服务名称
+  max_export_batch_size: 512      # 批量写入最大条数
+  schedule_delay_millis: 5000     # 批量写入间隔(ms)

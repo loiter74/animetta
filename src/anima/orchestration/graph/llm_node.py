@@ -5,7 +5,9 @@ from loguru import logger
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, ToolMessage
 from langgraph.types import RunnableConfig
 
-from .state import AgentState
+import time as time_module
+
+from .state import AgentState, log_timing
 from .interrupt_handler import get_interrupt_handler
 from .memory_middleware import MemoryMiddleware
 
@@ -118,7 +120,7 @@ def _notify_middleware_after(
     response: str,
     config: Optional[RunnableConfig],
 ) -> None:
-    """非阻塞通知中间件 LLM 调用完成."""
+    """Non-blocking notification to middleware that LLM call is complete."""
     try:
         import asyncio
         middleware = _get_memory_middleware(config)
@@ -189,17 +191,22 @@ async def _llm_with_tools(
 
     logger.info(f"[{session_id}] [LLMNode] Using tool calling mode")
 
+    t0 = time_module.perf_counter()
+
     system_prompt = state.get("system_prompt")
     if not system_prompt and service_context.config:
         system_prompt = service_context.config.get_system_prompt()
 
     # RAG + Profile: retrieve via MemoryMiddleware
+    t_rag = time_module.perf_counter()
     memory_context = await _retrieve_memory_context(
         session_id=session_id,
         query=user_text,
         config=config,
         max_turns=5,
     )
+    rag_duration = (time_module.perf_counter() - t_rag) * 1000
+    log_timing(state, "llm.rag_retrieval", rag_duration, f"query='{user_text[:50]}'")
 
     # Inject memory into system_prompt
     enriched_prompt = _enrich_system_prompt(system_prompt, memory_context)
@@ -209,12 +216,15 @@ async def _llm_with_tools(
     history_for_llm = [msg for msg in messages if isinstance(msg, (HumanMessage, AIMessage, ToolMessage))]
 
     try:
+        t_llm = time_module.perf_counter()
         response = await llm_engine.chat_with_tools(
             user_text,
             tools=bound_tools,
             langchain_history=history_for_llm,
             system_prompt=enriched_prompt,  # Use enriched prompt
         )
+        llm_duration = (time_module.perf_counter() - t_llm) * 1000
+        log_timing(state, "llm.api_call", llm_duration, "chat_with_tools")
 
         if isinstance(response, dict):
             if response.get("tool_calls"):
@@ -226,7 +236,7 @@ async def _llm_with_tools(
 
                 ai_message = AIMessage(content=response.get("content", "") or "Calling tools...", tool_calls=tool_calls)
 
-                # after_llm_call notification (非阻塞)
+                # after_llm_call notification (non-blocking)
                 _notify_middleware_after(session_id, user_text, response.get("content", ""), config)
 
                 return {
@@ -240,7 +250,7 @@ async def _llm_with_tools(
                 logger.info(f"[{session_id}] [LLMNode] LLM response: {full_response[:100]}...")
                 ai_message = AIMessage(content=full_response)
 
-                # after_llm_call notification (非阻塞)
+                # after_llm_call notification (non-blocking)
                 _notify_middleware_after(session_id, user_text, full_response, config)
 
                 return {
@@ -268,15 +278,20 @@ async def _llm_without_tools(
 
     logger.info(f"[{session_id}] [LLMNode] Using streaming mode (no tools)")
 
+    t0 = time_module.perf_counter()
+
     system_prompt = state.get("system_prompt", "")
 
     # RAG: retrieve memory context
+    t_rag = time_module.perf_counter()
     memory_context = await _retrieve_memory_context(
         session_id=session_id,
         query=user_text,
         config=config,
         max_turns=5,
     )
+    rag_duration = (time_module.perf_counter() - t_rag) * 1000
+    log_timing(state, "llm.rag_retrieval", rag_duration, f"query='{user_text[:50]}'")
 
     # Inject memory into system_prompt
     enriched_prompt = _enrich_system_prompt(system_prompt, memory_context)
@@ -298,6 +313,7 @@ async def _llm_without_tools(
     chunks = []
     full_response = ""
 
+    t_llm = time_module.perf_counter()
     async for chunk in llm_engine.chat_stream(user_text, system_prompt=enriched_prompt):
         if interrupt_handler.is_interrupted(session_id):
             logger.warning(f"[{session_id}] [LLMNode] Interrupt detected, stopping generation")
@@ -306,12 +322,15 @@ async def _llm_without_tools(
         full_response += chunk
         if len(chunks) % 10 == 0:
             logger.debug(f"[{session_id}] [LLMNode] Received {len(chunks)} chunks...")
+    llm_duration = (time_module.perf_counter() - t_llm) * 1000
 
     logger.info(f"[{session_id}] [LLMNode] LLM response: {full_response[:100]}...")
+    log_timing(state, "llm.api_call", llm_duration,
+               f"chat_stream | chunks={len(chunks)} | ttfb_first_chunk=<see llm_engine.log>")
 
     ai_message = AIMessage(content=full_response)
 
-    # after_llm_call notification (非阻塞)
+    # after_llm_call notification (non-blocking)
     _notify_middleware_after(session_id, user_text, full_response, config)
 
     return {

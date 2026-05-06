@@ -1,6 +1,6 @@
 """
-独立的 LLM 标签情绪分析器
-不依赖 legacy EmotionExtractor 的完全实现
+Standalone LLM tag emotion analyzer
+A complete implementation independent of the legacy EmotionExtractor
 """
 
 import re
@@ -11,7 +11,7 @@ from .base import IEmotionAnalyzer, EmotionData
 
 
 class EmotionTag:
-    """表情标签（独立实现）"""
+    """Emotion tag (standalone implementation)"""
     def __init__(self, emotion: str, position: int, duration: float = 0.0):
         self.emotion = emotion
         self.position = position
@@ -27,7 +27,7 @@ class EmotionTag:
 
 
 class EmotionExtractionResult:
-    """表情提取结果（独立实现）"""
+    """Emotion extraction result (standalone implementation)"""
     def __init__(self, cleaned_text: str, emotions: List[EmotionTag], has_emotions: bool):
         self.cleaned_text = cleaned_text
         self.emotions = emotions
@@ -39,20 +39,20 @@ class EmotionExtractionResult:
 
 class StandaloneLLMTagAnalyzer(IEmotionAnalyzer):
     """
-    独立的 LLM 标签情绪分析器
+    Standalone LLM tag emotion analyzer
 
-    从 LLM 生成的文本中提取 [happy], [sad] 等情绪标签。
-    完全独立实现，不依赖 legacy EmotionExtractor。
+    Extracts emotion tags like [happy], [sad] from LLM-generated text.
+    Fully independent implementation, no dependency on legacy EmotionExtractor.
 
-    功能:
-    - 提取 LLM 生成的 [emotion] 标签
-    - 验证情绪标签的有效性
-    - 返回清理后的文本
-    - 支持自定义情绪列表
+    Features:
+    - Extracts LLM-generated [emotion] tags
+    - Validates emotion tag validity
+    - Returns cleaned text
+    - Supports custom emotion lists
 
     Attributes:
-        valid_emotions: 有效的情绪集合
-        confidence_mode: 置信度计算模式
+        valid_emotions: Set of valid emotions
+        confidence_mode: Confidence calculation mode
 
     Example:
         >>> analyzer = StandaloneLLMTagAnalyzer(
@@ -65,7 +65,7 @@ class StandaloneLLMTagAnalyzer(IEmotionAnalyzer):
         [EmotionTag(happy, pos=6)]
     """
 
-    # 情绪标签的正则模式
+    # Regex pattern for emotion tags
     EMOTION_PATTERN = re.compile(r'\[([a-zA-Z_]+)\]')
 
     def __init__(
@@ -74,36 +74,36 @@ class StandaloneLLMTagAnalyzer(IEmotionAnalyzer):
         confidence_mode: str = "binary"
     ):
         """
-        初始化分析器
+        Initialize the analyzer
 
         Args:
-            valid_emotions: 有效的情绪列表。如果为 None，则接受所有标签
-            confidence_mode: 置信度计算模式
-                - "binary": 二值（有标签=1.0，无标签=0.0）
-                - "frequency": 基于标签频率（0.5 - 1.0）
-                - "normalized": 归一化（0.0 - 1.0）
+            valid_emotions: List of valid emotions. If None, accept all tags
+            confidence_mode: Confidence calculation mode
+                - "binary": Binary (has tag=1.0, no tag=0.0)
+                - "frequency": Based on tag frequency (0.5 - 1.0)
+                - "normalized": Normalized (0.0 - 1.0)
         """
         self.valid_emotions = set(valid_emotions) if valid_emotions else None
         self._confidence_mode = confidence_mode
 
-        # 验证 confidence_mode
+        # Validate confidence_mode
         if confidence_mode not in ["binary", "frequency", "normalized"]:
             raise ValueError(
-                f"无效的 confidence_mode: {confidence_mode}. "
-                f"可选值: 'binary', 'frequency', 'normalized'"
+                f"Invalid confidence_mode: {confidence_mode}. "
+                f"Valid values: 'binary', 'frequency', 'normalized'"
             )
 
     def extract_legacy(self, text: str) -> EmotionExtractionResult:
         """
-        提取情绪标签（legacy 格式）
+        Extract emotion tags (legacy format)
 
-        返回 EmotionExtractionResult，包含 cleaned_text 和 EmotionTag 列表。
+        Returns EmotionExtractionResult containing cleaned_text and EmotionTag list.
 
         Args:
-            text: 待分析文本
+            text: Text to analyze
 
         Returns:
-            EmotionExtractionResult: 清理后的文本和提取的情绪标签
+            EmotionExtractionResult: Cleaned text and extracted emotion tags
         """
         if not text:
             return EmotionExtractionResult(
@@ -119,19 +119,19 @@ class StandaloneLLMTagAnalyzer(IEmotionAnalyzer):
             emotion = match.group(1).lower()
             position = match.start()
 
-            # 如果设置了有效表情列表，则验证
+            # If valid emotions are set, validate
             if self.valid_emotions and emotion not in self.valid_emotions:
-                logger.debug(f"[StandaloneLLMTagAnalyzer] 忽略无效表情: [{emotion}]")
+                logger.debug(f"[StandaloneLLMTagAnalyzer] Ignoring invalid emotion: [{emotion}]")
                 continue
 
-            # 创建表情标签
+            # Create emotion tag
             emotions.append(EmotionTag(emotion=emotion, position=position))
             segments_to_remove.append((match.start(), match.end()))
 
-        # 清理文本：移除所有表情标签
+        # Clean text: remove all emotion tags
         cleaned_text = self._remove_segments(text, segments_to_remove)
 
-        logger.debug(f"[StandaloneLLMTagAnalyzer] 提取了 {len(emotions)} 个表情: {emotions}")
+        logger.debug(f"[StandaloneLLMTagAnalyzer] Extracted {len(emotions)} emotions: {emotions}")
 
         return EmotionExtractionResult(
             cleaned_text=cleaned_text,
@@ -141,43 +141,43 @@ class StandaloneLLMTagAnalyzer(IEmotionAnalyzer):
 
     def extract(self, text: str, context: Optional[Dict[str, Any]] = None) -> EmotionData:
         """
-        从文本中提取情绪标签（新接口格式）
+        Extract emotion tags from text (new interface format)
 
         Args:
-            text: 待分析文本
-            context: 可选的上下文信息（本分析器不使用）
+            text: Text to analyze
+            context: Optional context information (not used by this analyzer)
 
         Returns:
-            EmotionData: 提取的情绪数据
+            EmotionData: Extracted emotion data
 
         Raises:
-            ValueError: 文本为空或无效
+            ValueError: Text is empty or invalid
         """
-        # 输入验证
+        # Input validation
         if not self.validate_input(text):
-            raise ValueError(f"输入文本无效: {text}")
+            raise ValueError(f"Invalid input text: {text}")
 
         try:
-            # 使用 legacy 格式提取
+            # Use legacy format extraction
             result = self.extract_legacy(text)
 
-            # 计算置信度
+            # Calculate confidence
             confidence = self._calculate_confidence(result, text)
 
-            # 构建时间轴
+            # Build timeline
             timeline = self._build_timeline(result)
 
-            # 提取主要情绪
+            # Extract primary emotion
             primary = self._extract_primary(result)
 
-            # 统计信息
+            # Statistics
             emotion_counts = self._count_emotions(result)
             metadata = {
                 "source": "llm_tag",
                 "raw_emotions": [str(e) for e in result.emotions],
                 "emotion_counts": emotion_counts,
                 "confidence_mode": self._confidence_mode,
-                "cleaned_text": result.cleaned_text,  # 包含清理后的文本
+                "cleaned_text": result.cleaned_text,  # Contains cleaned text
                 "has_emotions": result.has_emotions
             }
 
@@ -189,25 +189,25 @@ class StandaloneLLMTagAnalyzer(IEmotionAnalyzer):
             )
 
         except Exception as e:
-            logger.error(f"[{self.name}] 提取情绪失败: {e}")
-            # 返回默认情绪
+            logger.error(f"[{self.name}] Failed to extract emotions: {e}")
+            # Return default emotion
             return self._get_default_emotion_data(text)
 
     def _remove_segments(self, text: str, segments: List[tuple]) -> str:
         """
-        从文本中移除指定片段
+        Remove specified segments from text
 
         Args:
-            text: 原始文本
-            segments: 要移除的 (start, end) 位置列表
+            text: Original text
+            segments: List of (start, end) positions to remove
 
         Returns:
-            清理后的文本
+            Cleaned text
         """
         if not segments:
             return text
 
-        # 按位置排序并从后往前移除（避免位置偏移）
+        # Sort by position and remove from back to front (avoid offset issues)
         segments = sorted(segments, key=lambda x: x[0], reverse=True)
 
         result = text
@@ -217,7 +217,7 @@ class StandaloneLLMTagAnalyzer(IEmotionAnalyzer):
         return result
 
     def _calculate_confidence(self, result: EmotionExtractionResult, text: str) -> float:
-        """计算置信度"""
+        """Calculate confidence"""
         if not result.has_emotions:
             return 0.0
 
@@ -233,7 +233,7 @@ class StandaloneLLMTagAnalyzer(IEmotionAnalyzer):
             return 1.0
 
     def _build_timeline(self, result: EmotionExtractionResult) -> List[Dict[str, Any]]:
-        """构建时间轴数据"""
+        """Build timeline data"""
         timeline = []
         for emotion_tag in result.emotions:
             timeline.append({
@@ -244,14 +244,14 @@ class StandaloneLLMTagAnalyzer(IEmotionAnalyzer):
         return timeline
 
     def _extract_primary(self, result: EmotionExtractionResult) -> str:
-        """提取主要情绪"""
+        """Extract primary emotion"""
         if result.has_emotions:
             return result.emotions[0].emotion
         else:
             return "neutral"
 
     def _count_emotions(self, result: EmotionExtractionResult) -> Dict[str, int]:
-        """统计每种情绪的出现次数"""
+        """Count occurrences of each emotion"""
         counts = {}
         for emotion_tag in result.emotions:
             emotion = emotion_tag.emotion
@@ -259,7 +259,7 @@ class StandaloneLLMTagAnalyzer(IEmotionAnalyzer):
         return counts
 
     def _get_default_emotion_data(self, text: str) -> EmotionData:
-        """获取默认情绪数据（当没有提取到情绪时）"""
+        """Get default emotion data (when no emotion is extracted)"""
         return EmotionData(
             primary="neutral",
             confidence=0.0,
@@ -275,20 +275,20 @@ class StandaloneLLMTagAnalyzer(IEmotionAnalyzer):
 
     @property
     def name(self) -> str:
-        """分析器名称"""
+        """Analyzer name"""
         return "standalone_llm_tag_analyzer"
 
     @property
     def priority(self) -> int:
-        """优先级（最高）"""
+        """Priority (highest)"""
         return 1
 
     def get_supported_emotions(self) -> List[str]:
-        """获取支持的情绪列表"""
+        """Get supported emotions list"""
         if self.valid_emotions:
             return list(self.valid_emotions)
         return []
 
     def validate_input(self, text: str) -> bool:
-        """验证输入参数"""
+        """Validate input parameters"""
         return isinstance(text, str) and len(text.strip()) > 0

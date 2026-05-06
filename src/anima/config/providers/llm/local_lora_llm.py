@@ -1,5 +1,5 @@
 """
-本地 LoRA LLM 配置
+Local LoRA LLM configuration
 Local Lora LLM Configuration
 """
 
@@ -11,46 +11,46 @@ from .base import LLMBaseConfig
 
 class LocalLoraLLMConfig(LLMBaseConfig):
     """
-    本地 LoRA 微调模型配置
+    Local LoRA fine-tuned model configuration
     """
 
     type: Literal["local_lora"] = "local_lora"
 
-    # 模型配置
+    # Model configuration
     model: str = Field(
         default="local-lora-model",
-        description="模型标识符"
+        description="Model identifier"
     )
 
     base_model_name: str = Field(
         default="Qwen/Qwen2.5-7B-Instruct",
-        description="基座模型名称"
+        description="Base model name"
     )
 
     lora_path: str = Field(
         default="models/lora/neuro-vtuber-v1",
-        description="LoRA 适配器路径"
+        description="LoRA adapter path"
     )
 
     device: str = Field(
         default="cuda",
-        description="计算设备 (cuda/cpu)"
+        description="Compute device (cuda/cpu)"
     )
 
-    # 可选参数
+    # Optional parameters
     max_new_tokens: int = Field(
         default=512,
-        description="最大生成 token 数"
+        description="Maximum generated tokens"
     )
 
     temperature: float = Field(
         default=0.7,
-        description="生成温度参数"
+        description="Generation temperature"
     )
 
     top_p: float = Field(
         default=0.9,
-        description="Top-p 采样参数"
+        description="Top-p sampling parameter"
     )
 
     model_config = ConfigDict(

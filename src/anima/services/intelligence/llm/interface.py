@@ -1,5 +1,5 @@
 """
-LLM (大语言模型) 服务接口定义
+LLM (Large Language Model) service interface definition
 """
 
 from abc import ABC, abstractmethod
@@ -8,8 +8,8 @@ from typing import AsyncIterator, Optional, List, Dict, Any
 
 class LLMInterface(ABC):
     """
-    LLM 服务接口的抽象基类
-    所有 LLM 实现都必须继承此类并实现其抽象方法
+    Abstract base class for LLM service interface
+    All LLM implementations must inherit from this class and implement its abstract methods
     """
 
     @abstractmethod
@@ -19,14 +19,14 @@ class LLMInterface(ABC):
         **kwargs
     ) -> str:
         """
-        与 LLM 进行对话
+        Chat with the LLM
 
         Args:
-            user_input: 用户输入
-            **kwargs: 额外参数
+            user_input: User input
+            **kwargs: Additional parameters
 
         Returns:
-            str: LLM 的回复
+            str: LLM response
         """
         pass
 
@@ -37,54 +37,54 @@ class LLMInterface(ABC):
         **kwargs
     ) -> AsyncIterator[str]:
         """
-        流式对话
+        Streaming chat
 
         Args:
-            user_input: 用户输入
-            **kwargs: 额外参数
+            user_input: User input
+            **kwargs: Additional parameters
 
         Yields:
-            str: LLM 回复的文本片段
+            str: Text chunk of the LLM response
         """
         pass
 
     @abstractmethod
     def set_system_prompt(self, prompt: str) -> None:
         """
-        设置系统提示词
+        Set the system prompt
 
         Args:
-            prompt: 系统提示词
+            prompt: System prompt
         """
         pass
 
     @abstractmethod
     def get_history(self) -> List[Dict[str, Any]]:
         """
-        获取对话历史
+        Get conversation history
 
         Returns:
-            List[Dict[str, Any]]: 对话历史列表
+            List[Dict[str, Any]]: Conversation history list
         """
         pass
 
     @abstractmethod
     def clear_history(self) -> None:
-        """清空对话历史"""
+        """Clear conversation history"""
         pass
 
     @abstractmethod
     async def close(self) -> None:
-        """清理资源"""
+        """Clean up resources"""
         pass
 
     @abstractmethod
     def handle_interrupt(self, heard_response: str = "") -> None:
         """
-        处理用户打断
+        Handle user interruption
 
         Args:
-            heard_response: 用户听到的部分回复（可用于存储历史）
+            heard_response: Partial response heard by the user (can be used for history storage)
         """
         pass
 
@@ -95,10 +95,10 @@ class LLMInterface(ABC):
         history_uid: str
     ) -> None:
         """
-        从历史记录恢复对话记忆
+        Restore conversation memory from history records
 
         Args:
-            conf_uid: 配置 UID
-            history_uid: 历史 UID
+            conf_uid: Config UID
+            history_uid: History UID
         """
         pass

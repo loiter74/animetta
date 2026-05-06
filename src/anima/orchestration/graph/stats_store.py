@@ -1,4 +1,4 @@
-"""Pipeline 统计数据存储 - SQLite"""
+"""Pipeline stats data storage - SQLite"""
 
 import asyncio
 import aiosqlite
@@ -8,7 +8,7 @@ from loguru import logger
 
 
 class StatsStore:
-    """SQLite 统计存储"""
+    """SQLite stats storage"""
 
     def __init__(self, db_path: Optional[str] = None):
         if db_path is None:
@@ -19,12 +19,27 @@ class StatsStore:
         self._db: Optional[aiosqlite.Connection] = None
 
     async def init(self):
-        """初始化数据库连接和表结构"""
+        """Initialize database connection and table structure"""
         Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
         self._db = await aiosqlite.connect(self.db_path)
         self._db.row_factory = aiosqlite.Row
         await self._create_tables()
-        logger.info(f"[StatsStore] 数据库已初始化: {self.db_path}")
+        await self._migrate_schema()
+        logger.info(f"[StatsStore] Database initialized: {self.db_path}")
+
+    async def _migrate_schema(self):
+        """Add OTel columns to spans table (safe for existing DBs)."""
+        migrations = [
+            "ALTER TABLE spans ADD COLUMN attributes TEXT",
+            "ALTER TABLE spans ADD COLUMN events TEXT",
+            "ALTER TABLE spans ADD COLUMN kind INTEGER",
+        ]
+        for sql in migrations:
+            try:
+                await self._db.execute(sql)
+                await self._db.commit()
+            except Exception:
+                pass  # column already exists
 
     async def _create_tables(self):
         await self._db.executescript("""
@@ -200,7 +215,8 @@ class StatsStore:
             return None
 
         span_cursor = await self._db.execute(
-            "SELECT span_id, parent_span_id, node_name, duration_ms, status, input_summary, output_summary, created_at "
+            "SELECT span_id, parent_span_id, node_name, duration_ms, status, "
+            "input_summary, output_summary, attributes, events, kind, created_at "
             "FROM spans WHERE trace_id=? ORDER BY created_at",
             (trace_id,),
         )
@@ -213,7 +229,10 @@ class StatsStore:
                 "status": s[4],
                 "input_summary": s[5],
                 "output_summary": s[6],
-                "created_at": s[7],
+                "attributes": s[7],
+                "events": s[8],
+                "kind": s[9],
+                "created_at": s[10],
             }
             for s in await span_cursor.fetchall()
         ]
@@ -235,7 +254,7 @@ class StatsStore:
             await self._db.close()
 
 
-# 全局单例（带异步锁防竞态）
+# Global singleton (with async lock to prevent race conditions)
 _store: Optional[StatsStore] = None
 _store_lock = asyncio.Lock()
 

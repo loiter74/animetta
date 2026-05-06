@@ -1,15 +1,15 @@
 """
-LangGraph 节点模块
+LangGraph node module
 
-实现各个处理节点，每个节点负责：
-1. 读取状态中的特定字段
-2. 调用现有服务（services/ 中的实现）
-3. 将结果写回状态
+Implements each processing node, each node is responsible for:
+1. Reading specific fields from the state
+2. Calling existing services (implementations in services/)
+3. Writing results back to the state
 
-节点原则:
-- 不重写业务逻辑，全部复用现有服务
-- 只负责状态流转和服务调用
-- 异常处理：失败时设置 state["error"]
+Node principles:
+- Do not rewrite business logic, reuse all existing services
+- Only responsible for state transitions and service calls
+- Error handling: set state["error"] on failure
 """
 
 from .asr_node import asr_node

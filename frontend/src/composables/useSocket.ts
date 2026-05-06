@@ -1,8 +1,11 @@
 import { io, Socket } from 'socket.io-client'
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useConnectionStore } from '@/stores/connection'
+import { useModelLoadingStore } from '@/stores/modelLoading'
+import type { ModelStatusPayload } from '@/types/model-loading'
 import type { ConnectionStatus } from '@/types/socket-events'
 
+// Direct connection to backend. CORS is enabled (cors_allowed_origins='*').
 const SOCKET_URL = 'http://localhost:12394'
 
 let socket: Socket | null = null
@@ -35,6 +38,17 @@ export function useSocket() {
 
     socket.on('connect_error', (err) => {
       store.setStatus('error', err.message)
+    })
+
+    // Listen for model loading status
+    const modelStore = useModelLoadingStore()
+    socket.on('model_status', (payload: ModelStatusPayload) => {
+      modelStore.updateModelStatus(payload)
+    })
+
+    // Clear loading state on reconnect
+    socket.on('connect', () => {
+      // Don't clear on reconnect - warmup may still be in progress
     })
 
     _initialized = true

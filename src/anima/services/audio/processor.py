@@ -1,11 +1,11 @@
 """
-音频处理器服务接口
+Audio processor service interface
 
-负责：
-1. 接收音频数据流
-2. 使用 VAD 进行语音活动检测
-3. 累积有效语音片段
-4. 触发 ASR 转录和 LLM 对话
+Responsibilities:
+1. Receive audio data stream
+2. Perform voice activity detection using VAD
+3. Accumulate valid speech segments
+4. Trigger ASR transcription and LLM conversation
 """
 
 from abc import ABC, abstractmethod
@@ -14,29 +14,29 @@ from typing import Dict
 
 
 class AudioProcessorInterface(ABC):
-    """音频处理器接口"""
+    """Audio processor interface"""
 
     @abstractmethod
     async def process_chunk(self, audio_data: List[float]) -> None:
         """
-        处理音频数据块
+        Process audio data chunk
 
         Args:
-            audio_data: 音频数据（float32 列表）
+            audio_data: Audio data (float32 list)
         """
         pass
 
     @abstractmethod
     async def process_end(self) -> None:
-        """处理音频输入结束"""
+        """Handle audio input end"""
         pass
 
     @abstractmethod
     def reset(self) -> None:
-        """重置处理器状态"""
+        """Reset processor state"""
         pass
 
     @abstractmethod
     def is_speaking(self) -> bool:
-        """是否正在检测到语音"""
+        """Whether speech is currently being detected"""
         pass

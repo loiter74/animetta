@@ -1,4 +1,4 @@
-"""智谱 AI GLM ASR 提供者配置"""
+"""Zhipu AI GLM ASR provider configuration"""
 
 from typing import Literal
 from pydantic import Field
@@ -9,7 +9,7 @@ from .base import ASRBaseConfig
 
 @ProviderRegistry.register("asr", "glm")
 class GLMASRConfig(ASRBaseConfig):
-    """智谱 AI GLM ASR 配置"""
+    """Zhipu AI GLM ASR configuration"""
     type: Literal["glm"] = "glm"
-    model: str = Field(default="glm-asr", description="ASR 模型名称")
-    stream: bool = Field(default=False, description="是否流式识别")
+    model: str = Field(default="glm-asr", description="ASR model name")
+    stream: bool = Field(default=False, description="Whether to use streaming recognition")

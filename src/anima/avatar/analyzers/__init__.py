@@ -1,7 +1,7 @@
 """
-表情分析器模块
+Emotion Analyzer Module
 
-包含各种 Live2D 表情分析器
+Contains various Live2D emotion analyzers
 """
 
 from .base import IEmotionAnalyzer, EmotionData

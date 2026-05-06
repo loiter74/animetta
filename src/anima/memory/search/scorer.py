@@ -1,7 +1,7 @@
 """
-记忆评分器
+Memory scorer
 
-基于规则计算对话的重要性分数，决定是否值得长期存储。
+Computes importance scores for conversations based on rules, determines whether long-term storage is warranted.
 """
 
 import re
@@ -14,21 +14,21 @@ from ..models.turns import MemoryTurn
 
 class MemoryScorer:
     """
-    记忆评分器
+    Memory importance scorer
 
-    根据多条规则评估对话的重要性分数。
+    Evaluates conversation importance using multiple rule-based criteria.
 
-    评分规则:
-    1. 基础分 (0.3): 每条对话都有基础分
-    2. 关键信息加分 (+0.15): 名字、偏好、年龄、住址等
-    3. 长度奖励 (+0.1): 50+ 字符
-    4. 问句降分 (-0.1): 通常不重要
+    Scoring rules:
+    1. Base score (0.3): every conversation has a base score
+    2. Key info bonus (+0.15): name, preference, age, location, etc.
+    3. Length reward (+0.1): 50+ characters
+    4. Question penalty (-0.1): questions are usually less important
 
-    分数范围: 0.0 ~ 1.0
-    阈值: >= 0.5 写入 MEMORY.md, >= 0.3 写入 daily log, < 0.3 跳过
+    Score range: 0.0 ~ 1.0
+    Threshold: >= 0.5 write to MEMORY.md, >= 0.3 write to daily log, < 0.3 skip
     """
 
-    # 关键信息模式 (加分)
+    # Key information patterns (bonus)
     KEY_INFO_PATTERNS = [
         r'我[叫是](.+)',
         r'我的名字[是为](.+)',
@@ -43,56 +43,56 @@ class MemoryScorer:
     ]
 
     def __init__(self):
-        # 编译模式
+        # Compile patterns
         self._key_patterns = [
             re.compile(p, re.IGNORECASE) for p in self.KEY_INFO_PATTERNS
         ]
 
     def score(self, turn: MemoryTurn) -> float:
         """
-        计算对话的重要性分数
+        Compute conversation importance score
 
         Args:
-            turn: 对话轮次
+            turn: Conversation turn
 
         Returns:
-            0.0 ~ 1.0 的分数
+            Score from 0.0 to 1.0
         """
         user_input = turn.user_input.strip()
 
-        # 1. 基础分
+        # 1. Base score
         score = 0.3
 
-        # 2. 关键信息加分
+        # 2. Key info bonus
         for pattern in self._key_patterns:
             if pattern.search(user_input):
                 score += 0.15
-                logger.debug(f"[MemoryScorer] 检测到关键信息: {pattern.pattern}")
-                break  # 只加一次
+                logger.debug(f"[MemoryScorer] Detected key info: {pattern.pattern}")
+                break  # Only add once
 
-        # 3. 长度奖励 (信息量可能更多)
+        # 3. Length reward (more information likely)
         if len(user_input) > 50:
             score += 0.1
 
-        # 4. 问句降分 (通常不重要)
+        # 4. Question penalty (usually less important)
         if user_input.endswith('?') and len(user_input) < 15:
             score -= 0.1
 
-        # 限制范围
+        # Clamp to range
         score = max(0.0, min(score, 1.0))
 
-        logger.debug(f"[MemoryScorer] 评分完成: {score:.2f} (输入: {user_input[:30]}...)")
+        logger.debug(f"[MemoryScorer] Scoring complete: {score:.2f} (input: {user_input[:30]}...)")
 
         return score
 
     def should_store(self, score: float) -> bool:
         """
-        判断是否应该存储
+        Determine if the turn should be stored
 
         Args:
-            score: 评分
+            score: Importance score
 
         Returns:
-            True 表示应该存储
+            True if should store
         """
         return score >= 0.3

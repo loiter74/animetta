@@ -1,4 +1,4 @@
-"""DeepSeek LLM 提供者配置"""
+"""DeepSeek LLM provider configuration"""
 
 from typing import Literal
 from pydantic import Field
@@ -9,7 +9,7 @@ from .base import LLMBaseConfig
 
 @ProviderRegistry.register("llm", "deepseek")
 class DeepSeekLLMConfig(LLMBaseConfig):
-    """DeepSeek LLM 配置"""
+    """DeepSeek LLM configuration"""
     type: Literal["deepseek"] = "deepseek"
-    model: str = Field(default="deepseek-v4-flash", description="模型名称: deepseek-v4-flash / deepseek-v4-pro")
+    model: str = Field(default="deepseek-v4-flash", description="Model name: deepseek-v4-flash / deepseek-v4-pro")
     base_url: str = Field(default="https://api.deepseek.com/v1", description="DeepSeek API Base URL")

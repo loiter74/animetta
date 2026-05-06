@@ -4,8 +4,10 @@ import { getSocket } from '@/composables/useSocket'
 
 // ===== Model Configuration (edit these to change model) =====
 export const MODEL_PATH = 'live2d/hiyori/Hiyori.model3.json'
-const INITIAL_POS_X = 1120
-const INITIAL_POS_Y = 1662
+// Position is computed as a fraction of canvas dimensions at load time,
+// so the model appears at the same relative position on any screen size.
+const POS_X_RATIO = 0.35   // 0.0 = left edge, 1.0 = right edge
+const POS_Y_RATIO = 1.2    // >1.0 = below canvas bottom edge
 const INITIAL_SCALE = 2.59
 
 // Mouth parameter candidates (Cubism 3/4)
@@ -38,6 +40,7 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
   let targetMouth = 0
   let mouthParam: string | null = null
   let lipSyncCancel: (() => void) | null = null
+  let _lipSyncRafActive = false  // when true, PIXI ticker lip sync is disabled
 
   // Scale state
   let strategy = 'fit'
@@ -176,9 +179,9 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
       baseBounds = { width: initialBounds.width, height: initialBounds.height }
 
       applyScale()
-      // Apply default user-preferred position and scale
-      model.x = INITIAL_POS_X
-      model.y = INITIAL_POS_Y
+      // Position model relative to canvas size
+      model.x = app.screen.width * POS_X_RATIO
+      model.y = app.screen.height * POS_Y_RATIO
       userScale = INITIAL_SCALE
       applyScale()
       isLoaded.value = true
@@ -295,6 +298,8 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
   }
 
   function tickLipSync(): void {
+    // RAF-based lip sync takes priority over PIXI ticker
+    if (_lipSyncRafActive) return
     if (!model) return
 
     const delta = Math.abs(targetMouth - mouthValue)
@@ -316,35 +321,73 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
 
   function startLipSync(audio: HTMLAudioElement, volumes: number[]): void {
     stopLipSync()
+    _lipSyncRafActive = true
     const intervalMs = 20
     let lastIndex = -1
     let hasStarted = false
+    let preRollCount = 0
+    let preRollTarget = 3
+    let lipSyncMouth = 0
+    let lipSyncTarget = 0
+
+    // Direct parameter setter — runs every RAF frame, NOT through the PIXI
+    // ticker, so it wins over any motion-driven mouth keyframes.
+    function setLipSyncParam(value: number) {
+      lipSyncTarget = Math.max(0, Math.min(1, value))
+      // Smooth interpolation
+      const delta = Math.abs(lipSyncTarget - lipSyncMouth)
+      const factor = 0.5 + 0.4 * Math.min(delta / 0.3, 1.0)
+      lipSyncMouth += (lipSyncTarget - lipSyncMouth) * factor
+      if (!mouthParam) {
+        for (const name of MOUTH_PARAMS) {
+          const idx = model?.internalModel?.coreModel?.getParameterIndex(name)
+          if (idx !== undefined && idx >= 0) { mouthParam = name; break }
+        }
+      }
+      if (mouthParam && model?.internalModel?.coreModel) {
+        const idx = model.internalModel.coreModel.getParameterIndex(mouthParam)
+        if (idx >= 0) model.internalModel.coreModel.setParameterValueByIndex(idx, lipSyncMouth)
+      }
+    }
 
     const tick = () => {
       if (audio.ended || (hasStarted && audio.paused)) {
-        setMouthTarget(0)
+        setLipSyncParam(0)
         return
       }
+
       if (!hasStarted) {
-        if (audio.paused) { requestAnimationFrame(tick); return }
+        if (audio.paused) {
+          if (preRollCount < preRollTarget && preRollCount < volumes.length) {
+            setLipSyncParam(volumes[preRollCount])
+            preRollCount++
+          }
+          requestAnimationFrame(tick)
+          return
+        }
         hasStarted = true
       }
 
-      const index = Math.floor((audio.currentTime * 1000) / intervalMs)
+      const rawIndex = Math.floor((audio.currentTime * 1000) / intervalMs)
+      const index = rawIndex + preRollCount
       if (index !== lastIndex) {
-        setMouthTarget(index < volumes.length ? volumes[index] : 0)
+        setLipSyncParam(index < volumes.length ? volumes[index] : 0)
         lastIndex = index
+      } else {
+        // Keep smoothing toward current target even on same index
+        setLipSyncParam(lipSyncTarget)
       }
       requestAnimationFrame(tick)
     }
     requestAnimationFrame(tick)
 
-    lipSyncCancel = () => setMouthTarget(0)
+    lipSyncCancel = () => { _lipSyncRafActive = false; setLipSyncParam(0) }
   }
 
   function stopLipSync(): void {
     lipSyncCancel?.()
     lipSyncCancel = null
+    _lipSyncRafActive = false
     setMouthTarget(0)
   }
 
@@ -520,9 +563,9 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
     resetView() {
       userScale = INITIAL_SCALE
       applyScale()
-      if (model) {
-        model.x = INITIAL_POS_X
-        model.y = INITIAL_POS_Y
+      if (model && app) {
+        model.x = app.screen.width * POS_X_RATIO
+        model.y = app.screen.height * POS_Y_RATIO
       }
       updateModelInfo()
     },

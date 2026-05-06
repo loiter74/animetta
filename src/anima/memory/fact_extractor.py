@@ -1,10 +1,10 @@
 """
-事实提取器: 从对话中提取原子事实并管理 MemoryEntry 版本.
+Fact extractor: extracts atomic facts from conversations and manages MemoryEntry versions.
 
-工作流程:
-1. 从对话轮次 (MemoryTurn) 提取结构化事实
-2. 与已有 MemoryEntry 做版本匹配 (create vs update)
-3. 通过 MemoryEntryStore 持久化
+Workflow:
+1. Extract structured facts from conversation turns (MemoryTurn)
+2. Version-match against existing MemoryEntry (create vs update)
+3. Persist via MemoryEntryStore
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ from .storage.memory_entry_store import MemoryEntryStore
 
 logger = logging.getLogger(__name__)
 
-# ── LLM Prompt 模板 (Task 2.1) ──────────────────────────────
+# ── LLM Prompt templates (Task 2.1) ─────────────────────────
 
 FACT_EXTRACTION_SYSTEM_PROMPT = """你是一个对话事实提取助手。从用户和 AI 的对话中提取原子事实。
 
@@ -58,7 +58,7 @@ AI: {agent_response}
 
 提取的事实:"""
 
-# ── LLM Prompt 模板 (Task 3.1: Memory 关系判断) ────────────
+# ── LLM Prompt templates (Task 3.1: Memory relation judgment) ──
 
 RELATION_ANALYSIS_SYSTEM_PROMPT = """你是一个记忆关系分析助手。判断两个事实之间的关系。
 
@@ -79,10 +79,10 @@ RELATION_ANALYSIS_USER_PROMPT = """判断新事实与旧事实之间的关系:
 关系:"""
 
 
-# ── 规则提取 (fallback) ────────────────────────────────────
+# ── Rule-based extraction (fallback) ────────────────────────
 
 RULES: List[Tuple[str, str, str, float, bool]] = [
-    # pattern, category, is_static, confidence
+    # pattern, category, confidence, is_static
     (r"我[叫是](\S{1,10}?)[，。！？\s,]", "identity", 0.9, True),
     (r"我的名字[是为](\S{1,10}?)[，。！？\s,]", "identity", 0.9, True),
     (r"我(?:今年)?(\d{1,3})岁", "identity", 0.9, True),
@@ -102,7 +102,7 @@ RULES: List[Tuple[str, str, str, float, bool]] = [
 
 @dataclass
 class ExtractedFact:
-    """从对话中提取的一条事实."""
+    """A single fact extracted from conversation."""
     fact: str
     category: str
     confidence: float
@@ -110,7 +110,7 @@ class ExtractedFact:
 
 
 class FactExtractorConfig:
-    """FactExtractor 配置."""
+    """FactExtractor configuration."""
 
     def __init__(
         self,
@@ -118,18 +118,21 @@ class FactExtractorConfig:
         relation_analysis_rate: float = 0.5,
     ):
         """
+        Fact extractor configuration
+
         Args:
-            enable_relation_analysis: 是否启用 LLM 关系分析
-            relation_analysis_rate: 采样率 [0.0, 1.0], 控制多少比例的新事实做关系分析
+            enable_relation_analysis: Whether to enable LLM relation analysis
+            relation_analysis_rate: Sampling rate [0.0, 1.0], controls what proportion of new facts undergo relation analysis
         """
         self.enable_relation_analysis = enable_relation_analysis
         self.relation_analysis_rate = min(max(relation_analysis_rate, 0.0), 1.0)
 
 
 class FactExtractor:
-    """从对话中提取原子事实.
+    """
+    Extracts structured facts from conversations and manages MemoryEntry versions.
 
-    支持 LLM 驱动的提取 (优先) 和基于规则的 fallback 提取.
+    Supports LLM-driven extraction (preferred) and rule-based fallback extraction.
     """
 
     def __init__(
@@ -142,26 +145,26 @@ class FactExtractor:
         self._llm_client = llm_client
         self._config = config or FactExtractorConfig()
 
-    # ── 主入口 ───────────────────────────────────────────────
+    # ── Main entry ────────────────────────────────────────────
 
     async def extract_and_store(
         self,
         turn: MemoryTurn,
         space_id: str = "default",
     ) -> List[MemoryEntry]:
-        """从 MemoryTurn 提取事实并存储到 MemoryEntryStore.
+        """Extract facts from MemoryTurn and store them in MemoryEntryStore.
 
         Returns:
-            创建的 (或更新后的) MemoryEntry 列表
+            List of created (or updated) MemoryEntry objects
         """
-        # 1. 提取事实
+        # 1. Extract facts
         facts = await self._extract_facts(turn)
 
         if not facts:
             logger.debug(f"[FactExtractor] no facts extracted from turn {turn.turn_id}")
             return []
 
-        # 2. 存储并做版本匹配
+        # 2. Store and perform version matching
         stored: List[MemoryEntry] = []
         for fact in facts:
             entry = await self._store_fact(fact, space_id)
@@ -175,10 +178,10 @@ class FactExtractor:
             )
         return stored
 
-    # ── 事实提取 (Task 2.1, 2.2) ────────────────────────────
+    # ── Fact extraction (Task 2.1, 2.2) ──────────────────────
 
     async def _extract_facts(self, turn: MemoryTurn) -> List[ExtractedFact]:
-        """提取事实: 优先 LLM, fallback 规则."""
+        """Extract facts: prefer LLM, fallback to rules."""
         if self._llm_client:
             try:
                 return await self._extract_with_llm(turn)
@@ -188,7 +191,7 @@ class FactExtractor:
         return self._extract_with_rules(turn)
 
     async def _extract_with_llm(self, turn: MemoryTurn) -> List[ExtractedFact]:
-        """LLM 驱动的事实提取."""
+        """LLM-driven fact extraction."""
         user_prompt = FACT_EXTRACTION_USER_PROMPT.format(
             user_input=turn.user_input,
             agent_response=turn.agent_response,
@@ -224,7 +227,7 @@ class FactExtractor:
         return extracted
 
     def _extract_with_rules(self, turn: MemoryTurn) -> List[ExtractedFact]:
-        """基于规则的事实提取 (fallback)."""
+        """Rule-based fact extraction (fallback)."""
         combined = f"{turn.user_input}\n{turn.agent_response}"
         extracted: List[ExtractedFact] = []
         seen: set = set()
@@ -243,23 +246,22 @@ class FactExtractor:
                     ))
         return extracted
 
-    # ── 版本匹配 (Task 2.3) ─────────────────────────────────
+    # ── Version matching (Task 2.3) ──────────────────────────
 
     async def _store_fact(self, fact: ExtractedFact, space_id: str) -> Optional[MemoryEntry]:
-        """存储事实, 自动做版本匹配."""
-        # 标准化: 去空格、转小写
+        # Normalize: strip whitespace, lowercase
         normalized = fact.fact.strip()
 
-        # 查找是否有相似事实已存在
+        # Check if a similar fact already exists
         existing = self._store.get_latest_by_memory(normalized, space_id)
 
         if existing:
-            # 事实已存在但内容相同 → 跳过
+            # Content unchanged => skip
             if existing.memory == normalized:
                 logger.debug(f"[FactExtractor] fact unchanged, skipping: {normalized[:40]}")
                 return existing
 
-            # 事实有变化 → 创建新版本
+            # Fact changed → create new version
             new_entry = MemoryEntry(
                 id="",
                 memory=normalized,
@@ -273,7 +275,7 @@ class FactExtractor:
             new_id = self._store.create_new_version(new_entry, existing.id)
             new_entry.id = new_id
 
-            # 关系分析 (Task 3.2, 3.3)
+            # Relation analysis (Task 3.2, 3.3)
             relation = await self._analyze_relation(normalized, existing)
             if relation:
                 from .models.memory_entry import MemoryRelation, RelationType
@@ -287,7 +289,7 @@ class FactExtractor:
             logger.info(f"[FactExtractor] updated version {existing.version}→{existing.version + 1}: {normalized[:50]}")
             return new_entry
         else:
-            # 全新事实
+            # Brand new fact
             entry = MemoryEntry(
                 id="",
                 memory=normalized,
@@ -302,38 +304,38 @@ class FactExtractor:
             logger.debug(f"[FactExtractor] new fact: {normalized[:50]}")
             return entry
 
-    # ── 置信度 (Task 2.5) ───────────────────────────────────
+    # ── Confidence (Task 2.5) ─────────────────────────────────
 
     def _compute_confidence(self, new_fact: ExtractedFact, existing: MemoryEntry) -> float:
-        """综合计算置信度.
+        """Compute combined confidence.
 
-        策略: 取新旧置信度的加权平均, 版本越高越偏向新值.
+        Strategy: weighted average of old and new confidence; higher version favors newer value.
         """
         old_conf = existing.confidence
         new_conf = new_fact.confidence
         version = existing.version
 
-        # 随着版本增加, 新置信度权重逐渐增大
+        # As version increases, new confidence weight gradually grows
         new_weight = min(0.5 + version * 0.1, 0.9)
         old_weight = 1.0 - new_weight
         return round(new_conf * new_weight + old_conf * old_weight, 2)
 
-    # ── 关系分析 (Task 3.1, 3.2) ──────────────────────────
+    # ── Relation analysis (Task 3.1, 3.2) ──────────────────
 
     async def _analyze_relation(
         self,
         new_fact: str,
         existing_entry: MemoryEntry,
     ) -> Optional[str]:
-        """判断新事实与已有条目的关系.
+        """Determine the relationship between a new fact and an existing entry.
 
         Returns:
-            "updates" | "extends" | "derives" | None (无法判断)
+            "updates" | "extends" | "derives" | None (cannot determine)
         """
         if not self._config.enable_relation_analysis:
             return None
 
-        # 采样: 控制关系分析的比例
+        # Sampling: control the proportion of relation analysis
         import hashlib
         sample_key = f"{new_fact}:{existing_entry.id}"
         sample_hash = int(hashlib.sha256(sample_key.encode()).hexdigest(), 16)
@@ -367,11 +369,11 @@ class FactExtractor:
 
         return None
 
-    # ── 辅助 ─────────────────────────────────────────────────
+    # ── Helpers ───────────────────────────────────────────────
 
     @staticmethod
     def _clean_json(text: str) -> str:
-        """清理 LLM 返回的 JSON 字符串."""
+        """Clean JSON string returned by LLM."""
         text = text.strip()
         if text.startswith("```json"):
             text = text[7:]

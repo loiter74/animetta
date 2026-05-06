@@ -26,7 +26,7 @@ class WikiPage:
     path: str  # relative to wiki/, e.g. "entities/user.md"
     content: str  # Markdown body (without frontmatter)
     tags: List[str] = field(default_factory=list)
-    links: List[str] = field(default_factory=list)  # [[双链]] targets
+    links: List[str] = field(default_factory=list)  # [[wikilink]] targets
     created_at: datetime = field(default_factory=datetime.now)
     updated_at: datetime = field(default_factory=datetime.now)
     raw_source: Optional[str] = None  # link to raw/ source file
@@ -73,7 +73,7 @@ class WikiPage:
         if first_line.startswith("# "):
             title = first_line[2:].strip()
 
-        # extract [[双链]]
+        # extract [[wikilinks]]
         parsed_links = re.findall(r"\[\[(.+?)\]\]", content)
 
         return cls(

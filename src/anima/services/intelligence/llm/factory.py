@@ -1,5 +1,5 @@
 """
-LLM 服务工厂 - 根据配置自动创建 LLM 服务实例
+LLM service factory - automatically creates LLM service instances based on configuration
 """
 
 from loguru import logger
@@ -7,63 +7,64 @@ from loguru import logger
 from .interface import LLMInterface
 from anima.config.core.registry import ProviderRegistry
 from anima.config import LLMConfig
+from anima.tracing import TracingProxy
 
 
 class LLMFactory:
     """
-    LLM 服务工厂类（简化版）
+    LLM service factory class (simplified version)
     
-    使用 ProviderRegistry 自动查找并实例化服务，
-    无需手动维护 if-elif 链。
+    Uses ProviderRegistry to automatically find and instantiate services,
+    eliminating the need to manually maintain if-elif chains.
     
-    新增提供者只需：
-    1. 创建配置类并注册
-    2. 创建服务类并注册
-    工厂代码无需任何修改。
+    To add a new provider, simply:
+    1. Create a config class and register it
+    2. Create a service class and register it
+    No modifications to the factory code are required.
     """
     
     @staticmethod
     def create_from_config(config: LLMConfig, system_prompt: str = "") -> LLMInterface:
         """
-        根据配置对象自动创建 LLM 服务实例
+        Automatically create an LLM service instance from a config object
         
         Args:
-            config: LLM 配置对象 (Discriminated Union)
-            system_prompt: 系统提示词
+            config: LLM config object (Discriminated Union)
+            system_prompt: System prompt
             
         Returns:
-            LLMInterface: LLM 服务实例
+            LLMInterface: LLM service instance
         
         Raises:
-            ValueError: 如果找不到对应的服务实现
+            ValueError: If no matching service implementation is found
         """
         logger.debug(f"create_from_config: config.type={config.type}, config class={type(config).__name__}")
         
         try:
-            # 使用 Registry 自动查找并实例化
+            # Use Registry to automatically find and instantiate
             llm = ProviderRegistry.create_service("llm", config, system_prompt=system_prompt)
-            logger.info(f"LLM 服务创建成功: type={config.type}, instance={type(llm).__name__}")
-            return llm
+            logger.info(f"LLM service created successfully: type={config.type}, instance={type(llm).__name__}")
+            return TracingProxy(llm, service_name="llm")
         except Exception as e:
-            # 捕获所有异常（ValueError, TypeError, ImportError, ConnectionError 等）
-            logger.error(f"创建 LLM 服务失败 (type={config.type}): {type(e).__name__}: {e}")
-            # 降级到 Mock 实现
-            logger.warning(f"降级使用 MockLLM (原配置: {config.type})")
+            # Catch all exceptions (ValueError, TypeError, ImportError, ConnectionError, etc.)
+            logger.error(f"Failed to create LLM service (type={config.type}): {type(e).__name__}: {e}")
+            # Fall back to Mock implementation
+            logger.warning(f"Falling back to MockLLM (original config: {config.type})")
             from .mock_llm import MockLLM
             return MockLLM(system_prompt=system_prompt)
 
     @staticmethod
     def create(provider: str, system_prompt: str = "", **kwargs) -> LLMInterface:
         """
-        根据提供商名称创建 LLM 服务实例（向后兼容）
+        Create an LLM service instance by provider name (backward compatible)
         
         Args:
-            provider: 提供商名称
-            system_prompt: 系统提示词
-            **kwargs: 传递给具体实现的参数
+            provider: Provider name
+            system_prompt: System prompt
+            **kwargs: Parameters passed to the concrete implementation
             
         Returns:
-            LLMInterface: LLM 服务实例
+            LLMInterface: LLM service instance
         """
         from anima.config import (
             MockLLMConfig,
@@ -72,7 +73,7 @@ class LLMFactory:
             OllamaLLMConfig,
         )
         
-        # 根据提供商名称构建配置对象
+        # Build config object based on provider name
         config_map = {
             "openai": lambda: OpenAILLMConfig(
                 api_key=kwargs.get("api_key"),
@@ -99,7 +100,7 @@ class LLMFactory:
         
         config_factory = config_map.get(provider)
         if config_factory is None:
-            logger.warning(f"未知的 LLM 提供商: {provider}，使用 Mock 实现")
+            logger.warning(f"Unknown LLM provider: {provider}, using Mock implementation")
             config = MockLLMConfig()
         else:
             config = config_factory()
@@ -108,5 +109,5 @@ class LLMFactory:
     
     @staticmethod
     def get_available_providers() -> list:
-        """获取所有可用的提供商列表"""
+        """Get the list of all available providers"""
         return ProviderRegistry.list_services("llm")

@@ -1,10 +1,10 @@
-"""VAD 基础配置"""
+"""VAD base configuration"""
 
 from typing import Literal
 from ...core.base import BaseConfig
 
 
 class VADBaseConfig(BaseConfig):
-    """VAD 配置基类"""
+    """VAD configuration base class"""
     type: str = "base"
     sample_rate: int = 16000

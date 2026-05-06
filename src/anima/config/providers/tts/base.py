@@ -1,4 +1,4 @@
-"""TTS 配置基类"""
+"""TTS base configuration"""
 
 from typing import Optional
 from pydantic import Field
@@ -8,10 +8,10 @@ from ...core.base import ProviderConfig
 
 class TTSBaseConfig(ProviderConfig):
     """
-    TTS 提供者配置基类
-    
-    所有 TTS 提供者配置都应继承此类
+    TTS provider configuration base class
+
+    All TTS provider configurations should inherit from this class
     """
-    voice: str = Field(default="default", description="声音/音色")
-    speed: float = Field(default=1.0, ge=0.5, le=2.0, description="语速")
+    voice: str = Field(default="default", description="Voice / timbre")
+    speed: float = Field(default=1.0, ge=0.5, le=2.0, description="Speech speed")
     api_key: Optional[str] = Field(default=None, description="API Key")

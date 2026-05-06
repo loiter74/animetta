@@ -1,28 +1,28 @@
 """
-桌面客户端支持
-管理 Electron 桌面客户端的注册和广播
+Desktop client support
+Manages Electron desktop client registration and broadcasting
 """
 
 from typing import Dict, Set
 from loguru import logger
 
-# 桌面客户端类型
+# Desktop client types
 DESKTOP_CLIENT_TYPES = {"live2d", "chat", "web"}
 
 
 class DesktopClientManager:
     """
-    桌面客户端管理器
+    Desktop client manager
 
-    负责：
-    1. 管理桌面客户端的注册
-    2. 广播消息到指定类型的客户端
-    3. 客户端状态追踪
+    Responsibilities:
+    1. Manage desktop client registration
+    2. Broadcast messages to clients of a specified type
+    3. Client state tracking
     """
 
     def __init__(self):
-        # 存储桌面客户端信息
-        # 键: session_id, 值: {client_type: str, connected: bool}
+        # Store desktop client info
+        # Key: session_id, Value: {client_type: str, connected: bool}
         self.clients: Dict[str, dict] = {}
 
     def register(
@@ -31,17 +31,17 @@ class DesktopClientManager:
         client_type: str = "web"
     ) -> bool:
         """
-        注册桌面客户端
+        Register a desktop client
 
         Args:
             sid: session id
-            client_type: 客户端类型 ("live2d", "chat", "web")
+            client_type: Client type ("live2d", "chat", "web")
 
         Returns:
-            bool: 是否注册成功
+            bool: Whether registration succeeded
         """
         if client_type not in DESKTOP_CLIENT_TYPES:
-            logger.warning(f"[Desktop] 未知的客户端类型: {client_type}")
+            logger.warning(f"[Desktop] Unknown client type: {client_type}")
             return False
 
         self.clients[sid] = {
@@ -49,12 +49,12 @@ class DesktopClientManager:
             'connected': True
         }
 
-        logger.info(f"[Desktop] {client_type} 客户端已注册: {sid}")
+        logger.info(f"[Desktop] {client_type} client registered: {sid}")
         return True
 
     def unregister(self, sid: str) -> None:
         """
-        注销桌面客户端
+        Unregister a desktop client
 
         Args:
             sid: session id
@@ -62,34 +62,34 @@ class DesktopClientManager:
         if sid in self.clients:
             client_type = self.clients[sid].get('client_type', 'unknown')
             del self.clients[sid]
-            logger.info(f"[Desktop] {client_type} 客户端已注销: {sid}")
+            logger.info(f"[Desktop] {client_type} client unregistered: {sid}")
 
     def get_client_type(self, sid: str) -> str:
-        """获取客户端类型"""
+        """Get client type"""
         if sid in self.clients:
             return self.clients[sid].get('client_type', 'web')
         return 'web'
 
     def is_connected(self, sid: str) -> bool:
-        """检查客户端是否已连接"""
+        """Check if client is connected"""
         if sid in self.clients:
             return self.clients[sid].get('connected', False)
         return False
 
     def set_connected(self, sid: str, connected: bool) -> None:
-        """设置客户端连接状态"""
+        """Set client connection state"""
         if sid in self.clients:
             self.clients[sid]['connected'] = connected
 
     def get_clients_by_type(self, client_type: str) -> Set[str]:
         """
-        获取指定类型的所有客户端
+        Get all clients of a specified type
 
         Args:
-            client_type: 客户端类型
+            client_type: Client type
 
         Returns:
-            Set[str]: 客户端 session id 集合
+            Set[str]: Set of client session ids
         """
         return {
             sid for sid, info in self.clients.items()
@@ -98,5 +98,5 @@ class DesktopClientManager:
 
     @property
     def client_count(self) -> int:
-        """获取已注册的客户端数量"""
+        """Get the number of registered clients"""
         return len(self.clients)

@@ -1,6 +1,6 @@
 """
-表情参数映射器 - 基础接口
-将情绪/表情转换为 Live2D 参数
+Expression Parameter Mapper - Base Interface
+Converts emotions/expressions to Live2D parameters
 """
 
 from abc import ABC, abstractmethod
@@ -11,12 +11,12 @@ from typing import Dict, Any, List, Optional
 @dataclass
 class ParameterState:
     """
-    Live2D 参数状态
+    Live2D Parameter State
 
     Attributes:
-        name: 参数名（如 ParamMouthOpenY）
-        value: 参数值（通常范围 -1 到 1，或 0 到 1）
-        duration: 过渡时长（秒）
+        name: Parameter name (e.g., ParamMouthOpenY)
+        value: Parameter value (typically range -1 to 1, or 0 to 1)
+        duration: Transition duration (seconds)
     """
     name: str
     value: float
@@ -33,14 +33,14 @@ class ParameterState:
 @dataclass
 class ExpressionFrame:
     """
-    表情帧
+    Expression Frame
 
-    表示某一时刻的完整表情状态，包含多个参数。
+    Represents the complete expression state at a given moment, containing multiple parameters.
 
     Attributes:
-        parameters: 参数列表
-        intensity: 整体强度（0.0 - 1.0）
-        timestamp: 时间戳（秒）
+        parameters: List of parameters
+        intensity: Overall intensity (0.0 - 1.0)
+        timestamp: Timestamp in seconds
     """
     parameters: List[ParameterState]
     intensity: float = 1.0
@@ -56,15 +56,15 @@ class ExpressionFrame:
 
 class IEmotionParamMapper(ABC):
     """
-    情绪参数映射器接口
+    Emotion Parameter Mapper Interface
 
-    将情绪标签映射到 Live2D 模型参数。
+    Maps emotion labels to Live2D model parameters.
 
-    设计模式:
-    - Strategy Pattern: 不同的映射策略
-    - Plugin Pattern: 可动态注册的映射器
+    Design Patterns:
+    - Strategy Pattern: Different mapping strategies
+    - Plugin Pattern: Dynamically registerable mappers
 
-    使用示例:
+    Usage Examples:
         >>> mapper = EmotionParamMapper()
         >>> frame = mapper.map_emotion("happy", intensity=0.8)
         >>> print(frame.parameters)
@@ -79,18 +79,18 @@ class IEmotionParamMapper(ABC):
         context: Optional[Dict[str, Any]] = None
     ) -> ExpressionFrame:
         """
-        将情绪映射到 Live2D 参数
+        Map an emotion to Live2D parameters
 
         Args:
-            emotion: 情绪名称（如 "happy", "sad", "angry"）
-            intensity: 强度（0.0 - 1.0）
-            context: 可选上下文信息
+            emotion: Emotion name (e.g., "happy", "sad", "angry")
+            intensity: Intensity (0.0 - 1.0)
+            context: Optional context information
 
         Returns:
-            ExpressionFrame: 包含所有参数的表情帧
+            ExpressionFrame: Expression frame containing all parameters
 
         Raises:
-            ValueError: 不支持的情绪
+            ValueError: Unsupported emotion
         """
         pass
 
@@ -101,36 +101,36 @@ class IEmotionParamMapper(ABC):
         duration: float
     ) -> List[ExpressionFrame]:
         """
-        将情绪时间轴映射到表情帧序列
+        Map an emotion timeline to a sequence of expression frames
 
         Args:
-            emotions: 情绪片段列表
-            duration: 总时长
+            emotions: List of emotion segments
+            duration: Total duration
 
         Returns:
-            List[ExpressionFrame]: 表情帧序列
+            List[ExpressionFrame]: Sequence of expression frames
         """
         pass
 
     @property
     @abstractmethod
     def name(self) -> str:
-        """映射器名称"""
+        """Mapper name"""
         pass
 
     def get_supported_emotions(self) -> List[str]:
-        """获取支持的情绪列表"""
+        """Get the list of supported emotions"""
         return []
 
     def apply_intensity(self, base_value: float, intensity: float) -> float:
         """
-        应用强度系数
+        Apply intensity coefficient
 
         Args:
-            base_value: 基础值
-            intensity: 强度（0.0 - 1.0）
+            base_value: Base value
+            intensity: Intensity (0.0 - 1.0)
 
         Returns:
-            float: 应用强度后的值
+            float: Value after applying intensity
         """
         return base_value * intensity

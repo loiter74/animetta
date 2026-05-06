@@ -1,8 +1,8 @@
 """
-情绪分析器接口和基础数据结构
+Emotion Analyzer Interface and Basic Data Structures
 
-定义了所有情绪分析器必须实现的接口。
-采用策略模式和插件架构，支持动态扩展。
+Defines the interface that all emotion analyzers must implement.
+Uses the strategy pattern and plugin architecture for dynamic extensibility.
 """
 
 from abc import ABC, abstractmethod
@@ -13,16 +13,16 @@ from typing import List, Dict, Any, Optional
 @dataclass
 class EmotionData:
     """
-    情绪数据（统一格式）
+    Emotion Data (unified format)
 
-    所有情绪分析器必须返回此格式。
-    包含情绪信息、置信度、时间轴和元数据。
+    All emotion analyzers must return this format.
+    Contains emotion information, confidence, timeline, and metadata.
 
     Attributes:
-        primary: 主要情绪（如 "happy", "sad"）
-        confidence: 置信度 (0.0 - 1.0)
-        timeline: 情绪时间轴片段列表
-        metadata: 额外信息（用于调试和扩展）
+        primary: Primary emotion (e.g., "happy", "sad")
+        confidence: Confidence score (0.0 - 1.0)
+        timeline: List of emotion timeline segments
+        metadata: Additional info (for debugging and extension)
 
     Example:
         >>> data = EmotionData(
@@ -46,10 +46,10 @@ class EmotionData:
 
     def to_dict(self) -> Dict[str, Any]:
         """
-        转换为字典（用于序列化和日志）
+        Convert to dictionary (for serialization and logging)
 
         Returns:
-            Dict[str, Any]: 包含所有字段的字典
+            Dict[str, Any]: Dictionary containing all fields
         """
         return {
             "primary": self.primary,
@@ -59,7 +59,7 @@ class EmotionData:
         }
 
     def __repr__(self) -> str:
-        """字符串表示"""
+        """String representation"""
         return (f"EmotionData(primary={self.primary}, "
                 f"confidence={self.confidence:.2f}, "
                 f"timeline_items={len(self.timeline)})")
@@ -67,27 +67,27 @@ class EmotionData:
 
 class IEmotionAnalyzer(ABC):
     """
-    情绪分析器接口
+    Emotion Analyzer Interface
 
-    所有情绪分析器必须实现此接口。
-    插件系统通过此接口实现多态性。
+    All emotion analyzers must implement this interface.
+    The plugin system achieves polymorphism through this interface.
 
-    设计模式:
-    - Strategy Pattern: 不同的情绪分析策略
-    - Plugin Pattern: 可动态注册的分析器
+    Design Patterns:
+    - Strategy Pattern: Different emotion analysis strategies
+    - Plugin Pattern: Dynamically registerable analyzers
 
-    使用示例:
+    Usage Examples:
         >>> from anima.avatar.analyzers import LLMTagAnalyzer
         >>> analyzer = LLMTagAnalyzer(valid_emotions=["happy", "sad"])
         >>> result = analyzer.extract("Hello [happy] world!")
         >>> print(result.primary)
         'happy'
 
-    扩展示例:
+    Extension Example:
         >>> from anima.avatar.analyzers.base import IEmotionAnalyzer
         >>> class MyAnalyzer(IEmotionAnalyzer):
         ...     def extract(self, text, context=None):
-        ...         # 自定义分析逻辑
+        ...         # Custom analysis logic
         ...         return EmotionData(primary="neutral", confidence=0.5)
         ...
         >>> from anima.avatar.factory import EmotionAnalyzerFactory
@@ -97,31 +97,31 @@ class IEmotionAnalyzer(ABC):
     @abstractmethod
     def extract(self, text: str, context: Optional[Dict[str, Any]] = None) -> EmotionData:
         """
-        从文本中提取情绪信息
+        Extract emotion information from text
 
-        这是核心方法，所有分析器必须实现。
+        This is the core method that all analyzers must implement.
 
         Args:
-            text: 待分析的文本
-            context: 可选的上下文信息，包含:
-                - conversation_history: 对话历史
-                - user_input: 用户输入
-                - user_state: 用户状态
-                - custom: 自定义上下文
+            text: The text to analyze
+            context: Optional context information, containing:
+                - conversation_history: Conversation history
+                - user_input: User input
+                - user_state: User state
+                - custom: Custom context
 
         Returns:
-            EmotionData: 提取的情绪数据，包含:
-                - primary: 主要情绪
-                - confidence: 置信度 (0.0 - 1.0)
-                - timeline: 情绪时间轴
-                - metadata: 调试信息
+            EmotionData: Extracted emotion data, containing:
+                - primary: Primary emotion
+                - confidence: Confidence score (0.0 - 1.0)
+                - timeline: Emotion timeline
+                - metadata: Debug info
 
         Raises:
-            NotImplementedError: 子类必须实现
-            ValueError: 输入参数无效
+            NotImplementedError: Subclass must implement
+            ValueError: Invalid input parameters
 
         Example:
-            >>> analyzer.extract("今天天气真好！")
+            >>> analyzer.extract("What a wonderful day!")
             EmotionData(primary='happy', confidence=0.8, ...)
         """
         pass
@@ -130,13 +130,13 @@ class IEmotionAnalyzer(ABC):
     @abstractmethod
     def name(self) -> str:
         """
-        分析器名称（唯一标识符）
+        Analyzer name (unique identifier)
 
-        用于工厂注册和配置引用。
-        必须是全局唯一的字符串。
+        Used for factory registration and configuration references.
+        Must be a globally unique string.
 
         Returns:
-            str: 分析器名称
+            str: Analyzer name
 
         Example:
             >>> analyzer.name
@@ -147,16 +147,16 @@ class IEmotionAnalyzer(ABC):
     @property
     def priority(self) -> int:
         """
-        优先级（数字越小优先级越高）
+        Priority (lower number = higher priority)
 
-        当多个分析器同时使用时，优先级决定处理顺序。
-        默认值为 100（中等优先级）。
+        When multiple analyzers are used simultaneously, priority determines processing order.
+        Default value is 100 (medium priority).
 
         Returns:
-            int: 优先级值（推荐范围: 1-100）
+            int: Priority value (recommended range: 1-100)
 
         Example:
-            >>> # 高优先级分析器
+            >>> # High-priority analyzer
             >>> @property
             >>> def priority(self) -> int:
             ...     return 1
@@ -165,25 +165,25 @@ class IEmotionAnalyzer(ABC):
 
     def validate_input(self, text: str) -> bool:
         """
-        验证输入参数（可选方法）
+        Validate input parameters (optional method)
 
-        子类可以覆盖此方法以添加自定义验证逻辑。
+        Subclasses can override this method to add custom validation logic.
 
         Args:
-            text: 待验证的文本
+            text: Text to validate
 
         Returns:
-            bool: 输入是否有效
+            bool: Whether the input is valid
         """
         return text is not None and len(text.strip()) > 0
 
     def get_supported_emotions(self) -> List[str]:
         """
-        获取支持的情绪列表（可选方法）
+        Get the list of supported emotions (optional method)
 
-        子类可以覆盖此方法以声明支持的情绪。
+        Subclasses can override this method to declare supported emotions.
 
         Returns:
-            List[str]: 支持的情绪列表
+            List[str]: List of supported emotions
         """
-        return []  # 空列表表示支持所有情绪
+        return []  # Empty list means all emotions are supported

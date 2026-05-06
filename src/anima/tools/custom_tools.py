@@ -1,7 +1,7 @@
 """
-自定义工具集合
+Custom tool collection
 
-提供额外的实用工具。
+Provides additional utility tools.
 """
 
 from loguru import logger
@@ -10,19 +10,19 @@ from langchain_core.tools import tool
 
 @tool
 async def url_preview(url: str) -> str:
-    """获取 URL 预览和摘要
+    """Get URL preview and summary
 
     Args:
-        url: 要预览的 URL
+        url: URL to preview
 
     Returns:
-        str: URL 预览信息
+        str: URL preview information
     """
     import httpx
     from urllib.parse import urlparse
 
     try:
-        # 验证 URL 格式
+        # Validate URL format
         parsed = urlparse(url)
         if not parsed.scheme or not parsed.netloc:
             return f"Invalid URL: {url}"
@@ -30,17 +30,17 @@ async def url_preview(url: str) -> str:
         async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
             response = await client.get(url)
             if response.status_code == 200:
-                # 获取页面内容
+                # Get page content
                 html = response.text
 
-                # 简单提取标题和部分内容
+                # Simple extraction of title and content
                 title = "Unknown"
                 if "<title>" in html:
                     start = html.find("<title>") + 7
                     end = html.find("</title>", start)
                     title = html[start:end].strip()
 
-                # 获取前 500 个字符作为预览
+                # Get first 500 characters as preview
                 import re
                 text_only = re.sub(r'<[^>]+>', ' ', html)
                 text_only = ' '.join(text_only.split())
@@ -64,21 +64,21 @@ async def url_preview(url: str) -> str:
 
 @tool
 async def send_email(to: str, subject: str, body: str) -> str:
-    """发送邮件（需要 SMTP 配置）
+    """Send email (requires SMTP configuration)
 
     Args:
-        to: 收件人邮箱
-        subject: 邮件主题
-        body: 邮件正文
+        to: Recipient email
+        subject: Email subject
+        body: Email body
 
     Returns:
-        str: 发送结果
+        str: Sending result
     """
     import os
     import smtplib
     from email.message import EmailMessage
 
-    # SMTP 配置
+    # SMTP configuration
     smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
     smtp_port = int(os.getenv("SMTP_PORT", "587"))
     smtp_user = os.getenv("SMTP_USER")
@@ -88,14 +88,14 @@ async def send_email(to: str, subject: str, body: str) -> str:
         return "Email not configured. Please set SMTP_USER and SMTP_PASSWORD environment variables.\n\nExample for Gmail:\n1. Enable 2FA on your Google account\n2. Generate App Password\n3. Set SMTP_USER=your@gmail.com\n4. Set SMTP_PASSWORD=your_app_password"
 
     try:
-        # 创建邮件
+        # Create email
         msg = EmailMessage()
         msg["From"] = smtp_user
         msg["To"] = to
         msg["Subject"] = subject
         msg.set_content(body)
 
-        # 发送邮件
+        # Send email
         with smtplib.SMTP(smtp_host, smtp_port) as server:
             server.starttls()
             server.login(smtp_user, smtp_password)
@@ -111,14 +111,14 @@ async def send_email(to: str, subject: str, body: str) -> str:
 
 @tool
 async def image_gen(prompt: str, size: str = "1024x1024") -> str:
-    """生成图片（需要 API Key）
+    """Generate image (requires API Key)
 
     Args:
-        prompt: 图片描述提示词
-        size: 图片尺寸（256x256, 512x512, 1024x1024）
+        prompt: Image description prompt
+        size: Image size (256x256, 512x512, 1024x1024)
 
     Returns:
-        str: 图片 URL 或生成结果
+        str: Image URL or generation result
     """
     import os
     import httpx
@@ -153,13 +153,13 @@ async def image_gen(prompt: str, size: str = "1024x1024") -> str:
         except Exception as e:
             logger.warning(f"[image_gen] DALL-E failed: {e}")
 
-    # Stable Diffusion (通过 replicate)
+    # Stable Diffusion (via replicate)
     replicate_key = os.getenv("REPLICATE_API_TOKEN")
 
     if replicate_key:
         try:
             async with httpx.AsyncClient(timeout=60.0) as client:
-                # 创建预测
+                # Create prediction
                 response = await client.post(
                     "https://api.replicate.com/v1/predictions",
                     json={
@@ -175,7 +175,7 @@ async def image_gen(prompt: str, size: str = "1024x1024") -> str:
                 if response.status_code in [200, 201]:
                     data = response.json()
                     if data.get("status") == "starting":
-                        # 需要轮询获取结果
+                        # Need to poll for results
                         get_url = data.get("urls", {}).get("get")
                         if get_url:
                             get_response = await client.get(
@@ -192,10 +192,10 @@ async def image_gen(prompt: str, size: str = "1024x1024") -> str:
     return "Image generation unavailable. Please set OPENAI_API_KEY (DALL-E) or REPLICATE_API_TOKEN (Stable Diffusion).\n\nDALL-E: https://platform.openai.com/api-keys\nReplicate: https://replicate.com/account/api-tokens"
 
 
-# 导出工具列表
+# Export tool list
 CUSTOM_TOOLS = [url_preview, send_email, image_gen]
 
 
 def get_custom_tools() -> list:
-    """获取所有自定义工具"""
+    """Get all custom tools"""
     return CUSTOM_TOOLS.copy()

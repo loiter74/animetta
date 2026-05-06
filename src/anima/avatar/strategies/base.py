@@ -1,8 +1,8 @@
 """
-时间轴策略接口和基础数据结构
+Timeline Strategy Interface and Basic Data Structures
 
-定义了情绪时间轴计算策略的接口。
-采用策略模式，支持不同的时间分配算法。
+Defines the interface for emotion timeline calculation strategies.
+Uses the strategy pattern to support different time allocation algorithms.
 """
 
 from abc import ABC, abstractmethod
@@ -13,16 +13,16 @@ from typing import List, Dict, Any
 @dataclass
 class TimelineSegment:
     """
-    时间轴片段
+    Timeline Segment
 
-    表示在特定时间段内的情绪状态。
-    多个片段组合成完整的时间轴。
+    Represents the emotional state within a specific time period.
+    Multiple segments combine to form a complete timeline.
 
     Attributes:
-        emotion: 情绪名称（如 "happy", "sad"）
-        start_time: 开始时间（秒）
-        end_time: 结束时间（秒）
-        intensity: 情绪强度 (0.0 - 1.0，默认 1.0)
+        emotion: Emotion name (e.g., "happy", "sad")
+        start_time: Start time (seconds)
+        end_time: End time (seconds)
+        intensity: Emotion intensity (0.0 - 1.0, default 1.0)
 
     Example:
         >>> segment = TimelineSegment("happy", 0.0, 2.5, intensity=0.8)
@@ -38,15 +38,15 @@ class TimelineSegment:
 
     @property
     def duration(self) -> float:
-        """计算片段时长"""
+        """Calculate segment duration"""
         return self.end_time - self.start_time
 
     def to_dict(self) -> Dict[str, Any]:
         """
-        转换为字典（用于 WebSocket 消息）
+        Convert to dictionary (for WebSocket messages)
 
         Returns:
-            Dict[str, Any]: 前端可用的字典格式（包含 intensity）
+            Dict[str, Any]: Dictionary format usable by the frontend (includes intensity)
         """
         return {
             "emotion": self.emotion,
@@ -57,10 +57,10 @@ class TimelineSegment:
 
     def to_frontend_format(self) -> Dict[str, Any]:
         """
-        转换为前端格式（兼容 audio_with_expression 事件）
+        Convert to frontend format (compatible with audio_with_expression event)
 
         Returns:
-            Dict[str, Any]: 包含 emotion, time, duration, intensity 的字典
+            Dict[str, Any]: Dictionary containing emotion, time, duration, intensity
         """
         return {
             "emotion": self.emotion,
@@ -70,7 +70,7 @@ class TimelineSegment:
         }
 
     def __repr__(self) -> str:
-        """字符串表示"""
+        """String representation"""
         return (f"TimelineSegment(emotion={self.emotion}, "
                 f"start={self.start_time:.2f}s, "
                 f"end={self.end_time:.2f}s, "
@@ -78,25 +78,25 @@ class TimelineSegment:
 
     def contains_time(self, time: float) -> bool:
         """
-        检查指定时间是否在片段内
+        Check if a specific time is within the segment
 
         Args:
-            time: 时间点（秒）
+            time: Time point (seconds)
 
         Returns:
-            bool: 如果时间在片段范围内返回 True
+            bool: True if the time is within the segment range
         """
         return self.start_time <= time < self.end_time
 
     def overlaps_with(self, other: 'TimelineSegment') -> bool:
         """
-        检查是否与另一个片段重叠
+        Check if this segment overlaps with another segment
 
         Args:
-            other: 另一个时间轴片段
+            other: Another timeline segment
 
         Returns:
-            bool: 如果两个片段有重叠返回 True
+            bool: True if the two segments overlap
         """
         return not (self.end_time <= other.start_time or
                    self.start_time >= other.end_time)
@@ -105,15 +105,15 @@ class TimelineSegment:
 @dataclass
 class TimelineConfig:
     """
-    时间轴配置参数
+    Timeline Configuration Parameters
 
-    用于配置时间轴计算的行为。
+    Used to configure the behavior of timeline calculation.
 
     Attributes:
-        default_emotion: 默认情绪（当没有情绪时使用）
-        min_segment_duration: 最小片段时长（秒）
-        transition_duration: 过渡时长（秒）
-        enable_smoothing: 是否启用平滑过渡
+        default_emotion: Default emotion (used when no emotion is present)
+        min_segment_duration: Minimum segment duration (seconds)
+        transition_duration: Transition duration (seconds)
+        enable_smoothing: Whether to enable smooth transitions
     """
     default_emotion: str = "neutral"
     min_segment_duration: float = 0.1
@@ -121,7 +121,7 @@ class TimelineConfig:
     enable_smoothing: bool = True
 
     def validate(self) -> bool:
-        """验证配置参数"""
+        """Validate configuration parameters"""
         return (
             self.min_segment_duration >= 0
             and self.transition_duration >= 0
@@ -131,16 +131,16 @@ class TimelineConfig:
 
 class ITimelineStrategy(ABC):
     """
-    时间轴计算策略接口
+    Timeline Calculation Strategy Interface
 
-    定义如何将情绪映射到时间轴。
-    不同策略可以实现不同的时间分配算法。
+    Defines how to map emotions to a timeline.
+    Different strategies can implement different time allocation algorithms.
 
-    设计模式:
-    - Strategy Pattern: 不同的时间轴计算策略
-    - 可扩展: 轻松添加新的计算策略
+    Design Patterns:
+    - Strategy Pattern: Different timeline calculation strategies
+    - Extensible: Easily add new calculation strategies
 
-    使用示例:
+    Usage Examples:
         >>> strategy = PositionBasedStrategy()
         >>> segments = strategy.calculate(
         ...     emotions=["happy", "neutral"],
@@ -150,10 +150,10 @@ class ITimelineStrategy(ABC):
         >>> print(segments)
         [TimelineSegment(happy, 0.0, 2.5, 1.0), TimelineSegment(neutral, 2.5, 5.0, 1.0)]
 
-    扩展示例:
+    Extension Example:
         >>> class MyStrategy(ITimelineStrategy):
         ...     def calculate(self, emotions, text, audio_duration, **kwargs):
-        ...         # 自定义时间分配逻辑
+        ...         # Custom time allocation logic
         ...         return [TimelineSegment(emotion, 0.0, audio_duration)]
         ...
         >>> from anima.avatar.factory import TimelineStrategyFactory
@@ -170,26 +170,26 @@ class ITimelineStrategy(ABC):
         **kwargs
     ) -> List[TimelineSegment]:
         """
-        计算情绪时间轴
+        Calculate the emotion timeline
 
-        这是核心方法，所有策略必须实现。
+        This is the core method that all strategies must implement.
 
         Args:
-            emotions: 情绪列表（由 IEmotionAnalyzer 提取）
-            text: 文本内容（用于语义分析）
-            audio_duration: 音频时长（秒）
-            config: 可选的配置参数
-            **kwargs: 额外参数（用于未来扩展）
+            emotions: List of emotions (extracted by IEmotionAnalyzer)
+            text: Text content (for semantic analysis)
+            audio_duration: Audio duration (seconds)
+            config: Optional configuration parameters
+            **kwargs: Additional parameters (for future extension)
 
         Returns:
-            List[TimelineSegment]: 时间轴片段列表
-                - 片段按时间排序
-                - 片段应该覆盖整个音频时长
-                - 片段之间可以有间隙或重叠
+            List[TimelineSegment]: List of timeline segments
+                - Segments are sorted by time
+                - Segments should cover the entire audio duration
+                - Segments can have gaps or overlap
 
         Raises:
-            NotImplementedError: 子类必须实现
-            ValueError: 参数无效
+            NotImplementedError: Subclass must implement
+            ValueError: Invalid parameters
 
         Example:
             >>> strategy.calculate(
@@ -208,13 +208,13 @@ class ITimelineStrategy(ABC):
     @abstractmethod
     def name(self) -> str:
         """
-        策略名称（唯一标识符）
+        Strategy name (unique identifier)
 
-        用于工厂注册和配置引用。
-        必须是全局唯一的字符串。
+        Used for factory registration and configuration references.
+        Must be a globally unique string.
 
         Returns:
-            str: 策略名称
+            str: Strategy name
 
         Example:
             >>> strategy.name
@@ -229,17 +229,17 @@ class ITimelineStrategy(ABC):
         audio_duration: float
     ) -> bool:
         """
-        验证输入参数（可选方法）
+        Validate input parameters (optional method)
 
-        子类可以覆盖此方法以添加自定义验证。
+        Subclasses can override this method to add custom validation.
 
         Args:
-            emotions: 情绪列表
-            text: 文本内容
-            audio_duration: 音频时长
+            emotions: List of emotions
+            text: Text content
+            audio_duration: Audio duration
 
         Returns:
-            bool: 输入是否有效
+            bool: Whether the input is valid
         """
         return (
             audio_duration > 0
@@ -254,18 +254,18 @@ class ITimelineStrategy(ABC):
         default_emotion: str = "neutral"
     ) -> List[TimelineSegment]:
         """
-        确保时间轴覆盖整个音频时长
+        Ensure the timeline covers the entire audio duration
 
-        如果时间轴有间隙，用默认情绪填充。
-        这是辅助方法，子类可以使用。
+        If there are gaps in the timeline, fill them with the default emotion.
+        This is a helper method that subclasses can use.
 
         Args:
-            segments: 原始时间轴片段
-            audio_duration: 音频时长
-            default_emotion: 默认情绪
+            segments: Original timeline segments
+            audio_duration: Audio duration
+            default_emotion: Default emotion
 
         Returns:
-            List[TimelineSegment]: 填充后的完整时间轴
+            List[TimelineSegment]: The filled, complete timeline
         """
         if not segments:
             return [
@@ -276,15 +276,15 @@ class ITimelineStrategy(ABC):
                 )
             ]
 
-        # 按开始时间排序
+        # Sort by start time
         sorted_segments = sorted(segments, key=lambda s: s.start_time)
 
-        # 检查是否有间隙
+        # Check for gaps
         result = []
         last_end = 0.0
 
         for segment in sorted_segments:
-            # 如果有间隙，填充默认情绪
+            # If there's a gap, fill with default emotion
             if segment.start_time > last_end:
                 result.append(TimelineSegment(
                     emotion=default_emotion,
@@ -295,7 +295,7 @@ class ITimelineStrategy(ABC):
             result.append(segment)
             last_end = max(last_end, segment.end_time)
 
-        # 检查末尾是否覆盖
+        # Check if end is covered
         if last_end < audio_duration:
             result.append(TimelineSegment(
                 emotion=default_emotion,
@@ -310,28 +310,28 @@ class ITimelineStrategy(ABC):
         segments: List[TimelineSegment]
     ) -> List[TimelineSegment]:
         """
-        合并相邻的相同情绪片段
+        Merge adjacent segments with the same emotion
 
-        这是辅助方法，子类可以使用。
-        减少片段数量，提高性能。
+        This is a helper method that subclasses can use.
+        Reduces segment count and improves performance.
 
         Args:
-            segments: 原始时间轴片段
+            segments: Original timeline segments
 
         Returns:
-            List[TimelineSegment]: 合并后的时间轴
+            List[TimelineSegment]: Merged timeline
         """
         if not segments:
             return []
 
-        # 按时间排序
+        # Sort by time
         sorted_segments = sorted(segments, key=lambda s: s.start_time)
 
         result = []
         current = sorted_segments[0]
 
         for next_seg in sorted_segments[1:]:
-            # 如果情绪相同且有重叠或相邻，合并
+            # If same emotion and overlapping or adjacent, merge
             if (next_seg.emotion == current.emotion and
                 next_seg.start_time <= current.end_time):
                 current = TimelineSegment(

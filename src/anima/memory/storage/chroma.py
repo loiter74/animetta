@@ -1,12 +1,12 @@
 """
-Chroma 向量存储层.
+Chroma vector storage layer.
 
-负责:
-- 存储和检索文本块的 embedding
-- 语义相似度搜索 (余弦距离)
-- 按文件路径批量删除
+Responsibilities:
+- Store and retrieve embeddings for text chunks
+- Semantic similarity search (cosine distance)
+- Batch deletion by file path
 
-替代 OpenClaw 中 sqlite-vec 的角色, 用 Chroma 获得更好的向量检索能力.
+Replaces the role of sqlite-vec in OpenClaw, using Chroma for better vector search capabilities.
 """
 
 from __future__ import annotations
@@ -25,12 +25,12 @@ logger = logging.getLogger(__name__)
 from chromadb import EmbeddingFunction, Embeddings
 
 class _PassthroughEmbeddingFunction(EmbeddingFunction):
-    """占位用，实际 embedding 由外部传入，不走这里"""
+    """Placeholder; actual embeddings are provided externally, not via this function"""
     def __call__(self, input):
         raise NotImplementedError("Embeddings must be provided externally")
     
 class ChromaStore:
-    """Chroma 向量数据库封装."""
+    """Chroma vector database wrapper."""
 
     def __init__(
         self,
@@ -40,37 +40,37 @@ class ChromaStore:
         embedding_function: Any | None = None,
     ):
         """
-        初始化 Chroma 客户端.
+        Initialize Chroma client.
 
         Args:
-            persist_dir: 持久化目录
-            collection_name: 集合名称
-            embedding_dim: embedding 向量维度
-            embedding_function: Chroma 的 EmbeddingFunction 实例.
-                如果为 None, 需要在 upsert 时手动传入 embeddings.
+            persist_dir: Persistence directory
+            collection_name: Collection name
+            embedding_dim: Embedding vector dimension
+            embedding_function: Chroma EmbeddingFunction instance.
+                If None, embeddings must be provided manually during upsert.
         """
-        logger.info(f"[ChromaStore] >>> 开始初始化: persist_dir={persist_dir}, collection={collection_name}")
+        logger.info(f"[ChromaStore] >>> Initializing: persist_dir={persist_dir}, collection={collection_name}")
         self.embedding_dim = embedding_dim
         Path(persist_dir).mkdir(parents=True, exist_ok=True)
-        logger.info(f"[ChromaStore] 持久化目录已确认: {persist_dir}")
+        logger.info(f"[ChromaStore] Persistence directory confirmed: {persist_dir}")
 
-        logger.info(f"[ChromaStore] 创建 PersistentClient...")
+        logger.info(f"[ChromaStore] Creating PersistentClient...")
         self.client = chromadb.PersistentClient(
             path=persist_dir,
             settings=Settings(anonymized_telemetry=False),
         )
-        logger.info(f"[ChromaStore] ✅ PersistentClient 创建完成")
+        logger.info(f"[ChromaStore] ✅ PersistentClient created")
 
-        # 维度检测：检查已有 collection 的 embedding 维度是否匹配
+        # Dimension check: verify existing collection's embedding dimension matches
         try:
             existing = self.client.get_collection(collection_name)
             if existing.count() > 0:
                 existing_dim = None
-                # 方法1: peek
+                # Method 1: peek
                 sample = existing.peek(limit=1)
                 if sample.get("embeddings") and len(sample["embeddings"]) > 0:
                     existing_dim = len(sample["embeddings"][0])
-                # 方法2: get 一条记录
+                # Method 2: get one record
                 if existing_dim is None:
                     got = existing.get(limit=1, include=["embeddings"])
                     if got.get("embeddings") and len(got["embeddings"]) > 0:
@@ -88,7 +88,7 @@ class ChromaStore:
 
         self.collection = self.client.get_or_create_collection(
             name=collection_name,
-            metadata={"hnsw:space": "cosine"},  # 余弦距离
+            metadata={"hnsw:space": "cosine"},  # Cosine distance
             embedding_function=_PassthroughEmbeddingFunction(),
         )
         logger.info(
@@ -103,15 +103,15 @@ class ChromaStore:
         embeddings: list[list[float]] | None = None,
     ):
         """
-        批量 upsert 块到 Chroma.
+        Batch upsert chunks to Chroma.
 
-        使用 SQLite rowid 作为 Chroma 的文档 ID, 保持两边一致.
+        Uses SQLite rowid as the Chroma document ID to keep both sides consistent.
 
         Args:
-            chunks: 文本块列表
-            sqlite_rowids: 对应的 SQLite rowid 列表
-            embeddings: 预计算的 embedding 向量. 如果 collection 有
-                embedding_function 则可为 None.
+            chunks: List of text chunks
+            sqlite_rowids: Corresponding SQLite rowid list
+            embeddings: Pre-computed embedding vectors. Can be None if the
+                collection has an embedding_function.
         """
         if not chunks:
             return
@@ -126,7 +126,7 @@ class ChromaStore:
                 "end_line": c.end_line,
                 "content_hash": c.content_hash,
                 "chunk_index": c.chunk_index,
-                "oral_version": c.oral_version or "",  # 口语化版本
+                "oral_version": c.oral_version or "",  # Colloquial version
             }
             for c in chunks
         ]
@@ -143,7 +143,7 @@ class ChromaStore:
         logger.debug(f"Upserted {len(chunks)} chunks to Chroma")
 
     def delete_by_path(self, path: str):
-        """删除某文件路径下的所有向量."""
+        """Delete all vectors under a given file path."""
         self.collection.delete(where={"path": path})
 
     def vector_search(
@@ -154,12 +154,12 @@ class ChromaStore:
         where: dict | None = None,
     ) -> list[tuple[str, float, dict]]:
         """
-        向量语义搜索.
+        Vector semantic search.
 
         Returns:
-            [(chroma_id, distance, metadata), ...] — distance 越小越相似 (余弦距离).
-            metadata 包含 oral_version 等字段.
-            注意: Chroma 返回的是距离而非相似度, 需要转换: similarity = 1 - distance
+            [(chroma_id, distance, metadata), ...] — smaller distance means more similar (cosine distance).
+            metadata includes oral_version and other fields.
+            Note: Chroma returns distance, not similarity. Convert via: similarity = 1 - distance
         """
         kwargs: dict[str, Any] = {"n_results": n_results}
         if query_text is not None:

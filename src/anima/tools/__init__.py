@@ -1,9 +1,9 @@
 """
-Anima 工具集
+Anima Tools
 
-提供:
-1. 内置工具 (web_search, get_weather, read_file, ...)
-2. MCP 桥接工具 (通过 MCPManager 从外部服务器加载)
+Provides:
+1. Built-in tools (web_search, get_weather, read_file, ...)
+2. MCP bridge tools (loaded from external servers via MCPManager)
 """
 
 from .base import (

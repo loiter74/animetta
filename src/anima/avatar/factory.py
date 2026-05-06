@@ -1,8 +1,8 @@
 """
-工厂类模块
+Factory Module
 
-提供情绪分析器和时间轴策略的工厂方法。
-支持动态注册和创建组件。
+Provides factory methods for emotion analyzers and timeline strategies.
+Supports dynamic registration and creation of components.
 """
 
 from typing import Dict, Type, Optional, Any
@@ -19,46 +19,46 @@ from .strategies.intensity import IntensityBasedStrategy
 
 class EmotionAnalyzerFactory:
     """
-    情绪分析器工厂
+    Emotion Analyzer Factory
 
-    负责创建和管理情绪分析器实例。
-    支持动态注册自定义分析器。
+    Responsible for creating and managing emotion analyzer instances.
+    Supports dynamic registration of custom analyzers.
 
-    设计模式:
-    - Factory Pattern: 创建对象而不指定具体类
-    - Registry Pattern: 维护可用的分析器列表
+    Design Patterns:
+    - Factory Pattern: Creates objects without specifying concrete classes
+    - Registry Pattern: Maintains a list of available analyzers
 
-    使用示例:
-        >>> # 使用内置分析器
+    Usage Examples:
+        >>> # Use built-in analyzer
         >>> analyzer = EmotionAnalyzerFactory.create(
         ...     name="llm_tag_analyzer",
         ...     config={"valid_emotions": ["happy", "sad"]}
         ... )
 
-        >>> # 注册自定义分析器
+        >>> # Register custom analyzer
         >>> class MyAnalyzer(IEmotionAnalyzer):
         ...     pass
         >>> EmotionAnalyzerFactory.register("my_analyzer", MyAnalyzer)
         >>> analyzer = EmotionAnalyzerFactory.create("my_analyzer", {})
     """
 
-    # 内置分析器注册表
+    # Built-in analyzer registry
     _analyzers: Dict[str, Type[IEmotionAnalyzer]] = {
-        "llm_tag_analyzer": StandaloneLLMTagAnalyzer,  # 使用独立实现
+        "llm_tag_analyzer": StandaloneLLMTagAnalyzer,  # Uses standalone implementation
         "keyword_analyzer": KeywordAnalyzer,
     }
 
     @classmethod
     def register(cls, name: str, analyzer_class: Type[IEmotionAnalyzer]) -> None:
         """
-        注册自定义分析器
+        Register a custom analyzer
 
         Args:
-            name: 分析器名称（唯一标识符）
-            analyzer_class: 分析器类（必须实现 IEmotionAnalyzer）
+            name: Analyzer name (unique identifier)
+            analyzer_class: Analyzer class (must implement IEmotionAnalyzer)
 
         Raises:
-            ValueError: 名称已存在或类未实现接口
+            ValueError: Name already exists or class does not implement the interface
 
         Example:
             >>> class MyAnalyzer(IEmotionAnalyzer):
@@ -68,31 +68,31 @@ class EmotionAnalyzerFactory:
             >>> EmotionAnalyzerFactory.register("my_analyzer", MyAnalyzer)
         """
         if name in cls._analyzers:
-            logger.warning(f"[EmotionAnalyzerFactory] 分析器 '{name}' 已存在，将被覆盖")
+            logger.warning(f"[EmotionAnalyzerFactory] Analyzer '{name}' already exists, will be overwritten")
 
-        # 验证类实现了接口
+        # Validate the class implements the interface
         if not issubclass(analyzer_class, IEmotionAnalyzer):
             raise ValueError(
-                f"分析器类必须实现 IEmotionAnalyzer 接口: {analyzer_class}"
+                f"Analyzer class must implement IEmotionAnalyzer interface: {analyzer_class}"
             )
 
         cls._analyzers[name] = analyzer_class
-        logger.info(f"[EmotionAnalyzerFactory] 注册分析器: {name} ({analyzer_class.__name__})")
+        logger.info(f"[EmotionAnalyzerFactory] Registered analyzer: {name} ({analyzer_class.__name__})")
 
     @classmethod
     def create(cls, name: str, config: Optional[Dict[str, Any]] = None) -> IEmotionAnalyzer:
         """
-        创建分析器实例
+        Create an analyzer instance
 
         Args:
-            name: 分析器名称
-            config: 配置参数（传递给分析器的 __init__）
+            name: Analyzer name
+            config: Configuration parameters (passed to analyzer's __init__)
 
         Returns:
-            IEmotionAnalyzer: 分析器实例
+            IEmotionAnalyzer: Analyzer instance
 
         Raises:
-            ValueError: 未知的分析器名称
+            ValueError: Unknown analyzer name
 
         Example:
             >>> analyzer = EmotionAnalyzerFactory.create(
@@ -105,67 +105,67 @@ class EmotionAnalyzerFactory:
         if not analyzer_class:
             available = ", ".join(cls._analyzers.keys())
             raise ValueError(
-                f"未知的分析器: '{name}'。"
-                f"可用的分析器: {available}"
+                f"Unknown analyzer: '{name}'. "
+                f"Available analyzers: {available}"
             )
 
-        # 创建实例（传递配置参数）
+        # Create instance (pass configuration parameters)
         config = config or {}
         try:
             instance = analyzer_class(**config)
-            logger.debug(f"[EmotionAnalyzerFactory] 创建分析器实例: {name}")
+            logger.debug(f"[EmotionAnalyzerFactory] Created analyzer instance: {name}")
             return instance
         except Exception as e:
-            logger.error(f"[EmotionAnalyzerFactory] 创建分析器 '{name}' 失败: {e}")
+            logger.error(f"[EmotionAnalyzerFactory] Failed to create analyzer '{name}': {e}")
             raise
 
     @classmethod
     def list_all(cls) -> list[str]:
         """
-        列出所有已注册的分析器
+        List all registered analyzers
 
         Returns:
-            List[str]: 分析器名称列表
+            List[str]: List of analyzer names
         """
         return list(cls._analyzers.keys())
 
     @classmethod
     def is_registered(cls, name: str) -> bool:
         """
-        检查分析器是否已注册
+        Check if an analyzer is registered
 
         Args:
-            name: 分析器名称
+            name: Analyzer name
 
         Returns:
-            bool: 是否已注册
+            bool: Whether registered
         """
         return name in cls._analyzers
 
 
 class TimelineStrategyFactory:
     """
-    时间轴策略工厂
+    Timeline Strategy Factory
 
-    负责创建和管理时间轴策略实例。
-    支持动态注册自定义策略。
+    Responsible for creating and managing timeline strategy instances.
+    Supports dynamic registration of custom strategies.
 
-    设计模式:
-    - Factory Pattern: 创建策略对象
-    - Registry Pattern: 维护可用的策略列表
+    Design Patterns:
+    - Factory Pattern: Creates strategy objects
+    - Registry Pattern: Maintains a list of available strategies
 
-    使用示例:
-        >>> # 使用内置策略
+    Usage Examples:
+        >>> # Use built-in strategy
         >>> strategy = TimelineStrategyFactory.create("position_based")
 
-        >>> # 注册自定义策略
+        >>> # Register custom strategy
         >>> class MyStrategy(ITimelineStrategy):
         ...     def calculate(...): ...
         >>> TimelineStrategyFactory.register("my_strategy", MyStrategy)
         >>> strategy = TimelineStrategyFactory.create("my_strategy")
     """
 
-    # 内置策略注册表
+    # Built-in strategy registry
     _strategies: Dict[str, Type[ITimelineStrategy]] = {
         "position_based": PositionBasedStrategy,
         "duration_based": DurationBasedStrategy,
@@ -175,14 +175,14 @@ class TimelineStrategyFactory:
     @classmethod
     def register(cls, name: str, strategy_class: Type[ITimelineStrategy]) -> None:
         """
-        注册自定义策略
+        Register a custom strategy
 
         Args:
-            name: 策略名称（唯一标识符）
-            strategy_class: 策略类（必须实现 ITimelineStrategy）
+            name: Strategy name (unique identifier)
+            strategy_class: Strategy class (must implement ITimelineStrategy)
 
         Raises:
-            ValueError: 名称已存在或类未实现接口
+            ValueError: Name already exists or class does not implement the interface
 
         Example:
             >>> class MyStrategy(ITimelineStrategy):
@@ -193,31 +193,31 @@ class TimelineStrategyFactory:
             >>> TimelineStrategyFactory.register("my_strategy", MyStrategy)
         """
         if name in cls._strategies:
-            logger.warning(f"[TimelineStrategyFactory] 策略 '{name}' 已存在，将被覆盖")
+            logger.warning(f"[TimelineStrategyFactory] Strategy '{name}' already exists, will be overwritten")
 
-        # 验证类实现了接口
+        # Validate the class implements the interface
         if not issubclass(strategy_class, ITimelineStrategy):
             raise ValueError(
-                f"策略类必须实现 ITimelineStrategy 接口: {strategy_class}"
+                f"Strategy class must implement ITimelineStrategy interface: {strategy_class}"
             )
 
         cls._strategies[name] = strategy_class
-        logger.info(f"[TimelineStrategyFactory] 注册策略: {name} ({strategy_class.__name__})")
+        logger.info(f"[TimelineStrategyFactory] Registered strategy: {name} ({strategy_class.__name__})")
 
     @classmethod
     def create(cls, name: str, config: Optional[Dict[str, Any]] = None) -> ITimelineStrategy:
         """
-        创建策略实例
+        Create a strategy instance
 
         Args:
-            name: 策略名称
-            config: 配置参数（传递给策略的 __init__）
+            name: Strategy name
+            config: Configuration parameters (passed to strategy's __init__)
 
         Returns:
-            ITimelineStrategy: 策略实例
+            ITimelineStrategy: Strategy instance
 
         Raises:
-            ValueError: 未知的策略名称
+            ValueError: Unknown strategy name
 
         Example:
             >>> strategy = TimelineStrategyFactory.create(
@@ -230,58 +230,58 @@ class TimelineStrategyFactory:
         if not strategy_class:
             available = ", ".join(cls._strategies.keys())
             raise ValueError(
-                f"未知的策略: '{name}'。"
-                f"可用的策略: {available}"
+                f"Unknown strategy: '{name}'. "
+                f"Available strategies: {available}"
             )
 
-        # 创建实例（传递配置参数）
+        # Create instance (pass configuration parameters)
         config = config or {}
         try:
             instance = strategy_class(**config)
-            logger.debug(f"[TimelineStrategyFactory] 创建策略实例: {name}")
+            logger.debug(f"[TimelineStrategyFactory] Created strategy instance: {name}")
             return instance
         except Exception as e:
-            logger.error(f"[TimelineStrategyFactory] 创建策略 '{name}' 失败: {e}")
+            logger.error(f"[TimelineStrategyFactory] Failed to create strategy '{name}': {e}")
             raise
 
     @classmethod
     def list_all(cls) -> list[str]:
         """
-        列出所有已注册的策略
+        List all registered strategies
 
         Returns:
-            List[str]: 策略名称列表
+            List[str]: List of strategy names
         """
         return list(cls._strategies.keys())
 
     @classmethod
     def is_registered(cls, name: str) -> bool:
         """
-        检查策略是否已注册
+        Check if a strategy is registered
 
         Args:
-            name: 策略名称
+            name: Strategy name
 
         Returns:
-            bool: 是否已注册
+            bool: Whether registered
         """
         return name in cls._strategies
 
 
-# 便捷函数
+# Convenience functions
 def create_emotion_analyzer(
     name: str,
     config: Optional[Dict[str, Any]] = None
 ) -> IEmotionAnalyzer:
     """
-    创建情绪分析器的便捷函数
+    Convenience function to create an emotion analyzer
 
     Args:
-        name: 分析器名称
-        config: 配置参数
+        name: Analyzer name
+        config: Configuration parameters
 
     Returns:
-        IEmotionAnalyzer: 分析器实例
+        IEmotionAnalyzer: Analyzer instance
     """
     return EmotionAnalyzerFactory.create(name, config)
 
@@ -291,13 +291,13 @@ def create_timeline_strategy(
     config: Optional[Dict[str, Any]] = None
 ) -> ITimelineStrategy:
     """
-    创建时间轴策略的便捷函数
+    Convenience function to create a timeline strategy
 
     Args:
-        name: 策略名称
-        config: 配置参数
+        name: Strategy name
+        config: Configuration parameters
 
     Returns:
-        ITimelineStrategy: 策略实例
+        ITimelineStrategy: Strategy instance
     """
     return TimelineStrategyFactory.create(name, config)

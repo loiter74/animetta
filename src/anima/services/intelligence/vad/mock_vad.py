@@ -1,5 +1,5 @@
 """
-Mock VAD 实现（用于测试）
+Mock VAD implementation (for testing)
 """
 
 from typing import Union
@@ -14,10 +14,10 @@ from anima.config.providers.vad.mock import MockVADConfig
 @ProviderRegistry.register_service("vad", "mock")
 class MockVAD(VADInterface):
     """
-    Mock VAD 实现
+    Mock VAD implementation
     
-    简单的基于音量的语音活动检测，用于测试
-    不需要额外依赖
+    Simple volume-based voice activity detection for testing
+    No additional dependencies required
     """
     
     def __init__(
@@ -32,50 +32,50 @@ class MockVAD(VADInterface):
         self.min_speech_duration = min_speech_duration
         self.min_silence_duration = min_silence_duration
         
-        # 状态
+        # State
         self.state = VADState.IDLE
         self.speech_frames = 0
         self.silence_frames = 0
         
-        # 累积的音频
+        # Accumulated audio
         self.audio_buffer = bytearray()
         
-        # 预缓冲
+        # Pre-buffer
         self.pre_buffer = []
         self.pre_buffer_max = 10
         
-        logger.info(f"Mock VAD 初始化: db_threshold={db_threshold}")
+        logger.info(f"Mock VAD initialized: db_threshold={db_threshold}")
     
     def _calculate_db(self, audio_data: np.ndarray) -> float:
-        """计算音频的分贝值"""
+        """Calculate audio decibel value"""
         rms = np.sqrt(np.mean(np.square(audio_data)))
         return 20 * np.log10(rms + 1e-7) if rms > 0 else -np.inf
     
     def detect_speech(self, audio_data: Union[list, np.ndarray]) -> VADResult:
         """
-        检测音频数据中的语音活动
+        Detect voice activity in audio data
 
-        基于简单的音量阈值判断
+        Based on simple volume threshold judgment
         """
-        # 转换为 numpy 数组
+        # Convert to numpy array
         audio_np = np.array(audio_data, dtype=np.float32)
 
-        # 检测是否为 int16 PCM 数据（值范围超出 [-1.0, 1.0]）
+        # Check if int16 PCM data (value range exceeds [-1.0, 1.0])
         if len(audio_np) > 0 and np.max(np.abs(audio_np)) > 1.0:
-            # int16 PCM 数据，归一化到 [-1.0, 1.0]
+            # int16 PCM data, normalize to [-1.0, 1.0]
             audio_np = audio_np / 32767.0
         
-        # 计算分贝值
+        # Calculate decibel value
         db = self._calculate_db(audio_np)
         is_loud = db > self.db_threshold
         
-        # 转换为字节
+        # Convert to bytes
         int_audio = (audio_np * 32767).astype(np.int16)
         chunk_bytes = int_audio.tobytes()
         
-        # 状态机
+        # State machine
         if self.state == VADState.IDLE:
-            # 预缓冲
+            # Pre-buffer
             self.pre_buffer.append(chunk_bytes)
             if len(self.pre_buffer) > self.pre_buffer_max:
                 self.pre_buffer.pop(0)
@@ -109,7 +109,7 @@ class MockVAD(VADInterface):
                     self.silence_frames = 0
                     self.speech_frames = 0
                     
-                    # 合并预缓冲和主缓冲区
+                    # Merge pre-buffer and main buffer
                     pre_bytes = b"".join(self.pre_buffer)
                     audio_data = pre_bytes + bytes(self.audio_buffer)
                     
@@ -131,19 +131,19 @@ class MockVAD(VADInterface):
         )
     
     def reset(self) -> None:
-        """重置状态"""
+        """Reset state"""
         self.state = VADState.IDLE
         self.speech_frames = 0
         self.silence_frames = 0
         self.audio_buffer.clear()
         self.pre_buffer.clear()
-        logger.debug("Mock VAD 已重置")
+        logger.debug("Mock VAD has been reset")
     
     def get_current_state(self) -> VADState:
-        """获取当前状态"""
+        """Get current state"""
         return self.state
     
     async def close(self) -> None:
-        """清理资源"""
+        """Clean up resources"""
         self.reset()
-        logger.info("Mock VAD 资源已释放")
+        logger.info("Mock VAD resources released")

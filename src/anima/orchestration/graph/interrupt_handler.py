@@ -1,7 +1,7 @@
 """
-打断信号处理器
+Interrupt signal handler
 
-负责管理每个会话的打断信号，用于中断正在进行的 LLM 生成。
+Manages interrupt signals for each session, used to interrupt ongoing LLM generation.
 """
 
 import asyncio
@@ -11,9 +11,9 @@ from loguru import logger
 
 class InterruptHandler:
     """
-    打断信号处理器
+    Interrupt signal handler
 
-    使用 asyncio.Event 作为每个会话的停止信号。
+    Uses asyncio.Event as the stop signal for each session.
     """
 
     def __init__(self):
@@ -22,74 +22,74 @@ class InterruptHandler:
 
     def get_signal(self, session_id: str) -> asyncio.Event:
         """
-        获取会话的停止信号（如果不存在则创建）
+        Get the stop signal for a session (creates if it does not exist)
 
         Args:
-            session_id: 会话 ID
+            session_id: Session ID
 
         Returns:
-            asyncio.Event: 停止信号事件
+            asyncio.Event: Stop signal event
         """
         if session_id not in self._signals:
             self._signals[session_id] = asyncio.Event()
-            logger.debug(f"[InterruptHandler] 创建停止信号: {session_id}")
+            logger.debug(f"[InterruptHandler] Created stop signal: {session_id}")
         return self._signals[session_id]
 
     def set_interrupt(self, session_id: str) -> None:
         """
-        设置打断信号
+        Set interrupt signal
 
         Args:
-            session_id: 会话 ID
+            session_id: Session ID
         """
         if session_id in self._signals:
             self._signals[session_id].set()
-            logger.info(f"[InterruptHandler] 设置打断信号: {session_id}")
+            logger.info(f"[InterruptHandler] Set interrupt signal: {session_id}")
 
     def clear_interrupt(self, session_id: str) -> None:
         """
-        清除打断信号（为新对话准备）
+        Clear interrupt signal (prepare for new conversation)
 
         Args:
-            session_id: 会话 ID
+            session_id: Session ID
         """
         if session_id in self._signals:
-            # 如果已设置，先清除
+            # If already set, clear it first
             if self._signals[session_id].is_set():
                 self._signals[session_id].clear()
-            logger.debug(f"[InterruptHandler] 清除打断信号: {session_id}")
+            logger.debug(f"[InterruptHandler] Cleared interrupt signal: {session_id}")
 
     def is_interrupted(self, session_id: str) -> bool:
         """
-        检查是否被打断
+        Check if interrupted
 
         Args:
-            session_id: 会话 ID
+            session_id: Session ID
 
         Returns:
-            bool: 是否已设置打断信号
+            bool: Whether interrupt signal is set
         """
         signal = self._signals.get(session_id)
         return signal.is_set() if signal else False
 
     def remove_session(self, session_id: str) -> None:
         """
-        移除会话（断开连接时清理）
+        Remove session (cleanup on disconnect)
 
         Args:
-            session_id: 会话 ID
+            session_id: Session ID
         """
         if session_id in self._signals:
             del self._signals[session_id]
-            logger.debug(f"[InterruptHandler] 移除会话: {session_id}")
+            logger.debug(f"[InterruptHandler] Removed session: {session_id}")
 
 
-# 全局单例
+# Global singleton
 _global_handler: InterruptHandler = None
 
 
 def get_interrupt_handler() -> InterruptHandler:
-    """获取全局打断处理器实例"""
+    """Get the global interrupt handler instance"""
     global _global_handler
     if _global_handler is None:
         _global_handler = InterruptHandler()

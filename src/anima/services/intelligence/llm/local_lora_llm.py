@@ -1,8 +1,8 @@
 """
-本地 LoRA 微调模型服务
+Local LoRA fine-tuned model service
 Local Lora LLM Service
 
-使用本地微调后的模型进行推理
+Uses locally fine-tuned models for inference
 """
 
 import asyncio
@@ -17,9 +17,9 @@ from anima.config.core.registry import ProviderRegistry
 @ProviderRegistry.register_service("llm", "local_lora")
 class LocalLoraLLM(LLMInterface):
     """
-    本地 LoRA 微调模型服务
+    Local LoRA fine-tuned model service
 
-    使用本地微调后的模型进行对话
+    Uses locally fine-tuned models for conversation
     """
 
     def __init__(
@@ -31,78 +31,78 @@ class LocalLoraLLM(LLMInterface):
         **kwargs
     ):
         """
-        初始化本地 LoRA 模型
+        Initialize the local LoRA model
 
         Args:
-            base_model_name: 基座模型名称
-            lora_path: LoRA 适配器路径
-            device: 设备 (cuda/cpu)
-            system_prompt: 系统提示词
+            base_model_name: Base model name
+            lora_path: LoRA adapter path
+            device: Device (cuda/cpu)
+            system_prompt: System prompt
         """
         self.base_model_name = base_model_name
         self.lora_path = lora_path
-        self.requested_device = device  # 保存用户请求的设备
-        self.device = self._resolve_device(device)  # 自动降级
+        self.requested_device = device  # Save user-requested device
+        self.device = self._resolve_device(device)  # Auto-degradation
         self.system_prompt = system_prompt
 
         self.model = None
         self.tokenizer = None
         self._loaded = False
 
-        # 对话历史
+        # Conversation history
         self.history: list = []
 
-        logger.info(f"[LocalLoraLLM] 初始化")
-        logger.info(f"[LocalLoraLLM] 基座模型: {base_model_name}")
-        logger.info(f"[LocalLoraLLM] LoRA 路径: {lora_path}")
-        logger.info(f"[LocalLoraLLM] 请求设备: {device}")
-        logger.info(f"[LocalLoraLLM] 实际设备: {self.device}")
+        logger.info(f"[LocalLoraLLM] Initializing")
+        logger.info(f"[LocalLoraLLM] Base model: {base_model_name}")
+        logger.info(f"[LocalLoraLLM] LoRA path: {lora_path}")
+        logger.info(f"[LocalLoraLLM] Requested device: {device}")
+        logger.info(f"[LocalLoraLLM] Actual device: {self.device}")
 
         if self.device != self.requested_device:
-            logger.warning(f"[LocalLoraLLM] ⚠️ 设备已自动降级: {self.requested_device} → {self.device}")
-            logger.warning(f"[LocalLoraLLM] ⚠️ 性能将受影响，请检查CUDA安装")
+            logger.warning(f"[LocalLoraLLM] ⚠️ Device auto-downgraded: {self.requested_device} → {self.device}")
+            logger.warning(f"[LocalLoraLLM] ⚠️ Performance will be affected, please check CUDA installation")
 
-        # 🚀 预加载模型（避免首次调用时超时）
-        logger.info(f"[LocalLoraLLM] 🔄 开始预加载模型...")
+        # Preload model (avoid timeout on first call)
+        logger.info(f"[LocalLoraLLM] 🔄 Starting model preload...")
         self.load_model()
-        logger.info(f"[LocalLoraLLM] ✅ 模型预加载完成")
+        logger.info(f"[LocalLoraLLM] ✅ Model preload complete")
 
     def _resolve_device(self, requested_device: str) -> str:
         """
-        解析设备，自动降级 CUDA → CPU
+        Resolve device, auto-downgrade CUDA → CPU
 
         Args:
-            requested_device: 用户请求的设备
+            requested_device: User-requested device
 
         Returns:
-            str: 实际使用的设备
+            str: Actual device to use
         """
         if requested_device == "cpu":
             return "cpu"
 
-        # 检查CUDA是否可用
+        # Check if CUDA is available
         try:
             if torch.cuda.is_available():
                 return "cuda"
         except:
             pass
 
-        # CUDA不可用，降级到CPU
-        logger.warning(f"[LocalLoraLLM] CUDA不可用，将使用CPU")
+        # CUDA not available, downgrade to CPU
+        logger.warning(f"[LocalLoraLLM] CUDA not available, will use CPU")
         return "cpu"
 
     @classmethod
     def from_config(cls, config, system_prompt: str = "", **kwargs):
         """
-        从配置创建实例
+        Create an instance from configuration
 
         Args:
             config: LocalLoraLLMConfig
-            system_prompt: 系统提示词
-            **kwargs: 其他参数
+            system_prompt: System prompt
+            **kwargs: Additional parameters
 
         Returns:
-            LocalLoraLLM 实例
+            LocalLoraLLM instance
         """
         return cls(
             base_model_name=config.base_model_name,
@@ -112,7 +112,7 @@ class LocalLoraLLM(LLMInterface):
         )
 
     def load_model(self):
-        """加载模型"""
+        """Load the model"""
         if self._loaded:
             return
 
@@ -121,16 +121,16 @@ class LocalLoraLLM(LLMInterface):
             from peft import PeftModel
             import os
 
-            logger.info(f"[LocalLoraLLM] 加载基座模型: {self.base_model_name}")
+            logger.info(f"[LocalLoraLLM] Loading base model: {self.base_model_name}")
 
-            # 检测是否为本地路径（Windows盘符或绝对路径）
+            # Check if it is a local path (Windows drive letter or absolute path)
             is_local_path = (
                 os.path.isabs(self.base_model_name) or
                 (len(self.base_model_name) > 2 and self.base_model_name[1] == ':') or
                 self.base_model_name.startswith('/')
             )
 
-            # 加载分词器
+            # Load tokenizer
             self.tokenizer = AutoTokenizer.from_pretrained(
                 self.base_model_name,
                 trust_remote_code=True,
@@ -140,27 +140,27 @@ class LocalLoraLLM(LLMInterface):
             if self.tokenizer.pad_token is None:
                 self.tokenizer.pad_token = self.tokenizer.eos_token
 
-            # 根据设备选择数据类型
+            # Select dtype based on device
             if self.device == "cuda":
                 torch_dtype = torch.bfloat16
                 device_map = "cuda"
             else:  # cpu
-                torch_dtype = torch.float32  # CPU使用float32
+                torch_dtype = torch.float32  # CPU uses float32
                 device_map = "cpu"
 
-            # 加载基座模型
-            logger.info(f"[LocalLoraLLM] 使用设备: {device_map}, 数据类型: {torch_dtype}")
+            # Load base model
+            logger.info(f"[LocalLoraLLM] Using device: {device_map}, dtype: {torch_dtype}")
             base_model = AutoModelForCausalLM.from_pretrained(
                 self.base_model_name,
                 torch_dtype=torch_dtype,
                 device_map=device_map,
                 trust_remote_code=True,
-                low_cpu_mem_usage=True,  # 减少CPU内存占用
+                low_cpu_mem_usage=True,  # Reduce CPU memory usage
                 local_files_only=is_local_path
             )
 
-            # 加载 LoRA 适配器
-            logger.info(f"[LocalLoraLLM] 加载 LoRA 适配器: {self.lora_path}")
+            # Load LoRA adapter
+            logger.info(f"[LocalLoraLLM] Loading LoRA adapter: {self.lora_path}")
 
             self.model = PeftModel.from_pretrained(
                 base_model,
@@ -171,36 +171,36 @@ class LocalLoraLLM(LLMInterface):
             self.model.eval()
             self._loaded = True
 
-            logger.info(f"[LocalLoraLLM] ✅ 模型加载完成")
+            logger.info(f"[LocalLoraLLM] ✅ Model loaded successfully")
 
-            # 性能提示
+            # Performance tips
             if self.device == "cpu":
-                logger.warning(f"[LocalLoraLLM] ⚠️ 使用CPU推理，速度较慢")
-                logger.warning(f"[LocalLoraLLM] 💡 建议安装CUDA版本PyTorch以获得更好性能")
+                logger.warning(f"[LocalLoraLLM] ⚠️ Using CPU for inference, performance will be slower")
+                logger.warning(f"[LocalLoraLLM] 💡 Consider installing CUDA-enabled PyTorch for better performance")
 
         except Exception as e:
-            logger.error(f"[LocalLoraLLM] ❌ 模型加载失败: {e}")
-            logger.error(f"[LocalLoraLLM] 💡 请检查:")
-            logger.error(f"[LocalLoraLLM]    1. 模型路径是否正确: {self.base_model_name}")
-            logger.error(f"[LocalLoraLLM]    2. LoRA路径是否正确: {self.lora_path}")
-            logger.error(f"[LocalLoraLLM]    3. 是否安装了transformers和peft")
+            logger.error(f"[LocalLoraLLM] ❌ Model loading failed: {e}")
+            logger.error(f"[LocalLoraLLM] 💡 Please check:")
+            logger.error(f"[LocalLoraLLM]    1. Is the model path correct: {self.base_model_name}")
+            logger.error(f"[LocalLoraLLM]    2. Is the LoRA path correct: {self.lora_path}")
+            logger.error(f"[LocalLoraLLM]    3. Are transformers and peft installed")
             raise
 
     async def chat_stream(self, text: str) -> AsyncIterator[str]:
         """
-        流式对话
+        Streaming conversation
 
         Args:
-            text: 输入文本
+            text: Input text
 
         Yields:
-            生成的文本片段
+            Generated text chunks
         """
-        # 确保模型已加载
+        # Ensure the model is loaded
         if not self._loaded:
             self.load_model()
 
-        # 构造提示词
+        # Build prompt
         prompt = self._format_prompt(text)
 
         # Tokenize
@@ -211,7 +211,7 @@ class LocalLoraLLM(LLMInterface):
             max_length=256
         ).to(self.device)
 
-        # 生成参数
+        # Generation parameters
         generation_kwargs = {
             "max_new_tokens": 512,
             "temperature": 0.7,
@@ -221,7 +221,7 @@ class LocalLoraLLM(LLMInterface):
             "eos_token_id": self.tokenizer.eos_token_id
         }
 
-        # 流式生成
+        # Streaming generation
         try:
             from transformers import TextIteratorStreamer
 
@@ -233,7 +233,7 @@ class LocalLoraLLM(LLMInterface):
 
             generation_kwargs["streamer"] = streamer
 
-            # 在后台线程中生成
+            # Generate in a background thread
             import threading
 
             def generate():
@@ -243,33 +243,33 @@ class LocalLoraLLM(LLMInterface):
             thread = threading.Thread(target=generate)
             thread.start()
 
-            # 流式输出
+            # Stream output
             for text in streamer:
                 yield text
 
             thread.join()
 
         except Exception as e:
-            logger.error(f"[LocalLoraLLM] 生成失败: {e}")
+            logger.error(f"[LocalLoraLLM] Generation failed: {e}")
             yield f"【生成失败: {str(e)}】"
 
     def _format_prompt(self, text: str) -> str:
         """
-        格式化提示词
+        Format the prompt
 
         Args:
-            text: 用户输入
+            text: User input
 
         Returns:
-            格式化后的提示词
+            Formatted prompt
         """
-        # 使用 Qwen Chat 模板格式
+        # Use Qwen Chat template format
         messages = [
             {"role": "system", "content": self.system_prompt},
             {"role": "user", "content": text}
         ]
 
-        # 使用 tokenizer 的 chat template
+        # Use tokenizer's chat template
         prompt = self.tokenizer.apply_chat_template(
             messages,
             tokenize=False,
@@ -280,25 +280,25 @@ class LocalLoraLLM(LLMInterface):
 
     async def chat(self, text: str) -> str:
         """
-        非流式对话（异步）
+        Non-streaming conversation (async)
 
         Args:
-            text: 输入文本
+            text: Input text
 
         Returns:
-            生成的完整文本
+            Complete generated text
         """
-        # 确保模型已加载
+        # Ensure the model is loaded
         if not self._loaded:
             self.load_model()
 
-        # 构造提示词
+        # Build prompt
         prompt = self._format_prompt(text)
 
-        logger.info(f"[LocalLoraLLM] 开始生成回复...")
-        logger.debug(f"[LocalLoraLLM] 输入prompt长度: {len(prompt)} 字符")
+        logger.info(f"[LocalLoraLLM] Starting response generation...")
+        logger.debug(f"[LocalLoraLLM] Input prompt length: {len(prompt)} chars")
 
-        # 使用线程池执行阻塞的模型生成
+        # Use thread pool to execute blocking model generation
         import asyncio
 
         def generate_sync():
@@ -310,7 +310,7 @@ class LocalLoraLLM(LLMInterface):
                 max_length=256
             ).to(self.device)
 
-            # 生成
+            # Generate
             with torch.no_grad():
                 outputs = self.model.generate(
                     **inputs,
@@ -322,7 +322,7 @@ class LocalLoraLLM(LLMInterface):
                     eos_token_id=self.tokenizer.eos_token_id
                 )
 
-            # 解码
+            # Decode
             response = self.tokenizer.decode(
                 outputs[0][inputs['input_ids'].shape[1]:],
                 skip_special_tokens=True
@@ -330,41 +330,41 @@ class LocalLoraLLM(LLMInterface):
 
             return response
 
-        # 在线程池中执行阻塞调用
+        # Execute blocking call in thread pool
         response = await asyncio.to_thread(generate_sync)
 
-        logger.info(f"[LocalLoraLLM] ✅ 生成完成")
-        logger.debug(f"[LocalLoraLLM] 输出长度: {len(response)} 字符")
+        logger.info(f"[LocalLoraLLM] ✅ Generation complete")
+        logger.debug(f"[LocalLoraLLM] Output length: {len(response)} chars")
 
         return response
 
     def set_system_prompt(self, prompt: str) -> None:
-        """设置系统提示词"""
+        """Set the system prompt"""
         self.system_prompt = prompt
-        logger.debug(f"[LocalLoraLLM] 系统提示词已更新")
+        logger.debug(f"[LocalLoraLLM] System prompt updated")
 
     def get_history(self) -> list:
-        """获取对话历史"""
+        """Get conversation history"""
         return self.history.copy()
 
     def clear_history(self) -> None:
-        """清空对话历史"""
+        """Clear conversation history"""
         self.history.clear()
-        logger.debug(f"[LocalLoraLLM] 对话历史已清空")
+        logger.debug(f"[LocalLoraLLM] Conversation history cleared")
 
     def handle_interrupt(self, heard_response: str = "") -> None:
-        """处理用户打断"""
-        logger.debug(f"[LocalLoraLLM] 处理打断: heard='{heard_response[:50]}...'")
-        # 可以在这里保存听到的部分回复到历史中
+        """Handle user interruption"""
+        logger.debug(f"[LocalLoraLLM] Handling interrupt: heard='{heard_response[:50]}...'")
+        # Can save the partial response heard into history here
         if heard_response:
             self.history.append({"role": "assistant", "content": heard_response})
 
     def set_memory_from_history(self, conf_uid: str, history_uid: str) -> None:
-        """从历史记录恢复对话记忆（暂未实现）"""
-        logger.debug(f"[LocalLoraLLM] 从历史恢复记忆: conf_uid={conf_uid}, history_uid={history_uid}")
+        """Restore conversation memory from history (not yet implemented)"""
+        logger.debug(f"[LocalLoraLLM] Restoring memory from history: conf_uid={conf_uid}, history_uid={history_uid}")
 
     async def close(self):
-        """关闭模型，释放资源"""
+        """Close the model and release resources"""
         if self.model is not None:
             del self.model
             self.model = None
@@ -375,4 +375,4 @@ class LocalLoraLLM(LLMInterface):
 
         self._loaded = False
 
-        logger.info(f"[LocalLoraLLM] 模型已卸载")
+        logger.info(f"[LocalLoraLLM] Model unloaded")

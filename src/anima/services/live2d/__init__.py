@@ -1,6 +1,6 @@
 """
 Live2D Services
-提供 Live2D 模型动作队列、预设加载和口型同步
+Provides Live2D model action queue, preset loading, and lip sync
 """
 
 from .action_queue import Live2DActionQueue, ActionMessage, OverflowPolicy

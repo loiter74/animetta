@@ -1,6 +1,6 @@
 """
-情绪参数映射器 - 默认实现
-将常见情绪映射到 Live2D 模型参数
+Emotion Parameter Mapper - Default Implementation
+Maps common emotions to Live2D model parameters
 """
 
 from typing import Dict, Any, List, Optional, Tuple
@@ -13,76 +13,76 @@ from .base import (
 )
 
 
-# 默认情绪参数映射配置
+# Default emotion parameter mapping configuration
 DEFAULT_EMOTION_MAPPINGS = {
     "happy": {
-        # 嘴巴：微笑
+        # Mouth: smiling
         "ParamMouthOpenY": 0.6,
         "ParamMouthForm": 0.3,
-        # 眉毛：上扬
+        # Eyebrows: raised
         "ParamEyebrowLY": 0.4,
         "ParamEyebrowRY": 0.4,
-        # 眼睛：睁大，有神
+        # Eyes: wide, bright
         "ParamEyeLOpen": 0.95,
         "ParamEyeROpen": 0.95,
         "ParamEyeBallX": 0.0,
         "ParamEyeBallY": -0.1,
-        # 头部：微微上扬
+        # Head: slightly raised
         "ParamAngleX": -0.05,
         "ParamAngleY": 0.0,
         "ParamAngleZ": 0.0,
-        # 身体：轻微前倾
+        # Body: slightly forward
         "ParamBodyAngleX": 0.05,
     },
 
     "sad": {
-        # 嘴巴：微张，嘴角下垂
+        # Mouth: slightly open, corners down
         "ParamMouthOpenY": 0.2,
         "ParamMouthForm": -0.2,
-        # 眉毛：下压，内收
+        # Eyebrows: lowered, pulled together
         "ParamEyebrowLY": -0.3,
         "ParamEyebrowRY": -0.3,
-        # 眼睛：半闭
+        # Eyes: half-closed
         "ParamEyeLOpen": 0.6,
         "ParamEyeROpen": 0.6,
-        # 头部：低垂
+        # Head: lowered
         "ParamAngleX": 0.15,
         "ParamAngleY": 0.0,
     },
 
     "angry": {
-        # 嘴巴：紧闭或微张
+        # Mouth: tight or slightly open
         "ParamMouthOpenY": 0.3,
         "ParamMouthForm": 0.1,
-        # 眉毛：紧锁，下压
+        # Eyebrows: furrowed, lowered
         "ParamEyebrowLY": -0.6,
         "ParamEyebrowRY": -0.6,
-        # 眼睛：怒目而视
+        # Eyes: glaring
         "ParamEyeLOpen": 0.8,
         "ParamEyeROpen": 0.8,
-        # 头部：前倾，微侧
+        # Head: forward, slightly tilted
         "ParamAngleX": -0.1,
         "ParamAngleY": 0.15,
         "ParamAngleZ": 0.1,
     },
 
     "surprised": {
-        # 嘴巴：张开
+        # Mouth: open
         "ParamMouthOpenY": 0.7,
         "ParamMouthForm": 0.0,
-        # 眉毛：上扬
+        # Eyebrows: raised
         "ParamEyebrowLY": 0.5,
         "ParamEyebrowRY": 0.5,
-        # 眼睛：睁大
+        # Eyes: wide open
         "ParamEyeLOpen": 1.0,
         "ParamEyeROpen": 1.0,
-        # 头部：后仰
+        # Head: leaning back
         "ParamAngleX": -0.15,
         "ParamAngleY": 0.0,
     },
 
     "neutral": {
-        # 默认状态
+        # Default state
         "ParamMouthOpenY": 0.0,
         "ParamEyebrowLY": 0.0,
         "ParamEyebrowRY": 0.0,
@@ -94,79 +94,79 @@ DEFAULT_EMOTION_MAPPINGS = {
     },
 
     "thinking": {
-        # 嘴巴：微张
+        # Mouth: slightly open
         "ParamMouthOpenY": 0.15,
-        # 眉毛：一高一低（思考状）
+        # Eyebrows: one up, one down (thinking pose)
         "ParamEyebrowLY": -0.2,
         "ParamEyebrowRY": 0.1,
-        # 眼睛：向上看
+        # Eyes: looking up
         "ParamEyeLOpen": 0.7,
         "ParamEyeROpen": 0.7,
         "ParamEyeBallY": 0.3,
-        # 头部：侧倾，低垂
+        # Head: tilted, lowered
         "ParamAngleX": 0.1,
         "ParamAngleY": -0.1,
         "ParamAngleZ": 0.15,
     },
 
     "confused": {
-        # 嘴巴：歪斜
+        # Mouth: crooked
         "ParamMouthOpenY": 0.2,
         "ParamMouthForm": 0.3,
-        # 眉毛：内收
+        # Eyebrows: pulled together
         "ParamEyebrowLY": 0.2,
         "ParamEyebrowRY": 0.2,
-        # 眼睛：眯眼
+        # Eyes: squinting
         "ParamEyeLOpen": 0.7,
         "ParamEyeROpen": 0.7,
-        # 头部：侧倾
+        # Head: tilted
         "ParamAngleZ": 0.2,
     },
 
     "love": {
-        # 嘴巴：温柔微笑
+        # Mouth: gentle smile
         "ParamMouthOpenY": 0.4,
         "ParamMouthForm": 0.2,
-        # 眉毛：柔和上扬
+        # Eyebrows: softly raised
         "ParamEyebrowLY": 0.2,
         "ParamEyebrowRY": 0.2,
-        # 眼睛：温柔注视
+        # Eyes: gentle gaze
         "ParamEyeLOpen": 0.8,
         "ParamEyeROpen": 0.8,
         "ParamEyeBallY": -0.1,
-        # 头部：微侧
+        # Head: slightly tilted
         "ParamAngleY": -0.1,
     },
 
     "shy": {
-        # 嘴巴：抿嘴
+        # Mouth: pursed
         "ParamMouthOpenY": 0.1,
         "ParamMouthForm": 0.1,
-        # 眉毛：低垂
+        # Eyebrows: lowered
         "ParamEyebrowLY": -0.1,
         "ParamEyebrowRY": -0.1,
-        # 眼睛：向下看
+        # Eyes: looking down
         "ParamEyeLOpen": 0.7,
         "ParamEyeROpen": 0.7,
         "ParamEyeBallY": 0.4,
-        # 头部：低垂，侧转
+        # Head: lowered, turned away
         "ParamAngleX": 0.2,
         "ParamAngleY": 0.15,
     },
 
     "excited": {
-        # 嘴巴：大笑
+        # Mouth: laughing
         "ParamMouthOpenY": 0.8,
         "ParamMouthForm": 0.4,
-        # 眉毛：高扬
+        # Eyebrows: highly raised
         "ParamEyebrowLY": 0.6,
         "ParamEyebrowRY": 0.6,
-        # 眼睛：睁大
+        # Eyes: wide open
         "ParamEyeLOpen": 1.0,
         "ParamEyeROpen": 1.0,
-        # 头部：后仰
+        # Head: leaning back
         "ParamAngleX": -0.1,
-        # 身体：前倾
+        # Body: leaning forward
         "ParamBodyAngleX": 0.1,
     },
 }
@@ -174,14 +174,14 @@ DEFAULT_EMOTION_MAPPINGS = {
 
 class EmotionParamMapper(IEmotionParamMapper):
     """
-    情绪参数映射器
+    Emotion Parameter Mapper
 
-    将情绪标签映射到 Live2D 模型参数。
-    支持自定义映射配置。
+    Maps emotion labels to Live2D model parameters.
+    Supports custom mapping configuration.
 
     Attributes:
-        mappings: 情绪到参数的映射字典
-        default_duration: 默认过渡时长（秒）
+        mappings: Dictionary mapping emotions to parameters
+        default_duration: Default transition duration (seconds)
 
     Example:
         >>> mapper = EmotionParamMapper()
@@ -196,11 +196,11 @@ class EmotionParamMapper(IEmotionParamMapper):
         default_duration: float = 0.3
     ):
         """
-        初始化映射器
+        Initialize the mapper
 
         Args:
-            mappings: 自定义映射配置（默认使用 DEFAULT_EMOTION_MAPPINGS）
-            default_duration: 默认过渡时长
+            mappings: Custom mapping configuration (defaults to DEFAULT_EMOTION_MAPPINGS)
+            default_duration: Default transition duration
         """
         self.mappings = mappings or DEFAULT_EMOTION_MAPPINGS
         self.default_duration = default_duration
@@ -212,31 +212,31 @@ class EmotionParamMapper(IEmotionParamMapper):
         context: Optional[Dict[str, Any]] = None
     ) -> ExpressionFrame:
         """
-        将情绪映射到 Live2D 参数
+        Map an emotion to Live2D parameters
 
         Args:
-            emotion: 情绪名称
-            intensity: 强度（0.0 - 1.0）
-            context: 上下文信息
+            emotion: Emotion name
+            intensity: Intensity (0.0 - 1.0)
+            context: Context information
 
         Returns:
-            ExpressionFrame: 表情帧
+            ExpressionFrame: Expression frame
         """
         emotion_lower = emotion.lower()
 
         if emotion_lower not in self.mappings:
-            logger.warning(f"[EmotionParamMapper] 未知情绪: {emotion}，使用 neutral")
+            logger.warning(f"[EmotionParamMapper] Unknown emotion: {emotion}, using neutral")
             emotion_lower = "neutral"
 
         param_config = self.mappings[emotion_lower]
 
-        # 创建参数列表
+        # Create parameters list
         parameters = []
         for param_name, base_value in param_config.items():
-            # 应用强度
+            # Apply intensity
             value = self.apply_intensity(base_value, intensity)
 
-            # 添加随机扰动（避免机械感）
+            # Add random variance (avoid mechanical feel)
             value = self._add_variance(value, intensity)
 
             parameters.append(ParameterState(
@@ -257,14 +257,14 @@ class EmotionParamMapper(IEmotionParamMapper):
         duration: float
     ) -> List[ExpressionFrame]:
         """
-        将情绪时间轴映射到表情帧序列
+        Map an emotion timeline to a sequence of expression frames
 
         Args:
             emotions: [(emotion, start_time, end_time, intensity), ...]
-            duration: 总时长
+            duration: Total duration
 
         Returns:
-            List[ExpressionFrame]: 表情帧序列
+            List[ExpressionFrame]: Sequence of expression frames
         """
         frames = []
 
@@ -272,39 +272,39 @@ class EmotionParamMapper(IEmotionParamMapper):
             frame = self.map_emotion(emotion, intensity)
             frame.timestamp = start_time
 
-            # 更新参数的 duration 为片段时长
+            # Update parameter duration to segment duration
             for param in frame.parameters:
                 param.duration = end_time - start_time
 
             frames.append(frame)
 
-        # 按时间排序
+        # Sort by timestamp
         frames.sort(key=lambda f: f.timestamp)
 
         return frames
 
     def _add_variance(self, value: float, intensity: float) -> float:
         """
-        添加随机扰动
+        Add random variance
 
-        让表情更自然，避免机械感。
+        Makes expressions more natural, avoiding mechanical feel.
 
         Args:
-            value: 基础值
-            intensity: 强度
+            value: Base value
+            intensity: Intensity
 
         Returns:
-            float: 添加扰动后的值
+            float: Value after adding variance
         """
         import random
 
-        # 扰动范围随强度减小
+        # Variance range decreases with intensity
         variance = 0.05 * intensity
 
         if variance > 0:
             value += random.uniform(-variance, variance)
 
-        # 限制在合理范围
+        # Clamp to valid range
         return max(-1.0, min(1.0, value))
 
     @property
@@ -312,7 +312,7 @@ class EmotionParamMapper(IEmotionParamMapper):
         return "emotion_param_mapper"
 
     def get_supported_emotions(self) -> List[str]:
-        """获取支持的情绪列表"""
+        """Get supported emotions list"""
         return list(self.mappings.keys())
 
     def add_emotion_mapping(
@@ -321,27 +321,27 @@ class EmotionParamMapper(IEmotionParamMapper):
         param_mappings: Dict[str, float]
     ):
         """
-        添加或更新情绪映射
+        Add or update emotion mapping
 
         Args:
-            emotion: 情绪名称
-            param_mappings: 参数映射字典
+            emotion: Emotion name
+            param_mappings: Parameter mapping dictionary
         """
         self.mappings[emotion.lower()] = param_mappings
 
     def load_from_yaml(self, yaml_path: str):
         """
-        从 YAML 文件加载映射配置
+        Load mapping configuration from YAML file
 
         Args:
-            yaml_path: YAML 文件路径
+            yaml_path: YAML file path
         """
         import yaml
         from pathlib import Path
 
         path = Path(yaml_path)
         if not path.exists():
-            logger.error(f"[EmotionParamMapper] 配置文件不存在: {yaml_path}")
+            logger.error(f"[EmotionParamMapper] Config file not found: {yaml_path}")
             return
 
         with open(path, 'r', encoding='utf-8') as f:
@@ -349,4 +349,4 @@ class EmotionParamMapper(IEmotionParamMapper):
 
         if 'emotions' in config:
             self.mappings.update(config['emotions'])
-            logger.info(f"[EmotionParamMapper] 从 {yaml_path} 加载了 {len(config['emotions'])} 个情绪映射")
+            logger.info(f"[EmotionParamMapper] Loaded {len(config['emotions'])} emotion mappings from {yaml_path}")

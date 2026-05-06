@@ -1,6 +1,6 @@
 """
-Loguru 日志管理器
-支持动态级别切换
+Loguru logger manager
+Supports dynamic level switching
 """
 
 from loguru import logger
@@ -9,7 +9,7 @@ from typing import Optional
 
 
 class LoggerManager:
-    """Loguru 日志管理器，支持动态级别切换"""
+    """Loguru logger manager, supports dynamic level switching"""
 
     _instance: Optional["LoggerManager"] = None
 
@@ -25,7 +25,7 @@ class LoggerManager:
         return cls._instance
 
     def _setup_handler(self, level: str = "INFO"):
-        """设置日志 handler"""
+        """Setup log handler"""
         logger.remove()
         self._handler_id = logger.add(
             sys.stderr,
@@ -36,21 +36,21 @@ class LoggerManager:
         self._current_level = level
 
     def set_level(self, level: str) -> bool:
-        """动态设置日志级别"""
+        """Dynamically set log level"""
         level = level.upper()
         valid_levels = ["TRACE", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
         if level not in valid_levels:
-            logger.warning(f"无效的日志级别: {level}")
+            logger.warning(f"Invalid log level: {level}")
             return False
 
         self._setup_handler(level)
-        logger.info(f"日志级别已更新为: {level}")
+        logger.info(f"Log level updated to: {level}")
         return True
 
     def get_level(self) -> str:
         return self._current_level
 
 
-# 全局单例
+# Global singleton
 logger_manager = LoggerManager.get_instance()

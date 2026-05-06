@@ -1,8 +1,7 @@
 """
-服务器模块
+Server module
 
-包含 WebSocket 服务器、会话管理、路由处理和生命周期管理
-使用 Adapter 架构和 EventBus 进行组件通信
+Contains WebSocket server, session management, route handling and lifecycle management
 """
 
 from .websocket import WebSocketServer, create_server
@@ -13,17 +12,17 @@ from .desktop import DesktopClientManager, DESKTOP_CLIENT_TYPES
 from .live2d import Live2DManager
 
 __all__ = [
-    # 服务器
+    # Server
     'WebSocketServer',
     'create_server',
-    # 会话管理
+    # Session management
     'SessionManager',
-    # 路由
+    # Routes
     'RouteHandlers',
     'register_routes',
-    # 生命周期
+    # Lifecycle
     'LifecycleManager',
-    # 桌面客户端
+    # Desktop client
     'DesktopClientManager',
     'DESKTOP_CLIENT_TYPES',
     # Live2D

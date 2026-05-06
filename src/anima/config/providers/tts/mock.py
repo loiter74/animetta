@@ -1,4 +1,4 @@
-"""Mock TTS 提供者配置"""
+"""Mock TTS provider configuration"""
 
 from typing import Literal
 
@@ -8,5 +8,5 @@ from .base import TTSBaseConfig
 
 @ProviderRegistry.register("tts", "mock")
 class MockTTSConfig(TTSBaseConfig):
-    """Mock TTS 配置 - 用于测试"""
+    """Mock TTS configuration - for testing"""
     type: Literal["mock"] = "mock"

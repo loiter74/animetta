@@ -16,7 +16,7 @@ from typing import Any
 from .manager import MemoryManager
 
 
-# ── Tool Schema (用于 function calling) ─────────────────
+# ── Tool Schema (for function calling) ──────────────────
 
 MEMORY_SEARCH_SCHEMA = {
     "name": "memory_search",
@@ -75,11 +75,11 @@ MEMORY_GET_SCHEMA = {
 
 
 def get_tool_schemas() -> list[dict]:
-    """获取所有记忆工具的 schema, 可直接用于 function calling."""
+    """Get all memory tool schemas for direct use in function calling."""
     return [MEMORY_SEARCH_SCHEMA, MEMORY_GET_SCHEMA]
 
 
-# ── Tool 执行器 ──────────────────────────────────────────
+# ── Tool executor ───────────────────────────────────────
 
 def execute_tool(
     manager: MemoryManager,

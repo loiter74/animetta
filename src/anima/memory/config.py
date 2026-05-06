@@ -1,4 +1,4 @@
-"""记忆模块配置."""
+"""Memory module configuration."""
 
 from __future__ import annotations
 
@@ -9,11 +9,11 @@ from typing import Optional
 
 @dataclass
 class ChunkConfig:
-    """分块参数 (对齐 OpenClaw 默认值)."""
+    """Chunking parameters (aligning with OpenClaw defaults)."""
 
-    target_tokens: int = 400  # 每块目标 token 数
-    overlap_tokens: int = 80  # 相邻块重叠 token 数
-    chars_per_token: float = 4.0  # 粗略的字符/token 比 (中文可调为 ~1.5)
+    target_tokens: int = 400  # Target tokens per chunk
+    overlap_tokens: int = 80  # Overlap tokens between adjacent chunks
+    chars_per_token: float = 4.0  # Rough character/token ratio (adjust to ~1.5 for Chinese)
 
     @property
     def target_chars(self) -> int:
@@ -26,47 +26,47 @@ class ChunkConfig:
 
 @dataclass
 class SearchConfig:
-    """混合搜索参数."""
+    """Hybrid search parameters."""
 
-    vector_weight: float = 0.7  # 向量得分权重
-    keyword_weight: float = 0.3  # 关键词 (BM25) 得分权重
-    candidate_multiplier: int = 4  # 候选池 = max_results * multiplier
+    vector_weight: float = 0.7  # Vector score weight
+    keyword_weight: float = 0.3  # Keyword (BM25) score weight
+    candidate_multiplier: int = 4  # Candidate pool = max_results * multiplier
     default_max_results: int = 10
     default_min_score: float = 0.0
 
 
 @dataclass
 class EmbeddingConfig:
-    """Embedding 模型配置."""
+    """Embedding model configuration."""
 
     model_name: str = "sentence-transformers/all-MiniLM-L6-v2"
-    # 中文项目推荐: "shibing624/text2vec-base-chinese"
-    # 或: "BAAI/bge-small-zh-v1.5"
+    # Recommended for Chinese projects: "shibing624/text2vec-base-chinese"
+    # Or: "BAAI/bge-small-zh-v1.5"
 
 
 @dataclass
 class MemoryConfig:
-    """记忆模块总配置."""
+    """Memory module master configuration."""
 
     workspace_dir: str = "~/.myagent/workspace"
-    db_path: Optional[str] = None  # 默认 workspace_dir/memory.sqlite
-    chroma_path: Optional[str] = None  # 默认 workspace_dir/chroma_db
+    db_path: Optional[str] = None  # Defaults to workspace_dir/memory.sqlite
+    chroma_path: Optional[str] = None  # Defaults to workspace_dir/chroma_db
     agent_id: str = "default"
 
     chunk: ChunkConfig = field(default_factory=ChunkConfig)
     search: SearchConfig = field(default_factory=SearchConfig)
     embedding: EmbeddingConfig = field(default_factory=EmbeddingConfig)
 
-    # 文件监控去抖时间 (秒)
+    # File watch debounce time (seconds)
     watch_debounce_seconds: float = 1.5
 
-    # 记忆 flush 配置 (上下文压缩前自动保存)
+    # Memory flush configuration (auto-save before context compression)
     flush_enabled: bool = True
     flush_soft_threshold_tokens: int = 4000
     reserve_tokens_floor: int = 20000
 
     def resolve_paths(self) -> MemoryConfig:
-        """展开 ~ 并设置默认路径."""
+        """Expand ~ and set default paths."""
         ws = Path(self.workspace_dir).expanduser()
         self.workspace_dir = str(ws)
         if self.db_path is None:

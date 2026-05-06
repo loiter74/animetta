@@ -1,4 +1,4 @@
-"""Mock LLM 提供者配置"""
+"""Mock LLM provider configuration"""
 
 from typing import Literal
 
@@ -8,5 +8,5 @@ from .base import LLMBaseConfig
 
 @ProviderRegistry.register("llm", "mock")
 class MockLLMConfig(LLMBaseConfig):
-    """Mock LLM 配置 - 用于测试"""
+    """Mock LLM configuration - for testing"""
     type: Literal["mock"] = "mock"

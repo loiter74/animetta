@@ -1,7 +1,7 @@
 """
 Preset Loader
-加载 Live2D 动作预设配置（YAML 格式）
-参考 open-yachiyo 的 live2d-presets.yaml
+Loads Live2D action preset configuration (YAML format)
+Based on open-yachiyo's live2d-presets.yaml
 """
 
 import yaml
@@ -16,7 +16,7 @@ from .action_queue import ActionFactory, ActionMessage
 
 @dataclass
 class EmotePreset:
-    """情感预设"""
+    """Emotion preset"""
     name: str
     intensity: str  # low, medium, high
     expression: str
@@ -25,7 +25,7 @@ class EmotePreset:
 
 @dataclass
 class GesturePreset:
-    """手势预设"""
+    """Gesture preset"""
     name: str
     expression: Optional[str]
     motion_group: Optional[str]
@@ -34,27 +34,27 @@ class GesturePreset:
 
 @dataclass
 class ReactPreset:
-    """反应预设"""
+    """Reaction preset"""
     name: str
     actions: List[Dict[str, Any]]
 
 
 class PresetLoader:
     """
-    Live2D 预设加载器
+    Live2D Preset Loader
 
-    从 YAML 文件加载表情、手势和反应预设
+    Loads expression, gesture, and reaction presets from YAML files
     """
 
     def __init__(self, config_path: str = None):
         """
-        初始化预设加载器
+        Initialize the preset loader
 
         Args:
-            config_path: 预设配置文件路径
+            config_path: Preset configuration file path
         """
         if config_path is None:
-            # 默认路径
+            # Default path
             project_root = Path(__file__).parent.parent.parent.parent.parent
             config_path = project_root / "config" / "live2d-presets.yaml"
 
@@ -63,84 +63,84 @@ class PresetLoader:
         self._load_presets()
 
     def _load_presets(self):
-        """加载预设文件"""
+        """Load preset file"""
         if not self.config_path.exists():
-            logger.warning(f"[PresetLoader] 预设文件不存在: {self.config_path}")
+            logger.warning(f"[PresetLoader] Preset file does not exist: {self.config_path}")
             return
 
         try:
             with open(self.config_path, 'r', encoding='utf-8') as f:
                 self.presets = yaml.safe_load(f)
-            logger.info(f"[PresetLoader] 预设加载成功: {self.config_path}")
+            logger.info(f"[PresetLoader] Preset loaded successfully: {self.config_path}")
         except Exception as e:
-            logger.error(f"[PresetLoader] 预设加载失败: {e}")
+            logger.error(f"[PresetLoader] Failed to load preset: {e}")
 
     def get_emote(self, emotion: str, intensity: str = "medium") -> Optional[Dict]:
         """
-        获取情感预设
+        Get emotion preset
 
         Args:
-            emotion: 情感名称 (e.g., "happy", "sad")
-            intensity: 强度 ("low", "medium", "high")
+            emotion: Emotion name (e.g., "happy", "sad")
+            intensity: Intensity ("low", "medium", "high")
 
         Returns:
-            预设数据
+            Preset data
         """
         emote_presets = self.presets.get('emote', {})
         emotion_data = emote_presets.get(emotion, {})
         intensity_data = emotion_data.get(intensity)
 
         if not intensity_data:
-            # 尝试使用 medium 作为默认
+            # Try using medium as default
             intensity_data = emotion_data.get('medium')
 
         return intensity_data
 
     def get_gesture(self, gesture_name: str) -> Optional[Dict]:
         """
-        获取手势预设
+        Get gesture preset
 
         Args:
-            gesture_name: 手势名称 (e.g., "greet", "think")
+            gesture_name: Gesture name (e.g., "greet", "think")
 
         Returns:
-            预设数据
+            Preset data
         """
         gesture_presets = self.presets.get('gesture', {})
         return gesture_presets.get(gesture_name)
 
     def get_react(self, react_name: str) -> Optional[List[Dict]]:
         """
-        获取反应预设
+        Get reaction preset
 
         Args:
-            react_name: 反应名称 (e.g., "success", "error")
+            react_name: Reaction name (e.g., "success", "error")
 
         Returns:
-            动作列表
+            Action list
         """
         react_presets = self.presets.get('react', {})
         return react_presets.get(react_name)
 
     def create_emote_action(self, emotion: str, intensity: str = "medium") -> Optional[ActionMessage]:
         """
-        创建情感动作
+        Create an emotion action
 
         Args:
-            emotion: 情感名称
-            intensity: 强度
+            emotion: Emotion name
+            intensity: Intensity
 
         Returns:
-            动作消息
+            Action message
         """
         preset = self.get_emote(emotion, intensity)
         if not preset:
             return None
 
-        # 创建动作
+        # Create action
         actions = []
 
-        # 表情
+        # Expression
         expression = preset.get('expression')
         if expression:
             actions.append({
@@ -148,7 +148,7 @@ class PresetLoader:
                 "name": expression
             })
 
-        # 参数
+        # Parameters
         params = preset.get('params', [])
         for param in params:
             actions.append({
@@ -157,7 +157,7 @@ class PresetLoader:
                 "value": param.get('value')
             })
 
-        # 如果有多个动作，包装成序列
+        # If there are multiple actions, wrap as a sequence
         if len(actions) > 1:
             return ActionFactory.sequence(actions, 0.5)
         elif actions:
@@ -171,13 +171,13 @@ class PresetLoader:
 
     def create_gesture_action(self, gesture_name: str) -> Optional[ActionMessage]:
         """
-        创建手势动作
+        Create a gesture action
 
         Args:
-            gesture_name: 手势名称
+            gesture_name: Gesture name
 
         Returns:
-            动作消息
+            Action message
         """
         preset = self.get_gesture(gesture_name)
         if not preset:
@@ -185,7 +185,7 @@ class PresetLoader:
 
         actions = []
 
-        # 表情
+        # Expression
         expression = preset.get('expression')
         if expression:
             actions.append({
@@ -193,7 +193,7 @@ class PresetLoader:
                 "name": expression
             })
 
-        # 动作
+        # Motion
         motion = preset.get('motion')
         if motion:
             actions.append({
@@ -215,25 +215,25 @@ class PresetLoader:
 
     def create_react_action(self, react_name: str) -> Optional[ActionMessage]:
         """
-        创建反应动作
+        Create a reaction action
 
         Args:
-            react_name: 反应名称
+            react_name: Reaction name
 
         Returns:
-            动作消息（序列）
+            Action message (sequence)
         """
         preset = self.get_react(react_name)
         if not preset:
             return None
 
-        # 计算总时长
+        # Calculate total duration
         total_duration = 0
         for action in preset:
             if action.get('type') == 'wait':
                 total_duration += action.get('ms', 0) / 1000
             else:
-                total_duration += 0.3  # 默认动作时长
+                total_duration += 0.3  # Default action duration
 
         return ActionMessage(
             action_id=f"react_{react_name}",
@@ -245,24 +245,24 @@ class PresetLoader:
         )
 
     def list_emotes(self) -> List[str]:
-        """列出所有可用的情感"""
+        """List all available emotions"""
         return list(self.presets.get('emote', {}).keys())
 
     def list_gestures(self) -> List[str]:
-        """列出所有可用的手势"""
+        """List all available gestures"""
         return list(self.presets.get('gesture', {}).keys())
 
     def list_reacts(self) -> List[str]:
-        """列出所有可用的反应"""
+        """List all available reactions"""
         return list(self.presets.get('react', {}).keys())
 
 
-# 全局实例
+# Global instance
 _preset_loader: Optional[PresetLoader] = None
 
 
 def get_preset_loader() -> PresetLoader:
-    """获取全局预设加载器实例"""
+    """Get the global preset loader instance"""
     global _preset_loader
     if _preset_loader is None:
         _preset_loader = PresetLoader()

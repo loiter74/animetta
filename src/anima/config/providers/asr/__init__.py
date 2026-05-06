@@ -1,4 +1,4 @@
-"""ASR 提供者配置模块"""
+"""ASR provider configuration module"""
 
 from typing import Annotated, Union
 from pydantic import Field
@@ -20,7 +20,7 @@ __all__ = [
     "ASRConfig",
 ]
 
-# Discriminated Union 类型
+# Discriminated Union type
 ASRConfig = Annotated[
     Union[
         MockASRConfig,

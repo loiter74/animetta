@@ -117,7 +117,7 @@ class WikiIngestor:
         for ctype, cname in concepts:
             self._update_concept_page(ctype, cname, turn)
 
-        # 5. MemoryEntry 事实提取 (若配置了 fact_extractor)
+        # 5. MemoryEntry fact extraction (if fact_extractor is configured)
         if self._fact_extractor:
             try:
                 await self._fact_extractor.extract_and_store(turn)

@@ -1,4 +1,4 @@
-"""Mock ASR 提供者配置"""
+"""Mock ASR provider configuration"""
 
 from typing import Literal
 
@@ -8,5 +8,5 @@ from .base import ASRBaseConfig
 
 @ProviderRegistry.register("asr", "mock")
 class MockASRConfig(ASRBaseConfig):
-    """Mock ASR 配置 - 用于测试"""
+    """Mock ASR configuration - for testing"""
     type: Literal["mock"] = "mock"

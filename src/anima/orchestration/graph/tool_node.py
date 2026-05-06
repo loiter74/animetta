@@ -1,4 +1,4 @@
-"""工具执行节点"""
+"""Tool execution node"""
 
 from typing import Dict, Any, List, Optional
 from loguru import logger
@@ -10,7 +10,7 @@ from .state import AgentState
 
 
 def _get_from_config(config: Optional[RunnableConfig], key: str) -> Optional[Any]:
-    """从 LangGraph config 获取值"""
+    """Get value from LangGraph config"""
     if config:
         return config.get("configurable", {}).get(key)
     return None
@@ -21,25 +21,25 @@ async def tool_node(
     config: Optional[RunnableConfig] = None,
 ) -> Dict[str, Any]:
     """
-    工具执行节点
+    Tool execution node
 
-    输入: state["tool_calls"]
-    输出: state["tool_results"], state["messages"]
+    Input: state["tool_calls"]
+    Output: state["tool_results"], state["messages"]
     """
     session_id = state.get("session_id", "unknown")
     tool_calls = state.get("tool_calls")
 
     if not tool_calls:
-        logger.debug(f"[{session_id}] [工具节点] 无工具调用")
+        logger.debug(f"[{session_id}] [ToolNode] No tool calls")
         return {"tool_results": [], "tool_calls": None}
 
-    logger.info(f"[{session_id}] [工具节点] 执行 {len(tool_calls)} 个工具调用")
+    logger.info(f"[{session_id}] [ToolNode] Executing {len(tool_calls)} tool calls")
 
     tools_map = _get_from_config(config, "tools_map")
 
     if not tools_map:
-        logger.error(f"[{session_id}] [工具节点] tools_map 未配置")
-        return {"tool_results": [], "tool_calls": None, "error": "工具映射未配置"}
+        logger.error(f"[{session_id}] [ToolNode] tools_map not configured")
+        return {"tool_results": [], "tool_calls": None, "error": "Tool mapping not configured"}
 
     tool_messages = []
     tool_results = []
@@ -49,19 +49,19 @@ async def tool_node(
         tool_name = tool_call.get("name", "unknown")
         tool_args = tool_call.get("args", {})
 
-        logger.info(f"[{session_id}] [工具节点] 调用工具: {tool_name}({tool_args})")
+        logger.info(f"[{session_id}] [ToolNode] Calling tool: {tool_name}({tool_args})")
 
         try:
             tool_fn = tools_map.get(tool_name)
 
             if not tool_fn:
-                error_msg = f"工具未找到: {tool_name}"
-                logger.error(f"[{session_id}] [工具节点] {error_msg}")
-                tool_messages.append(ToolMessage(content=f"错误: {error_msg}", tool_call_id=tool_id))
+                error_msg = f"Tool not found: {tool_name}"
+                logger.error(f"[{session_id}] [ToolNode] {error_msg}")
+                tool_messages.append(ToolMessage(content=f"Error: {error_msg}", tool_call_id=tool_id))
                 tool_results.append({"error": error_msg})
                 continue
 
-            # 执行工具
+            # Execute tool
             if hasattr(tool_fn, 'ainvoke'):
                 result = await tool_fn.ainvoke(tool_args)
             elif hasattr(tool_fn, '_run'):
@@ -74,18 +74,18 @@ async def tool_node(
                     result = tool_fn(**tool_args)
 
             result_str = _format_tool_result(result)
-            logger.info(f"[{session_id}] [工具节点] {tool_name} 结果: {result_str[:100]}...")
+            logger.info(f"[{session_id}] [ToolNode] {tool_name} result: {result_str[:100]}...")
 
             tool_messages.append(ToolMessage(content=result_str, tool_call_id=tool_id))
             tool_results.append({"tool": tool_name, "args": tool_args, "result": result})
 
         except Exception as e:
-            error_msg = f"工具执行错误: {str(e)}"
-            logger.error(f"[{session_id}] [工具节点] {tool_name} 执行失败: {e}")
-            tool_messages.append(ToolMessage(content=f"错误: {error_msg}", tool_call_id=tool_id))
+            error_msg = f"Tool execution error: {str(e)}"
+            logger.error(f"[{session_id}] [ToolNode] {tool_name} execution failed: {e}")
+            tool_messages.append(ToolMessage(content=f"Error: {error_msg}", tool_call_id=tool_id))
             tool_results.append({"tool": tool_name, "args": tool_args, "error": str(e)})
 
-    logger.info(f"[{session_id}] [工具节点] 完成 {len(tool_calls)} 个工具调用")
+    logger.info(f"[{session_id}] [ToolNode] Completed {len(tool_calls)} tool calls")
 
     return {
         "messages": tool_messages,
@@ -95,9 +95,9 @@ async def tool_node(
 
 
 def _format_tool_result(result: Any) -> str:
-    """格式化工具执行结果"""
+    """Format tool execution result"""
     if result is None:
-        return "（无返回值）"
+        return "(no return value)"
     if isinstance(result, str):
         return result
     if isinstance(result, (dict, list)):

@@ -1,7 +1,7 @@
 """
-音频处理器服务
+Audio processor service
 
-提供 VAD 音频处理功能，用于语音输入的检测和累积。
+Provides VAD audio processing functionality for speech input detection and accumulation.
 """
 
 from .processor import AudioProcessorInterface

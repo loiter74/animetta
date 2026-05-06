@@ -1,6 +1,6 @@
 """
-服务器生命周期管理
-优雅关闭和资源清理
+Server lifecycle management
+Graceful shutdown and resource cleanup
 """
 
 import signal
@@ -12,12 +12,12 @@ from typing import Callable, Optional
 
 class LifecycleManager:
     """
-    生命周期管理器
+    Lifecycle manager
 
-    负责：
-    1. 信号处理器注册
-    2. 优雅关闭
-    3. 资源清理
+    Responsibilities:
+    1. Signal handler registration
+    2. Graceful shutdown
+    3. Resource cleanup
     """
 
     def __init__(self):
@@ -28,18 +28,18 @@ class LifecycleManager:
 
     def setup_signal_handlers(self, shutdown_event: asyncio.Event) -> None:
         """
-        设置信号处理器
+        Set up signal handlers
 
         Args:
-            shutdown_event: 关闭事件
+            shutdown_event: Shutdown event
         """
         self._shutdown_event = shutdown_event
 
-        # Windows 和 Unix 都支持的信号
+        # Signals supported by both Windows and Unix
         signal.signal(signal.SIGINT, self._signal_handler)
         signal.signal(signal.SIGTERM, self._signal_handler)
 
-        # Windows 特有的信号
+        # Windows-specific signals
         if hasattr(signal, 'CTRL_BREAK_EVENT'):
             try:
                 signal.signal(signal.CTRL_BREAK_EVENT, self._signal_handler)
@@ -53,45 +53,45 @@ class LifecycleManager:
                 pass
 
         self._signal_handlers_set = True
-        logger.debug("信号处理器已设置")
+        logger.debug("Signal handlers set up")
 
     def _signal_handler(self, signum, frame):
-        """信号处理器"""
-        # 防止重复处理
+        """Signal handler"""
+        # Prevent duplicate processing
         if self._shutting_down:
-            logger.info("已在关闭中，忽略重复信号")
+            logger.info("Already shutting down, ignoring duplicate signal")
             return
 
         self._shutting_down = True
         signal_name = signal.Signals(signum).name
-        logger.info(f"收到信号 {signal_name}，准备优雅关闭...")
+        logger.info(f"Received signal {signal_name}, preparing graceful shutdown...")
 
-        # 执行同步清理回调
+        # Execute sync cleanup callbacks
         for callback in self._cleanup_callbacks:
             try:
-                # 对于异步回调，在同步上下文中我们只能尽力而为
+                # For async callbacks, we can only do our best in a sync context
                 if asyncio.iscoroutinefunction(callback):
-                    logger.warning("异步清理回调在信号处理器中无法执行，跳过")
+                    logger.warning("Async cleanup callback cannot be executed in signal handler, skipping")
                 else:
                     callback()
             except Exception as e:
-                logger.error(f"清理回调执行失败: {e}")
+                logger.error(f"Cleanup callback execution failed: {e}")
 
-        logger.info("资源清理完成，退出进程")
+        logger.info("Resource cleanup complete, exiting process")
         sys.exit(0)
 
     def register_cleanup_callback(self, callback: Callable) -> None:
         """
-        注册清理回调函数
+        Register a cleanup callback function
 
         Args:
-            callback: 清理函数
+            callback: Cleanup function
         """
         self._cleanup_callbacks.append(callback)
 
     async def cleanup_all(self) -> None:
-        """执行所有清理回调"""
-        logger.info("开始清理资源...")
+        """Execute all cleanup callbacks"""
+        logger.info("Starting resource cleanup...")
 
         for callback in self._cleanup_callbacks:
             try:
@@ -100,11 +100,11 @@ class LifecycleManager:
                 else:
                     callback()
             except Exception as e:
-                logger.error(f"清理回调执行失败: {e}")
+                logger.error(f"Cleanup callback execution failed: {e}")
 
-        logger.info("资源清理完成")
+        logger.info("Resource cleanup complete")
 
     @property
     def is_shutdown_requested(self) -> bool:
-        """是否已请求关闭"""
+        """Whether shutdown has been requested"""
         return self._shutting_down

@@ -1,4 +1,4 @@
-"""记忆条目数据模型 - MemoryEntry + MemoryRelation"""
+"""Memory entry data models - MemoryEntry + MemoryRelation"""
 
 from __future__ import annotations
 
@@ -9,42 +9,46 @@ from typing import List, Optional
 
 
 class RelationType(str, Enum):
-    """记忆关系类型"""
-    UPDATES = "updates"    # 新记忆取代了旧记忆
-    EXTENDS = "extends"    # 新记忆扩展/补充了旧记忆
-    DERIVES = "derives"    # 记忆衍生自某个来源
+    """Memory relation type"""
+    UPDATES = "updates"    # New memory replaces old memory
+    EXTENDS = "extends"    # New memory extends/supplements old memory
+    DERIVES = "derives"    # Memory derives from some source
 
 
 @dataclass
 class MemoryEntry:
-    """原子事实级记忆单元.
+    """
+    Memory entry
 
-    表示一个原子事实，带版本链，可追溯事实演变。
+    - References OpenClaw's MemoryEntry design
+    - Supports version chain: root_memory_id → parent_memory_id → id
+    - Supports soft delete: is_forgotten
     """
 
     id: str                           # UUID
-    memory: str                       # 事实文本 (如 "用户喜欢 TypeScript")
-    space_id: str                     # 容器 ID (对话范围)
-    version: int = 1                  # 版本号，每次更新 +1
-    is_latest: bool = True            # 是否为最新版本
-    is_static: bool = False           # 长期 vs 短期记忆
-    is_forgotten: bool = False        # 软删除/遗忘
-    forget_after: Optional[str] = None  # ISO datetime, 自动过期时间
-    parent_memory_id: Optional[str] = None  # 被此版本取代的旧版 ID
-    root_memory_id: Optional[str] = None   # 版本链根 ID, 首版为自身 ID
-    confidence: float = 1.0           # 置信度 [0.0, 1.0]
+    memory: str                       # Fact text (e.g. "User likes TypeScript")
+    space_id: str                     # Container ID (conversation scope)
+    version: int = 1                  # Version number, incremented on each update
+    is_latest: bool = True            # Whether this is the latest version
+    is_static: bool = False           # Long-term vs short-term memory
+    is_forgotten: bool = False        # Soft delete/forget
+    forget_after: Optional[str] = None  # ISO datetime, auto-expiration time
+    parent_memory_id: Optional[str] = None  # ID of the old version replaced by this one
+    root_memory_id: Optional[str] = None   # Version chain root ID, first version points to itself
+    confidence: float = 1.0           # Confidence [0.0, 1.0]
     created_at: Optional[str] = None  # ISO datetime
     updated_at: Optional[str] = None  # ISO datetime
 
 
 @dataclass
 class MemoryRelation:
-    """记忆关系记录.
+    """
+    Memory relation
 
-    表示两个 MemoryEntry 之间的语义关系.
+    Represents the semantic relationship between two MemoryEntry objects.
     """
 
-    source_id: str                 # 源记忆 ID
-    target_id: str                 # 目标记忆 ID
-    relation: RelationType         # 关系类型
+    source_id: str                 # Source memory ID
+    target_id: str                 # Target memory ID
+    relation: RelationType         # Relation type
     created_at: Optional[str] = None  # ISO datetime

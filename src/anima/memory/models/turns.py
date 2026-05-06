@@ -1,4 +1,4 @@
-"""记忆数据模型 - MemoryTurn"""
+"""Memory data model - MemoryTurn"""
 
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -7,7 +7,7 @@ from typing import List, Optional, Dict, Any
 
 @dataclass
 class MemoryTurn:
-    """单次对话数据"""
+    """Single conversation turn data"""
     turn_id: str
     session_id: str
     timestamp: datetime

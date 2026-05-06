@@ -1,7 +1,7 @@
 """
-LangChain 内置工具集成
+LangChain built-in tool integration
 
-提供 LangChain 自带的工具的集成和加载。
+Provides integration and loading of LangChain's built-in tools.
 """
 
 from typing import List, Any, Optional
@@ -10,10 +10,10 @@ from loguru import logger
 
 def get_python_repl_tool() -> Any:
     """
-    获取 Python 代码执行工具（安全版本）
+    Get Python code execution tool (safe version)
 
     Returns:
-        Python REPL 工具实例
+        Python REPL tool instance
     """
     try:
         from langchain_experimental.utilities import PythonREPL
@@ -24,10 +24,10 @@ def get_python_repl_tool() -> Any:
         from pydantic import BaseModel, Field
 
         class PythonInput(BaseModel):
-            code: str = Field(description="要执行的 Python 代码")
+            code: str = Field(description="Python code to execute")
 
         async def python_exec(code: str) -> str:
-            """安全执行 Python 代码并返回结果"""
+            """Safely execute Python code and return the result"""
             try:
                 import asyncio
                 loop = asyncio.get_event_loop()
@@ -36,26 +36,26 @@ def get_python_repl_tool() -> Any:
                     python_repl.run,
                     code
                 )
-                return f"🐍 Python 执行结果：\n\n{result}"
+                return f"Python execution result:\n\n{result}"
             except Exception as e:
-                return f"Python 执行错误: {str(e)}"
+                return f"Python execution error: {str(e)}"
 
         return StructuredTool.from_coro(
             name="python_repl",
-            description="安全执行 Python 代码并返回结果。适用于数学计算、数据处理、算法验证等。",
+            description="Safely execute Python code and return the result. Suitable for mathematical calculations, data processing, algorithm verification, etc.",
             func=python_exec,
             args_schema=PythonInput,
         )
 
     except ImportError:
-        logger.warning("[LangChainTools] PythonREPL 未安装，请运行: pip install langchain-experimental")
+        logger.warning("[LangChainTools] PythonREPL not installed, run: pip install langchain-experimental")
         return None
     except Exception as e:
-        logger.error(f"[LangChainTools] PythonREPL 加载失败: {e}")
+        logger.error(f"[LangChainTools] PythonREPL load failed: {e}")
         return None
 
 
-# 工具注册表
+# Tool registry
 _LANGCHAIN_TOOL_GETTERS = {
     "python_repl": get_python_repl_tool,
 }
@@ -63,16 +63,16 @@ _LANGCHAIN_TOOL_GETTERS = {
 
 def load_langchain_tools(enabled_tools: Optional[List[str]] = None) -> List[Any]:
     """
-    加载 LangChain 工具
+    Load LangChain tools
 
     Args:
-        enabled_tools: 要启用的工具名称列表（None 表示全部启用）
+        enabled_tools: List of tool names to enable (None to enable all)
 
     Returns:
-        工具列表
+        Tool list
     """
     if enabled_tools is None:
-        # 如果未指定，返回空列表（需要显式启用）
+        # If not specified, return empty list (requires explicit enabling)
         return []
 
     tools = []
@@ -83,19 +83,19 @@ def load_langchain_tools(enabled_tools: Optional[List[str]] = None) -> List[Any]
             tool = getter()
             if tool:
                 tools.append(tool)
-                logger.info(f"[LangChainTools] 已加载工具: {tool_name}")
+                logger.info(f"[LangChainTools] Loaded tool: {tool_name}")
         else:
-            logger.warning(f"[LangChainTools] 未知的工具: {tool_name}")
+            logger.warning(f"[LangChainTools] Unknown tool: {tool_name}")
 
-    logger.info(f"[LangChainTools] 共加载 {len(tools)} 个 LangChain 工具")
+    logger.info(f"[LangChainTools] Loaded {len(tools)} LangChain tools in total")
     return tools
 
 
 def get_available_langchain_tools() -> List[str]:
     """
-    获取可用的 LangChain 工具名称列表
+    Get list of available LangChain tool names
 
     Returns:
-        工具名称列表
+        List of tool names
     """
     return list(_LANGCHAIN_TOOL_GETTERS.keys())

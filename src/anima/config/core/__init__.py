@@ -1,4 +1,4 @@
-"""核心配置基础设施"""
+"""Core configuration infrastructure"""
 
 from .base import ProviderConfig
 from .registry import ProviderRegistry

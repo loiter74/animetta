@@ -1,4 +1,4 @@
-"""情感分析节点"""
+"""Emotion analysis node"""
 
 from typing import Dict, Any, Optional
 from loguru import logger
@@ -8,7 +8,7 @@ from .state import AgentState
 
 
 def _get_from_config(config: Optional[RunnableConfig], key: str) -> Optional[Any]:
-    """从 LangGraph config 获取值"""
+    """Get value from LangGraph config"""
     if config:
         return config.get("configurable", {}).get(key)
     return None
@@ -19,44 +19,44 @@ async def emotion_node(
     config: Optional[RunnableConfig] = None,
 ) -> Dict[str, Any]:
     """
-    情感分析节点
+    Emotion analysis node
 
-    输入: state["response_text"]
-    输出: state["emotion"]
+    Input: state["response_text"]
+    Output: state["emotion"]
     """
     session_id = state.get("session_id", "unknown")
     response_text = state.get("response_text", "")
 
-    logger.info(f"[{session_id}] [情感节点] 开始分析...")
+    logger.info(f"[{session_id}] [EmotionNode] Starting analysis...")
 
     if not response_text:
-        logger.warning(f"[{session_id}] [情感节点] 无回复文本，使用默认情感")
+        logger.warning(f"[{session_id}] [EmotionNode] No response text, using default emotion")
         return {"emotion": "neutral"}
 
-    # 从 config 获取 emotion_analyzer
+    # Get emotion_analyzer from config
     emotion_analyzer = _get_from_config(config, "emotion_analyzer")
 
     if not emotion_analyzer:
-        # 尝试从 service_context 获取
+        # Try to get from service_context
         service_context = _get_from_config(config, "service_context")
         if service_context and hasattr(service_context, "emotion_analyzer"):
             emotion_analyzer = service_context.emotion_analyzer
 
     if not emotion_analyzer:
-        logger.debug(f"[{session_id}] [情感节点] 无情感分析器，使用默认情感")
+        logger.debug(f"[{session_id}] [EmotionNode] No emotion analyzer, using default emotion")
         return {"emotion": "neutral"}
 
     try:
-        logger.debug(f"[{session_id}] [情感节点] 调用情感分析器...")
+        logger.debug(f"[{session_id}] [EmotionNode] Calling emotion analyzer...")
 
         result = emotion_analyzer.extract(response_text)
         primary_emotion = result.primary
         confidence = result.confidence
 
-        logger.info(f"[{session_id}] [情感节点] 分析结果: {primary_emotion} (置信度: {confidence:.2f})")
+        logger.info(f"[{session_id}] [EmotionNode] Analysis result: {primary_emotion} (confidence: {confidence:.2f})")
 
         return {"emotion": primary_emotion}
 
     except Exception as e:
-        logger.error(f"[{session_id}] [情感节点] 分析失败: {e}")
+        logger.error(f"[{session_id}] [EmotionNode] Analysis failed: {e}")
         return {"emotion": "neutral"}

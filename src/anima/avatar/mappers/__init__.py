@@ -1,7 +1,7 @@
 """
-表情参数映射器模块
+Expression Parameter Mapper Module
 
-将情绪/表情转换为 Live2D 模型参数
+Converts emotions/expressions to Live2D model parameters
 """
 
 from .base import (
@@ -16,13 +16,13 @@ from .emotion_param_mapper import (
 )
 
 __all__ = [
-    # 接口
+    # Interface
     "IEmotionParamMapper",
-    # 数据类
+    # Data classes
     "ParameterState",
     "ExpressionFrame",
-    # 实现
+    # Implementation
     "EmotionParamMapper",
-    # 常量
+    # Constants
     "DEFAULT_EMOTION_MAPPINGS",
 ]

@@ -1,85 +1,116 @@
 """
-TTS 工厂 - 根据配置创建 TTS 实例
+TTS Factory - creates TTS instances based on configuration
+
+Uses ProviderRegistry for automatic service discovery and instantiation.
+To add a new TTS provider, simply:
+1. Create a config class with @ProviderRegistry.register("tts", "type")
+2. Create a service class with @ProviderRegistry.register_service("tts", "type")
+   and a from_config() classmethod
 """
 
 from typing import List
 from loguru import logger
 
 from .interface import TTSInterface
+from .mock_tts import MockTTS
+from anima.config.core.registry import ProviderRegistry
+from anima.tracing import TracingProxy
 
 
 class TTSFactory:
-    """TTS 服务工厂类"""
-    
+    """TTS service factory class"""
+
     @staticmethod
     def create(provider: str, **kwargs) -> TTSInterface:
         """
-        根据提供商创建 TTS 实例
+        Creates TTS instance by provider via ProviderRegistry.
         
         Args:
-            provider: 提供商名称
-            **kwargs: 传递给具体实现的参数
+            provider: Provider name
+            **kwargs: Parameters passed to build the config object
             
         Returns:
-            TTSInterface: TTS 实例
+            TTSInterface: TTS instance
+            
+        Falls back to MockTTS on failure.
         """
-        if provider == "openai":
-            from .openai_tts import OpenAITTS
-            return OpenAITTS(
-                api_key=kwargs.get("api_key"),
-                model=kwargs.get("model", "tts-1"),
-                voice=kwargs.get("voice", "alloy"),
-                base_url=kwargs.get("base_url")
-            )
-        elif provider == "edge" or provider == "edge_tts":
-            from .edge_tts import EdgeTTS
-            return EdgeTTS(voice=kwargs.get("voice"))
-        elif provider == "glm":
-            from .glm_tts import GLMTTS
-            return GLMTTS(
-                api_key=kwargs.get("api_key"),
-                model=kwargs.get("model", "glm-tts"),
-                voice=kwargs.get("voice", "female"),
-                response_format=kwargs.get("response_format", "wav"),
-                speed=kwargs.get("speed", 1.0),
-                volume=kwargs.get("volume", 1.0)
-            )
-        elif provider == "chattts":
-            from .chattts_tts import ChatTTSTTS
-            return ChatTTSTTS(
-                model_path=kwargs.get("model_path", "E:/anima_data/models/ChatTTS"),
-                device=kwargs.get("device", "cpu"),
-                compile=kwargs.get("compile", False),
-                speaker_seed=kwargs.get("speaker_seed", 42),
-                temperature=kwargs.get("temperature", 0.3),
-                top_p=kwargs.get("top_p", 0.7),
-                top_k=kwargs.get("top_k", 20),
-            )
-        elif provider == "vibe_voice":
-            from .vibe_voice_tts import VibeVoiceTTS
-            return VibeVoiceTTS(
-                api_key=kwargs.get("api_key"),
-                model=kwargs.get("model", "vibe-voice-1.5b"),
-                voice=kwargs.get("voice", "default"),
-                base_url=kwargs.get("base_url", "http://localhost:8765"),
-                # VibeVoice 专有参数（需在 services.yaml 中配置，
-                # 或通过修改 service_context.init_tts() 传入）
-                mode=kwargs.get("mode", "remote"),
-                model_size=kwargs.get("model_size", "1.5b"),
-                model_path=kwargs.get("model_path"),
-                device=kwargs.get("device", "cuda:0"),
-                num_speakers=kwargs.get("num_speakers", 1),
-                language=kwargs.get("language", "zh"),
-            )
-        elif provider == "mock":
-            from .mock_tts import MockTTS
+        config = TTSFactory._build_config(provider, kwargs)
+        if config is None:
+            logger.warning(f"Unknown TTS provider: {provider}, using Mock implementation")
             return MockTTS()
-        else:
-            logger.warning(f"未知的 TTS 提供商: {provider}，使用 Mock 实现")
-            from .mock_tts import MockTTS
+
+        try:
+            svc = ProviderRegistry.create_service("tts", config)
+            return TracingProxy(svc, service_name="tts")
+        except Exception as e:
+            logger.warning(f"Failed to create TTS ({provider}): {e}, falling back to Mock")
             return MockTTS()
-    
+
+    @staticmethod
+    def _build_config(provider: str, kwargs: dict):
+        """Build a config Pydantic object from kwargs, or None if unknown."""
+        try:
+            if provider == "openai":
+                from anima.config.providers.tts.openai import OpenAITTSConfig
+                return OpenAITTSConfig(
+                    api_key=kwargs.get("api_key"),
+                    model=kwargs.get("model", "tts-1"),
+                    voice=kwargs.get("voice", "alloy"),
+                    base_url=kwargs.get("base_url"),
+                )
+            elif provider in ("edge", "edge_tts"):
+                from anima.config.providers.tts.edge import EdgeTTSConfig
+                return EdgeTTSConfig(
+                    voice=kwargs.get("voice", "zh-CN-XiaoxiaoNeural"),
+                    rate=kwargs.get("rate"),
+                    pitch=kwargs.get("pitch"),
+                    preset=kwargs.get("preset"),
+                )
+            elif provider == "glm":
+                from anima.config.providers.tts.glm import GLMTTSConfig
+                return GLMTTSConfig(
+                    api_key=kwargs.get("api_key"),
+                    model=kwargs.get("model", "glm-tts"),
+                    voice=kwargs.get("voice", "female"),
+                    response_format=kwargs.get("response_format", "wav"),
+                    speed=kwargs.get("speed", 1.0),
+                    volume=kwargs.get("volume", 1.0),
+                )
+            elif provider == "chattts":
+                from anima.config.providers.tts.chattts import ChatTTSConfig
+                return ChatTTSConfig(
+                    model_path=kwargs.get("model_path", "E:/anima_data/models/ChatTTS"),
+                    device=kwargs.get("device", "cpu"),
+                    compile=kwargs.get("compile", False),
+                    speaker_seed=kwargs.get("speaker_seed", 42),
+                    temperature=kwargs.get("temperature", 0.3),
+                    top_p=kwargs.get("top_p", 0.7),
+                    top_k=kwargs.get("top_k", 20),
+                )
+            elif provider == "vibe_voice":
+                from anima.config.providers.tts.vibe_voice import VibeVoiceTTSConfig
+                return VibeVoiceTTSConfig(
+                    api_key=kwargs.get("api_key"),
+                    model=kwargs.get("model", "vibe-voice-1.5b"),
+                    voice=kwargs.get("voice", "default"),
+                    base_url=kwargs.get("base_url", "http://localhost:8765"),
+                    mode=kwargs.get("mode", "remote"),
+                    model_size=kwargs.get("model_size", "1.5b"),
+                    model_path=kwargs.get("model_path"),
+                    device=kwargs.get("device", "cuda:0"),
+                    num_speakers=kwargs.get("num_speakers", 1),
+                    language=kwargs.get("language", "zh"),
+                )
+            elif provider == "mock":
+                from anima.config.providers.tts.mock import MockTTSConfig
+                return MockTTSConfig()
+            else:
+                return None
+        except ImportError as e:
+            logger.warning(f"Config class not available for {provider}: {e}")
+            return None
+
     @staticmethod
     def get_available_providers() -> List[str]:
-        """获取所有可用的提供商列表"""
-        return ["mock", "openai", "edge_tts", "glm", "chattts", "vibe_voice"]
+        """Get list of all available providers"""
+        return list(ProviderRegistry.list_services("tts"))

@@ -1,4 +1,4 @@
-"""LangGraph 状态定义"""
+"""LangGraph state definition"""
 
 from typing import TypedDict, Annotated, Sequence, Optional, Any, Dict, List, Union
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage
@@ -6,31 +6,31 @@ from langgraph.graph.message import add_messages
 
 
 class AgentState(TypedDict):
-    """LangGraph Agent 状态"""
+    """LangGraph Agent state"""
 
-    # 输入
+    # Input
     input_type: str
     raw_audio: Optional[bytes]
     user_text: str
 
-    # LLM 对话
+    # LLM conversation
     messages: Annotated[Sequence[BaseMessage], add_messages]
     system_prompt: Optional[str]
 
-    # 工具调用
+    # Tool calling
     tool_calls: Optional[List[Dict[str, Any]]]
     tool_results: Optional[List[Dict[str, Any]]]
 
-    # 输出
+    # Output
     response_text: str
     response_chunks: List[str]
     tts_audio: Optional[Union[bytes, str]]
     emotion: Optional[str]
 
-    # 控制
+    # Control
     control_signal: Optional[str]
 
-    # 元数据
+    # Metadata
     session_id: str
     persona: Optional[Dict[str, Any]]
     channel_id: Optional[str]
@@ -38,10 +38,13 @@ class AgentState(TypedDict):
     user_name: Optional[str]
     metadata: Dict[str, Any]
 
-    # 错误处理
+    # Error handling
     error: Optional[str]
     should_retry: bool
     retry_count: int
+
+    # Performance timing (collected at runtime for analysis)
+    _timings: List[Dict[str, Any]]
 
 
 def create_initial_state(
@@ -55,7 +58,7 @@ def create_initial_state(
     user_id: Optional[str] = None,
     user_name: Optional[str] = None,
 ) -> AgentState:
-    """创建初始状态"""
+    """Create initial state"""
     return {
         "input_type": input_type,
         "raw_audio": raw_audio,
@@ -78,20 +81,36 @@ def create_initial_state(
         "error": None,
         "should_retry": False,
         "retry_count": 0,
+        "_timings": [],
     }
 
 
 def create_user_message(text: str, user_id: Optional[str] = None, user_name: Optional[str] = None) -> HumanMessage:
-    """创建用户消息"""
+    """Create user message"""
     content = f"[{user_name}]: {text}" if user_name else text
     return HumanMessage(content=content, name=user_id or "user")
 
 
 def create_ai_message(text: str) -> AIMessage:
-    """创建 AI 消息"""
+    """Create AI message"""
     return AIMessage(content=text)
 
 
 def create_system_message(text: str) -> SystemMessage:
-    """创建系统消息"""
+    """Create system message"""
     return SystemMessage(content=text)
+
+
+# ---------------------------------------------------------------------------
+# Timing helper – appends timing entries to AgentState._timings
+# ---------------------------------------------------------------------------
+
+def log_timing(state: AgentState, step: str, duration_ms: float, detail: str = "") -> None:
+    """Append a timing entry to the state for performance analysis."""
+    timings = state.get("_timings", [])
+    timings.append({
+        "step": step,
+        "duration_ms": round(duration_ms, 2),
+        "detail": detail,
+    })
+    state["_timings"] = timings

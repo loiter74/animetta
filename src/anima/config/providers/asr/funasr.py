@@ -1,4 +1,4 @@
-"""FunASR Paraformer ASR 提供者配置"""
+"""FunASR Paraformer ASR provider configuration"""
 
 from typing import Literal, Optional, List
 from pydantic import Field
@@ -9,73 +9,73 @@ from .base import ASRBaseConfig
 
 @ProviderRegistry.register("asr", "funasr")
 class FunASRConfig(ASRBaseConfig):
-    """FunASR Paraformer 配置
+    """FunASR Paraformer configuration
 
-    FunASR 是阿里开源的语音识别工具包，支持：
-    - paraformer-zh: 中文离线语音识别（推荐）
-    - paraformer-zh-streaming: 中文流式语音识别
-    - paraformer-en: 英文语音识别
+    FunASR is Alibaba's open-source speech recognition toolkit, supporting:
+    - paraformer-zh: Chinese offline speech recognition (recommended)
+    - paraformer-zh-streaming: Chinese streaming speech recognition
+    - paraformer-en: English speech recognition
 
-    特点：
-    - 中文识别准确率比 Whisper 更高
-    - 支持实时流式识别
-    - 可选配 VAD、标点恢复、说话人分离
+    Features:
+    - Higher Chinese recognition accuracy than Whisper
+    - Supports real-time streaming recognition
+    - Optional VAD, punctuation restoration, speaker diarization
     """
     type: Literal["funasr"] = "funasr"
 
-    # 模型配置
+    # Model configuration
     model: str = Field(
         default="paraformer-zh",
-        description="FunASR 模型名称 (paraformer-zh/paraformer-zh-streaming/paraformer-en)"
+        description="FunASR model name (paraformer-zh/paraformer-zh-streaming/paraformer-en)"
     )
 
-    # 可选的辅助模型
+    # Optional auxiliary models
     vad_model: Optional[str] = Field(
         default="fsmn-vad",
-        description="VAD 模型 (fsmn-vad)，设为 null 禁用"
+        description="VAD model (fsmn-vad), set to null to disable"
     )
 
     punc_model: Optional[str] = Field(
         default="ct-punc",
-        description="标点恢复模型 (ct-punc)，设为 null 禁用"
+        description="Punctuation restoration model (ct-punc), set to null to disable"
     )
 
     spk_model: Optional[str] = Field(
         default=None,
-        description="说话人识别模型 (cam++)，设为 null 禁用"
+        description="Speaker diarization model (cam++), set to null to disable"
     )
 
-    # 设备配置
+    # Device configuration
     device: str = Field(
         default="cuda",
-        description="运行设备 (cpu/cuda)"
+        description="Device (cpu/cuda)"
     )
 
     ncpu: int = Field(
         default=4,
         ge=1,
-        description="CPU 线程数（用于计算）"
+        description="Number of CPU threads (for computation)"
     )
 
-    # 流式识别参数
+    # Streaming recognition parameters
     chunk_size: List[int] = Field(
         default_factory=lambda: [0, 10, 5],
-        description="流式识别块大小 [0, 10, 5] 表示首块0秒，后续每块10秒，5秒重叠"
+        description="Streaming chunk size [0, 10, 5] means first chunk 0s, subsequent chunks 10s with 5s overlap"
     )
 
-    # 热词功能
+    # Hotword feature
     hotword: Optional[str] = Field(
         default=None,
-        description="热词文件路径或热词字符串"
+        description="Hotword file path or hotword string"
     )
 
-    # 模型缓存目录
+    # Model cache directory
     model_hub: str = Field(
         default="ms",  # ms = ModelScope, hf = HuggingFace
-        description="模型下载源 (ms=ModelScope, hf=HuggingFace)"
+        description="Model download source (ms=ModelScope, hf=HuggingFace)"
     )
 
     disable_update: bool = Field(
         default=True,
-        description="禁用模型自动更新检查"
+        description="Disable model auto-update check"
     )

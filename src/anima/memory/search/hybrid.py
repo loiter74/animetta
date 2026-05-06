@@ -1,15 +1,15 @@
 """
-混合搜索: 向量语义 + BM25 关键词加权融合.
+Hybrid search: vector semantic + BM25 keyword weighted fusion.
 
-参考 OpenClaw 的 hybrid.ts:39-111:
-- 默认权重: 70% 向量 + 30% 关键词
-- BM25 rank 归一化到 [0,1]
-- 按融合分数排序, 去重后返回 top-K
+Reference OpenClaw's hybrid.ts:39-111:
+- Default weights: 70% vector + 30% keyword
+- BM25 rank normalized to [0,1]
+- Sort by fused score, deduplicate and return top-K
 
-公式:
-    final_score = vector_weight * vector_similarity + keyword_weight * keyword_score
-    keyword_score = 1 / (1 + rank)     # rank 从 0 开始, 0 最好
-    vector_similarity = 1 - cosine_distance
+Formula:
+final_score = vector_weight * vector_similarity + keyword_weight * keyword_score
+keyword_score = 1 / (1 + rank)     # rank starts from 0, 0 is best
+vector_similarity = 1 - cosine_distance
 """
 
 from __future__ import annotations
@@ -30,24 +30,24 @@ def hybrid_search(
     query_embedding: list[float] | None = None,
 ) -> list[SearchResult]:
     """
-    执行混合检索.
+    Hybrid search main flow.
 
-    1. 分别从 Chroma (向量) 和 SQLite FTS5 (关键词) 获取候选
-    2. 归一化各自分数到 [0, 1]
-    3. 加权融合
-    4. 去重, 按分数降序返回 top-K
+    1. Get candidates from Chroma (vector) and SQLite FTS5 (keyword)
+    2. Normalize each score to [0, 1]
+    3. Weighted fusion
+    4. Deduplicate, return top-K sorted by score descending
 
     Args:
-        query: 搜索查询文本
-        sqlite_store: SQLite 存储实例
-        chroma_store: Chroma 存储实例
-        config: 搜索配置
-        max_results: 返回结果数上限
-        min_score: 最低分数阈值
-        query_embedding: 预计算的查询向量 (可选)
+        query: Search query text
+        sqlite_store: SQLite store instance
+        chroma_store: Chroma store instance
+        config: Search configuration
+        max_results: Maximum number of results to return
+        min_score: Minimum score threshold
+        query_embedding: Pre-computed query embedding (optional)
 
     Returns:
-        按分数降序排列的 SearchResult 列表
+        List of SearchResult sorted by score descending
     """
     if config is None:
         config = SearchConfig()
@@ -58,9 +58,9 @@ def hybrid_search(
 
     pool_size = max_results * config.candidate_multiplier
 
-    # ── 1. 向量检索 ──────────────────────────────────────
+    # ── 1. Vector search ─────────────────────────────────
     vector_candidates: dict[int, float] = {}  # rowid -> similarity
-    vector_metadata: dict[int, dict] = {}  # rowid -> metadata (包含 oral_version)
+    vector_metadata: dict[int, dict] = {}  # rowid -> metadata (includes oral_version)
     try:
         if query_embedding is not None:
             v_results = chroma_store.vector_search(
@@ -72,24 +72,24 @@ def hybrid_search(
             )
         for chroma_id, distance, metadata in v_results:
             rowid = int(chroma_id)
-            similarity = max(0.0, 1.0 - distance)  # 余弦距离 -> 相似度
+            similarity = max(0.0, 1.0 - distance)  # Cosine distance -> similarity
             vector_candidates[rowid] = similarity
             vector_metadata[rowid] = metadata
     except Exception:
-        pass  # 向量搜索失败时降级为纯关键词搜索
+        pass  # Fall back to keyword-only search when vector search fails
 
-    # ── 2. 关键词检索 (BM25) ─────────────────────────────
+    # ── 2. Keyword search (BM25) ─────────────────────────
     keyword_candidates: dict[int, float] = {}  # rowid -> normalized_score
     try:
         kw_results = sqlite_store.keyword_search(query, limit=pool_size)
         for rank_idx, (rowid, _bm25_rank) in enumerate(kw_results):
-            # OpenClaw 的归一化: score = 1 / (1 + rank)
-            # rank 从 0 开始, 第一名得 1.0, 第二名得 0.5, ...
+            # OpenClaw normalization: score = 1 / (1 + rank)
+            # rank starts at 0; first gets 1.0, second gets 0.5, ...
             keyword_candidates[rowid] = 1.0 / (1.0 + rank_idx)
     except Exception:
-        pass  # FTS 搜索失败时降级为纯向量搜索
+        pass  # Fall back to pure vector search when FTS search fails
 
-    # ── 3. 加权融合 ──────────────────────────────────────
+    # ── 3. Weighted fusion ───────────────────────────────
     all_rowids = set(vector_candidates.keys()) | set(keyword_candidates.keys())
     scored: list[tuple[int, float, float, float]] = []  # (rowid, final, vec, kw)
 
@@ -99,10 +99,10 @@ def hybrid_search(
         final = config.vector_weight * vec_score + config.keyword_weight * kw_score
         scored.append((rowid, final, vec_score, kw_score))
 
-    # 按融合分数降序
+    # Sort by fused score descending
     scored.sort(key=lambda x: x[1], reverse=True)
 
-    # ── 4. 构建结果 ──────────────────────────────────────
+    # ── 4. Build results ─────────────────────────────────
     results: list[SearchResult] = []
     for rowid, final_score, vec_score, kw_score in scored[:max_results]:
         if final_score < min_score:
@@ -111,11 +111,11 @@ def hybrid_search(
         if chunk is None:
             continue
 
-        # 从 Chroma metadata 获取口语化版本
+        # Get colloquial version from Chroma metadata
         metadata = vector_metadata.get(rowid, {})
         oral_version = metadata.get("oral_version", "") or None
 
-        # 优先使用口语化版本，如果没有则使用原始文本
+        # Prefer colloquial version, fall back to original text
         display_text = oral_version if oral_version else chunk.text
         results.append(
             SearchResult(

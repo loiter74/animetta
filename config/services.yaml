@@ -62,6 +62,28 @@ tts:
     voice: "zh-CN-XiaoxiaoNeural"  # 中文女声
     # 其他: zh-CN-YunxiNeural(男), zh-CN-YunyangNeural(新闻), en-US-JennyNeural(英)
 
+  # Edge TTS - Neuro-sama 风格（电子可爱音）
+  edge_neurosama:
+    type: edge
+    preset: "neurosama"
+    voice: "zh-CN-XiaoxiaoNeural"
+    rate: "+25%"     # 语速加快 25%
+    pitch: "+120Hz"  # 音高升高 120Hz（更明显）
+
+  # Edge TTS - 高音版（手动调节用）
+  edge_high:
+    type: edge
+    voice: "zh-CN-XiaoxiaoNeural"
+    rate: "+15%"
+    pitch: "+60Hz"
+
+  # Edge TTS - 极速高音版
+  edge_extreme:
+    type: edge
+    voice: "zh-CN-XiaoxiaoNeural"
+    rate: "+30%"
+    pitch: "+150Hz"
+
   # 智谱 GLM TTS
   glm:
     type: glm

@@ -1,4 +1,4 @@
-"""TTS 提供者配置模块"""
+"""TTS provider configuration module"""
 
 from typing import Annotated, Union
 from pydantic import Field
@@ -22,7 +22,7 @@ __all__ = [
     "TTSConfig",
 ]
 
-# Discriminated Union 类型
+# Discriminated Union type
 TTSConfig = Annotated[
     Union[
         MockTTSConfig,

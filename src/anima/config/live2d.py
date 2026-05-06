@@ -1,6 +1,6 @@
 """
-Live2D 配置类
-定义 Live2D 模型的配置和表情映射
+Live2D configuration class
+Defines Live2D model configuration and expression mapping
 """
 
 from typing import Dict, List, Optional
@@ -11,33 +11,33 @@ from .core.base import BaseConfig
 
 
 class Live2DModelConfig(BaseModel):
-    """Live2D 模型配置"""
-    path: str = Field(default="/live2d/haru/haru_greeter_t03.model3.json", description="模型文件路径")
-    scale: float = Field(default=0.5, description="模型缩放比例")
-    position: Dict[str, float] = Field(default_factory=lambda: {"x": 0, "y": 0}, description="模型位置 (x, y)")
+    """Live2D model configuration"""
+    path: str = Field(default="/live2d/haru/haru_greeter_t03.model3.json", description="Model file path")
+    scale: float = Field(default=0.5, description="Model scale ratio")
+    position: Dict[str, float] = Field(default_factory=lambda: {"x": 0, "y": 0}, description="Model position (x, y)")
 
 
 class Live2DLipSyncConfig(BaseModel):
-    """Live2D 口型同步配置"""
-    enabled: bool = Field(default=True, description="是否启用口型同步")
-    sensitivity: float = Field(default=1.0, ge=0.0, le=2.0, description="嘴部动作灵敏度")
-    smoothing: float = Field(default=0.5, ge=0.0, le=1.0, description="平滑系数")
+    """Live2D lip sync configuration"""
+    enabled: bool = Field(default=True, description="Whether to enable lip sync")
+    sensitivity: float = Field(default=1.0, ge=0.0, le=2.0, description="Mouth movement sensitivity")
+    smoothing: float = Field(default=0.5, ge=0.0, le=1.0, description="Smoothing factor")
 
 
 class Live2DConfig(BaseConfig):
     """
-    Live2D 配置
+    Live2D configuration
 
-    基于情感内容的 Live2D 表情控制
+    Emotion-based Live2D expression control
     """
-    # 是否启用 Live2D
-    enabled: bool = Field(default=True, description="是否启用 Live2D")
+    # Whether to enable Live2D
+    enabled: bool = Field(default=True, description="Whether to enable Live2D")
 
-    # 模型配置
-    model: Live2DModelConfig = Field(default_factory=Live2DModelConfig, description="Live2D 模型配置")
+    # Model configuration
+    model: Live2DModelConfig = Field(default_factory=Live2DModelConfig, description="Live2D model configuration")
 
-    # 表情映射：emotion name → Live2D motion index
-    # 例如: {"happy": 3, "sad": 1, "angry": 2}
+    # Emotion mapping: emotion name → Live2D motion index
+    # Example: {"happy": 3, "sad": 1, "angry": 2}
     emotion_map: Dict[str, int] = Field(
         default_factory=lambda: {
             "happy": 3,
@@ -47,39 +47,39 @@ class Live2DConfig(BaseConfig):
             "neutral": 0,
             "thinking": 5,
         },
-        description="表情名称到 Live2D 动作索引的映射"
+        description="Mapping from emotion name to Live2D motion index"
     )
 
-    # 有效表情列表（用于提示词）
+    # Valid emotion list (for prompts)
     valid_emotions: List[str] = Field(
         default_factory=lambda: ["happy", "sad", "angry", "surprised", "neutral", "thinking"],
-        description="有效的表情列表"
+        description="List of valid emotions"
     )
 
-    # 口型同步配置
-    lip_sync: Live2DLipSyncConfig = Field(default_factory=Live2DLipSyncConfig, description="口型同步配置")
+    # Lip sync configuration
+    lip_sync: Live2DLipSyncConfig = Field(default_factory=Live2DLipSyncConfig, description="Lip sync configuration")
 
-    # 提示词模板路径
+    # Prompt template path
     prompt_template_path: str = Field(
         default="config/prompts/live2d_expression.txt",
-        description="表情使用指导提示词模板路径"
+        description="Expression usage guide prompt template path"
     )
 
     @classmethod
     def from_yaml(cls, path: str) -> "Live2DConfig":
         """
-        从 YAML 文件加载配置
+        Load configuration from YAML file
 
         Args:
-            path: 配置文件路径
+            path: Configuration file path
 
         Returns:
-            Live2DConfig 实例
+            Live2DConfig instance
         """
         import yaml
         path = Path(path)
         if not path.exists():
-            logger.warning(f"Live2D 配置文件不存在: {path}，使用默认配置")
+            logger.warning(f"Live2D config file not found: {path}, using default config")
             return cls()
 
         with open(path, 'r', encoding='utf-8') as f:
@@ -88,44 +88,44 @@ class Live2DConfig(BaseConfig):
         return cls(**data)
 
     def get_emotion_names(self) -> List[str]:
-        """获取所有表情名称列表"""
+        """Get list of all emotion names"""
         return list(self.emotion_map.keys())
 
     def get_motion_index(self, emotion: str) -> Optional[int]:
         """
-        获取表情对应的 Live2D 动作索引
+        Get the Live2D motion index for an emotion
 
         Args:
-            emotion: 表情名称
+            emotion: Emotion name
 
         Returns:
-            动作索引，如果不存在则返回 None
+            Motion index, or None if not found
         """
         return self.emotion_map.get(emotion)
 
     def is_valid_emotion(self, emotion: str) -> bool:
         """
-        检查表情是否有效
+        Check if an emotion is valid
 
         Args:
-            emotion: 表情名称
+            emotion: Emotion name
 
         Returns:
-            是否有效
+            Whether valid
         """
         return emotion in self.emotion_map
 
 
-# 全局 Live2D 配置实例（延迟加载）
+# Global Live2D config instance (lazy loaded)
 _live2d_config: Optional[Live2DConfig] = None
 
 
 def get_live2d_config() -> Live2DConfig:
     """
-    获取全局 Live2D 配置（单例）
+    Get global Live2D configuration (singleton)
 
     Returns:
-        Live2DConfig 实例
+        Live2DConfig instance
     """
     global _live2d_config
     if _live2d_config is None:
@@ -138,10 +138,10 @@ def get_live2d_config() -> Live2DConfig:
 
 
 def reset_live2d_config():
-    """重置全局 Live2D 配置（用于测试）"""
+    """Reset global Live2D configuration (for testing)"""
     global _live2d_config
     _live2d_config = None
 
 
-# 导入 logger
+# Import logger
 from loguru import logger

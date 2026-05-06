@@ -1,4 +1,4 @@
-"""VibeVoice TTS 提供者配置 (Microsoft 开源长文本多说话人 TTS)"""
+"""VibeVoice TTS provider configuration (Microsoft open-source long-form multi-speaker TTS)"""
 
 from typing import Literal, Optional
 from pydantic import Field
@@ -9,58 +9,58 @@ from .base import TTSBaseConfig
 
 @ProviderRegistry.register("tts", "vibe_voice")
 class VibeVoiceTTSConfig(TTSBaseConfig):
-    """VibeVoice TTS 配置
+    """VibeVoice TTS configuration
 
-    支持 Local（本地 GPU 推理）和 Remote（HTTP API）两种模式。
-    默认 Remote 模式指向本地 localhost:8765 的 VibeVoice 推理服务。
-    RTX 5090D 可流畅运行 1.5B (~6GB VRAM) 和 7B (~16GB VRAM) 模型。
+    Supports Local (local GPU inference) and Remote (HTTP API) modes.
+    Default Remote mode points to local VibeVoice inference service at localhost:8765.
+    RTX 5090D can run 1.5B (~6GB VRAM) and 7B (~16GB VRAM) models smoothly.
     """
     type: Literal["vibe_voice"] = "vibe_voice"
 
-    # === 模型标识 ===
+    # === Model identifier ===
     model: str = Field(
         default="vibe-voice-1.5b",
-        description="模型名称标识（用于日志和远程 API 请求）",
+        description="Model name identifier (for logging and remote API requests)",
     )
 
-    # === 部署模式 ===
+    # === Deployment mode ===
     mode: str = Field(
         default="remote",
-        description='部署模式: "remote"（HTTP API）或 "local"（本地 subprocess 推理）',
+        description='Deployment mode: "remote" (HTTP API) or "local" (local subprocess inference)',
     )
 
-    # === Remote 模式参数 ===
+    # === Remote mode parameters ===
     base_url: str = Field(
         default="http://localhost:8765",
-        description="Remote 模式: VibeVoice 推理服务地址",
+        description="Remote mode: VibeVoice inference service URL",
     )
 
-    # === Local 模式参数 ===
+    # === Local mode parameters ===
     model_size: str = Field(
         default="1.5b",
-        description='Local 模式: 模型大小 "1.5b" 或 "7b"',
+        description='Local mode: model size "1.5b" or "7b"',
     )
     model_path: Optional[str] = Field(
         default=None,
-        description="Local 模式: 模型权重路径（默认 HuggingFace 自动下载）",
+        description="Local mode: model weight path (default HuggingFace auto-download)",
     )
     device: str = Field(
         default="cuda:0",
-        description="Local 模式: 推理设备 cuda:0 / cpu",
+        description="Local mode: inference device cuda:0 / cpu",
     )
 
-    # === 合成参数 ===
+    # === Synthesis parameters ===
     voice: str = Field(
         default="default",
-        description="默认音色名称",
+        description="Default voice name",
     )
     num_speakers: int = Field(
         default=1,
         ge=1,
         le=4,
-        description="说话人数 (VibeVoice 支持最多 4 speaker)",
+        description="Number of speakers (VibeVoice supports up to 4 speakers)",
     )
     language: str = Field(
         default="zh",
-        description='语言: "zh" / "en" / "mix"',
+        description='Language: "zh" / "en" / "mix"',
     )

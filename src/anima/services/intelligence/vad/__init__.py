@@ -1,11 +1,11 @@
 """
-VAD (语音活动检测) 模块
+VAD (Voice Activity Detection) module
 """
 
 from .interface import VADInterface, VADState, VADResult
 from .factory import VADFactory
 
-# 导入实现以触发 ProviderRegistry 注册
+# Import implementations to trigger ProviderRegistry registration
 try:
     from . import silero_vad, mock_vad
 except ImportError:

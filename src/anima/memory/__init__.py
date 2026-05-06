@@ -1,30 +1,30 @@
 """
-记忆系统 - Wiki 架构 (Karpathy-style)
+Memory System - Wiki Architecture (Karpathy-style)
 
-目录约定:
-- raw/     不可变的原始对话日志
-- wiki/    AI 维护的知识库
-  - entities/   人物、角色、项目
-  - concepts/   偏好、兴趣、模式
-  - sources/    每日对话摘要
-  - synthesis/  跨源综合分析
-  - index.md    总目录
-  - log.md      操作日志
+Directory conventions:
+- raw/     Immutable raw conversation logs
+- wiki/    AI-maintained knowledge base
+  - entities/   People, characters, projects
+  - concepts/   Preferences, interests, patterns
+  - sources/    Daily conversation summaries
+  - synthesis/  Cross-source synthesis analysis
+  - index.md    Master table of contents
+  - log.md      Operation log
 
-底层存储: SQLite FTS5 + Chroma 向量 + Markdown 文件
+Backend storage: SQLite FTS5 + Chroma vector + Markdown files
 """
 
-# 核心入口
+# Core entry point
 from .models.turns import MemoryTurn
 from .system import MemorySystem
 
-# 底层存储组件
+# Backend storage components
 from .config import MemoryConfig, ChunkConfig, SearchConfig, EmbeddingConfig
 from .manager import MemoryManager
 from .models.base import SearchResult, Chunk, FileEntry, MemoryFlushSignal
 from .tools import get_tool_schemas, execute_tool
 
-# Wiki 架构组件
+# Wiki architecture components
 from .wiki import (
     WikiManager,
     WikiIngestor,
@@ -36,10 +36,10 @@ from .wiki import (
 )
 
 __all__ = [
-    # 核心
+    # Core
     "MemoryTurn",
     "MemorySystem",
-    # 底层
+    # Backend
     "MemoryConfig",
     "ChunkConfig",
     "SearchConfig",
@@ -57,7 +57,7 @@ __all__ = [
     "LintReport",
     "WikiPage",
     "PageType",
-    # 工具
+    # Tools
     "get_tool_schemas",
     "execute_tool",
 ]

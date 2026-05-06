@@ -97,9 +97,10 @@ async function fetchTraces() {
     });
 }
 
-// === Trace Detail ===
+// === Trace Detail (with Flame Chart) ===
 async function showTraceDetail(traceId) {
-    const res = await fetch(`${API_BASE}/api/stats/traces/${traceId}`);
+    // Fetch the tree endpoint (includes flat spans + tree structure)
+    const res = await fetch(`${API_BASE}/api/stats/traces/${traceId}/tree`);
     const data = await res.json();
     if (data.error) { alert(data.error); return; }
 
@@ -107,6 +108,9 @@ async function showTraceDetail(traceId) {
     const time = data.created_at
         ? new Date(data.created_at + "Z").toLocaleString()
         : "-";
+
+    const totalDuration = data.total_duration_ms || 1;
+    const treeHtml = renderTree(data.tree || [], totalDuration, 0);
 
     detail.innerHTML = `
         <div class="trace-meta">
@@ -116,7 +120,7 @@ async function showTraceDetail(traceId) {
             </div>
             <div class="trace-meta-item">
                 <label>Total Duration</label>
-                <span>${data.total_duration_ms ? data.total_duration_ms.toFixed(0) + "ms" : "-"}</span>
+                <span>${totalDuration.toFixed(0) + "ms"}</span>
             </div>
             <div class="trace-meta-item">
                 <label>Status</label>
@@ -127,7 +131,9 @@ async function showTraceDetail(traceId) {
                 <span>${time}</span>
             </div>
         </div>
-        <h3>Spans (${data.spans.length})</h3>
+        <h3>Flame Chart (${data.spans.length} spans)</h3>
+        <div class="flame-chart">${treeHtml}</div>
+        <h3>Span List</h3>
         <ul class="span-list">
             ${data.spans.map(s => `
                 <li class="span-item">
@@ -140,6 +146,36 @@ async function showTraceDetail(traceId) {
     `;
 
     document.getElementById("trace-modal").classList.remove("hidden");
+}
+
+// ── Flame Chart Renderer ──
+
+const SPAN_COLORS = [
+    "#38bdf8", "#f472b6", "#a78bfa", "#34d399",
+    "#fb923c", "#fbbf24", "#818cf8", "#2dd4bf",
+    "#f87171", "#e879f9", "#22d3ee", "#facc15",
+];
+
+function renderTree(nodes, totalDuration, depth) {
+    if (!nodes || nodes.length === 0) return "";
+    const depthEm = Math.min(depth * 1.2, 6);
+    let html = "";
+    nodes.forEach((node, i) => {
+        const dur = node.duration_ms || 0;
+        const pct = totalDuration > 0 ? (dur / totalDuration) * 100 : 0;
+        const color = SPAN_COLORS[depth % SPAN_COLORS.length];
+        const label = `${node.node_name} — ${dur.toFixed(1)}ms`;
+        html += `
+            <div class="flame-bar-wrap" style="margin-left: ${depthEm}em;">
+                <div class="flame-bar" style="width: ${Math.max(pct, 2)}%; background: ${color};"
+                     title="${escapeHtml(label)}">
+                    <span class="flame-label">${escapeHtml(label)}</span>
+                </div>
+            </div>
+            ${renderTree(node.children || [], totalDuration, depth + 1)}
+        `;
+    });
+    return html;
 }
 
 function closeModal() {

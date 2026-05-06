@@ -1,7 +1,7 @@
 """
-工具配置加载器
+Tool configuration loader
 
-从 config/tools.yaml 加载工具配置。
+Loads tool configuration from config/tools.yaml.
 """
 
 import yaml
@@ -12,42 +12,42 @@ from loguru import logger
 
 def load_tools_config(config_path: Optional[str] = None) -> Dict[str, Any]:
     """
-    加载工具配置
+    Load tool configuration
 
     Args:
-        config_path: 配置文件路径（默认为 config/tools.yaml）
+        config_path: Configuration file path (default: config/tools.yaml)
 
     Returns:
-        Dict: 工具配置字典
+        Dict: Tool configuration dictionary
     """
     if config_path is None:
-        # 默认路径
+        # Default path
         config_path = Path(__file__).parent.parent.parent / "config" / "tools.yaml"
 
     config_path = Path(config_path)
 
     if not config_path.exists():
-        logger.warning(f"[工具配置] 配置文件不存在: {config_path}，使用默认配置")
+        logger.warning(f"[Tool Config] Config file not found: {config_path}, using default config")
         return _get_default_config()
 
     try:
         with open(config_path, "r", encoding="utf-8") as f:
             config = yaml.safe_load(f)
 
-        logger.info(f"[工具配置] 已加载配置: {config_path}")
+        logger.info(f"[Tool Config] Loaded config: {config_path}")
         return config or {}
 
     except Exception as e:
-        logger.error(f"[工具配置] 加载失败: {e}，使用默认配置")
+        logger.error(f"[Tool Config] Load failed: {e}, using default config")
         return _get_default_config()
 
 
 def _get_default_config() -> Dict[str, Any]:
     """
-    获取默认工具配置
+    Get default tool configuration
 
     Returns:
-        Dict: 默认配置字典
+        Dict: Default configuration dictionary
     """
     return {
         "builtin_tools": [
@@ -69,15 +69,15 @@ def _get_default_config() -> Dict[str, Any]:
 
 def validate_tools_config(config: Dict[str, Any]) -> bool:
     """
-    验证工具配置
+    Validate tool configuration
 
     Args:
-        config: 工具配置字典
+        config: Tool configuration dictionary
 
     Returns:
-        bool: 配置是否有效
+        bool: Whether the configuration is valid
     """
-    # 验证内置工具
+    # Validate built-in tools
     builtin_tools = config.get("builtin_tools", [])
     valid_builtin = {
         "web_search", "get_weather",
@@ -86,26 +86,26 @@ def validate_tools_config(config: Dict[str, Any]) -> bool:
 
     for tool in builtin_tools:
         if tool not in valid_builtin:
-            logger.warning(f"[工具配置] 未知的内置工具: {tool}")
+            logger.warning(f"[Tool Config] Unknown built-in tool: {tool}")
 
-    # 验证 MCP 服务器配置
+    # Validate MCP server configuration
     mcp_servers = config.get("mcp_servers", [])
     for server in mcp_servers:
         if "name" not in server:
-            logger.error("[工具配置] MCP 服务器缺少 name 字段")
+            logger.error("[Tool Config] MCP server missing name field")
             return False
 
         transport = server.get("transport", "stdio")
         if transport == "stdio":
             if "command" not in server:
-                logger.error(f"[工具配置] MCP 服务器 {server['name']} 缺少 command 字段")
+                logger.error(f"[Tool Config] MCP server {server['name']} missing command field")
                 return False
         elif transport in ("sse", "streamable_http"):
             if "url" not in server:
-                logger.error(f"[工具配置] MCP 服务器 {server['name']} 缺少 url 字段")
+                logger.error(f"[Tool Config] MCP server {server['name']} missing url field")
                 return False
         else:
-            logger.error(f"[工具配置] 不支持的传输方式: {transport}")
+            logger.error(f"[Tool Config] Unsupported transport mode: {transport}")
             return False
 
     return True

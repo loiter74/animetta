@@ -5,6 +5,16 @@ import unocss from 'unocss/vite'
 
 export default defineConfig({
   root: resolve(__dirname),
+  server: {
+    port: 3000,
+    strictPort: true,
+    proxy: {
+      '/socket.io': {
+        target: 'http://localhost:12394',
+        ws: true,
+      },
+    },
+  },
   build: {
     rollupOptions: {
       input: resolve(__dirname, 'index.html')

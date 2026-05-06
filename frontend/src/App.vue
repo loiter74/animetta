@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import TitleBar from '@/components/layout/TitleBar.vue'
-import AppLayout from '@/components/layout/AppLayout.vue'
+import ModelLoadingOverlay from '@/components/shared/ModelLoadingOverlay.vue'
 import { useSocket } from '@/composables/useSocket'
 
-useSocket()
+const router = useRouter()
+useSocket()  // Initialize Socket.IO connection
 
 const STORAGE_KEY = 'anima_background'
 const bgSrc = ref('')
@@ -30,6 +32,9 @@ onMounted(() => {
 </script>
 
 <template>
+  <!-- Model loading overlay (above everything) -->
+  <ModelLoadingOverlay />
+
   <div class="flex flex-col h-screen w-screen overflow-hidden bg-c-bg text-c-text relative">
     <div
       v-if="bgSrc"
@@ -39,7 +44,7 @@ onMounted(() => {
     />
     <div class="relative flex flex-col h-full" style="z-index: 1">
       <TitleBar />
-      <AppLayout />
+      <router-view />
     </div>
   </div>
 </template>

@@ -1,5 +1,5 @@
 """
-Mock ASR 实现 - 用于测试和开发
+Mock ASR implementation - for testing and development
 """
 
 from typing import Union
@@ -13,11 +13,11 @@ from anima.config.providers.asr.mock import MockASRConfig
 @ProviderRegistry.register_service("asr", "mock")
 class MockASR(ASRInterface):
     """
-    Mock ASR 实现
-    不进行实际的语音识别，返回模拟的语音识别结果
+    Mock ASR implementation
+    Does not perform actual speech recognition, returns simulated recognition results
     """
 
-    # 测试用的模拟文本列表
+    # Test mock text list
     TEST_PHRASES = [
         "你好，请问你能帮我做什么？",
         "今天天气怎么样？",
@@ -32,40 +32,45 @@ class MockASR(ASRInterface):
     ]
 
     def __init__(self, mock_response: str = None):
-        # 如果没有指定响应，从列表中随机选择
+        # If no response specified, pick randomly from the list
         if mock_response is None:
             import random
             mock_response = random.choice(self.TEST_PHRASES)
         self.mock_response = mock_response
+
+    @classmethod
+    def from_config(cls, config, **kwargs):
+        """Create instance from configuration (supports ProviderRegistry.create_service path)"""
+        return cls()
 
     async def transcribe(
         self,
         audio_data: Union[bytes, str, Path],
         **kwargs
     ) -> str:
-        """返回模拟的识别结果"""
-        # 模拟处理延迟（根据音频长度）
+        """Return simulated recognition result"""
+        # Simulate processing delay (based on audio length)
         import asyncio
         import random
 
-        # 根据音频数据大小模拟不同的处理时间
+        # Simulate different processing times based on audio data size
         if isinstance(audio_data, bytes):
             audio_length = len(audio_data)
-            delay = min(0.5, audio_length / 32000)  # 约 0.1-0.5 秒
+            delay = min(0.5, audio_length / 32000)  # Approximately 0.1-0.5 seconds
         else:
             delay = 0.3
 
         await asyncio.sleep(delay)
 
-        # 每次随机返回不同的测试文本（模拟真实语音输入的变化）
+        # Randomly return different test text each time (simulates real voice input variation)
         response = random.choice(self.TEST_PHRASES)
 
-        # 添加日志
+        # Add log
         from loguru import logger
-        logger.info(f"[Mock ASR] 返回模拟识别结果: {response}")
+        logger.info(f"[Mock ASR] Returning simulated recognition result: {response}")
 
         return response
 
     async def close(self) -> None:
-        """无需清理资源"""
+        """No resources to clean up"""
         pass

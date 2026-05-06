@@ -1,7 +1,7 @@
-"""记忆系统协调器 - Wiki 架构 (Karpathy-style).
+"""Memory system coordinator - Wiki architecture (Karpathy-style).
 
-- raw/   不可变的原始对话日志
-- wiki/  AI 维护的知识库 (entities / concepts / sources / synthesis)
+- raw/   Immutable raw conversation logs
+- wiki/  AI-maintained knowledge base (entities / concepts / sources / synthesis)
 """
 
 import hashlib
@@ -23,7 +23,7 @@ from .wiki import WikiManager, WikiIngestor, WikiQuery, WikiLint
 
 
 class MemorySystem:
-    """记忆系统统一入口 (Wiki 架构)."""
+    """Memory system unified entry point (Wiki architecture)."""
 
     def __init__(self, config: Dict[str, Any]):
         workspace = config.get("workspace_dir", "~/.anima/workspace")
@@ -44,7 +44,7 @@ class MemorySystem:
             max_turns=config.get("short_term_max_turns", 20)
         )
 
-        # Turn cache: 同轮检索去重
+        # Turn cache: deduplicate retrievals within the same turn
         self._turn_cache: Dict[str, Any] = {}
         self._turn_cache_enabled: bool = config.get("enable_turn_cache", True)
         self._last_session_id: Optional[str] = None
@@ -58,7 +58,7 @@ class MemorySystem:
         try:
             manager = MemoryManager(config=memory_config)
             self._wiki_manager = WikiManager(manager)
-            # 事实提取器 (MemoryEntry 版本化记忆)
+            # Fact extractor (MemoryEntry versioned memory)
             fact_extractor = FactExtractor(
                 entry_store=manager.memory_entries,
                 llm_client=config.get("llm_client"),
@@ -75,27 +75,27 @@ class MemorySystem:
             )
             self._wiki_lint = WikiLint(self._wiki_manager)
             logger.info(
-                f"[MemorySystem] Wiki 架构初始化成功, "
+                f"[MemorySystem] Wiki architecture initialized successfully, "
                 f"workspace: {memory_config.workspace_dir}"
             )
         except Exception as e:
-            logger.warning(f"[MemorySystem] 降级为纯短期记忆模式: {e}")
+            logger.warning(f"[MemorySystem] Degraded to pure short-term memory mode: {e}")
 
-    # ── 生命周期 ────────────────────────────────────────────
+    # ── Lifecycle ─────────────────────────────────────────
 
     async def start(self) -> None:
-        logger.info("[MemorySystem] 已启动 (wiki 架构)")
+        logger.info("[MemorySystem] Started (wiki architecture)")
 
     async def stop(self) -> None:
         if self._wiki_manager:
             self._wiki_manager.manager.close()
         self._short_term.clear_all()
-        logger.info("[MemorySystem] 记忆系统已停止")
+        logger.info("[MemorySystem] Memory system stopped")
 
-    # ── 存储 ────────────────────────────────────────────────
+    # ── Storage ───────────────────────────────────────────
 
     async def store_turn(self, turn: MemoryTurn) -> None:
-        """存储对话轮次: 短期记忆 + wiki INGEST"""
+        """Store conversation turn: short-term memory + wiki INGEST"""
         score = self._scorer.score(turn)
         turn.importance = score
         self._short_term.append(turn.session_id, turn)
@@ -103,41 +103,41 @@ class MemorySystem:
         if self._ingestor:
             asyncio.create_task(self._ingestor.ingest_turn(turn))
 
-    # ── 用户画像 ────────────────────────────────────────────
+    # ── User profile ──────────────────────────────────────
 
     def get_profile(self, session_id: str) -> UserProfile:
-        """获取用户画像 (static + dynamic).
+        """Get user profile (static + dynamic).
 
-        需要在 wiki 模式和 short_term 都可用时才能完整构建.
+        Requires both wiki mode and short_term to be available for complete construction.
         """
         if not hasattr(self, '_profile_builder') or self._profile_builder is None:
             return UserProfile()
         return self._profile_builder.build(session_id)
 
-    # ── Turn Cache ───────────────────────────────────────────
+    # ── Turn cache ────────────────────────────────────────
 
     def _invalidate_turn_cache(self, session_id: str, query: str) -> None:
-        """检测是否为新轮次, 若是则清空缓存."""
+        """Detect if new turn, clear cache if so."""
         if session_id != self._last_session_id or query != self._last_query:
             self._turn_cache.clear()
             self._last_session_id = session_id
             self._last_query = query
 
     def _make_cache_key(self, session_id: str, query: str, max_turns: int) -> str:
-        """构建缓存 key."""
+        """Build cache key."""
         raw = f"{session_id}:{query}:{max_turns}"
         return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-    # ── 检索 ────────────────────────────────────────────────
+    # ── Retrieval ─────────────────────────────────────────
 
     async def retrieve_context(
         self, query: str, session_id: str, max_turns: int = 5,
     ) -> List[MemoryTurn]:
-        """检索相关记忆: 短期 + wiki search + MemoryEntry (可选).
+        """Retrieve relevant memories: short-term + wiki search + MemoryEntry (optional).
 
-        启用 turn cache 时, 同轮同参数的检索只执行一次.
+        When turn cache is enabled, same-turn same-parameter retrieval executes only once.
         """
-        # 缓存检查 (Task 6.1, 6.2)
+        # Cache check (Task 6.1, 6.2)
         if self._turn_cache_enabled:
             self._invalidate_turn_cache(session_id, query)
             cache_key = self._make_cache_key(session_id, query, max_turns)
@@ -153,9 +153,9 @@ class MemorySystem:
                     query=query, session_id=session_id, max_results=5,
                 ))
             except Exception as e:
-                logger.warning(f"[MemorySystem] Wiki 搜索失败: {e}")
+                logger.warning(f"[MemorySystem] Wiki search failed: {e}")
 
-        # 附加 MemoryEntry 结果 (Task 7.2)
+        # Append MemoryEntry results (Task 7.2)
         try:
             if self._wiki_manager and hasattr(self._wiki_manager.manager, 'memory_entries'):
                 entries = self._wiki_manager.manager.memory_entries.search_by_space(
@@ -179,7 +179,7 @@ class MemorySystem:
         seen: set = set()
         deduped = [t for t in results if t.turn_id not in seen and not seen.add(t.turn_id)]
 
-        # 缓存结果 (Task 6.3)
+        # Cache results (Task 6.3)
         if self._turn_cache_enabled:
             self._turn_cache[cache_key] = deduped
 
@@ -192,12 +192,12 @@ class MemorySystem:
         self._short_term.clear(session_id)
 
     def search(self, query: str, max_results: int = 10) -> List[SearchResult]:
-        """直接搜索记忆: 合并 chunk 结果 + MemoryEntry 结果."""
+        """Direct memory search: merge chunk results + MemoryEntry results."""
         results: List[SearchResult] = []
         if self._wiki_manager:
             results = self._wiki_manager.search(query, max_results=max_results)
 
-        # 附加 MemoryEntry 结果 (Task 7.1)
+        # Append MemoryEntry results (Task 7.1)
         try:
             if self._wiki_manager and hasattr(self._wiki_manager.manager, 'memory_entries'):
                 entries = self._wiki_manager.manager.memory_entries.search_by_space(
@@ -218,7 +218,7 @@ class MemorySystem:
         return results
 
     def load_session_context(self, query: str = "") -> str:
-        """加载会话启动时的记忆上下文"""
+        """Load memory context at session startup"""
         if self._wiki_query:
             return self._wiki_query.load_context(query=query)
         return ""
@@ -229,13 +229,13 @@ class MemorySystem:
         return False
 
     def sync(self) -> None:
-        """全量同步索引"""
+        """Full index sync"""
         if self._wiki_manager:
             self._wiki_manager.manager.sync()
             self._wiki_manager.rebuild_index()
 
     def lint(self):
-        """运行 wiki 健康检查"""
+        """Run wiki health check"""
         if self._wiki_lint:
             return self._wiki_lint.run()
         return None

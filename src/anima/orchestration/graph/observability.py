@@ -1,11 +1,11 @@
 """
-可观测性集成 - LangSmith + LangFuse
+Observability integration - LangSmith + LangFuse
 
-职责:
-1. 加载 config/observability.yaml 配置
-2. 初始化 LangSmith (通过环境变量, LangGraph 原生集成)
-3. 初始化 LangFuse CallbackHandler
-4. 提供合并的 callbacks 列表注入 LangGraph config
+Responsibilities:
+1. Load config/observability.yaml configuration
+2. Initialize LangSmith (via environment variables, LangGraph native integration)
+3. Initialize LangFuse CallbackHandler
+4. Provide merged callbacks list to inject into LangGraph config
 """
 
 import os
@@ -17,7 +17,7 @@ import yaml
 
 
 class ObservabilityManager:
-    """可观测性管理器 - 单例"""
+    """Observability manager - singleton"""
 
     _instance: Optional["ObservabilityManager"] = None
 
@@ -39,28 +39,28 @@ class ObservabilityManager:
 
     def initialize(self, config_path: Optional[str] = None) -> None:
         """
-        初始化可观测性
+        Initialize observability
 
         Args:
-            config_path: 配置文件路径, 默认 config/observability.yaml
+            config_path: Config file path, default config/observability.yaml
         """
         if self._initialized:
             return
 
-        # 加载配置
+        # Load configuration
         self._config = self._load_config(config_path)
 
-        # 初始化 LangSmith (环境变量)
+        # Initialize LangSmith (environment variable)
         self._init_langsmith()
 
-        # 初始化 LangFuse (CallbackHandler)
+        # Initialize LangFuse (CallbackHandler)
         self._init_langfuse()
 
         self._initialized = True
         self._log_status()
 
     def _load_config(self, config_path: Optional[str] = None) -> Dict[str, Any]:
-        """加载配置文件"""
+        """Load configuration file"""
         if config_path is None:
             config_path = (
                 Path(__file__).parent.parent.parent.parent.parent
@@ -69,20 +69,20 @@ class ObservabilityManager:
 
         config_path = Path(config_path)
         if not config_path.exists():
-            logger.info("[Observability] 未找到配置文件, 使用默认配置 (全部关闭)")
+            logger.info("[Observability] Config file not found, using defaults (all disabled)")
             return {"langsmith": {"enabled": False}, "langfuse": {"enabled": False}}
 
         try:
             with open(config_path, "r", encoding="utf-8") as f:
                 config = yaml.safe_load(f) or {}
-            logger.info(f"[Observability] 配置已加载: {config_path}")
+            logger.info(f"[Observability] Config loaded: {config_path}")
             return config
         except Exception as e:
-            logger.warning(f"[Observability] 配置加载失败: {e}")
+            logger.warning(f"[Observability] Config load failed: {e}")
             return {"langsmith": {"enabled": False}, "langfuse": {"enabled": False}}
 
     def _init_langsmith(self) -> None:
-        """初始化 LangSmith - 通过环境变量, LangGraph 自动采集"""
+        """Initialize LangSmith - via environment variables, LangGraph auto-collection"""
         cfg = self._config.get("langsmith", {})
         if not cfg.get("enabled", False):
             return
@@ -97,13 +97,13 @@ class ObservabilityManager:
             os.environ["LANGCHAIN_ENDPOINT"] = cfg["endpoint"]
 
         self._langsmith_enabled = True
-        logger.info("[Observability] LangSmith 已启用")
+        logger.info("[Observability] LangSmith enabled")
 
     def _init_langfuse(self) -> None:
-        """初始化 LangFuse - 通过 CallbackHandler 采集
+        """Initialize LangFuse - via CallbackHandler
 
-        Langfuse v4: CallbackHandler 只接受 public_key,
-        secret_key/host 通过环境变量自动读取:
+        Langfuse v4: CallbackHandler only accepts public_key,
+        secret_key/host are automatically read from environment variables:
           LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY, LANGFUSE_HOST
         """
         cfg = self._config.get("langfuse", {})
@@ -113,10 +113,10 @@ class ObservabilityManager:
         try:
             from langfuse.langchain import CallbackHandler
         except ImportError:
-            logger.warning("[Observability] langfuse 未安装或版本过低, 请运行: pip install langfuse>=4.0.0")
+            logger.warning("[Observability] langfuse not installed or version too low, run: pip install langfuse>=4.0.0")
             return
 
-        # 设置环境变量（如果 YAML 配置中有值，写入环境变量供 Langfuse SDK 读取）
+        # Set environment variables (if YAML config has values, write them for Langfuse SDK to read)
         if cfg.get("secret_key") and not os.environ.get("LANGFUSE_SECRET_KEY"):
             os.environ["LANGFUSE_SECRET_KEY"] = cfg["secret_key"]
         if cfg.get("host") and not os.environ.get("LANGFUSE_HOST"):
@@ -126,13 +126,13 @@ class ObservabilityManager:
         secret_key = os.environ.get("LANGFUSE_SECRET_KEY", cfg.get("secret_key"))
 
         if not public_key or not secret_key:
-            logger.warning("[Observability] LangFuse 缺少 public_key/secret_key, 已跳过")
+            logger.warning("[Observability] LangFuse missing public_key/secret_key, skipped")
             return
 
         host = os.environ.get("LANGFUSE_HOST", cfg.get("host", "https://cloud.langfuse.com"))
 
         try:
-            # Langfuse v4: 必须先创建 Langfuse 客户端，再创建 CallbackHandler（不传 public_key）
+            # Langfuse v4: Must create Langfuse client first, then create CallbackHandler (without passing public_key)
             from langfuse import Langfuse
             self._langfuse_client = Langfuse(
                 public_key=public_key,
@@ -141,24 +141,24 @@ class ObservabilityManager:
             )
             self._langfuse_handler = CallbackHandler()
             self._langfuse_enabled = True
-            logger.info(f"[Observability] LangFuse 已启用 - host: {host}")
+            logger.info(f"[Observability] LangFuse enabled - host: {host}")
         except Exception as e:
-            logger.error(f"[Observability] LangFuse 初始化失败: {e}")
+            logger.error(f"[Observability] LangFuse initialization failed: {e}")
 
     def _log_status(self) -> None:
-        """输出当前状态"""
+        """Log current status"""
         parts = []
         if self._langsmith_enabled:
             parts.append("LangSmith=ON")
         if self._langfuse_enabled:
             parts.append("LangFuse=ON")
         if not parts:
-            parts.append("全部关闭")
-        logger.info(f"[Observability] 状态: {', '.join(parts)}")
+            parts.append("All disabled")
+        logger.info(f"[Observability] Status: {', '.join(parts)}")
 
     @property
     def callbacks(self) -> List[Any]:
-        """返回 LangGraph/LangChain 回调列表"""
+        """Return LangGraph/LangChain callback list"""
         if self._langfuse_handler:
             return [self._langfuse_handler]
         return []
@@ -172,7 +172,7 @@ class ObservabilityManager:
         return self._langfuse_enabled
 
     def get_status(self) -> Dict[str, Any]:
-        """获取当前状态"""
+        """Get current status"""
         return {
             "langsmith_enabled": self._langsmith_enabled,
             "langfuse_enabled": self._langfuse_enabled,
@@ -180,5 +180,5 @@ class ObservabilityManager:
 
 
 def get_observability() -> ObservabilityManager:
-    """获取全局可观测性管理器"""
+    """Get the global observability manager"""
     return ObservabilityManager()

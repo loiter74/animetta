@@ -1,10 +1,10 @@
 """
-MCP Bridge - 连接 MCP 服务器，将工具转换为 LangChain Tool
+MCP Bridge - Connect to MCP servers and convert tools to LangChain Tools
 
-支持三种传输方式:
-- stdio: 本地子进程通信
+Supports three transport modes:
+- stdio: Local subprocess communication
 - sse: Server-Sent Events (HTTP)
-- streamable_http: Streamable HTTP (MCP 新标准)
+- streamable_http: Streamable HTTP (MCP new standard)
 """
 
 from contextlib import AsyncExitStack
@@ -24,7 +24,7 @@ except ImportError:
 
 
 class MCPClient:
-    """单个 MCP 服务器连接"""
+    """Individual MCP server connection"""
 
     def __init__(self, name: str, transport: str, **kwargs):
         self.name = name
@@ -34,9 +34,9 @@ class MCPClient:
         self.session: Optional[ClientSession] = None
 
     async def connect(self) -> bool:
-        """连接到 MCP 服务器"""
+        """Connect to MCP server"""
         if not MCP_AVAILABLE:
-            logger.warning(f"[MCP:{self.name}] mcp 包未安装")
+            logger.warning(f"[MCP:{self.name}] mcp package not installed")
             return False
 
         try:
@@ -69,54 +69,54 @@ class MCPClient:
                 read, write = streams[0], streams[1]
 
             else:
-                logger.error(f"[MCP:{self.name}] 不支持的传输方式: {self.transport}")
+                logger.error(f"[MCP:{self.name}] Unsupported transport mode: {self.transport}")
                 return False
 
             self.session = await self._exit_stack.enter_async_context(
                 ClientSession(read, write)
             )
             await self.session.initialize()
-            logger.info(f"[MCP:{self.name}] 已连接 ({self.transport})")
+            logger.info(f"[MCP:{self.name}] Connected ({self.transport})")
             return True
 
         except Exception as e:
-            logger.warning(f"[MCP:{self.name}] 连接失败 (服务可能不可用): {e}")
+            logger.warning(f"[MCP:{self.name}] Connection failed (service may be unavailable): {e}")
             await self.disconnect()
             return False
 
     async def disconnect(self):
-        """断开连接"""
+        """Disconnect"""
         if self._exit_stack:
             await self._exit_stack.aclose()
             self._exit_stack = None
             self.session = None
-            logger.info(f"[MCP:{self.name}] 已断开")
+            logger.info(f"[MCP:{self.name}] Disconnected")
 
     async def list_tools(self) -> List[Any]:
-        """获取服务器提供的工具列表"""
+        """Get list of tools provided by the server"""
         if not self.session:
             return []
         try:
             response = await self.session.list_tools()
-            logger.info(f"[MCP:{self.name}] 发现 {len(response.tools)} 个工具")
+            logger.info(f"[MCP:{self.name}] Found {len(response.tools)} tools")
             return response.tools
         except Exception as e:
-            logger.error(f"[MCP:{self.name}] 获取工具列表失败: {e}")
+            logger.error(f"[MCP:{self.name}] Failed to get tool list: {e}")
             return []
 
     async def call_tool(self, name: str, arguments: Dict[str, Any]) -> Any:
-        """调用工具"""
+        """Call a tool"""
         if not self.session:
             return None
         try:
             return await self.session.call_tool(name, arguments)
         except Exception as e:
-            logger.error(f"[MCP:{self.name}] 调用工具 {name} 失败: {e}")
+            logger.error(f"[MCP:{self.name}] Failed to call tool {name}: {e}")
             return None
 
 
 def _parse_type(type_name: str) -> type:
-    """JSON Schema 类型 -> Python 类型"""
+    """JSON Schema type -> Python type"""
     return {
         "string": str, "integer": int, "number": float,
         "boolean": bool, "array": list, "object": dict,
@@ -124,7 +124,7 @@ def _parse_type(type_name: str) -> type:
 
 
 def mcp_tool_to_langchain(client: MCPClient, tool_info: Any) -> Any:
-    """将 MCP 工具转换为 LangChain StructuredTool"""
+    """Convert MCP tool to LangChain StructuredTool"""
     from langchain_core.tools import StructuredTool
     from pydantic import create_model
 
@@ -147,7 +147,7 @@ def mcp_tool_to_langchain(client: MCPClient, tool_info: Any) -> Any:
                     for item in result.content
                 )
             return str(result.content)
-        return str(result) if result else "无结果"
+        return str(result) if result else "No result"
 
     return StructuredTool(
         name=tool_name,
@@ -159,7 +159,7 @@ def mcp_tool_to_langchain(client: MCPClient, tool_info: Any) -> Any:
 
 
 class MCPManager:
-    """管理多个 MCP 服务器连接和工具"""
+    """Manage multiple MCP server connections and tools"""
 
     def __init__(self):
         self.clients: List[MCPClient] = []
@@ -169,26 +169,26 @@ class MCPManager:
         self, sandbox: Dict[str, Any], args: List[str]
     ) -> tuple:
         """
-        构建 Docker 沙箱启动命令
+        Build Docker sandbox startup command
 
-        将原始 command/args 包装在 docker run 中，实现 OS 层隔离。
+        Wraps the original command/args in docker run for OS-level isolation.
 
-        安全边界:
-        - --network none: 禁止网络访问
-        - --cap-drop ALL: 移除所有 Linux capabilities
-        - --security-opt no-new-privileges: 禁止权限提升
-        - --read-only: 只读根文件系统
-        - --pids-limit: 防止 fork bomb
-        - --memory/--cpus: 资源限制
-        - 非 root 用户运行 (Dockerfile 中 USER mcp)
-        - 仅挂载指定目录 (应用层白名单 + OS 层硬边界)
+        Security boundaries:
+        - --network none: Block network access
+        - --cap-drop ALL: Remove all Linux capabilities
+        - --security-opt no-new-privileges: Prevent privilege escalation
+        - --read-only: Read-only root filesystem
+        - --pids-limit: Prevent fork bomb
+        - --memory/--cpus: Resource limits
+        - Run as non-root user (USER mcp in Dockerfile)
+        - Only mount specified directories (app-level whitelist + OS-level hard boundary)
 
         Args:
-            sandbox: 沙箱配置字典
-            args: 传递给容器 ENTRYPOINT 的参数
+            sandbox: Sandbox configuration dictionary
+            args: Arguments to pass to container ENTRYPOINT
 
         Returns:
-            (command, args) 元组
+            (command, args) tuple
         """
         from pathlib import Path
 
@@ -199,28 +199,28 @@ class MCPManager:
 
         docker_args = [
             "run", "--rm", "-i",
-            # 网络: 完全禁止
+            # Network: fully disabled
             "--network", "none",
-            # 权限: 降到最低
+            # Permissions: minimal
             "--cap-drop", "ALL",
             "--security-opt", "no-new-privileges",
-            # 文件系统: 只读根
+            # Filesystem: read-only root
             "--read-only",
             "--tmpfs", "/tmp:noexec,nosuid,size=64m",
-            # 资源限制
+            # Resource limits
             "--memory", memory,
             "--cpus", cpus,
             "--pids-limit", "64",
-            # 清理超时
+            # Cleanup timeout
             "--stop-timeout", "5",
         ]
 
-        # 解析并解析卷挂载路径
+        # Parse and resolve volume mount paths
         project_root = Path(__file__).parent.parent.parent.parent
         for mount_spec in mounts:
             parts = mount_spec.split(":")
             if len(parts) < 2:
-                logger.warning(f"[MCP Docker] 无效的挂载格式: {mount_spec}")
+                logger.warning(f"[MCP Docker] Invalid mount format: {mount_spec}")
                 continue
 
             host_path = Path(parts[0])
@@ -232,40 +232,40 @@ class MCPManager:
 
             resolved = str(host_path.resolve())
             docker_args.extend(["-v", f"{resolved}:{container_path}:{mode}"])
-            logger.info(f"[MCP Docker] 挂载: {resolved} -> {container_path} ({mode})")
+            logger.info(f"[MCP Docker] Mount: {resolved} -> {container_path} ({mode})")
 
-        # 镜像名
+        # Image name
         docker_args.append(image)
 
-        # 传递给 ENTRYPOINT 的参数
+        # Arguments to pass to ENTRYPOINT
         docker_args.extend(args)
 
         return "docker", docker_args
 
     async def load(self, server_configs: List[Dict[str, Any]]) -> List[Any]:
-        """连接所有服务器并加载工具"""
+        """Connect to all servers and load tools"""
         if not MCP_AVAILABLE:
-            logger.warning("[MCP] mcp 包未安装，跳过 MCP 工具加载")
+            logger.warning("[MCP] mcp package not installed, skipping MCP tool loading")
             return []
 
         for cfg in server_configs:
             name = cfg.get("name", "unknown")
             transport = cfg.get("transport", "stdio")
 
-            # 提取传输层参数
+            # Extract transport layer parameters
             kwargs = {}
             if transport == "stdio":
                 sandbox = cfg.get("sandbox")
 
                 if sandbox and sandbox.get("type") == "docker":
-                    # Docker 沙箱: 用 docker run 包装原始命令
+                    # Docker sandbox: wrap original command with docker run
                     command, args = self._build_docker_command(
                         sandbox=sandbox,
                         args=cfg.get("args", []),
                     )
                     kwargs = {"command": command, "args": args}
                 else:
-                    # 原生模式: 直接运行 (npx / node)
+                    # Native mode: run directly (npx / node)
                     kwargs = {k: cfg[k] for k in ("command", "args", "env") if k in cfg}
 
             elif transport in ("sse", "streamable_http"):
@@ -280,15 +280,15 @@ class MCPManager:
                 for t in await client.list_tools():
                     try:
                         self.tools.append(mcp_tool_to_langchain(client, t))
-                        logger.info(f"[MCP] 加载工具: {t.name} from {name}")
+                        logger.info(f"[MCP] Loaded tool: {t.name} from {name}")
                     except Exception as e:
-                        logger.error(f"[MCP] 转换工具 {t.name} 失败: {e}")
+                        logger.error(f"[MCP] Failed to convert tool {t.name}: {e}")
 
-        logger.info(f"[MCP] 共加载 {len(self.tools)} 个工具 ({len(self.clients)} 个服务器)")
+        logger.info(f"[MCP] Loaded {len(self.tools)} tools from {len(self.clients)} servers")
         return self.tools
 
     async def close_all(self):
-        """关闭所有连接"""
+        """Close all connections"""
         for client in self.clients:
             await client.disconnect()
         self.clients.clear()

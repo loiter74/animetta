@@ -1,6 +1,6 @@
 """
-增强的人设配置系统
-支持复杂的人设定义，包括情感规则、回复模板、示例对话等
+Enhanced persona configuration system
+Supports complex persona definitions, including emotion rules, response templates, example conversations, etc.
 """
 
 from typing import Optional, List, Dict, Any
@@ -10,25 +10,25 @@ import yaml
 
 class EnhancedPersonaBuilder:
     """
-    增强的人设构建器
+    Enhanced persona builder
 
-    支持从复杂YAML文件构建详细的人设系统提示词
+    Supports building detailed persona system prompts from complex YAML files
     """
 
     def __init__(self, persona_path: str):
         """
-        初始化人设构建器
+        Initialize persona builder
 
         Args:
-            persona_path: 人设YAML文件路径
+            persona_path: Persona YAML file path
         """
         self.persona_path = Path(persona_path)
         self.persona_data = self._load_persona()
 
     def _load_persona(self) -> Dict[str, Any]:
-        """加载人设YAML文件"""
+        """Load persona YAML file"""
         if not self.persona_path.exists():
-            raise FileNotFoundError(f"人设文件不存在: {self.persona_path}")
+            raise FileNotFoundError(f"Persona file not found: {self.persona_path}")
 
         with open(self.persona_path, 'r', encoding='utf-8') as f:
             data = yaml.safe_load(f)
@@ -37,51 +37,51 @@ class EnhancedPersonaBuilder:
 
     def build_system_prompt(self, user_context: Optional[Dict] = None) -> str:
         """
-        构建完整的系统提示词
+        Build the complete system prompt
 
         Args:
-            user_context: 用户上下文（可选，用于个性化）
+            user_context: User context (optional, for personalization)
 
         Returns:
-            str: 完整的系统提示词
+            str: Complete system prompt
         """
         parts = []
 
-        # 1. 基础信息
+        # 1. Basic info
         parts.append(self._build_basic_info())
 
-        # 2. 性格特征
+        # 2. Personality traits
         parts.append(self._build_personality())
 
-        # 3. 说话风格
+        # 3. Speaking style
         parts.append(self._build_speaking_style())
 
-        # 4. 情感表达规则
+        # 4. Emotion rules
         parts.append(self._build_emotion_rules())
 
-        # 5. 知识领域
+        # 5. Expertise
         parts.append(self._build_expertise())
 
-        # 6. 互动规则
+        # 6. Interaction rules
         parts.append(self._build_interaction_rules())
 
-        # 7. 回复模板
+        # 7. Response templates
         parts.append(self._build_response_templates())
 
-        # 8. 示例对话（Few-shot Learning）
+        # 8. Example conversations (Few-shot Learning)
         parts.append(self._build_example_conversations())
 
-        # 9. 禁忌内容
+        # 9. Restrictions
         parts.append(self._build_restrictions())
 
-        # 10. 用户上下文（如果提供）
+        # 10. User context (if provided)
         if user_context:
             parts.append(self._build_user_context(user_context))
 
         return "\n\n".join(parts)
 
     def _build_basic_info(self) -> str:
-        """构建基础信息部分"""
+        """Build basic info section"""
         name = self.persona_data.get("name", "AI助手")
         description = self.persona_data.get("description", "")
         basic_info = self.persona_data.get("basic_info", {})
@@ -100,7 +100,7 @@ class EnhancedPersonaBuilder:
         return "\n".join(parts)
 
     def _build_personality(self) -> str:
-        """构建性格特征部分"""
+        """Build personality section"""
         personality = self.persona_data.get("personality", [])
         if not personality:
             return ""
@@ -112,7 +112,7 @@ class EnhancedPersonaBuilder:
         return "\n".join(parts)
 
     def _build_speaking_style(self) -> str:
-        """构建说话风格部分"""
+        """Build speaking style section"""
         speaking_style = self.persona_data.get("speaking_style", {})
         if not speaking_style:
             return ""
@@ -136,7 +136,7 @@ class EnhancedPersonaBuilder:
         return "\n".join(parts)
 
     def _build_emotion_rules(self) -> str:
-        """构建情感表达规则"""
+        """Build emotion rules section"""
         emotion_rules = self.persona_data.get("emotion_rules", {})
         if not emotion_rules:
             return ""
@@ -158,7 +158,7 @@ class EnhancedPersonaBuilder:
         return "\n".join(parts)
 
     def _build_expertise(self) -> str:
-        """构建知识领域部分"""
+        """Build expertise section"""
         expertise = self.persona_data.get("expertise", [])
         weaknesses = self.persona_data.get("weaknesses", [])
 
@@ -178,7 +178,7 @@ class EnhancedPersonaBuilder:
         return "\n".join(parts)
 
     def _build_interaction_rules(self) -> str:
-        """构建互动规则"""
+        """Build interaction rules section"""
         interaction_rules = self.persona_data.get("interaction_rules", [])
         if not interaction_rules:
             return ""
@@ -190,7 +190,7 @@ class EnhancedPersonaBuilder:
         return "\n".join(parts)
 
     def _build_response_templates(self) -> str:
-        """构建回复模板"""
+        """Build response templates section"""
         response_templates = self.persona_data.get("response_templates", {})
         if not response_templates:
             return ""
@@ -206,7 +206,7 @@ class EnhancedPersonaBuilder:
         return "\n".join(parts)
 
     def _build_example_conversations(self) -> str:
-        """构建示例对话（Few-shot Learning）"""
+        """Build example conversations section (Few-shot Learning)"""
         example_conversations = self.persona_data.get("example_conversations", [])
         if not example_conversations:
             return ""
@@ -223,7 +223,7 @@ class EnhancedPersonaBuilder:
         return "\n".join(parts)
 
     def _build_restrictions(self) -> str:
-        """构建禁忌内容"""
+        """Build restrictions section"""
         restrictions = self.persona_data.get("restrictions", [])
         if not restrictions:
             return ""
@@ -236,7 +236,7 @@ class EnhancedPersonaBuilder:
         return "\n".join(parts)
 
     def _build_user_context(self, user_context: Dict) -> str:
-        """构建用户上下文（动态部分）"""
+        """Build user context section (dynamic part)"""
         parts = ["## 用户信息"]
 
         if "name" in user_context:
@@ -253,14 +253,14 @@ class EnhancedPersonaBuilder:
     @classmethod
     def from_yaml(cls, persona_name: str, personas_dir: Optional[str] = None) -> "EnhancedPersonaBuilder":
         """
-        从人设名称创建构建器
+        Create builder from persona name
 
         Args:
-            persona_name: 人设名称（不含.yaml后缀）
-            personas_dir: 人设目录路径
+            persona_name: Persona name (without .yaml suffix)
+            personas_dir: Personas directory path
 
         Returns:
-            EnhancedPersonaBuilder: 人设构建器实例
+            EnhancedPersonaBuilder: Persona builder instance
         """
         if personas_dir is None:
             personas_dir = Path(__file__).parent.parent.parent.parent / "config" / "personas"
@@ -272,7 +272,7 @@ class EnhancedPersonaBuilder:
         return cls(str(persona_path))
 
     def get_metadata(self) -> Dict[str, Any]:
-        """获取人设元数据"""
+        """Get persona metadata"""
         return self.persona_data.get("metadata", {})
 
 
@@ -282,15 +282,15 @@ def create_enhanced_system_prompt(
     personas_dir: Optional[str] = None
 ) -> str:
     """
-    快捷函数：创建增强的系统提示词
+    Convenience function: create an enhanced system prompt
 
     Args:
-        persona_name: 人设名称
-        user_context: 用户上下文（可选）
-        personas_dir: 人设目录（可选）
+        persona_name: Persona name
+        user_context: User context (optional)
+        personas_dir: Personas directory (optional)
 
     Returns:
-        str: 完整的系统提示词
+        str: Complete system prompt
     """
     builder = EnhancedPersonaBuilder.from_yaml(persona_name, personas_dir)
     return builder.build_system_prompt(user_context=user_context)

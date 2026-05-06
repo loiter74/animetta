@@ -1,494 +1,77 @@
 #!/usr/bin/env python3
 """
-Anima 统一启动脚本
+Anima unified startup script.
 Usage: python scripts/start.py [options]
 """
 
+import argparse
 import os
-import sys
-import time
 import platform
 import subprocess
-import argparse
-import signal
+import sys
+import time
 from pathlib import Path
 
+# Ensure project root is on sys.path so 'scripts.start' is importable
+_script_dir = Path(__file__).resolve().parent
+_project_root = _script_dir.parent
+if str(_project_root) not in sys.path:
+    sys.path.insert(0, str(_project_root))
+
+from scripts.start import (
+    Colors, info, success, warn, error,
+    ProcessManager, open_browser,
+    start_backend, start_vite, start_web_config, start_vibe_voice, get_tts_provider,
+)
 
-# ===========================
-# Colors and Output
-# ===========================
-
-class Colors:
-    """ANSI color codes"""
-    CYAN = '\033[0;36m'
-    GREEN = '\033[0;32m'
-    YELLOW = '\033[0;33m'
-    RED = '\033[0;31m'
-    MAGENTA = '\033[0;35m'
-    GRAY = '\033[0;90m'
-    NC = '\033[0m'  # No Color
-
-    @staticmethod
-    def enabled():
-        """Check if colors are supported"""
-        if platform.system() != "Windows":
-            return True
-        # Windows: 支持 Windows 10+ 终端、WT_SESSION、VS Code 等
-        if os.getenv('WT_SESSION') or os.getenv('TERM') or os.getenv('TERM_PROGRAM'):
-            return True
-        # 尝试启用 ANSI 支持（Windows 10+）
-        try:
-            import ctypes
-            kernel32 = ctypes.windll.kernel32
-            kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
-            return True
-        except:
-            return False
-
-
-def info(msg):
-    print(f"{Colors.CYAN}[INFO]{Colors.NC} {msg}" if Colors.enabled() else f"[INFO] {msg}")
-
-
-def success(msg):
-    print(f"{Colors.GREEN}[OK]{Colors.NC} {msg}" if Colors.enabled() else f"[OK] {msg}")
-
-
-def warn(msg):
-    print(f"{Colors.YELLOW}[WARN]{Colors.NC} {msg}" if Colors.enabled() else f"[WARN] {msg}")
-
-
-def error(msg):
-    print(f"{Colors.RED}[ERROR]{Colors.NC} {msg}" if Colors.enabled() else f"[ERROR] {msg}")
-    sys.exit(1)
-
-
-# ===========================
-# Process Management
-# ===========================
-
-class ProcessManager:
-    """跨平台进程管理"""
-
-    def __init__(self):
-        self.is_windows = platform.system() == "Windows"
-        self.processes = []
-        self._setup_signal_handlers()
-
-    def _setup_signal_handlers(self):
-        """设置信号处理器，确保 Ctrl+C 能停止所有子进程"""
-        def handler(signum, frame):
-            print("\n")
-            self.stop_all()
-            sys.exit(0)
-
-        signal.signal(signal.SIGINT, handler)
-        if self.is_windows and hasattr(signal, 'SIGBREAK'):
-            signal.signal(signal.SIGBREAK, handler)
-
-    def find_processes_on_port(self, port):
-        """查找占用端口的进程 ID"""
-        pids = []
-
-        if self.is_windows:
-            # Windows: 使用 Get-NetTCPConnection
-            try:
-                ps_script = f"""
-                Get-NetTCPConnection -LocalPort {port} -ErrorAction SilentlyContinue |
-                    Where-Object {{ $_.State -eq "Listen" }} |
-                    Select-Object -ExpandProperty OwningProcess
-                """
-                result = subprocess.run(
-                    ['powershell', '-Command', ps_script],
-                    capture_output=True,
-                    text=True,
-                    check=True
-                )
-                for line in result.stdout.split('\n'):
-                    line = line.strip()
-                    if line and line.isdigit():
-                        pid = int(line)
-                        if pid not in pids:
-                            pids.append(pid)
-            except (subprocess.CalledProcessError, FileNotFoundError):
-                # 回退到 netstat
-                try:
-                    result = subprocess.run(
-                        ['netstat', '-ano'],
-                        capture_output=True,
-                        text=True,
-                        check=True
-                    )
-                    for line in result.stdout.split('\n'):
-                        if f':{port}' in line and 'LISTENING' in line:
-                            parts = line.split()
-                            if len(parts) >= 5:
-                                pid = int(parts[-1])
-                                if pid not in pids:
-                                    pids.append(pid)
-                except subprocess.CalledProcessError:
-                    pass
-        else:
-            # Unix: 使用 lsof
-            try:
-                result = subprocess.run(
-                    ['lsof', '-ti', f':{port}'],
-                    capture_output=True,
-                    text=True,
-                    check=True
-                )
-                pids = [int(pid.strip()) for pid in result.stdout.split('\n') if pid.strip()]
-            except (subprocess.CalledProcessError, FileNotFoundError):
-                pass
-
-        return pids
-
-    def stop_process(self, pid, service_name):
-        """停止指定 PID 的进程"""
-        if not pid:
-            return True
-
-        try:
-            if self.is_windows:
-                subprocess.run(['taskkill', '/F', '/PID', str(pid)], check=True, capture_output=True)
-            else:
-                subprocess.run(['kill', '-9', str(pid)], check=True, capture_output=True)
-            success(f"停止 {service_name} (PID: {pid})")
-            return True
-        except subprocess.CalledProcessError as e:
-            warn(f"无法停止进程 {pid}: {e}")
-            return False
-
-    def stop_processes_on_port(self, port, service_name):
-        """停止占用指定端口的所有进程"""
-        pids = self.find_processes_on_port(port)
-
-        if not pids:
-            return True
-
-        info(f"发现 {service_name} 占用端口 {port}: PID {pids}")
-        for pid in pids:
-            self.stop_process(pid, service_name)
-            time.sleep(0.5)
-
-        # 验证
-        time.sleep(1)
-        remaining = self.find_processes_on_port(port)
-        if remaining:
-            warn(f"端口 {port} 仍被占用: {remaining}")
-            return False
-
-        return True
-
-    def _get_venv_python(self, project_root):
-        """获取虚拟环境中的 Python，如果没有则使用系统 Python"""
-        venv_paths = [
-            project_root / ".venv" / "Scripts" / "python.exe",  # Windows
-            project_root / ".venv" / "bin" / "python",          # Unix
-            project_root / "venv" / "Scripts" / "python.exe",   # Windows (alternate name)
-            project_root / "venv" / "bin" / "python",           # Unix (alternate name)
-        ]
-        for venv_python in venv_paths:
-            if venv_python.exists():
-                return str(venv_python)
-        return sys.executable
-
-    def _get_tts_provider(self, project_root):
-        """从 config.yaml 读取 TTS 提供商"""
-        try:
-            import yaml
-            cfg_path = project_root / "config" / "config.yaml"
-            with open(cfg_path, encoding='utf-8') as f:
-                cfg = yaml.safe_load(f)
-            return (cfg or {}).get('services', {}).get('tts', 'edge')
-        except Exception:
-            return 'edge'
-
-    def start_vibe_voice_server(self, project_root):
-        """启动 VibeVoice TTS 本地推理服务"""
-        info("启动 VibeVoice TTS 服务 (端口 8765)...")
-
-        python_exe = self._get_venv_python(project_root)
-        server_script = project_root / "scripts" / "vibe_voice_server.py"
-        model_path = "E:/anima_data/models/VibeVoice/VibeVoice-1.5B"
-
-        if not server_script.exists():
-            warn(f"VibeVoice 服务脚本不存在: {server_script}")
-            return None
-
-        if not os.path.isdir(model_path):
-            warn(f"VibeVoice 模型目录不存在: {model_path}")
-            warn(f"请先运行: huggingface-cli download microsoft/VibeVoice-1.5B --local-dir {model_path}")
-            return None
-
-        cmd = [
-            python_exe, str(server_script),
-            "--port", "8765",
-            "--model", model_path,
-            "--device", "cuda",
-        ]
-
-        try:
-            process = subprocess.Popen(
-                cmd,
-                cwd=project_root,
-                stdout=None,
-                stderr=None,
-            )
-            self.processes.append(("VibeVoice TTS", process, 8765))
-            info("VibeVoice TTS 服务启动中 (模型加载约需 30-60 秒)...")
-            return process
-        except Exception as e:
-            warn(f"启动 VibeVoice TTS 服务失败: {e}")
-            return None
-
-    def start_backend(self, project_root):
-        """启动后端 Socket.IO 服务"""
-        info("启动后端 Socket.IO 服务 (端口 12394)...")
-
-        # 使用 venv 中的 Python（如果存在）
-        python_exe = self._get_venv_python(project_root)
-        if python_exe != sys.executable:
-            info(f"使用虚拟环境: {python_exe}")
-
-        src_path = project_root / "src"
-        env = os.environ.copy()
-        env['PYTHONPATH'] = str(src_path)
-        env['PYTHONIOENCODING'] = 'utf-8'
-
-        cmd = [python_exe, '-m', 'anima.core.socketio_server']
-
-        try:
-            # 不使用 CREATE_NEW_PROCESS_GROUP，让子进程继承信号处理
-            process = subprocess.Popen(
-                cmd,
-                cwd=project_root,
-                env=env,
-                stdout=None,  # 不重定向，让输出显示在终端
-                stderr=None,
-            )
-            self.processes.append(("后端", process, 12394))
-            return process
-        except Exception as e:
-            error(f"启动后端失败: {e}")
-
-    def start_web_config(self, project_root, port=8080):
-        """启动 Web 配置界面"""
-        info(f"启动 Web 配置界面 (端口 {port})...")
-
-        # 使用 venv 中的 Python（如果存在）
-        python_exe = self._get_venv_python(project_root)
-
-        # 使用正斜杠避免 Windows 路径转义问题
-        web_dir = project_root / "frontend" / "web"
-        web_dir_str = str(web_dir).replace('\\', '/')
-
-        cmd = [python_exe, '-c', f'''
-import sys
-import os
-from http.server import HTTPServer, SimpleHTTPRequestHandler
-
-class ConfigHandler(SimpleHTTPRequestHandler):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory=r"{web_dir_str}", **kwargs)
-
-    def end_headers(self):
-        self.send_header("Access-Control-Allow-Origin", "*")
-        super().end_headers()
-
-    def do_GET(self):
-        if self.path == "/" or self.path == "":
-            self.path = "/templates/config.html"
-        super().do_GET()
-
-    def log_message(self, *args):
-        pass
-
-server = HTTPServer(("0.0.0.0", {port}), ConfigHandler)
-print(f"[Config] Web 配置界面已启动: http://localhost:{port}")
-server.serve_forever()
-''']
-
-        try:
-            process = subprocess.Popen(
-                cmd,
-                stdout=None,
-                stderr=None,
-            )
-            self.processes.append(("Web配置", process, port))
-            return process
-        except Exception as e:
-            error(f"启动 Web 配置失败: {e}")
-
-    def start_frontend_vite(self, project_root):
-        """启动 Vite 前端开发服务器"""
-        info("启动 Vite 前端 (Vue 3 + Vite)...")
-
-        frontend_dir = project_root / "frontend"
-
-        # 检查并安装前端依赖
-        node_modules = frontend_dir / "node_modules"
-        needs_install = False
-        if not node_modules.exists():
-            warn("检测到前端依赖未安装，正在安装...")
-            needs_install = True
-        else:
-            key_dept = frontend_dir / "node_modules" / "@vitejs" / "plugin-vue"
-            if not key_dept.exists():
-                info("检测到依赖变更，正在更新...")
-                needs_install = True
-
-        if needs_install:
-            subprocess.run(
-                ["pnpm", "install"],
-                cwd=frontend_dir,
-                shell=True,
-                check=True
-            )
-
-        cmd = ["pnpm", "run", "dev"]
-
-        try:
-            process = subprocess.Popen(
-                cmd,
-                cwd=frontend_dir,
-                shell=True,
-                stdout=None,
-                stderr=None,
-            )
-            self.processes.append(("前端", process, None))
-            return process
-        except Exception as e:
-            error(f"启动前端失败: {e}")
-
-    def start_frontend_dev(self, project_root, pkg_manager):
-        """启动 Next.js 开发服务器"""
-        info("启动 Next.js 开发服务器 (端口 3000)...")
-
-        frontend_dir = project_root / "frontend"
-        env = os.environ.copy()
-        env['NEXT_PRIVATE_BENCHMARK_ENABLED'] = 'false'
-        env['NODE_OPTIONS'] = '--no-warnings'
-
-        cmd = [pkg_manager, 'dev']
-
-        try:
-            process = subprocess.Popen(
-                cmd,
-                cwd=frontend_dir,
-                env=env,
-                stdout=None,
-                stderr=None,
-            )
-            self.processes.append(("前端", process, 3000))
-            return process
-        except Exception as e:
-            error(f"启动前端失败: {e}")
-
-    def wait_for_services(self):
-        """等待所有服务启动"""
-        if not self.processes:
-            return
-
-        info("等待服务启动...")
-        time.sleep(2)
-
-        for name, process, port in self.processes:
-            if port:
-                for _ in range(15):
-                    if self.find_processes_on_port(port):
-                        success(f"{name} 已就绪 (端口 {port})")
-                        break
-                    time.sleep(0.5)
-                else:
-                    warn(f"{name} 可能未正常启动")
-
-    def stop_all(self):
-        """停止所有启动的服务"""
-        if not self.processes:
-            return
-
-        info("\n正在停止所有服务...")
-
-        for name, process, port in self.processes:
-            try:
-                if self.is_windows:
-                    # Windows: 使用 taskkill 强制终止进程树
-                    subprocess.run(
-                        ['taskkill', '/F', '/T', '/PID', str(process.pid)],
-                        capture_output=True,
-                        timeout=5
-                    )
-                else:
-                    process.terminate()
-                    process.wait(timeout=3)
-            except Exception as e:
-                # 尝试强制终止
-                try:
-                    process.kill()
-                except Exception:
-                    pass  # 进程可能已经结束
-
-        # 额外清理：确保端口被释放
-        for name, process, port in self.processes:
-            if port:
-                self.stop_processes_on_port(port, name)
-
-        self.processes.clear()
-        success("所有服务已停止")
-
-
-# ===========================
-# Main
-# ===========================
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Anima 统一启动脚本',
+        description="Anima unified startup script",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-示例:
-  python scripts/start.py              # 启动默认服务 (后端 + Web配置 + 桌面应用)
-  python scripts/start.py --mode web   # 启动 Web 模式 (后端 + Next.js)
-  python scripts/start.py --backend-only  # 仅启动后端
-        """
+Examples:
+  python scripts/start.py                    # Start all services (backend + frontend + web config)
+  python scripts/start.py --no-frontend      # Skip Vite frontend
+  python scripts/start.py --backend-only     # Backend only
+        """,
     )
-
-    parser.add_argument(
-        '--mode',
-        choices=['desktop', 'web'],
-        default='desktop',
-        help='运行模式: desktop (Electron桌面应用) 或 web (Next.js)'
-    )
-    parser.add_argument('--backend-only', action='store_true', help='仅启动后端')
-    parser.add_argument('--no-backend', action='store_true', help='不启动后端')
-    parser.add_argument('--no-web-config', action='store_true', help='不启动 Web 配置界面')
-    parser.add_argument('--no-app', action='store_true', help='不启动桌面/前端应用')
-    parser.add_argument('--web-port', type=int, default=8080, help='Web 配置界面端口')
-    parser.add_argument('--install', action='store_true', help='安装依赖')
-    parser.add_argument('--dev', action='store_true', help='开启开发者工具 (DevTools)')
-    parser.add_argument('--no-tts-server', action='store_true', help='不启动 TTS 本地推理服务')
+    parser.add_argument('--mode', choices=['desktop', 'web'], default=None,
+                        help=argparse.SUPPRESS)  # Deprecated, accepted for compatibility
+    parser.add_argument('--backend-only', action='store_true', help='Start backend only')
+    parser.add_argument('--no-backend', action='store_true', help='Skip backend')
+    parser.add_argument('--no-web-config', action='store_true', help='Skip web config page')
+    parser.add_argument('--no-frontend', action='store_true', help='Skip Vite frontend')
+    parser.add_argument('--no-app', action='store_true', help=argparse.SUPPRESS)  # Deprecated
+    parser.add_argument('--web-port', type=int, default=8080, help='Web config page port')
+    parser.add_argument('--install', action='store_true', help='Reinstall dependencies')
+    parser.add_argument('--dev', action='store_true', help='Enable DevTools')
+    parser.add_argument('--no-tts-server', action='store_true', help='Skip TTS inference server')
 
     args = parser.parse_args()
 
-    # 打印标题
+    # Deprecation warnings
+    if args.mode is not None:
+        warn("--mode is deprecated and no longer has any effect. All services are started by default.")
+    if args.no_app:
+        warn("--no-app is deprecated, use --no-frontend instead")
+        args.no_frontend = True
+
+    # Project root
+    os.chdir(_project_root)
     print()
+    header = "Anima Startup Script"
     if Colors.enabled():
         print(f"{Colors.MAGENTA}{'=' * 50}{Colors.NC}")
-        print(f"{Colors.MAGENTA}  Anima 启动脚本{Colors.NC}")
+        print(f"{Colors.MAGENTA}  {header}{Colors.NC}")
         print(f"{Colors.MAGENTA}{'=' * 50}{Colors.NC}")
     else:
         print('=' * 50)
-        print('  Anima 启动脚本')
+        print(f'  {header}')
         print('=' * 50)
     print()
 
-    # 获取项目根目录
-    script_dir = Path(__file__).parent
-    project_root = script_dir.parent
-    os.chdir(project_root)
-
-    # 检查包管理器
+    # Check package manager
     pkg_manager = None
     use_shell = platform.system() == "Windows"
     for pm in ['pnpm', 'npm']:
@@ -498,102 +81,99 @@ def main():
             break
         except (subprocess.CalledProcessError, FileNotFoundError):
             continue
-
     if pkg_manager:
-        info(f"包管理器: {pkg_manager}")
+        info(f"Package manager: {pkg_manager}")
 
-    # 安装依赖
+    # Install dependencies if requested
     if args.install:
-        info("安装 Python 依赖...")
+        info("Installing Python dependencies...")
         subprocess.run([sys.executable, '-m', 'pip', 'install', '-r', 'requirements.txt'], check=True)
-
         if pkg_manager:
-            info("安装前端依赖...")
+            info("Installing frontend dependencies...")
             subprocess.run([pkg_manager, 'install'], check=True, cwd='frontend', shell=use_shell)
         print()
 
-    # 进程管理器
+    # Stop existing services
     pm = ProcessManager()
-
-    # 停止现有服务
-    info("检查并停止现有服务...")
-    pm.stop_processes_on_port(12394, "后端")
+    info("Checking and stopping existing services...")
+    pm.stop_processes_on_port(12394, "Backend")
     pm.stop_processes_on_port(8765, "VibeVoice TTS")
-    pm.stop_processes_on_port(8080, "Web配置")
-    pm.stop_processes_on_port(3000, "前端")
+    pm.stop_processes_on_port(8080, "Web Config")
+    pm.stop_processes_on_port(3000, "Frontend")
     print()
 
-    try:
-        # 启动 VibeVoice TTS 服务（当配置为 vibe_voice 且未禁用时）
-        if not args.no_tts_server and not args.backend_only:
-            tts_provider = pm._get_tts_provider(project_root)
-            if tts_provider == "vibe_voice":
-                info(f"检测到 TTS 提供者为 {tts_provider}，启动本地推理服务...")
-                pm.start_vibe_voice_server(project_root)
-                time.sleep(3)  # 给模型加载一点启动时间
-            else:
-                info(f"TTS 提供者为 {tts_provider}，跳过 VibeVoice 服务启动")
+    started = []  # (name, process, port)
 
-        # 启动后端
+    try:
+        # TTS server
+        if not args.no_tts_server and not args.backend_only:
+            provider = get_tts_provider(_project_root)
+            if provider == "vibe_voice":
+                info(f"TTS provider is {provider}, starting local inference server...")
+                result = start_vibe_voice(_project_root, pm)
+                if result:
+                    started.append(result)
+                    time.sleep(3)
+            else:
+                info(f"TTS provider is {provider}, skipping VibeVoice")
+
+        # Backend
         if not args.no_backend:
-            pm.start_backend(project_root)
+            started.append(start_backend(_project_root, pm))
             time.sleep(2)
 
-        # 启动 Web 配置
+        # Web config
         if not args.no_web_config and not args.backend_only:
-            pm.start_web_config(project_root, args.web_port)
+            started.append(start_web_config(_project_root, args.web_port))
             time.sleep(1)
 
-        # 启动前端
-        if not args.no_app and not args.backend_only:
+        # Frontend (always start unless explicitly skipped)
+        if not args.no_frontend and not args.backend_only:
             if not pkg_manager:
-                error("前端需要 pnpm/npm")
-            pm.start_frontend_vite(project_root)
+                error("Frontend requires pnpm/npm")
+            started.append(start_vite(_project_root))
 
-        # 等待服务就绪
+        # Wait for services
         print()
         pm.wait_for_services()
 
-        # 打印状态
+        # Print status
         print()
         if Colors.enabled():
             print(f"{Colors.GREEN}{'=' * 50}{Colors.NC}")
-            print(f"{Colors.GREEN}  启动完成！{Colors.NC}")
+            print(f"{Colors.GREEN}  All services started!{Colors.NC}")
             print(f"{Colors.GREEN}{'=' * 50}{Colors.NC}")
         else:
             print('=' * 50)
-            print('  启动完成！')
+            print('  All services started!')
             print('=' * 50)
         print()
 
+        urls = []
         if not args.no_backend:
-            if Colors.enabled():
-                print(f"  后端:      {Colors.CYAN}http://localhost:12394{Colors.NC}")
-            else:
-                print("  后端:      http://localhost:12394")
+            url = "http://localhost:12394"
+            print(f"  Backend:     {Colors.CYAN}{url}{Colors.NC}" if Colors.enabled() else f"  Backend:     {url}")
 
         if not args.no_web_config and not args.backend_only:
-            if Colors.enabled():
-                print(f"  Web 配置:  {Colors.CYAN}http://localhost:{args.web_port}{Colors.NC}")
-            else:
-                print(f"  Web 配置:  http://localhost:{args.web_port}")
+            url = f"http://localhost:{args.web_port}"
+            print(f"  Web Config:  {Colors.CYAN}{url}{Colors.NC}" if Colors.enabled() else f"  Web Config:  {url}")
+            urls.append((url, 3))
 
-        if not args.no_app and not args.backend_only:
-            if args.mode == 'desktop':
-                print("  桌面应用:  Electron 窗口")
-            else:
-                if Colors.enabled():
-                    print(f"  前端:     {Colors.CYAN}http://localhost:3000{Colors.NC}")
-                else:
-                    print("  前端:     http://localhost:3000")
+        if not args.no_frontend and not args.backend_only:
+            url = "http://localhost:3000"
+            print(f"  Frontend:    {Colors.CYAN}{url}{Colors.NC}" if Colors.enabled() else f"  Frontend:    {url}")
+            # Don't auto-open frontend — Vite dev server opens it automatically
 
         print()
-        info("按 Ctrl+C 停止所有服务\n")
+        info("Press Ctrl+C to stop all services\n")
 
-        # 等待进程（用超时循环，Windows 上才能响应 Ctrl+C）
+        # Auto-open browser
+        open_browser(urls)
+
+        # Wait loop
         while True:
             all_stopped = True
-            for name, process, _ in pm.processes:
+            for _, process, _ in started:
                 if process.poll() is None:
                     all_stopped = False
                     try:

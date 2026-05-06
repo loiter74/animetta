@@ -1,7 +1,7 @@
 """
-人设配置模块
+Persona configuration module
 
-包含基础人设配置和增强人设构建器
+Contains base persona configuration and enhanced persona builder
 """
 
 from .base import (

@@ -595,3 +595,22 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
+## Token Optimization
+
+This project uses [RTK](https://github.com/rtk-ai/rtk) (Rust Token Killer) to reduce token consumption.
+
+```bash
+# RTK binary location — always add to PATH before use
+export PATH="$HOME/.local/bin:$PATH"
+
+# Instead of raw commands, use rtk-prefixed versions:
+#   git status     → rtk git status
+#   git log -10    → rtk git log -10
+#   cargo test     → rtk cargo test
+#   cat file       → rtk read file
+
+# rtk meta commands (used directly):
+#   rtk gain       — show token savings
+#   rtk proxy <cmd> — raw passthrough when needed
+```

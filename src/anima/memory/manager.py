@@ -1,10 +1,8 @@
 """
-核心记忆管理器.
-
-底层存储引擎 (SQLite FTS5 + Chroma 向量), 被 WikiManager 调用.
-- 增量索引: 检测文件变更, 只重建有改动的文件
-- 混合搜索: 向量语义 + BM25 关键词
-- Embedding 计算 (sentence-transformers)
+Low-level storage engine (SQLite FTS5 + Chroma vector), called by WikiManager.
+- Incremental indexing: detects file changes, rebuilds only modified files
+- Hybrid search: vector semantic + BM25 keyword
+- Embedding computation (sentence-transformers)
 """
 
 from __future__ import annotations
@@ -27,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 class MemoryManager:
-    """底层存储管理器 (SQLite + Chroma + file indexing)."""
+    """Low-level storage manager (SQLite + Chroma + file indexing)."""
 
     def __init__(self, config: MemoryConfig | None = None, **kwargs):
         if config is None:
@@ -38,7 +36,7 @@ class MemoryManager:
         ws = Path(self.config.workspace_dir)
         ws.mkdir(parents=True, exist_ok=True)
 
-        # 初始化存储层
+        # Initialize storage layer
         self.sqlite = SQLiteStore(self.config.db_path)
         self.chroma = ChromaStore(
             persist_dir=self.config.chroma_path,
@@ -47,7 +45,7 @@ class MemoryManager:
         )
         self.memory_entries = MemoryEntryStore(self.sqlite.conn)
 
-        # Embedding 模型
+        # Embedding model
         self._embedder = None
         try:
             from sentence_transformers import SentenceTransformer
@@ -62,7 +60,7 @@ class MemoryManager:
         except Exception as e:
             logger.warning(f"[MemoryManager] embedding load failed: {e}")
 
-    # ── workspace ───────────────────────────────────────────
+    # ── Workspace ──────────────────────────────────────────
 
     @property
     def _workspace(self) -> Path:
@@ -71,7 +69,7 @@ class MemoryManager:
     def get(
         self, relative_path: str, start_line: int | None = None, end_line: int | None = None
     ) -> str:
-        """读取 workspace 下的文件."""
+        """Read a file under workspace."""
         path = self._workspace / relative_path
         if not path.exists():
             return ""
@@ -83,19 +81,19 @@ class MemoryManager:
         e = end_line if end_line else len(lines)
         return "\n".join(lines[s:e])
 
-    # ── 索引 ────────────────────────────────────────────────
+    # ── Indexing ──────────────────────────────────────────
 
     def sync(self):
-        """全量同步: 扫描 raw/ + wiki/ 下所有 .md 文件."""
+        """Full sync: scan all .md files under raw/ + wiki/."""
         files_to_index: list[tuple[str, str]] = []
 
-        # raw/
+        # raw/ directory
         raw_dir = self._workspace / "raw"
         if raw_dir.exists():
             for md in sorted(raw_dir.glob("*.md")):
                 files_to_index.append((f"raw/{md.name}", "raw"))
 
-        # wiki/
+        # wiki/ directory
         wiki_dir = self._workspace / "wiki"
         if wiki_dir.exists():
             for md in sorted(wiki_dir.rglob("*.md")):
@@ -109,7 +107,7 @@ class MemoryManager:
         logger.info(f"[MemoryManager] sync: {indexed} indexed, {len(files_to_index) - indexed} unchanged")
 
     def _index_file(self, relative_path: str, source: str) -> bool:
-        """增量索引单个文件."""
+        """Incremental index for a single file."""
         abs_path = self._workspace / relative_path
         if not abs_path.exists():
             return False
@@ -165,12 +163,12 @@ class MemoryManager:
         )
         return [emb.tolist() for emb in all_embeddings]
 
-    # ── 搜索 ────────────────────────────────────────────────
+    # ── Search ─────────────────────────────────────────────
 
     def search(
         self, query: str, max_results: int | None = None, min_score: float | None = None,
     ) -> list[SearchResult]:
-        """混合搜索 (向量 + BM25)."""
+        """Hybrid search (vector + BM25)."""
         query_embedding = None
         if self._embedder is not None:
             emb = self._embedder.encode([query], normalize_embeddings=True)
@@ -182,7 +180,7 @@ class MemoryManager:
             min_score=min_score, query_embedding=query_embedding,
         )
 
-    # ── flush ───────────────────────────────────────────────
+    # ── Flush ──────────────────────────────────────────────
 
     def should_flush(self, current_tokens: int, context_window: int) -> bool:
         if not self.config.flush_enabled:
@@ -190,7 +188,7 @@ class MemoryManager:
         threshold = context_window - self.config.reserve_tokens_floor - self.config.flush_soft_threshold_tokens
         return current_tokens > threshold
 
-    # ── 生命周期 ────────────────────────────────────────────
+    # ── Lifecycle ─────────────────────────────────────────
 
     def close(self):
         self.sqlite.close()

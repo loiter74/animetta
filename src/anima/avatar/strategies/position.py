@@ -1,8 +1,8 @@
 """
-位置基础时间轴策略（增强版）
+Position-based timeline strategy (enhanced version)
 
-根据情绪标签在文本中的位置分配时间。
-实现新的 ITimelineStrategy 接口，增强错误处理和功能。
+Allocates time based on the position of emotion tags in the text.
+Implements the new ITimelineStrategy interface with enhanced error handling and features.
 """
 
 from typing import List, Optional, Dict, Any
@@ -13,21 +13,21 @@ from .base import ITimelineStrategy, TimelineSegment, TimelineConfig
 
 class PositionBasedStrategy(ITimelineStrategy):
     """
-    基于位置的时间轴策略
+    Position-based timeline strategy
 
-    根据情绪标签在文本中的位置平均分配时间。
-    支持平滑过渡和自定义强度计算。
+    Evenly allocates time based on the position of emotion tags in the text.
+    Supports smooth transitions and custom intensity calculation.
 
-    功能:
-    - 根据情绪列表平均分配时间
-    - 支持相邻相同情绪合并
-    - 支持过渡平滑（transition_duration）
-    - 支持自定义强度计算
-    - 完善的错误处理和验证
+    Features:
+    - Evenly allocates time based on emotion list
+    - Supports merging adjacent same emotions
+    - Supports smooth transitions (transition_duration)
+    - Supports custom intensity calculation
+    - Comprehensive error handling and validation
 
     Attributes:
-        config: 时间轴配置参数
-        enable_smoothing: 是否启用平滑过渡
+        config: Timeline configuration parameters
+        enable_smoothing: Whether to enable smooth transitions
 
     Example:
         >>> strategy = PositionBasedStrategy(
@@ -49,11 +49,11 @@ class PositionBasedStrategy(ITimelineStrategy):
         enable_smoothing: bool = True
     ):
         """
-        初始化策略
+        Initialize the strategy
 
         Args:
-            config: 时间轴配置
-            enable_smoothing: 是否启用平滑过渡（合并相邻相同情绪）
+            config: Timeline configuration
+            enable_smoothing: Whether to enable smooth transitions (merge adjacent same emotions)
         """
         self.config = config or TimelineConfig()
         self._enable_smoothing = enable_smoothing
@@ -67,71 +67,71 @@ class PositionBasedStrategy(ITimelineStrategy):
         **kwargs
     ) -> List[TimelineSegment]:
         """
-        计算情绪时间轴
+        Calculate the emotion timeline
 
         Args:
-            emotions: 情绪列表
-            text: 文本内容
-            audio_duration: 音频时长
-            config: 可选的配置（覆盖实例配置）
-            **kwargs: 额外参数（如 emotion_positions 情绪位置信息）
+            emotions: List of emotions
+            text: Text content
+            audio_duration: Audio duration
+            config: Optional configuration (overrides instance config)
+            **kwargs: Additional parameters (e.g., emotion_positions)
 
         Returns:
-            List[TimelineSegment]: 时间轴片段列表
+            List[TimelineSegment]: List of timeline segments
 
         Raises:
-            ValueError: 当输入参数无效时
+            ValueError: When input parameters are invalid
         """
-        # 使用提供的配置或实例配置
+        # Use provided config or instance config
         timeline_config = config or self.config
 
-        # 验证输入
+        # Validate input
         if not self.validate_input(emotions, text, audio_duration):
-            raise ValueError(f"无效的输入参数: emotions={emotions}, audio_duration={audio_duration}")
+            raise ValueError(f"Invalid input parameters: emotions={emotions}, audio_duration={audio_duration}")
 
         try:
-            # 情况 1: 没有情绪
+            # Case 1: No emotions
             if not emotions:
-                logger.debug(f"[{self.name}] 没有情绪，使用默认情绪")
+                logger.debug(f"[{self.name}] No emotions, using default emotion")
                 return self._create_default_segment(
                     timeline_config.default_emotion,
                     audio_duration
                 )
 
-            # 情况 2: 有情绪，平均分配时间
+            # Case 2: Has emotions, distribute time evenly
             segments = self._calculate_even_segments(
                 emotions,
                 audio_duration,
                 timeline_config
             )
 
-            # 可选：合并相邻相同情绪
+            # Optional: Merge adjacent same emotions
             if self._enable_smoothing:
                 segments = self.merge_adjacent_same_emotion(segments)
 
-            # 确保完整覆盖音频时长
+            # Ensure full coverage of audio duration
             segments = self.ensure_full_coverage(
                 segments,
                 audio_duration,
                 timeline_config.default_emotion
             )
 
-            # 应用最小片段时长过滤
+            # Apply minimum segment duration filter
             segments = self._filter_short_segments(
                 segments,
                 timeline_config.min_segment_duration
             )
 
             logger.debug(
-                f"[{self.name}] 计算了 {len(segments)} 个时间轴片段, "
-                f"总时长 {audio_duration:.2f}s"
+                f"[{self.name}] Calculated {len(segments)} timeline segments, "
+                f"total duration {audio_duration:.2f}s"
             )
 
             return segments
 
         except Exception as e:
-            logger.error(f"[{self.name}] 计算时间轴失败: {e}")
-            # 返回默认时间轴
+            logger.error(f"[{self.name}] Failed to calculate timeline: {e}")
+            # Return default timeline
             return self._create_default_segment(
                 timeline_config.default_emotion,
                 audio_duration
@@ -144,15 +144,15 @@ class PositionBasedStrategy(ITimelineStrategy):
         config: TimelineConfig
     ) -> List[TimelineSegment]:
         """
-        计算平均分配的时间段
+        Calculate evenly distributed segments
 
         Args:
-            emotions: 情绪列表
-            audio_duration: 音频时长
-            config: 时间轴配置
+            emotions: List of emotions
+            audio_duration: Audio duration
+            config: Timeline configuration
 
         Returns:
-            List[TimelineSegment]: 时间轴片段列表
+            List[TimelineSegment]: List of timeline segments
         """
         segment_duration = audio_duration / len(emotions)
         segments = []
@@ -161,7 +161,7 @@ class PositionBasedStrategy(ITimelineStrategy):
             start_time = i * segment_duration
             end_time = (i + 1) * segment_duration
 
-            # 计算强度（可以扩展为基于情绪的强度）
+            # Calculate intensity (can be extended to be emotion-based)
             intensity = self._calculate_intensity(emotion, i, len(emotions))
 
             segments.append(TimelineSegment(
@@ -180,20 +180,20 @@ class PositionBasedStrategy(ITimelineStrategy):
         total_emotions: int
     ) -> float:
         """
-        计算情绪强度
+        Calculate emotion intensity
 
-        可以根据情绪类型、位置等因素计算强度。
-        默认返回固定强度 1.0。
+        Can calculate intensity based on emotion type, position, etc.
+        Default returns fixed intensity 1.0.
 
         Args:
-            emotion: 情绪名称
-            index: 情绪在列表中的索引
-            total_emotions: 总情绪数
+            emotion: Emotion name
+            index: Index of emotion in the list
+            total_emotions: Total number of emotions
 
         Returns:
-            float: 强度值 (0.0 - 1.0)
+            float: Intensity value (0.0 - 1.0)
         """
-        # 默认强度
+        # Default intensity
         return 1.0
 
     def _filter_short_segments(
@@ -202,14 +202,14 @@ class PositionBasedStrategy(ITimelineStrategy):
         min_duration: float
     ) -> List[TimelineSegment]:
         """
-        过滤掉太短的时间段
+        Filter out segments that are too short
 
         Args:
-            segments: 时间轴片段列表
-            min_duration: 最小时长
+            segments: List of timeline segments
+            min_duration: Minimum duration
 
         Returns:
-            List[TimelineSegment]: 过滤后的片段列表
+            List[TimelineSegment]: Filtered segment list
         """
         filtered = []
         for segment in segments:
@@ -217,13 +217,13 @@ class PositionBasedStrategy(ITimelineStrategy):
                 filtered.append(segment)
             else:
                 logger.debug(
-                    f"[{self.name}] 跳过太短的情绪片段: "
+                    f"[{self.name}] Skipping too short emotion segment: "
                     f"{segment.emotion} ({segment.duration:.3f}s)"
                 )
 
-        # 如果所有片段都被过滤，返回第一个片段
+        # If all segments were filtered, return the first segment
         if not filtered and segments:
-            # 保留最长的片段
+            # Keep the longest segment
             longest = max(segments, key=lambda s: s.duration)
             return [longest]
 
@@ -235,14 +235,14 @@ class PositionBasedStrategy(ITimelineStrategy):
         duration: float
     ) -> List[TimelineSegment]:
         """
-        创建默认时间轴片段
+        Create a default timeline segment
 
         Args:
-            emotion: 情绪名称
-            duration: 时长
+            emotion: Emotion name
+            duration: Duration
 
         Returns:
-            List[TimelineSegment]: 包含单个片段的列表
+            List[TimelineSegment]: List containing a single segment
         """
         return [
             TimelineSegment(
@@ -255,7 +255,7 @@ class PositionBasedStrategy(ITimelineStrategy):
 
     @property
     def name(self) -> str:
-        """策略名称"""
+        """Strategy name"""
         return "position_based"
 
     def validate_input(
@@ -265,42 +265,42 @@ class PositionBasedStrategy(ITimelineStrategy):
         audio_duration: float
     ) -> bool:
         """
-        验证输入参数
+        Validate input parameters
 
         Args:
-            emotions: 情绪列表
-            text: 文本内容
-            audio_duration: 音频时长
+            emotions: List of emotions
+            text: Text content
+            audio_duration: Audio duration
 
         Returns:
-            bool: 是否有效
+            bool: Whether valid
         """
-        # 检查音频时长
+        # Check audio duration
         if not isinstance(audio_duration, (int, float)) or audio_duration <= 0:
-            logger.warning(f"[{self.name}] 无效的音频时长: {audio_duration}")
+            logger.warning(f"[{self.name}] Invalid audio duration: {audio_duration}")
             return False
 
-        # 检查文本
+        # Check text
         if not isinstance(text, str):
-            logger.warning(f"[{self.name}] 无效的文本类型: {type(text)}")
+            logger.warning(f"[{self.name}] Invalid text type: {type(text)}")
             return False
 
-        # 检查情绪列表
+        # Check emotions list
         if emotions is None:
-            logger.warning(f"[{self.name}] 情绪列表为 None")
+            logger.warning(f"[{self.name}] Emotions list is None")
             return False
 
         return True
 
     def get_segment_info(self, segments: List[TimelineSegment]) -> Dict[str, Any]:
         """
-        获取时间轴片段的统计信息
+        Get statistics for timeline segments
 
         Args:
-            segments: 时间轴片段列表
+            segments: List of timeline segments
 
         Returns:
-            Dict: 统计信息
+            Dict: Statistics
         """
         if not segments:
             return {

@@ -1,8 +1,8 @@
 """
-时间轴策略模块
+Timeline Strategy Module
 
-该模块定义了情绪时间轴计算策略的接口。
-所有策略必须实现 ITimelineStrategy 接口。
+This module defines the interface for emotion timeline calculation strategies.
+All strategies must implement the ITimelineStrategy interface.
 """
 
 from .base import ITimelineStrategy, TimelineSegment, TimelineConfig

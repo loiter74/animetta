@@ -1,34 +1,34 @@
-"""配置基类模块"""
+"""Base configuration module"""
 
 from typing import ClassVar
 from pydantic import BaseModel, Field, ConfigDict
 
 
 class BaseConfig(BaseModel):
-    """所有配置的基类"""
+    """Base class for all configurations"""
 
     model_config = ConfigDict(extra="forbid", validate_default=True)
 
 
 class ProviderConfig(BaseModel):
     """
-    提供者配置基类
-    
-    所有 LLM/ASR/TTS 提供者配置都应继承此类，
-    并定义 type 字段作为鉴别符（用于 Pydantic Discriminated Unions）
-    
-    示例:
+    Provider configuration base class
+
+    All LLM/ASR/TTS provider configurations should inherit from this class,
+    and define the type field as a discriminator (for Pydantic Discriminated Unions)
+
+    Example:
         class OpenAILLMConfig(ProviderConfig):
             type: Literal["openai"] = "openai"
             model: str = "gpt-4o-mini"
     """
-    type: str = Field(description="提供者类型，用于鉴别配置类型")
+    type: str = Field(description="Provider type, used for discriminating configuration types")
 
     model_config = ConfigDict(extra="forbid", validate_default=True)
-    
+
     @classmethod
     def get_provider_type(cls) -> str:
-        """获取提供者类型标识"""
+        """Get provider type identifier"""
         if "type" in cls.model_fields:
             default = cls.model_fields["type"].default
             if default is not None:

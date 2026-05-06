@@ -1,5 +1,5 @@
 """
-TTS (语音合成) 接口定义
+TTS (Text-to-Speech) interface definition
 """
 
 from abc import ABC, abstractmethod
@@ -9,8 +9,8 @@ from pathlib import Path
 
 class TTSInterface(ABC):
     """
-    语音合成接口的抽象基类
-    所有 TTS 实现都必须继承此类并实现其抽象方法
+    Abstract base class for speech synthesis interfaces
+    All TTS implementations must inherit from this class and implement its abstract methods
     """
 
     @abstractmethod
@@ -21,20 +21,20 @@ class TTSInterface(ABC):
         **kwargs
     ) -> Union[bytes, str]:
         """
-        将文本合成为语音
+        Synthesize text to speech
 
         Args:
-            text: 要合成的文本
-            output_path: 输出文件路径（可选）
-            **kwargs: 额外参数
+            text: Text to synthesize
+            output_path: Output file path (optional)
+            **kwargs: Additional parameters
 
         Returns:
-            Union[bytes, str]: 如果指定了 output_path，返回文件路径字符串
-                               否则返回音频字节数据
+            Union[bytes, str]: If output_path is specified, returns the file path string
+                               Otherwise returns audio byte data
         """
         pass
 
     @abstractmethod
     async def close(self) -> None:
-        """清理资源"""
+        """Clean up resources"""
         pass

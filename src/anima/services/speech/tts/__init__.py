@@ -1,4 +1,4 @@
-"""TTS 服务实现模块"""
+"""TTS service implementation module"""
 
 from .interface import TTSInterface
 from .factory import TTSFactory

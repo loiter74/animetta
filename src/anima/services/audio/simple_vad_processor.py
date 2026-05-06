@@ -1,5 +1,5 @@
 """
-简化版 VAD 处理器 - 直接使用概率值
+Simplified VAD processor - directly uses probability values
 """
 import time
 import numpy as np
@@ -10,7 +10,7 @@ from ..intelligence.vad import VADInterface
 
 
 class SimpleVADProcessor:
-    """简化版 VAD 处理器"""
+    """Simplified VAD processor"""
     
     def __init__(
         self,
@@ -30,31 +30,31 @@ class SimpleVADProcessor:
         self.min_silence_duration = min_silence_duration
         self.sample_rate = sample_rate
         
-        # 音频缓冲
+        # Audio buffer
         self._audio_buffer: List[float] = []
         
-        # 状态
+        # State
         self._is_speech = False
         self._speech_start_time = None
         self._silence_start_time = None
         self._total_chunks = 0
         
-        # 获取 Silero VAD 模型的原始概率
+        # Get raw probability from Silero VAD model
         self._silero_model = None
         if hasattr(vad_engine, 'model'):
             self._silero_model = vad_engine.model
     
     def _get_speech_prob(self, audio_data: List[float]) -> float:
-        """获取原始语音概率"""
+        """Get raw speech probability"""
         if self._silero_model is None:
             return 0.0
         
         try:
             import torch
-            # 转换为 tensor
+            # Convert to tensor
             chunk_tensor = torch.from_numpy(np.array(audio_data, dtype=np.float32))
             
-            # Silero VAD 模型需要 (batch, samples) 格式
+            # Silero VAD model expects (batch, samples) format
             if chunk_tensor.ndim == 1:
                 chunk_tensor = chunk_tensor.unsqueeze(0)
             
@@ -66,27 +66,27 @@ class SimpleVADProcessor:
             return 0.0
     
     async def process_chunk(self, audio_data: List[float]) -> None:
-        """处理音频数据块"""
+        """Process audio data chunk"""
         if not audio_data:
             return
         
         self._total_chunks += 1
         
-        # 每 500 个块输出一次
+        # Output every 500 chunks
         if self._total_chunks % 500 == 0:
             logger.info(f"[{self.session_id}] Audio chunks: {self._total_chunks}")
         
-        # 获取语音概率
+        # Get speech probability
         prob = self._get_speech_prob(audio_data)
         is_speech_frame = prob > self.threshold
         
         current_time = time.time()
         
-        # 累积音频
+        # Accumulate audio
         self._audio_buffer.extend(audio_data)
         
         if is_speech_frame:
-            # 检测到语音
+            # Speech detected
             if not self._is_speech:
                 self._is_speech = True
                 self._speech_start_time = current_time
@@ -95,7 +95,7 @@ class SimpleVADProcessor:
             
             self._silence_start_time = None
         else:
-            # 检测到静音
+            # Silence detected
             if self._is_speech:
                 if self._silence_start_time is None:
                     self._silence_start_time = current_time
@@ -103,7 +103,7 @@ class SimpleVADProcessor:
                 silence_duration = current_time - self._silence_start_time
                 speech_duration = current_time - self._speech_start_time if self._speech_start_time else 0
                 
-                # 条件：语音足够长 + 静音足够长
+                # Conditions: speech long enough + silence long enough
                 if speech_duration >= self.min_speech_duration and silence_duration >= self.min_silence_duration:
                     logger.info(
                         f"[{self.session_id}] 🎤 Speech ended: "
@@ -113,16 +113,16 @@ class SimpleVADProcessor:
                     if self.on_speech_end:
                         await self.on_speech_end(list(self._audio_buffer))
                     
-                    # 重置
+                    # Reset
                     self._is_speech = False
                     self._speech_start_time = None
                     self._silence_start_time = None
                     self._audio_buffer.clear()
     
     async def process_end(self) -> None:
-        """手动结束"""
+        """Manual end"""
         if self._is_speech and self._audio_buffer:
-            logger.info(f"[{self.session_id}] 手动结束语音输入")
+            logger.info(f"[{self.session_id}] Manual end of speech input")
             
             if self.on_speech_end:
                 await self.on_speech_end(list(self._audio_buffer))
@@ -131,7 +131,7 @@ class SimpleVADProcessor:
             self._audio_buffer.clear()
     
     def reset(self) -> None:
-        """重置"""
+        """Reset"""
         self._audio_buffer.clear()
         self._is_speech = False
         self._speech_start_time = None

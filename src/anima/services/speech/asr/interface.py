@@ -1,5 +1,5 @@
 """
-ASR (语音识别) 接口定义
+ASR (Automatic Speech Recognition) interface definition
 """
 
 from abc import ABC, abstractmethod
@@ -9,8 +9,8 @@ from pathlib import Path
 
 class ASRInterface(ABC):
     """
-    语音识别接口的抽象基类
-    所有 ASR 实现都必须继承此类并实现其抽象方法
+    Abstract base class for speech recognition interfaces
+    All ASR implementations must inherit from this class and implement its abstract methods
     """
 
     @abstractmethod
@@ -20,20 +20,20 @@ class ASRInterface(ABC):
         **kwargs
     ) -> str:
         """
-        将音频数据转录为文本
+        Transcribe audio data to text
 
         Args:
-            audio_data: 音频数据，可以是:
-                - bytes: 原始音频字节
-                - str/Path: 音频文件路径
-            **kwargs: 额外参数
+            audio_data: Audio data, can be:
+                - bytes: Raw audio bytes
+                - str/Path: Audio file path
+            **kwargs: Additional parameters
 
         Returns:
-            str: 识别出的文本
+            str: Recognized text
         """
         pass
 
     @abstractmethod
     async def close(self) -> None:
-        """清理资源"""
+        """Clean up resources"""
         pass

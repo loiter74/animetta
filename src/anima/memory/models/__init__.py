@@ -1,4 +1,4 @@
-"""记忆数据模型"""
+"""Memory data models"""
 
 from .base import FileEntry, SearchResult, MemoryFlushSignal, Chunk
 from .chunks import RawChunk

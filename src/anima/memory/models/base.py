@@ -1,4 +1,4 @@
-"""记忆模块数据模型."""
+"""Memory module data models."""
 
 from __future__ import annotations
 
@@ -8,47 +8,44 @@ from datetime import datetime
 
 @dataclass
 class Chunk:
-    """一个文本块."""
-
+    """Text chunk"""
     text: str
-    path: str  # 来源文件相对路径
+    path: str  # Source file relative path
     source: str  # "memory" | "daily" | "session"
     start_line: int
     end_line: int
-    content_hash: str  # SHA-256, 用于去重和缓存
-    chunk_index: int  # 在文件内的序号
-    oral_version: str | None = None  # 口语化版本（可选）
+    content_hash: str  # SHA-256, for deduplication and caching
+    chunk_index: int  # Sequence number within file
+    oral_version: str | None = None  # Colloquial version (optional)
 
 
 @dataclass
 class FileEntry:
-    """已索引文件的元数据."""
-
+    """File index entry"""
     path: str
     source: str
-    file_hash: str  # 文件整体内容哈希
+    file_hash: str  # Full file content hash
     indexed_at: float  # timestamp
     chunk_count: int
 
 
 @dataclass
 class SearchResult:
-    """搜索结果."""
-
+    """Search result"""
     text: str
     path: str
     start_line: int
     end_line: int
-    score: float  # 融合后的最终得分 [0, 1]
+    score: float  # Fused final score [0, 1]
     source: str
     vector_score: float = 0.0
     keyword_score: float = 0.0
-    oral_version: str | None = None  # 口语化版本（如果有）
+    oral_version: str | None = None  # Colloquial version (if available)
 
 
 @dataclass
 class MemoryFlushSignal:
-    """上下文压缩前的 flush 信号."""
+    """Flush signal before context compression."""
 
     current_tokens: int
     context_window: int

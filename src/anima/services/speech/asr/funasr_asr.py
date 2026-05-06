@@ -1,17 +1,17 @@
 """
-FunASR Paraformer ASR 实现 - 阿里开源语音识别
+FunASR Paraformer ASR implementation - Alibaba open-source speech recognition
 GitHub: https://github.com/modelscope/FunASR
 
-特点：
-- 中文识别准确率比 Whisper 更高
-- 支持实时流式识别
-- 可选配 VAD、标点恢复、说话人分离
-- 支持热词功能
+Features:
+- Higher Chinese recognition accuracy than Whisper
+- Supports real-time streaming recognition
+- Optional VAD, punctuation restoration, speaker diarization
+- Supports hotword functionality
 
-常用模型：
-- paraformer-zh: 中文离线语音识别（推荐）
-- paraformer-zh-streaming: 中文流式语音识别
-- paraformer-en: 英文语音识别
+Common models:
+- paraformer-zh: Chinese offline speech recognition (recommended)
+- paraformer-zh-streaming: Chinese streaming speech recognition
+- paraformer-en: English speech recognition
 """
 
 from typing import Union, Optional, List
@@ -26,18 +26,18 @@ from anima.config.core.registry import ProviderRegistry
 @ProviderRegistry.register_service("asr", "funasr")
 class FunASRASR(ASRInterface):
     """
-    FunASR Paraformer ASR 实现
-    使用阿里开源的 Paraformer 模型，中文识别效果优于 Whisper
+    FunASR Paraformer ASR implementation
+    Uses Alibaba's open-source Paraformer model, Chinese recognition outperforms Whisper
     """
 
-    # 支持的模型列表
+    # Supported model list
     MODELS = {
-        "paraformer-zh": "中文离线语音识别（推荐）",
-        "paraformer-zh-streaming": "中文流式语音识别",
-        "paraformer-en": "英文语音识别",
-        "paraformer-8k-zh": "中文 8k 采样率",
-        "paraformer-large-zh": "中文大模型",
-        "paraformer-large-en": "英文大模型",
+        "paraformer-zh": "Chinese offline speech recognition (recommended)",
+        "paraformer-zh-streaming": "Chinese streaming speech recognition",
+        "paraformer-en": "English speech recognition",
+        "paraformer-8k-zh": "Chinese 8k sample rate",
+        "paraformer-large-zh": "Chinese large model",
+        "paraformer-large-en": "English large model",
     }
 
     def __init__(
@@ -55,20 +55,20 @@ class FunASRASR(ASRInterface):
         disable_update: bool = True,
     ):
         """
-        初始化 FunASR Paraformer ASR
+        Initialize FunASR Paraformer ASR
 
         Args:
-            model: 模型名称（默认 paraformer-zh）
-            language: 语言代码（zh=中文, en=英文）
-            device: 运行设备（cpu/cuda）
-            ncpu: CPU 线程数
-            vad_model: VAD 模型名称，None 禁用
-            punc_model: 标点恢复模型名称，None 禁用
-            spk_model: 说话人识别模型名称，None 禁用
-            chunk_size: 流式识别块大小
-            hotword: 热词文件路径或字符串
-            model_hub: 模型下载源（ms=ModelScope, hf=HuggingFace）
-            disable_update: 禁用模型自动更新检查
+            model: Model name (default paraformer-zh)
+            language: Language code (zh=Chinese, en=English)
+            device: Device (cpu/cuda)
+            ncpu: Number of CPU threads
+            vad_model: VAD model name, None to disable
+            punc_model: Punctuation restoration model name, None to disable
+            spk_model: Speaker diarization model name, None to disable
+            chunk_size: Streaming recognition chunk size
+            hotword: Hotword file path or string
+            model_hub: Model download source (ms=ModelScope, hf=HuggingFace)
+            disable_update: Disable automatic model update check
         """
         self.model_name = model
         self.language = language
@@ -83,21 +83,21 @@ class FunASRASR(ASRInterface):
         self.disable_update = disable_update
         self._model = None
 
-        logger.info(f"FunASR Paraformer ASR 初始化配置:")
-        logger.info(f"  模型: {model}")
-        logger.info(f"  语言: {language}")
-        logger.info(f"  设备: {device}")
-        logger.info(f"  VAD 模型: {vad_model}")
-        logger.info(f"  标点模型: {punc_model}")
-        logger.info(f"  说话人模型: {spk_model}")
+        logger.info(f"FunASR Paraformer ASR initialization config:")
+        logger.info(f"  Model: {model}")
+        logger.info(f"  Language: {language}")
+        logger.info(f"  Device: {device}")
+        logger.info(f"  VAD model: {vad_model}")
+        logger.info(f"  Punctuation model: {punc_model}")
+        logger.info(f"  Speaker model: {spk_model}")
 
     def _get_model(self):
-        """懒加载模型"""
+        """Lazy-load model"""
         if self._model is None:
             try:
                 from funasr import AutoModel
 
-                # 构建模型参数
+                # Build model parameters
                 model_kwargs = {
                     "model": self.model_name,
                     "device": self.device,
@@ -106,7 +106,7 @@ class FunASRASR(ASRInterface):
                     "disable_update": self.disable_update,
                 }
 
-                # 添加可选的辅助模型
+                # Add optional auxiliary models
                 if self.vad_model:
                     model_kwargs["vad_model"] = self.vad_model
                 if self.punc_model:
@@ -114,17 +114,17 @@ class FunASRASR(ASRInterface):
                 if self.spk_model:
                     model_kwargs["spk_model"] = self.spk_model
 
-                logger.info(f"正在加载 FunASR 模型: {self.model_name}...")
+                logger.info(f"Loading FunASR model: {self.model_name}...")
                 self._model = AutoModel(**model_kwargs)
-                logger.info(f"✅ FunASR 模型加载完成")
+                logger.info(f"FunASR model loaded successfully")
 
             except ImportError:
-                logger.error("funasr 未安装，请运行: pip install funasr modelscope")
+                logger.error("funasr not installed, please run: pip install funasr modelscope")
                 raise ImportError(
                     "funasr 未安装，请运行: pip install funasr modelscope"
                 )
             except Exception as e:
-                logger.error(f"加载 FunASR 模型失败: {e}")
+                logger.error(f"Failed to load FunASR model: {e}")
                 raise
 
         return self._model
@@ -135,25 +135,25 @@ class FunASRASR(ASRInterface):
         **kwargs
     ) -> str:
         """
-        将音频数据转录为文本
+        Transcribe audio data to text
 
         Args:
-            audio_data: 音频数据，可以是:
-                - bytes: WAV/MP3 等格式的字节数据
-                - str/Path: 音频文件路径
-                - list/numpy array: PCM 音频数据 (float32, range [-1.0, 1.0])
+            audio_data: Audio data, can be:
+                - bytes: Byte data in WAV/MP3 etc. format
+                - str/Path: Audio file path
+                - list/numpy array: PCM audio data (float32, range [-1.0, 1.0])
 
         Returns:
-            str: 识别出的文本
+            str: Recognized text
         """
         import asyncio
         import tempfile
 
         model = self._get_model()
 
-        # FunASR 需要文件路径作为输入
+        # FunASR requires file path as input
         if isinstance(audio_data, np.ndarray):
-            # 将 numpy 数组写入临时 WAV 文件
+            # Write numpy array to temporary WAV file
             audio_path = await self._save_temp_wav(audio_data)
         elif isinstance(audio_data, list):
             audio_np = np.array(audio_data, dtype=np.float32)
@@ -161,14 +161,14 @@ class FunASRASR(ASRInterface):
         elif isinstance(audio_data, (str, Path)):
             audio_path = str(audio_data)
         elif isinstance(audio_data, bytes):
-            # 从 bytes 保存临时文件
+            # Save bytes to temp file
             audio_path = await self._save_bytes_to_temp(audio_data)
         else:
-            raise ValueError(f"不支持的音频数据类型: {type(audio_data)}")
+            raise ValueError(f"Unsupported audio data type: {type(audio_data)}")
 
-        logger.debug(f"FunASR 处理音频: {audio_path}")
+        logger.debug(f"FunASR processing audio: {audio_path}")
 
-        # 在线程池中运行转录（CPU/GPU 密集型操作）
+        # Run transcription in thread pool (CPU/GPU-intensive operation)
         loop = asyncio.get_event_loop()
         result = await loop.run_in_executor(
             None,
@@ -176,26 +176,26 @@ class FunASRASR(ASRInterface):
             audio_path
         )
 
-        logger.info(f"FunASR 识别结果: {result}")
+        logger.info(f"FunASR recognition result: {result}")
         return result
 
     def _transcribe_sync(self, audio_path: str) -> str:
-        """同步转录方法"""
+        """Synchronous transcription method"""
         model = self._get_model()
 
-        # 构建生成参数
+        # Build generation parameters
         gen_kwargs = {}
         if self.hotword:
             gen_kwargs["hotword"] = self.hotword
 
-        # 执行转录
+        # Execute transcription
         result = model.generate(input=audio_path, **gen_kwargs)
 
-        # 提取文本
+        # Extract text
         if not result:
             return ""
 
-        # result 是一个列表，每个元素对应一个输入
+        # result is a list, each element corresponds to an input
         first_result = result[0]
         if isinstance(first_result, dict):
             text = first_result.get("text", "")
@@ -205,38 +205,38 @@ class FunASRASR(ASRInterface):
         return text.strip()
 
     async def _save_temp_wav(self, audio_np: np.ndarray) -> str:
-        """将 numpy 数组保存为临时 WAV 文件"""
+        """Save numpy array to temporary WAV file"""
         import wave
         import tempfile
 
-        # 确保是 float32 格式
+        # Ensure float32 format
         if audio_np.dtype != np.float32:
             audio_np = audio_np.astype(np.float32)
 
-        # 限制范围到 [-1.0, 1.0]
+        # Clip range to [-1.0, 1.0]
         audio_np = np.clip(audio_np, -1.0, 1.0)
 
-        # 转换为 16-bit PCM
+        # Convert to 16-bit PCM
         audio_int16 = (audio_np * 32767).astype(np.int16)
 
-        # 写入临时 WAV 文件
+        # Write to temporary WAV file
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp_file:
             tmp_path = tmp_file.name
 
         with wave.open(tmp_path, 'wb') as wf:
-            wf.setnchannels(1)  # 单声道
+            wf.setnchannels(1)  # Mono
             wf.setsampwidth(2)  # 16-bit
             wf.setframerate(16000)  # 16kHz
             wf.writeframes(audio_int16.tobytes())
 
-        logger.debug(f"保存临时 WAV 文件: {tmp_path}")
+        logger.debug(f"Saved temporary WAV file: {tmp_path}")
         return tmp_path
 
     async def _save_bytes_to_temp(self, audio_bytes: bytes) -> str:
-        """将字节保存为临时文件"""
+        """Save bytes to temp file"""
         import tempfile
 
-        # 尝试判断格式
+        # Try to detect format
         suffix = ".wav"
         if audio_bytes[:3] == b'ID3' or audio_bytes[:2] == b'\xff\xfb':
             suffix = ".mp3"
@@ -252,18 +252,18 @@ class FunASRASR(ASRInterface):
         **kwargs
     ):
         """
-        流式识别音频，生成器返回文本块
+        Stream recognition of audio, generator returns text chunks
 
         Args:
-            audio_data: 音频数据
+            audio_data: Audio data
 
         Yields:
-            str: 识别的文本块
+            str: Recognized text chunks
         """
-        # 对于流式模型，可以使用 chunk 模式
+        # For streaming models, chunk mode can be used
         result = await self.transcribe(audio_data, **kwargs)
 
-        # 按句子分割返回
+        # Split by sentences and return
         import re
         sentences = re.split(r'[。！？.!?]', result)
 
@@ -273,13 +273,13 @@ class FunASRASR(ASRInterface):
                 yield sentence
 
     async def close(self) -> None:
-        """清理资源"""
+        """Clean up resources"""
         self._model = None
-        logger.debug("FunASR ASR 资源已释放")
+        logger.debug("FunASR ASR resources released")
 
     @classmethod
     def from_config(cls, config, **kwargs):
-        """从配置创建实例"""
+        """Create instance from configuration"""
         return cls(
             model=config.get("model", "paraformer-zh"),
             language=config.get("language", "zh"),
@@ -296,14 +296,14 @@ class FunASRASR(ASRInterface):
 
     async def preload(self) -> None:
         """
-        预加载模型（启动时调用，避免首次使用时延迟）
+        Preload model (called at startup to avoid delay on first use)
         """
         import asyncio
 
-        logger.info(f"FunASR 预加载模型: {self.model_name}...")
+        logger.info(f"FunASR preloading model: {self.model_name}...")
 
-        # 在线程池中加载模型（避免阻塞）
+        # Load model in thread pool (avoids blocking)
         loop = asyncio.get_event_loop()
         await loop.run_in_executor(None, self._get_model)
 
-        logger.info(f"FunASR 模型预加载完成: {self.model_name}")
+        logger.info(f"FunASR model preloaded: {self.model_name}")

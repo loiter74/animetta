@@ -17,6 +17,7 @@ from .desktop import DesktopClientManager
 from .live2d import Live2DManager
 from .stats_api import get_stats_routes
 from anima.core.model_loading_manager import ModelLoadingManager
+from anima.tracing import init_tracing
 
 
 class WebSocketServer:
@@ -63,6 +64,24 @@ class WebSocketServer:
         """Set user settings"""
         if self.route_handlers:
             self.route_handlers.set_user_settings(user_settings)
+
+    def setup_tracing(self) -> None:
+        """Initialize OpenTelemetry tracing pipeline."""
+        init_tracing()
+
+    async def prewarm_services(self) -> None:
+        """Pre-warm service imports and model loading at server startup.
+
+        Initializes the global ServicePool so that the first user request
+        reuses the already-loaded LLM/TTS/ASR engines instead of creating
+        them from scratch.
+        """
+        if self.config is None:
+            logger.info("[Prewarm] No config loaded yet, skipping")
+            return
+
+        from anima.core.service_pool import ServicePool
+        await ServicePool.init(self.config)
 
     def setup_routes(self) -> None:
         """Set up all routes"""
@@ -112,6 +131,7 @@ class WebSocketServer:
 def create_server(config=None) -> WebSocketServer:
     """Create a WebSocket server instance"""
     server = WebSocketServer(config)
+    server.setup_tracing()
     server.setup_routes()
     server.setup_lifecycle()
     return server
