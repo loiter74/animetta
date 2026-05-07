@@ -11,6 +11,7 @@ from .glm import GLMTTSConfig
 from .chattts import ChatTTSConfig
 from .vibe_voice import VibeVoiceTTSConfig
 from .kokoro import KokoroTTSConfig
+from .gpt_sovits import GPTSoVITSConfig
 
 __all__ = [
     "TTSBaseConfig",
@@ -21,6 +22,7 @@ __all__ = [
     "ChatTTSConfig",
     "VibeVoiceTTSConfig",
     "KokoroTTSConfig",
+    "GPTSoVITSConfig",
     "TTSConfig",
 ]
 
@@ -34,6 +36,7 @@ TTSConfig = Annotated[
         ChatTTSConfig,
         VibeVoiceTTSConfig,
         KokoroTTSConfig,
+        GPTSoVITSConfig,
     ],
     Field(discriminator="type")
 ]

@@ -13,7 +13,7 @@ persona: "neuro-vtuber"
 
 services:
   asr: faster_whisper  # FasterWhisper（本地语音识别）
-  tts: kokoro_glados  # Kokoro TTS - GLaDOS 风格电子合成音（需安装 kokoro 依赖）
+  tts: gpt_sovits_evil  # GPT-SoVITS - Evil 语音模型（需启动 api_v2.py）
   agent: deepseek  # 底座LLM：DeepSeek V4（OpenAI API 兼容）
   # local_llm: local_lora  # 本地LLM：LocalLoraLLM（简单应答，无persona，保留LoRA效果）- 已禁用
   vad: silero   # vad: silero / mock
@@ -26,3 +26,10 @@ system:
   port: 12394
   debug: true
   log_level: "INFO"
+
+  # GPT-SoVITS 本地推理服务路径配置
+  # 使用 tts: gpt_sovits* 时需要启动 api_v2.py 服务
+  gpt_sovits:
+    path: "C:/Users/30262/GPT-SoVITS-v2pro-20250604"  # GPT-SoVITS 仓库路径
+    python: "C:/Users/30262/miniconda3/envs/gpt-sovits/python.exe"  # Python 解释器路径
+    port: 9880      # api_v2.py 监听端口

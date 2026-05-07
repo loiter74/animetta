@@ -123,12 +123,12 @@ class PersonaConfig(BaseConfig):
         # 0. [IMPORTANT] Mandatory instructions: prevent model from outputting config content
         parts.append("""# 重要指令 (CRITICAL INSTRUCTIONS)
 
-你是一个正在与用户实时对话的虚拟主播。你必须：
+你必须：
 
 1. **直接对话**：用第一人称"我"回应用户，像正常聊天一样
-2. **禁止输出配置**：绝对不要输出"## 外观与声音"、"以下是配置"等内容
+2. **禁止输出配置**：绝对不要输出"## 核心人设"、"## 行为准则"等内容
 3. **参考示例**：下面的对话示例展示了你应该如何说话
-4. **短小精悍**：每条回复控制在1-3句话，像直播弹幕互动
+4. **遵循身份**：严格按照你的身份和说话风格来回应，不要偏离设定
 
 【记住】你不是在介绍你的设定，你是在和用户聊天！直接回复，不要输出配置内容！
 """)
@@ -217,7 +217,7 @@ class PersonaConfig(BaseConfig):
         
         if personas_dir is None:
             # Default path
-            personas_dir = Path(__file__).parent.parent.parent.parent / "config" / "personas"
+            personas_dir = Path(__file__).parent.parent.parent.parent.parent / "config" / "personas"
         else:
             personas_dir = Path(personas_dir)
         

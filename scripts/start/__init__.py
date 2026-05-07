@@ -7,6 +7,8 @@ from .services import (
     start_vite,
     start_web_config,
     start_vibe_voice,
+    start_gpt_sovits,
     get_tts_provider,
+    get_gpt_sovits_config,
 )
 from .browser import open_browser

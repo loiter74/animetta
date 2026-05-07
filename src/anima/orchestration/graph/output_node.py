@@ -84,7 +84,7 @@ async def output_node(
     if tts_audio:
         try:
             audio_data = None
-            format = "mp3"
+            format = "wav"  # default to WAV for byte-returning TTS providers
             volumes = []
 
             if isinstance(tts_audio, str) and os.path.exists(tts_audio):
@@ -100,13 +100,25 @@ async def output_node(
                 )
 
                 ext = os.path.splitext(audio_source)[1].lower()
-                format = ext.lstrip('.') if ext else "mp3"
+                format = ext.lstrip('.') if ext else "wav"
                 audio_data = base64.b64encode(raw_bytes).decode("utf-8")
                 volumes = vol_result or []
 
             elif isinstance(tts_audio, bytes):
+                # Detect audio format from magic bytes before encoding
+                if tts_audio[:4] == b"RIFF":
+                    format = "wav"
+                elif tts_audio[:3] == b"ID3" or (tts_audio[0] == 0xff and (tts_audio[1] & 0xe0) == 0xe0):
+                    format = "mp3"
+                elif tts_audio[:4] == b"OggS":
+                    format = "ogg"
                 audio_data = base64.b64encode(tts_audio).decode("utf-8")
-                volumes = []
+                # Write bytes to a temp file so we can compute volume envelope for lip sync
+                import tempfile
+                tmp_audio = tempfile.mktemp(suffix=f".{format}")
+                with open(tmp_audio, "wb") as f:
+                    f.write(tts_audio)
+                volumes = _compute_volumes(tmp_audio)
 
             if audio_data:
                 payload = {"audio_data": audio_data, "format": format}

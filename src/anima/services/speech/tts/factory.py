@@ -112,6 +112,25 @@ class TTSFactory:
                     num_speakers=kwargs.get("num_speakers", 1),
                     language=kwargs.get("language", "zh"),
                 )
+            elif provider == "gpt_sovits":
+                from anima.config.providers.tts.gpt_sovits import GPTSoVITSConfig
+                return GPTSoVITSConfig(
+                    base_url=kwargs.get("base_url", "http://127.0.0.1:9880"),
+                    ref_audio_path=kwargs.get("ref_audio_path", ""),
+                    prompt_text=kwargs.get("prompt_text", ""),
+                    prompt_lang=kwargs.get("prompt_lang", "zh"),
+                    text_lang=kwargs.get("text_lang", "zh"),
+                    top_k=kwargs.get("top_k", 15),
+                    top_p=kwargs.get("top_p", 1.0),
+                    temperature=kwargs.get("temperature", 1.0),
+                    speed=kwargs.get("speed", 1.0),
+                    media_type=kwargs.get("media_type", "wav"),
+                    streaming_mode=kwargs.get("streaming_mode", False),
+                    text_split_method=kwargs.get("text_split_method", "cut5"),
+                    sample_steps=kwargs.get("sample_steps", 32),
+                    seed=kwargs.get("seed", -1),
+                    aux_ref_audio_paths=kwargs.get("aux_ref_audio_paths", []),
+                )
             elif provider == "mock":
                 from anima.config.providers.tts.mock import MockTTSConfig
                 return MockTTSConfig()

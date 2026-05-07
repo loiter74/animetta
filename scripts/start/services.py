@@ -96,6 +96,104 @@ def get_tts_provider(project_root: Path) -> str:
         return 'edge'
 
 
+def get_gpt_sovits_config(project_root: Path) -> dict:
+    """Read GPT-SoVITS server config from config.yaml."""
+    try:
+        import yaml
+        cfg_path = project_root / "config" / "config.yaml"
+        with open(cfg_path, encoding='utf-8') as f:
+            cfg = yaml.safe_load(f)
+        gs_cfg = (cfg or {}).get('system', {}).get('gpt_sovits', {})
+        return {
+            'path': gs_cfg.get('path', ''),
+            'python': gs_cfg.get('python', ''),
+            'port': gs_cfg.get('port', 9880),
+        }
+    except Exception:
+        return {'path': '', 'python': '', 'port': 9880}
+
+
+def _detect_gpt_sovits_path(project_root: Path, configured_path: str) -> str:
+    """Auto-detect GPT-SoVITS repo path."""
+    if configured_path:
+        return configured_path
+    # Common locations
+    candidates = [
+        project_root.parent / "GPT-SoVITS",
+        project_root.parent / "GPT_SoVITS",
+        project_root.parent / "gpt-sovits",
+        Path(os.path.expanduser("~")) / "GPT-SoVITS",
+        Path(os.path.expanduser("~")) / "gpt-sovits",
+        Path("E:/GPT-SoVITS"),
+    ]
+    for p in candidates:
+        if (p / "api_v2.py").exists():
+            return str(p)
+    return ""
+
+
+def _find_gpt_sovits_python(repo_path: str) -> str:
+    """Find the Python interpreter for GPT-SoVITS conda env."""
+    # Try conda environment first
+    conda_envs = [
+        Path.home() / "miniconda3" / "envs" / "gpt-sovits" / "bin" / "python",
+        Path.home() / "miniconda3" / "envs" / "gpt-sovits" / "python.exe",
+        Path.home() / "anaconda3" / "envs" / "gpt-sovits" / "bin" / "python",
+        Path.home() / "anaconda3" / "envs" / "gpt-sovits" / "python.exe",
+    ]
+    for p in conda_envs:
+        if p.exists():
+            return str(p)
+    # Fall back to conda run
+    return ""
+
+
+def start_gpt_sovits(project_root: Path, pm: ProcessManager):
+    """Start the GPT-SoVITS api_v2.py inference server."""
+    gs_cfg = get_gpt_sovits_config(project_root)
+    repo_path = _detect_gpt_sovits_path(project_root, gs_cfg['path'])
+    port = gs_cfg['port']
+
+    if not repo_path:
+        warn(
+            "GPT-SoVITS repo not found. Set system.gpt_sovits.path in config.yaml "
+            "or clone GPT-SoVITS alongside the Anima project."
+        )
+        return None
+
+    info(f"Starting GPT-SoVITS api_v2.py (port {port})...")
+
+    python_exe = gs_cfg['python'] or _find_gpt_sovits_python(repo_path)
+    tts_infer_cfg = os.path.join(repo_path, "GPT_SoVITS", "configs", "tts_infer.yaml")
+
+    env = os.environ.copy()
+    env["PYTHONIOENCODING"] = "utf-8"
+
+    if python_exe:
+        # Direct Python executable (conda env or venv)
+        process = subprocess.Popen(
+            [python_exe, "api_v2.py", "-a", "127.0.0.1", "-p", str(port),
+             "-c", tts_infer_cfg],
+            cwd=repo_path, env=env, stdout=None, stderr=None,
+        )
+    else:
+        # Fallback: try conda run
+        try:
+            process = subprocess.Popen(
+                ["conda", "run", "-n", "gpt-sovits", "python", "api_v2.py",
+                 "-a", "127.0.0.1", "-p", str(port), "-c", tts_infer_cfg],
+                cwd=repo_path, env=env, stdout=None, stderr=None,
+            )
+        except FileNotFoundError:
+            warn(
+                "conda not found and no GPT-SoVITS Python interpreter configured. "
+                "Set system.gpt_sovits.python in config.yaml."
+            )
+            return None
+
+    return ("GPT-SoVITS", process, port)
+
+
 def _get_venv_python(project_root: Path) -> str:
     """Resolve the venv Python path or fall back to system Python."""
     venv_paths = [

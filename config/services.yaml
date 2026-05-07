@@ -137,6 +137,53 @@ tts:
     top_p: 0.7
     top_k: 20
 
+  # GPT-SoVITS（开源少样本语音克隆 TTS，需本地部署 api_v2.py 服务）
+  # 使用前需先启动 GPT-SoVITS 推理服务：
+  #   cd GPT-SoVITS && python api_v2.py -a 127.0.0.1 -p 9880 -c GPT_SoVITS/configs/tts_infer.yaml
+  # 参考音频（ref_audio_path）为服务端路径，prompt_text 为参考音频的文字转录
+  # ⚠️ 已知问题：
+  #   - RTX 50系显卡 (Blackwell) 需参考 https://github.com/RVC-Boss/GPT-SoVITS/issues/2192
+  #   - GPT-SoVITS V2 模型在并行推理模式(parallel_infer=true)下可能输出为空，建议使用 V2Pro+
+  #   - 如 api_v2.py 直调质量不佳，建议先用 webui 验证参考音频和模型效果
+  gpt_sovits:
+    type: gpt_sovits
+    base_url: "http://127.0.0.1:9880"   # GPT-SoVITS api_v2.py 服务地址
+    ref_audio_path: ""                   # 参考音频路径（服务端路径，必填）
+    prompt_text: ""                      # 参考音频的文字转录（必填）
+    prompt_lang: "zh"                    # 参考音频语种：zh/en/ja/ko/yue/auto
+    text_lang: "zh"                      # 合成文本语种：zh/en/ja/ko/yue/auto
+    top_k: 15                            # Top-k 采样
+    top_p: 1.0                           # Top-p 采样
+    temperature: 1.0                     # 采样温度
+    speed: 1.0                           # 语速 0.5-2.0
+    media_type: "wav"                    # 输出格式：wav/ogg/aac/raw
+    streaming_mode: false                # 流式模式
+    text_split_method: "cut5"            # 文本切分方式（V2 并行推理bug：如有问题尝试 cut0）
+    sample_steps: 32                     # 采样步数（V3/V4 模型）
+    seed: -1                             # 随机种子（-1 为随机）
+
+  # GPT-SoVITS - Evil 语音模型（Evil 英文原声 + v2ProPlus 跨语种合成）
+  # 使用 v2ProPlus 基座模型 + Evil 参考音频做零样本语音克隆
+  # aux_ref_audio_paths 可配置辅助参考音频做多说话人音色融合
+  gpt_sovits_evil:
+    type: gpt_sovits
+    base_url: "http://127.0.0.1:9880"
+    ref_audio_path: "C:/Users/30262/Project/Anima/config/gpt_sovits/evil/ref_audio.wav"
+    prompt_text: "I played Shovel Knight once. It turns out AI doesn't exactly have perfect hand-eye coordination."
+    prompt_lang: "en"
+    text_lang: "auto"   # auto 自动检测语种（支持中英混合）
+    aux_ref_audio_paths:
+      - "C:/Users/30262/Project/Anima/config/gpt_sovits/evil/ref_audio_zh.wav"
+    top_k: 10
+    top_p: 0.8
+    temperature: 0.7
+    speed: 1.0
+    media_type: "wav"
+    streaming_mode: false
+    text_split_method: "cut5"
+    sample_steps: 32
+    seed: -1
+
   # VibeVoice（Microsoft 开源长文本多说话人 TTS，需本地部署模型服务）
   # 推荐部署方式: FastAPI 推理服务监听 localhost:8765，Anima 通过 remote 模式调用
   # RTX 5090D 本地部署参考: openspec/changes/add-vibevoice-tts/design.md

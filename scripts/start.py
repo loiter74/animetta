@@ -21,7 +21,8 @@ if str(_project_root) not in sys.path:
 from scripts.start import (
     Colors, info, success, warn, error,
     ProcessManager, open_browser,
-    start_backend, start_vite, start_web_config, start_vibe_voice, get_tts_provider,
+    start_backend, start_vite, start_web_config, start_vibe_voice, start_gpt_sovits,
+    get_tts_provider,
 )
 
 
@@ -97,6 +98,7 @@ Examples:
     pm = ProcessManager()
     info("Checking and stopping existing services...")
     pm.stop_processes_on_port(12394, "Backend")
+    pm.stop_processes_on_port(9880, "GPT-SoVITS TTS")
     pm.stop_processes_on_port(8765, "VibeVoice TTS")
     pm.stop_processes_on_port(8080, "Web Config")
     pm.stop_processes_on_port(3000, "Frontend")
@@ -114,8 +116,14 @@ Examples:
                 if result:
                     started.append(result)
                     time.sleep(3)
+            elif provider.startswith("gpt_sovits"):
+                info(f"TTS provider is {provider}, starting GPT-SoVITS inference server...")
+                result = start_gpt_sovits(_project_root, pm)
+                if result:
+                    started.append(result)
+                    time.sleep(5)  # GPT-SoVITS takes longer to load
             else:
-                info(f"TTS provider is {provider}, skipping VibeVoice")
+                info(f"TTS provider is {provider}, no local inference server needed")
 
         # Backend
         if not args.no_backend:

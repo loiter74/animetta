@@ -159,16 +159,25 @@ class ServiceContext:
         model = getattr(tts_config, 'model', 'default')
         logger.info(f"[{self.session_id}] Initializing TTS: {provider}/{model}")
 
-        self.tts_engine = TTSFactory.create(
-            provider=provider,
-            api_key=getattr(tts_config, 'api_key', None),
-            model=getattr(tts_config, 'model', 'tts-1'),
-            voice=getattr(tts_config, 'voice', 'alloy'),
-            base_url=getattr(tts_config, 'base_url', None),
-            response_format=getattr(tts_config, 'response_format', 'wav'),
-            speed=getattr(tts_config, 'speed', 1.0),
-            volume=getattr(tts_config, 'volume', 1.0)
-        )
+        # Convert the config object to dict and pass all fields to factory
+        # This ensures provider-specific params (ref_audio_path, prompt_text, etc.)
+        # are forwarded properly, not just the generic ones.
+        tts_kwargs = {"provider": provider}
+        # Try model_dump() for Pydantic v2 configs, fall back to manual field extraction
+        if hasattr(tts_config, 'model_dump'):
+            cfg_dict = tts_config.model_dump(exclude={'type'})
+            tts_kwargs.update(cfg_dict)
+        else:
+            # Manual extraction for non-standard configs
+            for field in ['api_key', 'model', 'voice', 'base_url', 'response_format',
+                          'speed', 'volume', 'ref_audio_path', 'prompt_text',
+                          'prompt_lang', 'text_lang', 'top_k', 'top_p', 'temperature',
+                          'media_type', 'streaming_mode', 'text_split_method',
+                          'sample_steps', 'seed']:
+                val = getattr(tts_config, field, None)
+                if val is not None:
+                    tts_kwargs[field] = val
+        self.tts_engine = TTSFactory.create(**tts_kwargs)
 
         if hasattr(self.tts_engine, 'preload') and self.model_manager is not None:
             self.model_manager.register("tts", self.tts_engine.preload, "tts")

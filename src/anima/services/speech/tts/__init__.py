@@ -9,6 +9,7 @@ from .edge_tts import EdgeTTS
 from .chattts_tts import ChatTTSTTS
 from .vibe_voice_tts import VibeVoiceTTS
 from .kokoro_tts import KokoroTTS
+from .gpt_sovits_tts import GPTSoVITSTTS
 from .glados_effect import GladosEffectProcessor
 
 __all__ = [
@@ -20,5 +21,6 @@ __all__ = [
     "ChatTTSTTS",
     "VibeVoiceTTS",
     "KokoroTTS",
+    "GPTSoVITSTTS",
     "GladosEffectProcessor",
 ]

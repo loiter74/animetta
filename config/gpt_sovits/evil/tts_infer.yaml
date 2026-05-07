@@ -1,0 +1,14 @@
+# GPT-SoVITS Evil Voice Model Configuration
+# Copy this to GPT_SoVITS/configs/tts_infer.yaml before starting api_v2.py
+#
+# v2ProPlus: 跨语种合成优化（中文效果更好），使用预训练基座模型 + 参考音频语音克隆
+# 如需换回 V2 微调权重：version=v2, t2s=E:/...Evil-e15.ckpt, vits=E:/...Evil_e16_s14032.pth
+
+custom:
+  device: cuda
+  is_half: true
+  version: v2ProPlus
+  t2s_weights_path: GPT_SoVITS/pretrained_models/s1v3.ckpt
+  vits_weights_path: GPT_SoVITS/pretrained_models/v2Pro/s2Gv2ProPlus.pth
+  bert_base_path: GPT_SoVITS/pretrained_models/chinese-roberta-wwm-ext-large
+  cnhuhbert_base_path: GPT_SoVITS/pretrained_models/chinese-hubert-base
