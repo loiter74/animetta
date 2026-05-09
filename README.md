@@ -179,6 +179,11 @@ Chroma + SQLite FTS5          可审计 · 可版本控制              写入 W
                                Auditable · Versionable       Writes to Wiki KB
 ```
 
+**深度特性 | Deep Features:**
+- **FuzzyLayer** 分级记忆注入：上下文层 → 支撑层 → 精确层，按相关性逐级注入 LLM 上下文
+- **MemePool** 时间衰减记忆池：10 个活跃槽位，半衰期衰减 + 复活机制 + AI 自动发现梗
+- **UserProfile** 双轨用户画像：静态画像（Wiki 长期事实）+ 动态画像（当前对话上下文）
+
 ---
 
 ## 📐 工程实践 | Engineering
