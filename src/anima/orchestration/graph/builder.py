@@ -7,6 +7,7 @@ from langgraph.checkpoint.memory import MemorySaver
 
 from .state import AgentState
 from . import asr_node, llm_node, tts_node, emotion_node, output_node, tool_node
+from .personality_node import personality_node
 
 
 def route_input(state: AgentState) -> Literal["asr", "llm"]:
@@ -43,21 +44,25 @@ def build_graph(
            |
            +--(audio input)--> [asr_node]
            |                      |
-           +--(text input)--------+-> [llm_node]
-                                          |
-                                 +--------+--------+
-                                 |                 |
-                           (tool call)     (direct reply)
-                                 |                 |
-                             [tool_node]      [tts_node]
-                                 |                 |
-                                 +-------+---------+
-                                         |
-                                    [emotion_node]
-                                         |
-                                    [output_node]
-                                         |
-                                       [END]
+           +--(text input)--------+-> [personality_node]
+                                        |
+                                   [llm_node]
+                                        |
+                               +--------+--------+
+                               |                 |
+                         (tool call)    (direct reply)
+                               |                 |
+                           [tool_node]        [tts_node]
+                               |                 |
+                               +-------+---------+
+                                       |
+                                  [tts_node]
+                                       |
+                                  [emotion_node]
+                                       |
+                                  [output_node]
+                                       |
+                                     [END]
     """
     logger.info("[LangGraph] Building state graph...")
 
@@ -68,6 +73,7 @@ def build_graph(
 
     # Register nodes
     graph.add_node("asr", asr_node)
+    graph.add_node("personality", personality_node)
     graph.add_node("llm", llm_node)
     graph.add_node("tts", tts_node)
     graph.add_node("emotion", emotion_node)
@@ -78,10 +84,11 @@ def build_graph(
         logger.info("[LangGraph] Tool node registered")
 
     # Set entry point
-    graph.set_conditional_entry_point(route_input, {"asr": "asr", "llm": "llm"})
+    graph.set_conditional_entry_point(route_input, {"asr": "asr", "llm": "personality"})
 
     # Add edges
-    graph.add_edge("asr", "llm")
+    graph.add_edge("asr", "personality")
+    graph.add_edge("personality", "llm")
 
     if enable_tools:
         graph.add_conditional_edges("llm", should_use_tools, {"tools": "tools", "tts": "tts"})
