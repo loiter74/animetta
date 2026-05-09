@@ -2,8 +2,9 @@
 Memory middleware: automatically handles memory before and after LLM calls.
 
 Workflow:
-- before_llm_call: Retrieve relevant memories + user profile, inject into system prompt
-- after_llm_call: Store conversation into memory system (delegated to output_node)
+- before_llm_call: Uses FuzzyLayer for runtime fuzzification from wiki + short-term,
+  then injects into system prompt with user profile.
+- after_llm_call: Post-processing marker
 
 Safe degradation: any failure logs warning, does not block main flow.
 """
@@ -20,7 +21,7 @@ class MemoryMiddleware:
     """Automatic memory injection middleware.
 
     Integrated in LangGraph llm_node, calls before/after methods.
-    Follows the existing ConfigStore pattern to obtain MemorySystem instances.
+    Uses MemoryLayer for tiered injection strategy.
     """
 
     def __init__(self, memory_system: Optional[Any] = None):
@@ -33,43 +34,32 @@ class MemoryMiddleware:
         session_id: str,
         user_input: str,
         base_prompt: Optional[str] = None,
+        injection_tier: int = 1,
     ) -> Tuple[str, Optional[Dict]]:
-        """Before LLM call: retrieve memory + profile → build injection text.
-
-        Args:
-            session_id: Session ID
-            user_input: User input text
-            base_prompt: Base system prompt
-
-        Returns:
-            (enriched_prompt, metadata)
-            - enriched_prompt: Injected system prompt
-            - metadata: Contains memory and profile info (for debugging/logging)
-        """
+        """Before LLM call: retrieve memory via FuzzyLayer → build injection text."""
         if not self._memory_system:
             logger.debug("[MemoryMiddleware] MemorySystem not configured, skipping")
             return base_prompt or "", None
 
-        metadata: Dict = {}
+        metadata: Dict[str, Any] = {"tier": injection_tier}
         injection_parts: List[str] = []
 
-        try:
-            # 1. Retrieve relevant memories (MemoryTurns + MemoryEntries)
-            memory_turns = await self._memory_system.retrieve_context(
-                query=user_input,
-                session_id=session_id,
-                max_turns=5,
-            )
-            if memory_turns:
-                memory_text = self._format_memory_turns(memory_turns)
-                if memory_text:
-                    injection_parts.append(memory_text)
-                    metadata["memory_count"] = len(memory_turns)
-        except Exception as e:
-            logger.warning(f"[MemoryMiddleware] memory retrieval failed: {e}")
+        # Use FuzzyLayer for runtime fuzzification from wiki + short-term
+        fuzzy_layer = getattr(self._memory_system, "fuzzy_layer", None)
+        if fuzzy_layer:
+            try:
+                ctx = await fuzzy_layer.build_fuzzy_context(
+                    session_id=session_id,
+                    query=user_input,
+                )
+                if ctx:
+                    injection_parts.append(ctx)
+                    metadata["mode"] = "fuzzy_layer"
+            except Exception as e:
+                logger.warning(f"[MemoryMiddleware] FuzzyLayer failed: {e}")
 
+        # 3. Retrieve user profile
         try:
-            # 2. Retrieve user profile
             profile = self._memory_system.get_profile(session_id)
             if profile and not profile.is_empty():
                 profile_text = profile.format_for_prompt()
@@ -84,17 +74,17 @@ class MemoryMiddleware:
             logger.debug(f"[MemoryMiddleware] no memory or profile to inject")
             return base_prompt or "", metadata
 
-        # 3. Assemble injection block
+        # 4. Assemble injection block
         injection_block = "\n\n---\n\n".join(injection_parts)
 
-        # 4. Inject into system prompt
-        enriched = self._inject_into_prompt(base_prompt or "", injection_block)
+        # 5. Inject into system prompt
+        enriched = self._inject_into_prompt(base_prompt or "", injection_block, injection_tier)
 
         logger.info(
-            f"[MemoryMiddleware] injected: "
+            f"[MemoryMiddleware] tier={injection_tier}, "
             f"memory={metadata.get('memory_count', 0)}, "
-            f"profile_static={metadata.get('profile_static', 0)}, "
-            f"profile_dynamic={metadata.get('profile_dynamic', 0)}"
+            f"fuzzy={metadata.get('fuzzy_count', 0)}, "
+            f"profile_static={metadata.get('profile_static', 0)}"
         )
         return enriched, metadata
 
@@ -106,36 +96,37 @@ class MemoryMiddleware:
         user_input: str,
         agent_response: str,
     ) -> None:
-        """After LLM call: mark turn complete (for any additional post-processing).
+        """After LLM call: mark turn complete.
 
-        Note: Actual memory storage is done by output_node._store_conversation_to_memory.
-        This method is for any additional post-processing that may be needed (e.g. notifying fact extractors).
+        Storage is handled by output_node._store_conversation_to_memory.
         """
-        # Storage is handled by output_node, only post-processing marker here
         logger.debug(f"[MemoryMiddleware] turn completed: {session_id}")
 
-    # ── Formatting ──────────────────────────────────────────────
+    # ── Injection ───────────────────────────────────────────────
 
     @staticmethod
-    def _format_memory_turns(memory_turns: List[Any], max_items: int = 5) -> str:
-        """Format memory turns as text."""
-        selected = memory_turns[:max_items]
-        lines = ["## Related Memories"]
-        for i, turn in enumerate(selected, 1):
-            user_text = getattr(turn, "user_input", "")
-            agent_text = getattr(turn, "agent_response", "")
-            if user_text or agent_text:
-                lines.append(f"{i}. You said: {user_text}")
-                if agent_text:
-                    lines.append(f"   I replied: {agent_text}")
-        return "\n".join(lines) if len(lines) > 1 else ""
-
-    @staticmethod
-    def _inject_into_prompt(base_prompt: str, injection_block: str) -> str:
-        """Inject memory/profile content into the system prompt."""
+    def _inject_into_prompt(base_prompt: str, injection_block: str, tier: int = 1) -> str:
+        """Inject memory content into the system prompt with tier-aware instruction."""
         parts = [base_prompt, injection_block]
-        parts.append(
-            "Please refer to the above memories and user profile when responding. "
-            "If no relevant information is available, respond naturally."
-        )
+
+        if tier == 1:
+            parts.append(
+                "以上是我对用户的模糊记忆。请自然地参考这些记忆来回应，"
+                "就像你真正记得这些事一样。如果记忆不太确定，用自然的语气表达。"
+            )
+        elif tier == 2:
+            parts.append(
+                "以上是较精确的相关记忆和用户画像。请参考它们来回答用户的问题。"
+                "标注了可信度的信息请酌情使用。"
+            )
+        elif tier == 3:
+            parts.append(
+                "以上是精确的对话引用。用户似乎想确认某些细节，请尽量准确地参考这些记录。"
+            )
+        else:
+            parts.append(
+                "Please refer to the above memories and user profile when responding. "
+                "If no relevant information is available, respond naturally."
+            )
+
         return "\n\n---\n\n".join(parts)
