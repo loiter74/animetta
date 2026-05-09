@@ -65,8 +65,6 @@ __all__ = [
     "execute_tool",
     # Memory Evolution
     "FuzzyMemory",
-    "FuzzyMemoryStore",
-    "FuzzyConsolidator",
     "FuzzyLayer",
     "PeriodicLearner",
     "Meme",
