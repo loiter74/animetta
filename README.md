@@ -3,40 +3,34 @@
 <div align="center">
 
 ![Anima Chat Demo](assets/demo/anima-chat-preview.gif)
+<!-- ↑ Replace with your demo GIF: record 15s of chat + Live2D interaction -->
 
-**打造你的专属 AI 虚拟角色！ | Build Your Own AI Virtual Companion!** 🎭
-
-支持 Live2D 动画、实时语音交互，可自由切换不同 AI 模型
-Live2D animation, real-time voice interaction, swappable AI models
+**AI Virtual Companion with Live2D + Real-time Voice + LangGraph Orchestration** 🎭
+> 不是套壳 ChatGPT。LangGraph 状态机编排 · 插件化 AI 模型 · 实时语音管线 · Wiki 记忆系统
+> Not a ChatGPT wrapper. State machine orchestration · Plugin-based AI models · Real-time audio pipeline · Wiki memory
 
 [![Test](https://github.com/loiter74/Anima-LLM-Vtuber/actions/workflows/test.yml/badge.svg)](https://github.com/loiter74/Anima-LLM-Vtuber/actions/workflows/test.yml)
 [![Docker](https://img.shields.io/badge/docker-ready-blue)](https://github.com/loiter74/Anima-LLM-Vtuber)
 ![Python](https://img.shields.io/badge/python-3.12%20|%203.13-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Tests](https://img.shields.io/badge/tests-81%20passing-brightgreen)
+![Lines](https://img.shields.io/badge/code-30K%2B%20lines-informational)
 
 </div>
 
 ---
 
-## ✨ 为什么选择 Anima？ | Why Anima?
+## ✨ 一眼看懂 | At a Glance
 
 <div align="center">
 
-### 🎭 会"动"的虚拟角色 | Living Avatar
-
-**CN:** Live2D 角色会根据对话内容改变表情和动作，仿佛有真正的灵魂
-**EN:** Live2D avatars react with expressions and gestures — they feel alive.
-
-### 💬 自然流畅的对话 | Natural Conversations
-
-**CN:** 支持文本和语音双模态输入，像和朋友聊天一样自然
-**EN:** Text or voice input, streamed replies — chat like you're talking to a friend.
-
-### 🔄 随心切换 AI 模型 | Swap AI Models Freely
-
-**CN:** 无需修改代码，一键切换不同的 LLM/ASR/TTS 服务商
-**EN:** Switch between LLM/ASR/TTS providers without touching config code.
+| 🎭 | 💬 | 🔄 |
+|:---:|:---:|:---:|
+| **会动的虚拟角色** | **流式自然对话** | **换模型不改代码** |
+| **Living Avatar** | **Streaming Chat** | **Swap Models Freely** |
+| Live2D 角色根据对话内容 | Token 级流式输出 | 装饰器注册新 LLM/ASR/TTS |
+| 改变表情和动作 | 边说边显示，像真人聊天 | 无需修改框架代码 |
+| Reacts with expressions & gestures | Stream output token by token | Register via `@ProviderRegistry` |
 
 </div>
 
@@ -44,109 +38,73 @@ Live2D animation, real-time voice interaction, swappable AI models
 
 ## 🚀 快速开始 | Quick Start
 
-### 1️⃣ 安装依赖 | Install Dependencies
-
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt    # 安装依赖 | Install
+cp .env.example .env               # 配置 API Key | Configure
+python scripts/start.py            # 启动 | Launch
 ```
 
-### 2️⃣ 配置 API Key | Configure API Key
-
-```bash
-# 复制环境变量模板 | Copy the environment template
-cp .env.example .env
-# 编辑 .env 填入你的 API Key | Edit .env with your API keys
-```
-
-### 3️⃣ 启动应用 | Launch
-
-```bash
-python scripts/start.py
-```
-
-打开桌面应用，开始和你的 AI 角色聊天吧！
-Open the desktop app and start chatting with your AI character!
+打开桌面应用，开始和你的 AI 角色聊天吧！ | Open the desktop app and start chatting!
 
 ---
 
-## 🎮 核心特性 | Features
+## 🎮 能力矩阵 | Capability Matrix
 
-### 智能对话引擎 | Smart Dialogue Engine
+### 🤖 AI 模型支持 | AI Models
 
-| Feature | Description |
-|---------|-------------|
-| **实时回复** Real-time Replies | 流式输出，边说边显示 / Stream output token by token |
-| **长期记忆** Long-term Memory | 记住你们的对话历史 / Remembers conversation history |
-| **工具调用** Tool Calling | 联网搜索、计算等能力 / Web search, calculator, and more |
-| **多模态输入** Multi-modal Input | 文字或语音，随你选择 / Text or voice, your choice |
+| 类型 Type | 支持的服务 Providers |
+|-----------|---------------------|
+| **LLM** 大语言模型 | DeepSeek · GLM · OpenAI · Ollama · 本地模型 Local |
+| **ASR** 语音识别 | FasterWhisper · GLM · OpenAI · FunASR |
+| **TTS** 语音合成 | Edge TTS · ChatTTS · GPT-SoVITS · Kokoro · GLM · OpenAI · VibeVoice |
+| **VAD** 语音检测 | Silero VAD |
 
-### 生动角色表现 | Lively Character
+### 🎭 角色表现 | Character Features
 
-| Feature | Description |
-|---------|-------------|
-| **表情同步** Expression Sync | 情绪驱动面部表情 / Emotion-driven facial expressions |
+| 功能 Feature | 说明 Description |
+|-------------|-----------------|
+| **表情同步** Expression Sync | 情绪驱动 Live2D 面部表情 / Emotion-driven facial expressions |
 | **口型同步** Lip Sync | 语音与嘴型精确匹配 / Audio-driven viseme matching |
-| **动作控制** Motion Control | 自定义触发动作和姿势 / Custom trigger motions & poses |
-| **🎬 双语字幕** Bilingual Subtitles | Live2D 画布底部叠加萌系字幕，支持 LLM 翻译 / Anime-style subtitle overlay with LLM translation |
-
-### 灵活配置选择 | Flexible Config
-
-| Feature | Description |
-|---------|-------------|
-| **多种 AI 模型** Multi-LLM | GLM、OpenAI、DeepSeek、Ollama、本地模型 |
-| **语音识别** ASR | FasterWhisper、GLM、OpenAI、FunASR |
-| **语音合成** TTS | Edge TTS、GLM、OpenAI、ChatTTS、VibeVoice |
-| **语音检测** VAD | Silero VAD |
+| **🎬 双语字幕** Bilingual Subtitles | 萌系泡泡风格，LLM 实时翻译，支持英日韩法德西俄 / Anime-style overlay with LLM translation (EN/JA/KO/FR/DE/ES/RU) |
 | **自定义人设** Persona | 创建独一无二的角色性格 / Create unique character personalities |
 
 ---
 
-## 🛠️ 技术栈 | Tech Stack
+## 🏗️ 系统架构 | Architecture
 
-| Layer | Technology |
-|-------|-----------|
-| **后端 Backend** | Python 3.13, FastAPI, Socket.IO, LangGraph, LangChain |
-| **前端 Frontend** | Electron, Vue 3, TypeScript, UnoCSS, Pinia, pixi-live2d-display |
-| **AI 服务 AI Services** | GLM, OpenAI, DeepSeek, Ollama, FasterWhisper, Edge TTS, Silero VAD |
-| **记忆系统 Memory** | Chroma (Vector DB), SQLite FTS5, Hybrid Search (70% Vector + 30% BM25) |
-| **基础设施 Infra** | Docker, GitHub Actions, pytest, mypy, ruff |
+### C4 系统上下文 | System Context
 
----
+```mermaid
+graph TB
+    User([User])
+    subgraph "Anima System"
+        FE[Vue3 Frontend<br/>Electron + Web]
+        BE[FastAPI Backend<br/>Socket.IO + REST]
+        LG[LangGraph Engine<br/>State Graph]
+    end
+    subgraph "External Services"
+        LLM[LLM Providers<br/>DeepSeek / GLM / OpenAI / Ollama]
+        TTS[TTS Providers<br/>Edge / GLM / VibeVoice]
+        ASR[ASR Providers<br/>Whisper / GLM / FunASR]
+    end
+    subgraph "Data Stores"
+        SQL[(SQLite FTS5<br/>Keyword Index)]
+        VDB[(Chroma<br/>Vector DB)]
+        MD[(Markdown Files<br/>Conversation Logs)]
+    end
 
-## 📝 字幕功能 | Subtitles
+    User -->|text/audio| FE
+    FE -->|Socket.IO| BE
+    BE --> LG
+    LG -->|API calls| LLM
+    LG -->|API calls| TTS
+    LG -->|API calls| ASR
+    LG -.->|RAG| VDB
+    LG -.->|search| SQL
+    LG -.->|store| MD
+```
 
-<div align="center">
-
-**在 Live2D 画布底部显示 AI 回复字幕，支持双语展示和 LLM 实时翻译**
-**Display AI response subtitles at the bottom of the Live2D canvas with bilingual LLM translation**
-
-</div>
-
-### 主要特性 | Features
-
-| Feature | Description |
-|---------|-------------|
-| **萌系泡泡风格** Cute Bubble Style | 毛玻璃面板 + 粉紫装饰 + 弹簧弹跳动画 / Glassmorphism panel with spring pop-in animation |
-| **三种显示模式** 3 Display Modes | 原文 / 翻译 / 双语，一键切换 / Original / Translated / Bilingual |
-| **LLM 实时翻译** Real-time LLM Translation | 使用同一 LLM 将回复翻译为目标语言 / Uses the same LLM provider for translation |
-| **可配置开关** Configurable | 在设置面板中可随时启用/禁用 / Toggle on/off in Settings panel |
-| **多语言目标** Multi-language Target | 支持英日韩法德西俄等语言 / Supports English, Japanese, Korean, French, German, Spanish, Russian |
-
-### 使用方法 | Usage
-
-1. 在右侧面板点击 **📝 字幕** 标签进入设置
-2. 打开 **启用字幕** 开关
-3. 选择显示模式：原文 / 翻译 / 双语
-4. 选择翻译目标语言
-5. AI 回复时，字幕会自动出现在 Live2D 画布底部
-
-### 配置 | Configuration
-
-字幕配置在设置面板中管理，实时生效，无需重启。翻译使用当前 LLM 服务商（`config.yaml` 中的 `services.agent`）进行翻译。
-
----
-
-### 数据流 | Data Flow
+### 🔄 请求全链路 | Request Lifecycle
 
 ```
 User Input (Text / Audio)
@@ -156,119 +114,111 @@ User Input (Text / Audio)
     ├── (audio) → [asr_node] → Speech Recognition → user_text
     │
     └── (text) ──────────────────→ [llm_node]
-                                      │
-                                  RAG: Retrieve Memory Context
-                                      │
-                                  LLM Reasoning (Streaming / Tools)
-                                      │
-                             ┌────────┴────────┐
-                             │                 │
-                       (Tool Calls)      (Direct Reply)
-                             │                 │
-                        [tool_node]      [tts_node]
-                             │                 │
-                      Execute Results ←─────────┤
-                                               ↓
-                                         [emotion_node]
-                                               ↓
-                                         [output_node]
-                                    ┌──────────┴──────────┐
-                                    ↓                     ↓
-                            Socket.IO Events        Memory Storage
-                              → Frontend           → SQLite / Chroma
+                                       │
+                                   RAG: Retrieve Memory Context
+                                       │
+                                   LLM Reasoning (Streaming / Tools)
+                                       │
+                              ┌────────┴────────┐
+                              │                 │
+                        (Tool Calls)      (Direct Reply)
+                              │                 │
+                         [tool_node]      [tts_node]
+                              │                 │
+                       Execute Results ←─────────┤
+                                                ↓
+                                          [emotion_node]
+                                                ↓
+                                          [output_node]
+                                     ┌──────────┴──────────┐
+                                     ↓                     ↓
+                             Socket.IO Events        Memory Storage
+                               → Frontend           → SQLite / Chroma
 ```
 
-### 项目结构 | Project Structure
+### 🧩 LangGraph 状态机 | State Machine
+
+7 个节点 + 条件边，全流式，可中断 | 7 nodes + conditional edges, streaming-first, interruptible:
 
 ```
-src/anima/
-├── core/                    # Entry point + service container
-│   └── socketio_server.py   # Main ASGI server (FastAPI + Socket.IO)
-├── config/                  # Configuration (YAML + Pydantic)
-│   ├── app.py              # AppConfig — main configuration
-│   ├── persona/            # Character personality configs
-│   ├── providers/          # LLM/ASR/TTS/VAD provider configs
-│   └── core/registry.py    # Plugin-style service registry
-├── orchestration/           # LangGraph state graph
-│   ├── graph/              # Graph nodes + orchestrator
-│   │   ├── state.py       # AgentState TypedDict
-│   │   ├── builder.py     # StateGraph builder
-│   │   ├── orchestrator.py # LangGraphOrchestrator
-│   │   ├── llm_node.py    # LLM reasoning (with RAG + tools)
-│   │   ├── tts_node.py    # Speech synthesis
-│   │   ├── emotion_node.py # Emotion analysis
-│   │   ├── output_node.py # Output + memory storage
-│   │   ├── tool_node.py   # Tool execution
-│   │   └── asr_node.py    # Speech recognition
-│   └── server/             # WebSocket routes + session management
-├── services/                # Service implementations
-│   ├── speech/             # ASR + TTS implementations
-│   ├── intelligence/       # LLM + VAD implementations
-│   └── live2d/             # Live2D action queue + viseme sync
-├── memory/                  # Memory system (Wiki architecture)
-│   ├── search/             # Hybrid search (Vector + BM25)
-│   ├── storage/            # Chroma + SQLite stores
-│   └── wiki/               # Markdown-based wiki memory
-├── avatar/                  # Live2D expression analysis
-│   ├── analyzers/          # Keyword + LLM-based emotion extraction
-│   └── strategies/         # Duration/intensity/position strategies
-├── tools/                   # Tool calling system
-│   ├── base.py             # Built-in tools (web_search, calculator, etc.)
-│   ├── mcp_bridge.py       # MCP protocol bridge
-│   └── custom_tools.py     # Custom tool definitions
-└── utils/                   # Helpers
+START → route_input ─┬─ audio → ASR ─┐
+                      └─ text ────────┤
+                                      ↓
+                      LLM ←─ Tool ──→ LLM    (RAG: Hybrid Search)
+                                      ↓
+                               TTS → Emotion → Output → END
+```
+
+### 🔌 插件架构 | Plugin Architecture
+
+开放-封闭原则：新增 LLM/ASR/TTS 只需写一个类 + 一行装饰器，**零框架代码改动** | Add a provider with one class + one decorator, zero framework changes:
+
+```
+interface.py (ABC)
+    ↓ implements
+glm_llm.py, openai_llm.py, deepseek_llm.py ...
+    ↓ @ProviderRegistry.register_service
+factory.py → __init__.py (统一导出 | unified re-export)
+```
+
+### 🧠 记忆系统 | Memory System
+
+```
+Hybrid Search (ADR-002)         Wiki Memory (ADR-005)        Periodic Learner
+70% Vector + 30% BM25     →    Markdown = Source of Truth → Auto-extract knowledge
+Chroma + SQLite FTS5          可审计 · 可版本控制              写入 Wiki 知识库
+                               Auditable · Versionable       Writes to Wiki KB
 ```
 
 ---
 
-## 📦 容器化部署 | Container Deployment
+## 📐 工程实践 | Engineering
+
+### 架构决策记录 | Architecture Decision Records
+
+5 个正式 ADR，所有架构决策有据可查 | 5 formal ADRs documenting all key architectural decisions:
+
+| ID | 决策 Decision | 要点 Highlight |
+|----|--------------|----------------|
+| [ADR-001](docs/adrs/ADR-001-langgraph-over-eventbus.md) | LangGraph 替代 EventBus | 状态机编排 > 事件驱动 / State machine > event-driven |
+| [ADR-002](docs/adrs/ADR-002-hybrid-search.md) | Chroma + SQLite 混合搜索 | 70/30 向量+关键词融合 / Vector + keyword fusion |
+| [ADR-003](docs/adrs/ADR-003-plugin-architecture.md) | 装饰器插件注册 | 开放-封闭原则 / Open-closed principle |
+| [ADR-004](docs/adrs/ADR-004-streaming-response.md) | 流式响应优先 | Token 级流式，全链路 / End-to-end streaming |
+| [ADR-005](docs/adrs/ADR-005-wiki-memory.md) | Wiki 记忆架构 | Markdown=真实来源 / Markdown as truth source |
+
+### 工程指标 | Engineering Metrics
+
+| 指标 Metric | 状态 Status |
+|-------------|-------------|
+| **测试 Tests** | 81 passing · pytest + pytest-asyncio |
+| **CI/CD** | GitHub Actions · Python 3.12/3.13 矩阵 |
+| **类型安全 Type Safety** | mypy strict mode |
+| **代码规范 Lint** | ruff |
+| **可观测性 Observability** | OpenTelemetry 全链路追踪 |
+| **代码规模 Code Scale** | 202 files · ~30K lines Python |
+| **容器化 Container** | Docker + docker-compose |
 
 ```bash
-# Build & start
-docker-compose up --build -d
-
-# Verify health
-curl http://localhost:12394/health
-
-# View logs
-docker-compose logs -f
-```
-
-### Fly.io 部署 | Fly.io Deployment
-
-```bash
-# 一键部署 | One-command deploy
-flyctl launch --ha=false
-
-# 设置密钥 | Set secrets
-flyctl secrets set GLM_API_KEY=your_key_here
-
-# 部署 | Deploy
-flyctl deploy
-
-# 验证 | Verify
-curl https://anima-demo.fly.dev/health
-```
-
----
-
-## 🧪 测试 | Testing
-
-```bash
-# Run all tests
+# 测试 | Tests
 PYTHONPATH=src python -m pytest tests/ -v
-
-# With coverage
 PYTHONPATH=src python -m pytest tests/ --cov=src/anima --cov-report=term-missing
 
-# Type checking
+# 类型检查 + 代码规范 | Type check + Lint
 mypy src/ --ignore-missing-imports
-
-# Linting
 ruff check src/ tests/
 ```
 
-详见 [TESTING.md](TESTING.md) | See [TESTING.md](TESTING.md) for details.
+---
+
+## 📦 部署 | Deployment
+
+```bash
+# Docker 一键部署 | One-command deploy
+docker-compose up --build -d
+
+# 健康检查 | Health check
+curl http://localhost:12394/health
+```
 
 ---
 
@@ -276,10 +226,38 @@ ruff check src/ tests/
 
 | Document | Description |
 |----------|-------------|
-| [ARCHITECTURE.md](ARCHITECTURE.md) | 系统架构总览 / System Architecture |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | 系统架构总览 + C4 图 + 时序图 / System Architecture |
 | [TESTING.md](TESTING.md) | 测试指南 / Testing Guide |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | 贡献指南 / Contributing Guide |
-| [Enterprise Upgrade Plan](docs/plans/2026-05-01-enterprise-upgrade-plan.md) | 工程能力增强计划 / Engineering Upgrade Plan |
+| [docs/adrs/](docs/adrs/) | 5 个架构决策记录 / 5 Architecture Decision Records |
+| [docs/plans/](docs/plans/) | 工程升级计划 / Engineering Upgrade Plans |
+
+---
+
+## 📂 项目结构 | Project Structure
+
+```
+src/anima/                  # Python backend (202 files, 30K lines)
+├── core/                   # Entry point + service container
+├── orchestration/          # LangGraph state graph + WebSocket server
+│   ├── graph/              # 7 nodes + builder + orchestrator
+│   └── server/             # Socket.IO routes + session management
+├── services/               # LLM / ASR / TTS / VAD implementations
+│   ├── speech/{asr,tts}/   # Provider interface → impl → factory pattern
+│   └── intelligence/{llm,vad}/
+├── memory/                 # Wiki-architecture memory (Chroma + SQLite FTS5)
+│   ├── search/             # Hybrid search (70% vector + 30% BM25)
+│   ├── wiki/               # Markdown knowledge base
+│   └── learner/            # Periodic pattern extraction
+├── config/                 # Pydantic configs + @ProviderRegistry
+├── avatar/                 # Live2D expression analysis
+│   ├── analyzers/          # Emotion extraction (keyword + LLM)
+│   ├── mappers/            # Emotion → Live2D parameter mapping
+│   └── strategies/         # Duration/intensity/position strategies
+├── tools/                  # Tool calling + MCP bridge
+└── tracing/                # OpenTelemetry observability
+frontend/                   # Vue 3 + TypeScript + Electron (UnoCSS, Pinia)
+```
 
 ---
 
