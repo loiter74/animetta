@@ -35,6 +35,9 @@ from .wiki import (
     PageType,
 )
 
+# Memory Evolution (new: FuzzyLayer replaces FuzzyMemoryStore)
+from .fuzzy_layer import FuzzyLayer
+
 __all__ = [
     # Core
     "MemoryTurn",
@@ -60,4 +63,13 @@ __all__ = [
     # Tools
     "get_tool_schemas",
     "execute_tool",
+    # Memory Evolution
+    "FuzzyMemory",
+    "FuzzyMemoryStore",
+    "FuzzyConsolidator",
+    "FuzzyLayer",
+    "PeriodicLearner",
+    "Meme",
+    "MemeStore",
+    "MemePool",
 ]

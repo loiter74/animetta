@@ -21,7 +21,7 @@ from .fact_extractor import FactExtractor
 from .user_profile import UserProfile, UserProfileBuilder
 from .wiki import WikiManager, WikiIngestor, WikiQuery, WikiLint
 from ..orchestration.graph.scheduler import AsyncScheduler
-from .fuzzy import FuzzyMemoryStore, FuzzyConsolidator
+from .fuzzy_layer import FuzzyLayer
 from .meme import MemeStore, MemePool
 from .learner import PeriodicLearner
 
@@ -64,25 +64,9 @@ class MemorySystem:
         self._scheduler = AsyncScheduler()
         self._scheduler_enabled: bool = config.get("scheduler", {}).get("enabled", True)
 
-        # Fuzzy memory (Phase 2: Memory Evolution)
-        self.fuzzy: Optional[FuzzyMemoryStore] = None
-        self._fuzzy_consolidator: Optional[FuzzyConsolidator] = None
-        fuzzy_config = config.get("fuzzy_memory", {})
-        if fuzzy_config.get("enabled", True):
-            try:
-                from pathlib import Path as _Path
-                fuzzy_db = str(_Path(workspace) / "fuzzy_memory.sqlite")
-                fuzzy_store = FuzzyMemoryStore(fuzzy_db)
-                fuzzy_store.open()
-                self.fuzzy = fuzzy_store
-                self._fuzzy_consolidator = FuzzyConsolidator(
-                    store=fuzzy_store,
-                    llm_client=config.get("llm_client"),
-                    config=fuzzy_config,
-                )
-                logger.info("[MemorySystem] Fuzzy memory store initialized")
-            except Exception as e:
-                logger.warning(f"[MemorySystem] Fuzzy memory init failed: {e}")
+        # Fuzzy memory — replaced by FuzzyLayer (initialized after WikiManager below)
+        self.fuzzy: Optional[Any] = None   # backward compat, set to FuzzyLayer later
+        self._fuzzy_consolidator: Optional[Any] = None
 
         # PeriodicLearner (Phase 4: Memory Evolution)
         self._learner: Optional[PeriodicLearner] = None
@@ -113,6 +97,18 @@ class MemorySystem:
                     logger.info("[MemorySystem] MemePool initialized (wiki-backed)")
                 except Exception as e:
                     logger.warning(f"[MemorySystem] MemePool init failed: {e}")
+
+            # FuzzyLayer (replaces FuzzyMemoryStore, wiki + short-term fuzzification)
+            self.fuzzy_layer: Optional[FuzzyLayer] = None
+            try:
+                self.fuzzy_layer = FuzzyLayer(
+                    wiki=self._wiki_manager,
+                    short_term=self._short_term,
+                )
+                self.fuzzy = self.fuzzy_layer  # backward compat
+                logger.info("[MemorySystem] FuzzyLayer initialized")
+            except Exception as e:
+                logger.warning(f"[MemorySystem] FuzzyLayer init failed: {e}")
             # Fact extractor (MemoryEntry versioned memory)
             fact_extractor = FactExtractor(
                 entry_store=manager.memory_entries,
