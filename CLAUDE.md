@@ -344,7 +344,7 @@ The memory system follows an OpenClaw-style architecture with Markdown as the si
 
 1. **Short-term Memory**: In-memory session cache (configurable max turns, default 20)
 2. **Long-term Memory**:
-   - **Markdown Files**: Primary storage (`MEMORY.md` + daily logs in `YYYY-MM-DD.md`)
+   - **Markdown Files**: Primary storage (wiki/ entities, concepts, sources, synthesis + daily logs in `raw/YYYY-MM-DD.md`)
    - **SQLite FTS5**: Full-text search index with metadata
    - **Chroma**: Vector embeddings for semantic search
 
@@ -503,9 +503,8 @@ Use the `live2d` skill when working with Live2D models, expressions, lip sync, o
 
 The frontend was migrated from pure Electron + vanilla JS/HTML/CSS to Vue 3 + TypeScript + electron-vite.
 
-- Old frontend backed up at `frontend-legacy/`
 - New frontend at `frontend/` (Vue 3 + TypeScript + UnoCSS + Pinia)
-- See `openspec/changes/vue3-frontend-migration/` for design decisions and task tracking
+- See `openspec/changes/archive/2026-05-09-vue3-frontend-migration/` for design decisions and task tracking
 
 ### From EventBus to LangGraph (Completed)
 
@@ -528,7 +527,7 @@ See [docs/LANGGRAPH_MIGRATION_COMPLETE.md](docs/LANGGRAPH_MIGRATION_COMPLETE.md)
 
 - [LangGraph Migration Complete](docs/LANGGRAPH_MIGRATION_COMPLETE.md)
 - [Tools System](docs/TOOLS.md)
-- [Live2D System](MEMORY.md#live2d-lip-sync-system-2025-03)
+- [Live2D System](docs/modules/memory.md#live2d-lip-sync-system-2025-03)
 
 # CLAUDE.md
 
