@@ -779,6 +779,7 @@ class RouteHandlers:
                         'tags': page.tags,
                         'updated_at': page.updated_at.isoformat() if page.updated_at else '',
                     })
+            logger.info(f"[{sid}] Wiki pages: {len(pages)} pages returned")
             return {'pages': pages}
         except Exception as e:
             logger.error(f"[{sid}] get_wiki_pages failed: {e}")
