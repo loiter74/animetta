@@ -95,6 +95,12 @@ class WikiManager:
                 encoding="utf-8",
             )
 
+        rules = self._wiki_dir / "WIKI_RULES.md"
+        if not rules.exists():
+            template_path = Path(__file__).parent / "wikirules.template.md"
+            if template_path.exists():
+                rules.write_text(template_path.read_text(encoding="utf-8"), encoding="utf-8")
+
     # ── raw writes (immutable) ──────────────────────────────
 
     def write_raw(self, date: datetime, content: str) -> None:
