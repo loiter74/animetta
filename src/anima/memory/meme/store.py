@@ -15,8 +15,8 @@ class MemeStore:
     """Meme CRUD backed by WikiManager (wiki/memes/)."""
 
     def __init__(self, wiki: object) -> None:
-        from ...memory.wiki.manager import WikiManager as _WikiManager
-        from ...memory.wiki.models import WikiPage, PageType as _PageType
+        from ..wiki.manager import WikiManager as _WikiManager
+        from ..wiki.models import WikiPage, PageType as _PageType
         self._wiki: _WikiManager = wiki
         self._WikiPage = _WikiPage
         self._PageType = _PageType
