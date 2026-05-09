@@ -20,12 +20,17 @@ from .stores import ShortTermMemory
 from .fact_extractor import FactExtractor
 from .user_profile import UserProfile, UserProfileBuilder
 from .wiki import WikiManager, WikiIngestor, WikiQuery, WikiLint
+from ..orchestration.graph.scheduler import AsyncScheduler
+from .fuzzy import FuzzyMemoryStore, FuzzyConsolidator
+from .meme import MemeStore, MemePool
+from .learner import PeriodicLearner
 
 
 class MemorySystem:
     """Memory system unified entry point (Wiki architecture)."""
 
     def __init__(self, config: Dict[str, Any]):
+        self._config = config
         workspace = config.get("workspace_dir", "~/.anima/workspace")
         memory_config = MemoryConfig(
             workspace_dir=workspace,
@@ -55,9 +60,59 @@ class MemorySystem:
         self._wiki_query = None
         self._wiki_lint = None
 
+        # Scheduler (Phase 1: Memory Evolution)
+        self._scheduler = AsyncScheduler()
+        self._scheduler_enabled: bool = config.get("scheduler", {}).get("enabled", True)
+
+        # Fuzzy memory (Phase 2: Memory Evolution)
+        self.fuzzy: Optional[FuzzyMemoryStore] = None
+        self._fuzzy_consolidator: Optional[FuzzyConsolidator] = None
+        fuzzy_config = config.get("fuzzy_memory", {})
+        if fuzzy_config.get("enabled", True):
+            try:
+                from pathlib import Path as _Path
+                fuzzy_db = str(_Path(workspace) / "fuzzy_memory.sqlite")
+                fuzzy_store = FuzzyMemoryStore(fuzzy_db)
+                fuzzy_store.open()
+                self.fuzzy = fuzzy_store
+                self._fuzzy_consolidator = FuzzyConsolidator(
+                    store=fuzzy_store,
+                    llm_client=config.get("llm_client"),
+                    config=fuzzy_config,
+                )
+                logger.info("[MemorySystem] Fuzzy memory store initialized")
+            except Exception as e:
+                logger.warning(f"[MemorySystem] Fuzzy memory init failed: {e}")
+
+        # PeriodicLearner (Phase 4: Memory Evolution)
+        self._learner: Optional[PeriodicLearner] = None
+        learner_config = config.get("learner", {})
+        if learner_config.get("enabled", True):
+            try:
+                from pathlib import Path as _Path
+                learner_config["workspace_dir"] = str(_Path(workspace).expanduser().resolve())
+                self._learner = PeriodicLearner(
+                    memory_system=self,
+                    llm_client=config.get("llm_client"),
+                    config=learner_config,
+                )
+                logger.info("[MemorySystem] PeriodicLearner initialized")
+            except Exception as e:
+                logger.warning(f"[MemorySystem] PeriodicLearner init failed: {e}")
+
         try:
             manager = MemoryManager(config=memory_config)
             self._wiki_manager = WikiManager(manager)
+
+            # MemePool (wiki-backed, requires WikiManager)
+            self.meme_pool: Optional[MemePool] = None
+            meme_config = config.get("meme_pool", {})
+            if meme_config.get("enabled", True):
+                try:
+                    self.meme_pool = MemePool(wiki=self._wiki_manager, config=meme_config)
+                    logger.info("[MemorySystem] MemePool initialized (wiki-backed)")
+                except Exception as e:
+                    logger.warning(f"[MemorySystem] MemePool init failed: {e}")
             # Fact extractor (MemoryEntry versioned memory)
             fact_extractor = FactExtractor(
                 entry_store=manager.memory_entries,
@@ -86,7 +141,64 @@ class MemorySystem:
     async def start(self) -> None:
         logger.info("[MemorySystem] Started (wiki architecture)")
 
+        # Register scheduler tasks
+        if self._scheduler_enabled and self._scheduler:
+            sched_config = self._config if hasattr(self, '_config') else {}
+            tasks_cfg = sched_config.get("scheduler", {}).get("tasks", {})
+            default_cfg = {"timeout": 300}
+
+            if self._learner:
+                consolidate_cfg = tasks_cfg.get("consolidate_conversations", default_cfg)
+                self._scheduler.add_task(
+                    "consolidate_conversations",
+                    self._learner.consolidate_conversations,
+                    interval=consolidate_cfg.get("interval", 3600),
+                    timeout=consolidate_cfg.get("timeout", 120),
+                )
+                extract_cfg = tasks_cfg.get("extract_patterns", default_cfg)
+                self._scheduler.add_task(
+                    "extract_patterns",
+                    self._learner.extract_patterns,
+                    interval=extract_cfg.get("interval", 86400),
+                    timeout=extract_cfg.get("timeout", 300),
+                )
+                meme_cfg = tasks_cfg.get("generate_meme_candidates", default_cfg)
+                self._scheduler.add_task(
+                    "generate_meme_candidates",
+                    self._learner.generate_meme_candidates,
+                    interval=meme_cfg.get("interval", 21600),
+                    timeout=meme_cfg.get("timeout", 120),
+                )
+
+            if self.meme_pool:
+                maintain_cfg = tasks_cfg.get("maintain_meme_pool", default_cfg)
+                self._scheduler.add_task(
+                    "maintain_meme_pool",
+                    lambda: asyncio.to_thread(self.meme_pool.maintain_pool),
+                    interval=maintain_cfg.get("interval", 3600),
+                    timeout=maintain_cfg.get("timeout", 30),
+                )
+
+            if self._learner:
+                prune_cfg = tasks_cfg.get("prune_learning_logs", default_cfg)
+                self._scheduler.add_task(
+                    "prune_learning_logs",
+                    self._learner.prune_logs,
+                    interval=prune_cfg.get("interval", 86400),
+                    timeout=prune_cfg.get("timeout", 60),
+                )
+
+            await self._scheduler.start()
+            logger.info("[MemorySystem] Scheduler started with registered tasks")
+
     async def stop(self) -> None:
+        if self._scheduler:
+            await self._scheduler.stop()
+            _log_scheduler_metrics(self._scheduler)
+        if self._learner:
+            await self._learner.stop()
+        if self.fuzzy:
+            self.fuzzy.close()
         if self._wiki_manager:
             self._wiki_manager.manager.close()
         self._short_term.clear_all()
@@ -95,13 +207,17 @@ class MemorySystem:
     # ── Storage ───────────────────────────────────────────
 
     async def store_turn(self, turn: MemoryTurn) -> None:
-        """Store conversation turn: short-term memory + wiki INGEST"""
+        """Store conversation turn: short-term memory + wiki INGEST + fuzzy consolidation"""
         score = self._scorer.score(turn)
         turn.importance = score
         self._short_term.append(turn.session_id, turn)
 
         if self._ingestor:
             asyncio.create_task(self._ingestor.ingest_turn(turn))
+
+        # Fuzzy consolidation (async, non-blocking)
+        if self._fuzzy_consolidator and turn.importance >= 0.3:
+            asyncio.create_task(self._fuzzy_consolidator.consolidate_lightweight(turn))
 
     # ── User profile ──────────────────────────────────────
 
@@ -244,3 +360,18 @@ class MemorySystem:
         if self._wiki_manager:
             self._wiki_manager.manager.close()
         self._short_term.clear_all()
+
+
+def _log_scheduler_metrics(scheduler) -> None:
+    """Log scheduler metrics for all tasks (called on shutdown)."""
+    try:
+        metrics_list = scheduler.get_metrics()
+        for m in metrics_list:
+            if m.total_runs > 0:
+                logger.info(
+                    f"[MemorySystem] Scheduler task '{m.name}': "
+                    f"runs={m.total_runs}, success={m.success_count}, "
+                    f"failure={m.failure_count}, last_duration={m.last_duration:.1f}s"
+                )
+    except Exception as e:
+        logger.debug(f"[MemorySystem] Failed to log scheduler metrics: {e}")
