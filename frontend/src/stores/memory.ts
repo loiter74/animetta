@@ -48,10 +48,12 @@ export const useMemoryStore = defineStore('memory', () => {
 
   async function fetchWikiPages(sessionId: string): Promise<void> {
     const socket = getSocket()
+    console.log('[MemoryStore] fetchWikiPages called, socket:', !!socket, 'sessionId:', sessionId)
     if (!socket) return
 
     loading.value = true
     socket.emit('get_wiki_pages', { session_id: sessionId }, (response: { pages: WikiPageEntry[] }) => {
+      console.log('[MemoryStore] get_wiki_pages response:', response?.pages?.length, 'pages')
       wikiPages.value = response.pages ?? []
       loading.value = false
     })

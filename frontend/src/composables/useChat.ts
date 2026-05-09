@@ -105,6 +105,7 @@ export function useChat() {
 
     // Listen for result to reset state and refresh memory list
     const onResult = (_data: any) => {
+      console.log('[useChat] memory.organize.result received, refreshing wiki pages')
       store.memoryOrganizing = false
       socket.off('memory.organize.result', onResult)
       socket.emit('get_wiki_pages', { session_id: 'default' })

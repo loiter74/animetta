@@ -42,6 +42,7 @@ function formatTime(iso: string): string {
 }
 
 onMounted(() => {
+  console.log('[MemoryPanel] mounted, fetching wiki pages...')
   store.fetchWikiPages(sessionId.value)
 })
 </script>
