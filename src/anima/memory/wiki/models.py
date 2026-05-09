@@ -15,6 +15,7 @@ class PageType(Enum):
     CONCEPT = "concept"
     SOURCE = "source"
     SYNTHESIS = "synthesis"
+    MEME = "meme"
 
 
 @dataclass

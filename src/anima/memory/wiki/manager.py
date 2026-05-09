@@ -39,6 +39,7 @@ class WikiManager:
         PageType.CONCEPT: "concepts",
         PageType.SOURCE: "sources",
         PageType.SYNTHESIS: "synthesis",
+        PageType.MEME: "memes",
     }
 
     def __init__(self, manager: MemoryManager):
@@ -72,6 +73,7 @@ class WikiManager:
             self._wiki_dir / "concepts",
             self._wiki_dir / "sources",
             self._wiki_dir / "synthesis",
+            self._wiki_dir / "memes",
         ):
             d.mkdir(parents=True, exist_ok=True)
 
@@ -148,6 +150,7 @@ class WikiManager:
             "Concepts": self.list_pages(PageType.CONCEPT),
             "Sources": self.list_pages(PageType.SOURCE),
             "Synthesis": self.list_pages(PageType.SYNTHESIS),
+            "Memes": self.list_pages(PageType.MEME),
         }
         lines = ["# Wiki Index\n"]
         for heading, pages in sections.items():
