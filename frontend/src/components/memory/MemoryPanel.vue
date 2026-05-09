@@ -1,12 +1,25 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useMemoryStore } from '@/stores/memory'
+import { getSocket } from '@/composables/useSocket'
 import type { WikiPageEntry } from '@/stores/memory'
 
 const store = useMemoryStore()
 
 const collapsed = ref(false)
 const sessionId = ref('default')
+const memeText = ref('')
+
+function addMeme(): void {
+  const text = memeText.value.trim()
+  if (!text) return
+  const socket = getSocket()
+  if (!socket) return
+  socket.emit('meme_add', { text, source: 'user' }, () => {
+    memeText.value = ''
+    store.fetchWikiPages(sessionId.value)
+  })
+}
 
 const typeOptions: { key: string | null; label: string }[] = [
   { key: null, label: '全部' },
@@ -135,6 +148,27 @@ onMounted(() => {
               </p>
             </div>
           </Transition>
+        </div>
+      </div>
+
+      <!-- Quick add meme -->
+      <div class="px-3 py-1.5 border-t border-c-border/20 shrink-0">
+        <div class="flex gap-1">
+          <input
+            v-model="memeText"
+            type="text"
+            placeholder="添加梗..."
+            class="flex-1 px-2 py-1 rounded-lg bg-c-bg/60 border border-c-border/30 text-10px text-c-text
+                   placeholder:text-c-text-muted focus:outline-none focus:border-c-accent/50"
+            @keyup.enter="addMeme"
+          />
+          <button
+            class="px-2.5 py-1 rounded-lg text-10px bg-c-accent/20 text-c-accent hover:bg-c-accent/30 transition-colors"
+            :disabled="!memeText.trim()"
+            @click="addMeme"
+          >
+            +
+          </button>
         </div>
       </div>
 
