@@ -68,6 +68,15 @@ python scripts/start.py            # 启动 | Launch
 | **🎬 双语字幕** Bilingual Subtitles | 萌系泡泡风格，LLM 实时翻译，支持英日韩法德西俄 / Anime-style overlay with LLM translation (EN/JA/KO/FR/DE/ES/RU) |
 | **自定义人设** Persona | 创建独一无二的角色性格 / Create unique character personalities |
 
+### 🚀 扩展能力 | Extensions
+
+| 功能 Feature | 说明 Description |
+|-------------|-----------------|
+| **🔧 工具调用** Tool Calling | LLM 可调用计算器、网页搜索、MCP 协议工具 / Calculator, web search, MCP protocol tools |
+| **🎮 Minecraft 游戏** Gameplay | Mineflayer 机器人，AI 操控角色挖掘、建造、战斗 / AI controls a Minecraft bot via LangChain tools |
+| **📺 B站直播** Livestream | 实时弹幕接入，AI 与观众互动回复 / Bilibili danmaku integration, AI responds to live comments |
+| **📊 数据看板** Dashboard | 对话统计、延迟分布、Token 用量可视化 / Conversation stats, latency distribution, token usage charts |
+
 ---
 
 ## 🏗️ 系统架构 | Architecture
@@ -194,7 +203,7 @@ Chroma + SQLite FTS5          可审计 · 可版本控制              写入 W
 | **CI/CD** | GitHub Actions · Python 3.12/3.13 矩阵 |
 | **类型安全 Type Safety** | mypy strict mode |
 | **代码规范 Lint** | ruff |
-| **可观测性 Observability** | OpenTelemetry 全链路追踪 |
+| **可观测性 Observability** | OpenTelemetry 全链路追踪 + Stats API + 数据看板 |
 | **代码规模 Code Scale** | 202 files · ~30K lines Python |
 | **容器化 Container** | Docker + docker-compose |
 
@@ -244,7 +253,8 @@ src/anima/                  # Python backend (202 files, 30K lines)
 │   └── server/             # Socket.IO routes + session management
 ├── services/               # LLM / ASR / TTS / VAD implementations
 │   ├── speech/{asr,tts}/   # Provider interface → impl → factory pattern
-│   └── intelligence/{llm,vad}/
+│   ├── intelligence/{llm,vad}/
+│   └── live/               # Bilibili danmaku livestream integration
 ├── memory/                 # Wiki-architecture memory (Chroma + SQLite FTS5)
 │   ├── search/             # Hybrid search (70% vector + 30% BM25)
 │   ├── wiki/               # Markdown knowledge base
@@ -254,7 +264,10 @@ src/anima/                  # Python backend (202 files, 30K lines)
 │   ├── analyzers/          # Emotion extraction (keyword + LLM)
 │   ├── mappers/            # Emotion → Live2D parameter mapping
 │   └── strategies/         # Duration/intensity/position strategies
-├── tools/                  # Tool calling + MCP bridge
+├── tools/                  # Tool calling + MCP bridge + Minecraft bot
+│   ├── base.py             # Built-in tools (calculator, web search)
+│   ├── mcp_bridge.py       # MCP protocol bridge
+│   └── minecraft/          # Mineflayer bot gameplay integration
 └── tracing/                # OpenTelemetry observability
 frontend/                   # Vue 3 + TypeScript + Electron (UnoCSS, Pinia)
 ```
