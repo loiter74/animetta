@@ -2,13 +2,10 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
 export interface StatsOverview {
-  total_traces: number
-  total_spans: number
-  total_errors: number
-  avg_latency_ms: number
-  total_input_tokens: number
-  total_output_tokens: number
-  unique_sessions: number
+  total_requests: number
+  success_rate: number
+  avg_duration_ms: number
+  p95_duration_ms: number
 }
 
 export interface NodeStats {
@@ -23,10 +20,10 @@ export interface Trace {
   trace_id: string
   session_id: string
   input_type: string
-  input_summary: string
+  user_text: string
   total_duration_ms: number
   status: string
-  started_at: string
+  created_at: string
 }
 
 export const useDashboardStore = defineStore('dashboard', () => {
@@ -36,18 +33,12 @@ export const useDashboardStore = defineStore('dashboard', () => {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  const avgLatency = computed(() => overview.value?.avg_latency_ms ?? 0)
-  const totalSessions = computed(() => overview.value?.total_traces ?? 0)
+  const avgLatency = computed(() => overview.value?.avg_duration_ms ?? 0)
+  const totalSessions = computed(() => overview.value?.total_requests ?? 0)
   const errorRate = computed(() => {
-    if (!overview.value || overview.value.total_spans === 0) return 0
-    return (overview.value.total_errors / overview.value.total_spans) * 100
+    if (!overview.value || !overview.value.success_rate) return 0
+    return Math.round((100 - overview.value.success_rate) * 10) / 10
   })
-
-  function getTokenSummary() {
-    const inp = overview.value?.total_input_tokens ?? 0
-    const out = overview.value?.total_output_tokens ?? 0
-    return { input: inp, output: out, total: inp + out }
-  }
 
   async function fetchOverview() {
     try {
@@ -88,7 +79,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
 
   return {
     overview, nodeStats, traces, loading, error,
-    avgLatency, totalSessions, errorRate, getTokenSummary,
+    avgLatency, totalSessions, errorRate,
     fetchAll, fetchOverview, fetchNodeStats, fetchTraces,
   }
 })

@@ -3,7 +3,7 @@
 import os
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict, Any, List
 
 import socketio
 from loguru import logger
@@ -83,13 +83,30 @@ class WebSocketServer:
         from anima.core.service_pool import ServicePool
         await ServicePool.init(self.config, model_manager=self.model_manager)
 
+    def _load_bilibili_config(self) -> Optional[Dict[str, Any]]:
+        """Load Bilibili configuration from config.yaml (top-level 'bilibili' key)."""
+        try:
+            import yaml
+            from pathlib import Path
+            config_path = Path(__file__).parent.parent.parent.parent.parent / "config" / "config.yaml"
+            if config_path.exists():
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    data = yaml.safe_load(f)
+                return data.get("bilibili")
+        except Exception as e:
+            logger.warning(f"[Bilibili] Failed to load config: {e}")
+        return None
+
     def setup_routes(self) -> None:
         """Set up all routes"""
+        bilibili_config = self._load_bilibili_config()
+
         self.route_handlers = register_routes(
             self.sio,
             self.session_manager,
             self.desktop_manager,
-            self.live2d_manager
+            self.live2d_manager,
+            bilibili_config=bilibili_config,
         )
 
         # Wire up model manager with Socket.IO for status events
@@ -109,6 +126,11 @@ class WebSocketServer:
     async def _cleanup_all_resources(self) -> None:
         """Clean up all resources"""
         logger.info("Starting to clean up all resources...")
+
+        # Stop Bilibili danmaku service
+        if self.route_handlers:
+            self.route_handlers.stop_bilibili()
+
         await self.session_manager.cleanup_all()
         logger.info("All resources cleaned up")
 

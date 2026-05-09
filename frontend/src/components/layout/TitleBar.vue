@@ -27,6 +27,7 @@ function toggleDashboard() {
     router.push('/dashboard')
   }
 }
+
 </script>
 
 <template>

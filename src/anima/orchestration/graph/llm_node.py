@@ -28,9 +28,10 @@ def _get_memory_system(config: Optional[RunnableConfig]) -> Optional[Any]:
 def _get_memory_middleware(config: Optional[RunnableConfig]) -> Optional[MemoryMiddleware]:
     """Get or create MemoryMiddleware from LangGraph config"""
     if config:
-        existing = config.get("configurable", {}).get("memory_middleware")
-        if existing:
-            return existing
+        configurable = config.get("configurable", {})
+        # Explicit None means "skip middleware" (used in tests)
+        if "memory_middleware" in configurable:
+            return configurable["memory_middleware"]
         memory_system = _get_memory_system(config)
         if memory_system:
             middleware = MemoryMiddleware(memory_system=memory_system)
@@ -43,15 +44,17 @@ async def _retrieve_memory_context(
     query: str,
     config: Optional[RunnableConfig],
     max_turns: int = 5,
+    injection_tier: int = 1,
 ) -> str:
     """
-    Retrieve memory context via MemoryMiddleware
+    Retrieve memory context via MemoryMiddleware with tiered injection.
 
     Args:
         session_id: Session ID
         query: Query text (user input)
         config: LangGraph config
         max_turns: Maximum number of turns to retrieve
+        injection_tier: Memory injection tier (1=fuzzy, 2=supporting, 3=exact)
 
     Returns:
         Enriched system prompt with memory and profile
@@ -65,9 +68,16 @@ async def _retrieve_memory_context(
         enriched, metadata = await middleware.before_llm_call(
             session_id=session_id,
             user_input=query,
+            injection_tier=injection_tier,
         )
-        if metadata and metadata.get("memory_count", 0) > 0:
-            logger.info(f"[{session_id}] [LLMNode] Middleware injected {metadata['memory_count']} memories")
+        if metadata:
+            counts = []
+            if metadata.get("memory_count", 0) > 0:
+                counts.append(f"memories={metadata['memory_count']}")
+            if metadata.get("fuzzy_count", 0) > 0:
+                counts.append(f"fuzzy={metadata['fuzzy_count']}")
+            if counts:
+                logger.info(f"[{session_id}] [LLMNode] Middleware tier={injection_tier}: {', '.join(counts)}")
         return enriched
     except Exception as e:
         logger.warning(f"[{session_id}] [LLMNode] MemoryMiddleware retrieval failed: {e}")
@@ -191,19 +201,19 @@ async def _llm_with_tools(
 
     logger.info(f"[{session_id}] [LLMNode] Using tool calling mode")
 
-    t0 = time_module.perf_counter()
-
     system_prompt = state.get("system_prompt")
     if not system_prompt and service_context.config:
         system_prompt = service_context.config.get_system_prompt()
 
-    # RAG + Profile: retrieve via MemoryMiddleware
+    # RAG + Profile: retrieve via MemoryMiddleware (tiered)
+    injection_tier = state.get("injection_tier", 1)
     t_rag = time_module.perf_counter()
     memory_context = await _retrieve_memory_context(
         session_id=session_id,
         query=user_text,
         config=config,
         max_turns=5,
+        injection_tier=injection_tier,
     )
     rag_duration = (time_module.perf_counter() - t_rag) * 1000
     log_timing(state, "llm.rag_retrieval", rag_duration, f"query='{user_text[:50]}'")
@@ -278,17 +288,17 @@ async def _llm_without_tools(
 
     logger.info(f"[{session_id}] [LLMNode] Using streaming mode (no tools)")
 
-    t0 = time_module.perf_counter()
-
     system_prompt = state.get("system_prompt", "")
 
-    # RAG: retrieve memory context
+    # RAG: retrieve memory context (tiered)
+    injection_tier = state.get("injection_tier", 1)
     t_rag = time_module.perf_counter()
     memory_context = await _retrieve_memory_context(
         session_id=session_id,
         query=user_text,
         config=config,
         max_turns=5,
+        injection_tier=injection_tier,
     )
     rag_duration = (time_module.perf_counter() - t_rag) * 1000
     log_timing(state, "llm.rag_retrieval", rag_duration, f"query='{user_text[:50]}'")

@@ -36,6 +36,69 @@ memory:
     soft_threshold_tokens: 4000
     reserve_tokens_floor: 20000
 
+  # ── 定时调度器 (Scheduler) ─────────────────────────────────
+  scheduler:
+    enabled: true
+    tasks:
+      consolidate_conversations:
+        interval: 3600       # 1 小时
+        timeout: 120
+      extract_patterns:
+        interval: 86400      # 24 小时
+        timeout: 300
+      generate_meme_candidates:
+        interval: 21600      # 6 小时
+        timeout: 120
+      maintain_meme_pool:
+        interval: 3600       # 1 小时
+        timeout: 30
+      prune_learning_logs:
+        interval: 86400      # 24 小时
+        timeout: 60
+
+  # ── 模糊记忆 (Fuzzy Memory) ────────────────────────────────
+  fuzzy_memory:
+    enabled: true
+    granularity_weights:
+      fact: 0.3
+      persona: 0.2
+      event: 0.5
+    consolidation:
+      turns_per_lightweight: 1     # 每轮对话后轻量整理
+      turns_per_deep: 10            # 每 N 轮深度整理
+      deep_interval_minutes: 60     # 深度整理最大间隔
+    injection:
+      tier1_max_items: 3            # 上下文层最大条数
+      tier2_max_items: 5            # 支撑层最大条数
+      tier3_max_items: 3            # 精确层最大条数
+      escalation_thresholds:
+        tier2_depth: 2              # 追问 2 次升级到支撑层
+        tier3_depth: 4              # 追问 4 次升级到精确层
+
+  # ── 梗管理 (Meme Pool) ────────────────────────────────────
+  meme_pool:
+    enabled: true
+    max_active: 10
+    ai_source_ratio: 0.8           # AI 发现占比
+    user_source_ratio: 0.2         # 用户配置占比
+    scoring:
+      default_base_score: 0.7
+      user_meme_bonus: 0.1         # 用户配置梗的初始加成
+      resurrection_bonus: 0.1      # 每次复活的分数加成
+      resurrection_max_bonuses: 3  # 最大复活次数（之后锁定）
+    time_decay:
+      k: 0.5                       # 衰减速率
+      t_half_days: 7               # 半衰期（天）
+      resurrection_threshold: 0.6  # 复活阈值
+
+  # ── 学习模块 (PeriodicLearner) ────────────────────────────
+  learner:
+    enabled: true
+    llm_temperature: 0.3           # 学习用 LLM 温度（较低 = 更确定）
+    log_retention_days: 90         # 学习日志保留天数
+    patterns_per_run: 5            # 每次提取的模式数上限
+    meme_candidates_per_run: 3     # 每次生成的梗候选数上限
+
 # 记忆文件结构说明:
 # ─────────────────────────────────────────
 # memory_db/

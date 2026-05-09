@@ -69,3 +69,6 @@ aiosqlite>=0.20.0
 # JWT - 兼容 zhipuai 和 mcp 的版本
 # 注意：zhipuai 声称需要 <2.9.0，但实际测试 2.10.x 可正常工作
 pyjwt>=2.10.0
+
+# Bilibili 直播弹幕接收
+bilibili-api-python>=17.0.0

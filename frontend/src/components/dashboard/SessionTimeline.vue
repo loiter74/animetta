@@ -25,9 +25,9 @@ function statusClass(status: string): string {
         <div class="flex items-center gap-3 min-w-0">
           <span class="text-lg shrink-0">{{ trace.input_type === 'audio' ? '🎤' : '💬' }}</span>
           <div class="min-w-0">
-            <div class="text-sm text-gray-200 truncate max-w-48">{{ trace.input_summary }}</div>
+            <div class="text-sm text-gray-200 truncate max-w-48">{{ trace.user_text }}</div>
             <div class="text-xs text-gray-500">
-              {{ trace.started_at ? new Date(trace.started_at).toLocaleString() : '' }}
+              {{ trace.created_at ? new Date(trace.created_at).toLocaleString() : '' }}
             </div>
           </div>
         </div>

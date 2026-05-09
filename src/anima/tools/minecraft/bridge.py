@@ -1,0 +1,241 @@
+"""
+Minecraft Bridge — Manages Mineflayer bot subprocess lifecycle and communication
+
+Architecture:
+  Anima startup → MinecraftBridge.start() → spawns Node.js subprocess
+  LLM tool call → bridge.send_command(action, params) → JSON to stdin → wait response
+  Bot idle → sends heartbeat events → Python tracks state
+  Anima shutdown → MinecraftBridge.stop() → kill subprocess
+
+Protocol:
+  Request:  {"id": 1, "action": "goto", "params": {"x": 100, "y": 64, "z": 200}}
+  Response: {"id": 1, "status": "success", "result": "Arrived at (100, 64, 200)"}
+  Event:    {"id": null, "status": "event", "result": {"type": "heartbeat", ...}}
+"""
+
+import asyncio
+import json
+import os
+from typing import Optional, Any, Dict
+from loguru import logger
+from .config import MinecraftConfig
+
+
+class MinecraftBridge:
+    """Manages the Mineflayer bot subprocess"""
+
+    def __init__(self, config: MinecraftConfig):
+        self.config = config
+        self._process: Optional[asyncio.subprocess.Process] = None
+        self._pending: Dict[int, asyncio.Future] = {}
+        self._next_id = 1
+        self._lock = asyncio.Lock()
+        self._running = False
+        self._reader_task: Optional[asyncio.Task] = None
+        self._bot_ready = asyncio.Event()
+
+    async def start(self) -> bool:
+        """Start the Mineflayer bot subprocess"""
+        if self._running:
+            return True
+
+        bot_dir = os.path.join(os.path.dirname(__file__), "bot")
+        bot_script = os.path.join(bot_dir, "index.js")
+
+        if not os.path.exists(bot_script):
+            logger.error(f"[MinecraftBridge] Bot script not found: {bot_script}")
+            return False
+
+        if not os.path.exists(os.path.join(bot_dir, "node_modules")):
+            logger.error(f"[MinecraftBridge] node_modules not found, run 'npm install' in {bot_dir}")
+            return False
+
+        try:
+            self._process = await asyncio.create_subprocess_exec(
+                "node", bot_script,
+                self.config.bot.host,
+                str(self.config.bot.port),
+                self.config.bot.username,
+                stdin=asyncio.subprocess.PIPE,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                cwd=bot_dir,
+            )
+
+            self._running = True
+
+            # Start reader tasks
+            self._reader_task = asyncio.create_task(self._read_stdout())
+            asyncio.create_task(self._read_stderr())
+
+            logger.info(
+                f"[MinecraftBridge] Bot process started (PID: {self._process.pid}, "
+                f"server={self.config.bot.host}:{self.config.bot.port})"
+            )
+
+            # Wait for bot to log in
+            try:
+                await asyncio.wait_for(self._bot_ready.wait(), timeout=15.0)
+                logger.info("[MinecraftBridge] Bot logged in successfully")
+            except asyncio.TimeoutError:
+                logger.warning("[MinecraftBridge] Bot login timeout, continuing anyway")
+
+            return True
+
+        except Exception as e:
+            logger.error(f"[MinecraftBridge] Failed to start: {e}")
+            return False
+
+    async def send_command(
+        self, action: str, params: Optional[Dict] = None, timeout: float = 60.0
+    ) -> Dict:
+        """Send a command to the bot and wait for response
+
+        Args:
+            action: Bot action name (goto, mine, place, attack, chat, status, etc.)
+            params: Action parameters
+            timeout: Max wait time in seconds (default 60)
+
+        Returns:
+            Dict with status and result keys
+        """
+        if not self._running or not self._process:
+            return {"status": "error", "result": "Bridge not running"}
+
+        if self._process.returncode is not None:
+            self._running = False
+            return {"status": "error", "result": "Bot process has exited"}
+
+        async with self._lock:
+            cmd_id = self._next_id
+            self._next_id += 1
+            future = asyncio.get_event_loop().create_future()
+            self._pending[cmd_id] = future
+
+        command = json.dumps({"id": cmd_id, "action": action, "params": params or {}})
+        logger.debug(f"[MinecraftBridge] Sending: {action} (id={cmd_id})")
+
+        try:
+            self._process.stdin.write((command + "\n").encode("utf-8"))
+            await self._process.stdin.drain()
+
+            result = await asyncio.wait_for(future, timeout=timeout)
+            return result
+
+        except asyncio.TimeoutError:
+            logger.warning(f"[MinecraftBridge] Command '{action}' timeout after {timeout}s")
+            return {"status": "error", "result": f"Command timed out after {timeout}s"}
+        except Exception as e:
+            logger.error(f"[MinecraftBridge] Command '{action}' failed: {e}")
+            return {"status": "error", "result": str(e)}
+        finally:
+            self._pending.pop(cmd_id, None)
+
+    async def _read_stdout(self):
+        """Read JSON responses from bot stdout"""
+        try:
+            while self._running and self._process and self._process.stdout:
+                line = await self._process.stdout.readline()
+                if not line:
+                    logger.info("[MinecraftBridge] Bot stdout closed")
+                    break
+
+                line = line.decode("utf-8").strip()
+                if not line:
+                    continue
+
+                try:
+                    response = json.loads(line)
+                except json.JSONDecodeError:
+                    logger.warning(f"[MinecraftBridge] Invalid JSON from bot: {line[:100]}")
+                    continue
+
+                resp_id = response.get("id")
+                status = response.get("status")
+                result = response.get("result")
+
+                if resp_id == "system" or (resp_id is None and status == "event"):
+                    # Handle events
+                    if isinstance(result, dict) and result.get("type") == "heartbeat":
+                        logger.debug(f"[MinecraftBridge] Heartbeat: {result}")
+                    elif isinstance(result, dict) and result.get("type") == "login":
+                        logger.info(f"[MinecraftBridge] Bot logged in: {result.get('username')}")
+                        self._bot_ready.set()
+                    elif isinstance(result, dict) and result.get("type") == "spawn":
+                        logger.info("[MinecraftBridge] Bot spawned in world")
+                    continue
+
+                if resp_id is not None and resp_id in self._pending:
+                    self._pending[resp_id].set_result(
+                        {"status": status, "result": result}
+                    )
+                else:
+                    logger.debug(f"[MinecraftBridge] Unhandled response id={resp_id}")
+
+        except asyncio.CancelledError:
+            logger.debug("[MinecraftBridge] stdout reader cancelled")
+        except Exception as e:
+            logger.error(f"[MinecraftBridge] stdout reader error: {e}")
+        finally:
+            self._running = False
+
+    async def _read_stderr(self):
+        """Log bot stderr output"""
+        try:
+            while self._process and self._process.stderr:
+                line = await self._process.stderr.readline()
+                if not line:
+                    break
+                msg = line.decode("utf-8").strip()
+                if msg:
+                    logger.debug(f"[MinecraftBot] {msg}")
+        except Exception as e:
+            logger.debug(f"[MinecraftBridge] stderr reader stopped: {e}")
+
+    async def stop(self):
+        """Stop the bot subprocess"""
+        self._running = False
+
+        if self._reader_task:
+            self._reader_task.cancel()
+            try:
+                await self._reader_task
+            except asyncio.CancelledError:
+                pass
+            self._reader_task = None
+
+        if self._process:
+            try:
+                self._process.terminate()
+                await asyncio.wait_for(self._process.wait(), timeout=5.0)
+                logger.info("[MinecraftBridge] Bot process terminated")
+            except asyncio.TimeoutError:
+                try:
+                    self._process.kill()
+                    await self._process.wait()
+                    logger.warning("[MinecraftBridge] Bot process killed (timeout)")
+                except ProcessLookupError:
+                    pass
+            except ProcessLookupError:
+                pass
+
+        # Resolve all pending futures with error
+        for future in self._pending.values():
+            if not future.done():
+                future.set_result({"status": "error", "result": "Bridge stopped"})
+        self._pending.clear()
+
+        logger.info("[MinecraftBridge] Bridge stopped")
+
+    @property
+    def is_running(self) -> bool:
+        return self._running
+
+
+# Module-level singleton
+_bridge: Optional[MinecraftBridge] = None
+
+
+def get_bridge() -> Optional[MinecraftBridge]:
+    """Get the global bridge instance"""
+    return _bridge

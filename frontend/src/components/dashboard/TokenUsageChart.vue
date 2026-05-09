@@ -14,7 +14,7 @@ const store = useDashboardStore()
 
 const chartData = computed(() => ({
   labels: store.traces.slice(0, 20).reverse().map(t =>
-    t.started_at ? new Date(t.started_at).toLocaleTimeString() : ''
+    t.created_at ? new Date(t.created_at).toLocaleTimeString() : ''
   ),
   datasets: [
     {

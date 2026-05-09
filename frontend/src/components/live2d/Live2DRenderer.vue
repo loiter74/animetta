@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useLive2D } from './useLive2D'
 import { MODEL_PATH } from './useLive2D'
+import SubtitleOverlay from './SubtitleOverlay.vue'
 
 const containerRef = ref<HTMLDivElement | null>(null)
 const canvasRef = ref<HTMLCanvasElement | null>(null)
@@ -131,5 +132,8 @@ function handleWheel(e: WheelEvent): void {
         <p class="text-sm">未加载 Live2D 模型</p>
       </div>
     </div>
+
+    <!-- Subtitle overlay -->
+    <SubtitleOverlay />
   </div>
 </template>

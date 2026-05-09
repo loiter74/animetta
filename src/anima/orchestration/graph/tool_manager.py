@@ -81,3 +81,15 @@ class ToolManager:
         if self._mcp_manager:
             await self._mcp_manager.close_all()
             self._mcp_manager = None
+
+        # Cleanup Minecraft bridge
+        try:
+            from anima.tools.minecraft.bridge import get_bridge
+            bridge = get_bridge()
+            if bridge and bridge.is_running:
+                await bridge.stop()
+                logger.info(f"[{self.session_id}] [ToolManager] Minecraft bridge stopped")
+        except ImportError:
+            pass  # Minecraft tools not installed
+        except Exception as e:
+            logger.warning(f"[{self.session_id}] [ToolManager] Minecraft bridge cleanup: {e}")

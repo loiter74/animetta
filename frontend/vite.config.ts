@@ -13,6 +13,9 @@ export default defineConfig({
         target: 'http://localhost:12394',
         ws: true,
       },
+      '/api': {
+        target: 'http://localhost:12394',
+      },
     },
   },
   build: {

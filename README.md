@@ -87,6 +87,7 @@ Open the desktop app and start chatting with your AI character!
 | **表情同步** Expression Sync | 情绪驱动面部表情 / Emotion-driven facial expressions |
 | **口型同步** Lip Sync | 语音与嘴型精确匹配 / Audio-driven viseme matching |
 | **动作控制** Motion Control | 自定义触发动作和姿势 / Custom trigger motions & poses |
+| **🎬 双语字幕** Bilingual Subtitles | Live2D 画布底部叠加萌系字幕，支持 LLM 翻译 / Anime-style subtitle overlay with LLM translation |
 
 ### 灵活配置选择 | Flexible Config
 
@@ -112,7 +113,38 @@ Open the desktop app and start chatting with your AI character!
 
 ---
 
-## 📊 项目架构 | Architecture
+## 📝 字幕功能 | Subtitles
+
+<div align="center">
+
+**在 Live2D 画布底部显示 AI 回复字幕，支持双语展示和 LLM 实时翻译**
+**Display AI response subtitles at the bottom of the Live2D canvas with bilingual LLM translation**
+
+</div>
+
+### 主要特性 | Features
+
+| Feature | Description |
+|---------|-------------|
+| **萌系泡泡风格** Cute Bubble Style | 毛玻璃面板 + 粉紫装饰 + 弹簧弹跳动画 / Glassmorphism panel with spring pop-in animation |
+| **三种显示模式** 3 Display Modes | 原文 / 翻译 / 双语，一键切换 / Original / Translated / Bilingual |
+| **LLM 实时翻译** Real-time LLM Translation | 使用同一 LLM 将回复翻译为目标语言 / Uses the same LLM provider for translation |
+| **可配置开关** Configurable | 在设置面板中可随时启用/禁用 / Toggle on/off in Settings panel |
+| **多语言目标** Multi-language Target | 支持英日韩法德西俄等语言 / Supports English, Japanese, Korean, French, German, Spanish, Russian |
+
+### 使用方法 | Usage
+
+1. 在右侧面板点击 **📝 字幕** 标签进入设置
+2. 打开 **启用字幕** 开关
+3. 选择显示模式：原文 / 翻译 / 双语
+4. 选择翻译目标语言
+5. AI 回复时，字幕会自动出现在 Live2D 画布底部
+
+### 配置 | Configuration
+
+字幕配置在设置面板中管理，实时生效，无需重启。翻译使用当前 LLM 服务商（`config.yaml` 中的 `services.agent`）进行翻译。
+
+---
 
 ### 数据流 | Data Flow
 

@@ -435,7 +435,11 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
   }
 
   function cleanupAudio(): void {
-    if (currentAudio) { currentAudio.onended = null; currentAudio = null }
+    if (currentAudio) {
+      currentAudio.pause()
+      currentAudio.onended = null
+      currentAudio = null
+    }
     if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null }
   }
 

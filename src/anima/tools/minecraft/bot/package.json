@@ -1,0 +1,13 @@
+{
+  "name": "anima-minecraft-bot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "mineflayer": "^4.20.0",
+    "mineflayer-pathfinder": "^2.4.0",
+    "mineflayer-pvp": "^1.3.0",
+    "mineflayer-collectblock": "^1.4.1",
+    "vec3": "^0.1.8"
+  }
+}

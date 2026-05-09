@@ -10,6 +10,7 @@ from functools import partial
 from langgraph.types import RunnableConfig
 
 from .state import AgentState
+from .translation_state import translation_state
 
 
 def _get_from_config(config: Optional[RunnableConfig], key: str) -> Optional[Any]:
@@ -49,11 +50,46 @@ async def output_node(
     # Send text response
     response_text = state.get("response_text", "")
     if response_text:
-        await sio.emit("sentence", {"text": response_text, "seq": 0}, to=to)
+        # ── 1. Send original text immediately (no blocking) ──
+        sentence_payload = {
+            "text": response_text,
+            "seq": 0,
+            "lang": translation_state.source_language.lower()[:2],
+        }
+        await sio.emit("sentence", sentence_payload, to=to)
         logger.info(f"[{session_id}] [OutputNode] ✅ Sent text response")
 
         await sio.emit("sentence", {"text": "", "is_complete": True}, to=to)
         logger.debug(f"[{session_id}] [OutputNode] ✅ Sent stream end marker")
+
+        # ── 2. Run translation in background (non-blocking) ──
+        if translation_state.enabled and response_text:
+            async def _translate_and_emit():
+                try:
+                    service_context = _get_from_config(config, "service_context")
+                    if service_context and hasattr(service_context, "llm_engine") and service_context.llm_engine:
+                        translate_prompt = (
+                            f"Translate the following text from {translation_state.source_language} "
+                            f"to {translation_state.target_language}. "
+                            f"Output only the translation, no explanations, no quotes.\n\n"
+                            f"Text: {response_text}\n"
+                            f"Translation:"
+                        )
+                        llm = service_context.llm_engine
+                        translated = await llm.chat(translate_prompt)
+                        if translated and translated.strip():
+                            translation = translated.strip()
+                            target_lang = translation_state.target_language.lower()[:2]
+                            # Emit a subtitle.translate event with the translation
+                            await sio.emit("subtitle.translation", {
+                                "translation": translation,
+                                "target_lang": target_lang,
+                            }, to=to)
+                            logger.info(f"[{session_id}] [OutputNode] ✅ Translated response to {translation_state.target_language}")
+                except Exception as e:
+                    logger.warning(f"[{session_id}] [OutputNode] Translation failed: {e}")
+
+            asyncio.create_task(_translate_and_emit())
 
     # Send emotion event — also send motion command to frontend
     emotion = state.get("emotion")
@@ -240,6 +276,33 @@ async def _store_conversation_to_memory(
         )
 
         await memory_system.store_turn(turn)
+
+        # Meme scoring hook (Phase 5.9): if a meme was injected, evaluate effectiveness
+        meme_injected = state.get("meme_injected", False)
+        if meme_injected and hasattr(memory_system, 'meme_pool') and memory_system.meme_pool:
+            try:
+                meme_candidates = state.get("meme_candidates", [])
+                if meme_candidates:
+                    meme_id = meme_candidates[0].get("id", "")
+                    if meme_id:
+                        # Simple effectiveness heuristic: user responded (not just listened)
+                        # Higher score if user replied with positive sentiment
+                        effectiveness = 0.6  # default: mildly effective
+                        if user_text and len(user_text) > 3:
+                            effectiveness = 0.8  # user engaged further
+                        if any(kw in user_text for kw in ["哈哈", "笑", "hh", "lol", "😂", "好梗", "有趣"]):
+                            effectiveness = 1.0  # positive reaction
+                        elif any(kw in user_text for kw in ["?", "？", "什么", "不懂"]):
+                            effectiveness = 0.3  # confused
+
+                        memory_system.meme_pool.score_after_use(meme_id, effectiveness)
+                        logger.debug(
+                            f"[{session_id}] [OutputNode] Scored meme {meme_id}: "
+                            f"effectiveness={effectiveness}"
+                        )
+            except Exception as e:
+                logger.warning(f"[{session_id}] [OutputNode] Meme scoring failed: {e}")
+
         logger.debug(f"[{session_id}] [OutputNode] Stored conversation in memory system")
 
     except Exception as e:

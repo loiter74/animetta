@@ -7,7 +7,7 @@ const store = useDashboardStore()
 const kpis = computed(() => [
   { label: 'Sessions', value: store.totalSessions, icon: '💬' },
   { label: 'Avg Latency', value: `${store.avgLatency.toFixed(0)}ms`, icon: '⚡' },
-  { label: 'Total Tokens', value: (store.overview?.total_input_tokens ?? 0) + (store.overview?.total_output_tokens ?? 0), icon: '📊' },
+  { label: 'Total Requests', value: store.overview?.total_requests ?? 0, icon: '📊' },
   { label: 'Error Rate', value: `${store.errorRate.toFixed(1)}%`, icon: '❌' },
 ])
 </script>

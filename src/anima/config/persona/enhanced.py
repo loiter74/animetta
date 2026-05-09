@@ -35,12 +35,21 @@ class EnhancedPersonaBuilder:
 
         return data
 
-    def build_system_prompt(self, user_context: Optional[Dict] = None) -> str:
+    def build_system_prompt(
+        self,
+        user_context: Optional[Dict] = None,
+        mood_override: Optional[str] = None,
+        streaming_mode: bool = False,
+        memory_traits: Optional[List[str]] = None,
+    ) -> str:
         """
-        Build the complete system prompt
+        Build the complete system prompt with optional personality layers.
 
         Args:
             user_context: User context (optional, for personalization)
+            mood_override: Current mood override (happy/sad/angry/surprised/thinking/neutral)
+            streaming_mode: Enable streaming/livestream mode (shorter, more memes)
+            memory_traits: Memory-influenced personality traits from PeriodicLearner
 
         Returns:
             str: Complete system prompt
@@ -59,22 +68,40 @@ class EnhancedPersonaBuilder:
         # 4. Emotion rules
         parts.append(self._build_emotion_rules())
 
-        # 5. Expertise
+        # 5. Mood state layer (NEW — Phase 6.2)
+        if mood_override:
+            mood_prompt = self._build_mood_override(mood_override)
+            if mood_prompt:
+                parts.append(mood_prompt)
+
+        # 6. Streaming mode layer (NEW — Phase 6.3)
+        if streaming_mode:
+            streaming_prompt = self._build_streaming_mode()
+            if streaming_prompt:
+                parts.append(streaming_prompt)
+
+        # 7. Memory-influenced traits (NEW — Phase 6.4)
+        if memory_traits:
+            memory_prompt = self._build_memory_traits(memory_traits)
+            if memory_prompt:
+                parts.append(memory_prompt)
+
+        # 8. Expertise
         parts.append(self._build_expertise())
 
-        # 6. Interaction rules
+        # 9. Interaction rules
         parts.append(self._build_interaction_rules())
 
-        # 7. Response templates
+        # 10. Response templates
         parts.append(self._build_response_templates())
 
-        # 8. Example conversations (Few-shot Learning)
+        # 11. Example conversations (Few-shot Learning)
         parts.append(self._build_example_conversations())
 
-        # 9. Restrictions
+        # 12. Restrictions
         parts.append(self._build_restrictions())
 
-        # 10. User context (if provided)
+        # 13. User context (if provided)
         if user_context:
             parts.append(self._build_user_context(user_context))
 
@@ -154,6 +181,67 @@ class EnhancedPersonaBuilder:
                     parts.append(f'  "{response}"')
             if "expressions" in rules:
                 parts.append(f'表情标签：[{", ".join(rules["expressions"])}]')
+
+        return "\n".join(parts)
+
+    # ── Mood state layer (Phase 6.2) ────────────────────
+
+    def _build_mood_override(self, mood: str) -> str:
+        """Build mood state override section."""
+        mood_states = self.persona_data.get("mood_states", {})
+        mood_config = mood_states.get(mood, {})
+
+        parts = ["## 当前情绪状态"]
+        mood_names = {
+            "happy": "愉快", "sad": "低落", "angry": "不悦",
+            "surprised": "惊讶", "thinking": "思考中", "neutral": "平静",
+        }
+        name = mood_names.get(mood, mood)
+        parts.append(f"当前情绪：{name}")
+
+        if mood_config.get("speaking_style"):
+            parts.append(f"\n说话风格调整：{mood_config['speaking_style']}")
+        if mood_config.get("max_length"):
+            parts.append(f"\n回复长度限制：{mood_config['max_length']}字以内")
+
+        return "\n".join(parts)
+
+    # ── Streaming mode layer (Phase 6.3) ────────────────
+
+    def _build_streaming_mode(self) -> str:
+        """Build streaming/livestream mode section."""
+        streaming = self.persona_data.get("streaming_mode", {})
+
+        parts = ["## 直播模式"]
+        parts.append("当前处于直播模式，与观众弹幕互动。请遵循：")
+
+        if streaming.get("danmaku_style"):
+            parts.append(f"\n弹幕互动风格：{streaming['danmaku_style']}")
+        if streaming.get("reply_max_length"):
+            parts.append(f"\n每条回复不超过 {streaming['reply_max_length']} 字")
+        if streaming.get("meme_injection_rate", 0) > 0:
+            rate = int(streaming["meme_injection_rate"] * 100)
+            parts.append(f"\n适当使用梗和幽默（约 {rate}% 的回复可以带梗）")
+
+        parts.append("\n回复要简短有力，适合弹幕氛围。")
+        return "\n".join(parts)
+
+    # ── Memory-influenced traits layer (Phase 6.4) ──────
+
+    def _build_memory_traits(self, traits: List[str]) -> str:
+        """Build memory-influenced personality traits section."""
+        if not traits:
+            return ""
+
+        parts = ["## 记忆塑造的性格特征"]
+        parts.append("以下特征基于与用户的长期互动形成的：")
+        for trait in traits:
+            parts.append(f"- {trait}")
+
+        memory_influence = self.persona_data.get("memory_influence", {})
+        weight = memory_influence.get("weight", 0.3)
+        if weight > 0:
+            parts.append(f"\n（记忆影响权重：{int(weight * 100)}%）")
 
         return "\n".join(parts)
 

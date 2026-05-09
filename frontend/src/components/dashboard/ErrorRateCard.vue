@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Doughnut } from 'vue-chartjs'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import { useDashboardStore } from '../../stores/dashboardStore'
@@ -7,14 +8,17 @@ ChartJS.register(ArcElement, Tooltip, Legend)
 
 const store = useDashboardStore()
 
-const chartData = {
-  labels: ['Success', 'Error'],
-  datasets: [{
-    data: [1, 0],
-    backgroundColor: ['rgba(52, 211, 153, 0.7)', 'rgba(239, 68, 68, 0.7)'],
-    borderWidth: 0,
-  }],
-}
+const chartData = computed(() => {
+  const successRate = store.overview?.success_rate ?? 100
+  return {
+    labels: ['Success', 'Error'],
+    datasets: [{
+      data: [successRate, Math.round((100 - successRate) * 10) / 10],
+      backgroundColor: ['rgba(52, 211, 153, 0.7)', 'rgba(239, 68, 68, 0.7)'],
+      borderWidth: 0,
+    }],
+  }
+})
 
 const chartOptions = {
   responsive: true,

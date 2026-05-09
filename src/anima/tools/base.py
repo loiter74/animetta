@@ -183,4 +183,17 @@ def load_tools_from_config(config: Dict[str, Any]) -> tuple:
         except Exception as e:
             logger.error(f"[Custom Tools] Failed: {e}")
 
+    # Minecraft tools (requires Node.js subprocess)
+    minecraft_config = config.get("minecraft", {})
+    if minecraft_config.get("enabled", False):
+        try:
+            from .minecraft.tools import get_minecraft_tools, init_bridge
+            init_bridge(minecraft_config)
+            mc_tools = get_minecraft_tools()
+            extra_tools.extend(mc_tools)
+            tools_map.update({t.name: t for t in mc_tools})
+            logger.info(f"[Minecraft Tools] Loaded {len(mc_tools)} tools: {[t.name for t in mc_tools]}")
+        except Exception as e:
+            logger.error(f"[Minecraft Tools] Failed to load: {e}")
+
     return create_tool_registry(builtin_enabled=builtin_enabled, extra_tools=extra_tools)

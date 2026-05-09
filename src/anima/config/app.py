@@ -274,8 +274,11 @@ class AppConfig(BaseConfig):
         vad_data = _load_service_config("vad", vad_name)
 
         # Build complete configuration
+        # Strip keys that aren't Pydantic fields (e.g., 'bilibili' consumed elsewhere)
+        known_fields = {"persona", "services", "system", "asr", "tts", "agent", "local_llm", "vad"}
+        filtered = {k: v for k, v in main_config.items() if k in known_fields}
         merged = {
-            **main_config,
+            **filtered,
             "asr": asr_data,
             "tts": tts_data,
             "agent": agent_data,

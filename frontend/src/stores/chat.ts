@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { ChatMessage, MessageRole, MessageStatus } from '@/types/chat'
+import { useMessageStore } from '@/composables/useMessageStore'
 
 let messageIdCounter = 0
 
@@ -10,6 +11,14 @@ export const useChatStore = defineStore('chat', () => {
   const isSpeaking = ref(false)
   const styleTransferEnabled = ref(false)
   const memoryOrganizing = ref(false)
+
+  // Persistence via IndexedDB
+  const messageStore = useMessageStore()
+  messageStore.loadMessages().then((saved) => {
+    if (saved.length > 0) {
+      messages.value = saved
+    }
+  }).catch((e) => console.warn('[chat] Failed to load persisted messages:', e))
 
   // Streaming state
   const currentResponse = ref('')
@@ -100,6 +109,13 @@ export const useChatStore = defineStore('chat', () => {
     }
     currentResponse.value = ''
     isTyping.value = false
+
+    messageStore.saveMessages(messages.value).catch((e) =>
+      console.warn('[chat] Failed to persist messages:', e)
+    )
+    messageStore.pruneMessages(500).catch((e) =>
+      console.warn('[chat] Failed to prune messages:', e)
+    )
   }
 
   function scheduleFlush(callback: () => void, delay = 500): void {

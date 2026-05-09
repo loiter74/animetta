@@ -44,6 +44,10 @@ class LangGraphOrchestrator:
         self._is_running = False
         self._processing_audio = False  # guard against concurrent audio processing
 
+        # Memory Evolution: query depth tracking (Phase 3)
+        # Maps session_id -> {last_query: str, depth: int}
+        self._query_depth_map: Dict[str, Dict[str, Any]] = {}
+
         # Initialize tool manager
         self.tool_manager: Optional[ToolManager] = None
 
@@ -149,6 +153,9 @@ class LangGraphOrchestrator:
         # Clear interrupt signal
         get_interrupt_handler().clear_interrupt(self.session_id)
 
+        # Memory Evolution: query depth tracking (Phase 3)
+        injection_tier, user_query_depth = self._compute_injection_tier(text)
+
         try:
             initial_state = self._create_initial_state(
                 input_type="text",
@@ -158,6 +165,9 @@ class LangGraphOrchestrator:
                 user_name=user_name,
                 metadata=metadata,
             )
+            # Set memory evolution fields
+            initial_state["user_query_depth"] = user_query_depth
+            initial_state["injection_tier"] = injection_tier
 
             final_state = await self._run_graph(initial_state)
             return self._clean_result(final_state)
@@ -285,6 +295,41 @@ class LangGraphOrchestrator:
                     "speaking_style": persona.speaking_style,
                 }
         return {}
+
+    def _compute_injection_tier(self, text: str) -> tuple:
+        """Compute injection tier based on query depth tracking.
+
+        Returns:
+            (injection_tier, user_query_depth)
+        """
+        session_key = self.session_id
+        entry = self._query_depth_map.get(session_key, {"last_query": "", "depth": 0})
+
+        # Simple heuristic: if text shares significant words with last query, it's a follow-up
+        if entry["last_query"]:
+            prev_words = set(entry["last_query"].lower().split())
+            curr_words = set(text.lower().split())
+            overlap = len(prev_words & curr_words)
+            min_len = min(len(prev_words), len(curr_words))
+            if min_len > 0 and overlap / min_len >= 0.3:
+                entry["depth"] += 1
+            else:
+                entry["depth"] = 0  # new topic, reset
+        else:
+            entry["depth"] = 0
+
+        entry["last_query"] = text
+        self._query_depth_map[session_key] = entry
+
+        depth = entry["depth"]
+        if depth >= 4:
+            tier = 3
+        elif depth >= 2:
+            tier = 2
+        else:
+            tier = 1
+
+        return tier, depth
 
     def _get_system_prompt(self) -> Optional[str]:
         """Get system prompt"""

@@ -57,6 +57,20 @@ mcp_servers:
   #   url: "http://localhost:8080/mcp"
 
 # ========================================
+# Minecraft 游戏控制
+# ========================================
+minecraft:
+  enabled: false                # 设为 true 启用 Minecraft Bot
+  bot:
+    host: "localhost"
+    port: 25565
+    username: "AnimaBot"
+  safety:
+    no_griefing: true           # 不破坏玩家建筑
+    auto_heal: true             # 自动回血
+    max_distance: 500           # 最大活动半径
+
+# ========================================
 # 工具调用设置
 # ========================================
 tool_settings:

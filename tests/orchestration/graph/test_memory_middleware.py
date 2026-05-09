@@ -85,6 +85,7 @@ class TestMemoryMiddleware:
 
         mock_memory = MagicMock()
         mock_memory.retrieve_context = AsyncMock(side_effect=Exception("DB down"))
+        mock_memory.fuzzy = None  # No fuzzy store (prevents MagicMock auto-creation)
 
         mm = MemoryMiddleware(memory_system=mock_memory)
         enriched, metadata = await mm.before_llm_call(

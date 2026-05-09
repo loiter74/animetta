@@ -16,6 +16,8 @@ def _make_config(service_context=None, enable_tools=False, chat_model=None):
         configurable["enable_tools"] = True
     if chat_model:
         configurable["chat_model"] = chat_model
+    # Prevent MemoryMiddleware auto-creation from mock memory_system
+    configurable["memory_middleware"] = None
     return RunnableConfig(configurable=configurable)
 
 
