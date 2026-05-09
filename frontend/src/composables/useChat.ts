@@ -5,14 +5,20 @@ import { getSocket } from './useSocket'
 
 export function useChat() {
   const store = useChatStore()
-  const cleanups: (() => void)[] = []
+
+  // Store callback refs so onUnmounted removes ONLY our callbacks
+  let _onSentence: ((data: { text: string; seq: number }) => void) | null = null
+  let _onControl: ((data: { signal: string }) => void) | null = null
+  let _onTranscript: ((data: Transcript) => void) | null = null
+  let _onMemProgress: (() => void) | null = null
+  let _onMemResult: (() => void) | null = null
 
   onMounted(() => {
     const socket = getSocket()
     if (!socket) return
 
     // Listen for streaming LLM chunks
-    socket.on('sentence', (data: { text: string; seq: number }) => {
+    _onSentence = (data: { text: string; seq: number }) => {
       store.isTyping = false
 
       if (data.text === '' || (data as any).is_complete) {
@@ -32,41 +38,48 @@ export function useChat() {
         return
       }
       store.updateStreamingMessage()
-    })
+    }
 
     // Listen for conversation end
-    socket.on('control', (data: { signal: string }) => {
+    _onControl = (data: { signal: string }) => {
       if (data.signal === 'conversation-end') {
         store.finalizeResponse()
       }
-    })
+    }
 
     // Listen for transcript (ASR result)
-    socket.on('transcript', (data: Transcript) => {
+    _onTranscript = (data: Transcript) => {
       if (!data.text?.trim()) return
       store.createMessage('user', data.text, 'voice')
       store.isTyping = true
-    })
+    }
 
     // Memory organize progress
-    socket.on('memory.organize.progress', () => {
+    _onMemProgress = () => {
       // Handled in component for UI display
-    })
+    }
 
     // Memory organize result
-    socket.on('memory.organize.result', () => {
+    _onMemResult = () => {
       store.memoryOrganizing = false
-    })
+    }
+
+    socket.on('sentence', _onSentence)
+    socket.on('control', _onControl)
+    socket.on('transcript', _onTranscript)
+    socket.on('memory.organize.progress', _onMemProgress)
+    socket.on('memory.organize.result', _onMemResult)
   })
 
   onUnmounted(() => {
     const socket = getSocket()
     if (!socket) return
-    socket.off('sentence')
-    socket.off('control')
-    socket.off('transcript')
-    socket.off('memory.organize.progress')
-    socket.off('memory.organize.result')
+    // Only remove OUR callbacks, not other components' listeners
+    if (_onSentence) socket.off('sentence', _onSentence)
+    if (_onControl) socket.off('control', _onControl)
+    if (_onTranscript) socket.off('transcript', _onTranscript)
+    if (_onMemProgress) socket.off('memory.organize.progress', _onMemProgress)
+    if (_onMemResult) socket.off('memory.organize.result', _onMemResult)
   })
 
   async function sendText(text: string): Promise<void> {
@@ -89,6 +102,14 @@ export function useChat() {
 
     store.memoryOrganizing = true
     socket.emit('memory_organize', {})
+
+    // Listen for result to reset state and refresh memory list
+    const onResult = (_data: any) => {
+      store.memoryOrganizing = false
+      socket.off('memory.organize.result', onResult)
+      socket.emit('get_wiki_pages', { session_id: 'default' })
+    }
+    socket.on('memory.organize.result', onResult)
   }
 
   return {

@@ -6,6 +6,10 @@ import asyncio
 from typing import Dict, Any, Optional, TYPE_CHECKING
 from loguru import logger
 
+# Import audio helpers from output_node for danmaku audio broadcasting
+from anima.orchestration.graph.output_node import _compute_volumes, _read_file_bytes
+from anima.orchestration.graph.translation_state import translation_state
+
 from .desktop import DesktopClientManager
 from .live2d import Live2DManager
 
@@ -22,7 +26,7 @@ class RouteHandlers:
         sio: "AsyncServer",
         session_manager: "SessionManager",
         desktop_manager: Optional[DesktopClientManager] = None,
-        live2d_manager: Optional[Live2DManager] = None
+        live2d_manager: Optional[Live2DManager] = None,
     ):
         self.sio = sio
         self.session_manager = session_manager
@@ -31,6 +35,11 @@ class RouteHandlers:
 
         self.global_config = None
         self.user_settings = None
+
+        # Bilibili danmaku service (initialized via start_bilibili)
+        self._bilibili_service = None
+        self._main_loop: Optional[asyncio.AbstractEventLoop] = None
+
         self._setup_live2d_callback()
 
     def _setup_live2d_callback(self) -> None:
@@ -48,6 +57,253 @@ class RouteHandlers:
     def set_user_settings(self, user_settings) -> None:
         """Set user settings"""
         self.user_settings = user_settings
+
+    # ========================================
+    # Bilibili Danmaku Integration
+    # ========================================
+
+    def start_bilibili(self, room_id: int, sessdata: str = "") -> None:
+        """Start Bilibili danmaku service. Stops existing service if running."""
+        from anima.services.live import BilibiliDanmakuService
+
+        # Stop existing service if already running
+        if self._bilibili_service is not None:
+            self.stop_bilibili()
+
+        self._main_loop = asyncio.get_running_loop()
+        self._bilibili_service = BilibiliDanmakuService(
+            room_id=room_id,
+            sessdata=sessdata,
+        )
+        self._bilibili_service.set_callback(self._on_danmaku_from_thread)
+        self._bilibili_service.set_status_callback(self._on_bilibili_status_from_thread)
+        self._bilibili_service.start()
+
+    def stop_bilibili(self) -> None:
+        """Stop Bilibili danmaku service."""
+        if self._bilibili_service:
+            self._bilibili_service.stop()
+            self._bilibili_service = None
+
+    def _on_danmaku_from_thread(self, msg) -> None:
+        """Called from Bilibili background thread; schedule on main event loop."""
+        if self._main_loop and self._main_loop.is_running():
+            asyncio.run_coroutine_threadsafe(
+                self._process_danmaku(msg), self._main_loop
+            )
+
+    def _on_bilibili_status_from_thread(self, connected: bool, message: str) -> None:
+        """Called from Bilibili background thread; schedule status emit on main loop."""
+        if self._main_loop and self._main_loop.is_running():
+            asyncio.run_coroutine_threadsafe(
+                self._emit_bilibili_status(connected, message), self._main_loop
+            )
+
+    async def _emit_bilibili_status(self, connected: bool, message: str) -> None:
+        """Emit Bilibili connection status to all clients."""
+        await self.sio.emit('danmaku.status', {
+            'connected': connected,
+            'message': message,
+        })
+
+    async def _process_danmaku(self, msg) -> None:
+        """
+        Process a danmaku message in the main event loop.
+        1. Emit raw danmaku event to frontend
+        2. Process with AI via LangGraph orchestrator
+        3. Broadcast text, audio, and AI reply events to ALL clients
+        """
+        # 1. Broadcast raw danmaku to all clients
+        await self.sio.emit('danmaku', msg.to_dict())
+
+        # 2. Process with AI (use a dedicated "bilibili" session)
+        try:
+            orchestrator = await self._get_or_create_orchestrator("bilibili")
+            result = await orchestrator.process_text(
+                text=f"{msg.user_name}说: {msg.text}",
+                user_id=str(msg.user_id),
+                user_name=msg.user_name,
+                channel_id="bilibili",
+                source="danmaku",
+            )
+
+            # 3. Broadcast response to ALL clients (output_node emits to "bilibili"
+            #    session which is not a real socket, so we re-emit as broadcast)
+            reply_text = result.get("response_text", "")
+
+            # Broadcast conversation-start
+            await self.sio.emit("control", {"signal": "conversation-start"})
+
+            # Broadcast text response via sentence events (original text immediately)
+            if reply_text:
+                sentence_payload = {
+                    "text": reply_text,
+                    "seq": 0,
+                    "lang": translation_state.source_language.lower()[:2],
+                }
+                await self.sio.emit("sentence", sentence_payload)
+                await self.sio.emit("sentence", {"text": "", "is_complete": True})
+
+                # ── Run translation in background (non-blocking) ──
+                if translation_state.enabled:
+                    async def _translate_danmaku():
+                        try:
+                            orchestrator_svc = getattr(orchestrator, "service_context", None)
+                            llm = getattr(orchestrator_svc, "llm_engine", None) if orchestrator_svc else None
+                            if llm:
+                                translate_prompt = (
+                                    f"Translate the following text from {translation_state.source_language} "
+                                    f"to {translation_state.target_language}. "
+                                    f"Output only the translation, no explanations, no quotes.\n\n"
+                                    f"Text: {reply_text}\n"
+                                    f"Translation:"
+                                )
+                                translated = await llm.chat(translate_prompt)
+                                if translated and translated.strip():
+                                    t = translated.strip()
+                                    t_lang = translation_state.target_language.lower()[:2]
+                                    await self.sio.emit("subtitle.translation", {
+                                        "translation": t,
+                                        "target_lang": t_lang,
+                                    })
+                                    logger.info(f"[Bilibili] Translated danmaku reply to {translation_state.target_language}")
+                        except Exception as e:
+                            logger.warning(f"[Bilibili] Translation failed: {e}")
+
+                    asyncio.create_task(_translate_danmaku())
+
+            # Broadcast emotion
+            emotion = result.get("emotion")
+            if emotion:
+                await self.sio.emit("expression", {"emotion": emotion})
+
+            # Broadcast audio
+            tts_audio = result.get("tts_audio")
+            if tts_audio:
+                await self._broadcast_danmaku_audio(tts_audio)
+
+            # Broadcast conversation-end
+            await self.sio.emit("control", {"signal": "conversation-end"})
+
+            # Also emit danmaku.ai_reply for the chat message integration
+            if reply_text:
+                character_name = "AI"
+                persona = orchestrator.service_context.config.get_persona() if orchestrator.service_context else None
+                if persona:
+                    character_name = persona.name
+
+                await self.sio.emit('danmaku.ai_reply', {
+                    'danmaku_text': msg.text,
+                    'reply_text': reply_text,
+                    'user_name': msg.user_name,
+                    'character_name': character_name,
+                    'timestamp': time.time(),
+                })
+        except Exception as e:
+            logger.error(f"[Bilibili] Error processing danmaku: {e}")
+
+    async def _broadcast_danmaku_audio(self, tts_audio) -> None:
+        """Process TTS audio and broadcast to all clients."""
+        import base64
+        import os
+        from functools import partial
+
+        loop = asyncio.get_running_loop()
+
+        try:
+            audio_data = None
+            format = "wav"
+            volumes = []
+
+            if isinstance(tts_audio, str) and os.path.exists(tts_audio):
+                # File path — trim silence, read bytes, compute volumes
+                raw_bytes = await loop.run_in_executor(None, partial(_read_file_bytes, tts_audio))
+                ext = os.path.splitext(tts_audio)[1].lower()
+                format = ext.lstrip('.') if ext else "wav"
+                audio_data = base64.b64encode(raw_bytes).decode("utf-8")
+                volumes = _compute_volumes(tts_audio) or []
+
+            elif isinstance(tts_audio, bytes):
+                # Detect format from magic bytes
+                if tts_audio[:4] == b"RIFF":
+                    format = "wav"
+                elif tts_audio[:3] == b"ID3" or (tts_audio[0] == 0xff and (tts_audio[1] & 0xe0) == 0xe0):
+                    format = "mp3"
+                elif tts_audio[:4] == b"OggS":
+                    format = "ogg"
+                audio_data = base64.b64encode(tts_audio).decode("utf-8")
+                # Write to temp file for volume computation
+                import tempfile
+                tmp_audio = tempfile.mktemp(suffix=f".{format}")
+                with open(tmp_audio, "wb") as f:
+                    f.write(tts_audio)
+                volumes = _compute_volumes(tmp_audio) or []
+
+            if audio_data:
+                payload = {"audio_data": audio_data, "format": format}
+                if volumes:
+                    payload["volumes"] = volumes
+                await self.sio.emit("audio_with_expression", payload)
+
+        except Exception as e:
+            logger.error(f"[Bilibili] Audio broadcasting failed: {e}")
+
+    # ========================================
+    # Frontend-initiated Bilibili control
+    # ========================================
+
+    async def on_bilibili_connect(self, sid: str, data: dict) -> None:
+        """Handle frontend request to connect to a Bilibili live room."""
+        room_id = data.get('room_id')
+        if not room_id or not isinstance(room_id, int) or room_id <= 0:
+            await self.sio.emit('danmaku.status', {
+                'connected': False,
+                'message': 'Invalid room ID',
+            }, to=sid)
+            return
+
+        try:
+            logger.info(f"[Bilibili] Frontend requested connect to room {room_id}")
+            self.start_bilibili(room_id=room_id)
+        except Exception as e:
+            logger.error(f"[Bilibili] Error connecting to room {room_id}: {e}")
+            await self.sio.emit('danmaku.status', {
+                'connected': False,
+                'message': str(e),
+            }, to=sid)
+
+    async def on_bilibili_disconnect(self, sid: str, data: dict) -> None:
+        """Handle frontend request to disconnect from Bilibili live room."""
+        logger.info("[Bilibili] Frontend requested disconnect")
+        self.stop_bilibili()
+        await self.sio.emit('danmaku.status', {
+            'connected': False,
+            'message': 'Disconnected by user',
+        })
+
+    async def on_bilibili_update_room(self, sid: str, data: dict) -> None:
+        """Handle frontend request to change room ID."""
+        room_id = data.get('room_id')
+        if not room_id or not isinstance(room_id, int) or room_id <= 0:
+            await self.sio.emit('danmaku.status', {
+                'connected': False,
+                'message': 'Invalid room ID',
+            }, to=sid)
+            return
+
+        try:
+            logger.info(f"[Bilibili] Frontend requested update room to {room_id}")
+            self.start_bilibili(room_id=room_id)
+            await self.sio.emit('danmaku.status', {
+                'connected': True,
+                'message': f'Connected to room {room_id}',
+            })
+        except Exception as e:
+            logger.error(f"[Bilibili] Error updating room to {room_id}: {e}")
+            await self.sio.emit('danmaku.status', {
+                'connected': False,
+                'message': str(e),
+            }, to=sid)
 
     def _make_send_callback(self, sid: str):
         async def send_callback(data):
@@ -482,11 +738,279 @@ class RouteHandlers:
             }, to=sid)
 
 
+    async def on_translation_configure(self, sid: str, data: dict) -> None:
+        """Update translation configuration at runtime."""
+        target_language = data.get("target_language")
+        if target_language:
+            translation_state.target_language = target_language
+            logger.info(f"[{sid}] Translation target language updated to: {target_language}")
+            await self.sio.emit("translation.status", {
+                "target_language": translation_state.target_language,
+                "enabled": translation_state.enabled,
+            }, to=sid)
+        else:
+            await self.sio.emit("translation.status", {
+                "target_language": translation_state.target_language,
+                "enabled": translation_state.enabled,
+            }, to=sid)
+
+    # ========================================
+    # Memory: Wiki Pages
+    # ========================================
+
+    async def on_get_wiki_pages(self, sid: str, data: dict) -> dict:
+        """获取 wiki 页面列表（替代旧 fuzzy 记忆查询）"""
+        try:
+            ctx = self.session_manager.get_context(sid)
+            if not ctx or not ctx.memory_system:
+                return {'pages': []}
+            wiki = getattr(ctx.memory_system, '_wiki_manager', None)
+            if not wiki:
+                return {'pages': []}
+            pages = []
+            for rel in wiki.list_pages():
+                page = wiki.read_page(rel)
+                if page:
+                    pages.append({
+                        'path': page.path,
+                        'title': page.title,
+                        'page_type': page.page_type.value,
+                        'content': page.content[:200],
+                        'tags': page.tags,
+                        'updated_at': page.updated_at.isoformat() if page.updated_at else '',
+                    })
+            return {'pages': pages}
+        except Exception as e:
+            logger.error(f"[{sid}] get_wiki_pages failed: {e}")
+            return {'pages': []}
+
+    # ========================================
+    # Persona Runtime Switching
+    # ========================================
+
+    async def on_set_persona(self, sid: str, data: dict) -> None:
+        """运行时切换人设"""
+        persona_name = data.get('persona_name', '')
+        if not persona_name:
+            logger.warning(f"[{sid}] 切换人设失败: 人设名称为空")
+            await self.sio.emit('error', {
+                'type': 'error',
+                'message': 'persona_name is required'
+            }, to=sid)
+            return
+
+        logger.info(f"[{sid}] 切换人设: {persona_name}")
+
+        try:
+            ctx = self.session_manager.get_context(sid)
+            if not ctx:
+                await self.sio.emit('error', {
+                    'type': 'error',
+                    'message': '会话未初始化'
+                }, to=sid)
+                return
+
+            from anima.config.persona import PersonaConfig
+
+            # Load new persona
+            new_persona = PersonaConfig.load(persona_name)
+            if not new_persona:
+                await self.sio.emit('error', {
+                    'type': 'error',
+                    'message': f'无法加载人设: {persona_name}'
+                }, to=sid)
+                return
+
+            # Update global config persona cache
+            if self.global_config:
+                self.global_config.persona = persona_name
+                self.global_config._persona = None  # Invalidate cache
+
+            # Rebuild system prompt and push to LLM engine
+            if ctx.llm_engine and ctx.config:
+                live2d_prompt = None
+                try:
+                    from anima.config.live2d import get_live2d_config
+                    from anima.avatar.prompts import EmotionPromptBuilder
+                    live2d_cfg = get_live2d_config()
+                    if live2d_cfg and live2d_cfg.enabled:
+                        builder = EmotionPromptBuilder.from_config(
+                            {"valid_emotions": live2d_cfg.valid_emotions}
+                        )
+                        live2d_prompt = builder.build_prompt()
+                except Exception:
+                    pass
+
+                new_system_prompt = ctx.config.get_system_prompt(live2d_prompt=live2d_prompt)
+                ctx.llm_engine.set_system_prompt(new_system_prompt)
+                logger.info(f"[{sid}] 已更新 LLM 系统提示词")
+
+            # Notify orchestrator to refresh system prompt on next run
+            orchestrator = self.session_manager.get_orchestrator(sid)
+            if orchestrator:
+                logger.info(f"[{sid}] 编排器已感知人设变更")
+
+            logger.info(f"[{sid}] 人设切换完成: {persona_name}")
+            await self.sio.emit('persona_updated', {
+                'persona_name': persona_name,
+            }, to=sid)
+
+        except Exception as e:
+            logger.error(f"[{sid}] 切换人设失败: {e}", exc_info=True)
+            await self.sio.emit('error', {
+                'type': 'error',
+                'message': str(e),
+            }, to=sid)
+
+    # ========================================
+    # Memory Evolution: MemePool CRUD
+    # ========================================
+
+    async def on_meme_add(self, sid: str, data: dict) -> None:
+        """添加梗到 MemePool"""
+        text = data.get('text', '')
+        context_hint = data.get('context_hint', '')
+        tags = data.get('tags', [])
+        logger.info(f"[{sid}] 添加梗: {text[:50]}...")
+
+        try:
+            ctx = self.session_manager.get_context(sid)
+            if not ctx or not ctx.memory_system or not hasattr(ctx.memory_system, 'meme_pool') or not ctx.memory_system.meme_pool:
+                await self.sio.emit('error', {
+                    'type': 'error',
+                    'message': 'MemePool 未初始化'
+                }, to=sid)
+                return
+
+            from anima.memory.meme import MemeSource
+            meme = ctx.memory_system.meme_pool.add_meme(
+                text=text,
+                context_hint=context_hint,
+                source=MemeSource.USER,
+                tags=tags,
+            )
+
+            await self.sio.emit('meme_added', {
+                'meme': meme.to_dict(),
+            }, to=sid)
+
+            logger.info(f"[{sid}] 梗已添加: {meme.id}")
+
+        except Exception as e:
+            logger.error(f"[{sid}] 添加梗失败: {e}", exc_info=True)
+            await self.sio.emit('error', {
+                'type': 'error',
+                'message': str(e),
+            }, to=sid)
+
+    async def on_meme_rate(self, sid: str, data: dict) -> None:
+        """评分梗"""
+        meme_id = data.get('meme_id', '')
+        score = data.get('score', 0.0)
+        logger.info(f"[{sid}] 评分梗: {meme_id} = {score}")
+
+        try:
+            ctx = self.session_manager.get_context(sid)
+            if not ctx or not ctx.memory_system or not hasattr(ctx.memory_system, 'meme_pool') or not ctx.memory_system.meme_pool:
+                await self.sio.emit('error', {
+                    'type': 'error',
+                    'message': 'MemePool 未初始化'
+                }, to=sid)
+                return
+
+            meme_pool = ctx.memory_system.meme_pool
+
+            # Score after use with effectiveness = score
+            meme_pool.score_after_use(meme_id, effectiveness=score)
+
+            await self.sio.emit('meme_updated', {
+                'meme_id': meme_id,
+                'score': score,
+            }, to=sid)
+
+            logger.info(f"[{sid}] 梗评分完成: {meme_id}")
+
+        except Exception as e:
+            logger.error(f"[{sid}] 评分梗失败: {e}", exc_info=True)
+            await self.sio.emit('error', {
+                'type': 'error',
+                'message': str(e),
+            }, to=sid)
+
+    async def on_meme_delete(self, sid: str, data: dict) -> None:
+        """删除梗（标记为非活跃）"""
+        meme_id = data.get('meme_id', '')
+        logger.info(f"[{sid}] 删除梗: {meme_id}")
+
+        try:
+            ctx = self.session_manager.get_context(sid)
+            if not ctx or not ctx.memory_system or not hasattr(ctx.memory_system, 'meme_pool') or not ctx.memory_system.meme_pool:
+                await self.sio.emit('error', {
+                    'type': 'error',
+                    'message': 'MemePool 未初始化'
+                }, to=sid)
+                return
+
+            meme_pool = ctx.memory_system.meme_pool
+            meme_pool.store.set_active(meme_id, active=False)
+
+            await self.sio.emit('meme_updated', {
+                'meme_id': meme_id,
+                'active': False,
+            }, to=sid)
+
+            logger.info(f"[{sid}] 梗已删除: {meme_id}")
+
+        except Exception as e:
+            logger.error(f"[{sid}] 删除梗失败: {e}", exc_info=True)
+            await self.sio.emit('error', {
+                'type': 'error',
+                'message': str(e),
+            }, to=sid)
+
+    async def on_set_personality_mode(self, sid: str, data: dict) -> None:
+        """设置个性模式（运行时切换）"""
+        mode = data.get('mode', '')
+        if not mode:
+            logger.warning(f"[{sid}] 设置个性模式失败: mode 为空")
+            await self.sio.emit('error', {
+                'type': 'error',
+                'message': 'mode is required'
+            }, to=sid)
+            return
+
+        logger.info(f"[{sid}] 设置个性模式: {mode}")
+
+        try:
+            orchestrator = self.session_manager.get_orchestrator(sid)
+
+            # Store mode on orchestrator for runtime access by nodes
+            if orchestrator:
+                if not hasattr(orchestrator, '_personality_mode'):
+                    orchestrator._personality_mode = {}
+                orchestrator._personality_mode['mode'] = mode
+                logger.info(f"[{sid}] 编排器已更新个性模式")
+
+            await self.sio.emit('personality_updated', {
+                'mode': mode,
+            }, to=sid)
+
+            logger.info(f"[{sid}] 个性模式已设置: {mode}")
+
+        except Exception as e:
+            logger.error(f"[{sid}] 设置个性模式失败: {e}", exc_info=True)
+            await self.sio.emit('error', {
+                'type': 'error',
+                'message': str(e),
+            }, to=sid)
+
+
 def register_routes(
     sio: "AsyncServer",
     session_manager: "SessionManager",
     desktop_manager: Optional[DesktopClientManager] = None,
-    live2d_manager: Optional[Live2DManager] = None
+    live2d_manager: Optional[Live2DManager] = None,
+    bilibili_config: Optional[Dict[str, Any]] = None,
 ) -> RouteHandlers:
     """Register all routes to the Socket.IO server"""
     handlers = RouteHandlers(
@@ -495,6 +1019,15 @@ def register_routes(
         desktop_manager,
         live2d_manager
     )
+
+    # Start Bilibili danmaku service if configured
+    if bilibili_config and bilibili_config.get("enabled", False):
+        room_id = bilibili_config.get("room_id")
+        if room_id:
+            handlers.start_bilibili(
+                room_id=int(room_id),
+                sessdata=bilibili_config.get("sessdata", ""),
+            )
 
     # Connection events
     sio.on('connect', handlers.on_connect)
@@ -529,8 +1062,30 @@ def register_routes(
     sio.on('desktop_voice_start', handlers.on_desktop_voice_start)
     sio.on('desktop_voice_stop', handlers.on_desktop_voice_stop)
 
+    # Bilibili frontend control events
+    sio.on('bilibili.connect', handlers.on_bilibili_connect)
+    sio.on('bilibili.disconnect', handlers.on_bilibili_disconnect)
+    sio.on('bilibili.update_room', handlers.on_bilibili_update_room)
+
     # Memory organization events
     sio.on('memory_organize', handlers.on_memory_organize)
+
+    # Translation configuration events
+    sio.on('translation.configure', handlers.on_translation_configure)
+
+    # Memory: Wiki Pages
+    sio.on('get_wiki_pages', handlers.on_get_wiki_pages)
+
+    # Persona runtime switching
+    sio.on('set_persona', handlers.on_set_persona)
+
+    # Memory Evolution: MemePool CRUD
+    sio.on('meme_add', handlers.on_meme_add)
+    sio.on('meme_rate', handlers.on_meme_rate)
+    sio.on('meme_delete', handlers.on_meme_delete)
+
+    # Personality mode runtime switching
+    sio.on('set_personality_mode', handlers.on_set_personality_mode)
 
     logger.info("WebSocket routes registered")
     return handlers
