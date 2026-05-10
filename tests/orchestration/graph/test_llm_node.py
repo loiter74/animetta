@@ -1,5 +1,6 @@
 """Tests for LLM reasoning node — tool-calling and streaming paths."""
 
+import asyncio
 import pytest
 from unittest.mock import AsyncMock, MagicMock
 from langgraph.types import RunnableConfig
@@ -256,3 +257,74 @@ class TestLLMNodeWithTools:
 
         assert result["tool_calls"] is None
         assert result["response_text"] == "Fallback response"
+
+
+# ── Timeout / Error Resilience ────────────────────────────────────
+
+
+class TestLLMTimeout:
+    """LLM timeout triggers fallback response with error metadata."""
+
+    @pytest.mark.asyncio
+    async def test_llm_timeout_triggers_fallback(self, mock_service_context):
+        """When LLM streaming times out, fallback text is returned, no exception propagates."""
+        from anima.orchestration.graph.llm_node import llm_node, FALLBACK_RESPONSE
+
+        async def _chat_stream_hangs(user_text, system_prompt=""):
+            await asyncio.sleep(999)
+            yield "never"
+
+        mock_service_context.llm_engine.chat_stream = _chat_stream_hangs
+
+        state = create_initial_state(
+            session_id="test-timeout",
+            user_text="Hello",
+        )
+        config = _make_config(service_context=mock_service_context)
+        config["configurable"]["llm_timeout"] = 0.001
+
+        result = await llm_node(state, config)
+
+        assert result["response_text"] == FALLBACK_RESPONSE
+        assert result["response_chunks"] == [FALLBACK_RESPONSE]
+        assert result["tool_calls"] is None
+        assert result.get("metadata", {}).get("error_type") == "timeout"
+
+    @pytest.mark.asyncio
+    async def test_fallback_is_per_turn(self, mock_service_context):
+        """After timeout on turn N, turn N+1 attempts real provider again."""
+        from anima.orchestration.graph.llm_node import llm_node
+
+        # Turn 1: force timeout → fallback
+        async def _chat_stream_timeout(user_text, system_prompt=""):
+            await asyncio.sleep(999)
+            yield "never"
+
+        mock_service_context.llm_engine.chat_stream = _chat_stream_timeout
+
+        state1 = create_initial_state(
+            session_id="test-per-turn",
+            user_text="hi",
+        )
+        config1 = _make_config(service_context=mock_service_context)
+        config1["configurable"]["llm_timeout"] = 0.001
+
+        result1 = await llm_node(state1, config1)
+        assert result1.get("metadata", {}).get("error_type") == "timeout"
+
+        # Turn 2: real provider works normally
+        async def _chat_stream_real(user_text, system_prompt=""):
+            yield "real response"
+
+        mock_service_context.llm_engine.chat_stream = _chat_stream_real
+
+        state2 = create_initial_state(
+            session_id="test-per-turn",
+            user_text="hello again",
+        )
+        config2 = _make_config(service_context=mock_service_context)
+        config2["configurable"]["llm_timeout"] = 30
+
+        result2 = await llm_node(state2, config2)
+        assert result2["response_text"] == "real response"
+        assert "error_type" not in result2.get("metadata", {})

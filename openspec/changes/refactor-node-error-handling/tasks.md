@@ -28,4 +28,4 @@
 - [x] 4.2 Import `log_node_error` in `tts_node.py` — call when `tts_engine.synthesize()` raises exception
 - [x] 4.3 Import `log_node_error` in `asr_node.py` — call when `asr_engine.transcribe()` raises exception
 - [x] 4.4 Verify: run full graph test suite — `PYTHONPATH=src python -m pytest tests/orchestration/graph/ -v`
-- [ ] 4.5 Commit: `git add -A && git commit -m "refactor: deduplicate RAG in llm_node and add shared node_error logger"`
+- [x] 4.5 Commit: `git add -A && git commit -m "refactor: deduplicate RAG in llm_node and add shared node_error logger"`

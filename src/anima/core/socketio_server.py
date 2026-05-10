@@ -5,6 +5,7 @@ Uses server/ module components to build the server
 
 import os
 import sys
+import argparse
 from pathlib import Path
 
 # Fix module import path: add src directory to Python path
@@ -46,6 +47,21 @@ from anima.config import AppConfig
 from anima.config.user_settings import UserSettings
 from anima.utils.logger_manager import logger_manager
 from anima.orchestration.server import WebSocketServer, create_server
+
+
+def parse_server_args() -> argparse.Namespace:
+    """Parse server CLI arguments."""
+    parser = argparse.ArgumentParser(description="Anima Socket.IO Server")
+    parser.add_argument(
+        "--redis-url",
+        type=str,
+        default=None,
+        help="Redis URL for session checkpoint sharing (e.g. redis://localhost:6379)",
+    )
+    return parser.parse_args()
+
+
+_server_args = parse_server_args()
 
 
 # Global configuration
@@ -138,6 +154,9 @@ def get_asgi_app():
         if global_config is None:
             init_config()
 
+        # ── Redis checkpoint setup ──────────────────────────────
+        _setup_checkpointer()
+
         # Create server
         _server = create_server(global_config)
         _server.set_user_settings(user_settings)
@@ -155,6 +174,33 @@ def get_asgi_app():
         asgi_app = _server.get_app()
 
     return asgi_app
+
+
+def _setup_checkpointer() -> None:
+    """Set up the LangGraph checkpointer based on --redis-url.
+
+    If --redis-url is given, tries to create an AsyncRedisSaver.
+    On failure, or if --redis-url is absent, falls back to MemorySaver.
+    """
+    from langgraph.checkpoint.memory import MemorySaver
+    from anima.orchestration.graph.builder import set_external_checkpointer
+
+    redis_url = _server_args.redis_url
+
+    if not redis_url:
+        logger.info("[Checkpoint] --redis-url not set, using in-memory MemorySaver")
+        return  # keep default builder behavior (no external checkpointer)
+
+    try:
+        from anima.core.redis_checkpoint import AsyncRedisSaver
+        checkpointer = AsyncRedisSaver(redis_url)
+        set_external_checkpointer(checkpointer)
+        logger.info(f"[Checkpoint] Redis checkpointer active: {redis_url}")
+    except Exception as e:
+        logger.warning(
+            f"[Checkpoint] Redis unavailable ({e}), "
+            f"falling back to in-memory MemorySaver"
+        )
 
 
 if __name__ == '__main__':

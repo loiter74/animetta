@@ -9,6 +9,23 @@ from .state import AgentState
 from . import asr_node, llm_node, tts_node, emotion_node, output_node, tool_node
 from .personality_node import personality_node
 
+# Module-level external checkpointer — set by socketio_server at startup.
+# When set, create_default_graph() uses this instead of constructing a new
+# MemorySaver.  Enables Redis session sharing via --redis-url CLI flag.
+_external_checkpointer: Optional[Any] = None
+
+
+def set_external_checkpointer(checkpointer: Any) -> None:
+    """Set an external checkpointer for all graphs created by create_default_graph."""
+    global _external_checkpointer
+    _external_checkpointer = checkpointer
+    logger.info(f"[LangGraph] External checkpointer registered: {type(checkpointer).__name__}")
+
+
+def get_external_checkpointer() -> Optional[Any]:
+    """Get the current external checkpointer (or None)."""
+    return _external_checkpointer
+
 
 def route_input(state: AgentState) -> Literal["asr", "llm"]:
     """Determine the starting node based on input type"""
@@ -122,10 +139,20 @@ def create_default_graph(
         enable_tools: Whether to enable tool calls
         tools: List of tools
         tools_map: Tool mapping
+
+    Checkpointer priority:
+    1. External checkpointer (set via set_external_checkpointer()) — used
+       regardless of enable_memory flag.  This allows --redis-url to inject
+       a Redis checkpointer.
+    2. MemorySaver — when enable_memory=True and no external checkpointer.
+    3. None — when enable_memory=False and no external checkpointer.
     """
     checkpointer = None
 
-    if enable_memory:
+    if _external_checkpointer is not None:
+        checkpointer = _external_checkpointer
+        logger.info(f"[LangGraph] Using external checkpointer: {type(checkpointer).__name__}")
+    elif enable_memory:
         checkpointer = MemorySaver()
         logger.info("[LangGraph] Memory checkpoint enabled")
 

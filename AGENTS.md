@@ -83,6 +83,52 @@ mypy src/ --ignore-missing-imports
 ruff check src/ tests/
 ```
 
+## Model Selection Strategy
+
+Two DeepSeek models are available via `oh-my-openagent.json`:
+
+| Model | Agent/Category | Role |
+|-------|---------------|------|
+| **flash** (`deepseek/deepseek-v4-flash`) | sisyphus, sisyphus-junior, explore, librarian, visual-engineering, quick, unspecified-low, unspecified-high, writing | 快速、低成本，适合确定性强的任务 |
+| **pro** (`deepseek/deepseek-v4-pro`) | oracle, prometheus, metis, momus, ultrabrain, deep, artistry | 高推理能力，适合复杂/不确定/高代价场景 |
+
+### Decision Matrix
+
+When delegating an implementation task (always use `deep` or `unspecified-high`), choose:
+
+| 场景 | Use | 模型 |
+|------|-----|------|
+| 改一个文件、模式已知、改什么怎么写很清楚 | `unspecified-high` | flash |
+| 跨 2+ 模块、需要理解代码结构 | `deep` | **pro** |
+| 新功能设计、需要做 trade-off 选型 | `deep` | **pro** |
+| 批量执行、但每步逻辑简单（如替换字符串、加字段） | `unspecified-high` | flash |
+| 调试复杂 bug、需要追踪调用链 | `deep` or `oracle` | **pro** |
+| 纯搜索/查找（不修改代码） | `explore` / `librarian` | flash |
+| 纯 UI 视觉任务 | `visual-engineering` | flash |
+| 单文件 typo/简单修改 | `quick` | flash |
+| 硬核逻辑、算法、数学 | `ultrabrain` | **pro** |
+| 非常规思路、需要跳出框架 | `artistry` | **pro** |
+
+**Rule of thumb:** 如果不确定是 `deep` 还是 `unspecified-high`，选 `deep`（pro）。宁可贵一点，不要因为模型不够强而反复重做。
+
+### Pro Trigger Examples
+
+以下情况**必须**用 pro 类别（`deep` / `ultrabrain` / `oracle`）：
+
+- **首次接触的代码模块**——不熟悉内部结构，需要 pro 理解上下文
+- **跨 2 个以上模块的改动**——需要全局推理保证一致性
+- **设计/选型决策**——架构方案、API 设计、数据流设计
+- **复杂调试**——2 次尝试没解决的 bug
+- **高代价区域**——核心逻辑、对外接口、生产关键路径
+- **模棱两可的需求**——用户没说清楚，需要推理多种可能性
+
+以下情况**可以**用 flash 类别（`unspecified-high` / `quick` / `explore`）：
+
+- **搜索/查找**——找文件、找模式、找定义
+- **已知模式的重复操作**——加个字段、改个类型、复制已有模式
+- **纯执行**——实现方案已经定好了，只差写代码
+- **低风险修改**——工具脚本、测试辅助、注释文档
+
 ## NOTES
 
 - `docs/README.md` is OUTDATED — still references `adapters/`, `pipeline/`, `events/`

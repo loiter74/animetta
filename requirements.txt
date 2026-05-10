@@ -72,3 +72,9 @@ pyjwt>=2.10.0
 
 # Bilibili 直播弹幕接收
 bilibili-api-python>=17.0.0
+
+# Optional: LLM evaluation framework (scripts/eval_llm.py)
+# sentence-transformers>=3.0
+
+# Optional: Redis checkpoint support (multi-instance session sharing)
+redis[hiredis]>=5.0

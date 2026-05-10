@@ -12,6 +12,7 @@ Usage:
     python scripts/benchmark.py report      # regenerate report from latest run
 """
 
+import argparse
 import asyncio
 import json
 import sys
@@ -37,18 +38,12 @@ class Benchmark:
             "scenarios": [],
         }
 
-    async def run_quick(self):
-        """Quick benchmark: text E2E with mock providers (10 iterations)."""
-        print("Quick benchmark (text E2E, mock providers)...")
-        ctx = await self._create_mock_context()
-        orch = await LangGraphOrchestratorFactory.create(
-            session_id="bench-quick",
-            service_context=ctx,
-            socketio=None,
-            emotion_analyzer=None,
-        )
+    async def run_quick(self, turns: int = 10, concurrency: int = 1, provider: str | None = None):
+        """Quick benchmark: text E2E with configurable turns, concurrency, and providers."""
+        use_real = provider is not None
+        mode_label = f"real ({provider})" if use_real else "mock"
+        print(f"Quick benchmark (text E2E, {mode_label} providers, {turns} turns, concurrency={concurrency})...")
 
-        latencies: List[float] = []
         test_inputs = [
             "你好，请介绍一下你自己。",
             "今天天气怎么样？",
@@ -57,22 +52,61 @@ class Benchmark:
             "讲个笑话吧。",
         ]
 
-        for i, text in enumerate(test_inputs * 2):  # 10 total
-            start = time.perf_counter()
-            try:
-                await orch.process_text(text=text, user_id="bench", user_name="Bench")
-                elapsed = (time.perf_counter() - start) * 1000
-                latencies.append(elapsed)
-                print(f"  [{i+1}/10] {elapsed:.0f}ms")
-            except Exception as e:
-                print(f"  [{i+1}/10] FAILED: {e}")
+        if concurrency > 1:
+            latencies = await self._run_concurrent(test_inputs, turns, concurrency, provider=provider)
+            scenario_name = f"text_e2e_{'real_' + provider if use_real else 'mock'}_c{concurrency}"
+        else:
+            if use_real:
+                ctx = await self._create_real_context(provider)
+            else:
+                ctx = await self._create_mock_context()
+            orch = await LangGraphOrchestratorFactory.create(
+                session_id="bench-quick",
+                service_context=ctx,
+                socketio=None,
+                emotion_analyzer=None,
+            )
+
+            latencies: List[float] = []
+            for i in range(turns):
+                text = test_inputs[i % len(test_inputs)]
+                start = time.perf_counter()
+                try:
+                    await orch.process_text(text=text, user_id="bench", user_name="Bench")
+                    elapsed = (time.perf_counter() - start) * 1000
+                    latencies.append(elapsed)
+                    print(f"  [{i+1}/{turns}] {elapsed:.0f}ms")
+                except Exception as e:
+                    print(f"  [{i+1}/{turns}] FAILED: {e}")
+
+            scenario_name = f"text_e2e_{'real_' + provider if use_real else 'mock'}"
+
+        # Store config in results for reporting
+        self.results["config"] = {
+            "turns": turns,
+            "concurrency": concurrency,
+            "provider": provider,
+        }
 
         self.results["scenarios"].append({
-            "name": "text_e2e_mock",
+            "name": scenario_name,
             "iterations": len(latencies),
             "latencies_ms": latencies,
         })
-        self._print_summary("text_e2e_mock", latencies)
+        self._print_summary(scenario_name, latencies)
+
+        # Calculate and store QPS
+        if latencies:
+            self.results["qps"] = self._calculate_qps(latencies)
+
+        # Collect token counts if using real provider
+        if use_real and hasattr(self, "_token_counts"):
+            self.results["token_counts"] = self._token_counts
+            self.results["cost_estimate"] = self._estimate_cost(
+                provider,
+                self._token_counts.get("prompt", 0),
+                self._token_counts.get("completion", 0),
+            )
 
     async def _create_mock_context(self) -> ServiceContext:
         """Create a ServiceContext with all mock providers."""
@@ -95,6 +129,107 @@ class Benchmark:
         ctx.memory_system = AsyncMock()
         ctx.memory_system.retrieve_context = AsyncMock(return_value=[])
         return ctx
+
+    async def _create_real_context(self, provider: str) -> ServiceContext:
+        """Create a ServiceContext with a real LLM provider + mock TTS/ASR."""
+        from unittest.mock import MagicMock, AsyncMock
+        from anima.services.intelligence.llm.factory import LLMFactory
+        from anima.config import DeepSeekLLMConfig, OpenAILLMConfig, GLMLLMConfig, MockLLMConfig
+
+        # Build the appropriate config for the provider
+        provider_lower = provider.lower()
+        if provider_lower == "deepseek":
+            config = DeepSeekLLMConfig()
+        elif provider_lower == "openai":
+            config = OpenAILLMConfig(model="gpt-4o-mini")
+        elif provider_lower == "glm":
+            config = GLMLLMConfig(model="glm-4-flash")
+        else:
+            print(f"  Unknown provider '{provider}', falling back to mock")
+            return await self._create_mock_context()
+
+        real_llm = LLMFactory.create_from_config(config)
+        print(f"  Real LLM: {provider} ({type(real_llm).__name__})")
+
+        ctx = MagicMock(spec=ServiceContext)
+        ctx.llm_engine = real_llm
+        ctx.tts_engine = AsyncMock()
+        ctx.tts_engine.synthesize = AsyncMock(return_value=b"mock_audio")
+        ctx.tts_engine.close = AsyncMock()
+        ctx.asr_engine = AsyncMock()
+        ctx.asr_engine.transcribe = AsyncMock(return_value="mock transcription")
+        ctx.asr_engine.close = AsyncMock()
+        ctx.emotion_analyzer = MagicMock()
+        ctx.emotion_analyzer.analyze = MagicMock(return_value="neutral")
+        ctx.memory_system = AsyncMock()
+        ctx.memory_system.retrieve_context = AsyncMock(return_value=[])
+
+        # Initialize token tracking
+        self._token_counts = {"prompt": 0, "completion": 0}
+        return ctx
+
+    @staticmethod
+    def _estimate_cost(provider: str, prompt_tokens: int, completion_tokens: int) -> float:
+        """Estimate API cost based on provider pricing (USD per 1M tokens)."""
+        pricing = {
+            "deepseek": {"prompt": 0.14, "completion": 0.28},
+            "openai":   {"prompt": 1.50, "completion": 2.00},
+            "glm":      {"prompt": 1.00, "completion": 1.00},
+        }
+        p = pricing.get(provider.lower(), {"prompt": 0, "completion": 0})
+        return round((prompt_tokens / 1_000_000 * p["prompt"]) + (completion_tokens / 1_000_000 * p["completion"]), 6)
+
+    @staticmethod
+    def _calculate_qps(latencies: List[float]) -> float:
+        """Queries per second from latency list."""
+        if not latencies:
+            return 0.0
+        total_time_s = sum(latencies) / 1000
+        return round(len(latencies) / total_time_s, 2) if total_time_s > 0 else 0.0
+
+    async def _run_concurrent(
+        self, test_inputs: list, turns: int, concurrency: int, provider: str | None = None
+    ) -> List[float]:
+        """Run turns with bounded concurrency and return latencies."""
+        sem = asyncio.Semaphore(concurrency)
+        latencies: List[float] = []
+        lock = asyncio.Lock()
+        completed = 0
+
+        async def process_one(text: str, idx: int):
+            nonlocal completed
+            async with sem:
+                if provider:
+                    ctx = await self._create_real_context(provider)
+                else:
+                    ctx = await self._create_mock_context()
+                orch = await LangGraphOrchestratorFactory.create(
+                    session_id=f"bench-concurrent-{idx}",
+                    service_context=ctx,
+                    socketio=None,
+                    emotion_analyzer=None,
+                )
+                start = time.perf_counter()
+                try:
+                    await orch.process_text(text=text, user_id="bench", user_name="Bench")
+                    elapsed = (time.perf_counter() - start) * 1000
+                except Exception as e:
+                    elapsed = -1
+                    print(f"  [{idx+1}/{turns}] FAILED: {e}")
+                async with lock:
+                    if elapsed >= 0:
+                        latencies.append(elapsed)
+                    completed += 1
+                    if elapsed >= 0:
+                        print(f"  [{completed}/{turns}] {elapsed:.0f}ms")
+
+        tasks = []
+        for i in range(turns):
+            text = test_inputs[i % len(test_inputs)]
+            tasks.append(process_one(text, i))
+
+        await asyncio.gather(*tasks)
+        return latencies
 
     def _print_summary(self, name: str, latencies: List[float]):
         if not latencies:
@@ -186,30 +321,73 @@ class Benchmark:
             })
             self._print_summary("text_e2e_live", latencies)
 
-    def save_results(self):
-        """Save results to JSON for report generation."""
-        output_dir = Path(__file__).parent.parent / "docs" / "benchmarks"
-        output_dir.mkdir(parents=True, exist_ok=True)
-        path = output_dir / "latest.json"
+    def save_results(self, output_path: str | None = None):
+        """Save results to JSON for report generation.
+
+        Saves to:
+          - docs/benchmarks/runs/<timestamp>.json (timestamped archive)
+          - docs/benchmarks/runs/latest.json (always latest run)
+          - Custom path if output_path is provided.
+        """
+        runs_dir = Path(__file__).parent.parent / "docs" / "benchmarks" / "runs"
+        runs_dir.mkdir(parents=True, exist_ok=True)
+
+        if output_path:
+            path = Path(output_path)
+            path.parent.mkdir(parents=True, exist_ok=True)
+        else:
+            ts = time.strftime("%Y%m%d_%H%M%S")
+            path = runs_dir / f"{ts}.json"
+
         with open(path, "w") as f:
-            json.dump(self.results, f, indent=2)
+            json.dump(self.results, f, indent=2, ensure_ascii=False)
         print(f"\nResults saved to {path}")
+
+        # Also update latest.json
+        latest_path = runs_dir / "latest.json"
+        with open(latest_path, "w") as f:
+            json.dump(self.results, f, indent=2, ensure_ascii=False)
+        print(f"Latest updated: {latest_path}")
 
     def generate_report(self):
         """Generate markdown report from latest results, augmented with StatsStore data."""
         output_dir = Path(__file__).parent.parent / "docs" / "benchmarks"
-        json_path = output_dir / "latest.json"
 
         lines = [
             f"# Benchmark Results\n",
             f"**Date:** {time.strftime('%Y-%m-%d %H:%M', time.localtime(self.results['timestamp']))}\n",
             f"**Mode:** {self.results['mode']}\n",
             f"\n",
-            f"## Summary\n",
-            f"\n",
-            f"| Scenario | Iterations | P50 | P95 | P99 | Min | Max |\n",
-            f"|----------|-----------|-----|-----|-----|-----|-----|\n",
         ]
+
+        # ── Run Configuration ──
+        config = self.results.get("config", {})
+        if config:
+            lines.append("## Run Configuration\n\n")
+            lines.append("| Parameter | Value |\n")
+            lines.append("|-----------|-------|\n")
+            lines.append(f"| Turns | {config.get('turns', 'N/A')} |\n")
+            lines.append(f"| Concurrency | {config.get('concurrency', 1)} |\n")
+            lines.append(f"| Provider | {config.get('provider') or 'mock'} |\n")
+
+            qps = self.results.get("qps")
+            if qps is not None:
+                lines.append(f"| QPS | {qps:.2f} turns/sec |\n")
+
+            token_counts = self.results.get("token_counts")
+            if token_counts:
+                lines.append(f"| Prompt Tokens | {token_counts.get('prompt', 0)} |\n")
+                lines.append(f"| Completion Tokens | {token_counts.get('completion', 0)} |\n")
+
+            cost = self.results.get("cost_estimate")
+            if cost is not None:
+                lines.append(f"| Est. Cost (USD) | ${cost:.6f} |\n")
+            lines.append("\n")
+
+        # ── E2E Latency Summary ──
+        lines.append("## E2E Latency Summary\n\n")
+        lines.append("| Scenario | Iterations | P50 | P95 | P99 | Min | Max |\n")
+        lines.append("|----------|-----------|-----|-----|-----|-----|-----|\n")
 
         for scenario in self.results["scenarios"]:
             latencies = sorted(scenario["latencies_ms"])
@@ -223,12 +401,22 @@ class Benchmark:
                     f"{min(latencies):.0f}ms | {max(latencies):.0f}ms |\n"
                 )
 
+        # Add Std column if latencies available
+        all_lats = []
+        for scenario in self.results["scenarios"]:
+            all_lats.extend(scenario["latencies_ms"])
+        if len(all_lats) > 1:
+            lines.append(
+                f"\n| **Std** | | {stdev(all_lats):.0f}ms | | | | |\n"
+            )
+        lines.append("\n")
+
         # ── StatsStore data ──
         try:
             import sqlite3
             db_path = str(Path(__file__).parent.parent / "data" / "stats.db")
             if Path(db_path).exists():
-                lines.append("\n## StatsStore Trace Data\n\n")
+                lines.append("## Per-Node Timing (StatsStore)\n\n")
                 conn = sqlite3.connect(db_path)
                 conn.row_factory = sqlite3.Row
 
@@ -247,6 +435,8 @@ class Benchmark:
                     for r in rows:
                         lines.append(f"| {r['node_name']} | {r['cnt']} | {r['avg_ms']:.0f} | {r['min_ms']:.0f} | {r['max_ms']:.0f} |\n")
                     lines.append("\n")
+                else:
+                    lines.append("_No node timing data available._\n\n")
 
                 # Sub-node timing
                 cursor2 = conn.execute("""
@@ -604,9 +794,34 @@ def _print_baseline_diff(runs_dir: Path, run_data: dict):
         print(f"\n  ✅ P95 stable (Δ={delta:.1f}%)")
 
 
+def parse_args() -> argparse.Namespace:
+    """Parse CLI arguments for the benchmark suite."""
+    parser = argparse.ArgumentParser(description="Anima performance benchmark")
+    parser.add_argument(
+        "--turns", type=int, default=10,
+        help="Number of conversation turns (default: 10)")
+    parser.add_argument(
+        "--concurrency", type=int, default=1,
+        help="Concurrent turn execution count (default: 1 = sequential)")
+    parser.add_argument(
+        "--provider", type=str, default=None,
+        help="Real LLM provider name for real-provider mode (e.g. deepseek, openai, glm)")
+    parser.add_argument(
+        "--mock", action="store_true",
+        help="Force mock providers (overrides --provider if both given)")
+    parser.add_argument(
+        "--output", type=str, default=None,
+        help="Custom JSON output path")
+    parser.add_argument(
+        "mode", nargs="?", default="quick",
+        choices=["quick", "full", "compare", "report", "live", "stats", "diff", "auto"],
+        help="Benchmark mode (default: quick)")
+    return parser.parse_args()
+
+
 async def main():
-    mode = sys.argv[1] if len(sys.argv) > 1 else "quick"
-    extra_args = sys.argv[2:]
+    args = parse_args()
+    mode = args.mode
 
     if mode == "report":
         bench = Benchmark()
@@ -665,7 +880,7 @@ async def main():
             """)
             rows = cur3.fetchall()
             if rows:
-                print(f"\n  ── Node Timing ──")
+                print(f"\n  -- Node Timing --")
                 for n in rows:
                     print(f"  {n['node_name']:20s}  calls={n['cnt']:4d}  avg={n['avg_ms']:8.0f}ms  min={n['min_ms']:7.0f}ms  max={n['max_ms']:7.0f}ms")
 
@@ -677,7 +892,7 @@ async def main():
             """)
             rows2 = cur4.fetchall()
             if rows2:
-                print(f"\n  ── Sub-Node Timing ──")
+                print(f"\n  -- Sub-Node Timing --")
                 for n in rows2:
                     print(f"  {n['node_name']:25s}  calls={n['cnt']:4d}  avg={n['avg_ms']:8.0f}ms")
 
@@ -686,34 +901,36 @@ async def main():
             conn.close()
         return
 
+    # Resolve effective provider: --mock overrides --provider
+    effective_provider = None if args.mock else args.provider
     bench = Benchmark(mode)
 
     if mode == "auto":
         await run_auto()
         return
     elif mode == "diff":
-        _run_diff(extra_args)
+        _run_diff([args.output] if args.output else [])
         return
     elif mode == "quick":
-        await bench.run_quick()
+        await bench.run_quick(turns=args.turns, concurrency=args.concurrency, provider=effective_provider)
     elif mode == "live":
-        url = extra_args[0] if extra_args else "http://localhost:12394"
+        url = args.output if args.output else "http://localhost:12394"
         await bench.run_live(url=url)
     elif mode == "full":
-        await bench.run_quick()
+        await bench.run_quick(turns=args.turns, concurrency=args.concurrency, provider=effective_provider)
         if await _check_server("http://localhost:12394"):
             await bench.run_live(url="http://localhost:12394")
         else:
-            print("  (skip live — server not reachable)")
+            print("  (skip live -- server not reachable)")
     elif mode == "compare":
         print("Provider comparison not yet implemented")
-        await bench.run_quick()
+        await bench.run_quick(turns=args.turns, concurrency=args.concurrency, provider=effective_provider)
     else:
         print(f"Unknown mode: {mode}")
         print("Usage: python scripts/benchmark.py [auto|quick|full|compare|report|live|stats|diff]")
         sys.exit(1)
 
-    bench.save_results()
+    bench.save_results(output_path=args.output)
     bench.generate_report()
 
 

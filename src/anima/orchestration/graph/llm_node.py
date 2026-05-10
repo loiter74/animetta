@@ -1,5 +1,6 @@
 """LLM inference node - supports tool calls and streaming output"""
 
+import asyncio
 from typing import Dict, Any, List, Optional
 from loguru import logger
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, ToolMessage
@@ -12,6 +13,9 @@ from .interrupt_handler import get_interrupt_handler
 from .memory_middleware import MemoryMiddleware
 from .node_error import log_node_error
 
+# Configurable timeout for LLM provider calls (default: 30 seconds)
+TIMEOUT_SECONDS = 30
+FALLBACK_RESPONSE = "I need a moment to think about that."
 
 # ========================================
 # RAG memory retrieval helper functions
@@ -315,15 +319,35 @@ async def _llm_without_tools(
     chunks = []
     full_response = ""
 
+    timeout_seconds = _get_config_value(config, "llm_timeout", TIMEOUT_SECONDS)
+
     t_llm = time_module.perf_counter()
-    async for chunk in llm_engine.chat_stream(user_text, system_prompt=enriched_prompt):
-        if interrupt_handler.is_interrupted(session_id):
-            logger.warning(f"[{session_id}] [LLMNode] Interrupt detected, stopping generation")
-            break
-        chunks.append(chunk)
-        full_response += chunk
-        if len(chunks) % 10 == 0:
-            logger.debug(f"[{session_id}] [LLMNode] Received {len(chunks)} chunks...")
+    try:
+        async with asyncio.timeout(timeout_seconds):
+            async for chunk in llm_engine.chat_stream(user_text, system_prompt=enriched_prompt):
+                if interrupt_handler.is_interrupted(session_id):
+                    logger.warning(f"[{session_id}] [LLMNode] Interrupt detected, stopping generation")
+                    break
+                chunks.append(chunk)
+                full_response += chunk
+                if len(chunks) % 10 == 0:
+                    logger.debug(f"[{session_id}] [LLMNode] Received {len(chunks)} chunks...")
+    except asyncio.TimeoutError:
+        llm_duration = (time_module.perf_counter() - t_llm) * 1000
+        logger.warning(f"[{session_id}] [LLMNode] LLM timeout after {timeout_seconds}s, using fallback")
+        await log_node_error(session_id, "llm_node", "timeout", duration_ms=llm_duration)
+        full_response = FALLBACK_RESPONSE
+        chunks = [FALLBACK_RESPONSE]
+
+        ai_message = AIMessage(content=full_response)
+        return {
+            "response_text": full_response,
+            "response_chunks": chunks,
+            "messages": [ai_message],
+            "tool_calls": None,
+            "metadata": {**state.get("metadata", {}), "error_type": "timeout"},
+        }
+
     llm_duration = (time_module.perf_counter() - t_llm) * 1000
 
     logger.info(f"[{session_id}] [LLMNode] LLM response: {full_response[:100]}...")

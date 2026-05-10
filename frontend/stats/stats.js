@@ -13,6 +13,15 @@ async function fetchOverview() {
         data.p95_duration_ms ? data.p95_duration_ms.toFixed(0) + "ms" : "-";
 }
 
+async function fetchErrorRate() {
+    const res = await fetch(`${API_BASE}/api/stats/nodes`);
+    const data = await res.json();
+    const totalErrors = data.reduce((sum, n) => sum + (n.error_count || 0), 0);
+    const totalCalls = data.reduce((sum, n) => sum + (n.call_count || 0), 0);
+    const rate = totalCalls > 0 ? (totalErrors / totalCalls * 100).toFixed(1) + "%" : "0%";
+    document.getElementById("error-rate").textContent = rate;
+}
+
 // === Chart ===
 let nodeChart = null;
 
@@ -196,7 +205,7 @@ function escapeHtml(text) {
 // === Auto Refresh ===
 async function refreshAll() {
     try {
-        await Promise.all([fetchOverview(), fetchNodeStats(), fetchTraces()]);
+        await Promise.all([fetchOverview(), fetchNodeStats(), fetchTraces(), fetchErrorRate()]);
     } catch (e) {
         console.error("Refresh failed:", e);
     }
