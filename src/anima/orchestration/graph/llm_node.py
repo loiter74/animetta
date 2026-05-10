@@ -10,6 +10,7 @@ import time as time_module
 from .state import AgentState, log_timing
 from .interrupt_handler import get_interrupt_handler
 from .memory_middleware import MemoryMiddleware
+from .node_error import log_node_error
 
 
 # ========================================
@@ -170,42 +171,16 @@ async def llm_node(
     service_context = _get_service_context(config)
     if not service_context:
         logger.error(f"[{session_id}] [LLMNode] service_context not configured")
+        await log_node_error(session_id, "llm_node", "invalid_response", duration_ms=0)
         return {"error": "service_context not configured", "response_text": "", "response_chunks": [], "tool_calls": None}
 
     llm_engine = service_context.llm_engine
     if not llm_engine:
         logger.error(f"[{session_id}] [LLMNode] LLM engine not initialized")
+        await log_node_error(session_id, "llm_node", "invalid_response", duration_ms=0)
         return {"error": "LLM engine not initialized", "response_text": "", "response_chunks": [], "tool_calls": None}
 
-    # Check if tools are enabled
-    enable_tools = _get_config_value(config, "enable_tools", False)
-    chat_model = _get_config_value(config, "chat_model", None)
-
-    if enable_tools and chat_model:
-        return await _llm_with_tools(session_id, state, service_context, chat_model, config)
-    else:
-        return await _llm_without_tools(session_id, state, service_context, config)
-
-
-async def _llm_with_tools(
-    session_id: str,
-    state: AgentState,
-    service_context: Any,
-    chat_model: Any,
-    config: Optional[RunnableConfig] = None,
-) -> Dict[str, Any]:
-    """Use tool calling mode"""
-    user_text = state.get("user_text", "")
-    messages = list(state.get("messages", []))
-    llm_engine = service_context.llm_engine
-
-    logger.info(f"[{session_id}] [LLMNode] Using tool calling mode")
-
-    system_prompt = state.get("system_prompt")
-    if not system_prompt and service_context.config:
-        system_prompt = service_context.config.get_system_prompt()
-
-    # RAG + Profile: retrieve via MemoryMiddleware (tiered)
+    # RAG + Profile: retrieve via MemoryMiddleware (tiered) — once before branching
     injection_tier = state.get("injection_tier", 1)
     t_rag = time_module.perf_counter()
     memory_context = await _retrieve_memory_context(
@@ -217,6 +192,35 @@ async def _llm_with_tools(
     )
     rag_duration = (time_module.perf_counter() - t_rag) * 1000
     log_timing(state, "llm.rag_retrieval", rag_duration, f"query='{user_text[:50]}'")
+
+    # Check if tools are enabled
+    enable_tools = _get_config_value(config, "enable_tools", False)
+    chat_model = _get_config_value(config, "chat_model", None)
+
+    if enable_tools and chat_model:
+        return await _llm_with_tools(session_id, state, service_context, chat_model, config, memory_context)
+    else:
+        return await _llm_without_tools(session_id, state, service_context, config, memory_context)
+
+
+async def _llm_with_tools(
+    session_id: str,
+    state: AgentState,
+    service_context: Any,
+    chat_model: Any,
+    config: Optional[RunnableConfig] = None,
+    memory_context: str = "",
+) -> Dict[str, Any]:
+    """Use tool calling mode"""
+    user_text = state.get("user_text", "")
+    messages = list(state.get("messages", []))
+    llm_engine = service_context.llm_engine
+
+    logger.info(f"[{session_id}] [LLMNode] Using tool calling mode")
+
+    system_prompt = state.get("system_prompt")
+    if not system_prompt and service_context.config:
+        system_prompt = service_context.config.get_system_prompt()
 
     # Inject memory into system_prompt
     enriched_prompt = _enrich_system_prompt(system_prompt, memory_context)
@@ -272,7 +276,7 @@ async def _llm_with_tools(
 
     except Exception as e:
         logger.error(f"[{session_id}] [LLMNode] Tool call failed: {e}")
-        return await _llm_without_tools(session_id, state, service_context, config)
+        return await _llm_without_tools(session_id, state, service_context, config, memory_context)
 
 
 async def _llm_without_tools(
@@ -280,6 +284,7 @@ async def _llm_without_tools(
     state: AgentState,
     service_context: Any,
     config: Optional[RunnableConfig] = None,
+    memory_context: str = "",
 ) -> Dict[str, Any]:
     """Use streaming mode (no tools)"""
     user_text = state.get("user_text", "")
@@ -289,19 +294,6 @@ async def _llm_without_tools(
     logger.info(f"[{session_id}] [LLMNode] Using streaming mode (no tools)")
 
     system_prompt = state.get("system_prompt", "")
-
-    # RAG: retrieve memory context (tiered)
-    injection_tier = state.get("injection_tier", 1)
-    t_rag = time_module.perf_counter()
-    memory_context = await _retrieve_memory_context(
-        session_id=session_id,
-        query=user_text,
-        config=config,
-        max_turns=5,
-        injection_tier=injection_tier,
-    )
-    rag_duration = (time_module.perf_counter() - t_rag) * 1000
-    log_timing(state, "llm.rag_retrieval", rag_duration, f"query='{user_text[:50]}'")
 
     # Inject memory into system_prompt
     enriched_prompt = _enrich_system_prompt(system_prompt, memory_context)

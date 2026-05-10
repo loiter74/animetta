@@ -6,6 +6,7 @@ from langchain_core.messages import HumanMessage
 from langgraph.types import RunnableConfig
 
 from .state import AgentState
+from .node_error import log_node_error
 
 
 def _get_service_context(config: Optional[RunnableConfig]) -> Optional[Any]:
@@ -44,7 +45,12 @@ async def asr_node(
         logger.error(f"[{session_id}] [ASRNode] ASR engine not initialized")
         return {"error": "ASR engine not initialized", "user_text": ""}
 
-    text = await asr_engine.transcribe(raw_audio)
+    try:
+        text = await asr_engine.transcribe(raw_audio)
+    except Exception as e:
+        logger.warning(f"[{session_id}] [ASRNode] ASR failed ({type(e).__name__}): {e}")
+        await log_node_error(session_id, "asr_node", "network_error", duration_ms=0)
+        return {"error": str(e), "user_text": ""}
     logger.info(f"[{session_id}] [ASRNode] Recognition result: {text[:50]}...")
 
     # Emit transcript immediately so frontend shows user speech before LLM responds

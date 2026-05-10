@@ -7,6 +7,7 @@ from loguru import logger
 from langgraph.types import RunnableConfig
 
 from .state import AgentState, log_timing
+from .node_error import log_node_error
 
 
 # Regex: emotion tags like [happy], [sad], [angry] etc.
@@ -78,7 +79,12 @@ async def tts_node(
     clean_text = _clean_text_for_tts(response_text)
     logger.debug(f"[{session_id}] [TTSNode] Text length: {len(response_text)} chars → {len(clean_text)} chars (cleaned)")
 
-    audio = await tts_engine.synthesize(clean_text)
+    try:
+        audio = await tts_engine.synthesize(clean_text)
+    except Exception as e:
+        logger.warning(f"[{session_id}] [TTSNode] TTS failed ({type(e).__name__}): {e}")
+        await log_node_error(session_id, "tts_node", "network_error", duration_ms=0)
+        return {"tts_audio": b"", "error": str(e)}
 
     if isinstance(audio, bytes):
         logger.info(f"[{session_id}] [TTSNode] Audio data: {len(audio)} bytes")
