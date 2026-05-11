@@ -5,13 +5,14 @@ Generate → Store → Inject → Score → Discard/Resurrect (time-decay).
 80% AI-discovered + 20% user-configured.
 """
 
-from .models import Meme, MemeSource
+from .models import Meme, MemeSource, CognitiveAnalysis
 from .store import MemeStore
 from .engine import MemePool
 
 __all__ = [
     "Meme",
     "MemeSource",
+    "CognitiveAnalysis",
     "MemeStore",
     "MemePool",
 ]

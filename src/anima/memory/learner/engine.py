@@ -14,6 +14,8 @@ from ..models.turns import MemoryTurn
 from .summarizer import ConversationSummarizer, LearningLog
 from .pattern_extractor import PatternExtractor
 from .meme_discovery import MemeDiscoverer, MemeCandidate
+from .fact_extractor import extract_facts_batch, format_facts_for_wiki
+from .persona_optimizer import analyze_persona_performance, format_suggestions_yaml
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +51,10 @@ class PeriodicLearner:
             llm_client=llm_client,
             config=config,
         )
+        self._fact_extractor = None  # lazy init from memory_system
+        self._fact_confidence_threshold = config.get("fact_confidence_threshold", 0.7)
+        self._persona_auto_apply = config.get("persona_auto_apply", False)
+        self._persona_min_logs = config.get("persona_min_logs", 10)
 
         # Track which sessions / logs we've already processed
         self._processed_sessions: set = set()
@@ -154,6 +160,314 @@ class PeriodicLearner:
         except Exception as e:
             logger.warning(f"[PeriodicLearner] Meme generation failed: {e}")
 
+    async def extract_facts(self) -> None:
+        """Scheduled task: extract structured facts from recent conversations.
+
+        Uses FactExtractor (LLM-based) to identify user preferences, identity,
+        experiences, and other facts from consolidated conversation summaries.
+        Writes high-confidence facts to Wiki synthesis pages.
+        """
+        logger.info("[PeriodicLearner] Starting fact extraction...")
+
+        try:
+            self._ensure_db()
+            self._ensure_fact_extractor()
+            if not self._fact_extractor:
+                logger.debug("[PeriodicLearner] FactExtractor not available, skipping")
+                return
+
+            # Get recent conversation logs for fact extraction context
+            recent_logs = self._get_recent_logs("conversation", limit=20)
+            if not recent_logs:
+                logger.debug("[PeriodicLearner] No conversation logs for fact extraction")
+                return
+
+            all_facts: List[Dict[str, Any]] = []
+
+            for log in recent_logs:
+                if log.id in self._processed_log_ids:
+                    continue
+
+                # Get raw turns via source_ids for fact extraction
+                turns = self._get_turns_for_log(log)
+                if not turns:
+                    self._processed_log_ids.add(log.id)
+                    continue
+
+                # Extract facts
+                facts = await extract_facts_batch(
+                    fact_extractor=self._fact_extractor,
+                    turns=turns,
+                    session_id=log.session_id,
+                    confidence_threshold=self._fact_confidence_threshold,
+                )
+
+                if facts:
+                    all_facts.extend(facts)
+                    logger.info(
+                        f"[PeriodicLearner] Extracted {len(facts)} facts "
+                        f"from session {log.session_id} ({len(turns)} turns)"
+                    )
+
+                self._processed_log_ids.add(log.id)
+
+            if not all_facts:
+                logger.debug("[PeriodicLearner] No facts extracted this cycle")
+                return
+
+            # Write high-confidence facts to Wiki
+            await self._write_facts_to_wiki(all_facts)
+            logger.info(
+                f"[PeriodicLearner] Extracted {len(all_facts)} total facts "
+                f"from {len(recent_logs)} sessions"
+            )
+
+        except Exception as e:
+            logger.warning(f"[PeriodicLearner] Fact extraction failed: {e}", exc_info=True)
+
+    async def optimize_persona(self) -> None:
+        """Scheduled task: analyze persona performance and generate optimization suggestions.
+
+        Reads recent conversation summaries, analyzes persona effectiveness,
+        and outputs reviewable YAML suggestions. Optionally auto-applies.
+        """
+        logger.info("[PeriodicLearner] Starting persona optimization...")
+
+        try:
+            self._ensure_db()
+
+            # Get recent conversation logs
+            recent_logs = self._get_recent_logs("conversation", limit=50)
+            if len(recent_logs) < self._persona_min_logs:
+                logger.debug(
+                    f"[PeriodicLearner] Not enough logs for persona analysis "
+                    f"({len(recent_logs)} < {self._persona_min_logs})"
+                )
+                return
+
+            # Get current persona config
+            persona_config = self._load_persona_config()
+            if not persona_config:
+                logger.debug("[PeriodicLearner] No persona config loaded, skipping")
+                return
+
+            # Format logs for LLM
+            log_dicts = [
+                {
+                    "content": log.content,
+                    "session_id": log.session_id,
+                    "created_at": log.created_at.isoformat() if log.created_at else "",
+                }
+                for log in recent_logs
+            ]
+
+            # Run analysis
+            analysis = await analyze_persona_performance(
+                llm_client=self._llm_client,
+                persona_config=persona_config,
+                conversation_logs=log_dicts,
+            )
+
+            suggestions = analysis.get("suggestions", [])
+            if not suggestions:
+                logger.info("[PeriodicLearner] Persona analysis found no suggestions")
+                return
+
+            # Write suggestions file
+            suggestions_path = self._write_persona_suggestions(analysis, persona_config)
+            logger.info(
+                f"[PeriodicLearner] Wrote {len(suggestions)} persona suggestions "
+                f"to {suggestions_path}"
+            )
+
+            # Optionally auto-apply high-confidence suggestions
+            if self._persona_auto_apply and suggestions_path:
+                self._auto_apply_suggestions(suggestions_path, suggestions)
+
+        except Exception as e:
+            logger.warning(f"[PeriodicLearner] Persona optimization failed: {e}", exc_info=True)
+
+    def _load_persona_config(self) -> Optional[Dict[str, Any]]:
+        """Load current active persona configuration."""
+        try:
+            mem_config = getattr(self._memory_system, '_config', {})
+            app_config = mem_config.get("app_config")
+            if app_config and hasattr(app_config, 'get_persona'):
+                persona = app_config.get_persona()
+                if persona:
+                    return {
+                        "name": persona.name,
+                        "identity": persona.identity,
+                        "personality": {
+                            "traits": persona.personality.traits if hasattr(persona.personality, 'traits') else [],
+                            "speaking_style": persona.personality.speaking_style if hasattr(persona.personality, 'speaking_style') else [],
+                        } if hasattr(persona, 'personality') else {},
+                        "behavior": persona.behavior.dict() if hasattr(persona.behavior, 'dict') else {},
+                    }
+        except Exception as e:
+            logger.debug(f"[PeriodicLearner] Could not load persona config: {e}")
+
+        # Fallback: try reading directly from YAML
+        try:
+            project_root = Path(__file__).parent.parent.parent.parent.parent
+            persona_file = project_root / "config" / "personas" / "neuro-vtuber.yaml"
+            if persona_file.exists():
+                import yaml
+                with open(persona_file, 'r', encoding='utf-8') as f:
+                    return yaml.safe_load(f)
+        except Exception as e:
+            logger.warning(f"[PeriodicLearner] Fallback persona load failed: {e}")
+
+        return None
+
+    def _write_persona_suggestions(
+        self, analysis: Dict[str, Any], persona_config: Dict[str, Any]
+    ) -> Path:
+        """Write evolution suggestions to reviewable YAML file."""
+        persona_name = persona_config.get("name", "unknown")
+        yaml_content = format_suggestions_yaml(analysis, persona_name)
+
+        # Write to config/personas/evolution_suggestions.yaml
+        project_root = Path(__file__).parent.parent.parent.parent.parent
+        personas_dir = project_root / "config" / "personas"
+        personas_dir.mkdir(parents=True, exist_ok=True)
+        suggestions_path = personas_dir / "evolution_suggestions.yaml"
+
+        suggestions_path.write_text(yaml_content, encoding="utf-8")
+        return suggestions_path
+
+    def _auto_apply_suggestions(self, path: Path, suggestions: List[Dict[str, Any]]) -> None:
+        """Auto-apply high-confidence (≥0.8) suggestions."""
+        from .persona_optimizer import apply_suggestion
+
+        applied = 0
+        for s in suggestions:
+            if s.get("confidence", 0) >= 0.8:
+                sugg_id = s.get("id", "")
+                if sugg_id and apply_suggestion(path, sugg_id):
+                    applied += 1
+        if applied:
+            logger.info(f"[PeriodicLearner] Auto-applied {applied} high-confidence persona suggestions")
+
+    # ── Bilibili Meme Intelligence Tasks ─────────────────
+
+    async def collect_bilibili_memes(self) -> None:
+        """Scheduled task: collect trending memes from Bilibili and feed into MemePool.
+
+        Runs BilibiliMemeCollector → MemeCognitiveAnalyzer → MemePool pipeline.
+        Failure is isolated and does not block other scheduled tasks.
+        """
+        logger.info("[PeriodicLearner] Starting Bilibili meme collection...")
+
+        try:
+            # Lazy import to avoid import-time failures if module is unavailable
+            try:
+                from anima.services.meme.bilibili_collector import BilibiliMemeCollector
+                from anima.services.meme.analyzer import MemeCognitiveAnalyzer
+            except ImportError:
+                logger.warning(
+                    "[PeriodicLearner] Bilibili meme services not available, "
+                    "skipping meme collection"
+                )
+                return
+
+            # Get meme_pool from memory system
+            meme_pool = getattr(self._memory_system, 'meme_pool', None)
+            if not meme_pool:
+                logger.debug("[PeriodicLearner] MemePool not available, skipping meme collection")
+                return
+
+            config = self._config.get("bilibili_meme", {})
+
+            # Phase 1: Collect raw candidates from B站
+            collector = BilibiliMemeCollector(
+                llm_client=self._llm_client,
+                config=config.get("collector", {}),
+            )
+            candidates = await collector.collect()
+
+            if not candidates:
+                logger.info("[PeriodicLearner] No meme candidates collected from Bilibili")
+                return
+
+            logger.info(
+                "[PeriodicLearner] Collected %d meme candidates from Bilibili",
+                len(candidates),
+            )
+
+            # Phase 2: Cognitive analysis and ingestion
+            analyzer = MemeCognitiveAnalyzer(
+                llm_client=self._llm_client,
+                meme_pool=meme_pool,
+                config=config.get("analyzer", {}),
+            )
+
+            ingested = 0
+            for candidate in candidates:
+                meme = await analyzer.analyze_and_ingest(
+                    text=candidate.text,
+                    context_hint=candidate.context_hint,
+                    tags=candidate.tags,
+                    source_url=(
+                        f"https://www.bilibili.com/video/{candidate.source_videos[0]}"
+                        if candidate.source_videos else ""
+                    ),
+                )
+                if meme:
+                    ingested += 1
+
+            logger.info(
+                "[PeriodicLearner] Bilibili meme collection complete: "
+                "%d collected, %d ingested",
+                len(candidates), ingested,
+            )
+
+        except Exception as e:
+            logger.warning(
+                "[PeriodicLearner] Bilibili meme collection failed (isolated): %s",
+                e, exc_info=True,
+            )
+
+    async def learn_interaction_patterns(self) -> None:
+        """Scheduled task: learn Bilibili interaction patterns for livestream optimization.
+
+        Runs BilibiliInteractionLearner to analyze danmaku patterns and
+        generate actionable livestream strategies stored in Wiki.
+        Failure is isolated and does not block other scheduled tasks.
+        """
+        logger.info("[PeriodicLearner] Starting Bilibili interaction learning...")
+
+        try:
+            try:
+                from anima.services.meme.bilibili_interaction import BilibiliInteractionLearner
+            except ImportError:
+                logger.warning(
+                    "[PeriodicLearner] Bilibili interaction services not available, "
+                    "skipping interaction learning"
+                )
+                return
+
+            wiki = getattr(self._memory_system, '_wiki_manager', None)
+            config = self._config.get("bilibili_meme", {})
+
+            learner = BilibiliInteractionLearner(
+                llm_client=self._llm_client,
+                wiki_manager=wiki,
+                config=config.get("interaction", {}),
+            )
+
+            strategies = await learner.learn_patterns()
+            logger.info(
+                "[PeriodicLearner] Interaction learning complete: %d strategies generated",
+                len(strategies),
+            )
+
+        except Exception as e:
+            logger.warning(
+                "[PeriodicLearner] Interaction learning failed (isolated): %s",
+                e, exc_info=True,
+            )
+
     async def prune_logs(self) -> None:
         """Scheduled task: prune old learning logs.
 
@@ -239,6 +553,81 @@ class PeriodicLearner:
             logger.warning(f"[PeriodicLearner] Log pruning failed: {e}")
 
     # ── Pipeline helpers ─────────────────────────────────
+
+    def _ensure_fact_extractor(self) -> None:
+        """Lazily init FactExtractor from memory_system."""
+        if self._fact_extractor is not None:
+            return
+        try:
+            # Access fact_extractor via the WikiIngestor in memory_system
+            ingestor = getattr(self._memory_system, '_ingestor', None)
+            if ingestor and hasattr(ingestor, '_fact_extractor'):
+                self._fact_extractor = ingestor._fact_extractor
+                logger.info("[PeriodicLearner] FactExtractor initialized from memory system")
+        except Exception as e:
+            logger.warning(f"[PeriodicLearner] Could not init FactExtractor: {e}")
+
+    def _get_turns_for_log(self, log: LearningLog) -> List[MemoryTurn]:
+        """Retrieve raw MemoryTurn objects from a LearningLog's source_ids."""
+        try:
+            source_ids = json.loads(log.source_ids) if isinstance(log.source_ids, str) else log.source_ids
+            if not source_ids:
+                return []
+
+            short_term = getattr(self._memory_system, '_short_term', None)
+            if not hasattr(short_term, '_cache'):
+                return []
+
+            turns: List[MemoryTurn] = []
+            for sid in source_ids:
+                for session_turns in short_term._cache.values():
+                    for t in session_turns:
+                        if t.turn_id == sid:
+                            turns.append(t)
+                            break
+            return turns
+        except Exception as e:
+            logger.debug(f"[PeriodicLearner] Could not retrieve turns for log {log.id}: {e}")
+            return []
+
+    async def _write_facts_to_wiki(self, facts: List[Dict[str, Any]]) -> None:
+        """Write high-confidence extracted facts to Wiki synthesis pages.
+
+        Dedup: existing facts with same content are updated (confidence boosted),
+        new facts are appended.
+        """
+        wiki = getattr(self._memory_system, '_wiki_manager', None)
+        if not wiki:
+            logger.warning("[PeriodicLearner] WikiManager not available, cannot write facts")
+            return
+
+        import uuid as _uuid
+        from datetime import datetime as _dt
+
+        # Build Markdown content
+        session_id = facts[0].get("source_turn_id", "batch")[:8] if facts else "batch"
+        content = format_facts_for_wiki(facts, session_id)
+
+        if not content:
+            return
+
+        try:
+            from ..wiki.models import WikiPage, PageType
+
+            page = WikiPage(
+                title=f"自动发现: {_dt.now().strftime('%Y-%m-%d %H:%M')}",
+                page_type=PageType.SYNTHESIS,
+                path=f"synthesis/auto-facts-{_dt.now().strftime('%Y%m%d-%H%M%S')}-{_uuid.uuid4().hex[:6]}.md",
+                content=content,
+                tags=["auto-extracted", "fact", "learner", _dt.now().strftime("%Y-%m-%d")],
+                links=[],
+                created_at=_dt.now(),
+                updated_at=_dt.now(),
+            )
+            wiki.write_page(page)
+            logger.info(f"[PeriodicLearner] Wrote {len(facts)} facts to wiki page: {page.path}")
+        except Exception as e:
+            logger.warning(f"[PeriodicLearner] Wiki write failed: {e}")
 
     async def _patterns_to_memes(self, patterns: List[LearningLog]) -> None:
         """Feed patterns into meme discoverer."""

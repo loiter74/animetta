@@ -33,9 +33,13 @@ class MemoryEntry:
     is_static: bool = False           # Long-term vs short-term memory
     is_forgotten: bool = False        # Soft delete/forget
     forget_after: Optional[str] = None  # ISO datetime, auto-expiration time
+    is_archived: bool = False           # Decayed below threshold, excluded from search
+    retrieval_count: int = 0            # Times this entry was retrieved (consolidation)
+    last_accessed_at: Optional[str] = None  # ISO datetime of last retrieval
     parent_memory_id: Optional[str] = None  # ID of the old version replaced by this one
     root_memory_id: Optional[str] = None   # Version chain root ID, first version points to itself
     confidence: float = 1.0           # Confidence [0.0, 1.0]
+    emotion_value: Optional[float] = None  # Emotion intensity (0.0=none, 1.0=intense)
     created_at: Optional[str] = None  # ISO datetime
     updated_at: Optional[str] = None  # ISO datetime
 

@@ -35,8 +35,20 @@ class MemoryMiddleware:
         user_input: str,
         base_prompt: Optional[str] = None,
         injection_tier: int = 1,
+        meme: Optional[Any] = None,
     ) -> Tuple[str, Optional[Dict]]:
-        """Before LLM call: retrieve memory via FuzzyLayer → build injection text."""
+        """Before LLM call: retrieve memory via FuzzyLayer → build injection text.
+
+        Args:
+            session_id: Current session identifier.
+            user_input: User's message text.
+            base_prompt: Base system prompt to enrich.
+            injection_tier: Memory tier (1=fuzzy, 2=context, 3=precise).
+            meme: Optional Meme object to inject as [MemeContext].
+
+        Returns:
+            Tuple of (enriched_prompt, metadata_dict).
+        """
         if not self._memory_system:
             logger.debug("[MemoryMiddleware] MemorySystem not configured, skipping")
             return base_prompt or "", None
@@ -44,7 +56,7 @@ class MemoryMiddleware:
         metadata: Dict[str, Any] = {"tier": injection_tier}
         injection_parts: List[str] = []
 
-        # Use FuzzyLayer for runtime fuzzification from wiki + short-term
+        # 1. FuzzyLayer: runtime fuzzification from wiki + short-term
         fuzzy_layer = getattr(self._memory_system, "fuzzy_layer", None)
         if fuzzy_layer:
             try:
@@ -58,7 +70,7 @@ class MemoryMiddleware:
             except Exception as e:
                 logger.warning(f"[MemoryMiddleware] FuzzyLayer failed: {e}")
 
-        # 3. Retrieve user profile
+        # 2. User profile
         try:
             profile = self._memory_system.get_profile(session_id)
             if profile and not profile.is_empty():
@@ -69,6 +81,21 @@ class MemoryMiddleware:
                     metadata["profile_dynamic"] = len(profile.dynamic)
         except Exception as e:
             logger.warning(f"[MemoryMiddleware] profile retrieval failed: {e}")
+
+        # 3. Meme context injection
+        if meme:
+            try:
+                meme_text = self._format_meme_context(meme)
+                if meme_text:
+                    injection_parts.append(meme_text)
+                    metadata["meme_id"] = getattr(meme, "id", "unknown")
+                    metadata["meme_injected"] = True
+                    logger.debug(
+                        "[MemoryMiddleware] Injected meme: %s",
+                        getattr(meme, "text", "")[:30],
+                    )
+            except Exception as e:
+                logger.warning(f"[MemoryMiddleware] Meme injection failed: {e}")
 
         if not injection_parts:
             logger.debug(f"[MemoryMiddleware] no memory or profile to inject")
@@ -82,11 +109,44 @@ class MemoryMiddleware:
 
         logger.info(
             f"[MemoryMiddleware] tier={injection_tier}, "
-            f"memory={metadata.get('memory_count', 0)}, "
-            f"fuzzy={metadata.get('fuzzy_count', 0)}, "
+            f"meme={metadata.get('meme_injected', False)}, "
             f"profile_static={metadata.get('profile_static', 0)}"
         )
         return enriched, metadata
+
+    @staticmethod
+    def _format_meme_context(meme: Any) -> str:
+        """Format a Meme object as [MemeContext] for LLM prompt injection.
+
+        Produces a block like:
+        ```
+        [MemeContext]
+        最近的热梗: <梗文本>
+        使用场景: <context_hint>
+        使用示例: <usage_example>
+        ```
+        The LLM is told this is optional reference — not forced usage.
+        """
+        parts: List[str] = ["[MemeContext]"]
+
+        text = getattr(meme, "text", "")
+        if text:
+            parts.append(f"最近的热梗: {text}")
+
+        context_hint = getattr(meme, "context_hint", "")
+        if context_hint:
+            parts.append(f"适用场景: {context_hint}")
+
+        # Include cognitive analysis details if available
+        ca = getattr(meme, "cognitive_analysis", None)
+        if ca:
+            usage = getattr(ca, "usage_example", "")
+            if usage:
+                parts.append(f"使用示例: {usage}")
+
+        parts.append("(以上梗信息仅供参考，在合适的情境下自然使用，不必强行插入)")
+
+        return "\n".join(parts)
 
     # ── after LLM call ───────────────────────────
 

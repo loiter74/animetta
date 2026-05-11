@@ -103,7 +103,7 @@ class StatsSpanExporter(SpanExporter):
                 output_summary=error_msg,
             )
         except Exception:
-            logger.warning(f"[StatsExporter] Failed to write span {span.name}")
+            logger.debug(f"[StatsExporter] Failed to write span {span.name}")
 
     def shutdown(self) -> None:
         """No-op — StatsStore handles its own lifecycle."""

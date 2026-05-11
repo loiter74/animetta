@@ -48,17 +48,18 @@ class MemoryManager:
         # Embedding model
         self._embedder = None
         try:
-            from sentence_transformers import SentenceTransformer
             import os
             os.environ['CUDA_VISIBLE_DEVICES'] = ''
+            os.environ.setdefault('TORCH_CODEC_DISABLE', '1')  # suppress libtorchcodec noise
+            from sentence_transformers import SentenceTransformer
             logger.info(f"[MemoryManager] loading embedding: {self.config.embedding.model_name}")
             start = time.time()
             self._embedder = SentenceTransformer(self.config.embedding.model_name, device='cpu')
             logger.info(f"[MemoryManager] embedding ready ({time.time() - start:.1f}s)")
         except ImportError:
-            logger.warning("[MemoryManager] sentence-transformers not installed, keyword-only search")
+            logger.info("[MemoryManager] sentence-transformers not installed, keyword-only search")
         except Exception as e:
-            logger.warning(f"[MemoryManager] embedding load failed: {e}")
+            logger.info(f"[MemoryManager] embedding unavailable (keyword-only): {e}")
 
     # ── Workspace ──────────────────────────────────────────
 

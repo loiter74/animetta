@@ -23,6 +23,7 @@ class MemoryEntryStore:
 
     def __init__(self, conn: sqlite3.Connection):
         self.conn = conn
+        self._migrate()
 
     # ── DDL ───────────────────────────────────────────────────
 
@@ -41,10 +42,14 @@ class MemoryEntryStore:
             is_latest         INTEGER NOT NULL DEFAULT 1,
             is_static         INTEGER NOT NULL DEFAULT 0,
             is_forgotten      INTEGER NOT NULL DEFAULT 0,
+            is_archived       INTEGER NOT NULL DEFAULT 0,
             forget_after      TEXT,
             parent_memory_id  TEXT,
             root_memory_id    TEXT,
             confidence        REAL NOT NULL DEFAULT 1.0,
+            emotion_value     REAL,
+            retrieval_count   INTEGER NOT NULL DEFAULT 0,
+            last_accessed_at  TEXT,
             created_at        TEXT NOT NULL,
             updated_at        TEXT NOT NULL
         );
@@ -52,17 +57,30 @@ class MemoryEntryStore:
         CREATE INDEX IF NOT EXISTS idx_mem_latest ON memory_entries(space_id, is_latest);
         CREATE INDEX IF NOT EXISTS idx_mem_root ON memory_entries(root_memory_id);
         CREATE INDEX IF NOT EXISTS idx_mem_forgotten ON memory_entries(is_forgotten);
-
-        CREATE TABLE IF NOT EXISTS memory_relations (
-            source_id   TEXT NOT NULL,
-            target_id   TEXT NOT NULL,
-            relation    TEXT NOT NULL CHECK(relation IN ('updates', 'extends', 'derives')),
-            created_at  TEXT NOT NULL,
-            PRIMARY KEY (source_id, target_id, relation)
-        );
-
-        CREATE INDEX IF NOT EXISTS idx_rel_target ON memory_relations(target_id);
+        -- idx_mem_archived created by _migrate for backward compat
         """
+
+    def _migrate(self) -> None:
+        """Add new columns if they don't exist (safe for existing DBs)."""
+        migrations = [
+            "ALTER TABLE memory_entries ADD COLUMN is_archived INTEGER NOT NULL DEFAULT 0",
+            "ALTER TABLE memory_entries ADD COLUMN emotion_value REAL",
+            "ALTER TABLE memory_entries ADD COLUMN retrieval_count INTEGER NOT NULL DEFAULT 0",
+            "ALTER TABLE memory_entries ADD COLUMN last_accessed_at TEXT",
+        ]
+        for sql in migrations:
+            try:
+                self.conn.execute(sql)
+            except sqlite3.OperationalError:
+                pass  # column already exists
+        # Create index on is_archived if column exists
+        try:
+            self.conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_mem_archived ON memory_entries(is_archived)"
+            )
+        except sqlite3.OperationalError:
+            pass
+        self.conn.commit()
 
     # ── MemoryEntry CRUD ──────────────────────────────────────
 
@@ -79,16 +97,16 @@ class MemoryEntryStore:
             """
             INSERT INTO memory_entries
                 (id, memory, space_id, version, is_latest, is_static,
-                 is_forgotten, forget_after, parent_memory_id, root_memory_id,
-                 confidence, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 is_forgotten, is_archived, forget_after, parent_memory_id, root_memory_id,
+                 confidence, emotion_value, retrieval_count, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 entry_id, entry.memory, entry.space_id, entry.version,
                 int(entry.is_latest), int(entry.is_static),
-                int(entry.is_forgotten), entry.forget_after,
+                int(entry.is_forgotten), int(entry.is_archived), entry.forget_after,
                 entry.parent_memory_id, root_id,
-                entry.confidence, now, now,
+                entry.confidence, entry.emotion_value, entry.retrieval_count, now, now,
             ),
         )
         self.conn.commit()
@@ -111,15 +129,16 @@ class MemoryEntryStore:
         return self._row_to_entry(row) if row else None
 
     def search_by_space(self, space_id: str, query: str = "", limit: int = 20) -> List[MemoryEntry]:
-        """Search latest/unforgotten memories by space.
+        """Search latest/unarchived memories by space.
 
         Supports optional fuzzy matching of memory text.
+        Archived entries are excluded from default search.
         """
         if query:
             rows = self.conn.execute(
                 """
                 SELECT * FROM memory_entries
-                WHERE space_id = ? AND is_latest = 1 AND is_forgotten = 0
+                WHERE space_id = ? AND is_latest = 1 AND is_forgotten = 0 AND is_archived = 0
                   AND memory LIKE ?
                 ORDER BY updated_at DESC
                 LIMIT ?
@@ -130,7 +149,7 @@ class MemoryEntryStore:
             rows = self.conn.execute(
                 """
                 SELECT * FROM memory_entries
-                WHERE space_id = ? AND is_latest = 1 AND is_forgotten = 0
+                WHERE space_id = ? AND is_latest = 1 AND is_forgotten = 0 AND is_archived = 0
                 ORDER BY updated_at DESC
                 LIMIT ?
                 """,
@@ -234,6 +253,59 @@ class MemoryEntryStore:
             logger.info(f"[MemoryEntryStore] expired {count} old entries")
         return count
 
+    def archive_decayed(self, threshold: float = 0.15) -> int:
+        """Mark entries below decay threshold as archived.
+
+        Uses MemoryScorer to compute decay scores for all unarchived entries.
+        Entries below threshold are marked is_archived=1.
+
+        Args:
+            threshold: Decay score below which to archive
+
+        Returns:
+            Number of newly archived entries
+        """
+        from ..search.scorer import MemoryScorer
+
+        rows = self.conn.execute(
+            "SELECT * FROM memory_entries WHERE is_latest = 1 AND is_forgotten = 0 AND is_archived = 0",
+        ).fetchall()
+
+        archived = 0
+        now = datetime.now(timezone.utc).isoformat()
+        for row in rows:
+            entry = self._row_to_entry(row)
+            _, _, should_archive = MemoryScorer.memory_score(
+                confidence=entry.confidence,
+                created_at=entry.created_at,
+                retrieval_count=entry.retrieval_count,
+                emotion_value=entry.emotion_value,
+            )
+            if should_archive:
+                self.conn.execute(
+                    "UPDATE memory_entries SET is_archived = 1, updated_at = ? WHERE id = ?",
+                    (now, entry.id),
+                )
+                archived += 1
+
+        self.conn.commit()
+        if archived:
+            logger.info(f"[MemoryEntryStore] Archived {archived} decayed entries")
+        return archived
+
+    def increment_retrieval(self, entry_id: str) -> None:
+        """Increment retrieval_count and update last_accessed_at.
+
+        Called when a memory is retrieved in search results.
+        Simulates \"consolidation\" — frequently retrieved memories decay slower.
+        """
+        now = datetime.now(timezone.utc).isoformat()
+        self.conn.execute(
+            "UPDATE memory_entries SET retrieval_count = retrieval_count + 1, last_accessed_at = ? WHERE id = ?",
+            (now, entry_id),
+        )
+        self.conn.commit()
+
     # ── MemoryRelation CRUD ───────────────────────────────────
 
     def add_relation(self, relation: MemoryRelation) -> bool:
@@ -298,11 +370,11 @@ class MemoryEntryStore:
     # ── Batch operations ───────────────────────────────────────
 
     def get_all_latest(self, space_id: str, limit: int = 100) -> List[MemoryEntry]:
-        """Get all latest and unforgotten memories within a space."""
+        """Get all latest, unarchived, and unforgotten memories within a space."""
         rows = self.conn.execute(
             """
             SELECT * FROM memory_entries
-            WHERE space_id = ? AND is_latest = 1 AND is_forgotten = 0
+            WHERE space_id = ? AND is_latest = 1 AND is_forgotten = 0 AND is_archived = 0
             ORDER BY updated_at DESC
             LIMIT ?
             """,
@@ -330,10 +402,14 @@ class MemoryEntryStore:
             is_latest=bool(row["is_latest"]),
             is_static=bool(row["is_static"]),
             is_forgotten=bool(row["is_forgotten"]),
+            is_archived=bool(row["is_archived"]) if "is_archived" in row.keys() else False,
             forget_after=row["forget_after"],
             parent_memory_id=row["parent_memory_id"],
             root_memory_id=row["root_memory_id"],
             confidence=row["confidence"],
+            emotion_value=row["emotion_value"] if "emotion_value" in row.keys() else None,
+            retrieval_count=row["retrieval_count"] if "retrieval_count" in row.keys() else 0,
+            last_accessed_at=row["last_accessed_at"] if "last_accessed_at" in row.keys() else None,
             created_at=row["created_at"],
             updated_at=row["updated_at"],
         )

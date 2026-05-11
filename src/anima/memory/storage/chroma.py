@@ -138,9 +138,10 @@ class ChromaStore:
         }
         if embeddings is not None:
             kwargs["embeddings"] = embeddings
-
-        self.collection.upsert(**kwargs)
-        logger.debug(f"Upserted {len(chunks)} chunks to Chroma")
+            self.collection.upsert(**kwargs)
+            logger.debug(f"Upserted {len(chunks)} chunks to Chroma")
+        else:
+            logger.debug(f"Skipped Chroma upsert for {len(chunks)} chunks (no embeddings)")
 
     def delete_by_path(self, path: str):
         """Delete all vectors under a given file path."""

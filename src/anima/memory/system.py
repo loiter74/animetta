@@ -84,12 +84,13 @@ class MemorySystem:
             except Exception as e:
                 logger.warning(f"[MemorySystem] PeriodicLearner init failed: {e}")
 
+        self.meme_pool: Optional[MemePool] = None  # declared early for resilience
+
         try:
             manager = MemoryManager(config=memory_config)
             self._wiki_manager = WikiManager(manager)
 
             # MemePool (wiki-backed, requires WikiManager)
-            self.meme_pool: Optional[MemePool] = None
             meme_config = config.get("meme_pool", {})
             if meme_config.get("enabled", True):
                 try:
@@ -165,6 +166,27 @@ class MemorySystem:
                     interval=meme_cfg.get("interval", 21600),
                     timeout=meme_cfg.get("timeout", 120),
                 )
+                fact_cfg = tasks_cfg.get("extract_facts", default_cfg)
+                self._scheduler.add_task(
+                    "extract_facts",
+                    self._learner.extract_facts,
+                    interval=fact_cfg.get("interval", 7200),
+                    timeout=fact_cfg.get("timeout", 300),
+                )
+                persona_cfg = tasks_cfg.get("optimize_persona", default_cfg)
+                self._scheduler.add_task(
+                    "optimize_persona",
+                    self._learner.optimize_persona,
+                    interval=persona_cfg.get("interval", 86400),
+                    timeout=persona_cfg.get("timeout", 300),
+                )
+                archive_cfg = tasks_cfg.get("archive_decayed", default_cfg)
+                self._scheduler.add_task(
+                    "archive_decayed",
+                    self._archive_decayed_entries,
+                    interval=archive_cfg.get("interval", 43200),
+                    timeout=archive_cfg.get("timeout", 120),
+                )
 
             if self.meme_pool:
                 maintain_cfg = tasks_cfg.get("maintain_meme_pool", default_cfg)
@@ -193,12 +215,21 @@ class MemorySystem:
             _log_scheduler_metrics(self._scheduler)
         if self._learner:
             await self._learner.stop()
-        if self.fuzzy:
+        if self.fuzzy and hasattr(self.fuzzy, 'close'):
             self.fuzzy.close()
         if self._wiki_manager:
             self._wiki_manager.manager.close()
         self._short_term.clear_all()
         logger.info("[MemorySystem] Memory system stopped")
+
+    async def _archive_decayed_entries(self) -> None:
+        """Scheduled task: archive MemoryEntry objects below decay threshold."""
+        try:
+            store = self._wiki_manager.manager.memory_entries if self._wiki_manager else None
+            if store:
+                store.archive_decayed()
+        except Exception as e:
+            logger.warning(f"[MemorySystem] Archive decayed entries failed: {e}")
 
     # ── Storage ───────────────────────────────────────────
 

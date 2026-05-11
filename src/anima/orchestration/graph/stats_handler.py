@@ -212,7 +212,7 @@ class StatsCallbackHandler(BaseCallbackHandler):
             store = await get_stats_store()
             await store.create_trace(self._trace_id, session_id, input_type, user_text)
         except Exception as e:
-            logger.warning(f"[StatsHandler] Failed to create trace: {e}")
+            logger.debug(f"[StatsHandler] Failed to create trace: {e}")
 
     async def _async_finish_trace(
         self, duration: float, status: str, error_msg: str

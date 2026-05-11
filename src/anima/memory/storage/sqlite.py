@@ -33,8 +33,9 @@ class SQLiteStore:
         logger.info(f"[SQLiteStore] Parent directory confirmed")
 
         logger.info(f"[SQLiteStore] Creating SQLite connection...")
-        self.conn = sqlite3.connect(db_path)
+        self.conn = sqlite3.connect(db_path, timeout=10)
         self.conn.row_factory = sqlite3.Row
+        self.conn.execute("PRAGMA busy_timeout = 5000")
         logger.info(f"[SQLiteStore] ✅ Connection created")
 
         logger.info(f"[SQLiteStore] Setting PRAGMA journal_mode=WAL...")

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .models import Meme, MemeSource
+from .models import Meme, MemeSource, CognitiveAnalysis
 from typing import List, Optional
 from datetime import datetime
 from pathlib import Path
@@ -18,7 +18,7 @@ class MemeStore:
         from ..wiki.manager import WikiManager as _WikiManager
         from ..wiki.models import WikiPage, PageType as _PageType
         self._wiki: _WikiManager = wiki
-        self._WikiPage = _WikiPage
+        self._WikiPage = WikiPage
         self._PageType = _PageType
 
     def open(self) -> None:
@@ -111,29 +111,35 @@ class MemeStore:
     # ── conversion helpers ─────────────────────────────────
 
     def _meme_to_page(self, meme: Meme) -> object:
+        metadata = {
+            "id": meme.id,
+            "context_hint": meme.context_hint,
+            "source": meme.source.value,
+            "base_score": meme.base_score,
+            "current_score": meme.current_score,
+            "use_count": meme.use_count,
+            "last_used_at": meme.last_used_at.isoformat() if meme.last_used_at else None,
+            "is_active": meme.is_active,
+            "resurrection_count": meme.resurrection_count,
+            "source_platform": meme.source_platform,
+            "review_status": meme.review_status,
+        }
+        if meme.cognitive_analysis:
+            metadata["cognitive_analysis"] = meme.cognitive_analysis.to_dict()
         return self._WikiPage(
             title=meme.text[:50] if meme.text else "untitled",
             page_type=self._PageType.MEME,
             path=f"memes/{meme.id}.md",
             content=meme.text,
             tags=meme.tags.copy(),
-            metadata={
-                "id": meme.id,
-                "context_hint": meme.context_hint,
-                "source": meme.source.value,
-                "base_score": meme.base_score,
-                "current_score": meme.current_score,
-                "use_count": meme.use_count,
-                "last_used_at": meme.last_used_at.isoformat() if meme.last_used_at else None,
-                "is_active": meme.is_active,
-                "resurrection_count": meme.resurrection_count,
-            },
+            metadata=metadata,
         )
 
     def _page_to_meme(self, page: object) -> Optional[Meme]:
         md = page.metadata
         if not md.get("id"):
             return None
+        cognitive = CognitiveAnalysis.from_dict(md.get("cognitive_analysis"))
         return Meme(
             id=md.get("id", page.path.replace(".md", "").split("/")[-1]),
             text=page.content,
@@ -149,4 +155,7 @@ class MemeStore:
             ),
             is_active=md.get("is_active", True),
             resurrection_count=md.get("resurrection_count", 0),
+            cognitive_analysis=cognitive,
+            source_platform=md.get("source_platform", "internal"),
+            review_status=md.get("review_status", "pending"),
         )

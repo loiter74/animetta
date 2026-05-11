@@ -53,11 +53,46 @@ export function useSubtitle() {
     target_lang?: string
   }
 
+  /** Payload for audio_with_expression event (we only need audio metadata) */
+  interface AudioWithExpressionEvent {
+    audio_data?: string
+    format?: string
+  }
+
+  /** Estimate audio duration in seconds from base64 data.
+   *  Default assumption: 24kHz 16bit mono → 48000 bytes/sec.
+   *  The +1s safety buffer in the caller covers format estimation error. */
+  function estimateAudioDurationSec(audioData: string, format: string): number {
+    const rawBytes = Math.floor(audioData.length * 0.75)
+    let bytesPerSec = 48000 // conservative default
+
+    // Try to extract sample rate from WAV header for better precision
+    if (format === 'wav' && rawBytes >= 44) {
+      try {
+        // Base64 chars needed: 44 bytes → ceil(44/3)*4 = 60 chars
+        const header = atob(audioData.substring(0, 60))
+        const u8 = (i: number) => header.charCodeAt(i) & 0xff
+        const sampleRate = u8(24) | (u8(25) << 8) | (u8(26) << 16) | (u8(27) << 24)
+        const channels = u8(22) | (u8(23) << 8)
+        const bitsPerSample = u8(34) | (u8(35) << 8)
+        if (sampleRate > 0 && channels > 0 && bitsPerSample > 0) {
+          bytesPerSec = sampleRate * channels * (bitsPerSample / 8)
+        }
+      } catch {
+        // fall through to default
+      }
+    }
+
+    if (bytesPerSec <= 0) bytesPerSec = 48000
+    return rawBytes / bytesPerSec
+  }
+
   // Store refs so socket.off removes ONLY our callbacks
   let _onSentence: ((data: SentenceEvent) => void) | null = null
   let _onControl: ((data: { signal: string }) => void) | null = null
   let _onStopAudio: (() => void) | null = null
   let _onSubtitleTranslation: ((data: SubtitleTranslationEvent) => void) | null = null
+  let _onAudioWithExpression: ((data: AudioWithExpressionEvent) => void) | null = null
 
   onMounted(() => {
     const socket = getSocket()
@@ -116,10 +151,22 @@ export function useSubtitle() {
       scheduleHide(6000)
     }
 
+    // When TTS audio arrives, cancel the 6s fallback timer and
+    // schedule hide based on actual audio duration instead.
+    _onAudioWithExpression = (data: AudioWithExpressionEvent) => {
+      if (!data.audio_data) return
+      cancelHide()
+      const estDurationSec = estimateAudioDurationSec(data.audio_data, data.format || 'wav')
+      // Audio duration + 1s safety buffer, minimum 3s floor
+      const hideDelay = Math.max(Math.round(estDurationSec * 1000) + 1000, 3000)
+      scheduleHide(hideDelay)
+    }
+
     socket.on('sentence', _onSentence)
     socket.on('control', _onControl)
     socket.on('stop_audio', _onStopAudio)
     socket.on('subtitle.translation', _onSubtitleTranslation)
+    socket.on('audio_with_expression', _onAudioWithExpression)
   })
 
   onUnmounted(() => {
@@ -130,6 +177,7 @@ export function useSubtitle() {
     if (_onControl) socket.off('control', _onControl)
     if (_onStopAudio) socket.off('stop_audio', _onStopAudio)
     if (_onSubtitleTranslation) socket.off('subtitle.translation', _onSubtitleTranslation)
+    if (_onAudioWithExpression) socket.off('audio_with_expression', _onAudioWithExpression)
     if (hideTimeout) clearTimeout(hideTimeout)
   })
 

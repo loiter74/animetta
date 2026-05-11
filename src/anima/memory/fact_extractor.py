@@ -164,10 +164,14 @@ class FactExtractor:
             logger.debug(f"[FactExtractor] no facts extracted from turn {turn.turn_id}")
             return []
 
+        # Compute emotion intensity from turn for memory weighting
+        from .search.scorer import MemoryScorer
+        emotion_value = MemoryScorer.emotion_intensity(turn) if turn.emotions else None
+
         # 2. Store and perform version matching
         stored: List[MemoryEntry] = []
         for fact in facts:
-            entry = await self._store_fact(fact, space_id)
+            entry = await self._store_fact(fact, space_id, emotion_value)
             if entry:
                 stored.append(entry)
 
@@ -248,7 +252,7 @@ class FactExtractor:
 
     # ── Version matching (Task 2.3) ──────────────────────────
 
-    async def _store_fact(self, fact: ExtractedFact, space_id: str) -> Optional[MemoryEntry]:
+    async def _store_fact(self, fact: ExtractedFact, space_id: str, emotion_value: Optional[float] = None) -> Optional[MemoryEntry]:
         # Normalize: strip whitespace, lowercase
         normalized = fact.fact.strip()
 
@@ -271,6 +275,7 @@ class FactExtractor:
                 is_static=fact.is_static,
                 is_forgotten=False,
                 confidence=self._compute_confidence(fact, existing),
+                emotion_value=emotion_value if emotion_value is not None else existing.emotion_value,
             )
             new_id = self._store.create_new_version(new_entry, existing.id)
             new_entry.id = new_id
@@ -298,6 +303,7 @@ class FactExtractor:
                 is_latest=True,
                 is_static=fact.is_static,
                 confidence=fact.confidence,
+                emotion_value=emotion_value,
             )
             entry_id = self._store.create(entry)
             entry.id = entry_id

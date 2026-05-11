@@ -191,7 +191,6 @@ def load_tools_from_config(config: Dict[str, Any]) -> tuple:
             init_bridge(minecraft_config)
             mc_tools = get_minecraft_tools()
             extra_tools.extend(mc_tools)
-            tools_map.update({t.name: t for t in mc_tools})
             logger.info(f"[Minecraft Tools] Loaded {len(mc_tools)} tools: {[t.name for t in mc_tools]}")
         except Exception as e:
             logger.error(f"[Minecraft Tools] Failed to load: {e}")
