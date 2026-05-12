@@ -279,6 +279,52 @@ frontend/                   # Vue 3 + TypeScript + Electron (UnoCSS, Pinia)
 
 ---
 
+## 🔭 可观测性 | Observability
+
+Anima 集成了完整的本地化可观测性栈：**OpenTelemetry Collector + Prometheus + Grafana Tempo + Grafana**，一次对话的全链路 trace、业务指标 dashboard、成本追踪、异常告警一站到位。
+
+### 启动可观测性栈
+
+```bash
+# 一键启动所有组件 (首次启动需拉取镜像，约 2 分钟)
+docker-compose -f observability/docker-compose.yml up -d
+```
+
+### 端口与服务
+
+| 服务 | 端口 | 用途 | 默认账号 |
+|------|------|------|----------|
+| **Grafana** | `3000` | Dashboard + Trace 查看 | `admin` / `admin` |
+| **Prometheus** | `9090` | 指标查询 + 告警 | — |
+| **Tempo** | `3200` | 分布式追踪存储 | — |
+| **OTel Collector** | `4317` (gRPC) / `4318` (HTTP) | 遥测数据入口 | — |
+
+### Dashboard 概览
+
+启动后可访问 `http://localhost:3000`，预置 4 张 Dashboard：
+
+| Dashboard | 内容 |
+|-----------|------|
+| **Anima - Overview** | QPS、端到端延迟 p50/p95/p99、错误率、成本率、活跃会话数 |
+| **Anima - LangGraph Pipeline** | 7 节点延迟堆叠图、错误率热图、工具调用分布、LLM vs Tool 调用对比 |
+| **Anima - RAG Performance** | 检索延迟 p50/p95 按策略对比、chunk 数量分布、Top Score 直方图 |
+| **Anima - Cost & Tokens** | 累计成本曲线、Token 用量趋势、提供商成本占比、月度预测 |
+
+### Trace 查看
+
+在 Grafana → Explore → 选择 **Tempo** datasource → Search，可查看每次对话的完整 trace（含 LangGraph 7 节点 span + LLM/ASR/TTS 服务调用 span）。
+
+### 告警
+
+5 条预置 Prometheus 告警规则（高错误率、高延迟、月度成本预警/严重、服务宕机）。配置 Discord/Slack webhook 即可接收通知：
+
+```bash
+# 在 .env 中设置
+ALERT_WEBHOOK_URL=https://discord.com/api/webhooks/xxx/yyy
+```
+
+---
+
 ## 📄 许可证 | License
 
 MIT License — 自由使用、修改和分发 | Free to use, modify, and distribute.

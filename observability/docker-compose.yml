@@ -1,0 +1,81 @@
+version: "3.8"
+
+# ── Anima Observability Stack ──
+# 启动: docker-compose -f observability/docker-compose.yml up -d
+# 组件: OTel Collector | Prometheus | Tempo | Grafana
+
+services:
+  # ── OpenTelemetry Collector ──
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.123.0
+    container_name: anima-otel-collector
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+      - "8889:8889"   # Prometheus metrics exporter
+    networks:
+      - anima-obs
+
+  # ── Prometheus ──
+  prometheus:
+    image: prom/prometheus:v3.3.0
+    container_name: anima-prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=15d"
+      - "--web.enable-lifecycle"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./alerts/rules.yml:/etc/prometheus/rules.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - anima-obs
+
+  # ── Grafana Tempo (Trace Backend) ──
+  tempo:
+    image: grafana/tempo:2.7.3
+    container_name: anima-tempo
+    command: ["-config.file=/etc/tempo-config.yaml"]
+    volumes:
+      - ./tempo-config.yaml:/etc/tempo-config.yaml:ro
+      - tempo_data:/var/tempo
+    ports:
+      - "3200:3200"   # Tempo HTTP API
+    networks:
+      - anima-obs
+
+  # ── Grafana ──
+  grafana:
+    image: grafana/grafana:11.6.0
+    container_name: anima-grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    volumes:
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - anima-obs
+    depends_on:
+      - prometheus
+      - tempo
+
+networks:
+  anima-obs:
+    driver: bridge
+
+volumes:
+  prometheus_data:
+  tempo_data:
+  grafana_data:

@@ -1,0 +1,78 @@
+# ── Prometheus Alert Rules ──
+# Evaluated by Prometheus every 15s (evaluation_interval in prometheus.yml)
+
+groups:
+  - name: anima_alerts
+    rules:
+      # ── High LLM Error Rate (warning) ──
+      - alert: AnimaHighErrorRate
+        expr: |
+          (
+            rate(anima_llm_errors_total[5m])
+            /
+            rate(anima_llm_request_duration_seconds_count[5m])
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          component: llm
+        annotations:
+          summary: "Anima LLM error rate > 5%"
+          description: |
+            LLM error rate is {{ $value | humanizePercentage }} over the last 5 minutes.
+            Affected providers: check the "Anima - Overview" dashboard.
+
+      # ── High End-to-End Latency (warning) ──
+      - alert: AnimaHighLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(anima_node_duration_seconds_bucket{node_name="output"}[5m])) by (le)
+          ) > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: pipeline
+        annotations:
+          summary: "Anima p95 latency > 10s"
+          description: |
+            End-to-end p95 latency is {{ $value }}s over the last 5 minutes.
+            Check the "Anima - LangGraph Pipeline" dashboard for node breakdown.
+
+      # ── Monthly Cost Budget Warning ──
+      - alert: AnimaCostBudgetWarning
+        expr: |
+          increase(anima_llm_cost_usd_total[30d]) > 40
+        labels:
+          severity: warning
+          component: cost
+        annotations:
+          summary: "Anima monthly cost > $40"
+          description: |
+            Monthly LLM cost has exceeded $40 (current: {{ $value | humanize }}).
+            Check the "Anima - Cost & Tokens" dashboard for provider breakdown.
+
+      # ── Monthly Cost Budget Critical ──
+      - alert: AnimaCostBudgetCritical
+        expr: |
+          increase(anima_llm_cost_usd_total[30d]) > 48
+        labels:
+          severity: critical
+          component: cost
+        annotations:
+          summary: "Anima monthly cost > $48 (CRITICAL)"
+          description: |
+            Monthly LLM cost has exceeded $48 (current: {{ $value | humanize }}).
+            This is the critical threshold. Review immediately.
+
+      # ── Service Down (critical) ──
+      - alert: AnimaServiceDown
+        expr: up{job="anima"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: service
+        annotations:
+          summary: "Anima backend is DOWN"
+          description: |
+            Anima backend ({{ $labels.instance }}) has been unreachable for 2 minutes.
+            Check if the backend process is running.

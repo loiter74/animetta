@@ -197,6 +197,20 @@ async def llm_node(
     rag_duration = (time_module.perf_counter() - t_rag) * 1000
     log_timing(state, "llm.rag_retrieval", rag_duration, f"query='{user_text[:50]}'")
 
+    # OTel metrics: RAG retrieval duration + chunk count
+    try:
+        from anima.tracing.metrics import get_rag_duration, get_rag_chunks
+        rd = get_rag_duration()
+        if rd is not None:
+            rd.observe(rag_duration / 1000.0, {"strategy": "hybrid"})
+        rc = get_rag_chunks()
+        if rc is not None:
+            chunk_count = metadata.get("memory_count", 0) if metadata else 0
+            if chunk_count > 0:
+                rc.record(chunk_count, {"strategy": "hybrid"})
+    except Exception:
+        pass
+
     # Check if tools are enabled
     enable_tools = _get_config_value(config, "enable_tools", False)
     chat_model = _get_config_value(config, "chat_model", None)

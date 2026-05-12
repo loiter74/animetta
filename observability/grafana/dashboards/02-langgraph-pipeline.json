@@ -1,0 +1,93 @@
+{
+  "annotations": { "list": [] },
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "title": "Node Latency (stacked bar)",
+      "type": "barchart",
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(anima_node_duration_seconds_sum[5m])) by (node_name) / sum(rate(anima_node_duration_seconds_count[5m])) by (node_name)",
+          "legendFormat": "{{node_name}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s" }
+      }
+    },
+    {
+      "title": "Node Error Rate Heatmap",
+      "type": "heatmap",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 10 },
+      "targets": [
+        {
+          "expr": "rate(anima_node_errors_total[5m]) / rate(anima_node_duration_seconds_count[5m]) * 100",
+          "legendFormat": "{{node_name}}"
+        }
+      ]
+    },
+    {
+      "title": "Tool Call Distribution",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 10 },
+      "targets": [
+        {
+          "expr": "sum(rate(anima_tool_calls_total[1h])) by (tool_name)",
+          "legendFormat": "{{tool_name}}"
+        }
+      ]
+    },
+    {
+      "title": "LLM Calls vs Tool Calls",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 18 },
+      "targets": [
+        {
+          "expr": "rate(anima_llm_request_duration_seconds_count[5m])",
+          "legendFormat": "LLM Calls"
+        },
+        {
+          "expr": "rate(anima_tool_calls_total[5m])",
+          "legendFormat": "Tool Calls"
+        }
+      ]
+    },
+    {
+      "title": "Per-Node Latency over Time",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 18 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(anima_node_duration_seconds_bucket[5m])) by (le, node_name))",
+          "legendFormat": "{{node_name}} p95"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": ["anima", "pipeline"],
+  "templating": {
+    "list": [
+      {
+        "name": "session_id",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "query": "label_values(anima_node_duration_seconds_count, node_name)",
+        "multi": false,
+        "includeAll": true
+      }
+    ]
+  },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "title": "Anima - LangGraph Pipeline",
+  "uid": "anima-pipeline",
+  "version": 1
+}

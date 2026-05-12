@@ -1,0 +1,17 @@
+# ── Alertmanager Configuration ──
+# Routes alerts to Discord/Slack webhook.
+# Set ALERT_WEBHOOK_URL in .env — if empty, alerts are logged only.
+
+route:
+  receiver: "default"
+  group_by: ["alertname"]
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+
+receivers:
+  - name: "default"
+    # Discord webhook (preferred) — set ALERT_WEBHOOK_URL in .env
+    discord_configs: []
+    # Slack webhook (fallback)
+    slack_configs: []

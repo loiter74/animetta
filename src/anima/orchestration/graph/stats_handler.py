@@ -187,6 +187,15 @@ class StatsCallbackHandler(BaseCallbackHandler):
             self._async_finish_span(span_info["span_id"], duration, output_summary)
         )
 
+        # OTel metrics: node duration histogram
+        try:
+            from anima.tracing.metrics import get_node_duration
+            metric = get_node_duration()
+            if metric is not None:
+                metric.observe(duration / 1000.0, {"node_name": span_info["node_name"]})
+        except Exception:
+            pass
+
     def on_chain_error(
         self, error: BaseException, *, run_id: Any, **kwargs: Any
     ) -> None:
@@ -202,6 +211,15 @@ class StatsCallbackHandler(BaseCallbackHandler):
                 span_info["span_id"], duration, str(error)[:200], status="error"
             )
         )
+
+        # OTel metrics: node error counter
+        try:
+            from anima.tracing.metrics import get_node_errors
+            metric = get_node_errors()
+            if metric is not None:
+                metric.add(1, {"node_name": span_info["node_name"], "error_type": "exception"})
+        except Exception:
+            pass
 
     # -- Async storage methods --
 

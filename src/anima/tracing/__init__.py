@@ -5,6 +5,7 @@ Provides:
 - StatsSpanExporter: writes OTel spans to StatsStore SQLite
 - TracingProxy: auto-wraps service instances with OTel span creation
 - init_tracing(): one-call bootstrap for TracerProvider
+- init_metrics(): one-call bootstrap for MeterProvider
 - attach_trace_context(): links OTel context to StatsHandler's trace_id
 """
 

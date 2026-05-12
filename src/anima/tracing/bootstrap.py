@@ -2,33 +2,32 @@
 Tracing bootstrap — one-call initialization of OpenTelemetry TracerProvider.
 
 Reads config/observability.yaml and sets up:
-- TracerProvider with BatchSpanProcessor(StatsSpanExporter)
+- TracerProvider with SimpleSpanProcessor(StatsSpanExporter) → SQLite
+- Optional: BatchSpanProcessor(OTLPSpanExporter) → OTel Collector (dual-write)
 - Or NoOpTracerProvider when disabled
 """
 
 import os
 import signal
-from typing import Optional
+from typing import Any, Optional
 from pathlib import Path
 from loguru import logger
 
 import yaml
 
 
-def _load_tracing_config() -> dict:
-    """Load tracing config from config/observability.yaml."""
+def _load_full_config() -> dict[str, Any]:
+    """Load full observability config from config/observability.yaml."""
     config_path = Path(__file__).parent.parent.parent.parent / "config" / "observability.yaml"
     if not config_path.exists():
-        logger.info("[Tracing] No observability.yaml found — using defaults (tracing=disabled)")
-        return {"enabled": False}
-
+        logger.info("[Tracing] No observability.yaml found — using defaults")
+        return {}
     try:
         with open(config_path, "r", encoding="utf-8") as f:
-            cfg = yaml.safe_load(f) or {}
-        return cfg.get("tracing", {"enabled": False})
+            return yaml.safe_load(f) or {}
     except Exception as e:
         logger.warning(f"[Tracing] Failed to load config: {e}")
-        return {"enabled": False}
+        return {}
 
 
 def init_tracing(
@@ -39,6 +38,9 @@ def init_tracing(
 ):
     """Initialize the OpenTelemetry tracing pipeline.
 
+    Dual-write mode: spans go to both StatsStore (SQLite) and OTel Collector (OTLP).
+    Metrics (if configured) are exported via OTLP to the Collector.
+
     Args:
         service_name: Service name for Resource attributes.
         enabled: Override config file's enabled flag.
@@ -48,14 +50,16 @@ def init_tracing(
     Returns:
         The configured Tracer (or NoOpTracer if disabled).
     """
-    cfg = _load_tracing_config()
+    full_cfg = _load_full_config()
+    tracing_cfg = full_cfg.get("tracing", {})
+    otlp_cfg = full_cfg.get("otlp", {})
 
     if enabled is None:
-        enabled = cfg.get("enabled", True)
+        enabled = tracing_cfg.get("enabled", True)
     if service_name is None:
-        service_name = cfg.get("service_name", "anima")
-    bsize = max_export_batch_size or cfg.get("max_export_batch_size", 512)
-    delay = schedule_delay_millis or cfg.get("schedule_delay_millis", 5000)
+        service_name = tracing_cfg.get("service_name", "anima")
+    bsize = max_export_batch_size or tracing_cfg.get("max_export_batch_size", 512)
+    delay = schedule_delay_millis or tracing_cfg.get("schedule_delay_millis", 5000)
 
     if not enabled:
         logger.info("[Tracing] Tracing disabled — using NoOpTracerProvider")
@@ -66,22 +70,86 @@ def init_tracing(
     from opentelemetry import trace
     from opentelemetry.sdk.resources import Resource
     from opentelemetry.sdk.trace import TracerProvider
-    from opentelemetry.sdk.trace.export import SimpleSpanProcessor
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor, SimpleSpanProcessor
 
     from .exporter import StatsSpanExporter
 
     resource = Resource.create({
         "service.name": service_name,
-        "service.version": __import__("anima").__version__ if hasattr(__import__("anima"), "__version__") else "unknown",
+        "service.version": (
+            __import__("anima").__version__
+            if hasattr(__import__("anima"), "__version__")
+            else "unknown"
+        ),
     })
 
     provider = TracerProvider(resource=resource)
 
-    exporter = StatsSpanExporter()
-    processor = SimpleSpanProcessor(exporter)
-    provider.add_span_processor(processor)
+    # ── StatsStore SQLite exporter (always on when tracing enabled) ──
+    stats_exporter = StatsSpanExporter()
+    provider.add_span_processor(SimpleSpanProcessor(stats_exporter))
+    logger.info("[Tracing] StatsSpanExporter → SQLite (sync write)")
+
+    # ── OTLP gRPC exporter (dual-write to OTel Collector) ──
+    if otlp_cfg.get("enabled", False):
+        _init_otlp_exporter(provider, otlp_cfg, bsize, delay)
 
     trace.set_tracer_provider(provider)
-    logger.info(f"[Tracing] Initialized: service={service_name} (sync write)")
+    logger.info(f"[Tracing] Initialized: service={service_name}")
+
+    # ── Initialize OTel Metrics ──
+    otlp_metrics_endpoint = otlp_cfg.get("endpoint") if otlp_cfg.get("enabled") else None
+    try:
+        from .metrics import init_metrics
+        init_metrics(service_name=service_name, otlp_endpoint=otlp_metrics_endpoint)
+    except Exception as e:
+        logger.warning(f"[Tracing] Metrics init failed (non-fatal): {e}")
 
     return trace.get_tracer(service_name)
+
+
+def _init_otlp_exporter(
+    provider: Any,
+    otlp_cfg: dict[str, Any],
+    batch_size: int,
+    schedule_delay: int,
+) -> None:
+    """Add OTLP gRPC exporter to the TracerProvider for dual-write.
+
+    Gracefully degrades if the exporter package is missing or the endpoint
+    is unreachable — spans still go to StatsStore.
+    """
+    endpoint = otlp_cfg.get("endpoint", "http://localhost:4317")
+    protocol = otlp_cfg.get("protocol", "grpc")
+
+    try:
+        if protocol == "grpc":
+            from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (
+                OTLPSpanExporter,
+            )
+        else:
+            from opentelemetry.exporter.otlp.proto.http.trace_exporter import (
+                OTLPSpanExporter,
+            )
+    except ImportError:
+        logger.warning(
+            "[Tracing] opentelemetry-exporter-otlp not installed — OTLP export disabled. "
+            "Run: pip install opentelemetry-exporter-otlp-proto-grpc"
+        )
+        return
+
+    otlp_exporter = OTLPSpanExporter(
+        endpoint=endpoint,
+        headers=otlp_cfg.get("headers"),
+        timeout=10,
+    )
+    provider.add_span_processor(
+        BatchSpanProcessor(
+            otlp_exporter,
+            max_export_batch_size=batch_size,
+            schedule_delay_millis=schedule_delay,
+        )
+    )
+    logger.info(
+        f"[Tracing] OTLPSpanExporter → {endpoint} (batch, {protocol}) — dual-write enabled"
+    )

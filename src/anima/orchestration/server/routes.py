@@ -375,6 +375,15 @@ class RouteHandlers:
             'server_time': asyncio.get_event_loop().time()
         }, to=sid)
 
+        # OTel metrics: active sessions gauge
+        try:
+            from anima.tracing.metrics import get_active_sessions
+            g = get_active_sessions()
+            if g is not None:
+                g.add(1)
+        except Exception:
+            pass
+
         if not is_electron:
             await self.sio.emit('control', {
                 'type': 'control',
@@ -388,6 +397,15 @@ class RouteHandlers:
         self.desktop_manager.unregister(sid)
         await self.session_manager.cleanup_session(sid)
 
+        # OTel metrics: active sessions gauge
+        try:
+            from anima.tracing.metrics import get_active_sessions
+            g = get_active_sessions()
+            if g is not None:
+                g.add(-1)
+        except Exception:
+            pass
+
     # Conversation events
     async def on_text_input(self, sid: str, data: dict) -> None:
         """Handle text input"""
@@ -396,6 +414,15 @@ class RouteHandlers:
 
         if not text:
             return
+
+        # OTel metrics: session messages counter
+        try:
+            from anima.tracing.metrics import get_session_messages
+            sm = get_session_messages()
+            if sm is not None:
+                sm.add(1)
+        except Exception:
+            pass
 
         try:
             orchestrator = await self._get_or_create_orchestrator(sid)
@@ -407,6 +434,15 @@ class RouteHandlers:
             )
         except Exception as e:
             logger.error(f"[{sid}] Error processing text input: {e}")
+
+            # OTel metrics: websocket errors counter
+            try:
+                from anima.tracing.metrics import get_websocket_errors
+                we = get_websocket_errors()
+                if we is not None:
+                    we.add(1)
+            except Exception:
+                pass
             await self.sio.emit('error', {
                 'type': 'error',
                 'message': str(e)
@@ -1167,6 +1203,51 @@ class RouteHandlers:
 
         return random.choice(GOOD_TPL if status == 'good' else BAD_TPL)
 
+    async def on_meme_collect(self, sid: str, data: dict) -> None:
+        """触发B站热梗采集（meme:collect）"""
+        logger.info(f"[{sid}] meme:collect — triggering Bilibili meme collection")
+        try:
+            ctx = self.session_manager.get_context(sid)
+            if not ctx or not ctx.memory_system:
+                await self.sio.emit('meme:collect', {'ok': False, 'error': 'Memory system not available'}, to=sid)
+                return
+
+            # Use the PeriodicLearner's collect_bilibili_memes if available
+            learner = getattr(ctx.memory_system, '_learner', None)
+            if learner and hasattr(learner, 'collect_bilibili_memes'):
+                import asyncio
+                await learner.collect_bilibili_memes()
+                # Count new pending memes
+                meme_pool = getattr(ctx.memory_system, 'meme_pool', None)
+                count = 0
+                if meme_pool:
+                    active = meme_pool.store.list_active()
+                    count = len([m for m in active if m.review_status == 'pending'])
+                await self.sio.emit('meme:collect', {'ok': True, 'count': count}, to=sid)
+                logger.info(f"[{sid}] meme:collect — done, {count} pending memes")
+            else:
+                # Fallback: run the standalone script
+                import subprocess, sys, os
+                project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
+                script = os.path.join(project_root, 'scripts', 'test_meme_collector.py')
+                if os.path.exists(script):
+                    proc = await asyncio.create_subprocess_exec(
+                        sys.executable, script,
+                        cwd=project_root,
+                        stdout=asyncio.subprocess.PIPE,
+                        stderr=asyncio.subprocess.PIPE,
+                    )
+                    stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=120)
+                    if proc.returncode == 0:
+                        await self.sio.emit('meme:collect', {'ok': True, 'count': 0}, to=sid)
+                    else:
+                        await self.sio.emit('meme:collect', {'ok': False, 'error': stderr.decode()[:200]}, to=sid)
+                else:
+                    await self.sio.emit('meme:collect', {'ok': False, 'error': f'Script not found: {script}'}, to=sid)
+        except Exception as e:
+            logger.error(f"[{sid}] meme:collect error: {e}", exc_info=True)
+            await self.sio.emit('meme:collect', {'ok': False, 'error': str(e)}, to=sid)
+
     async def on_set_personality_mode(self, sid: str, data: dict) -> None:
         """设置个性模式（运行时切换）"""
         mode = data.get('mode', '')
@@ -1287,6 +1368,7 @@ def register_routes(
     sio.on('meme:list', handlers.on_meme_list)
     sio.on('meme:review', handlers.on_meme_review)
     sio.on('meme:dataset', handlers.on_meme_dataset)
+    sio.on('meme:collect', handlers.on_meme_collect)
 
     # Personality mode runtime switching
     sio.on('set_personality_mode', handlers.on_set_personality_mode)

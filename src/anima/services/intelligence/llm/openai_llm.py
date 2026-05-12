@@ -4,6 +4,7 @@ Uses the openai SDK to call OpenAI GPT models
 """
 
 import json
+import time as time_module
 from typing import AsyncIterator, List, Dict, Any, Optional, TYPE_CHECKING
 from loguru import logger
 from openai import AsyncOpenAI
@@ -145,7 +146,8 @@ class OpenAILLM(LLMInterface):
         """
         system_prompt = kwargs.get("system_prompt")
         messages = self._build_messages(user_input, system_prompt=system_prompt)
-        
+
+        t_start = time_module.perf_counter()
         try:
             response = await self.client.chat.completions.create(
                 model=kwargs.get("model", self.model),
@@ -153,17 +155,23 @@ class OpenAILLM(LLMInterface):
                 temperature=kwargs.get("temperature", self.temperature),
                 max_tokens=kwargs.get("max_tokens", self.max_tokens)
             )
-            
+
             assistant_message = response.choices[0].message.content
-            
+
+            # OTel metrics: record token usage + cost + duration
+            duration_s = time_module.perf_counter() - t_start
+            self._record_usage(response, duration_s)
+
             # Update history
             self.history.append({"role": "user", "content": user_input})
             self.history.append({"role": "assistant", "content": assistant_message})
-            
+
             logger.debug(f"OpenAI response: {assistant_message[:100]}...")
             return assistant_message
-            
+
         except Exception as e:
+            duration_s = time_module.perf_counter() - t_start
+            self._record_error(duration_s)
             logger.error(f"OpenAI chat error: {e}")
             raise
 
@@ -182,6 +190,7 @@ class OpenAILLM(LLMInterface):
         messages = self._build_messages(user_input, system_prompt=system_prompt)
         
         full_response = ""
+        t_start = time_module.perf_counter()
         
         try:
             response = await self.client.chat.completions.create(
@@ -189,20 +198,48 @@ class OpenAILLM(LLMInterface):
                 messages=messages,
                 temperature=kwargs.get("temperature", self.temperature),
                 max_tokens=kwargs.get("max_tokens", self.max_tokens),
-                stream=True
+                stream=True,
+                stream_options={"include_usage": True},
             )
             
             async for chunk in response:
-                if chunk.choices[0].delta.content:
+                if chunk.choices and chunk.choices[0].delta.content:
                     content = chunk.choices[0].delta.content
                     full_response += content
                     yield content
+                # Final chunk may contain usage info
+                if hasattr(chunk, "usage") and chunk.usage:
+                    response._usage = chunk.usage
+            
+            # OTel metrics: record usage from stream
+            duration_s = time_module.perf_counter() - t_start
+            try:
+                # Try to get usage from response object or estimate from text
+                if hasattr(response, "_usage") and response._usage:
+                    input_tokens = getattr(response._usage, "prompt_tokens", 0)
+                    output_tokens = getattr(response._usage, "completion_tokens", 0)
+                else:
+                    # Fallback: rough estimate (4 chars ≈ 1 token)
+                    input_tokens = len(user_input) // 4
+                    output_tokens = len(full_response) // 4
+                # Use a synthetic response-like object for _record_usage
+                class _StreamUsage:
+                    pass
+                usage_obj = _StreamUsage()
+                usage_obj.usage = _StreamUsage()
+                usage_obj.usage.prompt_tokens = input_tokens
+                usage_obj.usage.completion_tokens = output_tokens
+                self._record_usage(usage_obj, duration_s)
+            except Exception:
+                pass
             
             # Update history
             self.history.append({"role": "user", "content": user_input})
             self.history.append({"role": "assistant", "content": full_response})
             
         except Exception as e:
+            duration_s = time_module.perf_counter() - t_start
+            self._record_error(duration_s)
             logger.error(f"OpenAI streaming chat error: {e}")
             raise
 
@@ -225,6 +262,67 @@ class OpenAILLM(LLMInterface):
         await self.client.close()
         logger.info("OpenAILLM resources released")
     
+    def _get_provider_name(self) -> str:
+        """Infer provider name from base_url."""
+        if self.base_url and "deepseek" in str(self.base_url).lower():
+            return "deepseek"
+        return "openai"
+
+    def _record_usage(self, response: Any, duration_s: float) -> None:
+        """Record OTel metrics for token usage, cost, and duration."""
+        try:
+            input_tokens = 0
+            output_tokens = 0
+
+            if hasattr(response, "usage") and response.usage:
+                input_tokens = getattr(response.usage, "prompt_tokens", 0)
+                output_tokens = getattr(response.usage, "completion_tokens", 0)
+
+            provider = self._get_provider_name()
+            model = self.model
+
+            from anima.tracing.metrics import (
+                get_llm_request_duration, get_llm_tokens, get_llm_cost
+            )
+            from anima.tracing.cost_calculator import calculate_cost
+
+            # Duration
+            dur = get_llm_request_duration()
+            if dur is not None:
+                dur.observe(duration_s, {"provider": provider, "model": model})
+
+            # Tokens
+            tok = get_llm_tokens()
+            if tok is not None:
+                if input_tokens > 0:
+                    tok.add(input_tokens, {"provider": provider, "model": model, "type": "input"})
+                if output_tokens > 0:
+                    tok.add(output_tokens, {"provider": provider, "model": model, "type": "output"})
+
+            # Cost
+            cost = calculate_cost(provider, model, input_tokens, output_tokens)
+            if cost > 0:
+                cst = get_llm_cost()
+                if cst is not None:
+                    cst.add(cost, {"provider": provider, "model": model})
+
+        except Exception:
+            pass
+
+    def _record_error(self, duration_s: float) -> None:
+        """Record LLM error metrics."""
+        try:
+            provider = self._get_provider_name()
+            from anima.tracing.metrics import get_llm_errors, get_llm_request_duration
+            err = get_llm_errors()
+            if err is not None:
+                err.add(1, {"provider": provider, "model": self.model})
+            dur = get_llm_request_duration()
+            if dur is not None and duration_s > 0:
+                dur.observe(duration_s, {"provider": provider, "model": self.model})
+        except Exception:
+            pass
+
     def handle_interrupt(self, heard_response: str = "") -> None:
         """
         Handle user interruption
@@ -378,6 +476,7 @@ class OpenAILLM(LLMInterface):
 
         logger.debug(f"[OpenAI] chat_with_tools: tools={len(openai_tools)}, input={user_input[:50]}")
 
+        t_start = time_module.perf_counter()
         try:
             response = await self.client.chat.completions.create(
                 model=self.model,
@@ -388,6 +487,10 @@ class OpenAILLM(LLMInterface):
                 max_tokens=self.max_tokens,
                 stream=False,
             )
+
+            # OTel metrics: record token usage + cost + duration
+            duration_s = time_module.perf_counter() - t_start
+            self._record_usage(response, duration_s)
 
             message = response.choices[0].message
             content = message.content or ""
@@ -426,5 +529,7 @@ class OpenAILLM(LLMInterface):
             }
 
         except Exception as e:
+            duration_s = time_module.perf_counter() - t_start if 't_start' in dir() else 0
+            self._record_error(duration_s)
             logger.error(f"[OpenAI] Tool call failed: {e}")
             raise

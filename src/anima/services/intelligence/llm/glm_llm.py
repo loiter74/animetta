@@ -35,7 +35,7 @@ class GLMLLM(LLMInterface):
 
     async def _ensure_client(self):
         if self.client is None:
-            self.client = ZhipuAI(api_key=self.config.api_key)
+            self.client = ZhipuAI(api_key=self.config.api_key, disable_token_cache=False)
             logger.info(f"[GLM] ZhipuAI client initialized")
 
     async def preload(self) -> None:
@@ -157,7 +157,7 @@ class GLMLLM(LLMInterface):
             raise
 
     def _track_usage(self, response: Any) -> None:
-        """Track token consumption"""
+        """Track token consumption and record OTel metrics."""
         try:
             usage = getattr(response, "usage", None)
             if usage:
@@ -169,6 +169,25 @@ class GLMLLM(LLMInterface):
                     f"[GLM] Token usage: input={input_tokens}, output={output_tokens}, "
                     f"cumulative input={self._total_input_tokens}, output={self._total_output_tokens}"
                 )
+
+                # OTel metrics: record token usage + cost
+                try:
+                    from anima.tracing.metrics import get_llm_tokens, get_llm_cost
+                    from anima.tracing.cost_calculator import calculate_cost
+
+                    tok = get_llm_tokens()
+                    if tok is not None:
+                        tok.add(input_tokens, {"provider": "glm", "model": self.model, "type": "input"})
+                        tok.add(output_tokens, {"provider": "glm", "model": self.model, "type": "output"})
+
+                    cost = calculate_cost("glm", self.model, input_tokens, output_tokens)
+                    if cost > 0:
+                        cst = get_llm_cost()
+                        if cst is not None:
+                            cst.add(cost, {"provider": "glm", "model": self.model})
+                except Exception:
+                    pass
+
         except Exception as e:
             logger.debug(f"[GLM] Token tracking failed: {e}")
 

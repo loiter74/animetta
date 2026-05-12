@@ -31,3 +31,14 @@ tracing:
   service_name: "anima"           # 服务名称
   max_export_batch_size: 512      # 批量写入最大条数
   schedule_delay_millis: 5000     # 批量写入间隔(ms)
+
+# ========================================
+# OTLP Export - 将 trace + metrics 发送到 OTel Collector
+# OTel Collector → Tempo (traces) + Prometheus (metrics) → Grafana
+# ========================================
+otlp:
+  enabled: true                    # 开启双写: StatsStore SQLite + OTLP Collector
+  endpoint: "http://localhost:4317"  # OTLP gRPC 端点
+  protocol: "grpc"                # grpc / http/protobuf
+  # 可选 headers (e.g. {"Authorization": "Bearer <token>"})
+  # headers: {}

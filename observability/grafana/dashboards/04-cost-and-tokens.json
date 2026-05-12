@@ -1,0 +1,108 @@
+{
+  "annotations": { "list": [] },
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "title": "Cumulative Cost (by Provider)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "anima_llm_cost_usd_total",
+          "legendFormat": "{{provider}}/{{model}}"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "currencyUSD" } }
+    },
+    {
+      "title": "Token Usage (Input/Output by Provider)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "rate(anima_llm_tokens_total{type=\"input\"}[5m])",
+          "legendFormat": "{{provider}} input"
+        },
+        {
+          "expr": "rate(anima_llm_tokens_total{type=\"output\"}[5m])",
+          "legendFormat": "{{provider}} output"
+        }
+      ]
+    },
+    {
+      "title": "Per-Provider Cost Share",
+      "type": "piechart",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "anima_llm_cost_usd_total - anima_llm_cost_usd_total offset 1d",
+          "legendFormat": "{{provider}}"
+        }
+      ]
+    },
+    {
+      "title": "Monthly Cost Forecast",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 8 },
+      "targets": [
+        {
+          "expr": "predict_linear(anima_llm_cost_usd_total[24h], 30 * 86400)",
+          "legendFormat": "Forecast"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "currencyUSD" } }
+    },
+    {
+      "title": "LLM Request Duration (p50/p95) by Provider",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(anima_llm_request_duration_seconds_bucket[5m])) by (le, provider))",
+          "legendFormat": "{{provider}} p50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(anima_llm_request_duration_seconds_bucket[5m])) by (le, provider))",
+          "legendFormat": "{{provider}} p95"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "title": "Cost over Time (24h)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+      "targets": [
+        {
+          "expr": "increase(anima_llm_cost_usd_total[1h])",
+          "legendFormat": "{{provider}}/{{model}}"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "currencyUSD" } }
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": ["anima", "cost"],
+  "templating": {
+    "list": [
+      {
+        "name": "provider",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "query": "label_values(anima_llm_cost_usd_total, provider)",
+        "multi": true,
+        "includeAll": true
+      }
+    ]
+  },
+  "time": { "from": "now-24h", "to": "now" },
+  "timepicker": {},
+  "title": "Anima - Cost & Tokens",
+  "uid": "anima-cost",
+  "version": 1
+}
