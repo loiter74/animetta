@@ -123,6 +123,8 @@ def _init_otlp_exporter(
     protocol = otlp_cfg.get("protocol", "grpc")
 
     try:
+        from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
         if protocol == "grpc":
             from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (
                 OTLPSpanExporter,
@@ -138,11 +140,15 @@ def _init_otlp_exporter(
         )
         return
 
-    otlp_exporter = OTLPSpanExporter(
-        endpoint=endpoint,
-        headers=otlp_cfg.get("headers"),
-        timeout=10,
-    )
+    otlp_exporter_kwargs: dict[str, Any] = {
+        "endpoint": endpoint,
+        "timeout": 10,
+    }
+    headers = otlp_cfg.get("headers")
+    if headers and isinstance(headers, dict):
+        otlp_exporter_kwargs["headers"] = headers
+
+    otlp_exporter = OTLPSpanExporter(**otlp_exporter_kwargs)
     provider.add_span_processor(
         BatchSpanProcessor(
             otlp_exporter,
