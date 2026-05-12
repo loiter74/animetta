@@ -77,11 +77,14 @@ def calculate_cost(
     # Try exact model match first, then fallback to partial match
     prices: Optional[tuple[float, float]] = provider_prices.get(model)
     if prices is None:
-        # Partial match: check if model starts with a known prefix
+        # Partial match: find the longest known prefix that matches the model
+        best_match: Optional[tuple[float, float]] = None
+        best_len = 0
         for known_model, known_prices in provider_prices.items():
-            if model.startswith(known_model):
-                prices = known_prices
-                break
+            if model.startswith(known_model) and len(known_model) > best_len:
+                best_match = known_prices
+                best_len = len(known_model)
+        prices = best_match
 
     if prices is None:
         logger.debug(f"[CostCalc] Unknown model: {provider}/{model}")

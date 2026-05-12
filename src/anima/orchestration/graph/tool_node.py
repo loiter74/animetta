@@ -52,6 +52,7 @@ async def tool_node(
 
         logger.info(f"[{session_id}] [ToolNode] Calling tool: {tool_name}({tool_args})")
 
+        t_start = 0.0
         try:
             tool_fn = tools_map.get(tool_name)
 
@@ -86,7 +87,7 @@ async def tool_node(
             tool_results.append({"tool": tool_name, "args": tool_args, "result": result})
 
         except Exception as e:
-            duration_s = time_module.perf_counter() - t_start if 't_start' in dir() else 0
+            duration_s = time_module.perf_counter() - t_start if t_start > 0 else 0
             error_msg = f"Tool execution error: {str(e)}"
             logger.error(f"[{session_id}] [ToolNode] {tool_name} execution failed: {e}")
             tool_messages.append(ToolMessage(content=f"Error: {error_msg}", tool_call_id=tool_id))
