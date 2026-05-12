@@ -38,6 +38,26 @@ class MemorySystem:
             chroma_path=config.get("chroma_path"),
         )
 
+        # Apply search configuration from config dict (overrides dataclass defaults)
+        search_cfg = config.get("search", {})
+        if search_cfg:
+            if "vector_weight" in search_cfg:
+                memory_config.search.vector_weight = float(search_cfg["vector_weight"])
+            if "keyword_weight" in search_cfg:
+                memory_config.search.keyword_weight = float(search_cfg["keyword_weight"])
+            if "default_max_results" in search_cfg:
+                memory_config.search.default_max_results = int(search_cfg["default_max_results"])
+
+        # Apply chunk configuration from config dict
+        chunk_cfg = config.get("chunk", {})
+        if chunk_cfg:
+            if "target_tokens" in chunk_cfg:
+                memory_config.chunk.target_tokens = int(chunk_cfg["target_tokens"])
+            if "overlap_tokens" in chunk_cfg:
+                memory_config.chunk.overlap_tokens = int(chunk_cfg["overlap_tokens"])
+            if "chars_per_token" in chunk_cfg:
+                memory_config.chunk.chars_per_token = float(chunk_cfg["chars_per_token"])
+
         if "embedding_model" in config:
             from .config import EmbeddingConfig
             memory_config.embedding = EmbeddingConfig(

@@ -58,6 +58,16 @@ class MemoryEntryStore:
         CREATE INDEX IF NOT EXISTS idx_mem_root ON memory_entries(root_memory_id);
         CREATE INDEX IF NOT EXISTS idx_mem_forgotten ON memory_entries(is_forgotten);
         -- idx_mem_archived created by _migrate for backward compat
+
+        CREATE TABLE IF NOT EXISTS memory_relations (
+            source_id     TEXT NOT NULL,
+            target_id     TEXT NOT NULL,
+            relation      TEXT NOT NULL,
+            created_at    TEXT NOT NULL,
+            FOREIGN KEY (source_id) REFERENCES memory_entries(id),
+            FOREIGN KEY (target_id) REFERENCES memory_entries(id),
+            PRIMARY KEY (source_id, target_id, relation)
+        );
         """
 
     def _migrate(self) -> None:

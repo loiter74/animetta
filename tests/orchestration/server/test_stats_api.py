@@ -1,0 +1,252 @@
+"""Tests for stats API endpoints — health check, overview, nodes, traces."""
+
+import pytest
+from unittest.mock import AsyncMock, MagicMock, patch
+
+from starlette.testclient import TestClient
+from starlette.applications import Starlette
+
+
+# ── Helpers ────────────────────────────────────────────────────────
+
+
+def _build_test_app(store_mock=None):
+    """Build a Starlette app with the stats routes and optional mocked store."""
+    from anima.orchestration.server.stats_api import get_stats_routes
+    routes = get_stats_routes()
+    app = Starlette(routes=routes)
+    return app
+
+
+# ── Fixtures ───────────────────────────────────────────────────────
+
+
+@pytest.fixture
+def mock_store():
+    """Mock StatsStore with async methods returning canned data."""
+    store = MagicMock()
+    store.get_overview = AsyncMock(return_value={
+        "total_sessions": 10,
+        "total_messages": 100,
+        "avg_latency_ms": 250.0,
+    })
+    store.get_node_stats = AsyncMock(return_value={
+        "llm_node": {"calls": 50, "avg_duration_ms": 300},
+        "tts_node": {"calls": 30, "avg_duration_ms": 150},
+    })
+    store.get_recent_traces = AsyncMock(return_value=[
+        {"trace_id": "abc", "status": "ok", "total_duration_ms": 500},
+        {"trace_id": "def", "status": "ok", "total_duration_ms": 300},
+    ])
+    store.get_trace_detail = AsyncMock(return_value={
+        "trace_id": "abc",
+        "status": "ok",
+        "total_duration_ms": 500,
+        "spans": [
+            {"span_id": "s1", "parent_span_id": None, "name": "llm_call"},
+            {"span_id": "s2", "parent_span_id": "s1", "name": "tts_call"},
+        ],
+    })
+    return store
+
+
+@pytest.fixture
+def client(mock_store):
+    """TestClient with mocked stats store."""
+    with patch("anima.orchestration.server.stats_api.get_stats_store",
+               AsyncMock(return_value=mock_store)):
+        app = _build_test_app()
+        with TestClient(app) as c:
+            yield c
+
+
+# ── Health Check ───────────────────────────────────────────────────
+
+
+class TestHealthEndpoint:
+    """GET /health"""
+
+    def test_health_returns_ok(self, client):
+        """Health check returns {"status": "ok"}."""
+        resp = client.get("/health")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["status"] == "ok"
+        assert "service" in data
+        assert "timestamp" in data
+
+    def test_health_has_service_field(self, client):
+        """Health response includes service name."""
+        resp = client.get("/health")
+        data = resp.json()
+        assert data["service"] == "anima"
+
+
+# ── Stats Overview ─────────────────────────────────────────────────
+
+
+class TestStatsOverview:
+    """GET /api/stats/overview"""
+
+    def test_overview_returns_stats(self, client, mock_store):
+        """Overview returns data from get_overview()."""
+        resp = client.get("/api/stats/overview")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["total_sessions"] == 10
+        assert data["total_messages"] == 100
+        assert data["avg_latency_ms"] == 250.0
+
+    def test_overview_calls_get_overview(self, client, mock_store):
+        """The underlying store method is called."""
+        client.get("/api/stats/overview")
+        mock_store.get_overview.assert_called_once()
+
+    def test_overview_returns_500_on_error(self):
+        """Overview returns 500 when store raises."""
+        failing_store = MagicMock()
+        failing_store.get_overview = AsyncMock(side_effect=RuntimeError("db fail"))
+
+        with patch("anima.orchestration.server.stats_api.get_stats_store",
+                   AsyncMock(return_value=failing_store)):
+            app = _build_test_app()
+            with TestClient(app) as c:
+                resp = c.get("/api/stats/overview")
+            assert resp.status_code == 500
+            assert "error" in resp.json()
+
+
+# ── Node Stats ─────────────────────────────────────────────────────
+
+
+class TestStatsNodes:
+    """GET /api/stats/nodes"""
+
+    def test_nodes_returns_node_stats(self, client, mock_store):
+        """Node stats endpoint returns data from get_node_stats()."""
+        resp = client.get("/api/stats/nodes")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "llm_node" in data
+        assert data["llm_node"]["calls"] == 50
+
+    def test_nodes_calls_get_node_stats(self, client, mock_store):
+        """The underlying store method is called."""
+        client.get("/api/stats/nodes")
+        mock_store.get_node_stats.assert_called_once()
+
+
+# ── Traces ─────────────────────────────────────────────────────────
+
+
+class TestStatsTraces:
+    """GET /api/stats/traces"""
+
+    def test_traces_returns_list(self, client, mock_store):
+        """Traces endpoint returns list of traces."""
+        resp = client.get("/api/stats/traces")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert isinstance(data, list)
+        assert len(data) == 2
+        assert data[0]["trace_id"] == "abc"
+
+    def test_traces_passes_limit_and_offset(self, client, mock_store):
+        """Limit and offset query params are passed to store."""
+        client.get("/api/stats/traces?limit=10&offset=5")
+        mock_store.get_recent_traces.assert_called_once_with(10, 5)
+
+    def test_traces_uses_default_pagination(self, client, mock_store):
+        """Default limit=50, offset=0 when not specified."""
+        client.get("/api/stats/traces")
+        mock_store.get_recent_traces.assert_called_once_with(50, 0)
+
+    def test_traces_returns_500_on_error(self):
+        """Traces returns 500 when store raises."""
+        failing_store = MagicMock()
+        failing_store.get_recent_traces = AsyncMock(side_effect=RuntimeError("db fail"))
+
+        with patch("anima.orchestration.server.stats_api.get_stats_store",
+                   AsyncMock(return_value=failing_store)):
+            app = _build_test_app()
+            with TestClient(app) as c:
+                resp = c.get("/api/stats/traces")
+            assert resp.status_code == 500
+            assert "error" in resp.json()
+
+
+# ── Trace Detail ───────────────────────────────────────────────────
+
+
+class TestStatsTraceDetail:
+    """GET /api/stats/traces/{trace_id}"""
+
+    def test_trace_detail_returns_data(self, client, mock_store):
+        """Trace detail endpoint returns trace info."""
+        resp = client.get("/api/stats/traces/abc")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["trace_id"] == "abc"
+        assert data["status"] == "ok"
+
+    def test_trace_detail_404_when_not_found(self):
+        """Missing trace returns 404."""
+        store = MagicMock()
+        store.get_trace_detail = AsyncMock(return_value=None)
+
+        with patch("anima.orchestration.server.stats_api.get_stats_store",
+                   AsyncMock(return_value=store)):
+            app = _build_test_app()
+            with TestClient(app) as c:
+                resp = c.get("/api/stats/traces/missing")
+            assert resp.status_code == 404
+            assert "error" in resp.json()
+
+
+# ── Trace Tree ─────────────────────────────────────────────────────
+
+
+class TestStatsTraceTree:
+    """GET /api/stats/traces/{trace_id}/tree"""
+
+    def test_trace_tree_returns_nested_tree(self, client, mock_store):
+        """Trace tree returns spans with nested children."""
+        resp = client.get("/api/stats/traces/abc/tree")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["trace_id"] == "abc"
+        assert "tree" in data
+        assert len(data["tree"]) == 1
+        assert data["tree"][0]["span_id"] == "s1"
+        assert len(data["tree"][0]["children"]) == 1
+        assert data["tree"][0]["children"][0]["span_id"] == "s2"
+
+    def test_trace_tree_returns_404_when_not_found(self):
+        """Missing trace tree returns 404."""
+        store = MagicMock()
+        store.get_trace_detail = AsyncMock(return_value=None)
+
+        with patch("anima.orchestration.server.stats_api.get_stats_store",
+                   AsyncMock(return_value=store)):
+            app = _build_test_app()
+            with TestClient(app) as c:
+                resp = c.get("/api/stats/traces/missing/tree")
+            assert resp.status_code == 404
+
+
+# ── Route Registration ─────────────────────────────────────────────
+
+
+class TestRouteRegistration:
+    """Route list construction."""
+
+    def test_get_stats_routes_returns_all_routes(self):
+        """get_stats_routes returns all expected routes."""
+        from anima.orchestration.server.stats_api import get_stats_routes
+        routes = get_stats_routes()
+
+        path_set = {r.path for r in routes if hasattr(r, "path")}
+        assert "/health" in path_set
+        assert "/api/stats/overview" in path_set
+        assert "/api/stats/nodes" in path_set
+        assert "/api/stats/traces" in path_set

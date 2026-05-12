@@ -22,9 +22,9 @@ from .config import MinecraftConfig
 
 
 class MinecraftBridge:
-    """Manages the Mineflayer bot subprocess"""
+    """Manages the Mineflayer bot subprocess with optional autonomous behavior"""
 
-    def __init__(self, config: MinecraftConfig):
+    def __init__(self, config: MinecraftConfig, autonomous: bool = False):
         self.config = config
         self._process: Optional[asyncio.subprocess.Process] = None
         self._pending: Dict[int, asyncio.Future] = {}
@@ -33,6 +33,10 @@ class MinecraftBridge:
         self._running = False
         self._reader_task: Optional[asyncio.Task] = None
         self._bot_ready = asyncio.Event()
+
+        # Autonomous behavior loop (lazy init)
+        self._autonomous_loop = None
+        self._autonomous_enabled = autonomous
 
     async def start(self) -> bool:
         """Start the Mineflayer bot subprocess"""
@@ -79,6 +83,10 @@ class MinecraftBridge:
                 logger.info("[MinecraftBridge] Bot logged in successfully")
             except asyncio.TimeoutError:
                 logger.warning("[MinecraftBridge] Bot login timeout, continuing anyway")
+
+            # Start autonomous loop if enabled
+            if self._autonomous_enabled:
+                await self._start_autonomous()
 
             return True
 
@@ -192,9 +200,54 @@ class MinecraftBridge:
         except Exception as e:
             logger.debug(f"[MinecraftBridge] stderr reader stopped: {e}")
 
+    async def _start_autonomous(self):
+        """Start the autonomous behavior loop"""
+        from .autonomous import AutonomousLoop
+        self._autonomous_loop = AutonomousLoop(self)
+        await self._autonomous_loop.start()
+        logger.info("[MinecraftBridge] Autonomous behavior loop started")
+
+    async def _stop_autonomous(self):
+        """Stop the autonomous behavior loop"""
+        if self._autonomous_loop:
+            await self._autonomous_loop.stop()
+            self._autonomous_loop = None
+
+    def pause_autonomous(self):
+        """Pause autonomous decisions (e.g., LLM instruction active)"""
+        if self._autonomous_loop:
+            self._autonomous_loop.pause()
+
+    def resume_autonomous(self):
+        """Resume autonomous decisions after LLM instruction"""
+        if self._autonomous_loop:
+            self._autonomous_loop.resume()
+
+    # ── Mode Commands (for planner integration) ──
+
+    async def set_planner_mode(self, plan_steps: list) -> dict:
+        """Switch bot to planner mode with a plan"""
+        return await self.send_command("set_mode", {
+            "mode": "planner",
+            "plan": plan_steps,
+        }, timeout=10.0)
+
+    async def set_rule_mode(self) -> dict:
+        """Switch bot to rule mode (Python-driven)"""
+        return await self.send_command("set_mode", {
+            "mode": "rule",
+        }, timeout=10.0)
+
+    async def get_plan_status(self) -> dict:
+        """Get current plan execution status"""
+        return await self.send_command("plan_status", {}, timeout=5.0)
+
     async def stop(self):
-        """Stop the bot subprocess"""
+        """Stop the bot subprocess and autonomous loop"""
         self._running = False
+
+        # Stop autonomous loop first
+        await self._stop_autonomous()
 
         if self._reader_task:
             self._reader_task.cancel()

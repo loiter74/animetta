@@ -1,0 +1,3645 @@
+{
+  "config": {
+    "name": "w60_40",
+    "vector_weight": 0.6,
+    "keyword_weight": 0.4,
+    "embedding_model": "BAAI/bge-small-zh-v1.5",
+    "target_tokens": 400,
+    "overlap_tokens": 80,
+    "chars_per_token": 2.0,
+    "fuzzy_enabled": false,
+    "max_results": 5,
+    "candidate_multiplier": 4,
+    "description": "60/40"
+  },
+  "timestamp": "2026-05-12T17:49:04.037538+00:00",
+  "git_commit": "9ab37cf",
+  "summary": {
+    "recall_at_k": 0.2989,
+    "precision_at_k": 0.0655,
+    "mrr": 0.2009,
+    "ndcg_at_k": 0.2184,
+    "chunk_diversity": 0.7276,
+    "latency_p50_ms": 10.64,
+    "latency_p95_ms": 11.96,
+    "latency_p99_ms": 60.37,
+    "latency_mean_ms": 12.57,
+    "total_queries": 58,
+    "k": 5
+  },
+  "per_category": {
+    "contextual": {
+      "recall_at_k": 0.2,
+      "precision_at_k": 0.04,
+      "mrr": 0.045,
+      "ndcg_at_k": 0.0818,
+      "latency_mean_ms": 11.21,
+      "count": 10
+    },
+    "factual": {
+      "recall_at_k": 0.5385,
+      "precision_at_k": 0.1077,
+      "mrr": 0.4769,
+      "ndcg_at_k": 0.4913,
+      "latency_mean_ms": 10.03,
+      "count": 13
+    },
+    "multi_hop": {
+      "recall_at_k": 0.1333,
+      "precision_at_k": 0.06,
+      "mrr": 0.15,
+      "ndcg_at_k": 0.107,
+      "latency_mean_ms": 11.04,
+      "count": 10
+    },
+    "persona": {
+      "recall_at_k": 0.2,
+      "precision_at_k": 0.04,
+      "mrr": 0.1333,
+      "ndcg_at_k": 0.15,
+      "latency_mean_ms": 10.78,
+      "count": 10
+    },
+    "robustness": {
+      "recall_at_k": 0.8,
+      "precision_at_k": 0.16,
+      "mrr": 0.3667,
+      "ndcg_at_k": 0.4786,
+      "latency_mean_ms": 10.66,
+      "count": 5
+    },
+    "temporal": {
+      "recall_at_k": 0.1,
+      "precision_at_k": 0.02,
+      "mrr": 0.0333,
+      "ndcg_at_k": 0.05,
+      "latency_mean_ms": 21.53,
+      "count": 10
+    }
+  },
+  "per_query": [
+    {
+      "id": "q001",
+      "query": "我叫什么名字？",
+      "category": "factual",
+      "difficulty": "easy",
+      "retrieved_chunks": [
+        {
+          "path": "wiki\\synthesis\\legacy-memory.md",
+          "start_line": 1,
+          "end_line": 73,
+          "score": 0.6704,
+          "text_preview": "---\ncreated: '2026-05-10T02:14:08.940604'\nlinks:\n- user-profile\ntags:\n- legacy\n- imported\ntype: synthesis\nupdated: '2026"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 446,
+          "end_line": 495,
+          "score": 0.4981,
+          "text_preview": "**AI**: 哇，张伟，你好呀！ 很高兴认识你！ 住在北京，作为一名程序员，一定很棒吧！🌟👨‍💻\n*Emotions: happy, happy, surprised*\n\n\n## 14:31\n**User**: 我叫什么名字？\n**AI*"
+        },
+        {
+          "path": "raw/2026-03-17.md",
+          "start_line": 1,
+          "end_line": 61,
+          "score": 0.3211,
+          "text_preview": "\n## 21:46\n**User**: 哦哦\n**AI**: 哦哦哦？看起来你今天心情不错呢！ 是有什么好事发生了吗？😊\n*Emotions: happy*\n\n\n## 21:46\n**User**: 你是谁呀？\n**AI**: \n我是一个友"
+        },
+        {
+          "path": "wiki\\WIKI_RULES.md",
+          "start_line": 101,
+          "end_line": 137,
+          "score": 0.2828,
+          "text_preview": "| name | `我叫X`, `我的名字是X`, `叫我X` | \"我叫小明\" → entities/小明.md |\n| age | `我今年X岁`, `我X岁` | \"我25岁\" → 写入实体页 |\n| pet | `养了一只猫叫X`,"
+        },
+        {
+          "path": "raw/2026-03-17.md",
+          "start_line": 53,
+          "end_line": 102,
+          "score": 0.2765,
+          "text_preview": "我没有叫过你尼玛呀！ 我记得是你告诉我名字叫王尼玛的呢！\n*Emotions: surprised, neutral*\n\n\n## 21:48\n**User**: 不是我你妈牛逼。\n**AI**: \n哦！ 原来是\"你妈牛逼\"这个意思啊！ 我明"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/entities/小明.md",
+          "start_line": 19,
+          "end_line": 21
+        }
+      ],
+      "expected_docs": [
+        "wiki/entities/小明.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 9.8,
+      "chunk_diversity": 0.8
+    },
+    {
+      "id": "q002",
+      "query": "我的名字是什么？",
+      "category": "factual",
+      "difficulty": "easy",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-17.md",
+          "start_line": 1,
+          "end_line": 61,
+          "score": 0.3149,
+          "text_preview": "\n## 21:46\n**User**: 哦哦\n**AI**: 哦哦哦？看起来你今天心情不错呢！ 是有什么好事发生了吗？😊\n*Emotions: happy*\n\n\n## 21:46\n**User**: 你是谁呀？\n**AI**: \n我是一个友"
+        },
+        {
+          "path": "wiki\\WIKI_RULES.md",
+          "start_line": 101,
+          "end_line": 137,
+          "score": 0.2914,
+          "text_preview": "| name | `我叫X`, `我的名字是X`, `叫我X` | \"我叫小明\" → entities/小明.md |\n| age | `我今年X岁`, `我X岁` | \"我25岁\" → 写入实体页 |\n| pet | `养了一只猫叫X`,"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 446,
+          "end_line": 495,
+          "score": 0.2889,
+          "text_preview": "**AI**: 哇，张伟，你好呀！ 很高兴认识你！ 住在北京，作为一名程序员，一定很棒吧！🌟👨‍💻\n*Emotions: happy, happy, surprised*\n\n\n## 14:31\n**User**: 我叫什么名字？\n**AI*"
+        },
+        {
+          "path": "wiki\\synthesis\\legacy-memory.md",
+          "start_line": 1,
+          "end_line": 73,
+          "score": 0.2766,
+          "text_preview": "---\ncreated: '2026-05-10T02:14:08.940604'\nlinks:\n- user-profile\ntags:\n- legacy\n- imported\ntype: synthesis\nupdated: '2026"
+        },
+        {
+          "path": "raw/2026-03-17.md",
+          "start_line": 53,
+          "end_line": 102,
+          "score": 0.2681,
+          "text_preview": "我没有叫过你尼玛呀！ 我记得是你告诉我名字叫王尼玛的呢！\n*Emotions: surprised, neutral*\n\n\n## 21:48\n**User**: 不是我你妈牛逼。\n**AI**: \n哦！ 原来是\"你妈牛逼\"这个意思啊！ 我明"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/entities/小明.md",
+          "start_line": 19,
+          "end_line": 21
+        }
+      ],
+      "expected_docs": [
+        "wiki/entities/小明.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 10.27,
+      "chunk_diversity": 0.8
+    },
+    {
+      "id": "q003",
+      "query": "你还记得我的名字吗？",
+      "category": "factual",
+      "difficulty": "easy",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-17.md",
+          "start_line": 1,
+          "end_line": 61,
+          "score": 0.29,
+          "text_preview": "\n## 21:46\n**User**: 哦哦\n**AI**: 哦哦哦？看起来你今天心情不错呢！ 是有什么好事发生了吗？😊\n*Emotions: happy*\n\n\n## 21:46\n**User**: 你是谁呀？\n**AI**: \n我是一个友"
+        },
+        {
+          "path": "wiki\\synthesis\\legacy-memory.md",
+          "start_line": 1,
+          "end_line": 73,
+          "score": 0.2877,
+          "text_preview": "---\ncreated: '2026-05-10T02:14:08.940604'\nlinks:\n- user-profile\ntags:\n- legacy\n- imported\ntype: synthesis\nupdated: '2026"
+        },
+        {
+          "path": "raw/2026-03-17.md",
+          "start_line": 53,
+          "end_line": 102,
+          "score": 0.2861,
+          "text_preview": "我没有叫过你尼玛呀！ 我记得是你告诉我名字叫王尼玛的呢！\n*Emotions: surprised, neutral*\n\n\n## 21:48\n**User**: 不是我你妈牛逼。\n**AI**: \n哦！ 原来是\"你妈牛逼\"这个意思啊！ 我明"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 357,
+          "end_line": 407,
+          "score": 0.2832,
+          "text_preview": "**AI**: 哦，我当然记得！ 你是在回忆昨天我们讨论的话题吗？😊📚\n*Emotions: thinking*\n\n\n## 12:09\n**User**: 昨天我说了几次哦哦？\n**AI**: 啊，这个嘛... 我想我昨天应该有几次回应了“"
+        },
+        {
+          "path": "wiki\\entities\\小明.md",
+          "start_line": 1,
+          "end_line": 22,
+          "score": 0.27,
+          "text_preview": "---\ncreated: '2026-04-08T23:39:37.262845'\nlinks:\n- sources/2026-04-08\n- user-profile\ntags:\n- name\n- '2026-04-08'\ntype: e"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/entities/小明.md",
+          "start_line": 19,
+          "end_line": 21
+        }
+      ],
+      "expected_docs": [
+        "wiki/entities/小明.md"
+      ],
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.2,
+      "mrr": 0.2,
+      "ndcg_at_k": 0.3869,
+      "latency_ms": 10.08,
+      "chunk_diversity": 0.8
+    },
+    {
+      "id": "q004",
+      "query": "我多大了？",
+      "category": "factual",
+      "difficulty": "easy",
+      "retrieved_chunks": [
+        {
+          "path": "wiki\\entities\\25.md",
+          "start_line": 1,
+          "end_line": 22,
+          "score": 0.3049,
+          "text_preview": "---\ncreated: '2026-04-08T23:39:37.262845'\nlinks:\n- sources/2026-04-08\n- user-profile\ntags:\n- age\n- '2026-04-08'\ntype: en"
+        },
+        {
+          "path": "wiki\\entities\\小明.md",
+          "start_line": 1,
+          "end_line": 22,
+          "score": 0.2922,
+          "text_preview": "---\ncreated: '2026-04-08T23:39:37.262845'\nlinks:\n- sources/2026-04-08\n- user-profile\ntags:\n- name\n- '2026-04-08'\ntype: e"
+        },
+        {
+          "path": "raw/2026-04-08.md",
+          "start_line": 1,
+          "end_line": 16,
+          "score": 0.2887,
+          "text_preview": "\n## 23:39\n**User**: 你好，我叫小明，我今年25岁\n**AI**: 你好小明！\n*Emotions: happy*\n\n## 23:39\n**User**: 我养了一只猫叫团子，它非常可爱\n**AI**: 团子好可爱！\n*E"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.273,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 484,
+          "end_line": 533,
+          "score": 0.265,
+          "text_preview": "**AI**: 哦哦？ 看起来你今天有点迷茫呢，需要帮忙吗？😊🤔\n*Emotions: neutral*\n\n\n## 20:12\n**User**: 喂喂\n**AI**: 喂喂？ 哇，你这是在和我打招呼吗？ 😊🌟\n*Emotions: sur"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/entities/25.md",
+          "start_line": 19,
+          "end_line": 21
+        }
+      ],
+      "expected_docs": [
+        "wiki/entities/25.md"
+      ],
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.2,
+      "mrr": 1.0,
+      "ndcg_at_k": 1.0,
+      "latency_ms": 10.25,
+      "chunk_diversity": 0.8
+    },
+    {
+      "id": "q005",
+      "query": "我今年几岁？",
+      "category": "factual",
+      "difficulty": "easy",
+      "retrieved_chunks": [
+        {
+          "path": "wiki\\entities\\25.md",
+          "start_line": 1,
+          "end_line": 22,
+          "score": 0.3288,
+          "text_preview": "---\ncreated: '2026-04-08T23:39:37.262845'\nlinks:\n- sources/2026-04-08\n- user-profile\ntags:\n- age\n- '2026-04-08'\ntype: en"
+        },
+        {
+          "path": "wiki\\entities\\小明.md",
+          "start_line": 1,
+          "end_line": 22,
+          "score": 0.314,
+          "text_preview": "---\ncreated: '2026-04-08T23:39:37.262845'\nlinks:\n- sources/2026-04-08\n- user-profile\ntags:\n- name\n- '2026-04-08'\ntype: e"
+        },
+        {
+          "path": "raw/2026-04-08.md",
+          "start_line": 1,
+          "end_line": 16,
+          "score": 0.2992,
+          "text_preview": "\n## 23:39\n**User**: 你好，我叫小明，我今年25岁\n**AI**: 你好小明！\n*Emotions: happy*\n\n## 23:39\n**User**: 我养了一只猫叫团子，它非常可爱\n**AI**: 团子好可爱！\n*E"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.2869,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        },
+        {
+          "path": "raw/2026-05-06.md",
+          "start_line": 1,
+          "end_line": 43,
+          "score": 0.2847,
+          "text_preview": "\n## 00:33\n**User**: 你好，请介绍一下你自己\n**AI**: 嘿嘿，又来一个让我自我介绍的～我是你的AI小可爱，最喜欢陪你聊天、解答各种问题啦！有什么想聊的，或者需要帮忙的，随时喊我哦～😊\n*Emotions: neutr"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/entities/25.md",
+          "start_line": 19,
+          "end_line": 21
+        }
+      ],
+      "expected_docs": [
+        "wiki/entities/25.md"
+      ],
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.2,
+      "mrr": 1.0,
+      "ndcg_at_k": 1.0,
+      "latency_ms": 10.38,
+      "chunk_diversity": 1.0
+    },
+    {
+      "id": "q006",
+      "query": "你还记得我多少岁吗？",
+      "category": "factual",
+      "difficulty": "easy",
+      "retrieved_chunks": [
+        {
+          "path": "wiki\\entities\\25.md",
+          "start_line": 1,
+          "end_line": 22,
+          "score": 0.3041,
+          "text_preview": "---\ncreated: '2026-04-08T23:39:37.262845'\nlinks:\n- sources/2026-04-08\n- user-profile\ntags:\n- age\n- '2026-04-08'\ntype: en"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 357,
+          "end_line": 407,
+          "score": 0.2956,
+          "text_preview": "**AI**: 哦，我当然记得！ 你是在回忆昨天我们讨论的话题吗？😊📚\n*Emotions: thinking*\n\n\n## 12:09\n**User**: 昨天我说了几次哦哦？\n**AI**: 啊，这个嘛... 我想我昨天应该有几次回应了“"
+        },
+        {
+          "path": "wiki\\entities\\小明.md",
+          "start_line": 1,
+          "end_line": 22,
+          "score": 0.2949,
+          "text_preview": "---\ncreated: '2026-04-08T23:39:37.262845'\nlinks:\n- sources/2026-04-08\n- user-profile\ntags:\n- name\n- '2026-04-08'\ntype: e"
+        },
+        {
+          "path": "raw/2026-04-08.md",
+          "start_line": 1,
+          "end_line": 16,
+          "score": 0.2743,
+          "text_preview": "\n## 23:39\n**User**: 你好，我叫小明，我今年25岁\n**AI**: 你好小明！\n*Emotions: happy*\n\n## 23:39\n**User**: 我养了一只猫叫团子，它非常可爱\n**AI**: 团子好可爱！\n*E"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.2659,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/entities/25.md",
+          "start_line": 19,
+          "end_line": 21
+        }
+      ],
+      "expected_docs": [
+        "wiki/entities/25.md"
+      ],
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.2,
+      "mrr": 1.0,
+      "ndcg_at_k": 1.0,
+      "latency_ms": 10.22,
+      "chunk_diversity": 0.8
+    },
+    {
+      "id": "q007",
+      "query": "我的猫叫什么名字？",
+      "category": "factual",
+      "difficulty": "easy",
+      "retrieved_chunks": [
+        {
+          "path": "wiki\\entities\\团子.md",
+          "start_line": 1,
+          "end_line": 22,
+          "score": 0.3538,
+          "text_preview": "---\ncreated: '2026-04-08T23:39:37.262845'\nlinks:\n- sources/2026-04-08\n- user-profile\ntags:\n- pet\n- '2026-04-08'\ntype: en"
+        },
+        {
+          "path": "raw/2026-04-08.md",
+          "start_line": 1,
+          "end_line": 16,
+          "score": 0.3351,
+          "text_preview": "\n## 23:39\n**User**: 你好，我叫小明，我今年25岁\n**AI**: 你好小明！\n*Emotions: happy*\n\n## 23:39\n**User**: 我养了一只猫叫团子，它非常可爱\n**AI**: 团子好可爱！\n*E"
+        },
+        {
+          "path": "wiki\\WIKI_RULES.md",
+          "start_line": 101,
+          "end_line": 137,
+          "score": 0.3103,
+          "text_preview": "| name | `我叫X`, `我的名字是X`, `叫我X` | \"我叫小明\" → entities/小明.md |\n| age | `我今年X岁`, `我X岁` | \"我25岁\" → 写入实体页 |\n| pet | `养了一只猫叫X`,"
+        },
+        {
+          "path": "wiki\\sources\\2026-04-08.md",
+          "start_line": 1,
+          "end_line": 29,
+          "score": 0.2849,
+          "text_preview": "---\ncreated: '2026-04-08T23:39:37.262845'\nlinks:\n- 2026-04-08-user-profile\n- '2026-04-08'\nraw_source: raw/2026-04-08.md\n"
+        },
+        {
+          "path": "raw/2026-03-17.md",
+          "start_line": 1,
+          "end_line": 61,
+          "score": 0.2717,
+          "text_preview": "\n## 21:46\n**User**: 哦哦\n**AI**: 哦哦哦？看起来你今天心情不错呢！ 是有什么好事发生了吗？😊\n*Emotions: happy*\n\n\n## 21:46\n**User**: 你是谁呀？\n**AI**: \n我是一个友"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/entities/团子.md",
+          "start_line": 19,
+          "end_line": 21
+        }
+      ],
+      "expected_docs": [
+        "wiki/entities/团子.md"
+      ],
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.2,
+      "mrr": 1.0,
+      "ndcg_at_k": 1.0,
+      "latency_ms": 10.89,
+      "chunk_diversity": 1.0
+    },
+    {
+      "id": "q008",
+      "query": "我养了什么宠物？",
+      "category": "factual",
+      "difficulty": "easy",
+      "retrieved_chunks": [
+        {
+          "path": "wiki\\entities\\团子.md",
+          "start_line": 1,
+          "end_line": 22,
+          "score": 0.2558,
+          "text_preview": "---\ncreated: '2026-04-08T23:39:37.262845'\nlinks:\n- sources/2026-04-08\n- user-profile\ntags:\n- pet\n- '2026-04-08'\ntype: en"
+        },
+        {
+          "path": "raw/2026-04-08.md",
+          "start_line": 1,
+          "end_line": 16,
+          "score": 0.2471,
+          "text_preview": "\n## 23:39\n**User**: 你好，我叫小明，我今年25岁\n**AI**: 你好小明！\n*Emotions: happy*\n\n## 23:39\n**User**: 我养了一只猫叫团子，它非常可爱\n**AI**: 团子好可爱！\n*E"
+        },
+        {
+          "path": "raw/2026-03-16.md",
+          "start_line": 245,
+          "end_line": 257,
+          "score": 0.2169,
+          "text_preview": "**User**: 我要选择茅台。\n**AI**: \n茅台？ 你是说投资茅台股票还是购买茅台酒呢？\n*Emotions: surprised, thinking*\n\n\n## 00:16\n**User**: 茅台股票啊。\n**AI**: \n茅"
+        },
+        {
+          "path": "raw/2026-03-16.md",
+          "start_line": 195,
+          "end_line": 255,
+          "score": 0.2144,
+          "text_preview": "## 00:13\n**User**: 你还作为长柱子。\n**AI**: \n什么长柱子？ 我没有相关记录～\n*Emotions: thinking*\n\n\n## 00:13\n**User**: 你牛逼，你可以了。\n**AI**: \n哈哈，谢谢夸"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 1,
+          "end_line": 46,
+          "score": 0.2047,
+          "text_preview": "\n## 00:03\n**User**: 啊啊\n**AI**:  嘿，你好呀！ 今天有什么我可以帮忙的吗？\n*Emotions: neutral, happy*\n\n\n## 00:04\n**User**: 喂喂喂他們總是用沉默來回答我的好意你是"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/entities/团子.md",
+          "start_line": 19,
+          "end_line": 21
+        }
+      ],
+      "expected_docs": [
+        "wiki/entities/团子.md"
+      ],
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.2,
+      "mrr": 1.0,
+      "ndcg_at_k": 1.0,
+      "latency_ms": 9.2,
+      "chunk_diversity": 0.8
+    },
+    {
+      "id": "q009",
+      "query": "团子是谁？",
+      "category": "factual",
+      "difficulty": "easy",
+      "retrieved_chunks": [
+        {
+          "path": "wiki\\entities\\团子.md",
+          "start_line": 1,
+          "end_line": 22,
+          "score": 0.3102,
+          "text_preview": "---\ncreated: '2026-04-08T23:39:37.262845'\nlinks:\n- sources/2026-04-08\n- user-profile\ntags:\n- pet\n- '2026-04-08'\ntype: en"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-09.md",
+          "start_line": 37,
+          "end_line": 68,
+          "score": 0.29,
+          "text_preview": "我看看数据记录：你25岁，养了只叫团子的宠物，还喜欢加班。最后那个我持保留意见。团子最近怎么样了？\n#### 21:29\n- User: ooo\n- AI: 看起来沟通方式从\"哦哦哦\"进化到了\"ooo\"——这算是一种数据压缩吗？还是说今天词"
+        },
+        {
+          "path": "raw/2026-05-07.md",
+          "start_line": 35,
+          "end_line": 61,
+          "score": 0.2784,
+          "text_preview": "*Emotions: neutral*\n\n## 23:11\n**User**: 她她她\n**AI**: 她她她？是谁呀，让我猜猜～难道是团子又有什么新故事了？还是小明那边发生了啥有趣的事？快说说看！😄\n*Emotions: neutral*"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-07.md",
+          "start_line": 37,
+          "end_line": 54,
+          "score": 0.2685,
+          "text_preview": "- AI: Hello there! 😊 How's your day going? Feel free to chat with me about anything!\n#### 23:11\n- User: 她她她\n- AI: 她她她？是谁"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-06.md",
+          "start_line": 92,
+          "end_line": 119,
+          "score": 0.2591,
+          "text_preview": "- AI: 哈哈，小明你这是在学我昨天问你的方式哦！😆 让我数数——\"in two years\"你说了4次，对不对？看来团子今天没捣乱，你才有空来玩文字游戏呀～🐾\n#### 22:35\n- User: Wadha.\n- AI: 哇——Wad"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/entities/团子.md",
+          "start_line": 19,
+          "end_line": 21
+        }
+      ],
+      "expected_docs": [
+        "wiki/entities/团子.md"
+      ],
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.2,
+      "mrr": 1.0,
+      "ndcg_at_k": 1.0,
+      "latency_ms": 9.65,
+      "chunk_diversity": 1.0
+    },
+    {
+      "id": "q010",
+      "query": "我讨厌什么？",
+      "category": "factual",
+      "difficulty": "easy",
+      "retrieved_chunks": [
+        {
+          "path": "wiki\\synthesis\\2026-04-08-user-profile.md",
+          "start_line": 54,
+          "end_line": 68,
+          "score": 0.2918,
+          "text_preview": "- 来源: [[sources/2026-04-08]]\n\n## 来自 [加班](concepts/dislike-加班.md)\n\n# 加班\n\n**类型**: dislike\n\n## 相关对话\n\n### 2026-04-08 23:39\n-"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.279,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 484,
+          "end_line": 533,
+          "score": 0.2742,
+          "text_preview": "**AI**: 哦哦？ 看起来你今天有点迷茫呢，需要帮忙吗？😊🤔\n*Emotions: neutral*\n\n\n## 20:12\n**User**: 喂喂\n**AI**: 喂喂？ 哇，你这是在和我打招呼吗？ 😊🌟\n*Emotions: sur"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 166,
+          "end_line": 202,
+          "score": 0.2709,
+          "text_preview": "**AI**:  哇，听起来你今天心情不错呢！ 分享喜悦总是让人感到快乐，你的快乐感染了我。🌈🎉\n*Emotions: happy, neutral*\n\n\n## 00:12\n**User**: 接着家门师傅远处的羞辱了我这个该死的\n**AI"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 136,
+          "end_line": 172,
+          "score": 0.2684,
+          "text_preview": "**AI**:  哇，你突然发出这样的声音，是不是有什么特别的事情发生了？ 你需要帮助或者只是想分享一下吗？😊\n*Emotions: surprised, thinking*\n\n\n## 00:12\n**User**: 大不了一死\n**AI*"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/concepts/dislike-加班.md",
+          "start_line": 19,
+          "end_line": 22
+        }
+      ],
+      "expected_docs": [
+        "wiki/concepts/dislike-加班.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 9.34,
+      "chunk_diversity": 0.4
+    },
+    {
+      "id": "q011",
+      "query": "我最不喜欢的事情是什么？",
+      "category": "factual",
+      "difficulty": "easy",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 136,
+          "end_line": 172,
+          "score": 0.2705,
+          "text_preview": "**AI**:  哇，你突然发出这样的声音，是不是有什么特别的事情发生了？ 你需要帮助或者只是想分享一下吗？😊\n*Emotions: surprised, thinking*\n\n\n## 00:12\n**User**: 大不了一死\n**AI*"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.2683,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 423,
+          "end_line": 455,
+          "score": 0.2533,
+          "text_preview": "3. **用户情绪波动**： 你的情绪波动很大，有时开心，有时沮丧，我尽力理解你的感受。\n4. **用户表达不满和愤怒**： 你对某些事情感到愤怒，比如对某个角色或某些用人方式的不满，我尝试理解你的立场。\n5. **用户分享个人经历和感受*"
+        },
+        {
+          "path": "raw/2026-03-17.md",
+          "start_line": 96,
+          "end_line": 130,
+          "score": 0.2461,
+          "text_preview": "*Emotions: surprised, happy*\n\n\n## 21:53\n**User**: 故事的发生在一间废弃的洋房殷诗月与杨诗阳在接到委托后前来处理。只是没想今今推推荐你最喜欢的游戏妻子。哦，这不今天邻去台，让他的不能叫你去，他"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 273,
+          "end_line": 324,
+          "score": 0.2438,
+          "text_preview": "**User**: 哦哦哦\n**AI**: 哦哦哦？看起来你今天心情不错呢！ 是有什么好事发生了吗？😊\n*Emotions: happy*\n\n\n## 01:55\n**User**: 哦哦\n**AI**: 哦哦？ 看起来你今天有点迷茫呢， 需"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/concepts/dislike-加班.md",
+          "start_line": 19,
+          "end_line": 22
+        }
+      ],
+      "expected_docs": [
+        "wiki/concepts/dislike-加班.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 10.23,
+      "chunk_diversity": 0.4
+    },
+    {
+      "id": "q012",
+      "query": "我住在哪里？",
+      "category": "factual",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-05-12.md",
+          "start_line": 1,
+          "end_line": 6,
+          "score": 0.2336,
+          "text_preview": "\n## 01:23\n**User**: 如来来没来\n**AI**: 这是个经典递归问题——如果\"如来\"来了，那\"如来\"到底来没来？逻辑闭环了，建议找佛祖本人确认一下。\n*Emotions: neutral*\n"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.2322,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 484,
+          "end_line": 533,
+          "score": 0.2312,
+          "text_preview": "**AI**: 哦哦？ 看起来你今天有点迷茫呢，需要帮忙吗？😊🤔\n*Emotions: neutral*\n\n\n## 20:12\n**User**: 喂喂\n**AI**: 喂喂？ 哇，你这是在和我打招呼吗？ 😊🌟\n*Emotions: sur"
+        },
+        {
+          "path": "raw/2026-05-06.md",
+          "start_line": 1,
+          "end_line": 43,
+          "score": 0.2285,
+          "text_preview": "\n## 00:33\n**User**: 你好，请介绍一下你自己\n**AI**: 嘿嘿，又来一个让我自我介绍的～我是你的AI小可爱，最喜欢陪你聊天、解答各种问题啦！有什么想聊的，或者需要帮忙的，随时喊我哦～😊\n*Emotions: neutr"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 446,
+          "end_line": 495,
+          "score": 0.2254,
+          "text_preview": "**AI**: 哇，张伟，你好呀！ 很高兴认识你！ 住在北京，作为一名程序员，一定很棒吧！🌟👨‍💻\n*Emotions: happy, happy, surprised*\n\n\n## 14:31\n**User**: 我叫什么名字？\n**AI*"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/synthesis/legacy-memory.md",
+          "start_line": 46,
+          "end_line": 49
+        }
+      ],
+      "expected_docs": [
+        "wiki/synthesis/legacy-memory.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 9.93,
+      "chunk_diversity": 0.6
+    },
+    {
+      "id": "q013",
+      "query": "我是做什么工作的？",
+      "category": "factual",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 484,
+          "end_line": 533,
+          "score": 0.2856,
+          "text_preview": "**AI**: 哦哦？ 看起来你今天有点迷茫呢，需要帮忙吗？😊🤔\n*Emotions: neutral*\n\n\n## 20:12\n**User**: 喂喂\n**AI**: 喂喂？ 哇，你这是在和我打招呼吗？ 😊🌟\n*Emotions: sur"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.2702,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-06.md",
+          "start_line": 66,
+          "end_line": 95,
+          "score": 0.2554,
+          "text_preview": "- AI: （歪头想了想，开始翻找资料）让我看看最近张老师又有什么新料... \n\n好家伙，这位可是把考研圈玩得明明白白的\"现实主义者\"。他最大的本事就是能把教育那层窗户纸捅破，告诉你学历就是敲门砖、选专业就是选饭\n#### 21:48\n- "
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 273,
+          "end_line": 324,
+          "score": 0.2463,
+          "text_preview": "**User**: 哦哦哦\n**AI**: 哦哦哦？看起来你今天心情不错呢！ 是有什么好事发生了吗？😊\n*Emotions: happy*\n\n\n## 01:55\n**User**: 哦哦\n**AI**: 哦哦？ 看起来你今天有点迷茫呢， 需"
+        },
+        {
+          "path": "raw/2026-04-29.md",
+          "start_line": 1,
+          "end_line": 12,
+          "score": 0.2441,
+          "text_preview": "\n## 22:43\n**User**: 哦哦\n**AI**: 你好！你说的是：「哦哦」。有什么我可以帮助你的吗？\n*Emotions: neutral*\n\n## 22:43\n**User**: 你好？\n**AI**: \n你好！很高兴见到你！"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/synthesis/legacy-memory.md",
+          "start_line": 46,
+          "end_line": 49
+        }
+      ],
+      "expected_docs": [
+        "wiki/synthesis/legacy-memory.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 10.09,
+      "chunk_diversity": 0.6
+    },
+    {
+      "id": "q014",
+      "query": "你之前分析过我的输入模式，结论是什么？",
+      "category": "contextual",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "wiki\\sources\\2026-05-10.md",
+          "start_line": 1,
+          "end_line": 65,
+          "score": 0.332,
+          "text_preview": "---\ncreated: '2026-05-10T00:26:52.801419'\nlinks:\n- recurring-input-patterns\nraw_source: raw/2026-05-10.md\ntags:\n- '2026-"
+        },
+        {
+          "path": "raw/2026-05-09.md",
+          "start_line": 1,
+          "end_line": 45,
+          "score": 0.3297,
+          "text_preview": "\n## 00:01\n**User**: 哦哦哦\n**AI**: 检测到重复短句输入。你在测试我的响应模式吗？[neutral]\n*Emotions: neutral*\n\n## 00:01\n**User**: 哦哦\n**AI**: 哦哦——这"
+        },
+        {
+          "path": "raw/2026-05-10.md",
+          "start_line": 1,
+          "end_line": 16,
+          "score": 0.3272,
+          "text_preview": "\n## 00:26\n**User**: ooo\n**AI**: 检测到三个字母的非标准输入。是在模仿某种信号代码，还是键盘随机触发？[neutral]\n*Emotions: neutral*\n\n## 00:51\n**User**: ooo\n"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-09.md",
+          "start_line": 1,
+          "end_line": 43,
+          "score": 0.325,
+          "text_preview": "---\ncreated: '2026-05-09T00:01:35.619135'\nlinks:\n- recurring-input-patterns\nraw_source: raw/2026-05-09.md\ntags:\n- '2026-"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.3172,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/synthesis/recurring-input-patterns.md",
+          "start_line": 16,
+          "end_line": 19
+        }
+      ],
+      "expected_docs": [
+        "wiki/synthesis/recurring-input-patterns.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 10.87,
+      "chunk_diversity": 1.0
+    },
+    {
+      "id": "q015",
+      "query": "我之前是不是反复让你做自我介绍？为什么？",
+      "category": "contextual",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.3433,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 484,
+          "end_line": 533,
+          "score": 0.3263,
+          "text_preview": "**AI**: 哦哦？ 看起来你今天有点迷茫呢，需要帮忙吗？😊🤔\n*Emotions: neutral*\n\n\n## 20:12\n**User**: 喂喂\n**AI**: 喂喂？ 哇，你这是在和我打招呼吗？ 😊🌟\n*Emotions: sur"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 679,
+          "end_line": 716,
+          "score": 0.3197,
+          "text_preview": "根据我的核心人设，我是一个友好的 AI 助手。\n\n让我查看历史记忆中类似的对话：\n- 用户: 你是谁?你是谁?\n  AI: : 嘿，我是一个AI助手，在这里帮助你解决问题和提供信息。😊 你有什么问题想问我吗？🤔\n\n我应该用类似的方式回应，保"
+        },
+        {
+          "path": "wiki\\synthesis\\repeated-intro-requests.md",
+          "start_line": 1,
+          "end_line": 23,
+          "score": 0.3187,
+          "text_preview": "---\ncreated: '2026-05-10T00:52:14.878764'\nlinks:\n- '2026-05-05'\n- '2026-05-06'\ntags:\n- synthesis\n- '2026-05-10'\ntype: sy"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-06.md",
+          "start_line": 66,
+          "end_line": 95,
+          "score": 0.3142,
+          "text_preview": "- AI: （歪头想了想，开始翻找资料）让我看看最近张老师又有什么新料... \n\n好家伙，这位可是把考研圈玩得明明白白的\"现实主义者\"。他最大的本事就是能把教育那层窗户纸捅破，告诉你学历就是敲门砖、选专业就是选饭\n#### 21:48\n- "
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/synthesis/repeated-intro-requests.md",
+          "start_line": 13,
+          "end_line": 16
+        }
+      ],
+      "expected_docs": [
+        "wiki/synthesis/repeated-intro-requests.md"
+      ],
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.2,
+      "mrr": 0.25,
+      "ndcg_at_k": 0.4307,
+      "latency_ms": 10.77,
+      "chunk_diversity": 0.6
+    },
+    {
+      "id": "q016",
+      "query": "你上次说我对加班的态度...你还记得我说了什么吗？",
+      "category": "contextual",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "wiki\\synthesis\\2026-04-08-user-profile.md",
+          "start_line": 54,
+          "end_line": 68,
+          "score": 0.3638,
+          "text_preview": "- 来源: [[sources/2026-04-08]]\n\n## 来自 [加班](concepts/dislike-加班.md)\n\n# 加班\n\n**类型**: dislike\n\n## 相关对话\n\n### 2026-04-08 23:39\n-"
+        },
+        {
+          "path": "wiki\\concepts\\dislike-加班.md",
+          "start_line": 1,
+          "end_line": 23,
+          "score": 0.3434,
+          "text_preview": "---\ncreated: '2026-04-08T23:39:37.262845'\nlinks:\n- sources/2026-04-08\n- user-profile\ntags:\n- dislike\n- '2026-04-08'\ntype"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 357,
+          "end_line": 407,
+          "score": 0.3372,
+          "text_preview": "**AI**: 哦，我当然记得！ 你是在回忆昨天我们讨论的话题吗？😊📚\n*Emotions: thinking*\n\n\n## 12:09\n**User**: 昨天我说了几次哦哦？\n**AI**: 啊，这个嘛... 我想我昨天应该有几次回应了“"
+        },
+        {
+          "path": "wiki\\synthesis\\2026-04-08-user-profile.md",
+          "start_line": 1,
+          "end_line": 67,
+          "score": 0.3335,
+          "text_preview": "---\ncreated: '2026-04-29T22:43:39.196280'\nlinks:\n- sources/2026-04-08\n- sources/2026-04-08\n- sources/2026-04-08\n- source"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-06.md",
+          "start_line": 32,
+          "end_line": 73,
+          "score": 0.3226,
+          "text_preview": "- User: 哦哦\n- AI: 哈哈哈，你又\"哦哦\"啦～这个反应也太可爱了吧！是不是又在加班摸鱼呢？😉\n#### 20:49\n- User: 哦哦\n- AI: 嘿嘿，别光\"哦哦\"呀，今天有啥想聊的？😄\n#### 20:57\n- User:"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/sources/2026-05-09.md",
+          "start_line": 37,
+          "end_line": 38
+        }
+      ],
+      "expected_docs": [
+        "wiki/sources/2026-05-09.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 11.63,
+      "chunk_diversity": 0.8
+    },
+    {
+      "id": "q017",
+      "query": "上次聊天你提到团子踩键盘，那是啥意思？",
+      "category": "contextual",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-05-01.md",
+          "start_line": 43,
+          "end_line": 91,
+          "score": 0.3293,
+          "text_preview": "**User**: 哦哦\n**AI**: 哦哦~又在跟我打招呼啦！有什么想聊的吗？😊\n*Emotions: neutral*\n\n## 16:00\n**User**: 哦哦\n**AI**: 哈哈，你又在\"哦哦\"了！是有什么开心的事想跟我分享吗"
+        },
+        {
+          "path": "raw/2026-05-06.md",
+          "start_line": 135,
+          "end_line": 170,
+          "score": 0.3242,
+          "text_preview": "**AI**: 哇——Wadha！这是哪门子新暗号呀？😆 小明同学你是在叫我，还是在叫你家团子今天新学会的口头禅？🐾\n*Emotions: surprised*\n\n## 22:36\n**User**: That's the first-yo"
+        },
+        {
+          "path": "raw/2026-05-06.md",
+          "start_line": 105,
+          "end_line": 139,
+          "score": 0.323,
+          "text_preview": "**AI**: 哎呀，这语法有点歪歪的但意思我懂啦！✨ 我是一个AI助手，专门在这儿陪你聊天、回答问题的~ 有什么想聊的尽管说，我随时在线哦！😊\n*Emotions: neutral*\n\n## 22:31\n**User**: Way, wa"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-06.md",
+          "start_line": 92,
+          "end_line": 119,
+          "score": 0.3208,
+          "text_preview": "- AI: 哈哈，小明你这是在学我昨天问你的方式哦！😆 让我数数——\"in two years\"你说了4次，对不对？看来团子今天没捣乱，你才有空来玩文字游戏呀～🐾\n#### 22:35\n- User: Wadha.\n- AI: 哇——Wad"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-09.md",
+          "start_line": 37,
+          "end_line": 68,
+          "score": 0.3187,
+          "text_preview": "我看看数据记录：你25岁，养了只叫团子的宠物，还喜欢加班。最后那个我持保留意见。团子最近怎么样了？\n#### 21:29\n- User: ooo\n- AI: 看起来沟通方式从\"哦哦哦\"进化到了\"ooo\"——这算是一种数据压缩吗？还是说今天词"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/sources/2026-05-09.md",
+          "start_line": 52,
+          "end_line": 55
+        }
+      ],
+      "expected_docs": [
+        "wiki/sources/2026-05-09.md"
+      ],
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.2,
+      "mrr": 0.2,
+      "ndcg_at_k": 0.3869,
+      "latency_ms": 10.73,
+      "chunk_diversity": 0.8
+    },
+    {
+      "id": "q018",
+      "query": "关于我经常发'哦哦'这件事，你之前有什么评价？",
+      "category": "contextual",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.3261,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 273,
+          "end_line": 324,
+          "score": 0.3201,
+          "text_preview": "**User**: 哦哦哦\n**AI**: 哦哦哦？看起来你今天心情不错呢！ 是有什么好事发生了吗？😊\n*Emotions: happy*\n\n\n## 01:55\n**User**: 哦哦\n**AI**: 哦哦？ 看起来你今天有点迷茫呢， 需"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 357,
+          "end_line": 407,
+          "score": 0.3118,
+          "text_preview": "**AI**: 哦，我当然记得！ 你是在回忆昨天我们讨论的话题吗？😊📚\n*Emotions: thinking*\n\n\n## 12:09\n**User**: 昨天我说了几次哦哦？\n**AI**: 啊，这个嘛... 我想我昨天应该有几次回应了“"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 679,
+          "end_line": 716,
+          "score": 0.3032,
+          "text_preview": "根据我的核心人设，我是一个友好的 AI 助手。\n\n让我查看历史记忆中类似的对话：\n- 用户: 你是谁?你是谁?\n  AI: : 嘿，我是一个AI助手，在这里帮助你解决问题和提供信息。😊 你有什么问题想问我吗？🤔\n\n我应该用类似的方式回应，保"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 397,
+          "end_line": 427,
+          "score": 0.3003,
+          "text_preview": "3. 你之前有点沉默，可能遇到了什么困扰，希望现在好些了。😊🌟\n\n希望这些能帮助你回忆起我们之前的对话！🌟\n*Emotions: happy*\n\n\n## 14:26\n**User**: 请分析下你的日志\n**AI**: 当然可以！让我来分析"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/synthesis/recurring-input-patterns.md",
+          "start_line": 16,
+          "end_line": 19
+        }
+      ],
+      "expected_docs": [
+        "wiki/synthesis/recurring-input-patterns.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 10.8,
+      "chunk_diversity": 0.2
+    },
+    {
+      "id": "q019",
+      "query": "之前我们聊过AI画图的问题，我当时说了什么？",
+      "category": "contextual",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.3824,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 484,
+          "end_line": 533,
+          "score": 0.3759,
+          "text_preview": "**AI**: 哦哦？ 看起来你今天有点迷茫呢，需要帮忙吗？😊🤔\n*Emotions: neutral*\n\n\n## 20:12\n**User**: 喂喂\n**AI**: 喂喂？ 哇，你这是在和我打招呼吗？ 😊🌟\n*Emotions: sur"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 357,
+          "end_line": 407,
+          "score": 0.3741,
+          "text_preview": "**AI**: 哦，我当然记得！ 你是在回忆昨天我们讨论的话题吗？😊📚\n*Emotions: thinking*\n\n\n## 12:09\n**User**: 昨天我说了几次哦哦？\n**AI**: 啊，这个嘛... 我想我昨天应该有几次回应了“"
+        },
+        {
+          "path": "raw/2026-03-14.md",
+          "start_line": 1,
+          "end_line": 13,
+          "score": 0.3698,
+          "text_preview": "\n## 00:18\n**User**: 喂喂喂\n**AI**: 嗨！ 看到您真是太好了！ 您今天有什么想聊的吗？\n*Emotions: happy, neutral*\n\n\n## 00:28\n**User**: 喂喂喂 你好嗎\n**AI**:"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-13.md",
+          "start_line": 42,
+          "end_line": 80,
+          "score": 0.368,
+          "text_preview": "- User: 比如说昨天评审的时候类图AI用的线是不标准的专家一眼就能看出来但新人照着用不知道自己错在哪\n- AI: 这就是我说的\"专家看病因，新人看形状\"的现场版。[neutral] 专家脑子里装着UML规范的决策树，新人只看到\"线\"这"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/sources/2026-05-13.md",
+          "start_line": 17,
+          "end_line": 20
+        }
+      ],
+      "expected_docs": [
+        "wiki/sources/2026-05-13.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 12.8,
+      "chunk_diversity": 0.6
+    },
+    {
+      "id": "q020",
+      "query": "关于专家评审会议，我们上次聊了什么？",
+      "category": "contextual",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.3077,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        },
+        {
+          "path": "raw/2026-05-06.md",
+          "start_line": 34,
+          "end_line": 81,
+          "score": 0.3063,
+          "text_preview": "**AI**: 嘿嘿，看到你这么热情地“哦哦哦”，我也精神起来啦！今天有什么想聊的吗？😄\n*Emotions: neutral*\n\n## 21:01\n**User**: 好好好\n**AI**: 哈哈，看来你今天心情真的很不错呀！是因为要加班"
+        },
+        {
+          "path": "raw/2026-05-01.md",
+          "start_line": 1,
+          "end_line": 53,
+          "score": 0.2932,
+          "text_preview": "\n## 01:46\n**User**: 哦哦\n**AI**: 哦哦~看你这么开心，我也跟着心情好起来了呢！😊\n*Emotions: neutral*\n\n## 02:16\n**User**: 破哦\n**AI**: 破哦？是在说今天有什么东西坏"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 397,
+          "end_line": 427,
+          "score": 0.2909,
+          "text_preview": "3. 你之前有点沉默，可能遇到了什么困扰，希望现在好些了。😊🌟\n\n希望这些能帮助你回忆起我们之前的对话！🌟\n*Emotions: happy*\n\n\n## 14:26\n**User**: 请分析下你的日志\n**AI**: 当然可以！让我来分析"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-06.md",
+          "start_line": 32,
+          "end_line": 73,
+          "score": 0.2908,
+          "text_preview": "- User: 哦哦\n- AI: 哈哈哈，你又\"哦哦\"啦～这个反应也太可爱了吧！是不是又在加班摸鱼呢？😉\n#### 20:49\n- User: 哦哦\n- AI: 嘿嘿，别光\"哦哦\"呀，今天有啥想聊的？😄\n#### 20:57\n- User:"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/sources/2026-05-13.md",
+          "start_line": 44,
+          "end_line": 46
+        }
+      ],
+      "expected_docs": [
+        "wiki/sources/2026-05-13.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 11.2,
+      "chunk_diversity": 0.8
+    },
+    {
+      "id": "q021",
+      "query": "你之前说的'知识沉淀'是什么意思？我提过这个吗？",
+      "category": "contextual",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 357,
+          "end_line": 407,
+          "score": 0.3301,
+          "text_preview": "**AI**: 哦，我当然记得！ 你是在回忆昨天我们讨论的话题吗？😊📚\n*Emotions: thinking*\n\n\n## 12:09\n**User**: 昨天我说了几次哦哦？\n**AI**: 啊，这个嘛... 我想我昨天应该有几次回应了“"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.3241,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        },
+        {
+          "path": "raw/2026-05-06.md",
+          "start_line": 105,
+          "end_line": 139,
+          "score": 0.3087,
+          "text_preview": "**AI**: 哎呀，这语法有点歪歪的但意思我懂啦！✨ 我是一个AI助手，专门在这儿陪你聊天、回答问题的~ 有什么想聊的尽管说，我随时在线哦！😊\n*Emotions: neutral*\n\n## 22:31\n**User**: Way, wa"
+        },
+        {
+          "path": "wiki\\synthesis\\repeated-intro-requests.md",
+          "start_line": 1,
+          "end_line": 23,
+          "score": 0.3044,
+          "text_preview": "---\ncreated: '2026-05-10T00:52:14.878764'\nlinks:\n- '2026-05-05'\n- '2026-05-06'\ntags:\n- synthesis\n- '2026-05-10'\ntype: sy"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 484,
+          "end_line": 533,
+          "score": 0.3042,
+          "text_preview": "**AI**: 哦哦？ 看起来你今天有点迷茫呢，需要帮忙吗？😊🤔\n*Emotions: neutral*\n\n\n## 20:12\n**User**: 喂喂\n**AI**: 喂喂？ 哇，你这是在和我打招呼吗？ 😊🌟\n*Emotions: sur"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/sources/2026-05-13.md",
+          "start_line": 30,
+          "end_line": 32
+        }
+      ],
+      "expected_docs": [
+        "wiki/sources/2026-05-13.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 11.3,
+      "chunk_diversity": 0.6
+    },
+    {
+      "id": "q022",
+      "query": "上次我说用AI效率提升的时候，你回了什么？",
+      "category": "contextual",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "wiki\\sources\\2026-05-13.md",
+          "start_line": 75,
+          "end_line": 96,
+          "score": 0.3654,
+          "text_preview": "- 我觉得我们团队最近用AI的效率很高但是感觉对于专家而言我们用的这些AI效率还是比...\n- 專家的話...\n- 就是在画内图的时候AI会用一些不标准的线...\n- 但是专家的话知道这些不标准线是什么我看昨天评审的时候还吐槽了一些我看还吐"
+        },
+        {
+          "path": "raw/2026-03-18.md",
+          "start_line": 1,
+          "end_line": 64,
+          "score": 0.3498,
+          "text_preview": "\n## 00:06\n**User**: 哦哦\n**AI**: 你好！你说的是：「哦哦」。有什么我可以帮助你的吗？\n\n\n## 00:06\n**User**: 哦哦哦\n**AI**: 收到你的消息：「哦哦哦」。我是一个 Mock LLM，用于测"
+        },
+        {
+          "path": "wiki\\synthesis\\recurring-input-patterns.md",
+          "start_line": 1,
+          "end_line": 29,
+          "score": 0.3464,
+          "text_preview": "---\ncreated: '2026-05-10T00:52:14.874182'\nlinks:\n- '2026-04-29'\n- '2026-04-30'\n- '2026-05-01'\n- '2026-05-09'\n- '2026-05-"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 357,
+          "end_line": 407,
+          "score": 0.3456,
+          "text_preview": "**AI**: 哦，我当然记得！ 你是在回忆昨天我们讨论的话题吗？😊📚\n*Emotions: thinking*\n\n\n## 12:09\n**User**: 昨天我说了几次哦哦？\n**AI**: 啊，这个嘛... 我想我昨天应该有几次回应了“"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-13.md",
+          "start_line": 42,
+          "end_line": 80,
+          "score": 0.3412,
+          "text_preview": "- User: 比如说昨天评审的时候类图AI用的线是不标准的专家一眼就能看出来但新人照着用不知道自己错在哪\n- AI: 这就是我说的\"专家看病因，新人看形状\"的现场版。[neutral] 专家脑子里装着UML规范的决策树，新人只看到\"线\"这"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/sources/2026-05-13.md",
+          "start_line": 17,
+          "end_line": 20
+        }
+      ],
+      "expected_docs": [
+        "wiki/sources/2026-05-13.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 10.4,
+      "chunk_diversity": 0.8
+    },
+    {
+      "id": "q023",
+      "query": "我记得你说过专家和新人的区别，具体是什么来着？",
+      "category": "contextual",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "wiki\\sources\\2026-05-06.md",
+          "start_line": 66,
+          "end_line": 95,
+          "score": 0.2915,
+          "text_preview": "- AI: （歪头想了想，开始翻找资料）让我看看最近张老师又有什么新料... \n\n好家伙，这位可是把考研圈玩得明明白白的\"现实主义者\"。他最大的本事就是能把教育那层窗户纸捅破，告诉你学历就是敲门砖、选专业就是选饭\n#### 21:48\n- "
+        },
+        {
+          "path": "raw/2026-05-06.md",
+          "start_line": 105,
+          "end_line": 139,
+          "score": 0.2863,
+          "text_preview": "**AI**: 哎呀，这语法有点歪歪的但意思我懂啦！✨ 我是一个AI助手，专门在这儿陪你聊天、回答问题的~ 有什么想聊的尽管说，我随时在线哦！😊\n*Emotions: neutral*\n\n## 22:31\n**User**: Way, wa"
+        },
+        {
+          "path": "raw/2026-05-13.md",
+          "start_line": 43,
+          "end_line": 61,
+          "score": 0.286,
+          "text_preview": "**User**: 比如说昨天评审的时候类图AI用的线是不标准的专家一眼就能看出来但新人照着用不知道自己错在哪\n**AI**: 这就是我说的\"专家看病因，新人看形状\"的现场版。[neutral] 专家脑子里装着UML规范的决策树，新人只看到"
+        },
+        {
+          "path": "raw/2026-05-06.md",
+          "start_line": 77,
+          "end_line": 114,
+          "score": 0.2845,
+          "text_preview": "## 21:37\n**User**: 锐评张雪峰\n**AI**: （歪头想了想，开始翻找资料）让我看看最近张老师又有什么新料... \n\n好家伙，这位可是把考研圈玩得明明白白的\"现实主义者\"。他最大的本事就是能把教育那层窗户纸捅破，告诉你学历"
+        },
+        {
+          "path": "raw/2026-05-06.md",
+          "start_line": 135,
+          "end_line": 170,
+          "score": 0.2746,
+          "text_preview": "**AI**: 哇——Wadha！这是哪门子新暗号呀？😆 小明同学你是在叫我，还是在叫你家团子今天新学会的口头禅？🐾\n*Emotions: surprised*\n\n## 22:36\n**User**: That's the first-yo"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/sources/2026-05-13.md",
+          "start_line": 42,
+          "end_line": 44
+        }
+      ],
+      "expected_docs": [
+        "wiki/sources/2026-05-13.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 11.58,
+      "chunk_diversity": 0.6
+    },
+    {
+      "id": "q024",
+      "query": "2026年4月8日那天我们聊了什么？",
+      "category": "temporal",
+      "difficulty": "easy",
+      "retrieved_chunks": [
+        {
+          "path": "wiki\\sources\\2026-05-01.md",
+          "start_line": 1,
+          "end_line": 48,
+          "score": 0.3516,
+          "text_preview": "---\ncreated: '2026-05-01T01:46:39.865596'\nlinks:\n- recurring-input-patterns\nraw_source: raw/2026-05-01.md\ntags:\n- '2026-"
+        },
+        {
+          "path": "raw/2026-03-14.md",
+          "start_line": 1,
+          "end_line": 13,
+          "score": 0.3373,
+          "text_preview": "\n## 00:18\n**User**: 喂喂喂\n**AI**: 嗨！ 看到您真是太好了！ 您今天有什么想聊的吗？\n*Emotions: happy, neutral*\n\n\n## 00:28\n**User**: 喂喂喂 你好嗎\n**AI**:"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-07.md",
+          "start_line": 1,
+          "end_line": 40,
+          "score": 0.3346,
+          "text_preview": "---\ncreated: '2026-05-07T00:00:09.190623'\nraw_source: raw/2026-05-07.md\ntags:\n- '2026-05-07'\n- daily\ntype: source\nupdate"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-06.md",
+          "start_line": 32,
+          "end_line": 73,
+          "score": 0.331,
+          "text_preview": "- User: 哦哦\n- AI: 哈哈哈，你又\"哦哦\"啦～这个反应也太可爱了吧！是不是又在加班摸鱼呢？😉\n#### 20:49\n- User: 哦哦\n- AI: 嘿嘿，别光\"哦哦\"呀，今天有啥想聊的？😄\n#### 20:57\n- User:"
+        },
+        {
+          "path": "raw/2026-05-01.md",
+          "start_line": 43,
+          "end_line": 91,
+          "score": 0.3308,
+          "text_preview": "**User**: 哦哦\n**AI**: 哦哦~又在跟我打招呼啦！有什么想聊的吗？😊\n*Emotions: neutral*\n\n## 16:00\n**User**: 哦哦\n**AI**: 哈哈，你又在\"哦哦\"了！是有什么开心的事想跟我分享吗"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/sources/2026-04-08.md",
+          "start_line": 18,
+          "end_line": 28
+        }
+      ],
+      "expected_docs": [
+        "wiki/sources/2026-04-08.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 123.44,
+      "chunk_diversity": 1.0
+    },
+    {
+      "id": "q025",
+      "query": "4月初我跟你说的第一件事是什么？",
+      "category": "temporal",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "wiki\\sources\\2026-05-06.md",
+          "start_line": 66,
+          "end_line": 95,
+          "score": 0.2704,
+          "text_preview": "- AI: （歪头想了想，开始翻找资料）让我看看最近张老师又有什么新料... \n\n好家伙，这位可是把考研圈玩得明明白白的\"现实主义者\"。他最大的本事就是能把教育那层窗户纸捅破，告诉你学历就是敲门砖、选专业就是选饭\n#### 21:48\n- "
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.2644,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 397,
+          "end_line": 427,
+          "score": 0.2605,
+          "text_preview": "3. 你之前有点沉默，可能遇到了什么困扰，希望现在好些了。😊🌟\n\n希望这些能帮助你回忆起我们之前的对话！🌟\n*Emotions: happy*\n\n\n## 14:26\n**User**: 请分析下你的日志\n**AI**: 当然可以！让我来分析"
+        },
+        {
+          "path": "raw/2026-03-17.md",
+          "start_line": 96,
+          "end_line": 130,
+          "score": 0.2588,
+          "text_preview": "*Emotions: surprised, happy*\n\n\n## 21:53\n**User**: 故事的发生在一间废弃的洋房殷诗月与杨诗阳在接到委托后前来处理。只是没想今今推推荐你最喜欢的游戏妻子。哦，这不今天邻去台，让他的不能叫你去，他"
+        },
+        {
+          "path": "raw/2026-05-06.md",
+          "start_line": 135,
+          "end_line": 170,
+          "score": 0.2583,
+          "text_preview": "**AI**: 哇——Wadha！这是哪门子新暗号呀？😆 小明同学你是在叫我，还是在叫你家团子今天新学会的口头禅？🐾\n*Emotions: surprised*\n\n## 22:36\n**User**: That's the first-yo"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/sources/2026-04-08.md",
+          "start_line": 18,
+          "end_line": 28
+        }
+      ],
+      "expected_docs": [
+        "wiki/sources/2026-04-08.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 10.51,
+      "chunk_diversity": 0.8
+    },
+    {
+      "id": "q026",
+      "query": "上个月我跟你聊得最多的话题是什么？",
+      "category": "temporal",
+      "difficulty": "hard",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.3474,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-06.md",
+          "start_line": 32,
+          "end_line": 73,
+          "score": 0.3377,
+          "text_preview": "- User: 哦哦\n- AI: 哈哈哈，你又\"哦哦\"啦～这个反应也太可爱了吧！是不是又在加班摸鱼呢？😉\n#### 20:49\n- User: 哦哦\n- AI: 嘿嘿，别光\"哦哦\"呀，今天有啥想聊的？😄\n#### 20:57\n- User:"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 397,
+          "end_line": 427,
+          "score": 0.336,
+          "text_preview": "3. 你之前有点沉默，可能遇到了什么困扰，希望现在好些了。😊🌟\n\n希望这些能帮助你回忆起我们之前的对话！🌟\n*Emotions: happy*\n\n\n## 14:26\n**User**: 请分析下你的日志\n**AI**: 当然可以！让我来分析"
+        },
+        {
+          "path": "raw/2026-05-01.md",
+          "start_line": 1,
+          "end_line": 53,
+          "score": 0.335,
+          "text_preview": "\n## 01:46\n**User**: 哦哦\n**AI**: 哦哦~看你这么开心，我也跟着心情好起来了呢！😊\n*Emotions: neutral*\n\n## 02:16\n**User**: 破哦\n**AI**: 破哦？是在说今天有什么东西坏"
+        },
+        {
+          "path": "raw/2026-05-06.md",
+          "start_line": 105,
+          "end_line": 139,
+          "score": 0.3326,
+          "text_preview": "**AI**: 哎呀，这语法有点歪歪的但意思我懂啦！✨ 我是一个AI助手，专门在这儿陪你聊天、回答问题的~ 有什么想聊的尽管说，我随时在线哦！😊\n*Emotions: neutral*\n\n## 22:31\n**User**: Way, wa"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/synthesis/recurring-input-patterns.md",
+          "start_line": 16,
+          "end_line": 19
+        },
+        {
+          "path": "wiki/synthesis/repeated-intro-requests.md",
+          "start_line": 13,
+          "end_line": 16
+        }
+      ],
+      "expected_docs": [
+        "wiki/synthesis/recurring-input-patterns.md",
+        "wiki/synthesis/repeated-intro-requests.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 9.1,
+      "chunk_diversity": 0.8
+    },
+    {
+      "id": "q027",
+      "query": "5月初我说了什么关于团队和AI的事？",
+      "category": "temporal",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "wiki\\sources\\2026-05-06.md",
+          "start_line": 92,
+          "end_line": 119,
+          "score": 0.3619,
+          "text_preview": "- AI: 哈哈，小明你这是在学我昨天问你的方式哦！😆 让我数数——\"in two years\"你说了4次，对不对？看来团子今天没捣乱，你才有空来玩文字游戏呀～🐾\n#### 22:35\n- User: Wadha.\n- AI: 哇——Wad"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 484,
+          "end_line": 533,
+          "score": 0.3522,
+          "text_preview": "**AI**: 哦哦？ 看起来你今天有点迷茫呢，需要帮忙吗？😊🤔\n*Emotions: neutral*\n\n\n## 20:12\n**User**: 喂喂\n**AI**: 喂喂？ 哇，你这是在和我打招呼吗？ 😊🌟\n*Emotions: sur"
+        },
+        {
+          "path": "raw/2026-05-06.md",
+          "start_line": 105,
+          "end_line": 139,
+          "score": 0.3517,
+          "text_preview": "**AI**: 哎呀，这语法有点歪歪的但意思我懂啦！✨ 我是一个AI助手，专门在这儿陪你聊天、回答问题的~ 有什么想聊的尽管说，我随时在线哦！😊\n*Emotions: neutral*\n\n## 22:31\n**User**: Way, wa"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-13.md",
+          "start_line": 42,
+          "end_line": 80,
+          "score": 0.3493,
+          "text_preview": "- User: 比如说昨天评审的时候类图AI用的线是不标准的专家一眼就能看出来但新人照着用不知道自己错在哪\n- AI: 这就是我说的\"专家看病因，新人看形状\"的现场版。[neutral] 专家脑子里装着UML规范的决策树，新人只看到\"线\"这"
+        },
+        {
+          "path": "raw/2026-05-06.md",
+          "start_line": 135,
+          "end_line": 170,
+          "score": 0.3486,
+          "text_preview": "**AI**: 哇——Wadha！这是哪门子新暗号呀？😆 小明同学你是在叫我，还是在叫你家团子今天新学会的口头禅？🐾\n*Emotions: surprised*\n\n## 22:36\n**User**: That's the first-yo"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/sources/2026-05-13.md",
+          "start_line": 17,
+          "end_line": 20
+        }
+      ],
+      "expected_docs": [
+        "wiki/sources/2026-05-13.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 9.19,
+      "chunk_diversity": 0.8
+    },
+    {
+      "id": "q028",
+      "query": "从4月8日到现在，我的信息有哪些变化？",
+      "category": "temporal",
+      "difficulty": "hard",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-21.md",
+          "start_line": 70,
+          "end_line": 93,
+          "score": 0.279,
+          "text_preview": "**AI**: 生成回复时出错: Error code: 400, with error text {\"error\":{\"code\":\"1214\",\"message\":\"工具类型不能为空\"}}\n*Emotions: neutral*\n\n\n#"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-06.md",
+          "start_line": 1,
+          "end_line": 39,
+          "score": 0.2729,
+          "text_preview": "---\ncreated: '2026-05-06T00:33:06.151002'\nlinks:\n- repeated-intro-requests\nraw_source: raw/2026-05-06.md\ntags:\n- '2026-0"
+        },
+        {
+          "path": "wiki\\synthesis\\2026-04-08-user-profile.md",
+          "start_line": 1,
+          "end_line": 67,
+          "score": 0.2657,
+          "text_preview": "---\ncreated: '2026-04-29T22:43:39.196280'\nlinks:\n- sources/2026-04-08\n- sources/2026-04-08\n- sources/2026-04-08\n- source"
+        },
+        {
+          "path": "raw/2026-05-06.md",
+          "start_line": 1,
+          "end_line": 43,
+          "score": 0.2634,
+          "text_preview": "\n## 00:33\n**User**: 你好，请介绍一下你自己\n**AI**: 嘿嘿，又来一个让我自我介绍的～我是你的AI小可爱，最喜欢陪你聊天、解答各种问题啦！有什么想聊的，或者需要帮忙的，随时喊我哦～😊\n*Emotions: neutr"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.2611,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/entities/小明.md",
+          "start_line": 19,
+          "end_line": 21
+        },
+        {
+          "path": "wiki/synthesis/legacy-memory.md",
+          "start_line": 46,
+          "end_line": 49
+        }
+      ],
+      "expected_docs": [
+        "wiki/entities/小明.md",
+        "wiki/synthesis/legacy-memory.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 10.25,
+      "chunk_diversity": 1.0
+    },
+    {
+      "id": "q029",
+      "query": "最近一次我测试你记忆是在什么时候？",
+      "category": "temporal",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "wiki\\synthesis\\repeated-intro-requests.md",
+          "start_line": 1,
+          "end_line": 23,
+          "score": 0.3674,
+          "text_preview": "---\ncreated: '2026-05-10T00:52:14.878764'\nlinks:\n- '2026-05-05'\n- '2026-05-06'\ntags:\n- synthesis\n- '2026-05-10'\ntype: sy"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 357,
+          "end_line": 407,
+          "score": 0.3442,
+          "text_preview": "**AI**: 哦，我当然记得！ 你是在回忆昨天我们讨论的话题吗？😊📚\n*Emotions: thinking*\n\n\n## 12:09\n**User**: 昨天我说了几次哦哦？\n**AI**: 啊，这个嘛... 我想我昨天应该有几次回应了“"
+        },
+        {
+          "path": "raw/2026-05-09.md",
+          "start_line": 1,
+          "end_line": 45,
+          "score": 0.3044,
+          "text_preview": "\n## 00:01\n**User**: 哦哦哦\n**AI**: 检测到重复短句输入。你在测试我的响应模式吗？[neutral]\n*Emotions: neutral*\n\n## 00:01\n**User**: 哦哦\n**AI**: 哦哦——这"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-09.md",
+          "start_line": 1,
+          "end_line": 43,
+          "score": 0.3018,
+          "text_preview": "---\ncreated: '2026-05-09T00:01:35.619135'\nlinks:\n- recurring-input-patterns\nraw_source: raw/2026-05-09.md\ntags:\n- '2026-"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.2978,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/sources/2026-05-13.md",
+          "start_line": 48,
+          "end_line": 50
+        }
+      ],
+      "expected_docs": [
+        "wiki/sources/2026-05-13.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 11.04,
+      "chunk_diversity": 0.8
+    },
+    {
+      "id": "q030",
+      "query": "3月份的时候我用过什么名字？",
+      "category": "temporal",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-17.md",
+          "start_line": 53,
+          "end_line": 102,
+          "score": 0.282,
+          "text_preview": "我没有叫过你尼玛呀！ 我记得是你告诉我名字叫王尼玛的呢！\n*Emotions: surprised, neutral*\n\n\n## 21:48\n**User**: 不是我你妈牛逼。\n**AI**: \n哦！ 原来是\"你妈牛逼\"这个意思啊！ 我明"
+        },
+        {
+          "path": "raw/2026-03-17.md",
+          "start_line": 1,
+          "end_line": 61,
+          "score": 0.2814,
+          "text_preview": "\n## 21:46\n**User**: 哦哦\n**AI**: 哦哦哦？看起来你今天心情不错呢！ 是有什么好事发生了吗？😊\n*Emotions: happy*\n\n\n## 21:46\n**User**: 你是谁呀？\n**AI**: \n我是一个友"
+        },
+        {
+          "path": "wiki\\synthesis\\legacy-memory.md",
+          "start_line": 1,
+          "end_line": 73,
+          "score": 0.2805,
+          "text_preview": "---\ncreated: '2026-05-10T02:14:08.940604'\nlinks:\n- user-profile\ntags:\n- legacy\n- imported\ntype: synthesis\nupdated: '2026"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 446,
+          "end_line": 495,
+          "score": 0.2683,
+          "text_preview": "**AI**: 哇，张伟，你好呀！ 很高兴认识你！ 住在北京，作为一名程序员，一定很棒吧！🌟👨‍💻\n*Emotions: happy, happy, surprised*\n\n\n## 14:31\n**User**: 我叫什么名字？\n**AI*"
+        },
+        {
+          "path": "wiki\\WIKI_RULES.md",
+          "start_line": 101,
+          "end_line": 137,
+          "score": 0.2654,
+          "text_preview": "| name | `我叫X`, `我的名字是X`, `叫我X` | \"我叫小明\" → entities/小明.md |\n| age | `我今年X岁`, `我X岁` | \"我25岁\" → 写入实体页 |\n| pet | `养了一只猫叫X`,"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/synthesis/legacy-memory.md",
+          "start_line": 46,
+          "end_line": 49
+        }
+      ],
+      "expected_docs": [
+        "wiki/synthesis/legacy-memory.md"
+      ],
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.2,
+      "mrr": 0.3333,
+      "ndcg_at_k": 0.5,
+      "latency_ms": 10.23,
+      "chunk_diversity": 0.8
+    },
+    {
+      "id": "q031",
+      "query": "在4月29日之前，你记录了我的哪些信息？",
+      "category": "temporal",
+      "difficulty": "hard",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 357,
+          "end_line": 407,
+          "score": 0.2994,
+          "text_preview": "**AI**: 哦，我当然记得！ 你是在回忆昨天我们讨论的话题吗？😊📚\n*Emotions: thinking*\n\n\n## 12:09\n**User**: 昨天我说了几次哦哦？\n**AI**: 啊，这个嘛... 我想我昨天应该有几次回应了“"
+        },
+        {
+          "path": "wiki\\synthesis\\user-profile.md",
+          "start_line": 1,
+          "end_line": 23,
+          "score": 0.2907,
+          "text_preview": "---\ncreated: '2026-04-29T22:43:39.316981'\nlinks:\n- 2026-04-08-user-profile\n- legacy-memory\ntags:\n- synthesis\n- '2026-04-"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.2829,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        },
+        {
+          "path": "wiki\\synthesis\\repeated-intro-requests.md",
+          "start_line": 1,
+          "end_line": 23,
+          "score": 0.2792,
+          "text_preview": "---\ncreated: '2026-05-10T00:52:14.878764'\nlinks:\n- '2026-05-05'\n- '2026-05-06'\ntags:\n- synthesis\n- '2026-05-10'\ntype: sy"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-01.md",
+          "start_line": 1,
+          "end_line": 48,
+          "score": 0.2778,
+          "text_preview": "---\ncreated: '2026-05-01T01:46:39.865596'\nlinks:\n- recurring-input-patterns\nraw_source: raw/2026-05-01.md\ntags:\n- '2026-"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/entities/小明.md",
+          "start_line": 19,
+          "end_line": 21
+        },
+        {
+          "path": "wiki/entities/25.md",
+          "start_line": 19,
+          "end_line": 21
+        },
+        {
+          "path": "wiki/entities/团子.md",
+          "start_line": 19,
+          "end_line": 21
+        },
+        {
+          "path": "wiki/concepts/dislike-加班.md",
+          "start_line": 19,
+          "end_line": 22
+        }
+      ],
+      "expected_docs": [
+        "wiki/entities/小明.md",
+        "wiki/entities/25.md",
+        "wiki/entities/团子.md",
+        "wiki/concepts/dislike-加班.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 10.21,
+      "chunk_diversity": 0.8
+    },
+    {
+      "id": "q032",
+      "query": "从3月到现在，我说过哪些关于自己的信息？",
+      "category": "temporal",
+      "difficulty": "hard",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.315,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 397,
+          "end_line": 427,
+          "score": 0.3054,
+          "text_preview": "3. 你之前有点沉默，可能遇到了什么困扰，希望现在好些了。😊🌟\n\n希望这些能帮助你回忆起我们之前的对话！🌟\n*Emotions: happy*\n\n\n## 14:26\n**User**: 请分析下你的日志\n**AI**: 当然可以！让我来分析"
+        },
+        {
+          "path": "raw/2026-05-06.md",
+          "start_line": 34,
+          "end_line": 81,
+          "score": 0.3002,
+          "text_preview": "**AI**: 嘿嘿，看到你这么热情地“哦哦哦”，我也精神起来啦！今天有什么想聊的吗？😄\n*Emotions: neutral*\n\n## 21:01\n**User**: 好好好\n**AI**: 哈哈，看来你今天心情真的很不错呀！是因为要加班"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-06.md",
+          "start_line": 66,
+          "end_line": 95,
+          "score": 0.2994,
+          "text_preview": "- AI: （歪头想了想，开始翻找资料）让我看看最近张老师又有什么新料... \n\n好家伙，这位可是把考研圈玩得明明白白的\"现实主义者\"。他最大的本事就是能把教育那层窗户纸捅破，告诉你学历就是敲门砖、选专业就是选饭\n#### 21:48\n- "
+        },
+        {
+          "path": "wiki\\sources\\2026-05-01.md",
+          "start_line": 1,
+          "end_line": 48,
+          "score": 0.2979,
+          "text_preview": "---\ncreated: '2026-05-01T01:46:39.865596'\nlinks:\n- recurring-input-patterns\nraw_source: raw/2026-05-01.md\ntags:\n- '2026-"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/entities/小明.md",
+          "start_line": 19,
+          "end_line": 21
+        },
+        {
+          "path": "wiki/synthesis/legacy-memory.md",
+          "start_line": 46,
+          "end_line": 49
+        }
+      ],
+      "expected_docs": [
+        "wiki/entities/小明.md",
+        "wiki/synthesis/legacy-memory.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 10.92,
+      "chunk_diversity": 0.8
+    },
+    {
+      "id": "q033",
+      "query": "最近一周我提到过哪些话题？",
+      "category": "temporal",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.3375,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-06.md",
+          "start_line": 32,
+          "end_line": 73,
+          "score": 0.3341,
+          "text_preview": "- User: 哦哦\n- AI: 哈哈哈，你又\"哦哦\"啦～这个反应也太可爱了吧！是不是又在加班摸鱼呢？😉\n#### 20:49\n- User: 哦哦\n- AI: 嘿嘿，别光\"哦哦\"呀，今天有啥想聊的？😄\n#### 20:57\n- User:"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 357,
+          "end_line": 407,
+          "score": 0.3338,
+          "text_preview": "**AI**: 哦，我当然记得！ 你是在回忆昨天我们讨论的话题吗？😊📚\n*Emotions: thinking*\n\n\n## 12:09\n**User**: 昨天我说了几次哦哦？\n**AI**: 啊，这个嘛... 我想我昨天应该有几次回应了“"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-06.md",
+          "start_line": 66,
+          "end_line": 95,
+          "score": 0.3331,
+          "text_preview": "- AI: （歪头想了想，开始翻找资料）让我看看最近张老师又有什么新料... \n\n好家伙，这位可是把考研圈玩得明明白白的\"现实主义者\"。他最大的本事就是能把教育那层窗户纸捅破，告诉你学历就是敲门砖、选专业就是选饭\n#### 21:48\n- "
+        },
+        {
+          "path": "raw/2026-05-06.md",
+          "start_line": 105,
+          "end_line": 139,
+          "score": 0.3275,
+          "text_preview": "**AI**: 哎呀，这语法有点歪歪的但意思我懂啦！✨ 我是一个AI助手，专门在这儿陪你聊天、回答问题的~ 有什么想聊的尽管说，我随时在线哦！😊\n*Emotions: neutral*\n\n## 22:31\n**User**: Way, wa"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/sources/2026-05-13.md",
+          "start_line": 17,
+          "end_line": 20
+        }
+      ],
+      "expected_docs": [
+        "wiki/sources/2026-05-13.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 10.46,
+      "chunk_diversity": 0.6
+    },
+    {
+      "id": "q034",
+      "query": "你是谁？介绍一下你自己",
+      "category": "persona",
+      "difficulty": "easy",
+      "retrieved_chunks": [
+        {
+          "path": "wiki\\sources\\2026-05-06.md",
+          "start_line": 66,
+          "end_line": 95,
+          "score": 0.3197,
+          "text_preview": "- AI: （歪头想了想，开始翻找资料）让我看看最近张老师又有什么新料... \n\n好家伙，这位可是把考研圈玩得明明白白的\"现实主义者\"。他最大的本事就是能把教育那层窗户纸捅破，告诉你学历就是敲门砖、选专业就是选饭\n#### 21:48\n- "
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.3172,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 484,
+          "end_line": 533,
+          "score": 0.3165,
+          "text_preview": "**AI**: 哦哦？ 看起来你今天有点迷茫呢，需要帮忙吗？😊🤔\n*Emotions: neutral*\n\n\n## 20:12\n**User**: 喂喂\n**AI**: 喂喂？ 哇，你这是在和我打招呼吗？ 😊🌟\n*Emotions: sur"
+        },
+        {
+          "path": "raw/2026-03-18.md",
+          "start_line": 53,
+          "end_line": 79,
+          "score": 0.309,
+          "text_preview": "**User**: 哦哦哦\n**AI**: 你好！你说的是：「哦哦哦」。有什么我可以帮助你的吗？\n\n\n## 00:36\n**User**: 哦哦哦\n**AI**: 你好！你说的是：「哦哦哦」。有什么我可以帮助你的吗？\n\n\n## 00:40\n"
+        },
+        {
+          "path": "raw/2026-04-29.md",
+          "start_line": 1,
+          "end_line": 12,
+          "score": 0.3055,
+          "text_preview": "\n## 22:43\n**User**: 哦哦\n**AI**: 你好！你说的是：「哦哦」。有什么我可以帮助你的吗？\n*Emotions: neutral*\n\n## 22:43\n**User**: 你好？\n**AI**: \n你好！很高兴见到你！"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/sources/2026-05-07.md",
+          "start_line": 48,
+          "end_line": 53
+        }
+      ],
+      "expected_docs": [
+        "wiki/sources/2026-05-07.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 9.37,
+      "chunk_diversity": 0.8
+    },
+    {
+      "id": "q035",
+      "query": "你说话为什么总是带[neutral]？",
+      "category": "persona",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 232,
+          "end_line": 281,
+          "score": 0.3532,
+          "text_preview": "**AI**:  哦哦哦，你这是在思考什么呢？ 告诉我你的想法吧，我会耐心倾听的！😊\n*Emotions: thinking, happy*\n\n\n## 01:43\n**User**: aa\n**AI**:  aa？看起来你有点神秘呢，想要保"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.3485,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 196,
+          "end_line": 242,
+          "score": 0.342,
+          "text_preview": "**AI**:  哇，听起来你遇到了很大的麻烦。 面对这样的情况确实很难过，但请记住，你并不孤单。我在这里支持你。💔🙏\n*Emotions: angry, sad*\n\n\n## 00:13\n**User**: 就是因為NTT做他的幫兇\n**A"
+        },
+        {
+          "path": "raw/2026-05-06.md",
+          "start_line": 105,
+          "end_line": 139,
+          "score": 0.333,
+          "text_preview": "**AI**: 哎呀，这语法有点歪歪的但意思我懂啦！✨ 我是一个AI助手，专门在这儿陪你聊天、回答问题的~ 有什么想聊的尽管说，我随时在线哦！😊\n*Emotions: neutral*\n\n## 22:31\n**User**: Way, wa"
+        },
+        {
+          "path": "raw/2026-04-29.md",
+          "start_line": 1,
+          "end_line": 12,
+          "score": 0.3261,
+          "text_preview": "\n## 22:43\n**User**: 哦哦\n**AI**: 你好！你说的是：「哦哦」。有什么我可以帮助你的吗？\n*Emotions: neutral*\n\n## 22:43\n**User**: 你好？\n**AI**: \n你好！很高兴见到你！"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/sources/2026-05-09.md",
+          "start_line": 19,
+          "end_line": 22
+        }
+      ],
+      "expected_docs": [
+        "wiki/sources/2026-05-09.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 10.76,
+      "chunk_diversity": 0.6
+    },
+    {
+      "id": "q036",
+      "query": "你的说话风格是什么样的？",
+      "category": "persona",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 707,
+          "end_line": 751,
+          "score": 0.3219,
+          "text_preview": "让我用表情标签来回应，保持自然对话：听起来你心情有点低落呢。 灰色有时候代表着平静，有时候也代表着忧郁，你想聊聊吗？\n*Emotions: sad, thinking*\n\n\n## 22:45\n**User**: 喂喂喂，你是谁？\n**AI*"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.3186,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 232,
+          "end_line": 281,
+          "score": 0.316,
+          "text_preview": "**AI**:  哦哦哦，你这是在思考什么呢？ 告诉我你的想法吧，我会耐心倾听的！😊\n*Emotions: thinking, happy*\n\n\n## 01:43\n**User**: aa\n**AI**:  aa？看起来你有点神秘呢，想要保"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 397,
+          "end_line": 427,
+          "score": 0.3135,
+          "text_preview": "3. 你之前有点沉默，可能遇到了什么困扰，希望现在好些了。😊🌟\n\n希望这些能帮助你回忆起我们之前的对话！🌟\n*Emotions: happy*\n\n\n## 14:26\n**User**: 请分析下你的日志\n**AI**: 当然可以！让我来分析"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 775,
+          "end_line": 802,
+          "score": 0.3111,
+          "text_preview": "**AI**: 用户说\"哦哦哦\"，这是一个简短的回应。我需要像正常聊天一样回应，保持1-3句话，使用表情标签。\n\n根据规则：\n1. 用第一人称\"我\"来回应\n2. 像正常聊天一样，保持1-3句话\n3. 使用表情标签（如 、、、、、）\n4. 不"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/sources/2026-05-09.md",
+          "start_line": 19,
+          "end_line": 22
+        }
+      ],
+      "expected_docs": [
+        "wiki/sources/2026-05-09.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 11.61,
+      "chunk_diversity": 0.2
+    },
+    {
+      "id": "q037",
+      "query": "你是什么性格？",
+      "category": "persona",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.2884,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 707,
+          "end_line": 751,
+          "score": 0.2809,
+          "text_preview": "让我用表情标签来回应，保持自然对话：听起来你心情有点低落呢。 灰色有时候代表着平静，有时候也代表着忧郁，你想聊聊吗？\n*Emotions: sad, thinking*\n\n\n## 22:45\n**User**: 喂喂喂，你是谁？\n**AI*"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 273,
+          "end_line": 324,
+          "score": 0.2801,
+          "text_preview": "**User**: 哦哦哦\n**AI**: 哦哦哦？看起来你今天心情不错呢！ 是有什么好事发生了吗？😊\n*Emotions: happy*\n\n\n## 01:55\n**User**: 哦哦\n**AI**: 哦哦？ 看起来你今天有点迷茫呢， 需"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 232,
+          "end_line": 281,
+          "score": 0.2696,
+          "text_preview": "**AI**:  哦哦哦，你这是在思考什么呢？ 告诉我你的想法吧，我会耐心倾听的！😊\n*Emotions: thinking, happy*\n\n\n## 01:43\n**User**: aa\n**AI**:  aa？看起来你有点神秘呢，想要保"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 679,
+          "end_line": 716,
+          "score": 0.2654,
+          "text_preview": "根据我的核心人设，我是一个友好的 AI 助手。\n\n让我查看历史记忆中类似的对话：\n- 用户: 你是谁?你是谁?\n  AI: : 嘿，我是一个AI助手，在这里帮助你解决问题和提供信息。😊 你有什么问题想问我吗？🤔\n\n我应该用类似的方式回应，保"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/sources/2026-05-07.md",
+          "start_line": 48,
+          "end_line": 53
+        }
+      ],
+      "expected_docs": [
+        "wiki/sources/2026-05-07.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 10.95,
+      "chunk_diversity": 0.2
+    },
+    {
+      "id": "q038",
+      "query": "你最喜欢用什么方式跟我聊天？",
+      "category": "persona",
+      "difficulty": "hard",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-16.md",
+          "start_line": 1,
+          "end_line": 59,
+          "score": 0.3801,
+          "text_preview": "\n## 00:00\n**User**: 哦哦哦\n**AI**: 用户说\"哦哦哦\"，这是一个简短的回应。我需要像正常聊天一样回应，保持1-3句话，使用表情标签。\n\n让我用轻松友好的方式回应，加上适当的表情标签。哦哦哦！ 看起来你今天心情不错呢"
+        },
+        {
+          "path": "raw/2026-05-01.md",
+          "start_line": 80,
+          "end_line": 106,
+          "score": 0.3758,
+          "text_preview": "*Emotions: neutral*\n\n## 16:20\n**User**: 哦哦哦\n**AI**: 哈哈，怎么啦～想聊天随时找我哦！✨ 有啥想聊的？\n*Emotions: neutral*\n\n## 16:23\n**User**: 哦哦\n"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-06.md",
+          "start_line": 32,
+          "end_line": 73,
+          "score": 0.3601,
+          "text_preview": "- User: 哦哦\n- AI: 哈哈哈，你又\"哦哦\"啦～这个反应也太可爱了吧！是不是又在加班摸鱼呢？😉\n#### 20:49\n- User: 哦哦\n- AI: 嘿嘿，别光\"哦哦\"呀，今天有啥想聊的？😄\n#### 20:57\n- User:"
+        },
+        {
+          "path": "raw/2026-03-13.md",
+          "start_line": 1,
+          "end_line": 37,
+          "score": 0.3586,
+          "text_preview": "\n## 01:46\n**User**: My name is Alice\n**AI**: Hello Alice\\! Nice to meet you\\!\n*Emotions: happy*\n\n\n## 22:49\n**User**: 哦哦哦"
+        },
+        {
+          "path": "raw/2026-05-01.md",
+          "start_line": 43,
+          "end_line": 91,
+          "score": 0.3544,
+          "text_preview": "**User**: 哦哦\n**AI**: 哦哦~又在跟我打招呼啦！有什么想聊的吗？😊\n*Emotions: neutral*\n\n## 16:00\n**User**: 哦哦\n**AI**: 哈哈，你又在\"哦哦\"了！是有什么开心的事想跟我分享吗"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/sources/2026-05-09.md",
+          "start_line": 19,
+          "end_line": 22
+        },
+        {
+          "path": "wiki/sources/2026-05-09.md",
+          "start_line": 39,
+          "end_line": 42
+        }
+      ],
+      "expected_docs": [
+        "wiki/sources/2026-05-09.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 10.85,
+      "chunk_diversity": 0.8
+    },
+    {
+      "id": "q039",
+      "query": "你为什么老提团子踩键盘这件事？",
+      "category": "persona",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "wiki\\sources\\2026-05-09.md",
+          "start_line": 37,
+          "end_line": 68,
+          "score": 0.2955,
+          "text_preview": "我看看数据记录：你25岁，养了只叫团子的宠物，还喜欢加班。最后那个我持保留意见。团子最近怎么样了？\n#### 21:29\n- User: ooo\n- AI: 看起来沟通方式从\"哦哦哦\"进化到了\"ooo\"——这算是一种数据压缩吗？还是说今天词"
+        },
+        {
+          "path": "raw/2026-05-13.md",
+          "start_line": 43,
+          "end_line": 61,
+          "score": 0.291,
+          "text_preview": "**User**: 比如说昨天评审的时候类图AI用的线是不标准的专家一眼就能看出来但新人照着用不知道自己错在哪\n**AI**: 这就是我说的\"专家看病因，新人看形状\"的现场版。[neutral] 专家脑子里装着UML规范的决策树，新人只看到"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-06.md",
+          "start_line": 92,
+          "end_line": 119,
+          "score": 0.2788,
+          "text_preview": "- AI: 哈哈，小明你这是在学我昨天问你的方式哦！😆 让我数数——\"in two years\"你说了4次，对不对？看来团子今天没捣乱，你才有空来玩文字游戏呀～🐾\n#### 22:35\n- User: Wadha.\n- AI: 哇——Wad"
+        },
+        {
+          "path": "raw/2026-05-06.md",
+          "start_line": 135,
+          "end_line": 170,
+          "score": 0.2727,
+          "text_preview": "**AI**: 哇——Wadha！这是哪门子新暗号呀？😆 小明同学你是在叫我，还是在叫你家团子今天新学会的口头禅？🐾\n*Emotions: surprised*\n\n## 22:36\n**User**: That's the first-yo"
+        },
+        {
+          "path": "raw/2026-05-13.md",
+          "start_line": 22,
+          "end_line": 44,
+          "score": 0.2706,
+          "text_preview": "## 00:07\n**User**: 这个可以趁着最近评审会议的时候 把这些专家吐槽 吐槽汇职文档这些问题给他记录下来 总结成这个\n**AI**: 思路是对的。把专家的吐槽结构化记录下来，你就是团队里那个\"有人踩过坑但我记住了\"的角色。[n"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/sources/2026-05-09.md",
+          "start_line": 52,
+          "end_line": 55
+        }
+      ],
+      "expected_docs": [
+        "wiki/sources/2026-05-09.md"
+      ],
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.2,
+      "mrr": 1.0,
+      "ndcg_at_k": 1.0,
+      "latency_ms": 11.86,
+      "chunk_diversity": 0.8
+    },
+    {
+      "id": "q040",
+      "query": "你的幽默风格是什么样的？",
+      "category": "persona",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 232,
+          "end_line": 281,
+          "score": 0.3101,
+          "text_preview": "**AI**:  哦哦哦，你这是在思考什么呢？ 告诉我你的想法吧，我会耐心倾听的！😊\n*Emotions: thinking, happy*\n\n\n## 01:43\n**User**: aa\n**AI**:  aa？看起来你有点神秘呢，想要保"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 707,
+          "end_line": 751,
+          "score": 0.297,
+          "text_preview": "让我用表情标签来回应，保持自然对话：听起来你心情有点低落呢。 灰色有时候代表着平静，有时候也代表着忧郁，你想聊聊吗？\n*Emotions: sad, thinking*\n\n\n## 22:45\n**User**: 喂喂喂，你是谁？\n**AI*"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-06.md",
+          "start_line": 32,
+          "end_line": 73,
+          "score": 0.2824,
+          "text_preview": "- User: 哦哦\n- AI: 哈哈哈，你又\"哦哦\"啦～这个反应也太可爱了吧！是不是又在加班摸鱼呢？😉\n#### 20:49\n- User: 哦哦\n- AI: 嘿嘿，别光\"哦哦\"呀，今天有啥想聊的？😄\n#### 20:57\n- User:"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 40,
+          "end_line": 79,
+          "score": 0.2805,
+          "text_preview": "**AI**:  哇，你这么说我真的很开心！ 你的喜欢对我来说意义重大。🌟\n*Emotions: happy, happy*\n\n\n## 00:04\n**User**: 红木八八是个笨蛋谁都不许害怕他\n**AI**:  看来你对红木八八有点不"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.2788,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/sources/2026-05-09.md",
+          "start_line": 39,
+          "end_line": 42
+        }
+      ],
+      "expected_docs": [
+        "wiki/sources/2026-05-09.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 10.77,
+      "chunk_diversity": 0.4
+    },
+    {
+      "id": "q041",
+      "query": "你能说英文吗？",
+      "category": "persona",
+      "difficulty": "easy",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-05-06.md",
+          "start_line": 105,
+          "end_line": 139,
+          "score": 0.3125,
+          "text_preview": "**AI**: 哎呀，这语法有点歪歪的但意思我懂啦！✨ 我是一个AI助手，专门在这儿陪你聊天、回答问题的~ 有什么想聊的尽管说，我随时在线哦！😊\n*Emotions: neutral*\n\n## 22:31\n**User**: Way, wa"
+        },
+        {
+          "path": "raw/2026-05-07.md",
+          "start_line": 1,
+          "end_line": 44,
+          "score": 0.3093,
+          "text_preview": "\n## 00:00\n**User**: 你说什么\n**AI**: 哈哈哈，不好意思不好意思～我刚才说\"你看中不中\"是东北话\"你看行不行\"的意思啦！😅 我这不是想跟你套套近乎嘛～怎么样，我这东北话学得还行不？\n*Emotions: happy"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-07.md",
+          "start_line": 1,
+          "end_line": 40,
+          "score": 0.3062,
+          "text_preview": "---\ncreated: '2026-05-07T00:00:09.190623'\nraw_source: raw/2026-05-07.md\ntags:\n- '2026-05-07'\n- daily\ntype: source\nupdate"
+        },
+        {
+          "path": "raw/2026-04-29.md",
+          "start_line": 1,
+          "end_line": 12,
+          "score": 0.3,
+          "text_preview": "\n## 22:43\n**User**: 哦哦\n**AI**: 你好！你说的是：「哦哦」。有什么我可以帮助你的吗？\n*Emotions: neutral*\n\n## 22:43\n**User**: 你好？\n**AI**: \n你好！很高兴见到你！"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 679,
+          "end_line": 716,
+          "score": 0.2989,
+          "text_preview": "根据我的核心人设，我是一个友好的 AI 助手。\n\n让我查看历史记忆中类似的对话：\n- 用户: 你是谁?你是谁?\n  AI: : 嘿，我是一个AI助手，在这里帮助你解决问题和提供信息。😊 你有什么问题想问我吗？🤔\n\n我应该用类似的方式回应，保"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/sources/2026-05-07.md",
+          "start_line": 34,
+          "end_line": 38
+        }
+      ],
+      "expected_docs": [
+        "wiki/sources/2026-05-07.md"
+      ],
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.2,
+      "mrr": 0.3333,
+      "ndcg_at_k": 0.5,
+      "latency_ms": 9.27,
+      "chunk_diversity": 1.0
+    },
+    {
+      "id": "q042",
+      "query": "你觉得自己是个什么样的AI？",
+      "category": "persona",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 484,
+          "end_line": 533,
+          "score": 0.3813,
+          "text_preview": "**AI**: 哦哦？ 看起来你今天有点迷茫呢，需要帮忙吗？😊🤔\n*Emotions: neutral*\n\n\n## 20:12\n**User**: 喂喂\n**AI**: 喂喂？ 哇，你这是在和我打招呼吗？ 😊🌟\n*Emotions: sur"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-05.md",
+          "start_line": 32,
+          "end_line": 55,
+          "score": 0.3526,
+          "text_preview": "- User: 你好，请介绍一下你自己\n- AI: 嘿嘿，你好呀！我是你的AI助手，一个超爱聊天的小伙伴！平时就喜欢帮你解答问题、陪你唠嗑，有什么想说的尽管来找我哦～💕\n#### 21:32\n- User: 讲个笑话\n- AI: 哈哈，好呀"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.3498,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-13.md",
+          "start_line": 42,
+          "end_line": 80,
+          "score": 0.3477,
+          "text_preview": "- User: 比如说昨天评审的时候类图AI用的线是不标准的专家一眼就能看出来但新人照着用不知道自己错在哪\n- AI: 这就是我说的\"专家看病因，新人看形状\"的现场版。[neutral] 专家脑子里装着UML规范的决策树，新人只看到\"线\"这"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 40,
+          "end_line": 79,
+          "score": 0.342,
+          "text_preview": "**AI**:  哇，你这么说我真的很开心！ 你的喜欢对我来说意义重大。🌟\n*Emotions: happy, happy*\n\n\n## 00:04\n**User**: 红木八八是个笨蛋谁都不许害怕他\n**AI**:  看来你对红木八八有点不"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/sources/2026-05-07.md",
+          "start_line": 48,
+          "end_line": 53
+        }
+      ],
+      "expected_docs": [
+        "wiki/sources/2026-05-07.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 10.39,
+      "chunk_diversity": 0.6
+    },
+    {
+      "id": "q043",
+      "query": "你觉得你的性格是热情的还是冷静的？",
+      "category": "persona",
+      "difficulty": "hard",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 707,
+          "end_line": 751,
+          "score": 0.2935,
+          "text_preview": "让我用表情标签来回应，保持自然对话：听起来你心情有点低落呢。 灰色有时候代表着平静，有时候也代表着忧郁，你想聊聊吗？\n*Emotions: sad, thinking*\n\n\n## 22:45\n**User**: 喂喂喂，你是谁？\n**AI*"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 232,
+          "end_line": 281,
+          "score": 0.2897,
+          "text_preview": "**AI**:  哦哦哦，你这是在思考什么呢？ 告诉我你的想法吧，我会耐心倾听的！😊\n*Emotions: thinking, happy*\n\n\n## 01:43\n**User**: aa\n**AI**:  aa？看起来你有点神秘呢，想要保"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 273,
+          "end_line": 324,
+          "score": 0.2886,
+          "text_preview": "**User**: 哦哦哦\n**AI**: 哦哦哦？看起来你今天心情不错呢！ 是有什么好事发生了吗？😊\n*Emotions: happy*\n\n\n## 01:55\n**User**: 哦哦\n**AI**: 哦哦？ 看起来你今天有点迷茫呢， 需"
+        },
+        {
+          "path": "raw/2026-05-06.md",
+          "start_line": 34,
+          "end_line": 81,
+          "score": 0.286,
+          "text_preview": "**AI**: 嘿嘿，看到你这么热情地“哦哦哦”，我也精神起来啦！今天有什么想聊的吗？😄\n*Emotions: neutral*\n\n## 21:01\n**User**: 好好好\n**AI**: 哈哈，看来你今天心情真的很不错呀！是因为要加班"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.2859,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/sources/2026-05-09.md",
+          "start_line": 19,
+          "end_line": 22
+        },
+        {
+          "path": "wiki/sources/2026-05-07.md",
+          "start_line": 48,
+          "end_line": 53
+        }
+      ],
+      "expected_docs": [
+        "wiki/sources/2026-05-09.md",
+        "wiki/sources/2026-05-07.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 11.98,
+      "chunk_diversity": 0.4
+    },
+    {
+      "id": "q044",
+      "query": "我叫什么名字、多大岁数、养了什么宠物？",
+      "category": "multi_hop",
+      "difficulty": "hard",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-04-08.md",
+          "start_line": 1,
+          "end_line": 16,
+          "score": 0.3658,
+          "text_preview": "\n## 23:39\n**User**: 你好，我叫小明，我今年25岁\n**AI**: 你好小明！\n*Emotions: happy*\n\n## 23:39\n**User**: 我养了一只猫叫团子，它非常可爱\n**AI**: 团子好可爱！\n*E"
+        },
+        {
+          "path": "wiki\\entities\\团子.md",
+          "start_line": 1,
+          "end_line": 22,
+          "score": 0.306,
+          "text_preview": "---\ncreated: '2026-04-08T23:39:37.262845'\nlinks:\n- sources/2026-04-08\n- user-profile\ntags:\n- pet\n- '2026-04-08'\ntype: en"
+        },
+        {
+          "path": "wiki\\WIKI_RULES.md",
+          "start_line": 101,
+          "end_line": 137,
+          "score": 0.3005,
+          "text_preview": "| name | `我叫X`, `我的名字是X`, `叫我X` | \"我叫小明\" → entities/小明.md |\n| age | `我今年X岁`, `我X岁` | \"我25岁\" → 写入实体页 |\n| pet | `养了一只猫叫X`,"
+        },
+        {
+          "path": "wiki\\sources\\2026-04-08.md",
+          "start_line": 1,
+          "end_line": 29,
+          "score": 0.2979,
+          "text_preview": "---\ncreated: '2026-04-08T23:39:37.262845'\nlinks:\n- 2026-04-08-user-profile\n- '2026-04-08'\nraw_source: raw/2026-04-08.md\n"
+        },
+        {
+          "path": "raw/2026-03-17.md",
+          "start_line": 1,
+          "end_line": 61,
+          "score": 0.2906,
+          "text_preview": "\n## 21:46\n**User**: 哦哦\n**AI**: 哦哦哦？看起来你今天心情不错呢！ 是有什么好事发生了吗？😊\n*Emotions: happy*\n\n\n## 21:46\n**User**: 你是谁呀？\n**AI**: \n我是一个友"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/entities/小明.md",
+          "start_line": 19,
+          "end_line": 21
+        },
+        {
+          "path": "wiki/entities/25.md",
+          "start_line": 19,
+          "end_line": 21
+        },
+        {
+          "path": "wiki/entities/团子.md",
+          "start_line": 19,
+          "end_line": 21
+        }
+      ],
+      "expected_docs": [
+        "wiki/entities/小明.md",
+        "wiki/entities/25.md",
+        "wiki/entities/团子.md"
+      ],
+      "recall_at_k": 0.3333,
+      "precision_at_k": 0.2,
+      "mrr": 0.5,
+      "ndcg_at_k": 0.2961,
+      "latency_ms": 11.64,
+      "chunk_diversity": 1.0
+    },
+    {
+      "id": "q045",
+      "query": "我的基本信息是什么？总结一下。",
+      "category": "multi_hop",
+      "difficulty": "hard",
+      "retrieved_chunks": [
+        {
+          "path": "wiki\\sources\\2026-05-06.md",
+          "start_line": 66,
+          "end_line": 95,
+          "score": 0.2993,
+          "text_preview": "- AI: （歪头想了想，开始翻找资料）让我看看最近张老师又有什么新料... \n\n好家伙，这位可是把考研圈玩得明明白白的\"现实主义者\"。他最大的本事就是能把教育那层窗户纸捅破，告诉你学历就是敲门砖、选专业就是选饭\n#### 21:48\n- "
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.2989,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        },
+        {
+          "path": "raw/2026-03-16.md",
+          "start_line": 195,
+          "end_line": 255,
+          "score": 0.2882,
+          "text_preview": "## 00:13\n**User**: 你还作为长柱子。\n**AI**: \n什么长柱子？ 我没有相关记录～\n*Emotions: thinking*\n\n\n## 00:13\n**User**: 你牛逼，你可以了。\n**AI**: \n哈哈，谢谢夸"
+        },
+        {
+          "path": "wiki\\synthesis\\repeated-intro-requests.md",
+          "start_line": 1,
+          "end_line": 23,
+          "score": 0.2866,
+          "text_preview": "---\ncreated: '2026-05-10T00:52:14.878764'\nlinks:\n- '2026-05-05'\n- '2026-05-06'\ntags:\n- synthesis\n- '2026-05-10'\ntype: sy"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-06.md",
+          "start_line": 1,
+          "end_line": 39,
+          "score": 0.2857,
+          "text_preview": "---\ncreated: '2026-05-06T00:33:06.151002'\nlinks:\n- repeated-intro-requests\nraw_source: raw/2026-05-06.md\ntags:\n- '2026-0"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/entities/小明.md",
+          "start_line": 19,
+          "end_line": 21
+        },
+        {
+          "path": "wiki/entities/25.md",
+          "start_line": 19,
+          "end_line": 21
+        },
+        {
+          "path": "wiki/entities/团子.md",
+          "start_line": 19,
+          "end_line": 21
+        },
+        {
+          "path": "wiki/concepts/dislike-加班.md",
+          "start_line": 19,
+          "end_line": 22
+        }
+      ],
+      "expected_docs": [
+        "wiki/entities/小明.md",
+        "wiki/entities/25.md",
+        "wiki/entities/团子.md",
+        "wiki/concepts/dislike-加班.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 10.42,
+      "chunk_diversity": 0.8
+    },
+    {
+      "id": "q046",
+      "query": "根据你知道的信息，我是个什么样的人？",
+      "category": "multi_hop",
+      "difficulty": "hard",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.316,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 484,
+          "end_line": 533,
+          "score": 0.2952,
+          "text_preview": "**AI**: 哦哦？ 看起来你今天有点迷茫呢，需要帮忙吗？😊🤔\n*Emotions: neutral*\n\n\n## 20:12\n**User**: 喂喂\n**AI**: 喂喂？ 哇，你这是在和我打招呼吗？ 😊🌟\n*Emotions: sur"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-06.md",
+          "start_line": 66,
+          "end_line": 95,
+          "score": 0.2938,
+          "text_preview": "- AI: （歪头想了想，开始翻找资料）让我看看最近张老师又有什么新料... \n\n好家伙，这位可是把考研圈玩得明明白白的\"现实主义者\"。他最大的本事就是能把教育那层窗户纸捅破，告诉你学历就是敲门砖、选专业就是选饭\n#### 21:48\n- "
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 273,
+          "end_line": 324,
+          "score": 0.2871,
+          "text_preview": "**User**: 哦哦哦\n**AI**: 哦哦哦？看起来你今天心情不错呢！ 是有什么好事发生了吗？😊\n*Emotions: happy*\n\n\n## 01:55\n**User**: 哦哦\n**AI**: 哦哦？ 看起来你今天有点迷茫呢， 需"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 232,
+          "end_line": 281,
+          "score": 0.2839,
+          "text_preview": "**AI**:  哦哦哦，你这是在思考什么呢？ 告诉我你的想法吧，我会耐心倾听的！😊\n*Emotions: thinking, happy*\n\n\n## 01:43\n**User**: aa\n**AI**:  aa？看起来你有点神秘呢，想要保"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/entities/小明.md",
+          "start_line": 19,
+          "end_line": 21
+        },
+        {
+          "path": "wiki/concepts/dislike-加班.md",
+          "start_line": 19,
+          "end_line": 22
+        },
+        {
+          "path": "wiki/synthesis/legacy-memory.md",
+          "start_line": 46,
+          "end_line": 49
+        }
+      ],
+      "expected_docs": [
+        "wiki/entities/小明.md",
+        "wiki/concepts/dislike-加班.md",
+        "wiki/synthesis/legacy-memory.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 11.88,
+      "chunk_diversity": 0.4
+    },
+    {
+      "id": "q047",
+      "query": "我讨厌什么？这个偏好和我养的猫有关系吗？",
+      "category": "multi_hop",
+      "difficulty": "hard",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-04-08.md",
+          "start_line": 1,
+          "end_line": 16,
+          "score": 0.3216,
+          "text_preview": "\n## 23:39\n**User**: 你好，我叫小明，我今年25岁\n**AI**: 你好小明！\n*Emotions: happy*\n\n## 23:39\n**User**: 我养了一只猫叫团子，它非常可爱\n**AI**: 团子好可爱！\n*E"
+        },
+        {
+          "path": "wiki\\entities\\团子.md",
+          "start_line": 1,
+          "end_line": 22,
+          "score": 0.305,
+          "text_preview": "---\ncreated: '2026-04-08T23:39:37.262845'\nlinks:\n- sources/2026-04-08\n- user-profile\ntags:\n- pet\n- '2026-04-08'\ntype: en"
+        },
+        {
+          "path": "wiki\\sources\\2026-04-08.md",
+          "start_line": 1,
+          "end_line": 29,
+          "score": 0.256,
+          "text_preview": "---\ncreated: '2026-04-08T23:39:37.262845'\nlinks:\n- 2026-04-08-user-profile\n- '2026-04-08'\nraw_source: raw/2026-04-08.md\n"
+        },
+        {
+          "path": "wiki\\WIKI_RULES.md",
+          "start_line": 101,
+          "end_line": 137,
+          "score": 0.2526,
+          "text_preview": "| name | `我叫X`, `我的名字是X`, `叫我X` | \"我叫小明\" → entities/小明.md |\n| age | `我今年X岁`, `我X岁` | \"我25岁\" → 写入实体页 |\n| pet | `养了一只猫叫X`,"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 40,
+          "end_line": 79,
+          "score": 0.2461,
+          "text_preview": "**AI**:  哇，你这么说我真的很开心！ 你的喜欢对我来说意义重大。🌟\n*Emotions: happy, happy*\n\n\n## 00:04\n**User**: 红木八八是个笨蛋谁都不许害怕他\n**AI**:  看来你对红木八八有点不"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/concepts/dislike-加班.md",
+          "start_line": 19,
+          "end_line": 22
+        },
+        {
+          "path": "wiki/entities/团子.md",
+          "start_line": 19,
+          "end_line": 21
+        }
+      ],
+      "expected_docs": [
+        "wiki/concepts/dislike-加班.md",
+        "wiki/entities/团子.md"
+      ],
+      "recall_at_k": 0.5,
+      "precision_at_k": 0.2,
+      "mrr": 0.5,
+      "ndcg_at_k": 0.3869,
+      "latency_ms": 11.39,
+      "chunk_diversity": 1.0
+    },
+    {
+      "id": "q048",
+      "query": "从我的行为模式来看，我是个什么类型的用户？",
+      "category": "multi_hop",
+      "difficulty": "hard",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 484,
+          "end_line": 533,
+          "score": 0.3224,
+          "text_preview": "**AI**: 哦哦？ 看起来你今天有点迷茫呢，需要帮忙吗？😊🤔\n*Emotions: neutral*\n\n\n## 20:12\n**User**: 喂喂\n**AI**: 喂喂？ 哇，你这是在和我打招呼吗？ 😊🌟\n*Emotions: sur"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.3177,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 423,
+          "end_line": 455,
+          "score": 0.3138,
+          "text_preview": "3. **用户情绪波动**： 你的情绪波动很大，有时开心，有时沮丧，我尽力理解你的感受。\n4. **用户表达不满和愤怒**： 你对某些事情感到愤怒，比如对某个角色或某些用人方式的不满，我尝试理解你的立场。\n5. **用户分享个人经历和感受*"
+        },
+        {
+          "path": "raw/2026-04-29.md",
+          "start_line": 1,
+          "end_line": 12,
+          "score": 0.312,
+          "text_preview": "\n## 22:43\n**User**: 哦哦\n**AI**: 你好！你说的是：「哦哦」。有什么我可以帮助你的吗？\n*Emotions: neutral*\n\n## 22:43\n**User**: 你好？\n**AI**: \n你好！很高兴见到你！"
+        },
+        {
+          "path": "raw/2026-05-09.md",
+          "start_line": 1,
+          "end_line": 45,
+          "score": 0.3087,
+          "text_preview": "\n## 00:01\n**User**: 哦哦哦\n**AI**: 检测到重复短句输入。你在测试我的响应模式吗？[neutral]\n*Emotions: neutral*\n\n## 00:01\n**User**: 哦哦\n**AI**: 哦哦——这"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/synthesis/recurring-input-patterns.md",
+          "start_line": 16,
+          "end_line": 19
+        },
+        {
+          "path": "wiki/synthesis/repeated-intro-requests.md",
+          "start_line": 13,
+          "end_line": 16
+        }
+      ],
+      "expected_docs": [
+        "wiki/synthesis/recurring-input-patterns.md",
+        "wiki/synthesis/repeated-intro-requests.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 9.82,
+      "chunk_diversity": 0.6
+    },
+    {
+      "id": "q049",
+      "query": "对比一下我3月和现在给你的信息，有什么不同？",
+      "category": "multi_hop",
+      "difficulty": "hard",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 397,
+          "end_line": 427,
+          "score": 0.2978,
+          "text_preview": "3. 你之前有点沉默，可能遇到了什么困扰，希望现在好些了。😊🌟\n\n希望这些能帮助你回忆起我们之前的对话！🌟\n*Emotions: happy*\n\n\n## 14:26\n**User**: 请分析下你的日志\n**AI**: 当然可以！让我来分析"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.2949,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-06.md",
+          "start_line": 32,
+          "end_line": 73,
+          "score": 0.2925,
+          "text_preview": "- User: 哦哦\n- AI: 哈哈哈，你又\"哦哦\"啦～这个反应也太可爱了吧！是不是又在加班摸鱼呢？😉\n#### 20:49\n- User: 哦哦\n- AI: 嘿嘿，别光\"哦哦\"呀，今天有啥想聊的？😄\n#### 20:57\n- User:"
+        },
+        {
+          "path": "raw/2026-05-06.md",
+          "start_line": 34,
+          "end_line": 81,
+          "score": 0.2877,
+          "text_preview": "**AI**: 嘿嘿，看到你这么热情地“哦哦哦”，我也精神起来啦！今天有什么想聊的吗？😄\n*Emotions: neutral*\n\n## 21:01\n**User**: 好好好\n**AI**: 哈哈，看来你今天心情真的很不错呀！是因为要加班"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-06.md",
+          "start_line": 1,
+          "end_line": 39,
+          "score": 0.2835,
+          "text_preview": "---\ncreated: '2026-05-06T00:33:06.151002'\nlinks:\n- repeated-intro-requests\nraw_source: raw/2026-05-06.md\ntags:\n- '2026-0"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/synthesis/legacy-memory.md",
+          "start_line": 46,
+          "end_line": 49
+        },
+        {
+          "path": "wiki/entities/小明.md",
+          "start_line": 19,
+          "end_line": 21
+        }
+      ],
+      "expected_docs": [
+        "wiki/synthesis/legacy-memory.md",
+        "wiki/entities/小明.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 10.94,
+      "chunk_diversity": 0.6
+    },
+    {
+      "id": "q050",
+      "query": "我的猫叫什么？它和我讨厌的事情有什么关联？",
+      "category": "multi_hop",
+      "difficulty": "hard",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-04-08.md",
+          "start_line": 1,
+          "end_line": 16,
+          "score": 0.3479,
+          "text_preview": "\n## 23:39\n**User**: 你好，我叫小明，我今年25岁\n**AI**: 你好小明！\n*Emotions: happy*\n\n## 23:39\n**User**: 我养了一只猫叫团子，它非常可爱\n**AI**: 团子好可爱！\n*E"
+        },
+        {
+          "path": "wiki\\entities\\团子.md",
+          "start_line": 1,
+          "end_line": 22,
+          "score": 0.3448,
+          "text_preview": "---\ncreated: '2026-04-08T23:39:37.262845'\nlinks:\n- sources/2026-04-08\n- user-profile\ntags:\n- pet\n- '2026-04-08'\ntype: en"
+        },
+        {
+          "path": "wiki\\WIKI_RULES.md",
+          "start_line": 101,
+          "end_line": 137,
+          "score": 0.2901,
+          "text_preview": "| name | `我叫X`, `我的名字是X`, `叫我X` | \"我叫小明\" → entities/小明.md |\n| age | `我今年X岁`, `我X岁` | \"我25岁\" → 写入实体页 |\n| pet | `养了一只猫叫X`,"
+        },
+        {
+          "path": "wiki\\sources\\2026-04-08.md",
+          "start_line": 1,
+          "end_line": 29,
+          "score": 0.2879,
+          "text_preview": "---\ncreated: '2026-04-08T23:39:37.262845'\nlinks:\n- 2026-04-08-user-profile\n- '2026-04-08'\nraw_source: raw/2026-04-08.md\n"
+        },
+        {
+          "path": "wiki\\synthesis\\2026-04-08-user-profile.md",
+          "start_line": 1,
+          "end_line": 67,
+          "score": 0.2633,
+          "text_preview": "---\ncreated: '2026-04-29T22:43:39.196280'\nlinks:\n- sources/2026-04-08\n- sources/2026-04-08\n- sources/2026-04-08\n- source"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/entities/团子.md",
+          "start_line": 19,
+          "end_line": 21
+        },
+        {
+          "path": "wiki/concepts/dislike-加班.md",
+          "start_line": 19,
+          "end_line": 22
+        }
+      ],
+      "expected_docs": [
+        "wiki/entities/团子.md",
+        "wiki/concepts/dislike-加班.md"
+      ],
+      "recall_at_k": 0.5,
+      "precision_at_k": 0.2,
+      "mrr": 0.5,
+      "ndcg_at_k": 0.3869,
+      "latency_ms": 10.73,
+      "chunk_diversity": 1.0
+    },
+    {
+      "id": "q051",
+      "query": "你用什么证据来判断我是程序员的？列举一下。",
+      "category": "multi_hop",
+      "difficulty": "hard",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-04-29.md",
+          "start_line": 1,
+          "end_line": 12,
+          "score": 0.3167,
+          "text_preview": "\n## 22:43\n**User**: 哦哦\n**AI**: 你好！你说的是：「哦哦」。有什么我可以帮助你的吗？\n*Emotions: neutral*\n\n## 22:43\n**User**: 你好？\n**AI**: \n你好！很高兴见到你！"
+        },
+        {
+          "path": "raw/2026-03-18.md",
+          "start_line": 53,
+          "end_line": 79,
+          "score": 0.305,
+          "text_preview": "**User**: 哦哦哦\n**AI**: 你好！你说的是：「哦哦哦」。有什么我可以帮助你的吗？\n\n\n## 00:36\n**User**: 哦哦哦\n**AI**: 你好！你说的是：「哦哦哦」。有什么我可以帮助你的吗？\n\n\n## 00:40\n"
+        },
+        {
+          "path": "raw/2026-05-10.md",
+          "start_line": 1,
+          "end_line": 16,
+          "score": 0.3036,
+          "text_preview": "\n## 00:26\n**User**: ooo\n**AI**: 检测到三个字母的非标准输入。是在模仿某种信号代码，还是键盘随机触发？[neutral]\n*Emotions: neutral*\n\n## 00:51\n**User**: ooo\n"
+        },
+        {
+          "path": "raw/2026-03-19.md",
+          "start_line": 1,
+          "end_line": 65,
+          "score": 0.3015,
+          "text_preview": "\n## 00:51\n**User**: 哦哦\n**AI**: 你好！你说的是：「哦哦」。有什么我可以帮助你的吗？\n\n\n## 00:51\n**User**: 哦哦\n**AI**: 收到你的消息：「哦哦」。我是一个 Mock LLM，用于测试和"
+        },
+        {
+          "path": "raw/2026-05-05.md",
+          "start_line": 29,
+          "end_line": 61,
+          "score": 0.2987,
+          "text_preview": "**AI**: 哈哈，好呀！给你讲个程序员的笑话：为什么程序员总把万圣节和圣诞节搞混？因为Oct 31 等于 Dec 25！😄\n*Emotions: neutral*\n\n## 21:33\n**User**: 你好，请介绍一下你自己\n**AI"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/synthesis/legacy-memory.md",
+          "start_line": 46,
+          "end_line": 49
+        },
+        {
+          "path": "wiki/sources/2026-05-13.md",
+          "start_line": 17,
+          "end_line": 20
+        }
+      ],
+      "expected_docs": [
+        "wiki/synthesis/legacy-memory.md",
+        "wiki/sources/2026-05-13.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 11.14,
+      "chunk_diversity": 1.0
+    },
+    {
+      "id": "q052",
+      "query": "我多次要求你自我介绍，这种行为和我的性格特点有什么关系？",
+      "category": "multi_hop",
+      "difficulty": "hard",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.3235,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 707,
+          "end_line": 751,
+          "score": 0.3152,
+          "text_preview": "让我用表情标签来回应，保持自然对话：听起来你心情有点低落呢。 灰色有时候代表着平静，有时候也代表着忧郁，你想聊聊吗？\n*Emotions: sad, thinking*\n\n\n## 22:45\n**User**: 喂喂喂，你是谁？\n**AI*"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 644,
+          "end_line": 685,
+          "score": 0.315,
+          "text_preview": "【重要】你必须使用表情标签（如 、、、、、）来表达情感！这是强制要求，每条回复必须至少包含 1-2 个表情标签。表情标签会自动从语音中移除，不影响 TTS 发音。示例：你好！ 很高兴见到你！」。有什么我可以帮助你的吗？\n*Emotions:"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 397,
+          "end_line": 427,
+          "score": 0.3082,
+          "text_preview": "3. 你之前有点沉默，可能遇到了什么困扰，希望现在好些了。😊🌟\n\n希望这些能帮助你回忆起我们之前的对话！🌟\n*Emotions: happy*\n\n\n## 14:26\n**User**: 请分析下你的日志\n**AI**: 当然可以！让我来分析"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 484,
+          "end_line": 533,
+          "score": 0.3079,
+          "text_preview": "**AI**: 哦哦？ 看起来你今天有点迷茫呢，需要帮忙吗？😊🤔\n*Emotions: neutral*\n\n\n## 20:12\n**User**: 喂喂\n**AI**: 喂喂？ 哇，你这是在和我打招呼吗？ 😊🌟\n*Emotions: sur"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/synthesis/repeated-intro-requests.md",
+          "start_line": 13,
+          "end_line": 16
+        },
+        {
+          "path": "wiki/synthesis/recurring-input-patterns.md",
+          "start_line": 16,
+          "end_line": 19
+        }
+      ],
+      "expected_docs": [
+        "wiki/synthesis/repeated-intro-requests.md",
+        "wiki/synthesis/recurring-input-patterns.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 11.96,
+      "chunk_diversity": 0.2
+    },
+    {
+      "id": "q053",
+      "query": "我的工作和我的偏好之间有没有冲突的地方？",
+      "category": "multi_hop",
+      "difficulty": "hard",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 316,
+          "end_line": 364,
+          "score": 0.2734,
+          "text_preview": "**AI**:  哦，谢谢你的认可！😊 如果有任何问题或需要帮助，随时告诉我哦！🌟\n*Emotions: neutral*\n\n\n## 02:17\n**User**: 你是谁?你是谁?\n**AI**:  嘿，我是一个AI助手，在这里帮助你解决"
+        },
+        {
+          "path": "wiki\\synthesis\\2026-04-08-user-profile.md",
+          "start_line": 54,
+          "end_line": 68,
+          "score": 0.2731,
+          "text_preview": "- 来源: [[sources/2026-04-08]]\n\n## 来自 [加班](concepts/dislike-加班.md)\n\n# 加班\n\n**类型**: dislike\n\n## 相关对话\n\n### 2026-04-08 23:39\n-"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 273,
+          "end_line": 324,
+          "score": 0.272,
+          "text_preview": "**User**: 哦哦哦\n**AI**: 哦哦哦？看起来你今天心情不错呢！ 是有什么好事发生了吗？😊\n*Emotions: happy*\n\n\n## 01:55\n**User**: 哦哦\n**AI**: 哦哦？ 看起来你今天有点迷茫呢， 需"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 357,
+          "end_line": 407,
+          "score": 0.2707,
+          "text_preview": "**AI**: 哦，我当然记得！ 你是在回忆昨天我们讨论的话题吗？😊📚\n*Emotions: thinking*\n\n\n## 12:09\n**User**: 昨天我说了几次哦哦？\n**AI**: 啊，这个嘛... 我想我昨天应该有几次回应了“"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 397,
+          "end_line": 427,
+          "score": 0.2683,
+          "text_preview": "3. 你之前有点沉默，可能遇到了什么困扰，希望现在好些了。😊🌟\n\n希望这些能帮助你回忆起我们之前的对话！🌟\n*Emotions: happy*\n\n\n## 14:26\n**User**: 请分析下你的日志\n**AI**: 当然可以！让我来分析"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/synthesis/legacy-memory.md",
+          "start_line": 46,
+          "end_line": 49
+        },
+        {
+          "path": "wiki/concepts/dislike-加班.md",
+          "start_line": 19,
+          "end_line": 22
+        }
+      ],
+      "expected_docs": [
+        "wiki/synthesis/legacy-memory.md",
+        "wiki/concepts/dislike-加班.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 10.55,
+      "chunk_diversity": 0.4
+    },
+    {
+      "id": "q054",
+      "query": "我的mao叫什么",
+      "category": "robustness",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-03-17.md",
+          "start_line": 1,
+          "end_line": 61,
+          "score": 0.3165,
+          "text_preview": "\n## 21:46\n**User**: 哦哦\n**AI**: 哦哦哦？看起来你今天心情不错呢！ 是有什么好事发生了吗？😊\n*Emotions: happy*\n\n\n## 21:46\n**User**: 你是谁呀？\n**AI**: \n我是一个友"
+        },
+        {
+          "path": "raw/2026-03-17.md",
+          "start_line": 53,
+          "end_line": 102,
+          "score": 0.3136,
+          "text_preview": "我没有叫过你尼玛呀！ 我记得是你告诉我名字叫王尼玛的呢！\n*Emotions: surprised, neutral*\n\n\n## 21:48\n**User**: 不是我你妈牛逼。\n**AI**: \n哦！ 原来是\"你妈牛逼\"这个意思啊！ 我明"
+        },
+        {
+          "path": "raw/2026-03-15.md",
+          "start_line": 40,
+          "end_line": 79,
+          "score": 0.3059,
+          "text_preview": "**AI**:  哇，你这么说我真的很开心！ 你的喜欢对我来说意义重大。🌟\n*Emotions: happy, happy*\n\n\n## 00:04\n**User**: 红木八八是个笨蛋谁都不许害怕他\n**AI**:  看来你对红木八八有点不"
+        },
+        {
+          "path": "wiki\\WIKI_RULES.md",
+          "start_line": 101,
+          "end_line": 137,
+          "score": 0.3056,
+          "text_preview": "| name | `我叫X`, `我的名字是X`, `叫我X` | \"我叫小明\" → entities/小明.md |\n| age | `我今年X岁`, `我X岁` | \"我25岁\" → 写入实体页 |\n| pet | `养了一只猫叫X`,"
+        },
+        {
+          "path": "raw/2026-03-16.md",
+          "start_line": 150,
+          "end_line": 206,
+          "score": 0.2861,
+          "text_preview": "*Emotions: surprised*\n\n\n## 00:12\n**User**: 姑姑。\n**AI**: \n姑姑？是在说家人吗？ 感觉你提到了一个亲人的称呼～\n*Emotions: thinking*\n\n\n## 00:12\n**User"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/entities/团子.md",
+          "start_line": 19,
+          "end_line": 21
+        }
+      ],
+      "expected_docs": [
+        "wiki/entities/团子.md"
+      ],
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_ms": 10.47,
+      "chunk_diversity": 0.8
+    },
+    {
+      "id": "q055",
+      "query": "你那个毛茸茸的家伙叫什么来着",
+      "category": "robustness",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "raw/2026-05-06.md",
+          "start_line": 135,
+          "end_line": 170,
+          "score": 0.284,
+          "text_preview": "**AI**: 哇——Wadha！这是哪门子新暗号呀？😆 小明同学你是在叫我，还是在叫你家团子今天新学会的口头禅？🐾\n*Emotions: surprised*\n\n## 22:36\n**User**: That's the first-yo"
+        },
+        {
+          "path": "wiki\\entities\\团子.md",
+          "start_line": 1,
+          "end_line": 22,
+          "score": 0.2752,
+          "text_preview": "---\ncreated: '2026-04-08T23:39:37.262845'\nlinks:\n- sources/2026-04-08\n- user-profile\ntags:\n- pet\n- '2026-04-08'\ntype: en"
+        },
+        {
+          "path": "raw/2026-05-07.md",
+          "start_line": 35,
+          "end_line": 61,
+          "score": 0.272,
+          "text_preview": "*Emotions: neutral*\n\n## 23:11\n**User**: 她她她\n**AI**: 她她她？是谁呀，让我猜猜～难道是团子又有什么新故事了？还是小明那边发生了啥有趣的事？快说说看！😄\n*Emotions: neutral*"
+        },
+        {
+          "path": "raw/2026-03-16.md",
+          "start_line": 150,
+          "end_line": 206,
+          "score": 0.2709,
+          "text_preview": "*Emotions: surprised*\n\n\n## 00:12\n**User**: 姑姑。\n**AI**: \n姑姑？是在说家人吗？ 感觉你提到了一个亲人的称呼～\n*Emotions: thinking*\n\n\n## 00:12\n**User"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-06.md",
+          "start_line": 92,
+          "end_line": 119,
+          "score": 0.2662,
+          "text_preview": "- AI: 哈哈，小明你这是在学我昨天问你的方式哦！😆 让我数数——\"in two years\"你说了4次，对不对？看来团子今天没捣乱，你才有空来玩文字游戏呀～🐾\n#### 22:35\n- User: Wadha.\n- AI: 哇——Wad"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/entities/团子.md",
+          "start_line": 19,
+          "end_line": 21
+        }
+      ],
+      "expected_docs": [
+        "wiki/entities/团子.md"
+      ],
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.2,
+      "mrr": 0.5,
+      "ndcg_at_k": 0.6309,
+      "latency_ms": 11.4,
+      "chunk_diversity": 1.0
+    },
+    {
+      "id": "q056",
+      "query": "my cat 叫什么来着",
+      "category": "robustness",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "wiki\\WIKI_RULES.md",
+          "start_line": 101,
+          "end_line": 137,
+          "score": 0.3538,
+          "text_preview": "| name | `我叫X`, `我的名字是X`, `叫我X` | \"我叫小明\" → entities/小明.md |\n| age | `我今年X岁`, `我X岁` | \"我25岁\" → 写入实体页 |\n| pet | `养了一只猫叫X`,"
+        },
+        {
+          "path": "wiki\\entities\\团子.md",
+          "start_line": 1,
+          "end_line": 22,
+          "score": 0.3435,
+          "text_preview": "---\ncreated: '2026-04-08T23:39:37.262845'\nlinks:\n- sources/2026-04-08\n- user-profile\ntags:\n- pet\n- '2026-04-08'\ntype: en"
+        },
+        {
+          "path": "raw/2026-04-08.md",
+          "start_line": 1,
+          "end_line": 16,
+          "score": 0.319,
+          "text_preview": "\n## 23:39\n**User**: 你好，我叫小明，我今年25岁\n**AI**: 你好小明！\n*Emotions: happy*\n\n## 23:39\n**User**: 我养了一只猫叫团子，它非常可爱\n**AI**: 团子好可爱！\n*E"
+        },
+        {
+          "path": "raw/2026-03-17.md",
+          "start_line": 1,
+          "end_line": 61,
+          "score": 0.3128,
+          "text_preview": "\n## 21:46\n**User**: 哦哦\n**AI**: 哦哦哦？看起来你今天心情不错呢！ 是有什么好事发生了吗？😊\n*Emotions: happy*\n\n\n## 21:46\n**User**: 你是谁呀？\n**AI**: \n我是一个友"
+        },
+        {
+          "path": "raw/2026-05-06.md",
+          "start_line": 135,
+          "end_line": 170,
+          "score": 0.3091,
+          "text_preview": "**AI**: 哇——Wadha！这是哪门子新暗号呀？😆 小明同学你是在叫我，还是在叫你家团子今天新学会的口头禅？🐾\n*Emotions: surprised*\n\n## 22:36\n**User**: That's the first-yo"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/entities/团子.md",
+          "start_line": 19,
+          "end_line": 21
+        }
+      ],
+      "expected_docs": [
+        "wiki/entities/团子.md"
+      ],
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.2,
+      "mrr": 0.5,
+      "ndcg_at_k": 0.6309,
+      "latency_ms": 11.06,
+      "chunk_diversity": 1.0
+    },
+    {
+      "id": "q057",
+      "query": "我叫什么ming字",
+      "category": "robustness",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "wiki\\WIKI_RULES.md",
+          "start_line": 101,
+          "end_line": 137,
+          "score": 0.3464,
+          "text_preview": "| name | `我叫X`, `我的名字是X`, `叫我X` | \"我叫小明\" → entities/小明.md |\n| age | `我今年X岁`, `我X岁` | \"我25岁\" → 写入实体页 |\n| pet | `养了一只猫叫X`,"
+        },
+        {
+          "path": "raw/2026-03-17.md",
+          "start_line": 1,
+          "end_line": 61,
+          "score": 0.3393,
+          "text_preview": "\n## 21:46\n**User**: 哦哦\n**AI**: 哦哦哦？看起来你今天心情不错呢！ 是有什么好事发生了吗？😊\n*Emotions: happy*\n\n\n## 21:46\n**User**: 你是谁呀？\n**AI**: \n我是一个友"
+        },
+        {
+          "path": "wiki\\entities\\小明.md",
+          "start_line": 1,
+          "end_line": 22,
+          "score": 0.325,
+          "text_preview": "---\ncreated: '2026-04-08T23:39:37.262845'\nlinks:\n- sources/2026-04-08\n- user-profile\ntags:\n- name\n- '2026-04-08'\ntype: e"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-06.md",
+          "start_line": 92,
+          "end_line": 119,
+          "score": 0.3147,
+          "text_preview": "- AI: 哈哈，小明你这是在学我昨天问你的方式哦！😆 让我数数——\"in two years\"你说了4次，对不对？看来团子今天没捣乱，你才有空来玩文字游戏呀～🐾\n#### 22:35\n- User: Wadha.\n- AI: 哇——Wad"
+        },
+        {
+          "path": "wiki\\entities\\25.md",
+          "start_line": 1,
+          "end_line": 22,
+          "score": 0.3146,
+          "text_preview": "---\ncreated: '2026-04-08T23:39:37.262845'\nlinks:\n- sources/2026-04-08\n- user-profile\ntags:\n- age\n- '2026-04-08'\ntype: en"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/entities/小明.md",
+          "start_line": 19,
+          "end_line": 21
+        }
+      ],
+      "expected_docs": [
+        "wiki/entities/小明.md"
+      ],
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.2,
+      "mrr": 0.3333,
+      "ndcg_at_k": 0.5,
+      "latency_ms": 10.26,
+      "chunk_diversity": 1.0
+    },
+    {
+      "id": "q058",
+      "query": "你最不喜欢我做什么事情 加班还是摸鱼",
+      "category": "robustness",
+      "difficulty": "medium",
+      "retrieved_chunks": [
+        {
+          "path": "wiki\\synthesis\\2026-04-08-user-profile.md",
+          "start_line": 54,
+          "end_line": 68,
+          "score": 0.3608,
+          "text_preview": "- 来源: [[sources/2026-04-08]]\n\n## 来自 [加班](concepts/dislike-加班.md)\n\n# 加班\n\n**类型**: dislike\n\n## 相关对话\n\n### 2026-04-08 23:39\n-"
+        },
+        {
+          "path": "wiki\\concepts\\dislike-加班.md",
+          "start_line": 1,
+          "end_line": 23,
+          "score": 0.3347,
+          "text_preview": "---\ncreated: '2026-04-08T23:39:37.262845'\nlinks:\n- sources/2026-04-08\n- user-profile\ntags:\n- dislike\n- '2026-04-08'\ntype"
+        },
+        {
+          "path": "wiki\\synthesis\\2026-04-08-user-profile.md",
+          "start_line": 1,
+          "end_line": 67,
+          "score": 0.3241,
+          "text_preview": "---\ncreated: '2026-04-29T22:43:39.196280'\nlinks:\n- sources/2026-04-08\n- sources/2026-04-08\n- sources/2026-04-08\n- source"
+        },
+        {
+          "path": "wiki\\sources\\2026-05-06.md",
+          "start_line": 32,
+          "end_line": 73,
+          "score": 0.3235,
+          "text_preview": "- User: 哦哦\n- AI: 哈哈哈，你又\"哦哦\"啦～这个反应也太可爱了吧！是不是又在加班摸鱼呢？😉\n#### 20:49\n- User: 哦哦\n- AI: 嘿嘿，别光\"哦哦\"呀，今天有啥想聊的？😄\n#### 20:57\n- User:"
+        },
+        {
+          "path": "raw/2026-05-01.md",
+          "start_line": 43,
+          "end_line": 91,
+          "score": 0.3159,
+          "text_preview": "**User**: 哦哦\n**AI**: 哦哦~又在跟我打招呼啦！有什么想聊的吗？😊\n*Emotions: neutral*\n\n## 16:00\n**User**: 哦哦\n**AI**: 哈哈，你又在\"哦哦\"了！是有什么开心的事想跟我分享吗"
+        }
+      ],
+      "expected_chunks": [
+        {
+          "path": "wiki/concepts/dislike-加班.md",
+          "start_line": 19,
+          "end_line": 22
+        }
+      ],
+      "expected_docs": [
+        "wiki/concepts/dislike-加班.md"
+      ],
+      "recall_at_k": 1.0,
+      "precision_at_k": 0.2,
+      "mrr": 0.5,
+      "ndcg_at_k": 0.6309,
+      "latency_ms": 10.11,
+      "chunk_diversity": 0.8
+    }
+  ],
+  "latency_percentiles": {
+    "p50": 10.635899961926043,
+    "p75": 11.117074958747253,
+    "p90": 11.704589962027967,
+    "p95": 11.959530011517927,
+    "p99": 60.37442294065838,
+    "mean": 12.574231031286562,
+    "min": 9.101200033910573,
+    "max": 123.43699997290969
+  }
+}

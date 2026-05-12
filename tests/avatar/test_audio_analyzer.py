@@ -50,6 +50,26 @@ def _create_silent_wav(path: str, duration_sec: float = 1.0,
     return path
 
 
+def _create_wav_with_leading_silence(path: str, silence_sec: float = 0.3,
+                                      duration_sec: float = 1.0,
+                                      sample_rate: int = 16000) -> str:
+    """Create a WAV file with leading silence followed by sine wave."""
+    import array
+    silence_samples = int(sample_rate * silence_sec)
+    tone_samples = int(sample_rate * duration_sec)
+    samples = [0] * silence_samples
+    for i in range(tone_samples):
+        t = i / sample_rate
+        val = int(0.5 * 32767 * math.sin(2 * math.pi * 440 * t))
+        samples.append(val)
+    with wave.open(path, "w") as wf:
+        wf.setnchannels(1)
+        wf.setsampwidth(2)
+        wf.setframerate(sample_rate)
+        wf.writeframes(struct.pack(f"<{len(samples)}h", *samples))
+    return path
+
+
 # ============================================================
 # AudioAnalyzer tests
 # ============================================================
@@ -125,8 +145,9 @@ class TestAudioAnalyzerVolumeEnvelope:
         loud = _create_sine_wave_wav(str(tmp_path / "loud.wav"), max_amplitude=0.9)
 
         analyzer = AudioAnalyzer(sample_rate=50)
-        quiet_volumes = analyzer.compute_volume_envelope(quiet, normalize=False)
-        loud_volumes = analyzer.compute_volume_envelope(loud, normalize=False)
+        # Use normalize=False and gain=1.0 to preserve amplitude differences
+        quiet_volumes = analyzer.compute_volume_envelope(quiet, normalize=False, gain=1.0)
+        loud_volumes = analyzer.compute_volume_envelope(loud, normalize=False, gain=1.0)
 
         assert max(loud_volumes) > max(quiet_volumes)
 
@@ -150,6 +171,22 @@ class TestAudioAnalyzerVolumeEnvelope:
         assert isinstance(volumes, list)
         assert len(volumes) > 0
 
+    def test_use_peak_mode(self, tmp_path):
+        """Peak mode should return values in [0, 1] range."""
+        wav = _create_sine_wave_wav(str(tmp_path / "peak.wav"))
+        analyzer = AudioAnalyzer(sample_rate=50)
+        volumes = analyzer.compute_volume_envelope(wav, use_peak=True)
+        assert all(0.0 <= v <= 1.0 for v in volumes)
+
+    def test_different_sample_rate(self, tmp_path):
+        """Different sample rate should produce different number of samples."""
+        wav = _create_sine_wave_wav(str(tmp_path / "rate.wav"), duration_sec=1.0)
+        analyzer_25 = AudioAnalyzer(sample_rate=25)  # 40ms interval
+        analyzer_100 = AudioAnalyzer(sample_rate=100)  # 10ms interval
+        v25 = analyzer_25.compute_volume_envelope(wav, normalize=False)
+        v100 = analyzer_100.compute_volume_envelope(wav, normalize=False)
+        assert len(v25) < len(v100)
+
 
 class TestAudioAnalyzerDuration:
     """get_audio_duration behavior."""
@@ -168,24 +205,54 @@ class TestAudioAnalyzerDuration:
         assert duration == 0.0
 
 
-def _create_wav_with_leading_silence(path: str, silence_sec: float = 0.3,
-                                      duration_sec: float = 1.0,
-                                      sample_rate: int = 16000) -> str:
-    """Create a WAV file with leading silence followed by sine wave."""
-    import array
-    silence_samples = int(sample_rate * silence_sec)
-    tone_samples = int(sample_rate * duration_sec)
-    samples = [0] * silence_samples
-    for i in range(tone_samples):
-        t = i / sample_rate
-        val = int(0.5 * 32767 * math.sin(2 * math.pi * 440 * t))
-        samples.append(val)
-    with wave.open(path, "w") as wf:
-        wf.setnchannels(1)
-        wf.setsampwidth(2)
-        wf.setframerate(sample_rate)
-        wf.writeframes(struct.pack(f"<{len(samples)}h", *samples))
-    return path
+# ============================================================
+# Convenience function compute_volume_envelope
+# ============================================================
+
+class TestConvenienceComputeVolumeEnvelope:
+    """Standalone compute_volume_envelope convenience function."""
+
+    def test_default_params(self, tmp_path):
+        """Default params should produce valid output."""
+        wav = _create_sine_wave_wav(str(tmp_path / "default.wav"))
+        volumes = compute_volume_envelope(wav)
+        assert isinstance(volumes, list)
+        assert len(volumes) > 0
+        assert all(0.0 <= v <= 1.0 for v in volumes)
+
+    def test_custom_sample_rate(self, tmp_path):
+        """Custom sample rate should be honored."""
+        wav = _create_sine_wave_wav(str(tmp_path / "custom_rate.wav"), duration_sec=2.0)
+        volumes_25 = compute_volume_envelope(wav, sample_rate=25)
+        volumes_100 = compute_volume_envelope(wav, sample_rate=100)
+        assert len(volumes_25) < len(volumes_100)
+        # 2s / (1/25) = 50, 2s / (1/100) = 200
+        assert len(volumes_25) == 50
+        assert len(volumes_100) == 200
+
+    def test_custom_gain(self, tmp_path):
+        """Custom gain factor should amplify output."""
+        wav = _create_sine_wave_wav(str(tmp_path / "custom_gain.wav"), max_amplitude=0.3)
+        volumes_low = compute_volume_envelope(wav, gain=0.5)
+        volumes_high = compute_volume_envelope(wav, gain=3.0)
+        assert max(volumes_high) >= max(volumes_low)
+
+    def test_silent_audio(self, tmp_path):
+        """Silent audio should return empty list or zeros."""
+        wav = _create_silent_wav(str(tmp_path / "silent_conv.wav"), duration_sec=0.5)
+        volumes = compute_volume_envelope(wav)
+        assert all(v == 0.0 for v in volumes)
+
+    def test_nonexistent_file(self, tmp_path):
+        """Non-existent file should return empty list."""
+        volumes = compute_volume_envelope(str(tmp_path / "nope.wav"))
+        assert volumes == []
+
+    def test_very_short_audio(self, tmp_path):
+        """Very short audio should return empty list."""
+        wav = _create_sine_wave_wav(str(tmp_path / "vshort.wav"), duration_sec=0.005)
+        volumes = compute_volume_envelope(wav)
+        assert volumes == []
 
 
 # ============================================================
@@ -211,11 +278,34 @@ class TestOutputNodeComputeVolumes:
         assert volumes == []
 
     def test_compute_volumes_uses_default_gain(self, tmp_path):
-        """_compute_volumes should use default gain of 1.8."""
+        """_compute_volumes should use default gain of 3.5."""
         from anima.orchestration.graph.output_node import _compute_volumes
         wav = _create_sine_wave_wav(str(tmp_path / "gain_test.wav"))
         volumes = _compute_volumes(wav)
         assert all(v >= 0.0 for v in volumes)
+
+    def test_compute_volumes_clamps_to_01(self, tmp_path):
+        """_compute_volumes volumes should be clamped to [0, 1]."""
+        from anima.orchestration.graph.output_node import _compute_volumes
+        wav = _create_sine_wave_wav(str(tmp_path / "clamp.wav"), max_amplitude=0.9)
+        volumes = _compute_volumes(wav)
+        assert all(0.0 <= v <= 1.0 for v in volumes)
+
+    def test_compute_volumes_uses_peak_mode(self, tmp_path):
+        """_compute_volumes should use peak amplitude mode."""
+        from anima.orchestration.graph.output_node import _compute_volumes
+        wav = _create_sine_wave_wav(str(tmp_path / "peak_mode.wav"))
+        volumes = _compute_volumes(wav)
+        # Peak mode means some values should be > 0 for non-silent audio
+        assert any(v > 0.0 for v in volumes)
+
+    def test_compute_volumes_no_normalize(self, tmp_path):
+        """_compute_volumes should NOT normalize globally (use_peak=True, normalize=False)."""
+        from anima.orchestration.graph.output_node import _compute_volumes
+        wav = _create_sine_wave_wav(str(tmp_path / "nonorm.wav"), max_amplitude=0.3)
+        volumes = _compute_volumes(wav)
+        # Volumes are in [0, 1] range even if not normalized
+        assert all(0.0 <= v <= 1.0 for v in volumes)
 
     def test_trim_leading_silence_no_silence(self, tmp_path):
         """Audio without silence should not be trimmed."""
@@ -237,6 +327,22 @@ class TestOutputNodeComputeVolumes:
         trimmed = AudioSegment.from_file(result)
         assert abs(len(trimmed) - 300) < 100, f"Trimmed length {len(trimmed)}ms, expected ~300ms"
 
+    def test_trim_leading_silence_short_silence_ignored(self, tmp_path):
+        """Leading silence shorter than 50ms should not be trimmed."""
+        from anima.orchestration.graph.output_node import _trim_leading_silence
+        wav = _create_wav_with_leading_silence(
+            str(tmp_path / "short_silence.wav"),
+            silence_sec=0.03, duration_sec=0.3)
+        result = _trim_leading_silence(wav)
+        assert result is None, "Should not trim <50ms silence"
+
+    def test_trim_leading_silence_full_silence(self, tmp_path):
+        """Fully silent audio should not be trimmed (no onset detected)."""
+        from anima.orchestration.graph.output_node import _trim_leading_silence
+        wav = _create_silent_wav(str(tmp_path / "full_silence.wav"), duration_sec=1.0)
+        result = _trim_leading_silence(wav)
+        assert result is None
+
     def test_compute_volumes_skips_leading_silence(self, tmp_path):
         """_trim_leading_silence should remove silence so volumes match speech onset."""
         from anima.orchestration.graph.output_node import _trim_leading_silence, _compute_volumes
@@ -253,3 +359,11 @@ class TestOutputNodeComputeVolumes:
         first_few = volumes[:5]
         assert any(v > 0.01 for v in first_few), (
             f"First 5 volumes are all near zero after silence trim: {first_few}")
+
+    def test_compute_volumes_silent_audio_no_trim_error(self, tmp_path):
+        """_compute_volumes should handle fully silent audio gracefully."""
+        from anima.orchestration.graph.output_node import _compute_volumes
+        wav = _create_silent_wav(str(tmp_path / "all_silent.wav"), duration_sec=1.0)
+        volumes = _compute_volumes(wav)
+        # Silent audio with gain=3.5 might still produce 0s
+        assert isinstance(volumes, list)

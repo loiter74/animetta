@@ -83,3 +83,71 @@ def mock_service_context(mock_llm, mock_tts, mock_asr, mock_vad):
     ctx.memory_system.retrieve_context = AsyncMock(return_value=[])
     ctx.close = AsyncMock()
     return ctx
+
+
+# ── Extended Mock Fixtures ──────────────────────────────────
+
+
+@pytest.fixture
+def mock_embedding():
+    """Mock sentence-transformer embedding model returning fixed vector."""
+    mock = MagicMock()
+    mock.encode = MagicMock(return_value=[0.1] * 384)
+    return mock
+
+
+@pytest.fixture
+def mock_chroma():
+    """Mock ChromaDB client with in-memory store."""
+    mock = MagicMock()
+    mock_collection = MagicMock()
+    mock_collection.add = MagicMock()
+    mock_collection.query = MagicMock(return_value={
+        "ids": [[]], "distances": [[]], "metadatas": [[]], "documents": [[]]
+    })
+    mock_collection.delete = MagicMock()
+    mock_collection.upsert = MagicMock()
+    mock_collection.count = MagicMock(return_value=0)
+    mock.get_or_create_collection = MagicMock(return_value=mock_collection)
+    mock.delete_collection = MagicMock()
+    mock.heartbeat = MagicMock(return_value=1)
+    return mock
+
+
+@pytest.fixture
+def mock_mcp_client():
+    """Mock MCP client that returns predefined tools."""
+    mock = MagicMock()
+    mock.list_tools = AsyncMock(return_value=[])
+    mock.connect = AsyncMock()
+    mock.disconnect = AsyncMock()
+
+    async def _mock_call_tool(name, args):
+        return MagicMock(content=[MagicMock(text=f"executed {name}")])
+
+    mock.call_tool = _mock_call_tool
+    return mock
+
+
+@pytest.fixture
+def mock_minecraft_bridge():
+    """Mock Minecraft bridge that simulates bot connection."""
+    mock = MagicMock()
+    mock.connect = AsyncMock()
+    mock.disconnect = AsyncMock()
+    mock.send_command = AsyncMock(return_value={"success": True, "result": "done"})
+    mock.get_status = MagicMock(return_value={
+        "connected": True, "position": {"x": 0, "y": 64, "z": 0}
+    })
+    return mock
+
+
+@pytest.fixture
+def mock_bilibili_client():
+    """Mock Bilibili danmaku client."""
+    mock = MagicMock()
+    mock.connect = AsyncMock()
+    mock.disconnect = AsyncMock()
+    mock.is_connected = MagicMock(return_value=False)
+    mock.on_danmaku = MagicMock()
+    return mock

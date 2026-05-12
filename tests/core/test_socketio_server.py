@@ -1,0 +1,314 @@
+"""
+Tests for socketio_server module — server entry point.
+
+The socketio_server module executes code at import time (dotenv loading,
+argparse, UserSettings instantiation, log level configuration).  This test
+file carefully mocks those side effects before the import, then tests each
+public/private function in isolation.
+"""
+
+import argparse
+import sys
+from pathlib import Path
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
+
+
+# ── Helpers ─────────────────────────────────────────────────────────
+
+
+def _noop_coro():
+    """Return a noop coroutine object (each call creates a fresh one)."""
+
+    async def _inner():
+        pass
+
+    return _inner()
+
+
+# ── Module-level fixture ────────────────────────────────────────────
+
+
+@pytest.fixture(scope="module")
+def mod():
+    """Import socketio_server module once with side-effect mocks.
+
+    The module runs code at import time:
+    - ``parse_server_args()`` on line 64 (reads ``sys.argv``)
+    - ``load_dotenv()`` in the ``try`` block on line 22
+    - ``UserSettings(...)`` on line 71 (reads ``.user_settings.yaml``)
+    - ``logger_manager.set_level(...)`` on line 75
+
+    This fixture:
+    - Sets ``sys.argv`` so argparse doesn't error
+    - Patches ``dotenv.load_dotenv`` so no real ``.env`` is loaded
+    - Patches ``UserSettings._load`` so no YAML file is read
+    """
+    original_argv = sys.argv.copy()
+    sys.argv = ["test_prog"]
+
+    # Ensure a fresh import
+    if "anima.core.socketio_server" in sys.modules:
+        del sys.modules["anima.core.socketio_server"]
+
+    with (
+        patch("dotenv.load_dotenv"),
+        patch(
+            "anima.config.user_settings.UserSettings._load",
+            return_value={"log_level": "INFO"},
+        ),
+    ):
+        import anima.core.socketio_server as m
+
+    sys.argv = original_argv
+    return m
+
+
+# ── TestParseServerArgs ─────────────────────────────────────────────
+
+
+class TestParseServerArgs:
+    """parse_server_args() — CLI argument parsing."""
+
+    def test_parses_redis_url_flag(self, mod):
+        """--redis-url flag is parsed correctly."""
+        with patch.object(sys, "argv", ["prog", "--redis-url", "redis://localhost:6379"]):
+            args = mod.parse_server_args()
+        assert args.redis_url == "redis://localhost:6379"
+
+    def test_defaults_to_none_when_flag_missing(self, mod):
+        """When --redis-url is absent, redis_url is None."""
+        with patch.object(sys, "argv", ["prog"]):
+            args = mod.parse_server_args()
+        assert args.redis_url is None
+
+
+# ── TestInitConfig ──────────────────────────────────────────────────
+
+
+class TestInitConfig:
+    """init_config() — global configuration loading."""
+
+    def test_loads_from_default_path(self, mod):
+        """Without config_path, calls AppConfig.load()."""
+        mock_config = MagicMock()
+        mock_config.system.host = "localhost"
+        mock_config.system.port = 12394
+
+        mod.global_config = None
+        with patch("anima.core.socketio_server.AppConfig.load", return_value=mock_config):
+            mod.init_config()
+
+        assert mod.global_config is mock_config
+
+    def test_loads_from_specified_path(self, mod):
+        """With config_path, calls AppConfig.from_yaml(path)."""
+        mock_config = MagicMock()
+        mock_config.system.host = "localhost"
+        mock_config.system.port = 12394
+
+        mod.global_config = None
+        with patch(
+            "anima.core.socketio_server.AppConfig.from_yaml", return_value=mock_config
+        ) as mock_from_yaml:
+            mod.init_config(config_path="/custom/path/config.yaml")
+
+        assert mod.global_config is mock_config
+        mock_from_yaml.assert_called_once_with("/custom/path/config.yaml")
+
+
+# ── TestSetupCheckpointer ───────────────────────────────────────────
+
+
+class TestSetupCheckpointer:
+    """_setup_checkpointer() — LangGraph checkpointer configuration."""
+
+    # -- Helpers ------------------------------------------------------
+
+    @staticmethod
+    def _patch_redis_url(mod, url):
+        """Replace ``_server_args`` with a namespace for the test duration."""
+        original = mod._server_args
+        mod._server_args = argparse.Namespace(redis_url=url)
+        return original
+
+    # -- Tests --------------------------------------------------------
+
+    def test_sets_redis_checkpointer_when_redis_url_given(self, mod):
+        """With a --redis-url, AsyncRedisSaver is created and registered."""
+        original = self._patch_redis_url(mod, "redis://localhost:6379")
+
+        mock_checkpointer = MagicMock()
+        with (
+            patch(
+                "anima.orchestration.graph.builder.set_external_checkpointer"
+            ) as mock_set,
+            patch(
+                "anima.core.redis_checkpoint.AsyncRedisSaver",
+                return_value=mock_checkpointer,
+            ),
+        ):
+            mod._setup_checkpointer()
+
+        mock_set.assert_called_once_with(mock_checkpointer)
+
+        mod._server_args = original
+
+    def test_skips_when_redis_url_not_set(self, mod):
+        """When --redis-url is None, no external checkpointer is registered."""
+        # _server_args.redis_url is None from import-time default
+        with patch(
+            "anima.orchestration.graph.builder.set_external_checkpointer"
+        ) as mock_set:
+            mod._setup_checkpointer()
+
+        mock_set.assert_not_called()
+
+    def test_handles_exception_gracefully(self, mod):
+        """If AsyncRedisSaver raises, the error is caught and swallowed."""
+        original = self._patch_redis_url(mod, "redis://localhost:6379")
+
+        with (
+            patch(
+                "anima.orchestration.graph.builder.set_external_checkpointer"
+            ) as mock_set,
+            patch(
+                "anima.core.redis_checkpoint.AsyncRedisSaver",
+                side_effect=ConnectionError("redis not available"),
+            ),
+        ):
+            # Should not raise
+            mod._setup_checkpointer()
+
+        mock_set.assert_not_called()
+
+        mod._server_args = original
+
+
+# ── TestGetAsgiApp ──────────────────────────────────────────────────
+
+
+class TestGetAsgiApp:
+    """get_asgi_app() — lazy-init ASGI application factory."""
+
+    # -- Helpers ------------------------------------------------------
+
+    @staticmethod
+    def _reset_module_state(mod):
+        """Reset lazy-init globals so get_asgi_app() re-runs."""
+        mod.asgi_app = None
+        mod._server = None
+
+    # -- Tests --------------------------------------------------------
+
+    @pytest.mark.asyncio
+    async def test_returns_asgi_app(self, mod):
+        """First call creates and returns an ASGI app."""
+        self._reset_module_state(mod)
+
+        mock_asgi_app = MagicMock()
+        mock_server = MagicMock()
+        mock_server.get_app.return_value = mock_asgi_app
+        mock_server.model_manager = MagicMock()
+        mock_server.model_manager.warmup = MagicMock(return_value=_noop_coro())
+        mock_server.prewarm_services = MagicMock(return_value=_noop_coro())
+
+        with (
+            patch("anima.core.socketio_server._setup_checkpointer") as mock_check,
+            patch("anima.core.socketio_server.create_server", return_value=mock_server),
+        ):
+            result = mod.get_asgi_app()
+
+        assert result is mock_asgi_app
+        mock_check.assert_called_once()
+        mock_server.set_user_settings.assert_called_once()
+        mock_server.get_app.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_caches_result_across_calls(self, mod):
+        """Subsequent calls return the cached ASGI app without re-creating."""
+        self._reset_module_state(mod)
+
+        mock_asgi_app = MagicMock()
+        mock_server = MagicMock()
+        mock_server.get_app.return_value = mock_asgi_app
+        mock_server.model_manager = MagicMock()
+        mock_server.model_manager.warmup = MagicMock(return_value=_noop_coro())
+        mock_server.prewarm_services = MagicMock(return_value=_noop_coro())
+
+        with (
+            patch("anima.core.socketio_server._setup_checkpointer"),
+            patch("anima.core.socketio_server.create_server", return_value=mock_server),
+        ):
+            result1 = mod.get_asgi_app()
+            result2 = mod.get_asgi_app()
+
+        assert result1 is result2  # Same cached object
+        mock_server.get_app.assert_called_once()  # Only built once
+
+    @pytest.mark.asyncio
+    async def test_calls_init_config_when_global_config_none(self, mod):
+        """If global_config is None, get_asgi_app calls init_config()."""
+        self._reset_module_state(mod)
+        mod.global_config = None
+
+        mock_server = MagicMock()
+        mock_server.model_manager = MagicMock()
+        mock_server.model_manager.warmup = MagicMock(return_value=_noop_coro())
+        mock_server.prewarm_services = MagicMock(return_value=_noop_coro())
+
+        with (
+            patch("anima.core.socketio_server.init_config") as mock_init,
+            patch("anima.core.socketio_server._setup_checkpointer"),
+            patch("anima.core.socketio_server.create_server", return_value=mock_server),
+        ):
+            mod.get_asgi_app()
+
+        mock_init.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_skips_init_config_when_config_already_loaded(self, mod):
+        """If global_config is already set, init_config is NOT called."""
+        self._reset_module_state(mod)
+        mod.global_config = MagicMock()  # Already loaded
+
+        mock_server = MagicMock()
+        mock_server.model_manager = MagicMock()
+        mock_server.model_manager.warmup = MagicMock(return_value=_noop_coro())
+        mock_server.prewarm_services = MagicMock(return_value=_noop_coro())
+
+        with (
+            patch("anima.core.socketio_server.init_config") as mock_init,
+            patch("anima.core.socketio_server._setup_checkpointer"),
+            patch("anima.core.socketio_server.create_server", return_value=mock_server),
+        ):
+            mod.get_asgi_app()
+
+        mock_init.assert_not_called()
+
+
+# ── TestModuleLevelVars ─────────────────────────────────────────────
+
+
+class TestModuleLevelVars:
+    """Module-level variables are properly initialised at import time."""
+
+    def test_global_config_exists(self, mod):
+        assert hasattr(mod, "global_config")
+
+    def test_user_settings_exists(self, mod):
+        assert hasattr(mod, "user_settings")
+
+    def test_server_args_exists(self, mod):
+        assert hasattr(mod, "_server_args")
+        # Parsed at import time — our fixture used sys.argv = ["test_prog"]
+        assert mod._server_args.redis_url is None
+
+    def test_asgi_app_exists(self, mod):
+        """asgi_app module-level variable exists (lazy init)."""
+        assert hasattr(mod, "asgi_app")
+
+    def test_server_exists(self, mod):
+        """_server module-level variable exists (lazy init)."""
+        assert hasattr(mod, "_server")

@@ -1,0 +1,65 @@
+# RAG Evaluation Experiment Matrix
+# Each experiment group maps to a set of MemoryConfig parameters
+
+experiments:
+  # ── Baseline: 5 core retriever configurations ──
+  baseline:
+    vector_only:
+      vector_weight: 1.0
+      keyword_weight: 0.0
+      description: "Pure Chroma vector search"
+    bm25_only:
+      vector_weight: 0.0
+      keyword_weight: 1.0
+      description: "Pure SQLite FTS5 BM25"
+    hybrid_70_30:
+      vector_weight: 0.7
+      keyword_weight: 0.3
+      description: "Current production config"
+    hybrid_50_50:
+      vector_weight: 0.5
+      keyword_weight: 0.5
+      description: "Equal weight baseline"
+    hybrid_with_fuzzy:
+      vector_weight: 0.7
+      keyword_weight: 0.3
+      fuzzy_enabled: true
+      description: "Production + FuzzyLayer"
+
+  # ── Ablation 1: Weight grid search ──
+  weight_grid:
+    w90_10: {vector_weight: 0.9, keyword_weight: 0.1, description: "90/10 vector-heavy"}
+    w80_20: {vector_weight: 0.8, keyword_weight: 0.2, description: "80/20"}
+    w70_30: {vector_weight: 0.7, keyword_weight: 0.3, description: "70/30 (baseline)"}
+    w60_40: {vector_weight: 0.6, keyword_weight: 0.4, description: "60/40"}
+    w50_50: {vector_weight: 0.5, keyword_weight: 0.5, description: "50/50 equal"}
+    w40_60: {vector_weight: 0.4, keyword_weight: 0.6, description: "40/60 keyword-heavy"}
+    w30_70: {vector_weight: 0.3, keyword_weight: 0.7, description: "30/70"}
+
+  # ── Ablation 2: Chunk size ──
+  chunk_size:
+    c256: {target_tokens: 256, overlap_tokens: 50, description: "Small chunks (256 tokens)"}
+    c400: {target_tokens: 400, overlap_tokens: 80, description: "Default (400 tokens)"}
+    c800: {target_tokens: 800, overlap_tokens: 160, description: "Large chunks (800 tokens)"}
+    c1024: {target_tokens: 1024, overlap_tokens: 200, description: "X-Large chunks (1024 tokens)"}
+
+  # ── Ablation 3: Embedding model ──
+  embedding:
+    bge_small: {model_name: "BAAI/bge-small-zh-v1.5", description: "BGE-small (baseline, 24MB)"}
+    bge_large: {model_name: "BAAI/bge-large-zh-v1.5", description: "BGE-large (326MB)"}
+
+  # ── Ablation 4: FuzzyLayer ──
+  fuzzy_ablation:
+    fuzzy_on: {fuzzy_enabled: true, description: "FuzzyLayer enabled"}
+    fuzzy_off: {fuzzy_enabled: false, description: "FuzzyLayer disabled"}
+
+# Default values (applied to all experiments unless overridden)
+defaults:
+  vector_weight: 0.7
+  keyword_weight: 0.3
+  embedding_model: "BAAI/bge-small-zh-v1.5"
+  target_tokens: 400
+  overlap_tokens: 80
+  chars_per_token: 2.0
+  fuzzy_enabled: false
+  max_results: 5

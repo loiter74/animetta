@@ -13,6 +13,11 @@ const router = createRouter({
       name: 'dashboard',
       component: () => import('../views/DashboardPage.vue'),
     },
+    {
+      path: '/meme-review',
+      name: 'meme-review',
+      component: () => import('../views/MemeReview.vue'),
+    },
   ],
 })
 

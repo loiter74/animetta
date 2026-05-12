@@ -4,6 +4,9 @@ import pvpPkg from 'mineflayer-pvp';
 import Vec3 from 'vec3';
 import { createInterface } from 'readline';
 import { stdin, stdout, argv } from 'process';
+import { setPlannerMode, setRuleMode, nextPlanStep, stepComplete, stepFailed, getPlanProgress, setOnPlanComplete, getMode } from './behaviors/planExecutor.js';
+import { setupCombatInterrupt } from './behaviors/combat.js';
+import { setupAutoEat } from './behaviors/autoEat.js';
 
 const { pathfinder, Movements, goals } = pathfinderPkg;
 const { GoalBlock } = goals;
@@ -104,8 +107,19 @@ bot.on('login', () => {
   sendEvent('login', { username: bot.username });
 });
 
+// Auto-eat and combat interrupt (setup after spawn)
+let autoEat = null;
+let combatGuard = null;
+let planLoopInterval = null;
+
 bot.on('spawn', () => {
   sendEvent('spawn');
+  // Start survival systems
+  autoEat = setupAutoEat(bot);
+  autoEat.start();
+  combatGuard = setupCombatInterrupt(bot);
+  combatGuard.start();
+  startPlanLoop();
 });
 
 bot.on('error', (err) => {
@@ -113,14 +127,66 @@ bot.on('error', (err) => {
 });
 
 bot.on('end', (reason) => {
+  if (autoEat) autoEat.stop();
+  if (combatGuard) combatGuard.stop();
+  if (planLoopInterval) clearInterval(planLoopInterval);
   sendEvent('disconnect', { reason });
 });
 
-bot.on('health', () => {
-  if (bot.health < 10 && bot.health > 0) {
-    bot.chat('I need to heal!');
+// ── Plan Executor Loop ──
+
+const planExecuting = { active: false };
+
+function startPlanLoop() {
+  if (planLoopInterval) return;
+  planLoopInterval = setInterval(async () => {
+    if (getMode() !== 'planner') return;
+    if (planExecuting.active || combatGuard?.isInCombat()) return;
+    
+    const step = nextPlanStep();
+    if (!step) {
+      // Plan complete
+      setOnPlanComplete((result) => {
+        sendEvent('plan_complete', result);
+      });
+      return;
+    }
+
+    planExecuting.active = true;
+    try {
+      // Execute the step using existing action handlers
+      const { action, params = {} } = step;
+      let result;
+      
+      switch (action) {
+        case 'goto': result = await handleGotoInternal(params); break;
+        case 'smart_goto': result = await handleSmartGotoInt(params); break;
+        case 'collect': result = await handleCollectInternal(params); break;
+        case 'mine': result = await handleMineInternal(params); break;
+        case 'place': result = await handlePlaceInternal(params); break;
+        case 'smart_build': result = await handleSmartBuildInt(params); break;
+        case 'chat': result = await handleChatInternal(params); break;
+        case 'attack': result = await handleAttackInternal(params); break;
+        default:
+          throw new Error(`Unknown plan action: ${action}`);
+      }
+      stepComplete({ action, result });
+      sendEvent('step_complete', { step: getPlanProgress().step - 1, action, result });
+    } catch (err) {
+      const failInfo = stepFailed(err.message);
+      sendEvent('step_failed', { step: getPlanProgress().step - 1, error: err.message, ...failInfo });
+    } finally {
+      planExecuting.active = false;
+    }
+  }, 2000); // Check every 2s for next step
+}
+
+function stopPlanLoop() {
+  if (planLoopInterval) {
+    clearInterval(planLoopInterval);
+    planLoopInterval = null;
   }
-});
+}
 
 // --- Command dispatch ---
 let busy = false;
@@ -151,15 +217,19 @@ async function handleCommand(cmd) {
 
   let handler;
   switch (action) {
-    case 'goto':     handler = handleGoto(id, params); break;
-    case 'mine':     handler = handleMine(id, params); break;
-    case 'place':    handler = handlePlace(id, params); break;
-    case 'attack':   handler = handleAttack(id, params); break;
-    case 'chat':     handler = handleChat(id, params); break;
-    case 'status':   handler = handleStatus(id, params); break;
-    case 'setgoal':  handler = handleSetGoal(id, params); break;
-    case 'stop':     handler = handleStop(id, params); break;
-    case 'collect':  handler = handleCollect(id, params); break;
+    case 'goto':        handler = handleGoto(id, params); break;
+    case 'smart_goto':  handler = handleSmartGoto(id, params); break;
+    case 'mine':        handler = handleMine(id, params); break;
+    case 'place':       handler = handlePlace(id, params); break;
+    case 'smart_build': handler = handleSmartBuild(id, params); break;
+    case 'attack':      handler = handleAttack(id, params); break;
+    case 'chat':        handler = handleChat(id, params); break;
+    case 'status':      handler = handleStatus(id, params); break;
+    case 'setgoal':     handler = handleSetGoal(id, params); break;
+    case 'stop':        handler = handleStop(id, params); break;
+    case 'collect':     handler = handleCollect(id, params); break;
+    case 'set_mode':    handler = handleSetMode(id, params); break;
+    case 'plan_status': handler = handlePlanStatus(id, params); break;
     default:
       sendResponse(id, 'error', `Unknown action: ${action}`);
       return;
@@ -387,4 +457,144 @@ async function handleCollect(id, params) {
   } catch (err) {
     sendResponse(id, 'error', `Collection failed: ${err.message}`);
   }
+}
+
+// ── Mode Control Handlers ──
+
+async function handleSetMode(id, params) {
+  const { mode, plan: planSteps } = params;
+  if (mode === 'planner') {
+    if (!planSteps || !Array.isArray(planSteps)) {
+      sendResponse(id, 'error', 'Planner mode requires a plan array');
+      return;
+    }
+    busy = false;
+    stopIdleLoop();
+    const result = setPlannerMode(planSteps);
+    sendResponse(id, 'success', result);
+  } else if (mode === 'rule') {
+    const result = setRuleMode();
+    startIdleLoop();
+    sendResponse(id, 'success', result);
+  } else {
+    sendResponse(id, 'error', `Unknown mode: ${mode}`);
+  }
+}
+
+async function handlePlanStatus(id, _params) {
+  sendResponse(id, 'success', getPlanProgress());
+}
+
+// ── Smart Actions ──
+
+async function handleSmartGoto(id, params) {
+  const { x, y, z, target } = params;
+  await setupMovements();
+  let targetPos;
+  if (target) {
+    const mcData = await getMcData();
+    const blockInfo = mcData.blocksByName?.[target];
+    if (blockInfo) {
+      const block = bot.findBlock({ matching: blockInfo.id, maxDistance: 64 });
+      if (block) targetPos = block.position;
+    }
+    if (!targetPos) {
+      const entity = bot.nearestEntity(e => e.name?.toLowerCase().includes(target.toLowerCase()));
+      if (entity) targetPos = entity.position;
+    }
+    if (!targetPos) {
+      sendResponse(id, 'error', `Cannot find target: ${target}`);
+      return;
+    }
+  } else {
+    targetPos = new Vec3(Math.floor(x || 0), Math.floor(y || 65), Math.floor(z || 0));
+  }
+  await bot.pathfinder.goto(new GoalBlock(targetPos.x, targetPos.y, targetPos.z));
+  sendResponse(id, 'success', `Navigated to (${targetPos.x}, ${targetPos.y}, ${targetPos.z})`);
+}
+
+async function handleSmartBuild(id, params) {
+  const { block_type, x, y, z, blueprint } = params;
+  await setupMovements();
+  if (blueprint === 'platform' || !blueprint) {
+    const pos = bot.entity.position;
+    const bx = Math.floor(x || pos.x) - 1, bz = Math.floor(z || pos.z) - 1, by = Math.floor(y || pos.y) - 1;
+    let placed = 0;
+    for (let dx = 0; dx < 3; dx++) {
+      for (let dz = 0; dz < 3; dz++) {
+        const pp = new Vec3(bx + dx, by, bz + dz);
+        const b = bot.blockAt(pp);
+        if (b && b.name === 'air') {
+          await bot.pathfinder.goto(new GoalBlock(pp.x, pp.y + 1, pp.z));
+          const ref = bot.blockAt(pp.offset(0, -1, 0));
+          if (ref && ref.name !== 'air') {
+            await bot.placeBlock(ref, new Vec3(0, 1, 0));
+            placed++;
+          }
+        }
+      }
+    }
+    sendResponse(id, 'success', `Built ${placed} blocks`);
+  } else {
+    sendResponse(id, 'error', `Unknown blueprint: ${blueprint}`);
+  }
+}
+
+// ── Internal wrappers for plan executor ──
+
+async function handleGotoInternal(params) {
+  const { x, y, z } = params;
+  await setupMovements();
+  await bot.pathfinder.goto(new GoalBlock(Math.floor(x), Math.floor(y), Math.floor(z)));
+  return `Moved to (${x}, ${y}, ${z})`;
+}
+
+async function handleSmartGotoInt(params) { return handleGotoInternal(params); }
+async function handleMineInternal(params) {
+  const { block_type, count = 1 } = params;
+  const mcData = await setupMovements();
+  const bi = mcData.blocksByName[block_type];
+  if (!bi) throw new Error(`Unknown block: ${block_type}`);
+  for (let i = 0; i < count; i++) {
+    const b = bot.findBlock({ matching: bi.id, maxDistance: 10 });
+    if (!b) throw new Error(`No more ${block_type}`);
+    await bot.pathfinder.goto(new GoalBlock(b.position.x, b.position.y + 1, b.position.z));
+    await bot.dig(b);
+  }
+  return `Mined ${count} ${block_type}`;
+}
+async function handlePlaceInternal(params) {
+  const { block_type, x, y, z } = params;
+  await setupMovements();
+  const ref = bot.blockAt(new Vec3(x, y - 1, z));
+  if (!ref || ref.name === 'air') throw new Error('No solid block below');
+  await bot.pathfinder.goto(new GoalBlock(x, y, z));
+  await bot.placeBlock(ref, new Vec3(0, 1, 0));
+  return `Placed ${block_type}`;
+}
+async function handleSmartBuildInt(params) { return handleSmartBuild('plan', params); }
+
+async function handleChatInternal(params) {
+  bot.chat(params.message);
+  return 'Chat sent';
+}
+async function handleAttackInternal(params) {
+  const t = params.target || 'nearest_hostile';
+  const e = bot.nearestEntity(e => {
+    const n = (e.name || '').toLowerCase();
+    return t === 'nearest_hostile'
+      ? ['zombie', 'skeleton', 'spider', 'creeper'].some(h => n.includes(h))
+      : n.includes(t.toLowerCase());
+  });
+  if (!e) throw new Error(`No target: ${t}`);
+  await bot.pvp?.attack(e);
+  return `Attacked ${e.name || t}`;
+}
+async function handleCollectInternal(params) {
+  const { block_type, count = 1 } = params;
+  await setupMovements();
+  const mod = await import('mineflayer-collectblock');
+  bot.loadPlugin(mod.default || mod);
+  await bot.collectBlock.collect(b => b.name === block_type, { maxCount: count });
+  return `Collected ${count} ${block_type}`;
 }

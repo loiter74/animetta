@@ -294,6 +294,10 @@ class ServiceContext:
             config = {
                 "workspace_dir": mem_cfg.get('workspace_dir', '~/.anima/workspace'),
                 "short_term_max_turns": mem_cfg.get('short_term', {}).get('max_turns', 20),
+                # Forward search configuration (hybrid weights, defaults from MemoryConfig)
+                "search": mem_cfg.get('search', {}),
+                # Forward chunk configuration (token/overlap settings)
+                "chunk": mem_cfg.get('chunk', {}),
             }
 
             embedding_cfg = mem_cfg.get('embedding', {})

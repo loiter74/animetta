@@ -14,6 +14,7 @@ testpaths = ["tests"]
 markers = [
     "asyncio: mark test as asyncio",
     "integration: mark as integration test (requires external services)",
+    "slow: mark test as slow (skipped in quick CI runs)",
 ]
 addopts = "-v --tb=short"
 

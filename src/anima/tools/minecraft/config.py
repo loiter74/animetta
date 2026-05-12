@@ -21,5 +21,6 @@ class MinecraftSafetyConfig(BaseModel):
 
 class MinecraftConfig(BaseModel):
     enabled: bool = False
+    autonomous: bool = False   # Enable autonomous behavior loop
     bot: MinecraftBotConfig = MinecraftBotConfig()
     safety: MinecraftSafetyConfig = MinecraftSafetyConfig()

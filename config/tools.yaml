@@ -60,7 +60,8 @@ mcp_servers:
 # Minecraft 游戏控制
 # ========================================
 minecraft:
-  enabled: false                # 设为 true 启用 Minecraft Bot
+  enabled: true                 # 已启用，AI 控制 Mineflayer Bot 自动连接
+  autonomous: true              # 启用自主行为循环（收集→建造→聊天）
   bot:
     host: "localhost"
     port: 25565

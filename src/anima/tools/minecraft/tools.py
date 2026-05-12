@@ -32,7 +32,7 @@ def init_bridge(config: Optional[Dict] = None):
         logger.info("[MinecraftTools] Minecraft gameplay is disabled in config")
         return
 
-    _bridge = MinecraftBridge(mc_config)
+    _bridge = MinecraftBridge(mc_config, autonomous=mc_config.autonomous)
 
     try:
         loop = asyncio.get_running_loop()

@@ -39,3 +39,49 @@ jobs:
 
     - name: Verify import
       run: python -c "import anima; print('Import OK')"
+
+  rag-eval:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pyyaml matplotlib jinja2
+
+      - name: Validate dataset
+        run: |
+          python -c "
+          import json
+          with open('evaluations/rag/dataset.jsonl', encoding='utf-8') as f:
+              data = [json.loads(l) for l in f if l.strip()]
+          assert len(data) >= 50, f'Dataset too small: {len(data)}'
+          cats = {}
+          for d in data:
+              cats[d['category']] = cats.get(d['category'], 0) + 1
+          print(f'Dataset: {len(data)} queries, categories: {cats}')
+          assert all(c in cats for c in ['factual','contextual','temporal','persona','multi_hop','robustness'])
+          print('Dataset validation OK')
+          "
+
+      - name: Run unit tests (metrics)
+        run: PYTHONPATH=src python -m pytest tests/eval/test_metrics.py -v
+
+      - name: Run RAG regression test
+        run: PYTHONPATH=src python -m pytest tests/eval/test_rag_quality.py -v -m "slow" --timeout=300
+        continue-on-error: true
+
+      - name: Archive eval results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rag-eval-${{ github.run_id }}
+          path: |
+            evaluations/rag/results/ci/

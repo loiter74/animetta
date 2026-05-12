@@ -10,6 +10,9 @@ Provides:
 from .bridge import MinecraftBridge, get_bridge
 from .tools import get_minecraft_tools, init_bridge, cleanup_bridge
 from .config import MinecraftConfig, MinecraftBotConfig, MinecraftSafetyConfig
+from .autonomous import AutonomousLoop
+from .rules_engine import RulesEngine
+from .world_state import WorldState
 
 __all__ = [
     "MinecraftBridge",
@@ -20,4 +23,7 @@ __all__ = [
     "MinecraftConfig",
     "MinecraftBotConfig",
     "MinecraftSafetyConfig",
+    "AutonomousLoop",
+    "RulesEngine",
+    "WorldState",
 ]

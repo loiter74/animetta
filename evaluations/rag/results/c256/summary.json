@@ -1,0 +1,75 @@
+{
+  "config": {
+    "name": "c256",
+    "vector_weight": 0.7,
+    "keyword_weight": 0.3,
+    "embedding_model": "BAAI/bge-small-zh-v1.5",
+    "target_tokens": 256,
+    "fuzzy_enabled": false
+  },
+  "timestamp": "2026-05-12T17:50:47.129349+00:00",
+  "git_commit": "9ab37cf",
+  "summary": {
+    "recall_at_k": 0.2126,
+    "precision_at_k": 0.0483,
+    "mrr": 0.1658,
+    "ndcg_at_k": 0.1723,
+    "chunk_diversity": 0.7103,
+    "latency_p50_ms": 10.83,
+    "latency_p95_ms": 12.5,
+    "latency_p99_ms": 13.2,
+    "latency_mean_ms": 10.83,
+    "total_queries": 58,
+    "k": 5
+  },
+  "per_category": {
+    "contextual": {
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_mean_ms": 11.22,
+      "count": 10
+    },
+    "factual": {
+      "recall_at_k": 0.5385,
+      "precision_at_k": 0.1077,
+      "mrr": 0.4769,
+      "ndcg_at_k": 0.4913,
+      "latency_mean_ms": 10.44,
+      "count": 13
+    },
+    "multi_hop": {
+      "recall_at_k": 0.1333,
+      "precision_at_k": 0.06,
+      "mrr": 0.125,
+      "ndcg_at_k": 0.0976,
+      "latency_mean_ms": 10.94,
+      "count": 10
+    },
+    "persona": {
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_mean_ms": 10.71,
+      "count": 10
+    },
+    "robustness": {
+      "recall_at_k": 0.8,
+      "precision_at_k": 0.16,
+      "mrr": 0.4333,
+      "ndcg_at_k": 0.5262,
+      "latency_mean_ms": 10.34,
+      "count": 5
+    },
+    "temporal": {
+      "recall_at_k": 0.0,
+      "precision_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "latency_mean_ms": 11.19,
+      "count": 10
+    }
+  }
+}

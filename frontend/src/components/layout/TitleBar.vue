@@ -20,14 +20,13 @@ const statusLabels: Record<string, string> = {
   error: 'Connection Error'
 }
 
-function toggleDashboard() {
-  if (route.name === 'dashboard') {
+function goTo(name: string) {
+  if (route.name === name) {
     router.push('/')
   } else {
-    router.push('/dashboard')
+    router.push('/' + (name === 'chat' ? '' : name))
   }
 }
-
 </script>
 
 <template>
@@ -46,7 +45,16 @@ function toggleDashboard() {
 
       <div class="flex items-center pr-4 gap-2">
         <button
-          @click="toggleDashboard"
+          @click="goTo('meme-review')"
+          class="px-3 py-1 text-xs rounded-lg transition-colors"
+          :class="route.name === 'meme-review'
+            ? 'bg-c-accent text-white'
+            : 'bg-white/10 text-c-text-dim hover:bg-white/20'"
+        >
+          梗筛选
+        </button>
+        <button
+          @click="goTo('dashboard')"
           class="px-3 py-1 text-xs rounded-lg transition-colors"
           :class="route.name === 'dashboard'
             ? 'bg-c-accent text-white'

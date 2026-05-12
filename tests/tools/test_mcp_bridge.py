@@ -96,3 +96,195 @@ class TestMCPManager:
         # Should not raise
         tools = await mgr.load(configs)
         assert isinstance(tools, list)
+
+
+class TestMCPClientInit:
+    """MCPClient initialization tests."""
+
+    def test_init_stdio(self):
+        from anima.tools.mcp_bridge import MCPClient
+        client = MCPClient(
+            name="test",
+            transport="stdio",
+            command="echo",
+            args=["hello"],
+        )
+        assert client.name == "test"
+        assert client.transport == "stdio"
+        assert client.session is None
+
+    def test_init_sse(self):
+        from anima.tools.mcp_bridge import MCPClient
+        client = MCPClient(
+            name="sse-test",
+            transport="sse",
+            url="http://localhost:8080/sse",
+        )
+        assert client.name == "sse-test"
+        assert client.transport == "sse"
+
+    def test_init_streamable_http(self):
+        from anima.tools.mcp_bridge import MCPClient
+        client = MCPClient(
+            name="http-test",
+            transport="streamable_http",
+            url="http://localhost:8080/mcp",
+        )
+        assert client.name == "http-test"
+        assert client.transport == "streamable_http"
+
+
+class TestMCPToolToLangChain:
+    """mcp_tool_to_langchain conversion tests."""
+
+    def test_convert_simple_tool(self):
+        from anima.tools.mcp_bridge import mcp_tool_to_langchain, MCPClient
+
+        client = MCPClient(name="test", transport="stdio", command="echo")
+
+        # Create a mock tool info object
+        class MockToolInfo:
+            name = "test_tool"
+            description = "A test tool"
+            inputSchema = {
+                "type": "object",
+                "properties": {
+                    "param1": {"type": "string"},
+                    "param2": {"type": "integer"},
+                },
+            }
+
+        tool = mcp_tool_to_langchain(client, MockToolInfo())
+        assert tool.name == "test_tool"
+        assert "A test tool" in tool.description
+        assert tool.args_schema is not None
+        # Verify schema fields
+        schema_fields = tool.args_schema.model_fields
+        assert "param1" in schema_fields
+        assert "param2" in schema_fields
+
+    def test_convert_tool_no_schema(self):
+        from anima.tools.mcp_bridge import mcp_tool_to_langchain, MCPClient
+
+        client = MCPClient(name="test", transport="stdio", command="echo")
+
+        class MockToolInfoNoSchema:
+            name = "no_schema_tool"
+            description = "Tool without schema"
+            inputSchema = None
+
+        tool = mcp_tool_to_langchain(client, MockToolInfoNoSchema())
+        assert tool.name == "no_schema_tool"
+
+    def test_convert_tool_no_description(self):
+        from anima.tools.mcp_bridge import mcp_tool_to_langchain, MCPClient
+
+        client = MCPClient(name="test", transport="stdio", command="echo")
+
+        class MockToolInfoNoDesc:
+            name = "no_desc"
+            description = None
+            inputSchema = {"type": "object", "properties": {}}
+
+        tool = mcp_tool_to_langchain(client, MockToolInfoNoDesc())
+        assert tool.name == "no_desc"
+
+    @pytest.mark.asyncio
+    async def test_execute_converted_tool(self):
+        from anima.tools.mcp_bridge import mcp_tool_to_langchain, MCPClient
+
+        client = MCPClient(name="test", transport="stdio", command="echo")
+
+        class MockToolInfo:
+            name = "echo_tool"
+            description = "Echoes input"
+            inputSchema = {
+                "type": "object",
+                "properties": {
+                    "message": {"type": "string"},
+                },
+            }
+
+        tool = mcp_tool_to_langchain(client, MockToolInfo())
+
+        # Mock the client.call_tool to test execution flow
+        class MockContent:
+            text = "echoed: hello"
+
+        class MockResult:
+            content = [MockContent()]
+
+        client.call_tool = AsyncMock(return_value=MockResult())
+        result = await tool.coroutine(message="hello")
+        assert "echoed: hello" in result
+
+
+class TestMCPManager:
+    """Additional MCPManager tests."""
+
+    def test_build_docker_command_with_mount_edge_cases(self):
+        from anima.tools.mcp_bridge import MCPManager
+
+        mgr = MCPManager()
+
+        # Invalid mount format should be skipped
+        command, args = mgr._build_docker_command(
+            sandbox={
+                "image": "test-image",
+                "mounts": ["invalid_format_no_colon"],
+                "memory": "256m",
+                "cpus": "1.0",
+            },
+            args=["/data"],
+        )
+        assert command == "docker"
+        assert "test-image" in args
+
+    def test_build_docker_command_defaults(self):
+        from anima.tools.mcp_bridge import MCPManager
+
+        mgr = MCPManager()
+
+        command, args = mgr._build_docker_command(
+            sandbox={},  # Empty sandbox uses defaults
+            args=[],
+        )
+        assert command == "docker"
+        assert "anima-mcp-filesystem" in args  # default image
+        assert "128m" in args  # default memory
+        assert "0.5" in args  # default cpus
+
+    @pytest.mark.asyncio
+    async def test_close_all_no_clients(self):
+        from anima.tools.mcp_bridge import MCPManager
+
+        mgr = MCPManager()
+        # Should not raise with no clients
+        await mgr.close_all()
+        assert len(mgr.clients) == 0
+        assert len(mgr.tools) == 0
+
+    @pytest.mark.asyncio
+    async def test_load_sse_transport_without_mcp(self):
+        """Loading SSE config without mcp package should degrade gracefully."""
+        from anima.tools.mcp_bridge import MCPManager
+
+        mgr = MCPManager()
+        configs = [{
+            "name": "sse-server",
+            "transport": "sse",
+            "url": "http://localhost:8080/sse",
+        }]
+        tools = await mgr.load(configs)
+        assert isinstance(tools, list)
+
+    def test_parse_type_all_types(self):
+        from anima.tools.mcp_bridge import _parse_type
+
+        assert _parse_type("string") == str
+        assert _parse_type("integer") == int
+        assert _parse_type("number") == float
+        assert _parse_type("boolean") == bool
+        assert _parse_type("array") == list
+        assert _parse_type("object") == dict
+        assert _parse_type("unknown") == str  # fallback

@@ -292,8 +292,9 @@ class TestMemePool:
         store = _FakeMemeStore()
         pool = MemePool(store)
 
-        pool.add_meme("testing meme", context_hint="test code")
-        selected = pool.select_for_context("weather is nice today", personality_mode="normal")
+        pool.add_meme("coding meme", context_hint="programming debugging")
+        # "baking bread recipe" has zero 2-char overlap with "programming debugging coding meme"
+        selected = pool.select_for_context("baking bread recipe", personality_mode="normal")
 
         assert selected is None
 
