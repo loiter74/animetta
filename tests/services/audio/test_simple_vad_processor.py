@@ -7,13 +7,21 @@ import pytest
 from anima.services.intelligence.vad import VADInterface
 
 
+class _TensorLike:
+    """Mimics a PyTorch tensor with .item() for test mocks."""
+    def __init__(self, value: float) -> None:
+        self._value = value
+    def item(self) -> float:
+        return self._value
+
+
 @pytest.fixture
 def mock_vad():
     """A VADInterface mock. We'll also give it a mock .model for _get_speech_prob."""
     vad = MagicMock(spec=VADInterface)
-    # Simulate a Silero VAD model with __call__
+    # Simulate a Silero VAD model with __call__ — must return tensor-like with .item()
     model = MagicMock()
-    model.return_value = 0.0  # will be overridden in tests
+    model.return_value = _TensorLike(0.0)  # will be overridden in tests
     vad.model = model
     return vad
 
@@ -58,7 +66,7 @@ class TestSimpleVADProcessor:
         """_get_speech_prob delegates to the Silero model."""
         from anima.services.audio.simple_vad_processor import SimpleVADProcessor
 
-        mock_vad.model.return_value = 0.85
+        mock_vad.model.return_value = _TensorLike(0.85)
         p = SimpleVADProcessor(
             session_id="test", vad_engine=mock_vad,
             on_speech_end=AsyncMock(),
@@ -89,7 +97,7 @@ class TestSimpleVADProcessor:
     @pytest.mark.asyncio
     async def test_speech_detected_starts_state(self, processor, mock_vad):
         """Frame above threshold sets _is_speech and _speech_start_time."""
-        mock_vad.model.return_value = 0.9  # above threshold=0.5
+        mock_vad.model.return_value = _TensorLike(0.9)  # above threshold=0.5
         with patch("time.time", return_value=100.0):
             await processor.process_chunk([0.1] * 160)
         assert processor._is_speech is True
@@ -98,13 +106,13 @@ class TestSimpleVADProcessor:
     @pytest.mark.asyncio
     async def test_silence_under_threshold(self, processor, mock_vad):
         """Frame below threshold and not in speech does nothing."""
-        mock_vad.model.return_value = 0.1  # below threshold
+        mock_vad.model.return_value = _TensorLike(0.1)  # below threshold
         # First, get into speech state
-        mock_vad.model.return_value = 0.9
+        mock_vad.model.return_value = _TensorLike(0.9)
         await processor.process_chunk([0.1] * 160)
         assert processor._is_speech is True
         # Now silence
-        mock_vad.model.return_value = 0.1
+        mock_vad.model.return_value = _TensorLike(0.1)
         await processor.process_chunk([0.1] * 160)
         assert processor._is_speech is True  # still speaking, silence not long enough
         assert processor._silence_start_time is not None
@@ -114,11 +122,11 @@ class TestSimpleVADProcessor:
         self, processor, mock_vad, mock_callbacks,
     ):
         """Sufficient silence after sufficient speech triggers on_speech_end."""
-        mock_vad.model.return_value = 0.9
+        mock_vad.model.return_value = _TensorLike(0.9)
         with patch("time.time", return_value=100.0):
             await processor.process_chunk([0.1] * 160)  # speech starts at t=100
 
-        mock_vad.model.return_value = 0.1  # silence starts at t=100
+        mock_vad.model.return_value = _TensorLike(0.1)  # silence starts at t=100
         with patch("time.time", return_value=101.5):  # 1.5s later
             await processor.process_chunk([0.1] * 160)
 
@@ -130,11 +138,11 @@ class TestSimpleVADProcessor:
         self, processor, mock_vad, mock_callbacks,
     ):
         """Short silence (< min_silence_duration) should not end speech."""
-        mock_vad.model.return_value = 0.9
+        mock_vad.model.return_value = _TensorLike(0.9)
         with patch("time.time", return_value=100.0):
             await processor.process_chunk([0.1] * 160)  # speech starts
 
-        mock_vad.model.return_value = 0.1
+        mock_vad.model.return_value = _TensorLike(0.1)
         with patch("time.time", return_value=100.3):  # only 0.3s silence
             await processor.process_chunk([0.1] * 160)
 
@@ -146,11 +154,11 @@ class TestSimpleVADProcessor:
         self, processor, mock_vad, mock_callbacks,
     ):
         """Short speech (< min_speech_duration) should not end even with silence."""
-        mock_vad.model.return_value = 0.9
+        mock_vad.model.return_value = _TensorLike(0.9)
         with patch("time.time", return_value=100.0):
             await processor.process_chunk([0.1] * 160)  # speech starts
 
-        mock_vad.model.return_value = 0.1  # silence
+        mock_vad.model.return_value = _TensorLike(0.1)  # silence
         with patch("time.time", return_value=100.2):  # only 0.2s total speech
             await processor.process_chunk([0.1] * 160)
 
@@ -161,7 +169,7 @@ class TestSimpleVADProcessor:
     @pytest.mark.asyncio
     async def test_process_end_fires_callback(self, processor, mock_vad, mock_callbacks):
         """process_end should trigger on_speech_end if in speech."""
-        mock_vad.model.return_value = 0.9
+        mock_vad.model.return_value = _TensorLike(0.9)
         with patch("time.time", return_value=100.0):
             await processor.process_chunk([0.1] * 160)
 
@@ -209,11 +217,11 @@ class TestSimpleVADProcessor:
     @pytest.mark.asyncio
     async def test_callback_receives_buffered_audio(self, processor, mock_vad, mock_callbacks):
         """The on_speech_end callback should receive accumulated audio."""
-        mock_vad.model.return_value = 0.9
+        mock_vad.model.return_value = _TensorLike(0.9)
         with patch("time.time", return_value=100.0):
             await processor.process_chunk([0.1, 0.2, 0.3])
 
-        mock_vad.model.return_value = 0.1
+        mock_vad.model.return_value = _TensorLike(0.1)
         with patch("time.time", return_value=101.5):
             await processor.process_chunk([0.4])
 

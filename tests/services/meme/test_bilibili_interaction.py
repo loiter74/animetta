@@ -1,5 +1,6 @@
 """Tests for BilibiliInteractionLearner — danmaku processing, pattern analysis."""
 
+import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
