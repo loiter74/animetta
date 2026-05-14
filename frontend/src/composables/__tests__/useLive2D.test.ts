@@ -1,0 +1,221 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { ref, type Ref } from 'vue'
+
+// Mock pixi.js before any imports
+vi.mock('pixi.js', () => ({
+  Application: vi.fn(() => ({
+    view: document.createElement('canvas'),
+    screen: { width: 800, height: 600 },
+    renderer: { resize: vi.fn() },
+    ticker: { add: vi.fn(), remove: vi.fn() },
+    stage: { addChild: vi.fn(), removeChild: vi.fn() },
+    destroy: vi.fn(),
+  })),
+}))
+
+// Mock pixi-live2d-display cubism4 before any imports
+vi.mock('pixi-live2d-display/cubism4', () => ({
+  Live2DModel: {
+    from: vi.fn().mockResolvedValue({
+      x: 0,
+      y: 0,
+      anchor: { set: vi.fn() },
+      scale: { set: vi.fn() },
+      interactive: true,
+      getBounds: vi.fn().mockReturnValue({ width: 200, height: 400 }),
+      focus: vi.fn(),
+      motion: vi.fn(),
+      expression: vi.fn(),
+      destroy: vi.fn(),
+      internalModel: {
+        motionManager: {
+          stopAllMotions: vi.fn(),
+          groups: {},
+          expressionNames: [],
+        },
+        coreModel: {
+          getParameterIndex: vi.fn().mockReturnValue(-1),
+          setParameterValueByIndex: vi.fn(),
+        },
+      },
+    }),
+  },
+}))
+
+// Mock socket — return null so all socket operations are no-ops
+vi.mock('@/composables/useSocket', () => ({
+  getSocket: () => null,
+}))
+
+describe('useLive2D', () => {
+  let canvasRef: Ref<HTMLCanvasElement | null>
+  let useLive2D: typeof import('@/components/live2d/useLive2D').useLive2D
+  let MODEL_PATH: string
+
+  beforeEach(async () => {
+    vi.clearAllMocks()
+    canvasRef = ref(document.createElement('canvas'))
+    const mod = await import('@/components/live2d/useLive2D')
+    useLive2D = mod.useLive2D
+    MODEL_PATH = mod.MODEL_PATH
+  })
+
+  describe('initial state', () => {
+    it('starts with isLoaded false', () => {
+      const live2d = useLive2D(canvasRef)
+      expect(live2d.isLoaded.value).toBe(false)
+    })
+
+    it('starts with isLoading false', () => {
+      const live2d = useLive2D(canvasRef)
+      expect(live2d.isLoading.value).toBe(false)
+    })
+
+    it('starts with empty loadError', () => {
+      const live2d = useLive2D(canvasRef)
+      expect(live2d.loadError.value).toBe('')
+    })
+
+    it('starts with modelInfo null', () => {
+      const live2d = useLive2D(canvasRef)
+      expect(live2d.modelInfo.value).toBeNull()
+    })
+
+    it('starts with isDragging false', () => {
+      const live2d = useLive2D(canvasRef)
+      expect(live2d.isDragging.value).toBe(false)
+    })
+  })
+
+  describe('setMouthTarget', () => {
+    it('clamps value to 0-1 range', () => {
+      const live2d = useLive2D(canvasRef)
+      live2d.setMouthTarget(0.5)
+      // No direct assertion — setMouthTarget updates internal state
+      // It should not throw
+      expect(() => live2d.setMouthTarget(-1)).not.toThrow()
+      expect(() => live2d.setMouthTarget(2)).not.toThrow()
+    })
+
+    it('handles zero and one boundaries', () => {
+      const live2d = useLive2D(canvasRef)
+      expect(() => live2d.setMouthTarget(0)).not.toThrow()
+      expect(() => live2d.setMouthTarget(1)).not.toThrow()
+    })
+  })
+
+  describe('zoom', () => {
+    it('applies zoom with positive delta', () => {
+      const live2d = useLive2D(canvasRef)
+      // Should not throw when no model loaded
+      expect(() => live2d.zoom(0.1)).not.toThrow()
+    })
+
+    it('applies zoom with negative delta', () => {
+      const live2d = useLive2D(canvasRef)
+      expect(() => live2d.zoom(-0.1)).not.toThrow()
+    })
+
+    it('handles zero delta', () => {
+      const live2d = useLive2D(canvasRef)
+      expect(() => live2d.zoom(0)).not.toThrow()
+    })
+  })
+
+  describe('resetView', () => {
+    it('does not throw when no model loaded', () => {
+      const live2d = useLive2D(canvasRef)
+      expect(() => live2d.resetView()).not.toThrow()
+    })
+  })
+
+  describe('setScaleStrategy', () => {
+    it('does not throw with valid strategy', () => {
+      const live2d = useLive2D(canvasRef)
+      expect(() => live2d.setScaleStrategy('contain')).not.toThrow()
+      expect(() => live2d.setScaleStrategy('cover')).not.toThrow()
+      expect(() => live2d.setScaleStrategy('fit')).not.toThrow()
+    })
+
+    it('ignores invalid strategy', () => {
+      const live2d = useLive2D(canvasRef)
+      // Should not throw
+      expect(() => live2d.setScaleStrategy('invalid')).not.toThrow()
+    })
+  })
+
+  describe('focus', () => {
+    it('does not throw when no model loaded', () => {
+      const live2d = useLive2D(canvasRef)
+      expect(() => live2d.focus(100, 200)).not.toThrow()
+    })
+  })
+
+  describe('executeAction', () => {
+    it('handles expression action without model', () => {
+      const live2d = useLive2D(canvasRef)
+      expect(() => live2d.executeAction({ type: 'expression', name: 'happy' })).not.toThrow()
+    })
+
+    it('handles motion action without model', () => {
+      const live2d = useLive2D(canvasRef)
+      expect(() => live2d.executeAction({ type: 'motion', group: 'Idle', index: 0 })).not.toThrow()
+    })
+
+    it('handles param action without model', () => {
+      const live2d = useLive2D(canvasRef)
+      expect(() => live2d.executeAction({ type: 'param', name: 'ParamAngleX', value: 30 })).not.toThrow()
+    })
+
+    it('handles sequence action without model', () => {
+      const live2d = useLive2D(canvasRef)
+      expect(() =>
+        live2d.executeAction({
+          type: 'sequence',
+          actions: [
+            { type: 'expression', name: 'happy' },
+            { type: 'wait', ms: 100 },
+            { type: 'expression', name: 'idle' },
+          ],
+        } as any),
+      ).not.toThrow()
+    })
+  })
+
+  describe('destroy', () => {
+    it('can be called without error', () => {
+      const live2d = useLive2D(canvasRef)
+      expect(() => live2d.destroy()).not.toThrow()
+    })
+  })
+
+  describe('handleResize', () => {
+    it('does not throw when called with no init', () => {
+      const live2d = useLive2D(canvasRef)
+      expect(() => live2d.handleResize()).not.toThrow()
+    })
+  })
+
+  describe('startDrag / onDrag / stopDrag', () => {
+    it('does not throw when no model loaded', () => {
+      const live2d = useLive2D(canvasRef)
+      live2d.startDrag(100, 200)
+      live2d.onDrag(150, 250)
+      live2d.stopDrag()
+      expect(live2d.isDragging.value).toBe(false)
+    })
+  })
+
+  describe('stopAudio', () => {
+    it('does not throw when no audio playing', () => {
+      const live2d = useLive2D(canvasRef)
+      expect(() => live2d.stopAudio()).not.toThrow()
+    })
+  })
+
+  describe('MODEL_PATH', () => {
+    it('is a string pointing to a model3.json file', () => {
+      expect(MODEL_PATH).toContain('.model3.json')
+    })
+  })
+})

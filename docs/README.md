@@ -17,8 +17,8 @@ AI 虚拟伴侣/VTuber 框架。
 
 | 文档 | 描述 |
 |------|------|
-| [数据流](architecture/data-flow.md) | Pipeline + EventBus + Orchestrator |
-| [事件系统](architecture/event-system.md) | EventBus 实现（**面试重点**） |
+| [数据流](architecture/data-flow.md) | LangGraph 状态机 + 服务编排 |
+| [事件系统](architecture/event-system.md) | LangGraph 事件驱动（**面试重点**） |
 | [设计模式](architecture/patterns.md) | 6 种设计模式应用 |
 | [可扩展性](architecture/extensibility.md) | 插件化架构 |
 
@@ -40,13 +40,16 @@ AI 虚拟伴侣/VTuber 框架。
 
 ```
 src/anima/
-├── socketio_server.py    # 主入口
-├── config/               # 配置 (YAML + Pydantic)
-├── adapters/             # 通道适配器层
-├── services/             # ASR/TTS/LLM/VAD 服务
-├── pipeline/             # 责任链处理
-├── events/               # 事件驱动架构
-├── memory/               # 对话记忆
+├── core/                 # 入口点 + 服务容器
+├── orchestration/       # LangGraph 状态图 + WebSocket 服务器
+│   ├── graph/           # 7 个节点 + builder + orchestrator
+│   └── server/          # Socket.IO 路由 + 会话管理
+├── services/             # LLM / ASR / TTS / VAD 实现
+├── memory/               # Wiki 记忆架构 (Chroma + SQLite)
+├── config/               # Pydantic 配置 + 服务注册
+├── avatar/               # Live2D 表情/情绪分析
+├── tools/                # 工具调用 + MCP 桥接
+├── tracing/              # OpenTelemetry 可观测性
 └── utils/                # 工具函数
 ```
 
@@ -70,7 +73,7 @@ python scripts/stop.py
 ## 技术栈
 
 - **后端**: Python, FastAPI, Socket.IO
-- **前端**: Electron, vanilla JS/HTML/CSS
+- **前端**: Electron, Vue 3 + TypeScript + Vite
 - **LLM**: GLM, OpenAI, Ollama
 - **ASR**: FasterWhisper, GLM
 - **TTS**: Edge TTS, GLM

@@ -11,6 +11,8 @@ from openai import AsyncOpenAI
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, ToolMessage
 
 from .interface import LLMInterface
+from .stream_handler import OpenAIStreamHandler
+from .tool_handler import OpenAIToolHandler
 from anima.config.core.registry import ProviderRegistry
 from anima.config import OpenAILLMConfig, DeepSeekLLMConfig
 
@@ -65,6 +67,10 @@ class OpenAILLM(LLMInterface):
             client_kwargs["base_url"] = base_url
         
         self.client = AsyncOpenAI(**client_kwargs)
+        
+        # Initialize handler instances
+        self.stream_handler = OpenAIStreamHandler(self)
+        self.tool_handler = OpenAIToolHandler(self)
         
         logger.info(f"OpenAILLM initialized: model={model}, base_url={base_url or 'default'}")
 
@@ -186,62 +192,8 @@ class OpenAILLM(LLMInterface):
         Yields:
             str: Text chunk of the model response
         """
-        system_prompt = kwargs.get("system_prompt")
-        messages = self._build_messages(user_input, system_prompt=system_prompt)
-        
-        full_response = ""
-        t_start = time_module.perf_counter()
-        
-        try:
-            response = await self.client.chat.completions.create(
-                model=kwargs.get("model", self.model),
-                messages=messages,
-                temperature=kwargs.get("temperature", self.temperature),
-                max_tokens=kwargs.get("max_tokens", self.max_tokens),
-                stream=True,
-                stream_options={"include_usage": True},
-            )
-            
-            async for chunk in response:
-                if chunk.choices and chunk.choices[0].delta.content:
-                    content = chunk.choices[0].delta.content
-                    full_response += content
-                    yield content
-                # Final chunk may contain usage info
-                if hasattr(chunk, "usage") and chunk.usage:
-                    response._usage = chunk.usage
-            
-            # OTel metrics: record usage from stream
-            duration_s = time_module.perf_counter() - t_start
-            try:
-                # Try to get usage from response object or estimate from text
-                if hasattr(response, "_usage") and response._usage:
-                    input_tokens = getattr(response._usage, "prompt_tokens", 0)
-                    output_tokens = getattr(response._usage, "completion_tokens", 0)
-                else:
-                    # Fallback: rough estimate (4 chars ≈ 1 token)
-                    input_tokens = len(user_input) // 4
-                    output_tokens = len(full_response) // 4
-                # Use a synthetic response-like object for _record_usage
-                class _StreamUsage:
-                    pass
-                usage_obj = _StreamUsage()
-                usage_obj.usage = _StreamUsage()
-                usage_obj.usage.prompt_tokens = input_tokens
-                usage_obj.usage.completion_tokens = output_tokens
-                self._record_usage(usage_obj, duration_s)
-            except Exception:
-                pass
-            
-            # Update history
-            self.history.append({"role": "user", "content": user_input})
-            self.history.append({"role": "assistant", "content": full_response})
-            
-        except Exception as e:
-            duration_s = time_module.perf_counter() - t_start
-            self._record_error(duration_s)
-            logger.error(f"OpenAI streaming chat error: {e}")
-            raise
+        async for chunk in self.stream_handler.stream(user_input, **kwargs):
+            yield chunk
 
     def set_system_prompt(self, prompt: str) -> None:
         """Set the system prompt"""
@@ -365,92 +317,8 @@ class OpenAILLM(LLMInterface):
         logger.info(f"Attempting to restore memory from history: conf_uid={conf_uid}, history_uid={history_uid}")
 
     # ================================================================
-    # LangGraph tool calling interface
+    # LangGraph tool calling interface (delegated to OpenAIToolHandler)
     # ================================================================
-
-    def _convert_tools_to_openai(self, tools: List[Any]) -> List[Dict[str, Any]]:
-        """
-        Convert a list of LangChain tools to OpenAI API format
-
-        Args:
-            tools: List of LangChain BaseTool objects
-
-        Returns:
-            Tool list in OpenAI API format
-        """
-        openai_tools = []
-        for tool in tools:
-            parameters = {"type": "object", "properties": {}}
-            if hasattr(tool, 'args_schema') and tool.args_schema:
-                try:
-                    parameters = tool.args_schema.schema()
-                except Exception:
-                    parameters = {"type": "object", "properties": {}}
-
-            openai_tools.append({
-                "type": "function",
-                "function": {
-                    "name": tool.name,
-                    "description": tool.description,
-                    "parameters": parameters,
-                }
-            })
-        return openai_tools
-
-    def _build_langchain_messages(
-        self,
-        langchain_history: List[Any],
-        system_prompt: Optional[str],
-        user_input: str,
-    ) -> List[Dict[str, Any]]:
-        """
-        Build an OpenAI API message list from LangChain messages
-
-        Args:
-            langchain_history: LangChain message history
-            system_prompt: System prompt
-            user_input: User input
-
-        Returns:
-            Message list in OpenAI API format
-        """
-        messages = []
-
-        if system_prompt:
-            messages.append({"role": "system", "content": system_prompt})
-
-        for msg in langchain_history:
-            if isinstance(msg, SystemMessage):
-                messages.append({"role": "system", "content": msg.content})
-            elif isinstance(msg, HumanMessage):
-                messages.append({"role": "user", "content": msg.content})
-            elif isinstance(msg, AIMessage):
-                ai_msg = {"role": "assistant", "content": msg.content or ""}
-                if hasattr(msg, 'tool_calls') and msg.tool_calls:
-                    ai_msg["tool_calls"] = [
-                        {
-                            "id": tc.get("id", "") if isinstance(tc, dict) else getattr(tc, 'id', ''),
-                            "type": "function",
-                            "function": {
-                                "name": tc.get("name", "") if isinstance(tc, dict) else getattr(tc, 'name', ''),
-                                "arguments": json.dumps(
-                                    tc.get("args", {}) if isinstance(tc, dict) else getattr(tc, 'args', {}),
-                                    ensure_ascii=False,
-                                ),
-                            },
-                        }
-                        for tc in (msg.tool_calls if hasattr(msg, 'tool_calls') else [])
-                    ]
-                messages.append(ai_msg)
-            elif isinstance(msg, ToolMessage):
-                messages.append({
-                    "role": "tool",
-                    "tool_call_id": msg.tool_call_id,
-                    "content": msg.content,
-                })
-
-        messages.append({"role": "user", "content": user_input})
-        return messages
 
     async def chat_with_tools(
         self,
@@ -471,65 +339,9 @@ class OpenAILLM(LLMInterface):
         Returns:
             Dict: Response containing content and tool_calls
         """
-        openai_tools = self._convert_tools_to_openai(tools)
-        messages = self._build_langchain_messages(langchain_history, system_prompt, user_input)
-
-        logger.debug(f"[OpenAI] chat_with_tools: tools={len(openai_tools)}, input={user_input[:50]}")
-
-        t_start = time_module.perf_counter()
-        try:
-            response = await self.client.chat.completions.create(
-                model=self.model,
-                messages=messages,
-                tools=openai_tools if openai_tools else None,
-                tool_choice="auto" if openai_tools else None,
-                temperature=self.temperature,
-                max_tokens=self.max_tokens,
-                stream=False,
-            )
-
-            # OTel metrics: record token usage + cost + duration
-            duration_s = time_module.perf_counter() - t_start
-            self._record_usage(response, duration_s)
-
-            message = response.choices[0].message
-            content = message.content or ""
-
-            tool_calls = []
-            if hasattr(message, 'tool_calls') and message.tool_calls:
-                for tc in message.tool_calls:
-                    args = tc.function.arguments
-                    if isinstance(args, str):
-                        try:
-                            args = json.loads(args)
-                        except json.JSONDecodeError:
-                            args = {}
-
-                    tool_calls.append({
-                        "id": tc.id,
-                        "name": tc.function.name,
-                        "args": args,
-                    })
-
-                logger.info(f"[OpenAI] Tool calls: {[tc['name'] for tc in tool_calls]}")
-                return {
-                    "content": content or "Calling tool......",
-                    "tool_calls": tool_calls,
-                }
-
-            logger.debug(f"[OpenAI] Response: {content[:100]}...")
-
-            # Update conversation history
-            self.history.append({"role": "user", "content": user_input})
-            self.history.append({"role": "assistant", "content": content})
-
-            return {
-                "content": content,
-                "tool_calls": None,
-            }
-
-        except Exception as e:
-            duration_s = time_module.perf_counter() - t_start if 't_start' in dir() else 0
-            self._record_error(duration_s)
-            logger.error(f"[OpenAI] Tool call failed: {e}")
-            raise
+        return await self.tool_handler.chat_with_tools(
+            user_input=user_input,
+            tools=tools,
+            langchain_history=langchain_history,
+            system_prompt=system_prompt,
+        )

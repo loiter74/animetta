@@ -7,6 +7,8 @@ Decorators execute registration at module import time
 
 from .interface import LLMInterface
 from .factory import LLMFactory
+from .stream_handler import OpenAIStreamHandler
+from .tool_handler import OpenAIToolHandler
 
 # MockLLM has no external dependencies
 from .mock_llm import MockLLM
@@ -69,5 +71,7 @@ __all__ = [
     "OpenAILLM",
     "OllamaLLM",
     "LocalLoraLLM",
+    "OpenAIStreamHandler",
+    "OpenAIToolHandler",
     "get_llm_class",
 ]

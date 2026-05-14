@@ -11,6 +11,7 @@
 
 [![Test](https://github.com/loiter74/Anima-LLM-Vtuber/actions/workflows/test.yml/badge.svg)](https://github.com/loiter74/Anima-LLM-Vtuber/actions/workflows/test.yml)
 [![Docker](https://img.shields.io/badge/docker-ready-blue)](https://github.com/loiter74/Anima-LLM-Vtuber)
+[![Frontend](https://github.com/loiter74/Anima-LLM-Vtuber/actions/workflows/frontend.yml/badge.svg)](https://github.com/loiter74/Anima-LLM-Vtuber/actions/workflows/frontend.yml)
 ![Python](https://img.shields.io/badge/python-3.12%20|%203.13-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Tests](https://img.shields.io/badge/tests-81%20passing-brightgreen)

@@ -1,0 +1,57 @@
+import { describe, it, expect, vi } from 'vitest'
+import { mount } from '@vue/test-utils'
+import AppLayout from '@/components/layout/AppLayout.vue'
+
+// Mock useDanmaku to avoid socket initialization
+vi.mock('@/composables/useDanmaku', () => ({
+  useDanmaku: () => ({ store: {}, connect: vi.fn(), disconnect: vi.fn(), updateRoom: vi.fn() }),
+}))
+
+function createWrapper() {
+  return mount(AppLayout, {
+    global: {
+      stubs: {
+        Live2DRenderer: true,
+        SceneEffects: true,
+        InteractivePanel: true,
+      },
+    },
+  })
+}
+
+describe('AppLayout', () => {
+  it('renders Live2DRenderer stub', () => {
+    const wrapper = createWrapper()
+    const renderer = wrapper.findComponent({ name: 'Live2DRenderer' })
+    expect(renderer.exists()).toBe(true)
+  })
+
+  it('renders SceneEffects stub', () => {
+    const wrapper = createWrapper()
+    const effects = wrapper.findComponent({ name: 'SceneEffects' })
+    expect(effects.exists()).toBe(true)
+  })
+
+  it('renders InteractivePanel stub', () => {
+    const wrapper = createWrapper()
+    const panel = wrapper.findComponent({ name: 'InteractivePanel' })
+    expect(panel.exists()).toBe(true)
+  })
+
+  it('has Live2DRenderer visible by default (not popout)', () => {
+    const wrapper = createWrapper()
+    const rendererDiv = wrapper.find('.z-0')
+    expect(rendererDiv.exists()).toBe(true)
+  })
+
+  it('passes live2dPopout prop to InteractivePanel', () => {
+    const wrapper = createWrapper()
+    const panel = wrapper.findComponent({ name: 'InteractivePanel' })
+    expect(panel.props('live2dPopout')).toBe(false)
+  })
+
+  it('renders without errors', () => {
+    const wrapper = createWrapper()
+    expect(wrapper.exists()).toBe(true)
+  })
+})
