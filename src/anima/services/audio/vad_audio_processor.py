@@ -10,7 +10,7 @@ from typing import List, Optional, Any, Callable, Dict
 from loguru import logger
 
 from .processor import AudioProcessorInterface
-from ..intelligence.vad import VADInterface
+from ..intelligence.vad import VADInterface, VADState
 
 
 class VADAudioProcessor(AudioProcessorInterface):
@@ -102,9 +102,9 @@ class VADAudioProcessor(AudioProcessorInterface):
             current_time = time.time()
 
             # Handle VAD state
-            if result.state.value == 'ACTIVE':
+            if result.state == VADState.ACTIVE:
                 self._handle_vad_active(current_time, audio_data)
-            elif result.state.value == 'IDLE':
+            elif result.state == VADState.IDLE:
                 self._handle_vad_idle(current_time)
 
             # Handle VAD events
@@ -116,7 +116,7 @@ class VADAudioProcessor(AudioProcessorInterface):
             
             # Force timeout check: regardless of VAD state, end if exceeds max duration
             if self._is_speaking and self._first_audio_time:
-                audio_duration = current_time - self._first_audio_time
+                audio_duration = time.time() - self._first_audio_time
                 if audio_duration > self._max_audio_duration:
                     logger.warning(f"[{self.session_id}] Force timeout ({audio_duration:.1f}s), ending speech")
                     await self._handle_speech_end()
@@ -164,7 +164,6 @@ class VADAudioProcessor(AudioProcessorInterface):
             self._first_audio_time = current_time
 
         self._vad_chunk_count += 1
-        self._is_speaking = True
         self._last_speech_time = current_time
 
         # Accumulate audio data

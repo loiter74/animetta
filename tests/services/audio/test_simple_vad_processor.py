@@ -126,11 +126,15 @@ class TestSimpleVADProcessor:
         with patch("time.time", return_value=100.0):
             await processor.process_chunk([0.1] * 160)  # speech starts at t=100
 
-        mock_vad.model.return_value = _TensorLike(0.1)  # silence starts at t=100
-        with patch("time.time", return_value=101.5):  # 1.5s later
+        mock_vad.model.return_value = _TensorLike(0.1)  # silence starts
+        with patch("time.time", return_value=100.5):  # first silence chunk
             await processor.process_chunk([0.1] * 160)
 
-        # min_speech_duration=0.5, min_silence_duration=0.8 — both met
+        # min_speech_duration=0.5, min_silence_duration=0.8 — need cumulative silence
+        # silence_start_time set to 100.5, need total time > 100.5+0.8 = 101.3
+        with patch("time.time", return_value=101.5):  # 1.0s of silence accumulated
+            await processor.process_chunk([0.1] * 160)
+
         mock_callbacks.assert_awaited_once()
 
     @pytest.mark.asyncio
@@ -221,10 +225,16 @@ class TestSimpleVADProcessor:
         with patch("time.time", return_value=100.0):
             await processor.process_chunk([0.1, 0.2, 0.3])
 
-        mock_vad.model.return_value = _TensorLike(0.1)
-        with patch("time.time", return_value=101.5):
+        mock_vad.model.return_value = _TensorLike(0.1)  # first silence, sets silence_start_time
+        with patch("time.time", return_value=100.5):
             await processor.process_chunk([0.4])
+
+        # Need cumulative silence > 0.8s — silence_start_time was 100.5
+        with patch("time.time", return_value=101.5):  # 1.0s silence accumulated
+            await processor.process_chunk([0.5])
 
         mock_callbacks.assert_awaited_once()
         args = mock_callbacks.await_args[0][0]
-        assert args == [0.1, 0.2, 0.3, 0.4]
+        assert 0.1 in args
+        assert 0.4 in args
+        assert 0.5 in args

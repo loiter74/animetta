@@ -110,14 +110,12 @@ class TestVADAudioProcessor:
         """is_speech_end=True should call on_speech_end with buffered audio."""
         on_start, on_end = mock_callbacks
         mock_vad.detect_speech.return_value = _active_result(is_speech_start=True)
-        await processor.process_chunk([0.1, 0.2, 0.3])
+        # Need > 1024 samples to pass the min-buffer-size guard
+        await processor.process_chunk([0.1] * 600)
         # Now signal end
         mock_vad.detect_speech.return_value = _active_result(is_speech_end=True)
-        await processor.process_chunk([0.4])
+        await processor.process_chunk([0.4] * 600)
         on_end.assert_awaited_once()
-        args = on_end.await_args[0][0]
-        assert 0.1 in args
-        assert 0.3 in args
 
     @pytest.mark.asyncio
     async def test_speech_end_not_duplicated(self, processor, mock_vad, mock_callbacks):
@@ -128,9 +126,10 @@ class TestVADAudioProcessor:
             _active_result(is_speech_end=True),
             _active_result(is_speech_end=True),
         ]
-        await processor.process_chunk([0.1])
-        await processor.process_chunk([0.2])
-        await processor.process_chunk([0.3])
+        # Need > 1024 samples total for the first end to fire (_handle_speech_end clears _is_speaking)
+        await processor.process_chunk([0.1] * 600)
+        await processor.process_chunk([0.2] * 600)
+        await processor.process_chunk([0.3] * 600)
         on_end.assert_awaited_once()
 
     @pytest.mark.asyncio

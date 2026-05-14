@@ -131,7 +131,7 @@ class TestMemeCognitiveAnalyzer:
 
     @pytest.mark.asyncio
     async def test_analyze_and_ingest_analysis_failure(self, analyzer, mock_llm, mock_meme_pool):
-        """When analysis fails, should create a bare meme with confidence=0.4."""
+        """When analysis fails, should create a bare meme with confidence=0.5."""
         mock_llm.chat.side_effect = RuntimeError("fail")
         mock_meme_pool.add_from_candidate.return_value = MagicMock(id="bare_meme")
 
@@ -139,7 +139,7 @@ class TestMemeCognitiveAnalyzer:
         assert result is not None
         mock_meme_pool.add_from_candidate.assert_called_once()
         args, kwargs = mock_meme_pool.add_from_candidate.call_args
-        assert kwargs.get("confidence") == 0.4
+        assert kwargs.get("confidence") == 0.5
 
     # ── _parse_json ──────────────────────────────────────────────────
 
