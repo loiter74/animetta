@@ -69,6 +69,9 @@ opencc-python-reimplemented>=0.1.7
 # Stats storage (Pipeline stats dashboard)
 aiosqlite>=0.20.0
 
+# HTTP client (Notifier webhook delivery)
+httpx>=0.27.0
+
 # JWT - 兼容 zhipuai 和 mcp 的版本
 # 注意：zhipuai 声称需要 <2.9.0，但实际测试 2.10.x 可正常工作
 pyjwt>=2.10.0

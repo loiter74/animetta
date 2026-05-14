@@ -154,6 +154,25 @@ def get_asgi_app():
         if global_config is None:
             init_config()
 
+        # ── Initialize OpenTelemetry tracing + metrics pipeline ──
+        try:
+            from anima.tracing import init_tracing
+            init_tracing()
+            logger.info("[Tracing] OTel pipeline initialized")
+        except Exception as e:
+            logger.warning(f"[Tracing] OTel init failed (non-fatal): {e}")
+
+        # ── File logging for Loki ingestion ─────────────────────
+        logs_dir = Path(__file__).parent.parent.parent.parent / "logs"
+        logs_dir.mkdir(parents=True, exist_ok=True)
+        logger.add(
+            str(logs_dir / "anima.log"),
+            rotation="10 MB",
+            retention="7 days",
+            level="INFO",
+            format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {name}:{function}:{line} - {message}",
+        )
+
         # ── Redis checkpoint setup ──────────────────────────────
         _setup_checkpointer()
 

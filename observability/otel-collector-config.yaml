@@ -1,6 +1,6 @@
 # ── OpenTelemetry Collector Configuration ──
 # Receives OTLP data from Anima backend, exports traces to Tempo,
-# and exposes Prometheus metrics endpoint for scraping.
+# metrics to Prometheus, and logs to Loki via filelog receiver.
 
 receivers:
   otlp:
@@ -9,6 +9,13 @@ receivers:
         endpoint: 0.0.0.0:4317
       http:
         endpoint: 0.0.0.0:4318
+  filelog:
+    include: [/logs/anima.log]
+    start_at: beginning
+    include_file_name: false
+    operators:
+      - type: regex_parser
+        regex: '^(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) \| (?P<level>\S+)\s*\| (?P<logger>\S+):(?P<message>.*)'
 
 processors:
   batch:
@@ -17,6 +24,11 @@ processors:
   memory_limiter:
     check_interval: 1s
     limit_mib: 512
+  attributes/loki:
+    actions:
+      - key: app
+        value: anima
+        action: upsert
 
 exporters:
   # Prometheus endpoint for metrics scraping
@@ -29,6 +41,10 @@ exporters:
     endpoint: "tempo:4317"
     tls:
       insecure: true
+
+  # Loki log exporter
+  loki:
+    endpoint: "http://loki:3100/loki/api/v1/push"
 
   # Debug exporter (disable in production)
   debug:
@@ -44,3 +60,7 @@ service:
       receivers: [otlp]
       processors: [memory_limiter, batch]
       exporters: [prometheus, debug]
+    logs:
+      receivers: [filelog]
+      processors: [batch, attributes/loki]
+      exporters: [loki, debug]

@@ -24,11 +24,13 @@
 - [[2026 05 10]] `(sources/2026-05-10.md)`
 - [[2026 05 12]] `(sources/2026-05-12.md)`
 - [[2026 05 13]] `(sources/2026-05-13.md)`
+- [[2026 05 14]] `(sources/2026-05-14.md)`
 
 ## Synthesis
 
 - [[2026 04 08 user profile]] `(synthesis/2026-04-08-user-profile.md)`
 - [[2026 04 08]] `(synthesis/2026-04-08.md)`
+- [[auto facts 20260513 191558 d4e9d8]] `(synthesis/auto-facts-20260513-191558-d4e9d8.md)`
 - [[legacy memory]] `(synthesis/legacy-memory.md)`
 - [[recurring input patterns]] `(synthesis/recurring-input-patterns.md)`
 - [[repeated intro requests]] `(synthesis/repeated-intro-requests.md)`

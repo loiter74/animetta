@@ -83,7 +83,7 @@ async def _retrieve_memory_context(
                 counts.append(f"fuzzy={metadata['fuzzy_count']}")
             if counts:
                 logger.info(f"[{session_id}] [LLMNode] Middleware tier={injection_tier}: {', '.join(counts)}")
-        return enriched
+        return enriched, metadata or {}
     except Exception as e:
         logger.warning(f"[{session_id}] [LLMNode] MemoryMiddleware retrieval failed: {e}")
         return ""
@@ -187,27 +187,33 @@ async def llm_node(
     # RAG + Profile: retrieve via MemoryMiddleware (tiered) — once before branching
     injection_tier = state.get("injection_tier", 1)
     t_rag = time_module.perf_counter()
-    memory_context = await _retrieve_memory_context(
+    retrieval_result = await _retrieve_memory_context(
         session_id=session_id,
         query=user_text,
         config=config,
         max_turns=5,
         injection_tier=injection_tier,
     )
+    memory_context, rag_metadata = retrieval_result if isinstance(retrieval_result, tuple) else (retrieval_result, {})
     rag_duration = (time_module.perf_counter() - t_rag) * 1000
     log_timing(state, "llm.rag_retrieval", rag_duration, f"query='{user_text[:50]}'")
 
-    # OTel metrics: RAG retrieval duration + chunk count
+    # OTel metrics: RAG retrieval duration + chunk count + top score
     try:
-        from anima.tracing.metrics import get_rag_duration, get_rag_chunks
+        from anima.tracing.metrics import get_rag_duration, get_rag_chunks, get_rag_top_score
         rd = get_rag_duration()
         if rd is not None:
             rd.observe(rag_duration / 1000.0, {"strategy": "hybrid"})
         rc = get_rag_chunks()
         if rc is not None:
-            chunk_count = metadata.get("memory_count", 0) if metadata else 0
+            chunk_count = rag_metadata.get("memory_count", rag_metadata.get("fuzzy_count", 0))
             if chunk_count > 0:
                 rc.record(chunk_count, {"strategy": "hybrid"})
+        rts = get_rag_top_score()
+        if rts is not None:
+            top_score = rag_metadata.get("top_score", 0.0)
+            if top_score > 0:
+                rts.record(top_score, {"strategy": "hybrid"})
     except Exception:
         pass
 

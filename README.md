@@ -281,12 +281,12 @@ frontend/                   # Vue 3 + TypeScript + Electron (UnoCSS, Pinia)
 
 ## 🔭 可观测性 | Observability
 
-Anima 集成了完整的本地化可观测性栈：**OpenTelemetry Collector + Prometheus + Grafana Tempo + Grafana**，一次对话的全链路 trace、业务指标 dashboard、成本追踪、异常告警一站到位。
+Anima 集成了完整的本地化可观测性栈：**OTel Collector + Prometheus + Tempo + Loki + Grafana + Notifier**，全链路 trace、业务指标、日志聚合、成本追踪、多渠道告警一站到位。
 
 ### 启动可观测性栈
 
 ```bash
-# 一键启动所有组件 (首次启动需拉取镜像，约 2 分钟)
+# 一键启动所有组件 (首次拉取镜像约 2 分钟)
 docker-compose -f observability/docker-compose.yml up -d
 ```
 
@@ -294,10 +294,14 @@ docker-compose -f observability/docker-compose.yml up -d
 
 | 服务 | 端口 | 用途 | 默认账号 |
 |------|------|------|----------|
-| **Grafana** | `3000` | Dashboard + Trace 查看 | `admin` / `admin` |
-| **Prometheus** | `9090` | 指标查询 + 告警 | — |
-| **Tempo** | `3200` | 分布式追踪存储 | — |
+| **前端 Vite** | `5173` | Vue 3 桌面应用开发服务器 | — |
+| **后端 API** | `12394` | FastAPI + Socket.IO 后端 | — |
+| **Grafana** | `3000` | Dashboard + Trace + Logs 查看 | `admin` / `admin` |
+| **Prometheus** | `9090` | 指标查询 + 告警规则 | — |
+| **Tempo** | `3200` | 分布式追踪 (trace) 存储 | — |
+| **Loki** | `3100` | 日志聚合 (logs) 存储 | — |
 | **OTel Collector** | `4317` (gRPC) / `4318` (HTTP) | 遥测数据入口 | — |
+| **Notifier** | `9094` | 告警通知中继 (Discord/飞书/邮件) | — |
 
 ### Dashboard 概览
 
@@ -314,13 +318,22 @@ docker-compose -f observability/docker-compose.yml up -d
 
 在 Grafana → Explore → 选择 **Tempo** datasource → Search，可查看每次对话的完整 trace（含 LangGraph 7 节点 span + LLM/ASR/TTS 服务调用 span）。
 
+### 日志查看
+
+在 Grafana → Explore → 选择 **Loki** datasource，可查看应用日志（loguru 格式）。后端启动时自动输出日志到 `logs/anima.log`，由 OTel Collector 的 filelog receiver 采集。
+
 ### 告警
 
-5 条预置 Prometheus 告警规则（高错误率、高延迟、月度成本预警/严重、服务宕机）。配置 Discord/Slack webhook 即可接收通知：
+5 条预置 Prometheus 告警规则（高错误率、高延迟、月度成本预警/严重、服务宕机）。告警通过 Notifier 中继推送到 Discord / 飞书 / 邮件：
 
 ```bash
-# 在 .env 中设置
-ALERT_WEBHOOK_URL=https://discord.com/api/webhooks/xxx/yyy
+# 1. 创建 .env.notifier 或从 .env.example 复制
+cp .env.example .env.notifier
+
+# 2. 编辑 .env.notifier，填写至少一个渠道的 webhook URL
+NOTIFIER_DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/xxx/yyy
+NOTIFIER_FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/xxx
+NOTIFIER_EMAIL_TO=admin@example.com
 ```
 
 ---

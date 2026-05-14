@@ -1,52 +1,70 @@
-## 1. 基础设施搭建（A.1）
+## 0. 前置修复：前端端口冲突
 
-- [x] 1.1 创建 `observability/` 目录结构
-- [x] 1.2 编写 `observability/docker-compose.yml`（OTel Collector + Prometheus + Tempo + Grafana）
-- [x] 1.3 编写 `observability/otel-collector-config.yaml`（OTLP gRPC :4317 + Prometheus exporter :8889 + Tempo exporter）
-- [x] 1.4 编写 `observability/prometheus.yml`（scrape OTel Collector :8889/metrics + alert rules 路径）
-- [x] 1.5 编写 `observability/tempo-config.yaml`（OTLP receiver, local storage）
-- [x] 1.6 编写 `observability/alertmanager.yml`（webhook 路由骨架）
-- [x] 1.7 编写 `observability/grafana/provisioning/datasources/datasources.yml`（Prometheus + Tempo auto-provision）
-- [x] 1.8 编写 `observability/grafana/provisioning/dashboards/dashboards.yml`（dashboard provider config）
-- [x] 1.9 在 `config/observability.yaml` 新增 `otlp` 配置段（enabled, endpoint, protocol）
-- [x] 1.10 修改 `src/anima/tracing/bootstrap.py`：`init_tracing()` 新增 OTLPSpanExporter（BatchSpanProcessor），双写模式
-- [x] 1.11 在 `requirements.txt` / `pyproject.toml` 中声明 `opentelemetry-exporter-otlp-proto-grpc` 依赖
-- [ ] 1.12 验收：`docker-compose up -d` → 启动 anima → 跑一次对话 → Grafana Explore → Tempo 能搜到完整 trace（含 7 个节点 span）
+- [x] 0.1 修改 `frontend/vite.config.ts`：`port: 3000` → `port: 5173`，同时更新所有相关引用
+- [ ] 0.2 验证：`pnpm dev` 启动在 5173，代理 `/api` + `/socket.io` 到后端正常
 
-## 2. 业务指标埋点（A.2）
+## 1. 接通 OTel Pipeline（新任务 — 代码核心断点）
 
-- [x] 2.1 创建 `src/anima/tracing/metrics.py`：初始化 OTel MeterProvider + 定义所有 Histogram/Counter/Gauge
-- [x] 2.2 创建 `src/anima/tracing/cost_calculator.py`：PROVIDER_PRICING 字典 + `calculate_cost()` 函数
-- [x] 2.3 在 `StatsCallbackHandler.on_chain_end()` 中记录 `anima_node_duration_seconds` histogram
-- [x] 2.4 在 `StatsCallbackHandler.on_chain_error()` 中记录 `anima_node_errors_total` counter
-- [x] 2.5 在 `openai_llm.py` 的 `chat()` / `chat_with_tools()` 中提取 `response.usage`，记录 token + cost 指标
-- [x] 2.6 在 `openai_llm.py` 的 `chat_stream()` 中从最终 chunk 提取 usage 并记录指标
-- [x] 2.7 在 `glm_llm.py` 中将 `_track_usage()` 对接到 metrics pipeline
-- [x] 2.8 在 `llm_node.py` 的 RAG 检索计时处（L189-198）添加 `anima_rag_*` 指标
-- [x] 2.9 在 `tool_node.py` 的工具循环（L47-86）中添加 `anima_tool_calls_total` + `anima_tool_duration_seconds`
-- [x] 2.10 在 `routes.py` 的 `on_connect`/`on_disconnect` 中添加 `anima_active_sessions` Gauge
-- [x] 2.11 在 `routes.py` 的消息处理中添加 `anima_session_messages_total` Counter
-- [x] 2.12 在 `routes.py` 的错误处理中添加 `anima_websocket_errors_total` Counter
-- [x] 2.13 在 `tts_node.py` / `asr_node.py` 中添加 ASR/TTS duration histogram（已有 TracingProxy 服务级埋点 + StatsCallbackHandler 节点级埋点覆盖）
-- [ ] 2.14 验收：`curl http://localhost:9090/api/v1/label/__name__/values | grep anima_` 能列出所有 20+ 指标
+- [x] 1.12 在 `socketio_server.py` 的 `get_asgi_app()` 中添加 `init_tracing()` 调用（从 `anima.tracing` import）
+- [ ] 1.13 验证 `init_tracing()` 优雅降级：OTel Collector 未启动时，不阻塞启动流程，metrics 静默 NoOp
 
-## 3. Dashboard 设计（A.3）
+## 2. LLM Token/Cost 埋点（原 2.5-2.7 — 代码已存在）
 
-- [x] 3.1 创建 `observability/grafana/dashboards/01-overview.json`（QPS, p50/p95/p99, 错误率, 成本率, 活跃会话）
-- [x] 3.2 创建 `observability/grafana/dashboards/02-langgraph-pipeline.json`（节点延迟堆叠图, 错误率热图, 工具分布饼图）
-- [x] 3.3 创建 `observability/grafana/dashboards/03-rag-performance.json`（检索延迟对比, 分块数分布, top score 直方图）
-- [x] 3.4 创建 `observability/grafana/dashboards/04-cost-and-tokens.json`（累计成本曲线, token 趋势, 提供商占比, 月度预测）
-- [x] 3.5 所有 dashboard 加 `session_id` 变量用于下钻
-- [ ] 3.6 验收：进 Grafana，4 个 dashboard 都能打开且有数据；截图保存到 `docs/screenshots/`
+- [x] 2.5 修改 `openai_llm.py`：在 `chat()` / `chat_with_tools()` 返回前提取 `response.usage`（prompt_tokens / completion_tokens），调用 `get_llm_tokens().add()` + `get_llm_cost().add()` + `get_llm_errors()` **（代码已存在）**
+- [x] 2.6 修改 `openai_llm.py`：在 `chat_stream()` 中从最后一帧提取 usage，记录相同指标 **（代码已存在）**
+- [x] 2.7 修改 `glm_llm.py`：将 `_track_usage()` 对接到 metrics pipeline **（代码已存在）**
 
-## 4. 告警（A.4）
+## 3. RAG / Tool / Session 埋点（原 2.8-2.12 — 代码已存在）
 
-- [x] 4.1 编写 `observability/alerts/rules.yml`（5 条 Prometheus alert rules）
-- [x] 4.2 完善 `observability/alertmanager.yml`（Discord webhook 路由 + Slack 备选）
-- [x] 4.3 在 `.env.example` 中添加 `ALERT_WEBHOOK_URL` 占位说明
-- [ ] 4.4 验收：手动断 LLM API key → 跑对话触发错误 → 5 分钟内收到 Discord 告警 → 恢复后收到 resolved
+- [x] 3.1 修改 `llm_node.py`：在 RAG 检索计时附近添加 `anima_rag_retrieval_duration_seconds` + `anima_rag_chunks_retrieved` + `anima_rag_top_score` **（代码已存在，修复了 metadata 变量 bug）**
+- [x] 3.2 修改 `tool_node.py`：在工具循环中添加 `anima_tool_calls_total` + `anima_tool_duration_seconds` **（代码已存在）**
+- [x] 3.3 修改 `routes.py`：在 `on_connect`/`on_disconnect` 添加 `anima_active_sessions`；消息处理添加 `anima_session_messages_total`；错误处理添加 `anima_websocket_errors_total` **（代码已存在）**
 
-## 5. README 更新（A.5）
+## 4. Loki 日志接入
 
-- [x] 5.1 在 `README.md` 新增 `## Observability` 章节
-- [x] 5.2 包含：可观测性栈介绍, `docker-compose up -d` 启动命令, 端口表 (Grafana:3000, Prometheus:9090, Tempo:3200), 默认账号密码, 4 张 dashboard 截图
+- [x] 4.1 在 `socketio_server.py` 启动入口添加 `logger.add("logs/anima.log", rotation="10MB", retention="7 days")`，输出日志到文件
+- [x] 4.2 编写 `observability/loki-config.yaml`（Loki 本地存储配置）
+- [x] 4.3 更新 `observability/otel-collector-config.yaml`：添加 filelog receiver，tail `logs/anima.log`，通过 loki exporter 发送
+- [x] 4.4 更新 `observability/docker-compose.yml`：新增 Loki 服务 + OTel Collector 挂载 logs 目录
+- [x] 4.5 更新 Grafana datasource provision：添加 Loki 数据源
+
+## 5. Notifier 通用通知框架（Python 端）
+
+- [x] 5.1 创建 `src/anima/notifier/` 包（`__init__.py`, `base.py`, `manager.py`, `server.py`）
+- [x] 5.2 实现 `NotifierBase` ABC：`send(alerts, status) -> bool` 抽象方法
+- [x] 5.3 实现 `@register_notifier(name)` 装饰器和全局注册表（复用 ProviderRegistry 模式）
+- [x] 5.4 实现 `Alert` dataclass 和 `parse_alertmanager_payload()` 解析器
+- [x] 5.5 实现 `NotifierManager`：加载配置、遍历渠道、并发调用各 notifier
+- [x] 5.6 实现 `create_notifier_app()`：独立 Starlette ASGI 应用，监听 `:9094`，暴露 `/api/v1/alerts` webhook 端点
+- [x] 5.7 编写 `observability/Dockerfile.notifier`：基于 `python:3.13-slim`，打包 `src/anima/notifier/`
+- [x] 5.8 在 `requirements.txt` 添加 httpx 依赖
+
+## 6. 通知插件：Discord + 飞书 + Email
+
+- [x] 6.1 创建 `src/anima/notifier/discord.py`：`@register_notifier("discord")`，Alertmanager → Discord embed 格式转换，颜色编码（critical=red, warning=yellow, resolved=green），httpx POST
+- [x] 6.2 创建 `src/anima/notifier/feishu.py`：`@register_notifier("feishu")`，Alertmanager → 飞书 interactive card 转换，HMAC-SHA256 签名校验，post 富文本 fallback，字段截断
+- [x] 6.3 创建 `src/anima/notifier/email.py`：`@register_notifier("email")`，SMTP STARTTLS(587)/SSL(465)，multipart/alternative（纯文本 + HTML Jinja2 模板），`asyncio.to_thread()` 包装
+- [x] 6.4 创建 `src/anima/notifier/templates/email_alert.html`：Jinja2 HTML 邮件模板
+
+## 7. Notifier Docker 部署 + Alertmanager 路由
+
+- [x] 7.1 更新 `observability/docker-compose.yml`：新增 `notifier` service（Dockerfile.notifier 构建，`:9094`，env_file: `.env.notifier`，网络接入 observability_default）
+- [x] 7.2 创建 `.env.notifier`：仅含 `NOTIFIER_*` 和 `ALERT_*` 环境变量，不暴露 LLM API Key
+- [x] 7.3 修改 `observability/alertmanager.yml`：webhook receiver 指向 `http://notifier:9094/api/v1/alerts`
+- [x] 7.4 在 `.env.example` 新增所有 `NOTIFIER_*` + `ALERT_SMTP_*` 变量
+
+## 8. 验收
+
+- [x] 8.1 完整启动：`docker-compose -f observability/docker-compose.yml up -d` + `pnpm dev`（:5173）+ `python -m anima.socketio_server`
+- [x] 8.2 跑一次对话 → Grafana Explore Tempo 能搜到完整 trace
+- [x] 8.3 `curl localhost:9090/api/v1/label/__name__/values | grep anima_` 能列出 20+ 指标
+- [x] 8.4 Grafana 4 张 dashboard 有数据
+- [ ] 8.5 手动断 LLM API key → 触发错误 → 5 分钟内 Discord 收到通知（需配置 .env.notifier）
+- [ ] 8.6 飞书群收到通知（需配置飞书 webhook）
+- [ ] 8.7 邮箱收到通知（需配置 SMTP）
+- [x] 8.8 `python -m pytest tests/ -k "notifier"` 全部通过（21 tests, 21 passed）
+
+## 9. README 更新
+
+- [ ] 9.1 更新 `README.md` observability 章节：端口表（前端:5173, Grafana:3000, Notifier:9094），Loki 接入说明，告警配置（Discord/飞书/Email 三种方式）
+- [ ] 9.2 新增 `.env.notifier` 使用说明

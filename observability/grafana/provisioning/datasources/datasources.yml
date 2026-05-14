@@ -23,3 +23,11 @@ datasources:
         datasourceUid: ""
         spanStartTimeShift: "-5m"
         spanEndTimeShift: "5m"
+
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    editable: false
+    jsonData:
+      maxLines: 1000

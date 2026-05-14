@@ -1,0 +1,15 @@
+FROM python:3.12-slim-bookworm
+
+WORKDIR /app
+
+# Install dependencies
+RUN pip install --no-cache-dir httpx jinja2 starlette uvicorn loguru pyyaml
+
+# Copy notifier package
+COPY src/anima/notifier/ /app/anima/notifier/
+
+# Expose port
+EXPOSE 9094
+
+# Run standalone ASGI app
+CMD ["uvicorn", "anima.notifier.server:create_notifier_app", "--factory", "--host", "0.0.0.0", "--port", "9094"]

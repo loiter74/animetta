@@ -1,17 +1,16 @@
-version: "3.8"
-
 # ── Anima Observability Stack ──
 # 启动: docker-compose -f observability/docker-compose.yml up -d
-# 组件: OTel Collector | Prometheus | Tempo | Grafana
+# 组件: OTel Collector | Prometheus | Tempo | Grafana | Alertmanager | Loki | Notifier
 
 services:
   # ── OpenTelemetry Collector ──
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.123.0
+    image: otel/opentelemetry-collector-contrib:0.119.0
     container_name: anima-otel-collector
     command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
+      - ../logs:/logs:ro  # Host loguru log files → Loki
     ports:
       - "4317:4317"   # OTLP gRPC
       - "4318:4318"   # OTLP HTTP
@@ -21,7 +20,7 @@ services:
 
   # ── Prometheus ──
   prometheus:
-    image: prom/prometheus:v3.3.0
+    image: prom/prometheus:v2.55.0
     container_name: anima-prometheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
@@ -39,7 +38,7 @@ services:
 
   # ── Grafana Tempo (Trace Backend) ──
   tempo:
-    image: grafana/tempo:2.7.3
+    image: grafana/tempo:2.6.1
     container_name: anima-tempo
     command: ["-config.file=/etc/tempo-config.yaml"]
     volumes:
@@ -50,9 +49,22 @@ services:
     networks:
       - anima-obs
 
+  # ── Loki (Log Backend) ──
+  loki:
+    image: grafana/loki:3.2.0
+    container_name: anima-loki
+    command: ["-config.file=/etc/loki/config.yaml"]
+    volumes:
+      - ./loki-config.yaml:/etc/loki/config.yaml:ro
+      - loki_data:/loki
+    ports:
+      - "3100:3100"
+    networks:
+      - anima-obs
+
   # ── Grafana ──
   grafana:
-    image: grafana/grafana:11.6.0
+    image: grafana/grafana:11.5.0
     container_name: anima-grafana
     environment:
       - GF_SECURITY_ADMIN_USER=admin
@@ -70,6 +82,33 @@ services:
     depends_on:
       - prometheus
       - tempo
+      - loki
+
+  # ── Alertmanager ──
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: anima-alertmanager
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    ports:
+      - "9093:9093"
+    networks:
+      - anima-obs
+
+  # ── Notifier (告警通知中继) ──
+  notifier:
+    build:
+      context: ../
+      dockerfile: observability/Dockerfile.notifier
+    container_name: anima-notifier
+    env_file:
+      - ../.env.notifier
+    ports:
+      - "9094:9094"
+    networks:
+      - anima-obs
 
 networks:
   anima-obs:
@@ -79,3 +118,4 @@ volumes:
   prometheus_data:
   tempo_data:
   grafana_data:
+  loki_data:

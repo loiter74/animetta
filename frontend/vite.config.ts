@@ -6,7 +6,7 @@ import unocss from 'unocss/vite'
 export default defineConfig({
   root: resolve(__dirname),
   server: {
-    port: 3000,
+    port: 5173,
     strictPort: true,
     proxy: {
       '/socket.io': {

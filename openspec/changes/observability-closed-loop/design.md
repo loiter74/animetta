@@ -10,13 +10,13 @@ Anima v2.0 基于 LangGraph 状态机，后端 FastAPI + Socket.IO。已有 Open
 - 一次对话的全链路 trace 能在 Grafana Tempo 中可视化（7 个 LangGraph 节点 span + 服务调用 span）
 - 20+ 核心业务指标通过 OTel Metrics API 埋点，经 OTel Collector → Prometheus 可查询
 - 4 张 Grafana dashboard 覆盖概览、Pipeline、RAG、成本
-- 5 条关键告警通过 Discord/Slack webhook 通知
+- 5 条关键告警通过 Discord / Email 通知
+- Loki 日志聚合，接入 loguru 日志到 Grafana
 - 一键启动：`docker-compose -f observability/docker-compose.yml up -d`
 
 **Non-Goals:**
 - 不引入 Datadog / Honeycomb / NewRelic 等 SaaS
 - 不重写已有 OTel SDK 埋点（TracingProxy、StatsSpanExporter 保留）
-- 不做日志聚合（loguru 已够用，不上 Loki）
 - 不做用户行为分析
 - 不在本 PR 中突击补测试覆盖率（保持与现有 ~21% 一致）
 
@@ -60,29 +60,91 @@ Anima v2.0 基于 LangGraph 状态机，后端 FastAPI + Socket.IO。已有 Open
 
 **理由**：最小侵入——计时代码已存在，只需加一行 `histogram.record()` 和 `counter.add()`。
 
-### 6. 基础设施：OTel Collector 兼作 Prometheus 指标端点
+### 6. 基础设施：OTel Collector 三路输出
 
-**选择**：OTel Collector 配置 `prometheus` exporter 在 `:8889` 暴露指标，Prometheus scrape 该端点。Tempo 接收 OTLP trace。Grafana 自动 provision Prometheus + Tempo 两个 datasource。
+**选择**：OTel Collector 配置 `prometheus` exporter 在 `:8889` 暴露指标，Prometheus scrape 该端点。Tempo 接收 OTLP trace + metrics。Loki 通过 Promtail 采集 loguru 日志文件。Grafana 自动 provision Prometheus + Tempo + Loki 三个 datasource。
 
 ```
-Anima Backend ──OTLP(grpc:4317)──▶ OTel Collector ──┬──▶ Tempo (traces)
+Anima Backend ──OTLP(grpc:4317)──▶ OTel Collector ──┬──▶ Tempo (traces + metrics)
                                      │                    │
                                      ├──▶ Prometheus :8889/metrics
                                      │        │
-                                     └──▶ (future: logs)
+                                     ├──▶ Loki (logs via filelog receiver)
+                                     │        │
+                                     │   logs/anima.log (host volume)
+                                     │        │
+                                     └──▶ Debug (stdout)
                                           
 Grafana :3000 ◀── datasources ── Prometheus :9090
-                               ── Tempo :3200
+                                ── Tempo :3200
+                                ── Loki :3100
+
+Alertmanager ──webhook──▶ Notifier (Docker, :9094)
+                            ├── Discord webhook
+                            ├── 飞书 webhook
+                            └── Email SMTP
 ```
+
+## Decisions (cont.)
+
+### 7. 通知架构：独立 Docker sidecar + 插件化 Notifier
+
+**选择**：弃用 Alertmanager 的原生 Discord receiver，改用通用的 webhook receiver + 自定义 Notifier 服务。
+
+```
+Alertmanager ──webhook POST──▶ Notifier (:9094/api/v1/alerts)
+                                   │
+                                   ├── @register_notifier("discord")
+                                   ├── @register_notifier("feishu")
+                                   └── @register_notifier("email")
+```
+
+**理由**：
+- Alertmanager 不支持飞书，也不方便自定义消息格式
+- 插件架构（`NotifierBase` ABC + `@register_notifier`）复用 Anima 现有的 ProviderRegistry 模式
+- Notifier 跑在 Docker 网络中，和 Alertmanager 同网络，不依赖宿主机后端是否可用
+
+### 8. Notifier 部署方式：独立 Starlette 服务
+
+**选择**：Notifier 是独立的 Python ASGI 应用（`src/anima/notifier/server.py` 中的 `create_notifier_app()`），通过 `Dockerfile.notifier` 打包，监听 `:9094`。
+
+**替代方案**：和 stats_api 一样挂在 Anima 后端内——如果后端挂了告警通知也跟着挂。
+
+**理由**：告警通知在故障场景最需要可用，独立部署避免与应用进程耦合。`python:3.13-slim` 镜像约 120MB，资源开销可忽略。
+
+### 9. Loki 日志采集：OTel Collector filelog receiver
+
+**选择**：使用 OTel Collector 内置的 `filelog` receiver 读取 `logs/anima.log`，通过 `loki` exporter 发送。不引入额外的 Alloy/Promtail 容器。
+
+**替代方案**：Alloy 或 Promtail——功能相同但多一个容器。
+
+**理由**：OTel Collector 已经部署了，`filelog` receiver 是 built-in 组件，零额外依赖。Anima 后端通过 `logger.add("logs/anima.log", rotation="10MB")` 输出文件日志。
+
+### 10. 配置隔离：独立 `.env.notifier`
+
+**选择**：Notifier 容器使用独立的 `.env.notifier` 文件，仅包含 `NOTIFIER_*` 和 `ALERT_*` 环境变量。
+
+**替代方案**：复用根 `.env`——会导致 LLM API Key 等敏感信息暴露给 Notifier 容器。
+
+**理由**：最小权限原则。`.env` 包含 `GLM_API_KEY`、`DEEPSEEK_API_KEY` 等敏感凭证，Notifier 不需要知道这些。
+
+### 11. 前端端口冲突
+
+**选择**：前端 Vite dev server 从 3000 改为 5173（`vite.config.ts`），Grafana 保持 `:3000`。
+
+**理由**：`strictPort: true` 下端口冲突会直接报错。5173 是 Vite 默认端口，改动最小。
 
 ## Risks / Trade-offs
 
 - **[风险] OTLP gRPC 导出增加网络开销** → 缓解：使用 `BatchSpanProcessor` 批量发送，不影响请求关键路径。trace 丢失可接受（非业务数据）。
 - **[风险] 流式 LLM 调用的 token 提取不可靠** → 缓解：对于 `chat_stream`，使用启发式估算（字符数 / 4 ≈ token 数）作为 fallback；非流式调用使用精确的 `response.usage`。
 - **[风险] LLM pricing 表过期** → 缓解：在 `PROVIDER_PRICING` 字典中加 `# TODO: Update pricing as of YYYY-MM-DD` 注释。成本指标是 Counter 而非精确计费——有误差可接受。
-- **[风险] docker-compose 增加本地资源消耗** → 缓解：4 个容器（Collector/Prometheus/Tempo/Grafana）总计约 500MB 内存，单机可承受。Config 中可选择性禁用。
+- **[风险] docker-compose 增加本地资源消耗** → 缓解：6 个容器（Collector/Prometheus/Tempo/Grafana/Alertmanager/Alloy 或 Promtail）总计约 700MB 内存，单机可承受。Config 中可选择性禁用。
+- **[风险] Grafana 端口与前端冲突** → 缓解：前端 Vite dev server 从 3000 改为 5173（`vite.config.ts`），Grafana 保持 :3000。
 
 ## Open Questions
 
 - Discord webhook URL 由用户自行配置在 `.env` 中，不 commit。默认情况下 Alertmanager 告警静默（webhook URL 为空时仅记录日志）。
+- 邮件告警需要 SMTP 账户，用户自行在 `.env` 中配置 `ALERT_SMTP_*` 参数。
 - Grafana 默认账号 `admin/admin`，首次登录强制改密码——在 README 中注明。
+- Loki 日志采集使用 Grafana Alloy（轻量级 collector，替代 Promtail），支持从文件 tail 日志并自动解析 loguru 格式。
