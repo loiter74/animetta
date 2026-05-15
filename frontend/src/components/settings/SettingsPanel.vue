@@ -3,11 +3,13 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { getSocket } from '@/composables/useSocket'
 import { useDanmakuStore } from '@/stores/danmaku'
 import { useSubtitleStore } from '@/stores/subtitle'
+import { useMinecraftStore } from '@/stores/minecraft'
 import type { SubtitleDisplayMode, SubtitleFontSize } from '@/stores/subtitle'
 import BackgroundSettings from './BackgroundSettings.vue'
 
 const danmakuStore = useDanmakuStore()
 const subtitleStore = useSubtitleStore()
+const minecraftStore = useMinecraftStore()
 const roomInput = ref<number | null>(null)
 const roomError = ref('')
 
@@ -60,6 +62,7 @@ const activeSection = ref<'status' | 'background' | 'controls' | 'live' | 'subti
 let cleanup: (() => void) | null = null
 
 onMounted(() => {
+  minecraftStore.setupListener()
   const socket = getSocket()
   if (!socket) {
     loading.value = false
@@ -87,6 +90,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  minecraftStore.teardownListener()
   cleanup?.()
 })
 </script>
@@ -183,6 +187,45 @@ onUnmounted(() => {
         <span>重置视图</span>
       </button>
       <p class="text-10px text-c-text-muted">将 Live2D 模型缩放重置为 1x 并居中</p>
+
+      <div class="pt-3 border-t border-c-border/40">
+        <h3 class="text-xs font-medium text-c-text-dim uppercase tracking-wider mb-2">Minecraft 机器人</h3>
+        <p class="text-10px text-c-text-muted mb-3">启动 AI 控制的 Minecraft 角色，可执行挖掘、建造、战斗等操作</p>
+
+        <!-- Connection status -->
+        <div class="flex items-center gap-2 mb-3">
+          <span
+            class="w-2 h-2 rounded-full"
+            :class="minecraftStore.connected ? 'bg-c-success shadow-[0_0_6px_rgba(74,222,128,0.6)]' : 'bg-c-error'"
+          />
+          <span class="text-xs" :class="minecraftStore.connected ? 'text-c-success' : 'text-c-error'">
+            {{ minecraftStore.connected ? `已连接 (${minecraftStore.username})` : '已断开' }}
+          </span>
+          <span v-if="minecraftStore.error" class="text-10px text-c-error ml-1">
+            {{ minecraftStore.error }}
+          </span>
+        </div>
+
+        <!-- Action button -->
+        <button
+          class="w-full px-3 py-2 rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-1.5"
+          :class="minecraftStore.isConnecting
+            ? 'bg-c-accent/20 text-c-accent pointer-events-none animate-pulse'
+            : minecraftStore.connected
+              ? 'bg-c-error/15 text-c-error hover:bg-c-error/25'
+              : 'bg-c-accent/15 text-c-accent hover:bg-c-accent/25'"
+          :disabled="minecraftStore.isConnecting"
+          @click="minecraftStore.connected ? minecraftStore.stop() : minecraftStore.start()"
+        >
+          <template v-if="minecraftStore.isConnecting">
+            <span class="inline-block w-3 h-3 border-2 border-c-accent border-t-transparent rounded-full animate-spin" />
+            启动中...
+          </template>
+          <template v-else>
+            {{ minecraftStore.connected ? '⏹ 停止' : '▶ 启动' }}
+          </template>
+        </button>
+      </div>
     </div>
 
     <!-- Live streaming section -->

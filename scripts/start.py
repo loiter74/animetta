@@ -21,7 +21,7 @@ if str(_project_root) not in sys.path:
 from scripts.start import (
     Colors, info, success, warn, error,
     ProcessManager, open_browser,
-    start_backend, start_vite, start_web_config, start_vibe_voice, start_gpt_sovits,
+    start_backend, start_vite, start_vibe_voice, start_gpt_sovits,
     get_tts_provider,
 )
 
@@ -32,7 +32,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python scripts/start.py                    # Start all services (backend + frontend + web config)
+  python scripts/start.py                    # Start all services (backend + frontend)
   python scripts/start.py --no-frontend      # Skip Vite frontend
   python scripts/start.py --backend-only     # Backend only
         """,
@@ -41,10 +41,8 @@ Examples:
                         help=argparse.SUPPRESS)  # Deprecated, accepted for compatibility
     parser.add_argument('--backend-only', action='store_true', help='Start backend only')
     parser.add_argument('--no-backend', action='store_true', help='Skip backend')
-    parser.add_argument('--no-web-config', action='store_true', help='Skip web config page')
     parser.add_argument('--no-frontend', action='store_true', help='Skip Vite frontend')
     parser.add_argument('--no-app', action='store_true', help=argparse.SUPPRESS)  # Deprecated
-    parser.add_argument('--web-port', type=int, default=8080, help='Web config page port')
     parser.add_argument('--install', action='store_true', help='Reinstall dependencies')
     parser.add_argument('--dev', action='store_true', help='Enable DevTools')
     parser.add_argument('--no-tts-server', action='store_true', help='Skip TTS inference server')
@@ -100,7 +98,6 @@ Examples:
     pm.stop_processes_on_port(12394, "Backend")
     pm.stop_processes_on_port(9880, "GPT-SoVITS TTS")
     pm.stop_processes_on_port(8765, "VibeVoice TTS")
-    pm.stop_processes_on_port(8080, "Web Config")
     pm.stop_processes_on_port(3000, "Frontend")
     print()
 
@@ -130,11 +127,6 @@ Examples:
             started.append(start_backend(_project_root, pm))
             time.sleep(2)
 
-        # Web config
-        if not args.no_web_config and not args.backend_only:
-            started.append(start_web_config(_project_root, args.web_port))
-            time.sleep(1)
-
         # Frontend (always start unless explicitly skipped)
         if not args.no_frontend and not args.backend_only:
             if not pkg_manager:
@@ -161,10 +153,6 @@ Examples:
         if not args.no_backend:
             url = "http://localhost:12394"
             print(f"  Backend:     {Colors.CYAN}{url}{Colors.NC}" if Colors.enabled() else f"  Backend:     {url}")
-
-        if not args.no_web_config and not args.backend_only:
-            url = f"http://localhost:{args.web_port}"
-            print(f"  Web Config:  {Colors.CYAN}{url}{Colors.NC}" if Colors.enabled() else f"  Web Config:  {url}")
 
         if not args.no_frontend and not args.backend_only:
             url = "http://localhost:3000"

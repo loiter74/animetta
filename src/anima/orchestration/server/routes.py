@@ -16,6 +16,7 @@ from .handlers.admin_handlers import AdminHandlers
 from .handlers.bilibili_handlers import BilibiliHandlers
 from .handlers.chat_handlers import ChatHandlers
 from .handlers.live2d_handlers import Live2DHandlers
+from .handlers.minecraft_handlers import MinecraftHandlers
 
 if TYPE_CHECKING:
     from .session import SessionManager
@@ -49,6 +50,7 @@ class RouteHandlers:
         self.bilibili = BilibiliHandlers(sio, session_manager, self.admin)
         self.chat = ChatHandlers(sio, session_manager, self.admin)
         self.live2d = Live2DHandlers(sio, self.live2d_manager, self.admin)
+        self.minecraft = MinecraftHandlers(sio)
 
         # Backward-compat: set global_config/user_settings on admin
         self.global_config = self.admin.global_config
@@ -191,6 +193,14 @@ class RouteHandlers:
     async def on_bilibili_update_room(self, sid: str, data: dict) -> None:
         return await self.bilibili.on_bilibili_update_room(sid, data)
 
+    # ── Minecraft bot control events ───────────────────────────────────
+
+    async def on_minecraft_start(self, sid: str, data: dict) -> None:
+        return await self.minecraft.on_minecraft_start(sid, data)
+
+    async def on_minecraft_stop(self, sid: str, data: dict) -> None:
+        return await self.minecraft.on_minecraft_stop(sid, data)
+
     # ── Memory / Wiki / Meme / Persona events ─────────────────────────
 
     async def on_memory_organize(self, sid: str, data: dict) -> None:
@@ -286,6 +296,10 @@ def register_routes(
     sio.on("bilibili.connect", handlers.on_bilibili_connect)
     sio.on("bilibili.disconnect", handlers.on_bilibili_disconnect)
     sio.on("bilibili.update_room", handlers.on_bilibili_update_room)
+
+    # Minecraft bot control events
+    sio.on("minecraft.start", handlers.on_minecraft_start)
+    sio.on("minecraft.stop", handlers.on_minecraft_stop)
 
     # Memory organization events
     sio.on("memory_organize", handlers.on_memory_organize)

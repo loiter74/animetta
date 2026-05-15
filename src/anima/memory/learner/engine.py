@@ -351,11 +351,14 @@ class PeriodicLearner:
 
     # ── Bilibili Meme Intelligence Tasks ─────────────────
 
-    async def collect_bilibili_memes(self) -> None:
+    async def collect_bilibili_memes(self) -> int:
         """Scheduled task: collect trending memes from Bilibili and feed into MemePool.
 
         Runs BilibiliMemeCollector → MemeCognitiveAnalyzer → MemePool pipeline.
         Failure is isolated and does not block other scheduled tasks.
+
+        Returns:
+            Number of memes successfully ingested into MemePool (0 if none or failed).
         """
         logger.info("[PeriodicLearner] Starting Bilibili meme collection...")
 
@@ -369,13 +372,13 @@ class PeriodicLearner:
                     "[PeriodicLearner] Bilibili meme services not available, "
                     "skipping meme collection"
                 )
-                return
+                return 0
 
             # Get meme_pool from memory system
             meme_pool = getattr(self._memory_system, 'meme_pool', None)
             if not meme_pool:
                 logger.debug("[PeriodicLearner] MemePool not available, skipping meme collection")
-                return
+                return 0
 
             config = self._config.get("bilibili_meme", {})
 
@@ -388,7 +391,7 @@ class PeriodicLearner:
 
             if not candidates:
                 logger.info("[PeriodicLearner] No meme candidates collected from Bilibili")
-                return
+                return 0
 
             logger.info(
                 "[PeriodicLearner] Collected %d meme candidates from Bilibili",
@@ -421,12 +424,14 @@ class PeriodicLearner:
                 "%d collected, %d ingested",
                 len(candidates), ingested,
             )
+            return ingested
 
         except Exception as e:
             logger.warning(
                 "[PeriodicLearner] Bilibili meme collection failed (isolated): %s",
                 e, exc_info=True,
             )
+            return 0
 
     async def learn_interaction_patterns(self) -> None:
         """Scheduled task: learn Bilibili interaction patterns for livestream optimization.

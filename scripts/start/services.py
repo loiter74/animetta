@@ -52,18 +52,6 @@ def start_vite(project_root: Path) -> tuple:
     return ("Frontend", process, None)
 
 
-def start_web_config(project_root: Path, port: int = 8080) -> tuple:
-    """Start the web configuration HTTP server."""
-    info(f"Starting web configuration interface (port {port})...")
-    python_exe = _get_venv_python(project_root)
-    web_dir = project_root / "frontend" / "web"
-    process = subprocess.Popen(
-        [python_exe, "-m", "scripts.start.web_config_server", str(web_dir), str(port)],
-        cwd=project_root, stdout=None, stderr=None,
-    )
-    return ("Web Config", process, port)
-
-
 def start_vibe_voice(project_root: Path, pm: ProcessManager):
     """Start the VibeVoice TTS local inference server."""
     info("Starting VibeVoice TTS server (port 8765)...")

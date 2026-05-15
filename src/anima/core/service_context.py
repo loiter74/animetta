@@ -298,6 +298,11 @@ class ServiceContext:
                 "search": mem_cfg.get('search', {}),
                 # Forward chunk configuration (token/overlap settings)
                 "chunk": mem_cfg.get('chunk', {}),
+                # Forward meme/learner/scheduler configs to MemorySystem
+                "meme_pool": mem_cfg.get('meme_pool', {}),
+                "learner": mem_cfg.get('learner', {}),
+                "scheduler": mem_cfg.get('scheduler', {}),
+                "llm_client": self.llm_engine,
             }
 
             embedding_cfg = mem_cfg.get('embedding', {})

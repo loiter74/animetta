@@ -106,7 +106,8 @@ class MemePool:
             self.store.save(meme)
         else:
             self._replace_lowest(meme)
-        logger.info("Candidate accepted: %s (confidence=%.2f)", meme.id, confidence)
+        logger.info("Candidate accepted: %s (confidence=%.2f, review_status=%s, is_active=%s)",
+                     meme.id, confidence, meme.review_status, meme.is_active)
         return meme
 
     def select_for_context(

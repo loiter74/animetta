@@ -76,7 +76,7 @@ services:
       - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
       - grafana_data:/var/lib/grafana
     ports:
-      - "3000:3000"
+      - "3001:3000"
     networks:
       - anima-obs
     depends_on:

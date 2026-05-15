@@ -48,7 +48,7 @@ class TestLive2DActionQueueBasic:
         from anima.services.live2d.action_queue import (
             Live2DActionQueue, OverflowPolicy,
         )
-        return Live2DQueue(queue)
+        return Live2DActionQueue()
 
     def test_init_defaults(self):
         from anima.services.live2d.action_queue import (

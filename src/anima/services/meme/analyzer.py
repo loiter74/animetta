@@ -108,7 +108,7 @@ class MemeCognitiveAnalyzer:
             return self._basic_analysis(text, context_hint)
 
         try:
-            result = await self._llm.chat(
+            result = await self._llm.chat_messages(
                 messages=[
                     {"role": "system", "content": COGNITIVE_ANALYSIS_SYSTEM_PROMPT},
                     {"role": "user", "content": COGNITIVE_ANALYSIS_USER_PROMPT.format(

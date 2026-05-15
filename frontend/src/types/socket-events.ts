@@ -25,3 +25,10 @@ export interface SentenceEvent {
 export interface TranslationConfigurePayload {
   target_language: string
 }
+
+/** Payload for `minecraft.status` server-to-client event */
+export interface MinecraftStatusPayload {
+  connected: boolean
+  username?: string
+  error?: string
+}

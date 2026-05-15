@@ -37,7 +37,7 @@ tracing:
 # OTel Collector → Tempo (traces) + Prometheus (metrics) → Grafana
 # ========================================
 otlp:
-  enabled: true                    # 开启双写: StatsStore SQLite + OTLP Collector
+  enabled: false                   # 默认关闭。开启前需先启动可观测性栈: docker-compose -f observability/docker-compose.yml up -d
   endpoint: "http://localhost:4317"  # OTLP gRPC 端点
   protocol: "grpc"                # grpc / http/protobuf
   # 可选 headers (e.g. {"Authorization": "Bearer <token>"})

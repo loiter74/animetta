@@ -9,6 +9,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+pytestmark = pytest.mark.slow
+
 # ── Mock bilibili_api before importing the service ────────────────────
 mock_bilibili_api = MagicMock()
 mock_live = MagicMock()

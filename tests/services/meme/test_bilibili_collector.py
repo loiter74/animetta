@@ -8,7 +8,7 @@ import pytest
 @pytest.fixture
 def mock_llm():
     llm = MagicMock()
-    llm.chat = AsyncMock()
+    llm.chat_messages = AsyncMock()
     return llm
 
 
@@ -263,7 +263,7 @@ class TestBilibiliMemeCollector:
             CollectedVideo,
         )
 
-        mock_llm.chat.return_value = {"content": '[{"text": "梗1", "frequency": 2}]'}
+        mock_llm.chat_messages.return_value = {"content": '[{"text": "梗1", "frequency": 2}]'}
         c = BilibiliMemeCollector(llm_client=mock_llm)
         videos = [CollectedVideo(bvid="BV1", title="Test")]
         result = await c._identify_meme_candidates(videos, {})

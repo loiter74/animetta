@@ -9,7 +9,7 @@ import pytest
 @pytest.fixture
 def mock_llm():
     llm = MagicMock()
-    llm.chat = AsyncMock()
+    llm.chat_messages = AsyncMock()
     return llm
 
 
@@ -109,7 +109,7 @@ class TestBilibiliInteractionLearner:
             DanmakuSample,
         )
 
-        mock_llm.chat.return_value = {
+        mock_llm.chat_messages.return_value = {
             "content": (
                 '{"patterns": [], "strategies": ['
                 '{"trigger_condition": "弹幕多", "suggested_behavior": "回应", '
@@ -140,7 +140,7 @@ class TestBilibiliInteractionLearner:
             DanmakuSample,
         )
 
-        mock_llm.chat.return_value = {
+        mock_llm.chat_messages.return_value = {
             "content": (
                 '{"patterns": [], "strategies": ['
                 '{"trigger_condition": "冷场", "suggested_behavior": "讲梗", '
@@ -207,7 +207,7 @@ class TestBilibiliInteractionLearner:
             DanmakuSample,
         )
 
-        mock_llm.chat.return_value = {
+        mock_llm.chat_messages.return_value = {
             "content": (
                 '{"patterns": [], "strategies": ['
                 '{"trigger_condition": "A", "suggested_behavior": "B", '
@@ -226,7 +226,7 @@ class TestBilibiliInteractionLearner:
         """LLM exception returns empty list."""
         from anima.services.meme.bilibili_interaction import BilibiliInteractionLearner
 
-        mock_llm.chat.side_effect = RuntimeError("LLM error")
+        mock_llm.chat_messages.side_effect = RuntimeError("LLM error")
         learner = BilibiliInteractionLearner(llm_client=mock_llm)
         result = await learner._analyze_patterns({123: []})
         assert result == []

@@ -9,10 +9,23 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import re
+from collections import Counter
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
+
+# Chinese stopwords for heuristic filtering
+_STOPWORDS = frozenset({
+    "的", "了", "在", "是", "我", "有", "和", "就", "不", "人", "都", "一",
+    "一个", "这个", "那个", "什么", "怎么", "如何", "可以", "没有", "还是",
+    "但是", "因为", "所以", "如果", "虽然", "而且", "或者", "不是", "就是",
+    "我们", "你们", "他们", "它们", "自己", "起来", "这些", "那些",
+})
+
+# Chinese punctuation for title splitting
+_TITLE_SEPARATORS = re.compile(r"[,，、。！？：；""''（）!?:\;\"'\(\)\s]|·|●|◆|【|】|《|》|—+")
 
 
 @dataclass
@@ -137,6 +150,8 @@ class BilibiliMemeCollector:
         self._min_comment_likes = self._config.get("min_comment_likes", 3)
         self._request_delay = self._config.get("request_delay", 1.0)
         self._search_keyword = self._config.get("search_keyword", "")
+        self._request_timeout = self._config.get("request_timeout", 60)
+        self._comment_timeout = self._config.get("comment_timeout", 10)
 
     # ── Public API ──────────────────────────────────────────────────────
 
@@ -148,11 +163,30 @@ class BilibiliMemeCollector:
         """
         logger.info(
             "[BilibiliMemeCollector] Starting collection "
-            "(max_videos=%d, max_comments=%d)",
+            "(max_videos=%d, max_comments=%d, timeout=%ds)",
             self._max_videos,
             self._max_comments_per_video,
+            self._request_timeout,
         )
 
+        try:
+            return await asyncio.wait_for(
+                self._collect_impl(),
+                timeout=self._request_timeout,
+            )
+        except asyncio.TimeoutError:
+            logger.warning(
+                "[BilibiliMemeCollector] Collection timed out after %ds — "
+                "returning partial results",
+                self._request_timeout,
+            )
+            return []
+        except Exception as e:
+            logger.error("[BilibiliMemeCollector] Collection failed: %s", e, exc_info=True)
+            return []
+
+    async def _collect_impl(self) -> List[MemeCandidateRaw]:
+        """Internal collection implementation (wrapped with timeout by collect())."""
         try:
             videos = await self._fetch_trending_videos()
             if not videos:
@@ -281,14 +315,17 @@ class BilibiliMemeCollector:
 
         try:
             loop = asyncio.get_event_loop()
-            result = await loop.run_in_executor(
-                None,
-                lambda: sync(comment.get_comments(
-                    oid=bvid,
-                    type_=comment.CommentResourceType.VIDEO,
-                    order=comment.OrderType.LIKE,
-                    page_index=1,
-                )),
+            result = await asyncio.wait_for(
+                loop.run_in_executor(
+                    None,
+                    lambda: sync(comment.get_comments(
+                        oid=bvid,
+                        type_=comment.CommentResourceType.VIDEO,
+                        order=comment.OrderType.LIKE,
+                        page_index=1,
+                    )),
+                ),
+                timeout=self._comment_timeout,
             )
 
             if not result or "replies" not in result:
@@ -314,6 +351,12 @@ class BilibiliMemeCollector:
 
             return comments
 
+        except asyncio.TimeoutError:
+            logger.warning(
+                "[BilibiliMemeCollector] Comment fetch timed out for %s (%ds)",
+                bvid, self._comment_timeout,
+            )
+            return []
         except Exception as e:
             logger.debug("[BilibiliMemeCollector] Comment fetch failed for %s: %s", bvid, e)
             return []
@@ -350,7 +393,7 @@ class BilibiliMemeCollector:
         combined = f"=== 热门视频 ===\n\n{video_text}\n\n=== 高赞评论 ===\n\n{comment_text}"
 
         try:
-            result = await self._llm.chat(
+            result = await self._llm.chat_messages(
                 messages=[
                     {"role": "system", "content": MEME_IDENTIFY_SYSTEM_PROMPT},
                     {"role": "user", "content": MEME_IDENTIFY_USER_PROMPT.format(video_data=combined)},
@@ -371,28 +414,106 @@ class BilibiliMemeCollector:
         videos: List[CollectedVideo],
         comments: Dict[str, List[CollectedComment]],
     ) -> List[MemeCandidateRaw]:
-        """Fallback: identify meme candidates from high-frequency phrases in titles/comments."""
-        # Simple heuristic: look for repeated phrases across video titles
+        """Fallback: identify meme candidates from high-frequency phrases in titles/comments.
+
+        Three strategies combined:
+        1. Repeated tags across videos (original logic)
+        2. Meaningful 2-4 char phrases from video titles (new)
+        3. High-frequency n-grams from top comments (new)
+        """
         candidates: List[MemeCandidateRaw] = []
-        title_phrases: Dict[str, int] = {}
+        seen_texts: set = set()
 
+        # ── Strategy 1: Repeated tags ──
+        tag_counts: Dict[str, int] = {}
         for v in videos:
-            # Extract interesting phrases from titles
-            title = v.title
             for tag in v.tags:
-                if len(tag) >= 2:
-                    title_phrases[tag] = title_phrases.get(tag, 0) + 1
-
-        for phrase, count in title_phrases.items():
-            if count >= 2 and len(phrase) <= 15:
+                t = tag.strip()
+                if len(t) >= 2 and t not in _STOPWORDS:
+                    tag_counts[t] = tag_counts.get(t, 0) + 1
+        for phrase, count in tag_counts.items():
+            if count >= 2 and len(phrase) <= 15 and phrase not in seen_texts:
+                seen_texts.add(phrase)
                 candidates.append(MemeCandidateRaw(
                     text=phrase,
-                    context_hint=f"来自B站热门视频标签，出现 {count} 次",
+                    context_hint=f"出现在 {count} 个热门视频标签中",
                     frequency=count,
-                    tags=["bilibili", "trending"],
+                    tags=["bilibili", "trending", "tag"],
                 ))
 
-        return candidates[:5]
+        # ── Strategy 2: Extract meaningful phrases from titles ──
+        title_phrases: Counter = Counter()
+        for v in videos:
+            for phrase in self._extract_title_phrases(v.title):
+                if phrase not in _STOPWORDS and len(phrase) >= 2:
+                    title_phrases[phrase] += 1
+        for phrase, count in title_phrases.most_common(10):
+            if count >= 2 and phrase not in seen_texts:
+                seen_texts.add(phrase)
+                candidates.append(MemeCandidateRaw(
+                    text=phrase,
+                    context_hint=f"出现在 {count} 个视频标题中的热门短语",
+                    frequency=count,
+                    tags=["bilibili", "trending", "title"],
+                ))
+
+        # ── Strategy 3: Extract n-grams from top comments ──
+        all_comments_text: List[str] = []
+        for clist in comments.values():
+            for c in clist[:5]:
+                all_comments_text.append(c.content)
+        comment_ngrams = self._extract_comment_ngrams(all_comments_text)
+        for phrase, count in comment_ngrams.most_common(10):
+            if count >= 2 and phrase not in seen_texts:
+                seen_texts.add(phrase)
+                candidates.append(MemeCandidateRaw(
+                    text=phrase,
+                    context_hint=f"在热门评论中出现 {count} 次",
+                    frequency=count,
+                    tags=["bilibili", "trending", "comment"],
+                ))
+
+        logger.info(
+            "[BilibiliMemeCollector] Heuristic identify: %d candidates from %d videos, %d comments",
+            len(candidates), len(videos), sum(len(c) for c in comments.values()),
+        )
+        return candidates[:10]
+
+    def _extract_title_phrases(self, title: str) -> List[str]:
+        """Split title into candidate phrases using punctuation and common patterns."""
+        if not title:
+            return []
+        # Split by punctuation
+        parts = _TITLE_SEPARATORS.split(title)
+        phrases: List[str] = []
+        for part in parts:
+            part = part.strip()
+            # Keep 2-15 char segments that aren't pure numbers
+            if 2 <= len(part) <= 15 and not part.isdigit():
+                phrases.append(part)
+                # Also extract 2-4 char sub-phrases for longer segments
+                if len(part) > 4:
+                    for i in range(len(part) - 1):
+                        sub = part[i:i+2]
+                        if sub not in _STOPWORDS:
+                            phrases.append(sub)
+        return phrases
+
+    @staticmethod
+    def _extract_comment_ngrams(comments: List[str]) -> Counter:
+        """Extract meaningful bigrams and trigrams from comment text."""
+        ngram_counts: Counter = Counter()
+        for text in comments:
+            if not text:
+                continue
+            # Simple tokenization: split by whitespace/punctuation for Chinese text
+            chars = list(text.strip())
+            # Bigrams
+            for i in range(len(chars) - 1):
+                bigram = chars[i] + chars[i+1]
+                if bigram not in _STOPWORDS and not bigram.isdigit() and len(bigram.strip()) == 2:
+                    ngram_counts[bigram] += 1
+        return ngram_counts
 
     @staticmethod
     def _parse_llm_json(raw: str) -> List[Dict[str, Any]]:

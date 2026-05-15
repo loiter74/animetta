@@ -181,6 +181,48 @@ class OpenAILLM(LLMInterface):
             logger.error(f"OpenAI chat error: {e}")
             raise
 
+    async def chat_messages(self, messages: list[dict], **kwargs) -> str:
+        """
+        Chat using messages-based protocol with native OpenAI API.
+
+        Overrides the default serialization to call OpenAI's
+        client.chat.completions.create directly, preserving
+        response_format, model, and temperature kwargs.
+
+        Args:
+            messages: List of message dicts with 'role' and 'content' keys
+            **kwargs: Additional parameters (response_format, model, temperature, etc.)
+
+        Returns:
+            str: Model response
+        """
+        create_kwargs = {
+            "model": kwargs.get("model", self.model),
+            "messages": messages,
+            "temperature": kwargs.get("temperature", self.temperature),
+            "max_tokens": kwargs.get("max_tokens", self.max_tokens),
+        }
+        if "response_format" in kwargs:
+            create_kwargs["response_format"] = kwargs["response_format"]
+
+        t_start = time_module.perf_counter()
+        try:
+            response = await self.client.chat.completions.create(**create_kwargs)
+            assistant_message = response.choices[0].message.content
+
+            # OTel metrics
+            duration_s = time_module.perf_counter() - t_start
+            self._record_usage(response, duration_s)
+
+            logger.debug(f"OpenAI chat_messages response: {assistant_message[:100]}...")
+            return assistant_message
+
+        except Exception as e:
+            duration_s = time_module.perf_counter() - t_start
+            self._record_error(duration_s)
+            logger.error(f"OpenAI chat_messages error: {e}")
+            raise
+
     async def chat_stream(self, user_input: str, **kwargs) -> AsyncIterator[str]:
         """
         Streaming chat

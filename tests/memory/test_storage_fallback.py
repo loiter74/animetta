@@ -7,6 +7,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 import pytest
 
+pytestmark = pytest.mark.xdist_group("serial")
+
 
 class TestChromaUpsertFallback:
     """When embeddings are None, Chroma should skip upsert gracefully."""

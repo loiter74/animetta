@@ -140,11 +140,13 @@ class TestStatsSpanExporter:
         )
         await exporter._write_span(mock_store, span)
 
-        create_call = mock_store.create_span.await_args
-        assert create_call is not None
-        kwargs = create_call[1] if len(create_call) > 1 else {}
-        assert "abc" in kwargs.get("trace_id", create_call[0][1]).lower()
-        assert kwargs.get("node_name", create_call[0][2]) == "llm.chat"
+        create_args = mock_store.create_span.call_args
+        assert create_args is not None
+        args, kwargs = create_args
+        trace_id_str = kwargs.get("trace_id", args[1] if len(args) > 1 else "")
+        assert "abc" in str(trace_id_str).lower()
+        node_name = kwargs.get("node_name", args[2] if len(args) > 2 else "")
+        assert node_name == "llm.chat"
 
         finish_call = mock_store.finish_span.await_args
         assert finish_call is not None
@@ -167,10 +169,11 @@ class TestStatsSpanExporter:
     @pytest.mark.asyncio
     async def test_write_span_with_events(self, exporter, mock_store):
         """Span events should be serialized."""
+        from opentelemetry.sdk.trace import Event
         span = _make_otel_span(
             name="with_events",
             events=[
-                MagicMock(name="event1", timestamp=1000, attributes={"k": "v"}),
+                Event(name="event1", timestamp=1000, attributes={"k": "v"}),
             ],
         )
         await exporter._write_span(mock_store, span)
@@ -180,11 +183,12 @@ class TestStatsSpanExporter:
     @pytest.mark.asyncio
     async def test_write_span_error_status_includes_description(self, exporter, mock_store):
         """Error status with description should pass output_summary."""
+        from opentelemetry.trace import Status, StatusCode as SC
         span = _make_otel_span(
             name="fail",
             status_code=StatusCode.ERROR,
         )
-        span.status.description = "timeout error"
+        span.status = Status(SC.ERROR, description="timeout error")
         await exporter._write_span(mock_store, span)
         mock_store.finish_span.assert_awaited_once()
 

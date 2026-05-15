@@ -273,7 +273,7 @@ class BilibiliInteractionLearner:
         combined = "\n\n".join(room_sections)
 
         try:
-            result = await self._llm.chat(
+            result = await self._llm.chat_messages(
                 messages=[
                     {"role": "system", "content": INTERACTION_ANALYSIS_SYSTEM_PROMPT},
                     {"role": "user", "content": INTERACTION_ANALYSIS_USER_PROMPT.format(

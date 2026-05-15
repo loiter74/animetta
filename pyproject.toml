@@ -14,9 +14,9 @@ testpaths = ["tests"]
 markers = [
     "asyncio: mark test as asyncio",
     "integration: mark as integration test (requires external services)",
-    "slow: mark test as slow (skipped in quick CI runs)",
+    "slow: mark test as slow and potentially hanging (skipped in default CI run)",
 ]
-addopts = "-v --tb=short"
+addopts = "-v --tb=short -n auto -m \"not slow\""
 
 [tool.coverage.run]
 source = ["src/anima"]

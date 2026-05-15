@@ -680,6 +680,7 @@ class AdminHandlers:
                 not ctx
                 or not ctx.memory_system
                 or not hasattr(ctx.memory_system, "meme_pool")
+                or not ctx.memory_system.meme_pool
             ):
                 await self.sio.emit(
                     "meme:list",
@@ -874,6 +875,9 @@ class AdminHandlers:
         logger.info(f"[{sid}] meme:collect — triggering Bilibili meme collection")
         try:
             ctx = self.session_manager.get_context(sid)
+            if not ctx:
+                await self._get_or_create_orchestrator(sid)
+                ctx = self.session_manager.get_context(sid)
             if not ctx or not ctx.memory_system:
                 await self.sio.emit(
                     "meme:collect",
@@ -884,18 +888,28 @@ class AdminHandlers:
 
             learner = getattr(ctx.memory_system, "_learner", None)
             if learner and hasattr(learner, "collect_bilibili_memes"):
-                await learner.collect_bilibili_memes()
+                ingested = await learner.collect_bilibili_memes()
                 meme_pool = getattr(ctx.memory_system, "meme_pool", None)
-                count = 0
+                pending_count = 0
                 if meme_pool:
                     active = meme_pool.store.list_active()
-                    count = len(
+                    logger.info(
+                        "[%s] meme:collect — list_active returned %d memes (%d pending)",
+                        sid, len(active),
+                        len([m for m in active if m.review_status == "pending"]),
+                    )
+                    pending_count = len(
                         [m for m in active if m.review_status == "pending"]
                     )
                 await self.sio.emit(
-                    "meme:collect", {"ok": True, "count": count}, to=sid
+                    "meme:collect",
+                    {"ok": True, "count": pending_count, "ingested": ingested},
+                    to=sid,
                 )
-                logger.info(f"[{sid}] meme:collect — done, {count} pending memes")
+                logger.info(
+                    f"[{sid}] meme:collect — ingested {ingested}, "
+                    f"{pending_count} pending memes"
+                )
             else:
                 import subprocess
                 import sys

@@ -42,6 +42,7 @@ class MemeStore:
 
     def get_active(self, limit: int = 10) -> List[Meme]:
         all_pages = self._wiki.list_pages(self._PageType.MEME)
+        logger.debug("[MemeStore] get_active: total pages=%d", len(all_pages))
         memes = []
         for p in all_pages:
             page = self._wiki.read_page(p)
@@ -49,7 +50,15 @@ class MemeStore:
                 m = self._page_to_meme(page)
                 if m and m.is_active:
                     memes.append(m)
+                elif m:
+                    logger.debug("[MemeStore] get_active: skipping inactive %s (is_active=%s, type=%s)",
+                                 m.id[:8], m.is_active, type(m.is_active).__name__)
+                else:
+                    logger.debug("[MemeStore] get_active: page_to_meme returned None for %s", str(p)[:60])
+            else:
+                logger.debug("[MemeStore] get_active: read_page returned None for %s", str(p)[:60])
         memes.sort(key=lambda m: m.current_score, reverse=True)
+        logger.debug("[MemeStore] get_active: active=%d (limit=%d)", len(memes), limit)
         return memes[:limit]
 
     def get_inactive(self, limit: int = 50) -> List[Meme]:

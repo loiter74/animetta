@@ -11,7 +11,7 @@ Workflow:
 import json
 import logging
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -29,6 +29,8 @@ class LearningLog:
     content: str = ""
     source_ids: str = ""
     created_at: Optional[datetime] = None
+    confidence: float = 0.5
+    metadata: Dict[str, Any] = field(default_factory=dict)
 
 
 SUMMARIZE_SYSTEM_PROMPT = """你是一个对话总结助手。请根据以下对话记录，生成一份结构化的每日摘要。

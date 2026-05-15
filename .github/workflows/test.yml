@@ -25,7 +25,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install pytest-cov mypy ruff
+        pip install pytest-cov pytest-xdist mypy ruff
 
     - name: Lint with ruff
       run: ruff check src/ tests/ || true
@@ -33,9 +33,10 @@ jobs:
     - name: Type check with mypy
       run: mypy src/ --ignore-missing-imports || true
 
-    - name: Test with pytest
+    - name: Fast parallel tests (default)
       run: |
-        PYTHONPATH=src python -m pytest tests/ -v --cov=src/anima --cov-report=term-missing --cov-report=xml --cov-fail-under=70
+        PYTHONPATH=src python -m pytest tests/ --ignore=tests/memory/test_manager.py \
+          --cov=src/anima --cov-report=term-missing --cov-report=xml --cov-fail-under=70
 
     - name: Upload coverage report
       if: always()

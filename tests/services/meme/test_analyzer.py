@@ -7,9 +7,9 @@ import pytest
 
 @pytest.fixture
 def mock_llm():
-    """A mock LLM client with .chat returning JSON content."""
+    """A mock LLM client with .chat_messages returning JSON content."""
     llm = MagicMock()
-    llm.chat = AsyncMock()
+    llm.chat_messages = AsyncMock()
     return llm
 
 
@@ -48,7 +48,7 @@ class TestMemeCognitiveAnalyzer:
     @pytest.mark.asyncio
     async def test_analyze_returns_cognitive_analysis(self, analyzer, mock_llm):
         """Successful LLM call should return a CognitiveAnalysis."""
-        mock_llm.chat.return_value = {"content": _MOCK_VALID_JSON}
+        mock_llm.chat_messages.return_value = {"content": _MOCK_VALID_JSON}
         result = await analyzer.analyze(text="测试梗", context_hint="吐槽场景")
         from anima.memory.meme.models import CognitiveAnalysis
 
@@ -59,10 +59,10 @@ class TestMemeCognitiveAnalyzer:
     @pytest.mark.asyncio
     async def test_analyze_passes_correct_prompt(self, analyzer, mock_llm):
         """The LLM should receive system + user prompt with the meme text."""
-        mock_llm.chat.return_value = {"content": _MOCK_VALID_JSON}
+        mock_llm.chat_messages.return_value = {"content": _MOCK_VALID_JSON}
         await analyzer.analyze(text="绝绝子", context_hint="网络用语", tags=["流行"])
-        mock_llm.chat.assert_awaited_once()
-        _, kwargs = mock_llm.chat.await_args
+        mock_llm.chat_messages.assert_awaited_once()
+        _, kwargs = mock_llm.chat_messages.await_args
         messages = kwargs["messages"]
         assert len(messages) == 2
         assert messages[0]["role"] == "system"
@@ -73,7 +73,7 @@ class TestMemeCognitiveAnalyzer:
     @pytest.mark.asyncio
     async def test_analyze_handles_llm_error(self, analyzer, mock_llm):
         """LLM failure should fall back to basic analysis."""
-        mock_llm.chat.side_effect = RuntimeError("LLM down")
+        mock_llm.chat_messages.side_effect = RuntimeError("LLM down")
         result = await analyzer.analyze(text="测试", context_hint="吐槽")
         from anima.memory.meme.models import CognitiveAnalysis
 
@@ -84,7 +84,7 @@ class TestMemeCognitiveAnalyzer:
     @pytest.mark.asyncio
     async def test_analyze_invalid_json_uses_fallback(self, analyzer, mock_llm):
         """Invalid JSON from LLM should produce a basic analysis."""
-        mock_llm.chat.return_value = {"content": "not json at all"}
+        mock_llm.chat_messages.return_value = {"content": "not json at all"}
         result = await analyzer.analyze(text="测试")
         assert result.humor_mechanism == ""
 
@@ -105,7 +105,7 @@ class TestMemeCognitiveAnalyzer:
     @pytest.mark.asyncio
     async def test_analyze_and_ingest_success(self, analyzer, mock_llm, mock_meme_pool):
         """High persona fit should ingest into MemePool."""
-        mock_llm.chat.return_value = {"content": _MOCK_VALID_JSON}
+        mock_llm.chat_messages.return_value = {"content": _MOCK_VALID_JSON}
 
         mock_meme = MagicMock()
         mock_meme.id = "meme_123"
@@ -124,7 +124,7 @@ class TestMemeCognitiveAnalyzer:
             '"emotional_tone": "一般", "persona_fit_score": 0.3,'
             '"usage_example": "不怎么好笑"}'
         )
-        mock_llm.chat.return_value = {"content": low_fit_json}
+        mock_llm.chat_messages.return_value = {"content": low_fit_json}
         result = await analyzer.analyze_and_ingest(text="无聊梗")
         assert result is None
         mock_meme_pool.add_from_candidate.assert_not_called()
@@ -132,7 +132,7 @@ class TestMemeCognitiveAnalyzer:
     @pytest.mark.asyncio
     async def test_analyze_and_ingest_analysis_failure(self, analyzer, mock_llm, mock_meme_pool):
         """When analysis fails, should create a bare meme with confidence=0.5."""
-        mock_llm.chat.side_effect = RuntimeError("fail")
+        mock_llm.chat_messages.side_effect = RuntimeError("fail")
         mock_meme_pool.add_from_candidate.return_value = MagicMock(id="bare_meme")
 
         result = await analyzer.analyze_and_ingest(text="fallback梗")

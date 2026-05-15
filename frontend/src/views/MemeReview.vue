@@ -27,7 +27,7 @@ function triggerCollect() {
       collectResult.value = data.error || '采集失败'
     }
   })
-  setTimeout(() => { if (collecting.value) { collecting.value = false; collectResult.value = '采集超时，请重试' } }, 30000)
+  setTimeout(() => { if (collecting.value) { collecting.value = false; collectResult.value = '采集超时，请重试' } }, 120000)
 }
 
 </script>
@@ -35,18 +35,19 @@ function triggerCollect() {
 <template>
   <Transition name="panel">
     <div v-if="visible" class="fixed inset-0 z-50 flex justify-end">
-      <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="close" />
-      <div class="relative w-full max-w-[440px] h-full bg-c-bg border-l border-c-border flex flex-col shadow-2xl overflow-hidden">
+      <div class="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in" @click="close" />
+      <div class="relative w-full max-w-[440px] h-full glass-strong flex flex-col overflow-hidden">
         <!-- Header -->
-        <div class="flex items-center justify-between px-5 py-4 border-b border-c-border shrink-0">
+        <div class="relative flex items-center justify-between px-5 py-4 shrink-0">
+          <div class="absolute bottom-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-c-accent/20 to-transparent" />
           <div class="flex items-center gap-2">
             <span class="text-lg">🔍</span>
             <h2 class="text-base font-semibold text-c-text">梗筛选器</h2>
           </div>
           <div class="flex items-center gap-2">
             <button
-              class="px-3 py-1.5 text-xs rounded-lg transition-colors"
-              :class="collecting ? 'bg-c-primary/20 text-c-primary animate-pulse' : collectResult ? 'bg-green-500/10 text-green-400' : 'bg-c-primary/10 text-c-primary hover:bg-c-primary/20'"
+              class="px-3 py-1.5 text-xs rounded-lg transition-all"
+              :class="collecting ? 'bg-c-accent/20 text-c-accent animate-pulse' : collectResult ? 'bg-c-success/15 text-c-success' : 'bg-gradient-to-r from-c-accent to-c-accent-hover text-white hover:shadow-[0_0_12px_rgba(232,121,168,0.4)]'"
               :disabled="collecting"
               @click="triggerCollect"
             >
@@ -65,10 +66,18 @@ function triggerCollect() {
         <div v-if="store.total > 0 && !store.isDone" class="px-5 py-2 border-b border-c-border/50 shrink-0">
           <div class="flex justify-between text-xs text-c-text-secondary mb-1">
             <span>{{ store.progress }}</span>
-            <span>👍 {{ store.goodCount }} <span class="mx-1">|</span> 👎 {{ store.badCount }}</span>
+            <span>
+              <Transition name="pop" mode="out-in">
+                <span :key="'g' + store.goodCount">👍 {{ store.goodCount }}</span>
+              </Transition>
+              <span class="mx-1">|</span>
+              <Transition name="pop" mode="out-in">
+                <span :key="'b' + store.badCount">👎 {{ store.badCount }}</span>
+              </Transition>
+            </span>
           </div>
           <div class="h-1 rounded-full bg-c-border overflow-hidden">
-            <div class="h-full rounded-full bg-c-primary transition-all duration-300" :style="{ width: `${((store.currentIndex + 1) / store.total) * 100}%` }" />
+            <div class="h-full rounded-full bg-gradient-to-r from-c-accent to-c-accent-hover transition-all duration-300" :style="{ width: `${((store.currentIndex + 1) / store.total) * 100}%` }" />
           </div>
         </div>
 
@@ -98,14 +107,16 @@ function triggerCollect() {
           </div>
           <!-- Cards -->
           <template v-else>
-            <MemeCard :meme="store.currentMeme!" :feedback="store.feedback" :feedback-visible="store.feedbackVisible" />
+            <Transition name="card" mode="out-in">
+              <MemeCard :key="store.currentIndex" :meme="store.currentMeme!" :feedback="store.feedback" :feedback-visible="store.feedbackVisible" />
+            </Transition>
             <div class="flex gap-3 mt-4">
-              <button class="flex-1 py-3 rounded-xl text-sm font-medium transition-all duration-200 bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20 hover:scale-[1.02] active:scale-[0.98]" @click="store.voteGood()">👍 好梗</button>
-              <button class="flex-1 py-3 rounded-xl text-sm font-medium transition-all duration-200 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 hover:scale-[1.02] active:scale-[0.98]" @click="store.voteBad()">👎 烂梗</button>
+              <button class="flex-1 py-3 rounded-xl text-sm font-medium transition-all duration-200 bg-c-success/15 text-c-success border border-c-success/20 hover:bg-c-success/25 hover:shadow-[0_0_8px_rgba(74,222,128,0.3)] active:scale-95" @click="store.voteGood()">👍 好梗</button>
+              <button class="flex-1 py-3 rounded-xl text-sm font-medium transition-all duration-200 bg-c-error/15 text-c-error border border-c-error/20 hover:bg-c-error/25 hover:shadow-[0_0_8px_rgba(248,113,113,0.3)] active:scale-95" @click="store.voteBad()">👎 烂梗</button>
             </div>
             <div class="flex gap-2 mt-2 justify-center">
-              <button class="px-2 py-1 text-xs rounded-lg border border-c-border text-c-text-secondary hover:text-c-text disabled:opacity-30" :disabled="store.currentIndex === 0" @click="store.prevMeme()">← 上一条</button>
-              <button class="px-2 py-1 text-xs rounded-lg border border-c-border text-c-text-secondary hover:text-c-text disabled:opacity-30" :disabled="store.currentIndex >= store.total - 1" @click="store.nextMeme()">跳过 →</button>
+              <button class="px-2 py-1 text-xs rounded-lg bg-c-card/50 text-c-text-dim hover:bg-c-card border border-transparent disabled:opacity-30 transition-all" :disabled="store.currentIndex === 0" @click="store.prevMeme()">← 上一条</button>
+              <button class="px-2 py-1 text-xs rounded-lg bg-c-card/50 text-c-text-dim hover:bg-c-card border border-transparent disabled:opacity-30 transition-all" :disabled="store.currentIndex >= store.total - 1" @click="store.nextMeme()">跳过 →</button>
             </div>
           </template>
         </div>
@@ -115,10 +126,36 @@ function triggerCollect() {
 </template>
 
 <style scoped>
-.panel-enter-active { transition: all 0.3s ease-out; }
-.panel-leave-active { transition: all 0.25s ease-in; }
-.panel-enter-from { opacity: 0; }
-.panel-enter-from > :last-child { transform: translateX(100%); }
-.panel-leave-to { opacity: 0; }
-.panel-leave-to > :last-child { transform: translateX(100%); }
+.panel-enter-active { animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+.panel-leave-active { animation: slideOutRight 0.25s ease-in; }
+
+.card-enter-active { animation: cardIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+.card-leave-active { animation: cardOut 0.2s ease-in; }
+.pop-enter-active { animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.pop-leave-active { animation: popOut 0.15s ease-in; }
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(100%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideOutRight {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(100%); }
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes cardOut {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(-30px); }
+}
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes popOut {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.5); }
+}
 </style>

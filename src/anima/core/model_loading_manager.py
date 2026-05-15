@@ -283,7 +283,7 @@ class ModelLoadingManager:
             payload["error"] = error
 
         try:
-            self._socketio.emit("model_status", payload)
+            asyncio.ensure_future(self._socketio.emit("model_status", payload))
         except Exception:
             # Socket.IO failures should never crash the loader.
             logger.debug(f"Failed to emit model_status for '{name}'")

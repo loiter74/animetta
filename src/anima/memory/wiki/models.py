@@ -48,6 +48,9 @@ class WikiPage:
             fm["links"] = self.links
         if self.raw_source:
             fm["raw_source"] = self.raw_source
+        # Merge custom metadata (e.g. id, review_status, is_active for MemeStore)
+        if self.metadata:
+            fm.update(self.metadata)
 
         yml = yaml.dump(fm, allow_unicode=True, default_flow_style=False)
         return f"---\n{yml}---\n\n{self.content}\n"
