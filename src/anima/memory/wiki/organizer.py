@@ -195,8 +195,8 @@ class WikiOrganizer:
         if callback:
             try:
                 await callback(text, pct)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"[Organizer] Progress callback failed: {e}")
 
     def _collect_pages(self) -> Dict[str, WikiPage]:
         """Read all wiki pages."""

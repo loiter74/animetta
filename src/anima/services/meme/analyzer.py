@@ -14,13 +14,8 @@ from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
-# Import from memory module
-try:
-    from anima.memory.meme.models import CognitiveAnalysis, Meme, MemeSource
-    from anima.memory.meme.engine import MemePool
-except ImportError:
-    from ....memory.meme.models import CognitiveAnalysis, Meme, MemeSource
-    from ....memory.meme.engine import MemePool
+from anima.config.data_models.meme import CognitiveAnalysis, Meme, MemeSource
+from anima.memory.meme.engine import MemePool
 
 
 # ── LLM Prompt for cognitive analysis ─────────────────────────────────
@@ -87,7 +82,7 @@ class MemeCognitiveAnalyzer:
         self._llm = llm_client
         self._meme_pool = meme_pool
         self._config = config or {}
-        self._min_persona_fit_score = self._config.get("min_persona_fit_score", 0.5)
+        self._min_persona_fit_score = self._config.get("min_persona_fit_score", 0.4)
 
     # ── Public API ──────────────────────────────────────────────────────
 
@@ -107,19 +102,36 @@ class MemeCognitiveAnalyzer:
             logger.debug("[MemeCognitiveAnalyzer] No LLM client, returning basic analysis")
             return self._basic_analysis(text, context_hint)
 
+        # Determine LLM interface: prefer chat_messages, fall back to chat
+        system_content = COGNITIVE_ANALYSIS_SYSTEM_PROMPT
+        user_content = COGNITIVE_ANALYSIS_USER_PROMPT.format(
+            text=text,
+            context_hint=context_hint or "通用场景",
+            source=source,
+            tags=", ".join(tags) if tags else "无",
+        )
+
         try:
-            result = await self._llm.chat_messages(
-                messages=[
-                    {"role": "system", "content": COGNITIVE_ANALYSIS_SYSTEM_PROMPT},
-                    {"role": "user", "content": COGNITIVE_ANALYSIS_USER_PROMPT.format(
-                        text=text,
-                        context_hint=context_hint or "通用场景",
-                        source=source,
-                        tags=", ".join(tags) if tags else "无",
-                    )},
-                ],
-                response_format={"type": "json_object"},
-            )
+            if hasattr(self._llm, 'chat_messages'):
+                result = await self._llm.chat_messages(
+                    messages=[
+                        {"role": "system", "content": system_content},
+                        {"role": "user", "content": user_content},
+                    ],
+                    response_format={"type": "json_object"},
+                )
+            elif hasattr(self._llm, 'chat'):
+                logger.debug("[MemeCognitiveAnalyzer] Using chat() fallback for LLM call")
+                combined = system_content + "\n\n" + user_content
+                result = await self._llm.chat(
+                    messages=[{"role": "user", "content": combined}],
+                    response_format={"type": "json_object"},
+                )
+            else:
+                logger.warning(
+                    "[MemeCognitiveAnalyzer] LLM has neither chat_messages nor chat()"
+                )
+                return self._basic_analysis(text, context_hint, source_url)
 
             content = result.get("content", "") if isinstance(result, dict) else str(result)
             parsed = self._parse_json(content)

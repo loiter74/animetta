@@ -6,6 +6,8 @@ from typing import Optional, Dict, Any, List
 from pathlib import Path
 from loguru import logger
 
+from anima.persistence.protocols import StatsStoreProtocol
+
 
 def _retry_on_locked(max_retries: int = 3, delay: float = 0.5):
     """Decorator: retry SQLite write on 'database is locked'."""
@@ -32,7 +34,7 @@ def _retry_on_locked(max_retries: int = 3, delay: float = 0.5):
     return decorator
 
 
-class StatsStore:
+class StatsStore(StatsStoreProtocol):
     """SQLite stats storage"""
 
     def __init__(self, db_path: Optional[str] = None):
@@ -69,8 +71,8 @@ class StatsStore:
             try:
                 await self._db.execute(sql)
                 await self._db.commit()
-            except Exception:
-                pass  # column already exists
+            except Exception as e:
+                logger.debug(f"[StatsStore] Migration column already exists (safe skip): {e}")
 
     async def _create_tables(self):
         await self._db.executescript("""
@@ -100,6 +102,18 @@ class StatsStore:
             CREATE INDEX IF NOT EXISTS idx_traces_created ON traces(created_at DESC);
             CREATE INDEX IF NOT EXISTS idx_spans_trace ON spans(trace_id);
             CREATE INDEX IF NOT EXISTS idx_spans_node ON spans(node_name);
+
+            CREATE TABLE IF NOT EXISTS inspection_reports (
+                run_id TEXT PRIMARY KEY,
+                started_at REAL NOT NULL,
+                finished_at REAL NOT NULL,
+                overall_ok INTEGER NOT NULL DEFAULT 0,
+                checks_json TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_inspection_reports_created
+                ON inspection_reports(created_at DESC);
         """)
         await self._db.commit()
 
@@ -286,6 +300,43 @@ class StatsStore:
             "error_msg": row[6],
             "created_at": row[7],
             "spans": spans,
+        }
+
+    @_retry_on_locked(max_retries=3, delay=0.5)
+    async def store_inspection_report(
+        self,
+        run_id: str,
+        started_at: float,
+        finished_at: float,
+        overall_ok: bool,
+        checks_json: str,
+    ) -> None:
+        """Persist an inspection report to the database."""
+        async with self._write_lock:
+            await self._db.execute(
+                "INSERT INTO inspection_reports (run_id, started_at, finished_at, overall_ok, checks_json) "
+                "VALUES (?, ?, ?, ?, ?)",
+                (run_id, started_at, finished_at, int(overall_ok), checks_json),
+            )
+            await self._db.commit()
+
+    async def get_latest_inspection_report(self) -> dict | None:
+        """Retrieve the most recent inspection report, or None if no reports exist."""
+        cursor = await self._db.execute(
+            "SELECT run_id, started_at, finished_at, overall_ok, checks_json, created_at "
+            "FROM inspection_reports ORDER BY created_at DESC LIMIT 1"
+        )
+        row = await cursor.fetchone()
+        if row is None:
+            return None
+        import json
+        return {
+            "run_id": row[0],
+            "started_at": row[1],
+            "finished_at": row[2],
+            "overall_ok": bool(row[3]),
+            "checks": json.loads(row[4]),
+            "created_at": row[5],
         }
 
     async def close(self):

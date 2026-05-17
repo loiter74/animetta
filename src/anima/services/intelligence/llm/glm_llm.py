@@ -185,8 +185,8 @@ class GLMLLM(LLMInterface):
                         cst = get_llm_cost()
                         if cst is not None:
                             cst.add(cost, {"provider": "glm", "model": self.model})
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug(f"[GLM] Token tracking cost metric failed: {e}")
 
         except Exception as e:
             logger.debug(f"[GLM] Token tracking failed: {e}")

@@ -16,18 +16,23 @@ from opentelemetry.sdk.trace import ReadableSpan
 from opentelemetry.sdk.trace.export import SpanExporter, SpanExportResult
 from opentelemetry.trace import StatusCode
 
+from anima.persistence.protocols import StatsStoreProtocol
+
 logger = logging.getLogger(__name__)
 
 
 class StatsSpanExporter(SpanExporter):
     """Exports OTel spans into Anima's StatsStore SQLite database."""
 
-    def __init__(self, stats_store=None):
-        self._stats_store = stats_store  # lazy resolved
+    def __init__(self, stats_store: StatsStoreProtocol | None = None):
+        self._stats_store = stats_store  # if None, lazy-resolve via get_stats_store()
 
-    async def _get_store(self):
+    async def _get_store(self) -> StatsStoreProtocol:
         if self._stats_store is None:
+            # Lazy fallback for backward compatibility with callers that
+            # do not inject a store (e.g. tracing/bootstrap.py).
             from anima.orchestration.graph.stats_store import get_stats_store
+
             self._stats_store = await get_stats_store()
         return self._stats_store
 
@@ -53,7 +58,7 @@ class StatsSpanExporter(SpanExporter):
         for span in spans:
             await self._write_span(store, span)
 
-    async def _write_span(self, store, span: ReadableSpan) -> None:
+    async def _write_span(self, store: StatsStoreProtocol, span: ReadableSpan) -> None:
         """Map an OTel ReadableSpan to StatsStore span columns."""
         ctx = span.get_span_context()
         parent = span.parent

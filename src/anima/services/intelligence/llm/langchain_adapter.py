@@ -60,10 +60,21 @@ class LLMChatModelAdapter(BaseChatModel):
         """
         Synchronous generation (delegates to async version)
 
-        Note: The existing LLM service is async; this uses asyncio to bridge
+        Note: The existing LLM service is async; this bridges sync→async.
+        Uses asyncio.run() when no running loop exists (safe path),
+        or run_until_complete with the current loop when called from async context.
         """
         import asyncio
-        return asyncio.run(self._agenerate(messages, stop, run_manager, **kwargs))
+        try:
+            loop = asyncio.get_running_loop()
+            # Called from async context — use run_until_complete to avoid
+            # "asyncio.run() cannot be called from a running event loop"
+            return loop.run_until_complete(
+                asyncio.ensure_future(self._agenerate(messages, stop, run_manager, **kwargs))
+            )
+        except RuntimeError:
+            # No running loop — safe to use asyncio.run()
+            return asyncio.run(self._agenerate(messages, stop, run_manager, **kwargs))
 
     async def _agenerate(
         self,

@@ -41,9 +41,8 @@ def init_bridge(config: Optional[Dict] = None):
         else:
             loop.run_until_complete(_bridge.start())
     except RuntimeError:
-        loop = asyncio.new_event_loop()
-        loop.run_until_complete(_bridge.start())
-        loop.close()
+        # No running event loop — use asyncio.run() which handles loop lifecycle
+        asyncio.run(_bridge.start())
 
     logger.info("[MinecraftTools] Bridge initialized and bot connecting...")
 

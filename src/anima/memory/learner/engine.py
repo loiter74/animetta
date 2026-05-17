@@ -398,26 +398,77 @@ class PeriodicLearner:
                 len(candidates),
             )
 
-            # Phase 2: Cognitive analysis and ingestion
+            # Phase 2: Cognitive analysis — batch all candidates first
             analyzer = MemeCognitiveAnalyzer(
                 llm_client=self._llm_client,
                 meme_pool=meme_pool,
                 config=config.get("analyzer", {}),
             )
 
-            ingested = 0
+            # Collect all analyses first (for relative ranking)
+            analyzed: List[tuple] = []
             for candidate in candidates:
-                meme = await analyzer.analyze_and_ingest(
+                analysis = await analyzer.analyze(
                     text=candidate.text,
                     context_hint=candidate.context_hint,
+                    source="bilibili",
                     tags=candidate.tags,
                     source_url=(
                         f"https://www.bilibili.com/video/{candidate.source_videos[0]}"
                         if candidate.source_videos else ""
                     ),
                 )
-                if meme:
-                    ingested += 1
+                if analysis:
+                    analyzed.append((candidate, analysis))
+                else:
+                    # Analysis failed — create with default confidence
+                    analyzed.append((candidate, None))
+
+            # Relative ranking: sort by persona_fit_score, take top 50%
+            if analyzed:
+                total_before = len(analyzed)
+                analyzed.sort(
+                    key=lambda x: (
+                        x[1].persona_fit_score if x[1] else 0.0
+                    ),
+                    reverse=True,
+                )
+                keep_count = max(1, total_before // 2)
+                analyzed = analyzed[:keep_count]
+                logger.info(
+                    "[PeriodicLearner] Relative ranking: keeping top %d/%d candidates",
+                    keep_count, total_before,
+                )
+
+            # Phase 3: Ingest top-ranked candidates
+            ingested = 0
+            for candidate, analysis in analyzed:
+                if analysis:
+                    # Pass the pre-computed analysis — avoid re-analyzing
+                    persona_fit = analysis.persona_fit_score
+                    meme = meme_pool.add_from_candidate(
+                        text=candidate.text,
+                        context_hint=analysis.context_trigger or candidate.context_hint,
+                        confidence=persona_fit,
+                        tags=(candidate.tags or []) + [f"mechanism:{analysis.humor_mechanism}"],
+                    )
+                    if meme:
+                        # Store cognitive analysis on the meme
+                        meme.cognitive_analysis = analysis
+                        meme.source_platform = "bilibili"
+                        meme.tags = list(set(meme.tags))
+                        meme_pool.store.update(meme)
+                        ingested += 1
+                else:
+                    # No analysis (LLM failed), ingest with default confidence
+                    meme = meme_pool.add_from_candidate(
+                        text=candidate.text,
+                        context_hint=candidate.context_hint,
+                        confidence=0.4,
+                        tags=candidate.tags,
+                    )
+                    if meme:
+                        ingested += 1
 
             logger.info(
                 "[PeriodicLearner] Bilibili meme collection complete: "
@@ -636,7 +687,7 @@ class PeriodicLearner:
 
     async def _patterns_to_memes(self, patterns: List[LearningLog]) -> None:
         """Feed patterns into meme discoverer."""
-        max_candidates = self._config.get("meme_candidates_per_run", 3)
+        max_candidates = self._config.get("meme_candidates_per_run", 15)
 
         candidates = await self._meme_discoverer.discover_candidates(
             patterns=patterns,

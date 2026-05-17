@@ -123,12 +123,18 @@ class StatsCallbackHandler(BaseCallbackHandler):
         self._trace_id: Optional[str] = None
         self._trace_start: Optional[float] = None
         self._lock = threading.Lock()
+        self._loop: Optional[asyncio.AbstractEventLoop] = None
 
     def start_trace(self, session_id: str, input_type: str, user_text: str) -> str:
         """Start a trace (called from orchestrator layer)"""
         self._trace_id = str(uuid.uuid4())
         self._trace_start = time.perf_counter()
         self._active_spans.clear()
+        # Capture the running event loop for later _schedule_async calls
+        try:
+            self._loop = asyncio.get_running_loop()
+        except RuntimeError:
+            self._loop = None
         self._schedule_async(
             self._async_create_trace(session_id, input_type, user_text)
         )
@@ -193,8 +199,8 @@ class StatsCallbackHandler(BaseCallbackHandler):
             metric = get_node_duration()
             if metric is not None:
                 metric.observe(duration / 1000.0, {"node_name": span_info["node_name"]})
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"[StatsHandler] OTel node_duration metric failed: {e}")
 
     def on_chain_error(
         self, error: BaseException, *, run_id: Any, **kwargs: Any
@@ -218,8 +224,8 @@ class StatsCallbackHandler(BaseCallbackHandler):
             metric = get_node_errors()
             if metric is not None:
                 metric.add(1, {"node_name": span_info["node_name"], "error_type": "exception"})
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"[StatsHandler] OTel node_errors metric failed: {e}")
 
     # -- Async storage methods --
 
@@ -262,31 +268,32 @@ class StatsCallbackHandler(BaseCallbackHandler):
 
     # -- Helper methods --
 
-    @staticmethod
-    def _schedule_async(coro):
+    def _schedule_async(self, coro):
         """Schedule a coroutine in a thread-safe async context.
         
-        Uses run_coroutine_threadsafe when a loop is running to avoid
-        "loop already running" errors, and falls back to run_until_complete
-        when no loop is available (e.g. in unit tests or startup).
+        Uses run_coroutine_threadsafe with the stored event loop reference
+        (captured in start_trace). Falls back only when no loop is available.
         """
+        loop = self._loop
+        if loop is not None and loop.is_running():
+            asyncio.run_coroutine_threadsafe(coro, loop)
+            return
+        # No captured loop — try to detect one at runtime
         try:
             loop = asyncio.get_running_loop()
             if loop.is_running():
                 asyncio.run_coroutine_threadsafe(coro, loop)
+                self._loop = loop  # cache for future calls
                 return
         except RuntimeError:
             pass
-        # No running loop — create one or use existing
+        # Last resort: run inline synchronously (e.g. in unit tests)
         try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                asyncio.run_coroutine_threadsafe(coro, loop)
-            else:
-                loop.run_until_complete(coro)
-        except RuntimeError:
             loop = asyncio.new_event_loop()
             loop.run_until_complete(coro)
+            loop.close()
+        except Exception:
+            logger.debug(f"[StatsHandler] Failed to schedule async task: {coro}")
 
     @staticmethod
     def _summarize_input(node_name: str, inputs: Dict) -> str:

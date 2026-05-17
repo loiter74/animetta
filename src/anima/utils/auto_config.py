@@ -49,8 +49,8 @@ class AutoConfig:
                     with open("/proc/version") as f:
                         if "microsoft" in f.read().lower():
                             return "wsl"
-                except:
-                    pass
+                except Exception:
+                    logger.debug("[AutoConfig] Failed to read /proc/version for WSL detection")
             return "linux"
         elif system == "darwin":
             return "macos"
@@ -71,8 +71,8 @@ class AutoConfig:
             import torch
             if torch.cuda.is_available():
                 return torch.version.cuda
-        except:
-            pass
+        except Exception:
+            logger.debug("[AutoConfig] Failed to get CUDA version")
         return None
 
     def get_data_dir(self) -> Path:

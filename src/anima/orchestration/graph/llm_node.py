@@ -214,8 +214,8 @@ async def llm_node(
             top_score = rag_metadata.get("top_score", 0.0)
             if top_score > 0:
                 rts.record(top_score, {"strategy": "hybrid"})
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"[{session_id}] [LLMNode] OTel RAG metrics recording failed: {e}")
 
     # Check if tools are enabled
     enable_tools = _get_config_value(config, "enable_tools", False)

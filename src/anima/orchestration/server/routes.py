@@ -12,11 +12,16 @@ from loguru import logger
 
 from .desktop import DesktopClientManager
 from .live2d import Live2DManager
-from .handlers.admin_handlers import AdminHandlers
+from .handlers.base_handler import BaseSocketHandler
 from .handlers.bilibili_handlers import BilibiliHandlers
 from .handlers.chat_handlers import ChatHandlers
+from .handlers.config_handlers import ConfigHandlers
+from .handlers.lifecycle_handlers import LifecycleHandlers
 from .handlers.live2d_handlers import Live2DHandlers
+from .handlers.meme_handlers import MemeHandlers
+from .handlers.memory_handlers import MemoryHandlers
 from .handlers.minecraft_handlers import MinecraftHandlers
+from .handlers.persona_handlers import PersonaHandlers
 
 if TYPE_CHECKING:
     from .session import SessionManager
@@ -43,18 +48,37 @@ class RouteHandlers:
         self.desktop_manager = desktop_manager or DesktopClientManager()
         self.live2d_manager = live2d_manager or Live2DManager()
 
-        # Domain handlers — Admin first (shared dependency), then others
-        self.admin = AdminHandlers(
+        # Shared base — used by dependent handlers that need orchestrator access
+        self.base = BaseSocketHandler(
             sio, session_manager, self.desktop_manager, self.live2d_manager
         )
-        self.bilibili = BilibiliHandlers(sio, session_manager, self.admin)
-        self.chat = ChatHandlers(sio, session_manager, self.admin)
-        self.live2d = Live2DHandlers(sio, self.live2d_manager, self.admin)
+
+        # Domain handlers (each owns a specific set of events)
+        self.config = ConfigHandlers(
+            sio, session_manager, self.desktop_manager, self.live2d_manager
+        )
+        self.memory = MemoryHandlers(
+            sio, session_manager, self.desktop_manager, self.live2d_manager
+        )
+        self.meme = MemeHandlers(
+            sio, session_manager, self.desktop_manager, self.live2d_manager
+        )
+        self.persona = PersonaHandlers(
+            sio, session_manager, self.desktop_manager, self.live2d_manager
+        )
+        self.lifecycle = LifecycleHandlers(
+            sio, session_manager, self.desktop_manager, self.live2d_manager
+        )
+
+        # Dependent handlers — use base for shared utilities (_get_or_create_orchestrator, etc.)
+        self.bilibili = BilibiliHandlers(sio, session_manager, self.base)
+        self.chat = ChatHandlers(sio, session_manager, self.base)
+        self.live2d = Live2DHandlers(sio, self.live2d_manager, self.base)
         self.minecraft = MinecraftHandlers(sio)
 
-        # Backward-compat: set global_config/user_settings on admin
-        self.global_config = self.admin.global_config
-        self.user_settings = self.admin.user_settings
+        # Backward-compat: expose global_config/user_settings from base
+        self.global_config = self.base.global_config
+        self.user_settings = self.base.user_settings
 
         # Wire up Live2D callback
         self.live2d._setup_live2d_callback()
@@ -84,22 +108,26 @@ class RouteHandlers:
     # ── Config setters (backward compat) ──────────────────────────────
 
     def set_global_config(self, config) -> None:
-        """Set global config — delegates to AdminHandlers."""
-        self.admin.set_global_config(config)
-        self.global_config = self.admin.global_config
+        """Set global config — delegates to domain handlers."""
+        self.base.set_global_config(config)
+        self.global_config = self.base.global_config
+        for h in [self.config, self.memory, self.meme, self.persona, self.lifecycle]:
+            h.global_config = config
 
     def set_user_settings(self, user_settings) -> None:
-        """Set user settings — delegates to AdminHandlers."""
-        self.admin.set_user_settings(user_settings)
-        self.user_settings = self.admin.user_settings
+        """Set user settings — delegates to domain handlers."""
+        self.base.set_user_settings(user_settings)
+        self.user_settings = self.base.user_settings
+        for h in [self.config, self.memory, self.meme, self.persona, self.lifecycle]:
+            h.user_settings = user_settings
 
     # ── Shared utility (backward compat) ─────────────────────────────
 
     async def broadcast_to_desktop_clients(
         self, client_type: str, event: str, data: dict
     ) -> None:
-        """Broadcast to desktop clients — delegates to AdminHandlers."""
-        return await self.admin.broadcast_to_desktop_clients(
+        """Broadcast to desktop clients — delegates to BaseSocketHandler."""
+        return await self.base.broadcast_to_desktop_clients(
             client_type, event, data
         )
 
@@ -116,10 +144,10 @@ class RouteHandlers:
     # ── Connection events ─────────────────────────────────────────────
 
     async def on_connect(self, sid: str, environ: dict) -> None:
-        return await self.admin.on_connect(sid, environ)
+        return await self.lifecycle.on_connect(sid, environ)
 
     async def on_disconnect(self, sid: str) -> None:
-        return await self.admin.on_disconnect(sid)
+        return await self.lifecycle.on_disconnect(sid)
 
     # ── Conversation events ───────────────────────────────────────────
 
@@ -152,18 +180,18 @@ class RouteHandlers:
     # ── Config events ─────────────────────────────────────────────────
 
     async def on_switch_config(self, sid: str, data: dict) -> None:
-        return await self.admin.on_switch_config(sid, data)
+        return await self.config.on_switch_config(sid, data)
 
     async def on_set_log_level(self, sid: str, data: dict) -> None:
-        return await self.admin.on_set_log_level(sid, data)
+        return await self.config.on_set_log_level(sid, data)
 
     async def on_get_config(self, sid: str, data: dict) -> None:
-        return await self.admin.on_get_config(sid, data)
+        return await self.config.on_get_config(sid, data)
 
     # ── Heartbeat ─────────────────────────────────────────────────────
 
     async def on_heartbeat(self, sid: str, data: dict) -> None:
-        return await self.admin.on_heartbeat(sid, data)
+        return await self.config.on_heartbeat(sid, data)
 
     # ── Desktop client events ─────────────────────────────────────────
 
@@ -204,40 +232,40 @@ class RouteHandlers:
     # ── Memory / Wiki / Meme / Persona events ─────────────────────────
 
     async def on_memory_organize(self, sid: str, data: dict) -> None:
-        return await self.admin.on_memory_organize(sid, data)
+        return await self.memory.on_memory_organize(sid, data)
 
     async def on_translation_configure(self, sid: str, data: dict) -> None:
-        return await self.admin.on_translation_configure(sid, data)
+        return await self.config.on_translation_configure(sid, data)
 
     async def on_get_wiki_pages(self, sid: str, data: dict) -> dict:
-        return await self.admin.on_get_wiki_pages(sid, data)
+        return await self.memory.on_get_wiki_pages(sid, data)
 
     async def on_set_persona(self, sid: str, data: dict) -> None:
-        return await self.admin.on_set_persona(sid, data)
+        return await self.persona.on_set_persona(sid, data)
 
     async def on_set_personality_mode(self, sid: str, data: dict) -> None:
-        return await self.admin.on_set_personality_mode(sid, data)
+        return await self.persona.on_set_personality_mode(sid, data)
 
     async def on_meme_add(self, sid: str, data: dict) -> None:
-        return await self.admin.on_meme_add(sid, data)
+        return await self.meme.on_meme_add(sid, data)
 
     async def on_meme_rate(self, sid: str, data: dict) -> None:
-        return await self.admin.on_meme_rate(sid, data)
+        return await self.meme.on_meme_rate(sid, data)
 
     async def on_meme_delete(self, sid: str, data: dict) -> None:
-        return await self.admin.on_meme_delete(sid, data)
+        return await self.meme.on_meme_delete(sid, data)
 
     async def on_meme_list(self, sid: str, data: dict) -> None:
-        return await self.admin.on_meme_list(sid, data)
+        return await self.meme.on_meme_list(sid, data)
 
     async def on_meme_review(self, sid: str, data: dict) -> None:
-        return await self.admin.on_meme_review(sid, data)
+        return await self.meme.on_meme_review(sid, data)
 
     async def on_meme_dataset(self, sid: str, data: dict) -> None:
-        return await self.admin.on_meme_dataset(sid, data)
+        return await self.meme.on_meme_dataset(sid, data)
 
     async def on_meme_collect(self, sid: str, data: dict) -> None:
-        return await self.admin.on_meme_collect(sid, data)
+        return await self.meme.on_meme_collect(sid, data)
 
 
 def register_routes(

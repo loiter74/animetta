@@ -114,7 +114,8 @@ def _format_tool_result(result: Any) -> str:
     if isinstance(result, (dict, list)):
         try:
             return json.dumps(result, ensure_ascii=False, indent=2)
-        except Exception:
+        except Exception as e:
+            logger.debug(f"[ToolNode] Failed to serialize tool result as JSON: {e}")
             return str(result)
     return str(result)
 
@@ -129,5 +130,5 @@ def _record_tool_metrics(tool_name: str, status: str, duration_s: float) -> None
         td = get_tool_duration()
         if td is not None and duration_s > 0:
             td.observe(duration_s, {"tool_name": tool_name})
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug(f"[ToolNode] OTel metrics recording failed: {e}")

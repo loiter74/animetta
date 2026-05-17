@@ -193,6 +193,55 @@ class BilibiliInteractionLearner:
 
         return strategies
 
+    async def get_hot_danmaku_phrases(
+        self,
+        min_freq: int = 3,
+        max_phrases: int = 30,
+    ) -> List[str]:
+        """Collect hot danmaku phrases from configured rooms.
+
+        Useful for the meme collection pipeline to query what's trending
+        in live chat without running the full interaction analysis.
+
+        Args:
+            min_freq: Minimum occurrence count to consider a phrase hot.
+            max_phrases: Maximum number of phrases to return.
+
+        Returns:
+            List of hot danmaku phrase texts.
+        """
+        if not self._room_ids:
+            return []
+
+        from collections import Counter
+        all_texts: List[str] = []
+
+        for room_id in self._room_ids:
+            try:
+                samples = await self._collect_danmaku(room_id)
+                for s in samples:
+                    if len(s.content.strip()) >= 2:
+                        all_texts.append(s.content)
+                await asyncio.sleep(self._request_delay)
+            except Exception as e:
+                logger.warning(
+                    "[BilibiliInteractionLearner] Failed to collect danmaku for room %d: %s",
+                    room_id, e,
+                )
+
+        if not all_texts:
+            return []
+
+        # Simple frequency-based phrase extraction
+        counter: Counter = Counter()
+        for text in all_texts:
+            counter[text] += 1
+
+        # Filter by min_freq and return top phrases
+        hot = [text for text, count in counter.most_common(max_phrases * 2)
+               if count >= min_freq]
+        return hot[:max_phrases]
+
     # ── Danmaku collection ──────────────────────────────────────────────
 
     async def _collect_danmaku(self, room_id: int) -> List[DanmakuSample]:

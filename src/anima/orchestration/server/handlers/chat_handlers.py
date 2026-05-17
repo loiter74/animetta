@@ -50,8 +50,8 @@ class ChatHandlers:
             sm = get_session_messages()
             if sm is not None:
                 sm.add(1)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"[ChatHandlers] OTel session_messages metric failed: {e}")
 
         try:
             orchestrator = await self.admin._get_or_create_orchestrator(sid)
@@ -71,8 +71,8 @@ class ChatHandlers:
                 we = get_websocket_errors()
                 if we is not None:
                     we.add(1)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"[ChatHandlers] OTel websocket_errors metric failed: {e}")
             await self.sio.emit(
                 "error", {"type": "error", "message": str(e)}, to=sid
             )

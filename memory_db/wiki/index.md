@@ -26,6 +26,7 @@
 - [[2026 05 13]] `(sources/2026-05-13.md)`
 - [[2026 05 14]] `(sources/2026-05-14.md)`
 - [[2026 05 15]] `(sources/2026-05-15.md)`
+- [[2026 05 17]] `(sources/2026-05-17.md)`
 
 ## Synthesis
 
@@ -46,6 +47,7 @@
 - [[meme_0c1e20fa]] `(memes/meme_0c1e20fa.md)`
 - [[meme_0c803367]] `(memes/meme_0c803367.md)`
 - [[meme_111014eb]] `(memes/meme_111014eb.md)`
+- [[meme_112f8551]] `(memes/meme_112f8551.md)`
 - [[meme_23184822]] `(memes/meme_23184822.md)`
 - [[meme_239408bd]] `(memes/meme_239408bd.md)`
 - [[meme_24a3dda2]] `(memes/meme_24a3dda2.md)`
@@ -57,14 +59,19 @@
 - [[meme_54635b00]] `(memes/meme_54635b00.md)`
 - [[meme_69c0384f]] `(memes/meme_69c0384f.md)`
 - [[meme_6d458459]] `(memes/meme_6d458459.md)`
+- [[meme_7177c6ce]] `(memes/meme_7177c6ce.md)`
+- [[meme_7346fa3b]] `(memes/meme_7346fa3b.md)`
 - [[meme_75132b26]] `(memes/meme_75132b26.md)`
 - [[meme_791afc09]] `(memes/meme_791afc09.md)`
 - [[meme_7ec87a41]] `(memes/meme_7ec87a41.md)`
 - [[meme_85a4bbfb]] `(memes/meme_85a4bbfb.md)`
 - [[meme_85b851ef]] `(memes/meme_85b851ef.md)`
 - [[meme_8604132a]] `(memes/meme_8604132a.md)`
+- [[meme_8cf1dcbd]] `(memes/meme_8cf1dcbd.md)`
 - [[meme_8ef92173]] `(memes/meme_8ef92173.md)`
 - [[meme_9359ba7f]] `(memes/meme_9359ba7f.md)`
+- [[meme_9c281ecb]] `(memes/meme_9c281ecb.md)`
+- [[meme_9d661f1d]] `(memes/meme_9d661f1d.md)`
 - [[meme_9e34bcc3]] `(memes/meme_9e34bcc3.md)`
 - [[meme_9edc662f]] `(memes/meme_9edc662f.md)`
 - [[meme_a37a3102]] `(memes/meme_a37a3102.md)`
@@ -72,6 +79,7 @@
 - [[meme_b070cba8]] `(memes/meme_b070cba8.md)`
 - [[meme_b086df11]] `(memes/meme_b086df11.md)`
 - [[meme_b99bd299]] `(memes/meme_b99bd299.md)`
+- [[meme_ba4a5b9a]] `(memes/meme_ba4a5b9a.md)`
 - [[meme_ba633a84]] `(memes/meme_ba633a84.md)`
 - [[meme_baeb3db7]] `(memes/meme_baeb3db7.md)`
 - [[meme_c0718207]] `(memes/meme_c0718207.md)`
@@ -83,6 +91,7 @@
 - [[meme_d9950832]] `(memes/meme_d9950832.md)`
 - [[meme_dc36802d]] `(memes/meme_dc36802d.md)`
 - [[meme_e3f9032a]] `(memes/meme_e3f9032a.md)`
+- [[meme_e5b29c12]] `(memes/meme_e5b29c12.md)`
 - [[meme_e70771e7]] `(memes/meme_e70771e7.md)`
 - [[meme_e78ff33e]] `(memes/meme_e78ff33e.md)`
 - [[meme_f478246c]] `(memes/meme_f478246c.md)`

@@ -44,7 +44,7 @@ useDanmaku()
     <Transition name="slide">
       <div
         v-if="!isCollapsed"
-        class="pointer-events-auto flex flex-col glass-strong m-3 ml-0 w-[380px] min-w-[320px] max-w-[420px]"
+        class="pointer-events-auto flex flex-col glass-strong m-3 ml-0 w-[380px] min-w-[320px] max-w-[420px] interactive-panel"
         :class="live2dPopout ? '!w-full !max-w-none !m-0 rounded-none' : ''"
       >
         <!-- Header: Tabs + Collapse -->

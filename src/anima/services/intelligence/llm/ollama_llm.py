@@ -131,7 +131,7 @@ class OllamaLLM(LLMInterface):
         try:
             # ollama SDK is synchronous, needs to run in thread pool
             import asyncio
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             
             response = await loop.run_in_executor(
                 None,
@@ -175,9 +175,9 @@ class OllamaLLM(LLMInterface):
         
         try:
             import asyncio
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             
-            # 在线程池中运行同步流式调用
+            # Run sync streaming call in thread pool
             def sync_stream():
                 return self.client.chat(
                     model=kwargs.get("model", self.model),

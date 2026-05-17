@@ -78,10 +78,10 @@ class TestBilibiliMemeCollector:
         from anima.services.meme.bilibili_collector import BilibiliMemeCollector
 
         c = BilibiliMemeCollector(llm_client=mock_llm)
-        assert c._max_videos == 20
-        assert c._max_comments_per_video == 20
-        assert c._min_comment_likes == 3
-        assert c._request_delay == 1.0
+        assert c._max_videos == 50
+        assert c._max_comments_per_video == 50
+        assert c._min_comment_likes == 2
+        assert c._request_delay == 0.3
         assert c._search_keyword == ""
 
     def test_constructor_custom_config(self, mock_llm):

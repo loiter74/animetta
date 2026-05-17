@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useSubtitle } from '@/composables/useSubtitle'
 import { useSubtitleStore } from '@/stores/subtitle'
 
@@ -37,16 +37,19 @@ const showTranslation = computed(() =>
   && translation.value
 )
 
-// ===== Drag support =====
-const isDragging = ref(false)
-const dragStartX = ref(0)
-const dragStartY = ref(0)
-const dragOriginX = ref(0)
-const dragOriginY = ref(0)
+// ===== Responsive container tracking (ResizeObserver) =====
+const containerWidth = ref(0)
+const containerHeight = ref(0)
+const panelWidth = ref(0)  // InteractivePanel rendered width, 0 if hidden/collapsed
 const panelRef = ref<HTMLDivElement | null>(null)
+let containerObserver: ResizeObserver | null = null
+let panelObserver: ResizeObserver | null = null
 
-/** Convert stored position to CSS style or null for default centered */
-const PANEL_OFFSET = 200  // shift left by ~half of chat panel width to center in Live2D area
+/** Half the panel width — fallback used when panel not yet measured.
+ *  Set to 0 to default-center in the full container; drag to customize position. */
+const PANEL_HALF_FALLBACK = 0
+
+// ===== Position calculation (ratio-based) =====
 
 const hasCustomPosition = computed(() =>
   store.posX != null && store.posY != null
@@ -54,22 +57,36 @@ const hasCustomPosition = computed(() =>
   && typeof store.posY === 'number'
 )
 
+/** Clamp ratio to keep panel mostly visible */
+const CLAMP_X_MIN = 0.05
+const CLAMP_X_MAX = 0.95
+const CLAMP_Y_MIN = 0.02
+const CLAMP_Y_MAX = 0.98
+
 const positionStyle = computed(() => {
-  if (hasCustomPosition.value) {
+  if (hasCustomPosition.value && containerWidth.value > 0) {
+    // Custom position: ratio-based via JS (needs ResizeObserver container dimensions)
     return {
-      left: `${store.posX}px`,
-      bottom: `${store.posY}px`,
-      transform: 'none',
+      left: `${store.posX! * containerWidth.value}px`,
+      bottom: `${store.posY! * containerHeight.value}px`,
+      transform: 'translateX(-50%)',
       maxWidth: '80vw',
     }
   }
-  // Default: centered in Live2D area (accounting for right-side chat panel)
+  // Default centered: original hardcoded offset (matches pre-fix behavior)
   return {
-    left: `calc(50% - ${PANEL_OFFSET}px)`,
+    left: `calc(50% - 200px)`,
     transform: 'translateX(-50%)',
     maxWidth: '80vw',
   }
 })
+
+// ===== Drag support (ratio-based) =====
+const isDragging = ref(false)
+const dragStartX = ref(0)
+const dragStartY = ref(0)
+const dragOriginRatioX = ref(0)
+const dragOriginRatioY = ref(0)
 
 function onDragStart(e: MouseEvent): void {
   // Only left-click
@@ -77,16 +94,21 @@ function onDragStart(e: MouseEvent): void {
   isDragging.value = true
   dragStartX.value = e.clientX
   dragStartY.value = e.clientY
-  dragOriginX.value = store.posX !== null ? store.posX : 0
-  dragOriginY.value = store.posY !== null ? store.posY : 0
 
-  // If at default position, compute current left/bottom from DOM
-  if (!hasCustomPosition.value && panelRef.value) {
+  // Get current position as ratios
+  if (hasCustomPosition.value) {
+    dragOriginRatioX.value = store.posX!
+    dragOriginRatioY.value = store.posY!
+  } else if (panelRef.value && containerWidth.value > 0) {
+    // Compute current ratio from DOM (default centered position)
     const rect = panelRef.value.getBoundingClientRect()
     const parentRect = panelRef.value.offsetParent?.getBoundingClientRect()
     if (parentRect) {
-      dragOriginX.value = rect.left - parentRect.left
-      dragOriginY.value = parentRect.bottom - rect.bottom
+      // Panel center X to ratio
+      const centerX = rect.left + rect.width / 2
+      dragOriginRatioX.value = centerX / containerWidth.value
+      // Panel bottom to ratio
+      dragOriginRatioY.value = (parentRect.bottom - rect.bottom) / containerHeight.value
     }
   }
 
@@ -95,12 +117,22 @@ function onDragStart(e: MouseEvent): void {
 }
 
 function onDragMove(e: MouseEvent): void {
-  if (!isDragging.value) return
+  if (!isDragging.value || containerWidth.value <= 0) return
   const dx = e.clientX - dragStartX.value
   const dy = e.clientY - dragStartY.value
-  const newX = Math.max(0, dragOriginX.value + dx)
-  const newY = Math.max(0, dragOriginY.value - dy) // inverted: bottom Y
-  subStore.setPosition(newX, newY)
+
+  // Convert pixel delta to ratio delta
+  const ratioDx = dx / containerWidth.value
+  const ratioDy = -dy / containerHeight.value  // inverted: bottom Y
+
+  let newXRatio = dragOriginRatioX.value + ratioDx
+  let newYRatio = dragOriginRatioY.value + ratioDy
+
+  // Clamp to keep panel mostly visible
+  newXRatio = Math.min(CLAMP_X_MAX, Math.max(CLAMP_X_MIN, newXRatio))
+  newYRatio = Math.min(CLAMP_Y_MAX, Math.max(CLAMP_Y_MIN, newYRatio))
+
+  subStore.setPosition(newXRatio, newYRatio)
 }
 
 function onDragEnd(): void {
@@ -108,6 +140,65 @@ function onDragEnd(): void {
   document.removeEventListener('mousemove', onDragMove)
   document.removeEventListener('mouseup', onDragEnd)
 }
+
+// ===== ResizeObserver lifecycle =====
+
+function setupResizeObservers(): void {
+  // Observe Live2D container (always present)
+  if (!containerObserver) {
+    const container = document.querySelector('.live2d-container') as HTMLElement | null
+    if (container) {
+      containerObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          const { width, height } = entry.contentRect
+          if (width > 0 && height > 0) {
+            containerWidth.value = width
+            containerHeight.value = height
+          }
+        }
+      })
+      containerObserver.observe(container)
+    }
+  }
+
+  // Observe InteractivePanel width (may appear/disappear via collapse/popout)
+  if (!panelObserver) {
+    const panel = document.querySelector('.interactive-panel') as HTMLElement | null
+    if (panel) {
+      panelObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          panelWidth.value = entry.contentRect.width
+        }
+      })
+      panelObserver.observe(panel)
+    }
+  }
+}
+
+onMounted(() => {
+  setupResizeObservers()
+})
+
+// Retry panel observation when subtitle becomes visible (panel may not exist yet)
+watch([visible, () => store.enabled], async ([vis, ena]) => {
+  if (vis && ena) {
+    await nextTick()
+    setupResizeObservers()
+  }
+})
+
+onUnmounted(() => {
+  if (containerObserver) {
+    containerObserver.disconnect()
+    containerObserver = null
+  }
+  if (panelObserver) {
+    panelObserver.disconnect()
+    panelObserver = null
+  }
+  document.removeEventListener('mousemove', onDragMove)
+  document.removeEventListener('mouseup', onDragEnd)
+})
 </script>
 
 <template>
@@ -173,11 +264,11 @@ function onDragEnd(): void {
 @keyframes popIn {
   0% {
     opacity: 0;
-    transform: translateY(20px) scale(0.95);
+    transform: translateX(-50%) translateY(20px) scale(0.95);
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateX(-50%) translateY(0) scale(1);
   }
 }
 

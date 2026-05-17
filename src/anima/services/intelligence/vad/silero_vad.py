@@ -78,7 +78,7 @@ class SileroVAD(VADInterface):
 
         logger.info("Loading Silero-VAD model...")
         import asyncio
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         self.detector.model = await loop.run_in_executor(None, self.detector._load_vad_model)
         logger.info("Silero-VAD model preloaded")
 

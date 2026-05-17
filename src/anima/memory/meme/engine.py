@@ -16,10 +16,10 @@ logger = logging.getLogger(__name__)
 
 
 class MemePool:
-    """Manages the 10-slot meme lifecycle with time-decay scoring and resurrection.
+    """Manages the 20-slot meme lifecycle with time-decay scoring and resurrection.
 
     Config keys (with defaults):
-        max_active              10
+        max_active              20
         k (decay rate)           0.5
         t_half_days              7
         resurrection_threshold   0.6
@@ -46,7 +46,7 @@ class MemePool:
         cfg = wiki if isinstance(wiki, dict) else (config or {})
         cfg = cfg or {}
 
-        self.max_active: int = cfg.get("max_active", 10)
+        self.max_active: int = cfg.get("max_active", 20)
         self.k: float = cfg.get("k", 0.5)
         self.t_half_days: int = cfg.get("t_half_days", 7)
         self.resurrection_threshold: float = cfg.get("resurrection_threshold", 0.6)

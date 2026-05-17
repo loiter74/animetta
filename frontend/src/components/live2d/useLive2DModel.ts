@@ -1,0 +1,156 @@
+import { getApp } from './usePixiApp'
+import { isLoaded, isLoading, loadError, updateModelInfo } from './useInteraction'
+
+// ===== Model Configuration (edit these to change model) =====
+
+export const MODEL_PATH = 'live2d/hiyori/Hiyori.model3.json'
+// Position is computed as a fraction of canvas dimensions at load time,
+// so the model appears at the same relative position on any screen size.
+const POS_X_RATIO = 0.35   // 0.0 = left edge, 1.0 = right edge
+const POS_Y_RATIO = 1.2    // >1.0 = below canvas bottom edge
+const INITIAL_SCALE = 2.59
+
+export { POS_X_RATIO, POS_Y_RATIO, INITIAL_SCALE }
+
+export interface ScaleStrategy {
+  anchor: [number, number]
+  yRatio: number
+}
+
+export const STRATEGIES: Record<string, ScaleStrategy> = {
+  fit: { anchor: [0.5, 0.5], yRatio: 0.5 },
+  contain: { anchor: [0.5, 1.0], yRatio: 1.0 },
+  cover: { anchor: [0.5, 0.5], yRatio: 0.5 }
+}
+
+// ===== Model State =====
+
+let model: any = null
+let baseBounds: { width: number; height: number } | null = null
+let userScale = 1.5
+let strategy = 'fit'
+
+export function getModel(): any { return model }
+export function getUserScale(): number { return userScale }
+export function getStrategy(): string { return strategy }
+export function setUserScale(s: number): void { userScale = s }
+export function setStrategy(s: string): void { if (STRATEGIES[s]) strategy = s }
+
+// ===== Model Loading =====
+
+export function unloadModel(): void {
+  const app = getApp()
+  if (model) {
+    app?.stage.removeChild(model)
+    model.destroy()
+    model = null
+    isLoaded.value = false
+  }
+}
+
+export async function loadModel(modelPath: string): Promise<void> {
+  const app = getApp()
+  isLoading.value = true
+  loadError.value = ''
+
+  try {
+    unloadModel()
+
+    // Dynamic import: Live2D is optional, app works without it
+    const { Live2DModel } = await import('pixi-live2d-display/cubism4')
+
+    model = await Live2DModel.from(modelPath)
+    // Disable idle group to prevent random idle motion cycling,
+    // then play motion[0] (Hiyori_m01: gentle head sway with ParamAngleX)
+    // on loop for a natural subtle swaying effect.
+    try {
+      model.internalModel?.motionManager?.stopAllMotions()
+      if (model.internalModel?.motionManager?.groups) {
+        model.internalModel.motionManager.groups.idle = '_none'
+      }
+    } catch {}
+    // Play the gentlest motion on loop (m01 has natural head sway + breathing)
+    try { model.motion("Idle", 0) } catch {}
+    model.anchor.set(0.5, 0.5)
+    // Will be overridden after applyScale below to user's preferred position
+    model.interactive = true
+
+    app.stage.addChild(model)
+
+    // Wait for bounds to be available
+    await new Promise<void>((resolve) => {
+      const check = () => {
+        const b = model.getBounds()
+        if (b?.width > 0) return resolve()
+        requestAnimationFrame(check)
+      }
+      check()
+    })
+
+    // Cache initial bounds (before any scaling) as the stable reference
+    const initialBounds = model.getBounds()
+    baseBounds = { width: initialBounds.width, height: initialBounds.height }
+
+    applyScale()
+    // Position model relative to canvas size
+    model.x = app.screen.width * POS_X_RATIO
+    model.y = app.screen.height * POS_Y_RATIO
+    userScale = INITIAL_SCALE
+    applyScale()
+    isLoaded.value = true
+    isLoading.value = false
+    updateModelInfo()
+  } catch (err: any) {
+    loadError.value = err.message
+    isLoading.value = false
+  }
+}
+
+// ===== Scale =====
+
+/**
+ * Apply current scale (strategy × userScale) using cached baseBounds.
+ * NEVER use real-time getBounds() here — creates a feedback loop.
+ */
+export function applyScale(): void {
+  const app = getApp()
+  if (!model || !app || !baseBounds) return
+  const canvas = { width: app.screen.width, height: app.screen.height }
+  // Use cached initial bounds as stable reference — NEVER real-time getBounds()
+  // because getBounds() changes as scale changes, creating a feedback loop.
+  const b = baseBounds
+
+  const scales: Record<string, number> = {
+    fit: Math.min(canvas.width / b.width, canvas.height / b.height),
+    contain: canvas.height / b.height,
+    cover: Math.max(canvas.width / b.width, canvas.height / b.height)
+  }
+
+  model.scale.set((scales[strategy] || scales.fit) * userScale)
+  // NOTE: Do NOT reset model.x/model.y/anchor here — position is
+  // managed by drag interaction. Only centerModel() changes position.
+}
+
+// ===== Positioning =====
+
+/** Center model in the current canvas. Preserves userScale. */
+export function centerModel(): void {
+  const app = getApp()
+  if (!model || !app) return
+  const cfg = STRATEGIES[strategy]
+  model.x = app.screen.width / 2
+  model.y = cfg.yRatio === 1.0 ? app.screen.height : app.screen.height / 2
+  updateModelInfo()
+}
+
+// ===== Expression & Motion =====
+
+export function setExpression(name: string): void {
+  if (!model?.internalModel?.motionManager?.expressionNames) return
+  const idx = model.internalModel.motionManager.expressionNames.indexOf(name)
+  if (idx >= 0) model.expression(idx)
+}
+
+export function playMotion(group: string, index: number): void {
+  model?.motion?.(group, index)
+}

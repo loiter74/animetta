@@ -57,7 +57,7 @@ function handleWheel(e: WheelEvent): void {
 <template>
   <div
     ref="containerRef"
-    class="relative w-full h-full select-none"
+    class="relative w-full h-full select-none live2d-container"
     @mousedown="handleMouseDown"
     @mousemove="handleMouseMove"
     @mouseup="handleMouseUp"

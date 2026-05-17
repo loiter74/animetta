@@ -38,14 +38,6 @@ class SimpleLLMClient:
 
     async def chat(self, messages, **kwargs):
         """Simple chat interface compatible with collector/analyzer expectations."""
-        system_msg = None
-        user_msg = None
-        for m in messages:
-            if m["role"] == "system":
-                system_msg = m["content"]
-            elif m["role"] == "user":
-                user_msg = m["content"]
-
         response_format = kwargs.get("response_format")
         extra = {}
         if response_format and response_format.get("type") == "json_object":
@@ -60,6 +52,10 @@ class SimpleLLMClient:
         )
         content = response.choices[0].message.content
         return {"content": content}
+
+    async def chat_messages(self, messages, **kwargs):
+        """Alias for chat() — compatible with BilibiliMemeCollector interface."""
+        return await self.chat(messages, **kwargs)
 
 
 async def main():

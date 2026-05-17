@@ -115,13 +115,55 @@ def _build_span_tree(spans: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
 
 async def health_check(request):
-    """Unified health check endpoint"""
+    """Unified health check endpoint — runs component health probes.
+
+    Returns:
+        - status: "ok" if all component checks pass, "degraded" if any fail,
+          "error" if the health check itself fails.
+        - checks: dict of component name → CheckResult (Pydantic model dumped as dict).
+    """
     import time
-    return JSONResponse({
-        "status": "ok",
-        "service": "anima",
-        "timestamp": time.time(),
-    })
+
+    timestamp = time.time()
+    try:
+        from anima.inspection.checks.health import check_all_components
+
+        checks = await check_all_components()
+        all_ok = all(c.ok for c in checks.values())
+        status = "ok" if all_ok else "degraded"
+
+        return JSONResponse({
+            "status": status,
+            "service": "anima",
+            "timestamp": timestamp,
+            "checks": {
+                name: result.model_dump()
+                for name, result in checks.items()
+            },
+        })
+    except Exception as e:
+        logger.error(f"[health] Health check failed: {e}")
+        return JSONResponse({
+            "status": "error",
+            "service": "anima",
+            "timestamp": timestamp,
+            "error": str(e),
+        })
+
+
+async def stats_inspection_latest(request: Request) -> JSONResponse:
+    """GET /api/stats/inspection/latest — most recent inspection report."""
+    try:
+        store = await get_stats_store()
+        data = await store.get_latest_inspection_report()
+        if data is None:
+            return JSONResponse(
+                {"error": "No inspection reports yet"}, status_code=404
+            )
+        return JSONResponse(data)
+    except Exception as e:
+        logger.error(f"[StatsAPI] inspection_latest failed: {e}")
+        return JSONResponse({"error": str(e)}, status_code=500)
 
 
 def get_stats_routes():
@@ -133,5 +175,6 @@ def get_stats_routes():
         Route("/api/stats/traces", stats_traces),
         Route("/api/stats/traces/{trace_id}", stats_trace_detail),
         Route("/api/stats/traces/{trace_id}/tree", stats_trace_tree),
+        Route("/api/stats/inspection/latest", stats_inspection_latest),
         Mount("/stats", app=StaticFiles(directory=STATS_FRONTEND_DIR, html=True), name="stats_dashboard"),
     ]

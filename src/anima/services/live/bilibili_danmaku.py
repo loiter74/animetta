@@ -18,8 +18,11 @@ import json
 import threading
 import time
 from dataclasses import dataclass, field, asdict
-from typing import Callable, Optional, Dict, Any, List
+from typing import Callable, Optional, Dict, Any, List, TYPE_CHECKING
 from loguru import logger
+
+if TYPE_CHECKING:
+    from anima.services.meme.danmaku_buffer import DanmakuBuffer
 
 
 @dataclass
@@ -89,6 +92,9 @@ class BilibiliDanmakuService:
         # bilibili-api client (created inside the thread)
         self._monitor = None
 
+        # DanmakuBuffer for meme collection pipeline
+        self._danmaku_buffer: Optional[DanmakuBuffer] = None
+
         # Connection state
         self._connected = False
         self._reconnect_delay = 1.0  # starts at 1s, doubles each retry
@@ -104,6 +110,15 @@ class BilibiliDanmakuService:
     def set_status_callback(self, callback: Callable[[bool, str], None]) -> None:
         """Register callback for connection status changes."""
         self._on_status_change = callback
+
+    def set_buffer(self, buffer: DanmakuBuffer) -> None:
+        """Attach a DanmakuBuffer to receive copies of all incoming danmaku.
+
+        The buffer receives the same danmaku messages forwarded to the
+        on_danmaku callback, enabling the meme collection pipeline to
+        consume real-time chat data.
+        """
+        self._danmaku_buffer = buffer
 
     @property
     def is_connected(self) -> bool:
@@ -341,6 +356,10 @@ class BilibiliDanmakuService:
                 # Forward to main thread via callback
                 if self._on_danmaku:
                     self._on_danmaku(msg)
+
+                # Push to DanmakuBuffer for meme collection pipeline
+                if self._danmaku_buffer:
+                    self._danmaku_buffer.add(msg.text, self.room_id)
 
                 self._queue.task_done()
             except asyncio.TimeoutError:

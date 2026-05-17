@@ -84,8 +84,8 @@ class LocalLoraLLM(LLMInterface):
         try:
             if torch.cuda.is_available():
                 return "cuda"
-        except:
-            pass
+        except Exception:
+            logger.debug("[LocalLoraLLM] Failed to check CUDA availability")
 
         # CUDA not available, downgrade to CPU
         logger.warning(f"[LocalLoraLLM] CUDA not available, will use CPU")

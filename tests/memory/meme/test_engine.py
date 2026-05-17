@@ -72,7 +72,7 @@ class TestMemePoolConstruction:
 
     def test_default_config(self, fake_store):
         pool = MemePool(store=fake_store)
-        assert pool.max_active == 10
+        assert pool.max_active == 20
         assert pool.k == 0.5
         assert pool.t_half_days == 7
         assert pool.resurrection_threshold == 0.6
@@ -95,7 +95,7 @@ class TestMemePoolConstruction:
 
     def test_empty_config_defaults(self, fake_store):
         pool = MemePool(store=fake_store, config={})
-        assert pool.max_active == 10
+        assert pool.max_active == 20
         assert pool.resurrection_threshold == 0.6
 
     def test_with_search_fn(self, fake_store):

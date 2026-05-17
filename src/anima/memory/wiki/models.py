@@ -9,6 +9,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Optional
 
+from loguru import logger
+
 
 class PageType(Enum):
     ENTITY = "entity"
@@ -101,5 +103,5 @@ def _parse_dt(v) -> datetime:
         try:
             return datetime.fromisoformat(v)
         except Exception:
-            pass
+            logger.warning(f"[WikiModels] Invalid datetime string: {v}")
     return datetime.now()

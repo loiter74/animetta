@@ -97,7 +97,7 @@ async def get_current_time(timezone: str = "Asia/Shanghai") -> str:
         tz = ZoneInfo(timezone)
         now = datetime.now(tz)
         return f"Current time ({timezone}): {now.strftime('%Y-%m-%d %H:%M:%S')}"
-    except:
+    except Exception:
         return f"Current local time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
 
 

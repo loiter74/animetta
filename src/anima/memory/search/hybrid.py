@@ -14,6 +14,8 @@ vector_similarity = 1 - cosine_distance
 
 from __future__ import annotations
 
+from loguru import logger
+
 from ..config import SearchConfig
 from ..models.base import SearchResult
 from ..storage.sqlite import SQLiteStore
@@ -75,8 +77,8 @@ def hybrid_search(
             similarity = max(0.0, 1.0 - distance)  # Cosine distance -> similarity
             vector_candidates[rowid] = similarity
             vector_metadata[rowid] = metadata
-    except Exception:
-        pass  # Fall back to keyword-only search when vector search fails
+    except Exception as e:
+        logger.warning(f"[HybridSearch] Vector search failed, falling back to keyword-only: {e}")
 
     # ── 2. Keyword search (BM25) ─────────────────────────
     keyword_candidates: dict[int, float] = {}  # rowid -> normalized_score
@@ -86,8 +88,8 @@ def hybrid_search(
             # OpenClaw normalization: score = 1 / (1 + rank)
             # rank starts at 0; first gets 1.0, second gets 0.5, ...
             keyword_candidates[rowid] = 1.0 / (1.0 + rank_idx)
-    except Exception:
-        pass  # Fall back to pure vector search when FTS search fails
+    except Exception as e:
+        logger.warning(f"[HybridSearch] Keyword search failed, falling back to pure vector: {e}")
 
     # ── 3. Weighted fusion ───────────────────────────────
     all_rowids = set(vector_candidates.keys()) | set(keyword_candidates.keys())
