@@ -142,6 +142,7 @@ class MinecraftBridge:
     async def _read_stdout(self):
         """Read JSON responses from bot stdout"""
         try:
+            _connection_refused_logged = False
             while self._running and self._process and self._process.stdout:
                 line = await self._process.stdout.readline()
                 if not line:
@@ -155,7 +156,13 @@ class MinecraftBridge:
                 try:
                     response = json.loads(line)
                 except json.JSONDecodeError:
-                    logger.warning(f"[MinecraftBridge] Invalid JSON from bot: {line[:100]}")
+                    # Suppress noisy individual line warnings when connection is refused
+                    if "ECONNREFUSED" in line:
+                        if not _connection_refused_logged:
+                            logger.info("[MinecraftBridge] Minecraft server not available on localhost:25565")
+                            _connection_refused_logged = True
+                    else:
+                        logger.debug(f"[MinecraftBridge] Non-JSON from bot: {line[:100]}")
                     continue
 
                 resp_id = response.get("id")

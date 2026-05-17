@@ -16,9 +16,7 @@ from .process import ProcessManager
 def start_backend(project_root: Path, pm: ProcessManager) -> tuple:
     """Start the Socket.IO backend server on port 12394."""
     info("Starting backend Socket.IO server (port 12394)...")
-    python_exe = pm._get_venv_python(project_root)
-    if python_exe != sys.executable:
-        info(f"Using virtual environment: {python_exe}")
+    python_exe = sys.executable
     src_path = project_root / "src"
     env = os.environ.copy()
     env["PYTHONPATH"] = str(src_path)
@@ -55,7 +53,7 @@ def start_vite(project_root: Path) -> tuple:
 def start_vibe_voice(project_root: Path, pm: ProcessManager):
     """Start the VibeVoice TTS local inference server."""
     info("Starting VibeVoice TTS server (port 8765)...")
-    python_exe = _get_venv_python(project_root)
+    python_exe = sys.executable
     server_script = project_root / "scripts" / "vibe_voice_server.py"
     model_path = "E:/anima_data/models/VibeVoice/VibeVoice-1.5B"
     if not server_script.exists():

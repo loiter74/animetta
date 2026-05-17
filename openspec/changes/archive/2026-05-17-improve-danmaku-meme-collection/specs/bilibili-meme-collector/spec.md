@@ -1,8 +1,10 @@
-# bilibili-meme-collector Specification
+# bilibili-meme-collector Specification (Delta)
 
 ## Purpose
-从 B 站定期采集热门视频和评论，识别新兴梗并提取关键上下文，为 MemePool 提供外部数据源。
-## Requirements
+从 B 站定期采集热门视频、评论及弹幕，识别新兴梗并提取关键上下文，为 MemePool 提供外部数据源。
+
+## MODIFIED Requirements
+
 ### Requirement: 热门视频采集
 系统 SHALL 定期从 B 站热门分区采集视频信息，包括标题、标签（tags）、播放量、视频描述。
 
@@ -64,6 +66,8 @@
 - **THEN** 系统 SHALL 返回空列表
 - **AND** 记录 info 日志 "No new meme candidates found"
 
+## ADDED Requirements
+
 ### Requirement: 弹幕数据采集
 系统 SHALL 新增弹幕数据源，从实时弹幕缓冲区 (`DanmakuBuffer`) 和历史弹幕 API (`live.get_danmaku`) 获取弹幕文本。
 
@@ -98,4 +102,3 @@
 - **WHEN** jieba 库未安装
 - **THEN** 系统 SHALL 回退到原有的字符 2-gram 方法
 - **AND** 记录 warning 日志提示安装 jieba
-

@@ -136,8 +136,8 @@ class AdminHandlers:
             g = get_active_sessions()
             if g is not None:
                 g.add(1)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"[AdminHandlers] OTel active_sessions (add) failed: {e}")
 
         if not is_electron:
             await self.sio.emit(
@@ -158,8 +158,8 @@ class AdminHandlers:
             g = get_active_sessions()
             if g is not None:
                 g.add(-1)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"[AdminHandlers] OTel active_sessions (sub) failed: {e}")
 
     # ── Config events ─────────────────────────────────────────────────
 
@@ -239,7 +239,8 @@ class AdminHandlers:
         try:
             live2d_cfg = Live2DConfig.load()
             live2d_model_path = live2d_cfg.model.path
-        except Exception:
+        except Exception as e:
+            logger.warning(f"[AdminHandlers] Failed to load Live2D config, using fallback: {e}")
             live2d_model_path = "/live2d/haru/haru_greeter_t03.model3.json"
 
         # Build safe config (NO api keys, NO secrets)
@@ -503,8 +504,8 @@ class AdminHandlers:
                             {"valid_emotions": live2d_cfg.valid_emotions}
                         )
                         live2d_prompt = builder.build_prompt()
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug(f"[AdminHandlers] Failed to build Live2D emotion prompt: {e}")
 
                 new_system_prompt = ctx.config.get_system_prompt(
                     live2d_prompt=live2d_prompt
@@ -894,9 +895,8 @@ class AdminHandlers:
                 if meme_pool:
                     active = meme_pool.store.list_active()
                     logger.info(
-                        "[%s] meme:collect — list_active returned %d memes (%d pending)",
-                        sid, len(active),
-                        len([m for m in active if m.review_status == "pending"]),
+                        f"[{sid}] meme:collect — list_active returned {len(active)} memes "
+                        f"({len([m for m in active if m.review_status == 'pending'])} pending)"
                     )
                     pending_count = len(
                         [m for m in active if m.review_status == "pending"]

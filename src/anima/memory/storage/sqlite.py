@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import logging
 import sqlite3
+import threading
 import time
 from pathlib import Path
 
@@ -33,8 +34,9 @@ class SQLiteStore:
         logger.info(f"[SQLiteStore] Parent directory confirmed")
 
         logger.info(f"[SQLiteStore] Creating SQLite connection...")
-        self.conn = sqlite3.connect(db_path, timeout=10)
+        self.conn = sqlite3.connect(db_path, timeout=10, check_same_thread=False)
         self.conn.row_factory = sqlite3.Row
+        self._lock = threading.RLock()
         self.conn.execute("PRAGMA busy_timeout = 5000")
         logger.info(f"[SQLiteStore] ✅ Connection created")
 
@@ -118,9 +120,10 @@ class SQLiteStore:
 
     def get_file_entry(self, path: str) -> FileEntry | None:
         """Get file index record."""
-        row = self.conn.execute(
-            "SELECT * FROM files WHERE path = ?", (path,)
-        ).fetchone()
+        with self._lock:
+            row = self.conn.execute(
+                "SELECT * FROM files WHERE path = ?", (path,)
+            ).fetchone()
         if row is None:
             return None
         return FileEntry(
@@ -133,48 +136,52 @@ class SQLiteStore:
 
     def upsert_file(self, entry: FileEntry):
         """Insert or update a file record."""
-        self.conn.execute(
-            """
-            INSERT INTO files (path, source, file_hash, indexed_at, chunk_count)
-            VALUES (?, ?, ?, ?, ?)
-            ON CONFLICT(path) DO UPDATE SET
-                source=excluded.source,
-                file_hash=excluded.file_hash,
-                indexed_at=excluded.indexed_at,
-                chunk_count=excluded.chunk_count
-            """,
-            (entry.path, entry.source, entry.file_hash, entry.indexed_at, entry.chunk_count),
-        )
-        self.conn.commit()
+        with self._lock:
+            self.conn.execute(
+                """
+                INSERT INTO files (path, source, file_hash, indexed_at, chunk_count)
+                VALUES (?, ?, ?, ?, ?)
+                ON CONFLICT(path) DO UPDATE SET
+                    source=excluded.source,
+                    file_hash=excluded.file_hash,
+                    indexed_at=excluded.indexed_at,
+                    chunk_count=excluded.chunk_count
+                """,
+                (entry.path, entry.source, entry.file_hash, entry.indexed_at, entry.chunk_count),
+            )
+            self.conn.commit()
 
     # ── Chunk operations ─────────────────────────────────
 
     def delete_chunks_by_path(self, path: str):
         """Delete all chunks for a file (cascade delete also cleans up FTS)."""
-        self.conn.execute("DELETE FROM chunks WHERE path = ?", (path,))
-        self.conn.commit()
+        with self._lock:
+            self.conn.execute("DELETE FROM chunks WHERE path = ?", (path,))
+            self.conn.commit()
 
     def insert_chunks(self, chunks: list[Chunk]) -> list[int]:
         """Batch insert chunks, returns list of rowids."""
-        cur = self.conn.cursor()
-        rowids = []
-        for c in chunks:
-            cur.execute(
-                """
-                INSERT INTO chunks (path, source, start_line, end_line, text, content_hash, chunk_index)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-                """,
-                (c.path, c.source, c.start_line, c.end_line, c.text, c.content_hash, c.chunk_index),
-            )
-            rowids.append(cur.lastrowid)
-        self.conn.commit()
+        with self._lock:
+            cur = self.conn.cursor()
+            rowids = []
+            for c in chunks:
+                cur.execute(
+                    """
+                    INSERT INTO chunks (path, source, start_line, end_line, text, content_hash, chunk_index)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (c.path, c.source, c.start_line, c.end_line, c.text, c.content_hash, c.chunk_index),
+                )
+                rowids.append(cur.lastrowid)
+            self.conn.commit()
         return rowids
 
     def get_chunk_by_rowid(self, rowid: int) -> Chunk | None:
         """Get chunk by rowid."""
-        row = self.conn.execute(
-            "SELECT * FROM chunks WHERE id = ?", (rowid,)
-        ).fetchone()
+        with self._lock:
+            row = self.conn.execute(
+                "SELECT * FROM chunks WHERE id = ?", (rowid,)
+            ).fetchone()
         if row is None:
             return None
         return Chunk(
@@ -196,17 +203,18 @@ class SQLiteStore:
         Returns:
             [(rowid, bm25_rank), ...] — smaller rank is better (SQLite FTS5 rank is negative, larger absolute value = more relevant)
         """
-        rows = self.conn.execute(
-            """
-            SELECT chunks.id, chunks_fts.rank
-            FROM chunks_fts
-            JOIN chunks ON chunks.id = chunks_fts.rowid
-            WHERE chunks_fts MATCH ?
-            ORDER BY chunks_fts.rank
-            LIMIT ?
-            """,
-            (query, limit),
-        ).fetchall()
+        with self._lock:
+            rows = self.conn.execute(
+                """
+                SELECT chunks.id, chunks_fts.rank
+                FROM chunks_fts
+                JOIN chunks ON chunks.id = chunks_fts.rowid
+                WHERE chunks_fts MATCH ?
+                ORDER BY chunks_fts.rank
+                LIMIT ?
+                """,
+                (query, limit),
+            ).fetchall()
         return [(row["id"], row["rank"]) for row in rows]
 
     # ── Embedding cache ─────────────────────────────────
@@ -216,26 +224,28 @@ class SQLiteStore:
         if not content_hashes:
             return set()
         placeholders = ",".join("?" for _ in content_hashes)
-        rows = self.conn.execute(
-            f"""
-            SELECT content_hash FROM embedding_cache
-            WHERE content_hash IN ({placeholders}) AND model_name = ?
-            """,
-            (*content_hashes, model_name),
-        ).fetchall()
+        with self._lock:
+            rows = self.conn.execute(
+                f"""
+                SELECT content_hash FROM embedding_cache
+                WHERE content_hash IN ({placeholders}) AND model_name = ?
+                """,
+                (*content_hashes, model_name),
+            ).fetchall()
         return {row["content_hash"] for row in rows}
 
     def mark_embedded(self, content_hashes: list[str], model_name: str):
         """Mark these contents as having completed embedding."""
         now = time.time()
-        self.conn.executemany(
-            """
-            INSERT OR IGNORE INTO embedding_cache (content_hash, model_name, created_at)
-            VALUES (?, ?, ?)
-            """,
-            [(h, model_name, now) for h in content_hashes],
-        )
-        self.conn.commit()
+        with self._lock:
+            self.conn.executemany(
+                """
+                INSERT OR IGNORE INTO embedding_cache (content_hash, model_name, created_at)
+                VALUES (?, ?, ?)
+                """,
+                [(h, model_name, now) for h in content_hashes],
+            )
+            self.conn.commit()
 
     # ── Lifecycle ─────────────────────────────────────────
 

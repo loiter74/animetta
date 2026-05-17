@@ -23,22 +23,10 @@ try:
     if env_path.exists():
         load_dotenv(env_path, override=True)
         logger.info(f"[OK] Environment variables loaded from: {env_path}")
-        glm_key = os.getenv("GLM_API_KEY")
-        if glm_key:
-            logger.info(f"[OK] GLM_API_KEY loaded from .env: {glm_key[:20]}... (length: {len(glm_key)})")
-        else:
-            logger.error("[WARNING] .env file loaded, but GLM_API_KEY is still not set!")
     else:
         logger.warning(f".env file not found: {env_path}, using system environment variables")
 except ImportError:
     logger.info("python-dotenv not installed, using system environment variables")
-
-# Final verification of key environment variables
-glm_key = os.getenv("GLM_API_KEY")
-if glm_key:
-    logger.info(f"[OK] GLM_API_KEY available at runtime: {glm_key[:20]}...")
-else:
-    logger.error("[WARNING] GLM_API_KEY not available at runtime, GLM will fall back to MockLLM")
 
 import uvicorn
 import asyncio
@@ -108,10 +96,7 @@ def run_server():
     def cleanup_on_exit():
         logger.info("Server shutting down...")
         try:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            loop.run_until_complete(_server.stop())
-            loop.close()
+            asyncio.run(_server.stop())
         except NameError:
             pass  # server not initialized
         except Exception as e:
@@ -189,6 +174,18 @@ def get_asgi_app():
         # This creates a throwaway ServiceContext that triggers all imports and model loading.
         logger.info("Starting service pre-warmup (cold-start mitigation)...")
         asyncio.ensure_future(_server.prewarm_services())
+
+        # ── Start daily inspection scheduler ────────────────────────
+        try:
+            from anima.inspection.scheduler import InspectionScheduler
+
+            _inspection_scheduler = InspectionScheduler(interval_hours=24)
+            asyncio.ensure_future(_inspection_scheduler.start())
+            logger.info("[Inspection] Daily inspection scheduler registered")
+        except Exception as e:
+            logger.warning(
+                f"[Inspection] Failed to start inspection scheduler (non-fatal): {e}"
+            )
 
         asgi_app = _server.get_app()
 

@@ -2,9 +2,7 @@
 
 ## Purpose
 后端梗筛选 REST API，提供梗列表获取、筛选结果记录、数据集导出功能。
-
-## ADDED Requirements
-
+## Requirements
 ### Requirement: 待筛选梗列表 API
 系统 SHALL 提供 `GET /api/memes/list` 接口返回待筛选梗列表。
 
@@ -48,6 +46,21 @@
 - **AND** 每项包含完整信息（text、tags、cognitive_analysis、source_url）
 - **AND** HTTP Content-Disposition 头设置为 `attachment; filename=meme_dataset.json`
 
+### Requirement: MemePool 持久化与查询一致性
+
+`MemePool.add_from_candidate()` 写入 memes 后，`store.list_active()` SHALL 能立即查询到新写入的 memes，且 `review_status` SHALL 为 `"pending"`。
+
+#### Scenario: 采集后立即可查询
+- **WHEN** `analyze_and_ingest()` 成功调用 `add_from_candidate()` 入库 3 条 memes
+- **THEN** `store.list_active()` SHALL 返回至少包含这 3 条的 active memes
+- **AND** 每条 `review_status` SHALL 为 `"pending"`
+
+#### Scenario: 日志可诊断
+- **WHEN** `add_from_candidate()` 成功保存 meme
+- **THEN** 系统 SHALL 输出 INFO 日志包含 meme.id + review_status
+- **WHEN** `get_active()` 查询 wiki
+- **THEN** 系统 SHALL 输出 DEBUG 日志包含总页数 + active 数量
+
 ### Requirement: Meme 数据模型扩展
 系统 SHALL 在 Meme 模型中增加 `review_status` 字段。
 
@@ -58,3 +71,4 @@
 #### Scenario: review_status 持久化
 - **WHEN** MemeStore 保存或更新 Meme
 - **THEN** `review_status` SHALL 通过 Wiki metadata 持久化
+

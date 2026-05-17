@@ -8,7 +8,8 @@ from typing import Optional, Dict, Any, List
 import socketio
 from loguru import logger
 from starlette.applications import Starlette
-from starlette.routing import Mount
+from starlette.responses import Response
+from starlette.routing import Mount, Route
 
 from .session import SessionManager
 from .routes import register_routes, RouteHandlers
@@ -41,8 +42,20 @@ class WebSocketServer:
         sio_app = socketio.ASGIApp(self.sio)
         stats_routes = get_stats_routes()
 
+        # Prometheus /metrics endpoint (optional — graceful fallback if package not installed)
+        metrics_route: list = []
+        try:
+            from prometheus_client import REGISTRY, generate_latest
+
+            async def metrics_endpoint(request):
+                return Response(generate_latest(REGISTRY), media_type="text/plain; charset=utf-8")
+
+            metrics_route = [Route("/metrics", metrics_endpoint)]
+        except ImportError:
+            logger.warning("[Metrics] prometheus-client not installed — /metrics disabled")
+
         self.asgi_app = Starlette(
-            routes=stats_routes + [Mount("/", app=sio_app)],
+            routes=stats_routes + metrics_route + [Mount("/", app=sio_app)],
         )
         self.model_manager = ModelLoadingManager()
         self.session_manager = SessionManager(model_manager=self.model_manager)
