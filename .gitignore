@@ -80,11 +80,8 @@ memory_db/MEMORY.md
 !memory_db/.gitkeep
 
 training_data/datasets/raw/
-
-# Stats database
-data/stats.db
-data/stats.db-*
-data/stats.db.tmp
+# Runtime data directories
+data/
 .gstack/
 
 # Coverage
