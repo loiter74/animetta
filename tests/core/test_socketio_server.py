@@ -199,6 +199,8 @@ class TestGetAsgiApp:
         """Reset lazy-init globals so get_asgi_app() re-runs."""
         mod.asgi_app = None
         mod._server = None
+        mod._INIT_DONE.clear()
+        mod._INIT_TASKS.clear()
 
     # -- Tests --------------------------------------------------------
 
