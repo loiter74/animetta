@@ -68,8 +68,8 @@ class InspectionScheduler:
           2. Infinite loop: run_full_inspection → store_report →
              (if not ok) send_alert → sleep interval_hours.
         """
-        # Warmup delay — let the server finish initializing
-        await asyncio.sleep(10)
+        # Warmup delay — let the server finish initializing (model loading, TTS cold start, etc.)
+        await asyncio.sleep(120)
         logger.info("[inspection:scheduler] Warmup complete, entering main loop")
 
         while not self._stop_event.is_set():

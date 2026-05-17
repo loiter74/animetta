@@ -24,7 +24,7 @@ from anima.inspection.models import CheckResult
 
 BACKEND_URL = "http://localhost:12394"
 CONNECTION_TIMEOUT = 5.0  # seconds
-COLLECTION_DURATION = 30.0  # seconds
+COLLECTION_DURATION = 5.0  # seconds — events arrive as soon as LLM+TTS finish
 
 # Verified against actual codebase emit() calls (see module docstring).
 # These are the core events a text-mode conversation pipeline must produce.
