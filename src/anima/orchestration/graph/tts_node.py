@@ -1,5 +1,6 @@
 """TTS node - text to speech"""
 
+import asyncio
 import re
 import time as time_module
 from typing import Dict, Any, Optional
@@ -80,7 +81,15 @@ async def tts_node(
     logger.debug(f"[{session_id}] [TTSNode] Text length: {len(response_text)} chars → {len(clean_text)} chars (cleaned)")
 
     try:
-        audio = await tts_engine.synthesize(clean_text)
+        audio = await asyncio.wait_for(
+            tts_engine.synthesize(clean_text), timeout=30.0
+        )
+    except asyncio.TimeoutError:
+        logger.warning(
+            f"[{session_id}] [TTSNode] TTS timed out after 30s"
+        )
+        await log_node_error(session_id, "tts_node", "timeout", duration_ms=30000)
+        return {"tts_audio": b"", "error": "TTS timed out after 30s"}
     except Exception as e:
         logger.warning(f"[{session_id}] [TTSNode] TTS failed ({type(e).__name__}): {e}")
         await log_node_error(session_id, "tts_node", "network_error", duration_ms=0)

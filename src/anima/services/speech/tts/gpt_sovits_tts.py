@@ -97,7 +97,7 @@ class GPTSoVITSTTS(TTSInterface):
                 "httpx is not installed, please run: pip install httpx"
             ) from e
 
-        timeout = httpx.Timeout(120.0, connect=10.0)
+        timeout = httpx.Timeout(30.0, connect=10.0)
         self._client = httpx.AsyncClient(base_url=self.base_url, timeout=timeout)
         logger.info(f"GPT-SoVITS HTTP client initialized (base_url={self.base_url})")
 
@@ -178,6 +178,18 @@ class GPTSoVITSTTS(TTSInterface):
             raise RuntimeError(
                 f"GPT-SoVITS synthesis failed (HTTP {response.status_code}): {error_msg}"
             )
+
+    async def preload(self) -> None:
+        """Warm up GPT-SoVITS by sending a short dummy request.
+
+        Called during server startup via ModelLoadingManager to ensure
+        the first real user request doesn't pay cold-start cost.
+        """
+        try:
+            await self._call_api("Hello.", text_lang="en")
+            logger.info("[GPT-SoVITS] Warmup request succeeded")
+        except Exception as e:
+            logger.info(f"[GPT-SoVITS] Warmup failed (non-fatal): {e}")
 
     async def synthesize(
         self,
