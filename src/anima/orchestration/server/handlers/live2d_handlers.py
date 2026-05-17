@@ -12,13 +12,13 @@ from loguru import logger
 if TYPE_CHECKING:
     from socketio import AsyncServer
     from ..live2d import Live2DManager
-    from .admin_handlers import AdminHandlers
+    from .base_handler import BaseSocketHandler
 
 
 class Live2DHandlers:
     """Live2D and desktop client event handlers.
 
-    Receives sio, live2d_manager, and a reference to AdminHandlers
+    Receives sio, live2d_manager, and a reference to BaseSocketHandler
     for shared utilities like broadcast_to_desktop_clients and
     _get_or_create_orchestrator.
     """
@@ -27,7 +27,7 @@ class Live2DHandlers:
         self,
         sio: "AsyncServer",
         live2d_manager: "Live2DManager",
-        admin: "AdminHandlers",
+        admin: "BaseSocketHandler",
     ):
         self.sio = sio
         self.live2d_manager = live2d_manager

@@ -28,6 +28,8 @@ try:
 except ImportError:
     logger.info("python-dotenv not installed, using system environment variables")
 
+import threading
+
 import uvicorn
 import asyncio
 
@@ -128,12 +130,28 @@ def run_server():
 _server: WebSocketServer = None
 asgi_app = None
 
+# ── Duplicate-init guards ─────────────────────────────────────────────
+# threading.Event survives module re-import (uvicorn reload/fork) where
+# `asgi_app is None` does not. Track background tasks so stale ones can
+# be cancelled if re-init is somehow triggered.
+_INIT_DONE = threading.Event()
+_INIT_TASKS: list[asyncio.Task] = []
+
 
 def get_asgi_app():
     """Get ASGI application (lazy initialization)"""
     global _server, asgi_app, global_config, user_settings
 
+    if _INIT_DONE.is_set():
+        return asgi_app
+
     if asgi_app is None:
+        # Cancel any stale tasks from a prior init attempt (belt-and-suspenders)
+        for t in _INIT_TASKS[:]:
+            if not t.done():
+                t.cancel()
+        _INIT_TASKS.clear()
+
         # Ensure config is loaded (needed when run as uvicorn subprocess)
         global global_config
         if global_config is None:
@@ -168,19 +186,19 @@ def get_asgi_app():
         # Start background model warmup (non-blocking - models load while server accepts connections)
         # warmup() is safe to call even if no services are registered yet
         logger.info("Starting background model warmup...")
-        asyncio.ensure_future(_server.model_manager.warmup())
+        _INIT_TASKS.append(asyncio.ensure_future(_server.model_manager.warmup()))
 
         # Pre-warm all services so the first real user request doesn't pay cold-start cost.
         # This creates a throwaway ServiceContext that triggers all imports and model loading.
         logger.info("Starting service pre-warmup (cold-start mitigation)...")
-        asyncio.ensure_future(_server.prewarm_services())
+        _INIT_TASKS.append(asyncio.ensure_future(_server.prewarm_services()))
 
         # ── Start daily inspection scheduler ────────────────────────
         try:
             from anima.inspection.scheduler import InspectionScheduler
 
             _inspection_scheduler = InspectionScheduler(interval_hours=24)
-            asyncio.ensure_future(_inspection_scheduler.start())
+            _INIT_TASKS.append(asyncio.ensure_future(_inspection_scheduler.start()))
             logger.info("[Inspection] Daily inspection scheduler registered")
         except Exception as e:
             logger.warning(
@@ -188,6 +206,7 @@ def get_asgi_app():
             )
 
         asgi_app = _server.get_app()
+        _INIT_DONE.set()
 
     return asgi_app
 

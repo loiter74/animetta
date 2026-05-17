@@ -12,13 +12,13 @@ from loguru import logger
 if TYPE_CHECKING:
     from socketio import AsyncServer
     from ..session import SessionManager
-    from .admin_handlers import AdminHandlers
+    from .base_handler import BaseSocketHandler
 
 
 class ChatHandlers:
     """Chat and conversation event handlers.
 
-    Receives sio, session_manager, and a reference to AdminHandlers
+    Receives sio, session_manager, and a reference to BaseSocketHandler
     for shared utilities like _get_or_create_orchestrator.
     """
 
@@ -26,7 +26,7 @@ class ChatHandlers:
         self,
         sio: "AsyncServer",
         session_manager: "SessionManager",
-        admin: "AdminHandlers",
+        admin: "BaseSocketHandler",
     ):
         self.sio = sio
         self.session_manager = session_manager
