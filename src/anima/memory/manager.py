@@ -51,6 +51,8 @@ class MemoryManager:
             import os
             os.environ['CUDA_VISIBLE_DEVICES'] = ''
             os.environ.setdefault('TORCH_CODEC_DISABLE', '1')  # suppress libtorchcodec noise
+            # Prevent HuggingFace Hub from hanging on network issues — fail fast if not cached
+            os.environ.setdefault('HF_HUB_OFFLINE', '1')
             from sentence_transformers import SentenceTransformer
             logger.info(f"[MemoryManager] loading embedding: {self.config.embedding.model_name}")
             start = time.time()

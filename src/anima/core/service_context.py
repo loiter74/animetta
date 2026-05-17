@@ -309,7 +309,12 @@ class ServiceContext:
             if embedding_cfg.get('model_name'):
                 config['embedding_model'] = embedding_cfg['model_name']
 
-            self.memory_system = MemorySystem(config)
+            # MemorySystem.__init__ loads SentenceTransformer synchronously.
+            # Run in thread so HF Hub downloads don't block the event loop.
+            self.memory_system = await asyncio.wait_for(
+                asyncio.to_thread(MemorySystem, config),
+                timeout=60.0,
+            )
             await self.memory_system.start()
             self.memory_system.sync()
 
