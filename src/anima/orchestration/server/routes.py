@@ -22,6 +22,7 @@ from .handlers.meme_handlers import MemeHandlers
 from .handlers.memory_handlers import MemoryHandlers
 from .handlers.minecraft_handlers import MinecraftHandlers
 from .handlers.persona_handlers import PersonaHandlers
+from .handlers.singing_handlers import SingingHandlers
 
 if TYPE_CHECKING:
     from .session import SessionManager
@@ -75,6 +76,9 @@ class RouteHandlers:
         self.chat = ChatHandlers(sio, session_manager, self.base)
         self.live2d = Live2DHandlers(sio, self.live2d_manager, self.base)
         self.minecraft = MinecraftHandlers(sio)
+        self.singing = SingingHandlers(
+            sio, session_manager, self.desktop_manager, self.live2d_manager
+        )
 
         # Backward-compat: expose global_config/user_settings from base
         self.global_config = self.base.global_config
@@ -267,6 +271,20 @@ class RouteHandlers:
     async def on_meme_collect(self, sid: str, data: dict) -> None:
         return await self.meme.on_meme_collect(sid, data)
 
+    # ── Singing events ────────────────────────────────────────────────
+
+    async def on_sing_process(self, sid: str, data: dict) -> None:
+        return await self.singing.on_sing_process(sid, data)
+
+    async def on_sing_confirm_lyrics(self, sid: str, data: dict) -> None:
+        return await self.singing.on_sing_confirm_lyrics(sid, data)
+
+    async def on_sing_cancel(self, sid: str, data: dict) -> None:
+        return await self.singing.on_sing_cancel(sid, data)
+
+    async def on_sing_subtitle_sync(self, sid: str, data: dict) -> None:
+        return await self.singing.on_sing_subtitle_sync(sid, data)
+
 
 def register_routes(
     sio: "AsyncServer",
@@ -354,6 +372,12 @@ def register_routes(
 
     # Personality mode runtime switching
     sio.on("set_personality_mode", handlers.on_set_personality_mode)
+
+    # Singing module events
+    sio.on("sing:process", handlers.on_sing_process)
+    sio.on("sing:confirm_lyrics", handlers.on_sing_confirm_lyrics)
+    sio.on("sing:cancel", handlers.on_sing_cancel)
+    sio.on("sing:subtitle_sync", handlers.on_sing_subtitle_sync)
 
     logger.info("WebSocket routes registered")
     return handlers

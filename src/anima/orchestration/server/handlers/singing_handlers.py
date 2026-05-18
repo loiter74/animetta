@@ -186,3 +186,18 @@ class SingingHandlers(BaseSocketHandler):
         """Cancel pipeline: sing:cancel"""
         if self._pipeline:
             await self._pipeline.cancel()
+
+    async def on_sing_subtitle_sync(self, sid: str, data: dict) -> None:
+        """Forward subtitle line to all clients.
+        
+        Receives: { text: str, translation: str }
+        Emits: sing:subtitle_line { text, translation, lang, target_lang }
+        """
+        text = data.get("text", "")
+        translation = data.get("translation", "")
+        await self.sio.emit("sing:subtitle_line", {
+            "text": text,
+            "translation": translation,
+            "lang": "zh",
+            "target_lang": "en",
+        }, to=sid)

@@ -93,6 +93,7 @@ export function useSubtitle() {
   let _onStopAudio: (() => void) | null = null
   let _onSubtitleTranslation: ((data: SubtitleTranslationEvent) => void) | null = null
   let _onAudioWithExpression: ((data: AudioWithExpressionEvent) => void) | null = null
+  let _onSingSubtitle: ((data: { text: string; translation: string; lang?: string }) => void) | null = null
 
   onMounted(() => {
     const socket = getSocket()
@@ -162,11 +163,18 @@ export function useSubtitle() {
       scheduleHide(hideDelay)
     }
 
+    _onSingSubtitle = (data: { text: string; translation: string; lang?: string }) => {
+      if (!store.enabled) return
+      showSubtitle(data.text, data.translation, data.lang || 'zh', data.lang || 'en')
+      cancelHide() // singing mode: don't auto-hide
+    }
+
     socket.on('sentence', _onSentence)
     socket.on('control', _onControl)
     socket.on('stop_audio', _onStopAudio)
     socket.on('subtitle.translation', _onSubtitleTranslation)
     socket.on('audio_with_expression', _onAudioWithExpression)
+    socket.on('sing:subtitle_line', _onSingSubtitle)
   })
 
   onUnmounted(() => {
@@ -178,6 +186,7 @@ export function useSubtitle() {
     if (_onStopAudio) socket.off('stop_audio', _onStopAudio)
     if (_onSubtitleTranslation) socket.off('subtitle.translation', _onSubtitleTranslation)
     if (_onAudioWithExpression) socket.off('audio_with_expression', _onAudioWithExpression)
+    if (_onSingSubtitle) socket.off('sing:subtitle_line', _onSingSubtitle)
     if (hideTimeout) clearTimeout(hideTimeout)
   })
 

@@ -21,6 +21,74 @@ class BilibiliDownloader:
         m = re.search(r'BV[a-zA-Z0-9]{10}', url)
         return m.group(0) if m else ""
 
+    @staticmethod
+    def extract_au_id(url: str) -> str:
+        """Extract Bilibili audio AU number from URL."""
+        m = re.search(r'/au(\d+)', url)
+        return m.group(1) if m else ""
+
+    async def fetch_lyrics_lrc(self, url: str) -> str | None:
+        """Fetch LRC lyrics from B站 audio API. Returns LRC string or None.
+        
+        For au (audio) URLs: directly GET the lyrics API.
+        For BV (video) URLs: try to find associated audio first.
+        Returns None when lyrics are unavailable (fallback to whisper).
+        """
+        import httpx
+
+        # Try AU audio URLs first
+        au_id = self.extract_au_id(url)
+        if au_id:
+            return await self._fetch_lyrics_by_sid(au_id)
+
+        # For BV URLs, try to find associated audio via yt-dlp metadata
+        bv_id = self.extract_bv_id(url)
+        if bv_id:
+            try:
+                proc = await asyncio.create_subprocess_exec(
+                    "yt-dlp", "--print", "%(id)s", "--print", "%(extractor)s",
+                    url,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                )
+                stdout, _ = await proc.communicate()
+                # yt-dlp may give us an au ID for bilibili audio URLs
+                if proc.returncode == 0 and stdout:
+                    lines = stdout.decode("utf-8", errors="replace").strip().split("\n")
+                    for line in lines:
+                        line = line.strip()
+                        if line.startswith("au") and len(line) > 2:
+                            sid = line[2:]
+                            lyrics = await self._fetch_lyrics_by_sid(sid)
+                            if lyrics:
+                                return lyrics
+            except Exception as e:
+                logger.debug(f"Failed to resolve BV to AU: {e}")
+
+        return None
+
+    async def _fetch_lyrics_by_sid(self, sid: str) -> str | None:
+        """Fetch LRC lyrics from B站 audio API by song ID."""
+        import httpx
+        api_url = f"https://www.bilibili.com/audio/music-service-c/web/song/lyric?sid={sid}"
+        try:
+            async with httpx.AsyncClient(timeout=httpx.Timeout(15.0)) as client:
+                resp = await client.get(api_url, headers={
+                    "Referer": "https://www.bilibili.com/",
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                })
+                if resp.status_code == 200:
+                    data = resp.json()
+                    if data.get("code") == 0 and data.get("data"):
+                        lrc = data["data"].get("lyric", "")
+                        if lrc and lrc.strip():
+                            logger.info(f"Fetched LRC lyrics from B站 API (sid={sid}): {len(lrc)} chars")
+                            return lrc
+                logger.debug(f"B站 lyrics API returned empty or error (sid={sid}, code={resp.status_code})")
+        except Exception as e:
+            logger.debug(f"Failed to fetch B站 lyrics for sid={sid}: {e}")
+        return None
+
     async def get_title(self, url: str) -> str:
         """Get video title from Bilibili URL via yt-dlp."""
         try:

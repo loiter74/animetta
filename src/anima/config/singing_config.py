@@ -28,8 +28,9 @@ class SeparationConfig(BaseModel):
 
 class ASRConfig(BaseModel):
     model_size: str = "large-v3"
-    language: str = "zh"
+    language: str | None = "zh"
     output_dir: str = "./data/singing/lyrics"
+    download_root: str = "E:/anima_data/models/whisper"
 
 
 class SVCConfig(BaseModel):

@@ -16,13 +16,13 @@ singing:
     rvc_path: "C:/Users/30262/RVC20240604Nvidia"
     python_exe: ""                     # auto-detect from runtime/python.exe
     model_name: "sanyueqi.pth"         # voice model file
-    index_path: ""                     # no feature index for sanyueqi
+    index_path: "logs/sanyueqi.index"     # was empty — needs index generation
     f0_method: "rmvpe"                # pitch extraction: rmvpe | pm | harvest | crepe
     f0_up_key: 0                      # semitone shift (-12 to +12)
-    index_rate: 0                      # disable timbre blend (no index)
-    filter_radius: 3
-    rms_mix_rate: 0.25
-    protect: 0.33
+    index_rate: 0.6                   # was 0 — enable timbre retrieval
+    filter_radius: 5                  # was 3 — F0 smoothing
+    rms_mix_rate: 0.5                 # was 0.25 — retain volume envelope
+    protect: 0.5                      # was 0.33 — enable feature protection
   bilibili:
     downloader: "yt-dlp"
     output_dir: "./data/singing/downloads"
@@ -31,9 +31,10 @@ singing:
     model: "htdemucs"    # htdemucs | UVR-MDX-NET-Inst_HQ_3
     output_dir: "./data/singing/separated"
   asr:
-    model_size: "base"
-    language: "zh"
+    model_size: "large-v3"     # was "base"
+    language: null             # was "zh" — auto-detect
     output_dir: "./data/singing/lyrics"
+    download_root: "E:/anima_data/models/whisper"  # NEW — configurable path
   svc:
     output_dir: "./data/singing/converted"
   output_dir: "./data/singing/outputs"

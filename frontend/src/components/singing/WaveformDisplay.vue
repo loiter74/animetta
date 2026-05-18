@@ -7,7 +7,7 @@ const props = defineProps<{
   vocalsUrl?: string
 }>()
 
-defineExpose({ connectAudio })
+defineExpose({ connectAudio, syncVocalsTime })
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 let analyser: AnalyserNode | null = null
@@ -25,7 +25,6 @@ function connectAudio(audioEl: HTMLAudioElement) {
     analyser = audioCtx.createAnalyser()
     analyser.fftSize = 256
     source.connect(analyser)
-    analyser.connect(audioCtx.destination)
   } catch { /* already connected */ }
 }
 
@@ -44,8 +43,14 @@ function loadVocalsForLipSync(url: string) {
   } catch { /* ignore */ }
 }
 
+function syncVocalsTime(time: number) {
+  if (vocalsAudio) {
+    vocalsAudio.currentTime = time
+  }
+}
+
 function getMouthValue(): number {
-  const a = vocalsAnalyser || analyser
+  const a = vocalsAnalyser
   if (!a) return 0
   const data = new Uint8Array(a.frequencyBinCount)
   a.getByteTimeDomainData(data)

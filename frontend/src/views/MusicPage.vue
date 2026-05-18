@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, nextTick } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useSingingStore } from '@/stores/singing'
 import { useSinging } from '@/composables/useSinging'
 import PlaybackControls from '@/components/singing/PlaybackControls.vue'
 import ProcessTimeline from '@/components/singing/ProcessTimeline.vue'
 import WaveformDisplay from '@/components/singing/WaveformDisplay.vue'
+import { getSocket } from '@/composables/useSocket'
 
 const store = useSingingStore()
 const { process, cancel } = useSinging()
 
 const inputUrl = ref('')
 const waveformRef = ref<InstanceType<typeof WaveformDisplay> | null>(null)
-const lyricsContainerRef = ref<HTMLElement | null>(null)
 const isMixedPlaying = ref(false)
 
 interface RecentItem {
@@ -39,12 +39,31 @@ function startProcess() {
 
 function handleTimeupdate(time: number) {
   store.currentTime = time
+
+  // Sync vocals audio for lip sync
+  waveformRef.value?.syncVocalsTime(time)
+
   if (store.result?.lyrics?.length) {
     const idx = store.result.lyrics.findIndex(
       l => time * 1000 >= l.start_ms && time * 1000 <= l.end_ms
     )
     if (idx !== store.currentLyricIndex) {
       store.currentLyricIndex = idx
+
+      // Emit subtitle sync event for SubtitleOverlay
+      const socket = getSocket()
+      if (socket?.connected) {
+        const line = store.result.lyrics[idx]
+        if (line) {
+          socket.emit('sing:subtitle_sync', {
+            index: idx,
+            text: line.text,
+            translation: line.translation || '',
+            start_ms: line.start_ms,
+            end_ms: line.end_ms,
+          })
+        }
+      }
     }
   }
 }
@@ -56,15 +75,6 @@ function handleMixedAudioReady(el: HTMLAudioElement) {
 function handleMixedPlay() { isMixedPlaying.value = true }
 function handleMixedPause() { isMixedPlaying.value = false }
 function handleMixedEnded() { isMixedPlaying.value = false }
-
-watch(() => store.currentLyricIndex, () => {
-  const idx = store.currentLyricIndex
-  if (idx < 0 || !lyricsContainerRef.value) return
-  nextTick(() => {
-    const el = lyricsContainerRef.value?.querySelector(`[data-lyric-idx="${idx}"]`)
-    el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  })
-})
 
 async function loadRecent() {
   loadingRecent.value = true
@@ -436,53 +446,6 @@ function formatTime(seconds: number): string {
                 </svg>
                 下载纯人声
               </a>
-            </div>
-          </div>
-
-          <!-- Lyrics -->
-          <div
-            v-if="store.result.lyrics && store.result.lyrics.length > 0"
-            class="glass p-4 space-y-3"
-          >
-            <div class="flex items-center gap-2">
-              <h3 class="text-sm font-medium text-c-text">歌词</h3>
-              <span class="text-[10px] text-c-text-dim">
-                {{ store.result.lyrics.length }} 行
-              </span>
-            </div>
-
-            <div
-              ref="lyricsContainerRef"
-              class="max-h-48 overflow-y-auto space-y-1.5 pr-2
-                     scrollbar-thin scrollbar-thumb-c-border scrollbar-track-transparent"
-            >
-              <div
-                v-for="(line, idx) in store.result.lyrics"
-                :key="idx"
-                :data-lyric-idx="idx"
-                class="px-3 py-1.5 rounded-lg transition-all duration-200"
-                :class="{
-                  'bg-c-accent/10 text-c-accent font-medium':
-                    idx === store.currentLyricIndex,
-                  'text-c-text-dim hover:text-c-text':
-                    idx !== store.currentLyricIndex,
-                }"
-              >
-                <div class="text-sm leading-relaxed">{{ line.text }}</div>
-                <div
-                  v-if="line.translation"
-                  class="text-xs text-c-text-muted mt-0.5 leading-relaxed"
-                >
-                  {{ line.translation }}
-                </div>
-              </div>
-
-              <div
-                v-if="store.result.lyrics.length === 0"
-                class="text-xs text-c-text-dim text-center py-4"
-              >
-                暂无歌词
-              </div>
             </div>
           </div>
 

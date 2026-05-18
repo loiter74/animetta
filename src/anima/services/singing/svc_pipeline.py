@@ -38,6 +38,7 @@ class SVCPipeline(SingingService):
         self._confirmed_ass: Optional[str] = None
         self._on_progress: Optional[Callable[[PipelineProgress], None]] = None
         self._session_dir: Optional[Path] = None
+        self._source_url: str = ""
 
         self._downloader = BilibiliDownloader(config.bilibili.output_dir)
         self._separator = create_separator(
@@ -49,6 +50,7 @@ class SVCPipeline(SingingService):
             model_size=config.asr.model_size,
             language=config.asr.language,
             output_dir=config.asr.output_dir,
+            download_root=config.asr.download_root,
         )
         self._svc = SVCBridge(config.gpt_sovits)
         self._rvc = RVCBridge(
@@ -91,6 +93,7 @@ class SVCPipeline(SingingService):
         """
         self._cancelled = False
         self._auto_confirm = auto_confirm_lyrics
+        self._source_url = url
 
         try:
             self._update_progress(PipelineStage.DOWNLOADING, 0, "Starting download...")
@@ -157,23 +160,44 @@ class SVCPipeline(SingingService):
         self._check_cancelled()
         self._update_progress(PipelineStage.SEPARATING, 100, "Separation complete")
 
-        # Stage 3: Transcribe
-        self._update_progress(PipelineStage.TRANSCRIBING, 0, "Transcribing lyrics...")
-        ass_content = await self._lyrics_gen.transcribe(vocals_path)
-        self._check_cancelled()
+        # Stage 2.5: Try B站 native lyrics first
+        lrc = None
+        if self._source_url:
+            try:
+                lrc = await self._downloader.fetch_lyrics_lrc(self._source_url)
+            except Exception as e:
+                logger.debug(f"B站 lyrics lookup failed (will use whisper): {e}")
 
+        if lrc:
+            lyric_lines = LyricsGenerator.parse_lrc(lrc)
+            logger.info(f"Using B站 native lyrics: {len(lyric_lines)} lines")
+            # Generate .ass from LRC lines for subtitle display/compatibility
+            ass_content = self._lyrics_gen._build_ass_header()
+            for ll in lyric_lines:
+                start = self._lyrics_gen._sec_to_ass_time(ll.start_ms / 1000.0)
+                end = self._lyrics_gen._sec_to_ass_time(ll.end_ms / 1000.0)
+                ass_content += f"Dialogue: 0,{start},{end},Default,,0,0,0,,{ll.text}\n"
+            self._confirmed_ass = ass_content
+        else:
+            # Stage 3: whisper transcription (fallback)
+            self._update_progress(PipelineStage.TRANSCRIBING, 0, "Transcribing lyrics...")
+            ass_content = await self._lyrics_gen.transcribe(vocals_path)
+            self._check_cancelled()
+            self._update_progress(PipelineStage.TRANSCRIBING, 100, "Lyrics ready")
+
+        # Save .ass file
         ass_path = session_dir / "lyrics.ass"
         ass_path.write_text(ass_content, encoding="utf-8")
-        # Also copy to output root for API serving
         subtitle_output_name = f"{session_id}_lyrics.ass"
         subtitle_output_path = Path(self.config.output_dir) / subtitle_output_name
         subtitle_output_path.write_text(ass_content, encoding="utf-8")
         self._message = f"Lyrics saved to {ass_path}"
 
-        self._update_progress(PipelineStage.TRANSCRIBING, 100, "Lyrics ready")
-
         # Stage 4: Wait for user confirmation (or auto-confirm)
-        if self._auto_confirm:
+        if lrc:
+            # B站 native lyrics — already confirmed, skip wait
+            pass
+        elif self._auto_confirm:
             self._confirmed_ass = ass_content
             self._update_progress(
                 PipelineStage.WAITING_LYRICS, 100, "Lyrics auto-confirmed"
@@ -188,7 +212,9 @@ class SVCPipeline(SingingService):
             self._check_cancelled()
             self._update_progress(PipelineStage.WAITING_LYRICS, 100, "Lyrics confirmed")
 
-        lyric_lines = self._lyrics_gen.parse_lyric_lines(self._confirmed_ass)
+        # Parse lyrics (only for whisper fallback; LRC already parsed)
+        if not lrc:
+            lyric_lines = self._lyrics_gen.parse_lyric_lines(self._confirmed_ass)
 
         # Stage 5: Voice Conversion (RVC preferred, SVC/fallback)
         self._update_progress(PipelineStage.CONVERTING, 0, "Converting vocals...")

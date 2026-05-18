@@ -1,6 +1,7 @@
 """Lyrics recognition — ASR + .ass generation."""
 
 import asyncio
+import re
 from pathlib import Path
 
 from loguru import logger
@@ -13,13 +14,15 @@ class LyricsGenerator:
     def __init__(
         self,
         model_size: str = "base",
-        language: str = "zh",
+        language: str | None = "zh",
         output_dir: str = "./data/singing/lyrics",
+        download_root: str = "E:/anima_data/models/whisper",
     ):
         self.model_size = model_size
         self.language = language
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.download_root = download_root
 
     async def transcribe(self, audio_path: str) -> str:
         """Transcribe vocals audio and generate .ass subtitle content."""
@@ -29,17 +32,20 @@ class LyricsGenerator:
 
         model = faster_whisper.WhisperModel(
             self.model_size,
-            download_root="E:/anima_data/models/whisper",
+            download_root=self.download_root,
         )
 
         def _do_transcribe():
-            segments_gen, info = model.transcribe(audio_path, language=self.language)
+            transcribe_kwargs: dict = {}
+            if self.language:
+                transcribe_kwargs["language"] = self.language
+            segments_gen, info = model.transcribe(audio_path, **transcribe_kwargs)
             return list(segments_gen), info
 
         segments, info = await asyncio.to_thread(_do_transcribe)
 
         ass_lines = self._segments_to_ass(segments)
-        ass_content = self._build_ass_header() + "\n".join(ass_lines)
+        ass_content = self._build_ass_header() + "\n".join(ass_lines) + "\n"
 
         logger.info(f"Transcription complete: {len(segments)} segments")
         return ass_content
@@ -75,7 +81,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         h = int(seconds // 3600)
         m = int((seconds % 3600) // 60)
         s = int(seconds % 60)
-        cs = int((seconds - int(seconds)) * 100)
+        cs = int((seconds - int(seconds)) * 100 + 0.5)
         return f"{h}:{m:02d}:{s:02d}.{cs:02d}"
 
     def parse_lyric_lines(self, ass_content: str) -> list[LyricLine]:
@@ -100,6 +106,24 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         h, m, s = time_str.split(":")
         s, cs = s.split(".")
         return (int(h) * 3600 + int(m) * 60 + int(s)) * 1000 + int(cs) * 10
+
+    @staticmethod
+    def parse_lrc(lrc_text: str) -> list[LyricLine]:
+        """Parse LRC format into LyricLine list. Handles [mm:ss.xx] format."""
+        lines: list[LyricLine] = []
+        for line in lrc_text.strip().split("\n"):
+            m = re.match(r"\[(\d+):(\d+)\.(\d+)\](.*)", line)
+            if m:
+                mins, secs, cs, text = int(m[1]), int(m[2]), int(m[3]), m[4].strip()
+                if text:
+                    start_ms = (mins * 60 + secs) * 1000 + cs * 10
+                    lines.append(LyricLine(text=text, start_ms=start_ms, end_ms=0))
+        # Fill end_ms: each line ends where next begins
+        for i in range(len(lines) - 1):
+            lines[i].end_ms = lines[i + 1].start_ms
+        if lines:
+            lines[-1].end_ms = lines[-1].start_ms + 3000  # 3s default
+        return lines
 
     async def close(self) -> None:
         pass
