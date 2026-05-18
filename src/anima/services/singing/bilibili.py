@@ -1,0 +1,120 @@
+"""Bilibili audio downloader — yt-dlp wrapper. Extracts video title for naming."""
+
+import asyncio
+import hashlib
+import re
+from pathlib import Path
+
+from loguru import logger
+
+
+class BilibiliDownloader:
+    """Download audio from Bilibili video URL using yt-dlp."""
+
+    def __init__(self, output_dir: str = "./data/singing/downloads"):
+        self.output_dir = Path(output_dir)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+
+    @staticmethod
+    def extract_bv_id(url: str) -> str:
+        """Extract Bilibili BV number from URL."""
+        m = re.search(r'BV[a-zA-Z0-9]{10}', url)
+        return m.group(0) if m else ""
+
+    async def get_title(self, url: str) -> str:
+        """Get video title from Bilibili URL via yt-dlp."""
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                "yt-dlp", "--get-title", url,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            stdout, stderr = await proc.communicate()
+            if proc.returncode == 0 and stdout:
+                return stdout.decode("utf-8", errors="replace").strip()
+        except Exception as e:
+            logger.warning(f"Failed to get video title: {e}")
+        return ""
+
+    def _sanitize_filename(self, name: str) -> str:
+        """Sanitize string for use as filename."""
+        return re.sub(r'[<>:"/\\|?*\n\r\t]', '_', name)[:60].strip()
+
+    async def download(self, url: str) -> tuple[str, str, str]:
+        """Download audio track from Bilibili URL.
+        
+        Returns:
+            Tuple of (file_path, video_title, bv_id).
+        """
+        logger.info(f"Downloading Bilibili audio: {url}")
+
+        bv_id = self.extract_bv_id(url)
+        url_hash = hashlib.md5(url.encode()).hexdigest()[:12]
+        output_path = self.output_dir / f"{url_hash}.wav"
+
+        # Get video title (for metadata)
+        title = await self.get_title(url)
+
+        if output_path.exists():
+            # Read cached title from metadata file
+            meta_path = self.output_dir / f"{url_hash}.meta"
+            cached_title = title
+            if meta_path.exists() and not title:
+                try:
+                    cached_title = meta_path.read_text(encoding="utf-8").strip()
+                except Exception:
+                    pass
+            else:
+                try:
+                    meta_path.write_text(title, encoding="utf-8")
+                except Exception:
+                    pass
+            logger.info(f"Using cached download: {output_path} (title: {cached_title})")
+            return str(output_path), cached_title, bv_id
+
+        cmd = [
+            "yt-dlp",
+            "--extract-audio",
+            "--audio-format", "wav",
+            "--audio-quality", "0",
+            "-o", str(output_path.with_suffix("")),
+            url,
+        ]
+
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            stdout, stderr = await proc.communicate()
+
+            if proc.returncode != 0:
+                err_text = stderr.decode("utf-8", errors="replace")[:500] if stderr else "(no output)"
+                raise RuntimeError(
+                    f"yt-dlp failed (code {proc.returncode}): {err_text}"
+                )
+
+            actual_path = output_path.with_suffix(".wav")
+            if not actual_path.exists():
+                candidates = list(self.output_dir.glob(f"{url_hash}*"))
+                if candidates:
+                    actual_path = candidates[0]
+                else:
+                    raise RuntimeError(f"Downloaded file not found for hash: {url_hash}")
+
+            # Save title metadata
+            if title:
+                meta_path = self.output_dir / f"{url_hash}.meta"
+                meta_path.write_text(title, encoding="utf-8")
+
+            logger.info(f"Download complete: {actual_path} (title: {title or bv_id})")
+            return str(actual_path), title, bv_id
+
+        except FileNotFoundError:
+            raise RuntimeError(
+                "yt-dlp not found. Install with: pip install yt-dlp"
+            ) from None
+
+    async def close(self) -> None:
+        pass

@@ -1,0 +1,44 @@
+export type PipelineStage =
+  | 'idle'
+  | 'downloading'
+  | 'separating'
+  | 'transcribing'
+  | 'waiting_lyrics'
+  | 'converting'
+  | 'mixing'
+  | 'done'
+  | 'error'
+
+export interface PipelineProgress {
+  stage: PipelineStage
+  progress: number
+  message: string
+}
+
+export interface LyricLine {
+  text: string
+  translation: string
+  start_ms: number
+  end_ms: number
+}
+
+export interface SongResult {
+  audio_url: string
+  subtitle_url: string
+  tts_audio_url: string
+  vocals_url: string
+  original_url: string
+  video_title: string
+  duration: number
+  lyrics: LyricLine[]
+  volumes?: number[]
+}
+
+export interface SongState {
+  url: string
+  status: PipelineStage
+  progress: number
+  message: string
+  result: SongResult | null
+  error: string
+}

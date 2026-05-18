@@ -45,6 +45,15 @@ function goTo(name: string) {
 
       <div class="flex items-center pr-4 gap-2">
         <button
+          @click="goTo('music')"
+          class="px-3 py-1 text-xs rounded-lg transition-colors"
+          :class="route.name === 'music'
+            ? 'bg-c-accent text-white'
+            : 'bg-white/10 text-c-text-dim hover:bg-white/20'"
+        >
+          音乐制作
+        </button>
+        <button
           @click="goTo('meme-review')"
           class="px-3 py-1 text-xs rounded-lg transition-colors"
           :class="route.name === 'meme-review'

@@ -1,0 +1,105 @@
+"""Lyrics recognition — ASR + .ass generation."""
+
+import asyncio
+from pathlib import Path
+
+from loguru import logger
+from .interface import LyricLine
+
+
+class LyricsGenerator:
+    """Generate .ass subtitle from vocals audio using Whisper."""
+
+    def __init__(
+        self,
+        model_size: str = "base",
+        language: str = "zh",
+        output_dir: str = "./data/singing/lyrics",
+    ):
+        self.model_size = model_size
+        self.language = language
+        self.output_dir = Path(output_dir)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+
+    async def transcribe(self, audio_path: str) -> str:
+        """Transcribe vocals audio and generate .ass subtitle content."""
+        logger.info(f"Transcribing vocals: {audio_path}")
+
+        import faster_whisper
+
+        model = faster_whisper.WhisperModel(
+            self.model_size,
+            download_root="E:/anima_data/models/whisper",
+        )
+
+        def _do_transcribe():
+            segments_gen, info = model.transcribe(audio_path, language=self.language)
+            return list(segments_gen), info
+
+        segments, info = await asyncio.to_thread(_do_transcribe)
+
+        ass_lines = self._segments_to_ass(segments)
+        ass_content = self._build_ass_header() + "\n".join(ass_lines)
+
+        logger.info(f"Transcription complete: {len(segments)} segments")
+        return ass_content
+
+    def _build_ass_header(self) -> str:
+        return """[Script Info]
+ScriptType: v4.00+
+PlayResX: 1920
+PlayResY: 1080
+Title: Singing Lyrics
+Language: zh
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Microsoft YaHei,48,&H00FFFFFF,&H0000FFFF,&H00000000,&H80000000,-1,0,0,2,2,30,2,20,20,134
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+"""
+
+    def _segments_to_ass(self, segments) -> list[str]:
+        lines = []
+        for seg in segments:
+            start = self._sec_to_ass_time(seg.start)
+            end = self._sec_to_ass_time(seg.end)
+            text = seg.text.strip()
+            if text:
+                lines.append(f"Dialogue: 0,{start},{end},Default,,0,0,0,,{text}")
+        return lines
+
+    @staticmethod
+    def _sec_to_ass_time(seconds: float) -> str:
+        h = int(seconds // 3600)
+        m = int((seconds % 3600) // 60)
+        s = int(seconds % 60)
+        cs = int((seconds - int(seconds)) * 100)
+        return f"{h}:{m:02d}:{s:02d}.{cs:02d}"
+
+    def parse_lyric_lines(self, ass_content: str) -> list[LyricLine]:
+        """Parse .ass content into LyricLine list."""
+        lines = []
+        for line in ass_content.split("\n"):
+            if line.startswith("Dialogue:"):
+                parts = line.split(",", 9)
+                if len(parts) >= 10:
+                    start_str = parts[1].strip()
+                    end_str = parts[2].strip()
+                    text = parts[9].strip()
+                    lines.append(LyricLine(
+                        text=text,
+                        start_ms=self._ass_time_to_ms(start_str),
+                        end_ms=self._ass_time_to_ms(end_str),
+                    ))
+        return lines
+
+    @staticmethod
+    def _ass_time_to_ms(time_str: str) -> int:
+        h, m, s = time_str.split(":")
+        s, cs = s.split(".")
+        return (int(h) * 3600 + int(m) * 60 + int(s)) * 1000 + int(cs) * 10
+
+    async def close(self) -> None:
+        pass

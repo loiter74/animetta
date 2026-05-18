@@ -18,6 +18,11 @@ const router = createRouter({
       name: 'meme-review',
       component: () => import('../views/MemeReview.vue'),
     },
+    {
+      path: '/music',
+      name: 'music',
+      component: () => import('../views/MusicPage.vue'),
+    },
   ],
 })
 
