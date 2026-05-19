@@ -51,7 +51,7 @@ class Qwen3TTSConfig(TTSBaseConfig):
     )
     max_new_tokens: int = Field(
         default=4096,
-        ge=512,
+        ge=128,
         le=16384,
         description="Maximum audio tokens to generate",
     )
