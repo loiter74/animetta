@@ -82,13 +82,13 @@ async def tts_node(
 
     try:
         audio = await asyncio.wait_for(
-            tts_engine.synthesize(clean_text), timeout=120.0
+            tts_engine.synthesize(clean_text), timeout=180.0
         )
     except asyncio.TimeoutError:
         logger.warning(
             f"[{session_id}] [TTSNode] TTS timed out after 30s"
         )
-        await log_node_error(session_id, "tts_node", "timeout", duration_ms=30000)
+        await log_node_error(session_id, "tts_node", "timeout", duration_ms=180000)
         return {"tts_audio": b"", "error": "TTS timed out after 30s"}
     except Exception as e:
         logger.warning(f"[{session_id}] [TTSNode] TTS failed ({type(e).__name__}): {e}")
