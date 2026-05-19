@@ -95,6 +95,7 @@ class Qwen3TTSTTS(TTSInterface):
                 return
 
             logger.info(f"Loading Qwen3-TTS model: {self.model} (device={self.device}, dtype={self.dtype})")
+            logger.info("First load downloads ~4GB model + tokenizer, may take 2-5 minutes depending on network...")
             try:
                 from qwen_tts import Qwen3TTSModel
                 import torch
