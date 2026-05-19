@@ -205,11 +205,11 @@ tts:
     type: qwen3
     model: "Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice"
     speaker: "Vivian"
-    device: "cpu"
+    device: "cuda:0"
     dtype: "float16"
     default_instruct: ""
     language: "Chinese"
-    max_new_tokens: 2048
+    max_new_tokens: 1024
     top_p: 0.9
     temperature: 0.9
     repetition_penalty: 1.05
