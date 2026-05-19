@@ -134,6 +134,21 @@ class TTSFactory:
             elif provider == "mock":
                 from anima.config.providers.tts.mock import MockTTSConfig
                 return MockTTSConfig()
+            elif provider == "qwen3":
+                from anima.config.providers.tts.qwen3 import Qwen3TTSConfig
+                return Qwen3TTSConfig(
+                    model=kwargs.get("model", "Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice"),
+                    speaker=kwargs.get("speaker", "Vivian"),
+                    device=kwargs.get("device", "cuda:0"),
+                    dtype=kwargs.get("dtype", "bfloat16"),
+                    default_instruct=kwargs.get("default_instruct", ""),
+                    language=kwargs.get("language", "Chinese"),
+                    max_new_tokens=kwargs.get("max_new_tokens", 4096),
+                    top_p=kwargs.get("top_p", 0.9),
+                    temperature=kwargs.get("temperature", 0.9),
+                    repetition_penalty=kwargs.get("repetition_penalty", 1.05),
+                    use_flash_attn=kwargs.get("use_flash_attn", True),
+                )
             else:
                 return None
         except ImportError as e:
