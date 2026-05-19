@@ -274,7 +274,7 @@ llm:
       # 使用 style_transfer 训练的 LoRA（与 7B 模型兼容）
       lora_path: "E:/anima_data/models/style_transfer/final/lora"
       device: cpu  # cuda / cpu
-      max_new_tokens: 512
+    max_new_tokens: 128
       temperature: 0.8
       top_p: 0.9
 
