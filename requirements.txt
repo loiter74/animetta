@@ -18,6 +18,9 @@ edge-tts>=6.1.0
 # Models auto-download from HuggingFace on first use (~300MB)
 kokoro>=0.9.4
 
+# Qwen3 TTS (CustomVoice model)
+qwen-tts>=0.1.0
+
 python-dotenv>=1.0.0
 pydub>=0.25.0
 # Python 3.13+ compat: audioop was removed, audioop-lts backports it
