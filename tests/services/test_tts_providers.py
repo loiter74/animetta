@@ -50,6 +50,11 @@ def _fake_external_modules():
     fake_kokoro.KPipeline = MagicMock()
     fakes["kokoro"] = fake_kokoro
 
+    # qwen_tts.Qwen3TTSModel
+    fake_qwen_tts = MagicMock()
+    fake_qwen_tts.Qwen3TTSModel = MagicMock()
+    fakes["qwen_tts"] = fake_qwen_tts
+
     # Install all fake modules
     for mod_name, mod in fakes.items():
         sys.modules[mod_name] = mod
@@ -97,6 +102,7 @@ class TestInterfaceContract:
             pytest.importorskip("anima.services.speech.tts.gpt_sovits_tts").GPTSoVITSTTS,
             pytest.importorskip("anima.services.speech.tts.kokoro_tts").KokoroTTS,
             pytest.importorskip("anima.services.speech.tts.vibe_voice_tts").VibeVoiceTTS,
+            pytest.importorskip("anima.services.speech.tts.qwen3_tts").Qwen3TTSTTS,
         ],
     )
     def test_implements_tts_interface(self, provider_cls):
@@ -112,6 +118,7 @@ class TestInterfaceContract:
             pytest.importorskip("anima.services.speech.tts.gpt_sovits_tts").GPTSoVITSTTS,
             pytest.importorskip("anima.services.speech.tts.kokoro_tts").KokoroTTS,
             pytest.importorskip("anima.services.speech.tts.vibe_voice_tts").VibeVoiceTTS,
+            pytest.importorskip("anima.services.speech.tts.qwen3_tts").Qwen3TTSTTS,
         ],
     )
     def test_has_from_config_classmethod(self, provider_cls):
@@ -575,6 +582,84 @@ class TestVibeVoiceTTS:
         tts._client = mock_client
         await tts.close()
         mock_client.aclose.assert_awaited_once()
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# Qwen3TTSTTS
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestQwen3TTSTTS:
+    """Qwen3TTSTTS — local Qwen3-TTS model inference."""
+
+    @pytest.mark.asyncio
+    async def test_synthesize_returns_audio_bytes(self):
+        from anima.services.speech.tts.qwen3_tts import Qwen3TTSTTS
+
+        import numpy as np
+        mock_model = MagicMock()
+        fake_audio = np.zeros(24000, dtype=np.float32)
+        mock_model.generate_custom_voice.return_value = ([fake_audio], 24000)
+        sys.modules["qwen_tts"].Qwen3TTSModel.from_pretrained.return_value = mock_model
+
+        tts = Qwen3TTSTTS(device="cpu")
+        result = await tts.synthesize("你好")
+        assert isinstance(result, bytes)
+        assert len(result) > 0
+
+    @pytest.mark.asyncio
+    async def test_synthesize_empty_text_returns_empty(self):
+        from anima.services.speech.tts.qwen3_tts import Qwen3TTSTTS
+
+        tts = Qwen3TTSTTS(device="cpu")
+        result = await tts.synthesize("")
+        assert result == b""
+
+    def test_from_config_all_fields(self):
+        from anima.services.speech.tts.qwen3_tts import Qwen3TTSTTS
+
+        config = _make_config_mock(
+            model="test/model",
+            speaker="TestVoice",
+            device="cpu",
+            dtype="float16",
+            default_instruct="用温柔的语气",
+            language="Japanese",
+            max_new_tokens=2048,
+            use_flash_attn=False,
+        )
+        tts = Qwen3TTSTTS.from_config(config)
+        assert tts.speaker == "TestVoice"
+        assert tts.device == "cpu"
+        assert tts.default_instruct == "用温柔的语气"
+        assert tts.language == "Japanese"
+        assert tts.max_new_tokens == 2048
+
+    @pytest.mark.asyncio
+    async def test_preload_uses_executor(self):
+        from anima.services.speech.tts.qwen3_tts import Qwen3TTSTTS
+
+        mock_model = MagicMock()
+        sys.modules["qwen_tts"].Qwen3TTSModel.from_pretrained.return_value = mock_model
+
+        tts = Qwen3TTSTTS(device="cpu")
+        await tts.preload()
+        assert tts._loaded is True
+
+    @pytest.mark.asyncio
+    async def test_close_without_model(self):
+        from anima.services.speech.tts.qwen3_tts import Qwen3TTSTTS
+
+        tts = Qwen3TTSTTS(device="cpu")
+        await tts.close()  # Should not raise
+
+    @pytest.mark.asyncio
+    async def test_synthesize_stream_raises_not_implemented(self):
+        from anima.services.speech.tts.qwen3_tts import Qwen3TTSTTS
+
+        tts = Qwen3TTSTTS(device="cpu")
+        with pytest.raises(NotImplementedError):
+            await tts.synthesize_stream("hello")
 
 
 # ═══════════════════════════════════════════════════════════════════════

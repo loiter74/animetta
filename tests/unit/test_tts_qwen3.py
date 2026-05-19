@@ -1,0 +1,69 @@
+"""Unit tests for Qwen3-TTS provider (config + registry + from_config)"""
+
+import pytest
+
+from anima.config.providers.tts.qwen3 import Qwen3TTSConfig
+from anima.services.speech.tts.qwen3_tts import Qwen3TTSTTS
+from anima.config.core.registry import ProviderRegistry
+
+
+class TestQwen3TTSConfigUnit:
+    def test_default_config_values(self):
+        config = Qwen3TTSConfig()
+        assert config.type == "qwen3"
+        assert config.model == "Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice"
+        assert config.speaker == "Vivian"
+        assert config.device == "cuda:0"
+        assert config.default_instruct == ""
+        assert config.language == "Chinese"
+
+    def test_custom_config_values(self):
+        config = Qwen3TTSConfig(
+            model="custom/model",
+            speaker="Aria",
+            device="cpu",
+            default_instruct="用愤怒的语气说",
+            language="English",
+        )
+        assert config.speaker == "Aria"
+        assert config.device == "cpu"
+        assert config.default_instruct == "用愤怒的语气说"
+
+    def test_config_registered_in_registry(self):
+        assert "qwen3" in ProviderRegistry.list_services("tts")
+
+    def test_max_new_tokens_bounds(self):
+        with pytest.raises(Exception):
+            Qwen3TTSConfig(max_new_tokens=100)
+
+    @pytest.mark.parametrize("dtype", ["bfloat16", "float16"])
+    def test_valid_dtype_values(self, dtype):
+        config = Qwen3TTSConfig(dtype=dtype)
+        assert config.dtype == dtype
+
+
+class TestQwen3TTSTTSUnit:
+    def test_from_config_creates_lazy(self):
+        config = Qwen3TTSConfig(device="cpu")
+        tts = Qwen3TTSTTS.from_config(config)
+        assert tts._model is None
+        assert tts._loaded is False
+
+    def test_from_config_preserves_instruct(self):
+        config = Qwen3TTSConfig(
+            default_instruct="温柔地轻声说",
+            speaker="Luna",
+        )
+        tts = Qwen3TTSTTS.from_config(config)
+        assert tts.default_instruct == "温柔地轻声说"
+        assert tts.speaker == "Luna"
+
+    def test_server_switching_preserves_preload_method(self):
+        tts = Qwen3TTSTTS(device="cpu")
+        assert hasattr(tts, "preload") and callable(tts.preload)
+        assert hasattr(tts, "close") and callable(tts.close)
+
+    def test_lock_initialized(self):
+        tts = Qwen3TTSTTS(device="cpu")
+        assert hasattr(tts, "_load_lock")
+        assert hasattr(tts, "_synth_done")
