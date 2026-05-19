@@ -149,16 +149,15 @@ class Qwen3TTSTTS(TTSInterface):
                     ) from e
                 raise
             except Exception as e:
-                error_msg = str(e).lower()
-                if "401" in error_msg or "403" in error_msg or "unauthorized" in error_msg:
-                    raise RuntimeError(
-                        "HuggingFace authentication failed. Run: huggingface-cli login"
-                    ) from e
-                if "timeout" in error_msg or "connection" in error_msg:
-                    raise RuntimeError(
-                        "Network error downloading model. Check internet connection or set HF_ENDPOINT."
-                    ) from e
-                raise
+                if "flash_attn" in str(e).lower() and "attn_implementation" in kwargs:
+                    logger.warning("FlashAttention not installed, retrying with default attention...")
+                    del kwargs["attn_implementation"]
+                    self.use_flash_attn = False
+                    self._model = Qwen3TTSModel.from_pretrained(self.model, **kwargs)
+                    self._loaded = True
+                    logger.info("Qwen3-TTS model loaded successfully (without FlashAttention)")
+                else:
+                    raise
 
     @classmethod
     def from_config(cls, config: Qwen3TTSConfig, **kwargs) -> "Qwen3TTSTTS":
