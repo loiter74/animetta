@@ -82,7 +82,7 @@ async def tts_node(
 
     try:
         audio = await asyncio.wait_for(
-            tts_engine.synthesize(clean_text), timeout=30.0
+            tts_engine.synthesize(clean_text), timeout=120.0
         )
     except asyncio.TimeoutError:
         logger.warning(
