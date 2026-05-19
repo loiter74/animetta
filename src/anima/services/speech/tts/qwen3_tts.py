@@ -109,6 +109,16 @@ class Qwen3TTSTTS(TTSInterface):
                 logger.warning("CUDA requested but not available, falling back to CPU")
                 self.device = "cpu"
 
+            # GPU optimizations for inference speed
+            if self.device.startswith("cuda"):
+                torch.backends.cudnn.benchmark = True
+                torch.backends.cuda.matmul.allow_tf32 = True
+                if hasattr(torch.backends.cuda, 'enable_flash_sdp'):
+                    torch.backends.cuda.enable_flash_sdp(True)
+                if hasattr(torch.backends.cuda, 'enable_mem_efficient_sdp'):
+                    torch.backends.cuda.enable_mem_efficient_sdp(True)
+                logger.debug("CUDA optimizations: cudnn.benchmark=ON, tf32=ON, flash_sdp=ON")
+
             # Check available VRAM
             if self.device.startswith("cuda"):
                 free_vram = torch.cuda.get_device_properties(self.device).total_memory / (1024**3)
