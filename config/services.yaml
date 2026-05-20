@@ -215,12 +215,12 @@ tts:
     repetition_penalty: 1.05
     use_flash_attn: false
 
-  # Qwen3-TTS voice clone (zero-shot voice cloning -- 久远寺有珠 参考音声)
-  # NOTE: Requires Base model (not CustomVoice). Voice clone only works with Base.
+  # Qwen3-TTS 久远寺有珠 微调模型（3 epoch SFT on 2,675 segments）
+  # Fine-tuned from 1.7B-Base, speaker="arisu", uses generate_custom_voice()
   qwen3_voice_clone:
     type: qwen3
-    model: "C:/Users/30262/.cache/huggingface/hub/models--Qwen--Qwen3-TTS-12Hz-1.7B-Base/snapshots/fd4b254389122332181a7c3db7f27e918eec64e3"
-    speaker: "Vivian"
+    model: "E:/anima_data/tts_training/kuonji_arisu/finetune_output/checkpoint-epoch-2"
+    speaker: "arisu"
     device: "cuda:0"
     dtype: "float16"
     default_instruct: ""
@@ -230,8 +230,6 @@ tts:
     temperature: 0.9
     repetition_penalty: 1.05
     use_flash_attn: false
-    ref_audio_path: "E:/anima_data/tts_training/kuonji_arisu/training_ready/S_alice_confirmed/ref_10s.wav"
-    x_vector_only: true
 
   # Mock（测试用）
   mock:
