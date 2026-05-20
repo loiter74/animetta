@@ -215,6 +215,23 @@ tts:
     repetition_penalty: 1.05
     use_flash_attn: false
 
+  # Qwen3-TTS voice clone (zero-shot voice cloning -- 久远寺有珠 参考音声)
+  qwen3_voice_clone:
+    type: qwen3
+    model: "D:/huggingface_cache/hub/models--Qwen--Qwen3-TTS-12Hz-1.7B-CustomVoice/snapshots/0c0e3051f131929182e2c023b9537f8b1c68adfe"
+    speaker: "Vivian"
+    device: "cuda:0"
+    dtype: "float16"
+    default_instruct: ""
+    language: "Chinese"
+    max_new_tokens: 128
+    top_p: 0.9
+    temperature: 0.9
+    repetition_penalty: 1.05
+    use_flash_attn: false
+    ref_audio_path: "E:/anima_data/tts_training/kuonji_arisu/training_ready/S_alice_confirmed/FGO_Myroom_01.wav"
+    x_vector_only: true
+
   # Mock（测试用）
   mock:
     type: mock
