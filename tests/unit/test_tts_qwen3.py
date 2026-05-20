@@ -41,6 +41,22 @@ class TestQwen3TTSConfigUnit:
         config = Qwen3TTSConfig(dtype=dtype)
         assert config.dtype == dtype
 
+    def test_voice_clone_fields_default_to_none(self):
+        config = Qwen3TTSConfig()
+        assert config.ref_audio_path is None
+        assert config.ref_text is None
+        assert config.x_vector_only is True
+
+    def test_voice_clone_fields_custom_values(self):
+        config = Qwen3TTSConfig(
+            ref_audio_path="E:/test/audio.wav",
+            ref_text="こんにちは",
+            x_vector_only=False,
+        )
+        assert config.ref_audio_path == "E:/test/audio.wav"
+        assert config.ref_text == "こんにちは"
+        assert config.x_vector_only is False
+
 
 class TestQwen3TTSTTSUnit:
     def test_from_config_creates_lazy(self):
@@ -67,3 +83,19 @@ class TestQwen3TTSTTSUnit:
         tts = Qwen3TTSTTS(device="cpu")
         assert hasattr(tts, "_load_lock")
         assert hasattr(tts, "_synth_done")
+
+    def test_from_config_preserves_voice_clone_params(self):
+        config = Qwen3TTSConfig(
+            device="cpu",
+            ref_audio_path="test/ref.wav",
+            ref_text="hello",
+            x_vector_only=False,
+        )
+        tts = Qwen3TTSTTS.from_config(config)
+        assert tts.ref_audio_path == "test/ref.wav"
+        assert tts.ref_text == "hello"
+        assert tts.x_vector_only is False
+
+    def test_voice_clone_prompt_cache_initialized(self):
+        tts = Qwen3TTSTTS(device="cpu", ref_audio_path="test.wav")
+        assert tts._voice_clone_prompt is None
