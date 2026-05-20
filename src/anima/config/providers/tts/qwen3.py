@@ -13,7 +13,7 @@ class Qwen3TTSConfig(TTSBaseConfig):
 
     Local inference mode using qwen-tts package.
     Loads 1.7B CustomVoice model (~3.5GB VRAM bfloat16) via HuggingFace.
-    Supports 9 premium preset voices with instruction-based emotion/style control.
+    Supports 9 preset voices + zero-shot voice clone via ref_audio_path.
 
     GPU requirements: ~4-6GB VRAM for bfloat16, ~3-4GB for float16.
     Windows CUDA note: bfloat16 may need auto-fallback to float16 on some GPUs.
@@ -78,4 +78,18 @@ class Qwen3TTSConfig(TTSBaseConfig):
     use_flash_attn: bool = Field(
         default=True,
         description="Use FlashAttention 2 for optimized GPU memory usage. Silently falls back if not installed.",
+    )
+
+    # === Voice Clone ===
+    ref_audio_path: Optional[str] = Field(
+        default=None,
+        description="Path to reference audio WAV for voice clone mode. When set, synthesize() uses generate_voice_clone() instead of generate_custom_voice().",
+    )
+    ref_text: Optional[str] = Field(
+        default=None,
+        description="Reference transcript for ICL mode (required when x_vector_only=False). Optional when x_vector_only=True.",
+    )
+    x_vector_only: bool = Field(
+        default=True,
+        description="If True, use speaker embedding only (no ref_text needed). If False, ICL mode with ref_text + speech codes.",
     )
