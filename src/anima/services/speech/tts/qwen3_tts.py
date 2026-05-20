@@ -50,6 +50,9 @@ class Qwen3TTSTTS(TTSInterface):
         temperature: float = 0.9,
         repetition_penalty: float = 1.05,
         use_flash_attn: bool = True,
+        ref_audio_path: str | None = None,
+        ref_text: str | None = None,
+        x_vector_only: bool = True,
     ):
         self.model = model
         self.speaker = speaker
@@ -62,6 +65,11 @@ class Qwen3TTSTTS(TTSInterface):
         self.temperature = temperature
         self.repetition_penalty = repetition_penalty
         self.use_flash_attn = use_flash_attn
+        self.ref_audio_path = ref_audio_path
+        self.ref_text = ref_text
+        self.x_vector_only = x_vector_only
+        # Voice clone prompt cache (lazy, invalidated on close/model reload)
+        self._voice_clone_prompt: list | None = None
 
         self._model = None
         self._loaded = False
@@ -170,6 +178,31 @@ class Qwen3TTSTTS(TTSInterface):
                 else:
                     raise
 
+    def _build_voice_clone_prompt(self):
+        """Build and cache voice clone prompt from reference audio.
+
+        Thread-safe: called under _load_lock after model is loaded.
+        Returns cached prompt on subsequent calls.
+        """
+        if self._voice_clone_prompt is not None:
+            return self._voice_clone_prompt
+
+        if not self.ref_audio_path:
+            raise ValueError("ref_audio_path must be set for voice clone mode")
+
+        import os
+        if not os.path.exists(self.ref_audio_path):
+            raise FileNotFoundError(f"Reference audio not found: {self.ref_audio_path}")
+
+        logger.info(f"Building voice clone prompt from: {self.ref_audio_path}")
+        self._voice_clone_prompt = self._model.create_voice_clone_prompt(
+            ref_audio=self.ref_audio_path,
+            ref_text=self.ref_text,
+            x_vector_only_mode=self.x_vector_only,
+        )
+        logger.debug(f"Voice clone prompt cached ({len(self._voice_clone_prompt)} items)")
+        return self._voice_clone_prompt
+
     @classmethod
     def from_config(cls, config: Qwen3TTSConfig, **kwargs) -> "Qwen3TTSTTS":
         """Create instance from config object"""
@@ -185,6 +218,9 @@ class Qwen3TTSTTS(TTSInterface):
             temperature=config.temperature,
             repetition_penalty=config.repetition_penalty,
             use_flash_attn=config.use_flash_attn,
+            ref_audio_path=getattr(config, "ref_audio_path", None),
+            ref_text=getattr(config, "ref_text", None),
+            x_vector_only=getattr(config, "x_vector_only", True),
         )
 
     async def synthesize(
@@ -228,19 +264,36 @@ class Qwen3TTSTTS(TTSInterface):
                 f"speaker={effective_speaker}, language={effective_language}"
             )
 
-            wavs, sr = await loop.run_in_executor(
-                None,
-                lambda: self._model.generate_custom_voice(
-                    text=text,
-                    language=effective_language,
-                    speaker=effective_speaker,
-                    instruct=effective_instruct,
-                    max_new_tokens=kwargs.get("max_new_tokens", self.max_new_tokens),
-                    top_p=kwargs.get("top_p", self.top_p),
-                    temperature=kwargs.get("temperature", self.temperature),
-                    repetition_penalty=kwargs.get("repetition_penalty", self.repetition_penalty),
-                ),
-            )
+            if self.ref_audio_path:
+                # Voice clone mode
+                prompt = self._build_voice_clone_prompt()
+                wavs, sr = await loop.run_in_executor(
+                    None,
+                    lambda: self._model.generate_voice_clone(
+                        text=text,
+                        language=effective_language,
+                        voice_clone_prompt=prompt,
+                        max_new_tokens=kwargs.get("max_new_tokens", self.max_new_tokens),
+                        top_p=kwargs.get("top_p", self.top_p),
+                        temperature=kwargs.get("temperature", self.temperature),
+                        repetition_penalty=kwargs.get("repetition_penalty", self.repetition_penalty),
+                    ),
+                )
+            else:
+                # Custom voice mode (existing behavior)
+                wavs, sr = await loop.run_in_executor(
+                    None,
+                    lambda: self._model.generate_custom_voice(
+                        text=text,
+                        language=effective_language,
+                        speaker=effective_speaker,
+                        instruct=effective_instruct,
+                        max_new_tokens=kwargs.get("max_new_tokens", self.max_new_tokens),
+                        top_p=kwargs.get("top_p", self.top_p),
+                        temperature=kwargs.get("temperature", self.temperature),
+                        repetition_penalty=kwargs.get("repetition_penalty", self.repetition_penalty),
+                    ),
+                )
 
             if not wavs or len(wavs) == 0:
                 raise RuntimeError("Qwen3-TTS generated empty audio")
@@ -327,6 +380,7 @@ class Qwen3TTSTTS(TTSInterface):
         logger.info("Unloading Qwen3-TTS model...")
         self._model = None
         self._loaded = False
+        self._voice_clone_prompt = None  # Invalidate cached prompt
         gc.collect()
         try:
             import torch
