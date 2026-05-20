@@ -661,6 +661,62 @@ class TestQwen3TTSTTS:
         with pytest.raises(NotImplementedError):
             await tts.synthesize_stream("hello")
 
+    @pytest.mark.asyncio
+    async def test_synthesize_voice_clone_mode(self):
+        """When ref_audio_path is set, synthesize() uses generate_voice_clone()."""
+        from anima.services.speech.tts.qwen3_tts import Qwen3TTSTTS
+        import os
+
+        import numpy as np
+        mock_model = MagicMock()
+        fake_audio = np.zeros(24000, dtype=np.float32)
+        mock_model.generate_voice_clone.return_value = ([fake_audio], 24000)
+        # Mock create_voice_clone_prompt
+        mock_prompt = MagicMock()
+        mock_model.create_voice_clone_prompt.return_value = [mock_prompt]
+
+        sys.modules["qwen_tts"].Qwen3TTSModel.from_pretrained.return_value = mock_model
+
+        # Use a temp file as mock reference audio
+        import tempfile
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+            ref_path = f.name
+
+        try:
+            tts = Qwen3TTSTTS(
+                device="cpu",
+                ref_audio_path=ref_path,
+                x_vector_only=True,
+            )
+            result = await tts.synthesize("テスト")
+
+            # Verify voice clone was called, not custom voice
+            mock_model.generate_voice_clone.assert_called_once()
+            mock_model.generate_custom_voice.assert_not_called()
+            assert isinstance(result, bytes)
+            assert len(result) > 0
+        finally:
+            os.unlink(ref_path)
+
+    @pytest.mark.asyncio
+    async def test_synthesize_falls_back_to_custom_voice_without_ref_audio(self):
+        """Without ref_audio_path, uses existing custom voice path."""
+        from anima.services.speech.tts.qwen3_tts import Qwen3TTSTTS
+
+        import numpy as np
+        mock_model = MagicMock()
+        fake_audio = np.zeros(24000, dtype=np.float32)
+        mock_model.generate_custom_voice.return_value = ([fake_audio], 24000)
+        sys.modules["qwen_tts"].Qwen3TTSModel.from_pretrained.return_value = mock_model
+
+        tts = Qwen3TTSTTS(device="cpu")  # No ref_audio_path
+        result = await tts.synthesize("你好")
+
+        mock_model.generate_custom_voice.assert_called_once()
+        mock_model.generate_voice_clone.assert_not_called()
+        assert isinstance(result, bytes)
+        assert len(result) > 0
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # TTSFactory
