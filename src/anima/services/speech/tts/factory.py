@@ -148,6 +148,9 @@ class TTSFactory:
                     temperature=kwargs.get("temperature", 0.9),
                     repetition_penalty=kwargs.get("repetition_penalty", 1.05),
                     use_flash_attn=kwargs.get("use_flash_attn", True),
+                    ref_audio_path=kwargs.get("ref_audio_path"),
+                    ref_text=kwargs.get("ref_text"),
+                    x_vector_only=kwargs.get("x_vector_only", True),
                 )
             else:
                 return None
