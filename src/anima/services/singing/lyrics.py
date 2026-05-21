@@ -23,17 +23,23 @@ class LyricsGenerator:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.download_root = download_root
+        self._model = None
+
+    def _get_model(self):
+        """Lazy-load whisper model (kept as instance attr to prevent GC segfault)."""
+        if self._model is None:
+            import faster_whisper
+            self._model = faster_whisper.WhisperModel(
+                self.model_size,
+                download_root=self.download_root,
+            )
+        return self._model
 
     async def transcribe(self, audio_path: str) -> str:
         """Transcribe vocals audio and generate .ass subtitle content."""
         logger.info(f"Transcribing vocals: {audio_path}")
 
-        import faster_whisper
-
-        model = faster_whisper.WhisperModel(
-            self.model_size,
-            download_root=self.download_root,
-        )
+        model = self._get_model()
 
         def _do_transcribe():
             transcribe_kwargs: dict = {}
@@ -126,4 +132,8 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         return lines
 
     async def close(self) -> None:
-        pass
+        """Release whisper model to free GPU/CPU memory."""
+        if self._model is not None:
+            self._model = None
+        import gc
+        gc.collect()
