@@ -15,8 +15,8 @@ singing:
     enabled: true                      # enable RVC voice conversion
     rvc_path: "C:/Users/30262/RVC20240604Nvidia"
     python_exe: ""                     # auto-detect from runtime/python.exe
-    model_name: "sanyueqi.pth"         # voice model file
-    index_path: "logs/sanyueqi.index"     # was empty — needs index generation
+    model_name: "alice.pth"            # Alice RVC model (200 epochs, 72min data)
+    index_path: "logs/alice.index"       # FAISS IVF256 index
     f0_method: "rmvpe"                # pitch extraction: rmvpe | pm | harvest | crepe
     f0_up_key: 0                      # semitone shift (-12 to +12)
     index_rate: 0.6                   # was 0 — enable timbre retrieval
