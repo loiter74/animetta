@@ -88,9 +88,9 @@ async def main():
         for label, path in files.items():
             p = Path(path)
             if p.exists():
-                print(f"  ✅ {label:<20} {human_size(p.stat().st_size):>10}  {p}")
+                print(f"  [OK] {label:<20} {human_size(p.stat().st_size):>10}  {p}")
             else:
-                print(f"  ❌ {label:<20} MISSING  {p}")
+                print(f"  [XX] {label:<20} MISSING  {p}")
                 all_ok = False
 
         if result.lyrics:
@@ -100,9 +100,9 @@ async def main():
 
         print()
         if all_ok:
-            print("  ✅ ALL OUTPUT FILES PRESENT - Pipeline PASSED")
+            print("  [OK] ALL OUTPUT FILES PRESENT - Pipeline PASSED")
         else:
-            print("  ❌ SOME FILES MISSING - Pipeline FAILED")
+            print("  [XX] SOME FILES MISSING - Pipeline FAILED")
 
     except Exception as e:
         logger.error(f"Pipeline crashed: {e}")

@@ -170,8 +170,10 @@ def get_asgi_app():
         logs_dir.mkdir(parents=True, exist_ok=True)
         logger.add(
             str(logs_dir / "anima.log"),
-            rotation="10 MB",
+            rotation="1 day",
             retention="7 days",
+            compression="zip",
+            enqueue=True,
             level="INFO",
             format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {name}:{function}:{line} - {message}",
         )

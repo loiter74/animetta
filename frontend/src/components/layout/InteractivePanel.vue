@@ -5,6 +5,7 @@ import LiveChatPanel from '@/components/chat/LiveChatPanel.vue'
 import SettingsPanel from '@/components/settings/SettingsPanel.vue'
 import MemoryPanel from '@/components/memory/MemoryPanel.vue'
 import PersonalityPanel from '@/components/personality/PersonalityPanel.vue'
+import MusicCard from '@/components/singing/MusicCard.vue'
 import PopOutButton from '@/components/live2d/PopOutButton.vue'
 import { useDanmaku } from '@/composables/useDanmaku'
 
@@ -18,7 +19,7 @@ const emit = defineEmits<{
 }>()
 
 const isCollapsed = ref(false)
-const activeTab = ref<'chat' | 'live' | 'memory' | 'personality' | 'settings'>('chat')
+const activeTab = ref<'chat' | 'live' | 'memory' | 'personality' | 'singing' | 'settings'>('chat')
 
 // Initialize danmaku socket listeners (runs globally, not per-tab)
 useDanmaku()
@@ -37,7 +38,7 @@ useDanmaku()
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M5 12h14M12 5l7 7-7 7" />
       </svg>
-      <span class="text-10px writing-mode-vertical">{{ { chat: '聊天', live: '直播', memory: '记忆', personality: '人格', settings: '设置' }[activeTab] }}</span>
+      <span class="text-10px writing-mode-vertical">{{ { chat: '聊天', live: '直播', memory: '记忆', personality: '人格', singing: '音乐', settings: '设置' }[activeTab] }}</span>
     </button>
 
     <!-- Main panel -->
@@ -89,6 +90,15 @@ useDanmaku()
             </button>
             <button
               class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+              :class="activeTab === 'singing'
+                ? 'bg-c-accent/20 text-c-accent'
+                : 'bg-c-bg/40 text-c-text-dim hover:text-c-text hover:bg-c-panel/50'"
+              @click="activeTab = 'singing'"
+            >
+              🎵 音乐
+            </button>
+            <button
+              class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
               :class="activeTab === 'settings'
                 ? 'bg-c-accent/20 text-c-accent'
                 : 'bg-c-bg/40 text-c-text-dim hover:text-c-text hover:bg-c-panel/50'"
@@ -124,6 +134,7 @@ useDanmaku()
             <LiveChatPanel v-else-if="activeTab === 'live'" key="live" />
             <MemoryPanel v-else-if="activeTab === 'memory'" key="memory" />
             <PersonalityPanel v-else-if="activeTab === 'personality'" key="personality" />
+            <MusicCard v-else-if="activeTab === 'singing'" key="singing" />
             <SettingsPanel v-else key="settings" />
           </Transition>
         </div>

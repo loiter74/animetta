@@ -5,10 +5,11 @@ import sys
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 
+import datetime
 import socketio
 from loguru import logger
 from starlette.applications import Starlette
-from starlette.responses import Response
+from starlette.responses import Response, FileResponse, JSONResponse
 from starlette.routing import Mount, Route
 
 from .session import SessionManager
@@ -36,6 +37,7 @@ class WebSocketServer:
             engineio_logger=False,
             ping_timeout=120,
             ping_interval=30,
+            max_http_buffer_size=10_000_000,  # 10MB for singing file uploads
         )
 
         # Socket.IO ASGI + Stats API routes
@@ -54,8 +56,61 @@ class WebSocketServer:
         except ImportError:
             logger.warning("[Metrics] prometheus-client not installed — /metrics disabled")
 
+        # Singing media file serving (audio + subtitles)
+        import mimetypes
+        _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent
+
+        async def serve_singing_audio(request):
+            filename = request.path_params.get("filename", "")
+            filepath = _PROJECT_ROOT / "data" / "singing" / "outputs" / filename
+            if not filepath.is_file():
+                return Response("Not found", status_code=404)
+            mime, _ = mimetypes.guess_type(filename)
+            return FileResponse(str(filepath), media_type=mime or "audio/wav")
+
+        async def serve_singing_subtitle(request):
+            filename = request.path_params.get("filename", "")
+            filepath = _PROJECT_ROOT / "data" / "singing" / "outputs" / filename
+            if not filepath.is_file():
+                return Response("Not found", status_code=404)
+            return FileResponse(
+                str(filepath),
+                media_type="text/plain; charset=utf-8",
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        )
+
+        async def serve_singing_recent(request):
+            output_dir = _PROJECT_ROOT / "data" / "singing" / "outputs"
+            if not output_dir.is_dir():
+                return JSONResponse([])
+            files = sorted(output_dir.glob("*_final.wav"), key=lambda f: f.stat().st_mtime, reverse=True)[:5]
+            result = []
+            for f in files:
+                session_id = f.stem.replace("_final", "")
+                subtitle = f.with_name(f"{session_id}_lyrics.ass")
+                vocals = f.with_name(f"{session_id}_vocals.wav")
+                tts = f.with_name(f"{session_id}_tts_final.wav")
+                original = f.with_name(f"{session_id}_original.wav")
+                result.append({
+                    "session_id": session_id,
+                    "audio_url": f"/api/singing/audio/{f.name}",
+                    "vocals_url": f"/api/singing/audio/{vocals.name}" if vocals.is_file() else "",
+                    "original_url": f"/api/singing/audio/{original.name}" if original.is_file() else "",
+                    "subtitle_url": f"/api/singing/subtitle/{subtitle.name}" if subtitle.is_file() else "",
+                    "tts_audio_url": f"/api/singing/audio/{tts.name}" if tts.is_file() else "",
+                    "created_at": datetime.datetime.fromtimestamp(f.stat().st_mtime).isoformat(),
+                    "duration_sec": 0.0,
+                })
+            return JSONResponse(result)
+
+        singing_routes = [
+            Route("/api/singing/audio/{filename:str}", serve_singing_audio),
+            Route("/api/singing/subtitle/{filename:str}", serve_singing_subtitle),
+            Route("/api/singing/recent", serve_singing_recent),
+        ]
+
         self.asgi_app = Starlette(
-            routes=stats_routes + metrics_route + [Mount("/", app=sio_app)],
+            routes=stats_routes + metrics_route + singing_routes + [Mount("/", app=sio_app)],
         )
         self.model_manager = ModelLoadingManager()
         self.session_manager = SessionManager(model_manager=self.model_manager)

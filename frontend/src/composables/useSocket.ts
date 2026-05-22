@@ -2,8 +2,10 @@ import { io, Socket } from 'socket.io-client'
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useConnectionStore } from '@/stores/connection'
 import { useModelLoadingStore } from '@/stores/modelLoading'
+import { useSingingStore } from '@/stores/singing'
 import type { ModelStatusPayload } from '@/types/model-loading'
 import type { ConnectionStatus } from '@/types/socket-events'
+import type { PipelineStage, SongResult } from '@/types/singing'
 
 // Direct connection to backend. CORS is enabled (cors_allowed_origins='*').
 const SOCKET_URL = 'http://localhost:12394'
@@ -49,6 +51,30 @@ export function useSocket() {
     // Clear loading state on reconnect
     socket.on('connect', () => {
       // Don't clear on reconnect - warmup may still be in progress
+    })
+
+    // Register singing event listeners globally (survive tab switches)
+    const singStore = useSingingStore()
+    socket.on('sing:progress', (data: any) => {
+      singStore.setProgress(data.stage, data.progress, data.message || '')
+    })
+    socket.on('sing:complete', (data: any) => {
+      singStore.setResult({
+        audio_url: data.audio_url,
+        subtitle_url: data.subtitle_url || '',
+        tts_audio_url: data.tts_audio_url || '',
+        vocals_url: data.vocals_url || '',
+        video_title: data.video_title || '',
+        duration: data.duration,
+        lyrics: data.lyrics || [],
+        volumes: data.volumes || [],
+      })
+    })
+    socket.on('sing:error', (data: any) => {
+      singStore.setError(data.error)
+    })
+    socket.on('sing:lyrics_ready', (data: any) => {
+      singStore.setProgress('waiting_lyrics' as PipelineStage, 0, data.message || 'Lyrics ready')
     })
 
     _initialized = true

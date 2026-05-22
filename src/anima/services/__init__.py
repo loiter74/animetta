@@ -8,6 +8,7 @@
 - intelligence/vad: 语音活动检测
 - audio: 音频处理服务
 - live2d: Live2D 控制
+- singing: AI歌声转换服务
 """
 
 from .intelligence.llm import LLMInterface, LLMFactory
@@ -16,6 +17,7 @@ from .speech.tts import TTSInterface, TTSFactory
 from .intelligence.vad import VADInterface, VADFactory
 from .audio import AudioProcessorInterface
 from .audio.vad_audio_processor import VADAudioProcessor
+from .singing import SingingService, SVCPipeline
 
 __all__ = [
     # LLM
@@ -33,4 +35,7 @@ __all__ = [
     # Audio
     "AudioProcessorInterface",
     "VADAudioProcessor",
+    # Singing
+    "SingingService",
+    "SVCPipeline",
 ]
