@@ -38,6 +38,6 @@ system:
   # GPT-SoVITS 本地推理服务路径配置
   # 使用 tts: gpt_sovits* 时需要启动 api_v2.py 服务
   gpt_sovits:
-    path: "C:/Users/30262/GPT-SoVITS-v2pro-20250604"  # GPT-SoVITS 仓库路径
-    python: "C:/Users/30262/miniconda3/envs/gpt-sovits/python.exe"  # Python 解释器路径
+    path: "${GPT_SOVITS_PATH:}"           # GPT-SoVITS 仓库路径（环境变量）
+    python: "${GPT_SOVITS_PYTHON:python}"  # Python 解释器路径（默认系统 python）
     port: 9880      # api_v2.py 监听端口

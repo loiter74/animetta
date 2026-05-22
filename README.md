@@ -237,6 +237,63 @@ curl http://localhost:12394/health
 
 ---
 
+## 🔧 项目治理 | Governance
+
+> **最新整改 (2026-05-23):** [治理报告](docs/plans/2026-05-23-governance-report.md) — 4 大结构性问题修复
+
+### 📋 整改摘要 | Summary
+
+| 类别 | 问题 | 修复 |
+|------|------|------|
+| 🔴 **隐私** | `memory_db/raw/` 对话记录已在仓库中 | 已从 git 追踪移除，.gitignore 排除 |
+| 🔴 **卫生** | 生成文件误入仓库 (cov_report, test-results, etc.) | 已 `git rm --cached` |
+| 🟡 **配置** | 硬编码 Windows 绝对路径 (GPT-SoVITS, RVC, Demucs) | 改为 `${ENV_VAR}` 环境变量 |
+| 🟢 **架构** | TTS 实现过多 (9 个)，维护成本高 | core/contrib 分层 + 生命周期标记 |
+| 🟢 **架构** | 跨层依赖检测 | `scripts/check_deps.py` CI 检查脚本 |
+| 🔵 **耦合** | meme→memory / tracing→orchestration 跨层导入 | 提取共享协议 / TYPE_CHECKING 守卫 |
+
+### 🏷️ TTS 分层 | TTS Layering
+
+```
+services/speech/tts/
+├── edge_tts.py           # core: active — 零依赖，开箱即用
+├── qwen3_tts.py          # core: active — 当前默认
+├── gpt_sovits_tts.py     # core: active — 本地推理
+└── contrib/              # contrib: maintained/experimental
+    ├── glm_tts.py
+    ├── kokoro_tts.py
+    ├── vibe_voice_tts.py
+    ├── chattts_tts.py    # experimental
+    └── glados_effect.py
+```
+
+### 📐 分层架构 | Layer Architecture
+
+```
+Layer 0 (Foundation):  utils, config, tracing, persistence
+Layer 1 (Domain):      memory, avatar, tools, notifier, services
+Layer 2 (Orchestration): orchestration/graph
+Layer 3 (Infrastructure): orchestration/server, core
+
+规则: 只允许向下依赖 → scripts/check_deps.py 自动检测
+```
+
+### 🔑 新增环境变量 | New Env Vars
+
+```bash
+# GPT-SoVITS 本地推理 (config/config.yaml)
+GPT_SOVITS_PATH=/path/to/GPT-SoVITS
+GPT_SOVITS_PYTHON=python
+
+# RVC 语音转换 (config/singing.yaml, config/services.yaml)
+RVC_PATH=/path/to/RVC
+
+# 项目根目录 (自动检测，通常无需设置)
+# ANIMA_PROJECT_ROOT=/path/to/Anima
+```
+
+---
+
 ## 📖 文档导航 | Documentation
 
 | Document | Description |

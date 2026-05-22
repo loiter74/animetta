@@ -7,6 +7,9 @@ Supports voice effects via SSML prosody adjustments:
 - preset: "neurosama" for Neuro-sama style electronic cute voice
 """
 
+# Status: active
+# Last verified: 2026-05-23
+
 from typing import Union, Optional
 from pathlib import Path
 import tempfile

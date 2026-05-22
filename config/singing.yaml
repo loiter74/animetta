@@ -13,7 +13,7 @@ singing:
   # RVC voice conversion (local)
   rvc:
     enabled: true                      # enable RVC voice conversion
-    rvc_path: "C:/Users/30262/RVC20240604Nvidia"
+    rvc_path: "${RVC_PATH:}"
     python_exe: ""                     # auto-detect from runtime/python.exe
     model_name: "alice.pth"            # Alice RVC model (200 epochs, 72min data)
     index_path: "logs/alice.index"       # FAISS IVF256 index

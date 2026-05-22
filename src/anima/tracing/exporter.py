@@ -21,6 +21,13 @@ from anima.persistence.protocols import StatsStoreProtocol
 logger = logging.getLogger(__name__)
 
 
+class _NoOpStatsStore:
+    """No-op stats store when orchestration is unavailable."""
+    async def record_span(self, *args: object, **kwargs: object) -> None: pass
+    async def record_event(self, *args: object, **kwargs: object) -> None: pass
+    async def get_stats(self, *args: object, **kwargs: object) -> dict: return {}
+
+
 class StatsSpanExporter(SpanExporter):
     """Exports OTel spans into Anima's StatsStore SQLite database."""
 
@@ -29,11 +36,20 @@ class StatsSpanExporter(SpanExporter):
 
     async def _get_store(self) -> StatsStoreProtocol:
         if self._stats_store is None:
-            # Lazy fallback for backward compatibility with callers that
-            # do not inject a store (e.g. tracing/bootstrap.py).
-            from anima.orchestration.graph.stats_store import get_stats_store
-
-            self._stats_store = await get_stats_store()
+            # Layer 0→2 runtime dependency (tracing→orchestration): intentionally
+            # lazy-imported inside function body to avoid import-time cycle.
+            # Prefer injecting store via __init__ to avoid this dependency.
+            try:
+                from anima.orchestration.graph.stats_store import get_stats_store as _get_stats
+                self._stats_store = await _get_stats()
+            except ImportError:
+                from loguru import logger
+                logger.warning(
+                    "[tracing] orchestration.graph.stats_store not available; "
+                    "stats will not be persisted"
+                )
+                # Return a no-op store
+                self._stats_store = _NoOpStatsStore()
         return self._stats_store
 
     def export(self, spans: Sequence[ReadableSpan]) -> SpanExportResult:

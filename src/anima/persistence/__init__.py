@@ -1,7 +1,9 @@
-"""Persistence layer — protocol interfaces and storage implementations."""
+"""Persistence layer — protocol interfaces, shared data models, and storage implementations."""
 
-from .protocols import StatsStoreProtocol
+from .protocols import StatsStoreProtocol, WikiPage, PageType
 
 __all__ = [
     "StatsStoreProtocol",
+    "WikiPage",
+    "PageType",
 ]

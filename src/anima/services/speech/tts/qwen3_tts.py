@@ -11,6 +11,9 @@ CustomVoice features: 9 preset voices, instruction-based emotion/style control,
 For RTX 5090D: bfloat16 + FlashAttention 2 at ~4GB VRAM.
 """
 
+# Status: active
+# Last verified: 2026-05-23
+
 from typing import Union, Optional, AsyncGenerator
 from pathlib import Path
 import os

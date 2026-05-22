@@ -1,28 +1,40 @@
-"""TTS service implementation module"""
+"""TTS service implementation module
+
+Structure:
+- Core implementations (active, minimal deps): edge_tts, qwen3_tts, gpt_sovits_tts, mock_tts
+- Contrib implementations (maintained/experimental): see contrib/ subpackage
+"""
 
 from .interface import TTSInterface
 from .factory import TTSFactory
 
+# Core implementations
 from .mock_tts import MockTTS
-from .glm_tts import GLMTTS
 from .edge_tts import EdgeTTS
-from .chattts_tts import ChatTTSTTS
-from .vibe_voice_tts import VibeVoiceTTS
-from .kokoro_tts import KokoroTTS
 from .gpt_sovits_tts import GPTSoVITSTTS
 from .qwen3_tts import Qwen3TTSTTS
-from .glados_effect import GladosEffectProcessor
+
+# Contrib implementations (maintained separately)
+from .contrib import (
+    GLMTTS,
+    ChatTTSTTS,
+    VibeVoiceTTS,
+    KokoroTTS,
+    GladosEffectProcessor,
+)
 
 __all__ = [
     "TTSInterface",
     "TTSFactory",
+    # Core
     "MockTTS",
-    "GLMTTS",
     "EdgeTTS",
+    "GPTSoVITSTTS",
+    "Qwen3TTSTTS",
+    # Contrib
+    "GLMTTS",
     "ChatTTSTTS",
     "VibeVoiceTTS",
     "KokoroTTS",
-    "GPTSoVITSTTS",
-    "Qwen3TTSTTS",
     "GladosEffectProcessor",
 ]

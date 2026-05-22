@@ -108,3 +108,29 @@ C:tmp_pip/
 
 # Temp files
 *.tmp
+
+# ============================================
+# Governance: Generated reports & runtime data
+# ============================================
+
+# CI/Testing artifacts
+cov_report.json
+eval_results.json
+eval_prompts.txt
+test-results/
+
+# Runtime memory data (PRIVACY: contains real conversations)
+memory_db/raw/*.md
+memory_db/wiki/memes/
+memory_db/wiki/sources/
+memory_db/wiki/synthesis/
+memory_db/wiki/entities/
+memory_db/wiki/concepts/
+memory_db/wiki/log.md
+memory_db/wiki/index.md
+
+# Keep only structural files
+!memory_db/wiki/WIKI_RULES.md
+
+# OpenSpec change archives (kept in docs/archive/ or separate wiki)
+openspec/changes/

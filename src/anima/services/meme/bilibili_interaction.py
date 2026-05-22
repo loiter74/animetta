@@ -390,7 +390,7 @@ class BilibiliInteractionLearner:
 
             content = "\n".join(content_lines)
 
-            from anima.memory.wiki.models import WikiPage, PageType
+            from anima.persistence.protocols import WikiPage, PageType
             page = WikiPage(
                 title=f"直播优化策略 {datetime.now().strftime('%Y-%m-%d')}",
                 page_type=PageType.CONCEPT,

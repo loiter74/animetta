@@ -168,12 +168,12 @@ tts:
   gpt_sovits_evil:
     type: gpt_sovits
     base_url: "http://127.0.0.1:9880"
-    ref_audio_path: "C:/Users/30262/Project/Anima/config/gpt_sovits/evil/ref_audio.wav"
+    ref_audio_path: "${ANIMA_PROJECT_ROOT}/config/gpt_sovits/evil/ref_audio.wav"
     prompt_text: "I played Shovel Knight once. It turns out AI doesn't exactly have perfect hand-eye coordination."
     prompt_lang: "en"
     text_lang: "auto"   # auto 自动检测语种（支持中英混合）
     aux_ref_audio_paths:
-      - "C:/Users/30262/Project/Anima/config/gpt_sovits/evil/ref_audio_zh.wav"
+      - "${ANIMA_PROJECT_ROOT}/config/gpt_sovits/evil/ref_audio_zh.wav"
     top_k: 10
     top_p: 0.8
     temperature: 0.7
@@ -215,21 +215,23 @@ tts:
     repetition_penalty: 1.05
     use_flash_attn: false
 
-  # Qwen3-TTS 久远寺有珠 微调模型（3 epoch SFT on 2,675 segments）
-  # Fine-tuned from 1.7B-Base, speaker="arisu", uses generate_custom_voice()
+  # Qwen3-TTS 久远寺有珠 Voice Clone（Zero-shot via Base model）
+  # SFT checkpoint 的 custom_voice 模式 speaker embedding 没收敛，
+  # 改用 Base 模型 + ref_10s.wav 做原生 voice clone
   qwen3_voice_clone:
     type: qwen3
-    model: "E:/anima_data/tts_training/kuonji_arisu/finetune_output/checkpoint-epoch-2"
-    speaker: "arisu"
+    model: "Qwen/Qwen3-TTS-12Hz-1.7B-Base"   # 原生 voice clone，已在 HF cache
     device: "cuda:0"
     dtype: "float16"
-    default_instruct: ""
-    language: "Chinese"
-    max_new_tokens: 128
+    language: "japanese"
+    max_new_tokens: 1024
     top_p: 0.9
-    temperature: 0.9
+    temperature: 0.8
     repetition_penalty: 1.05
     use_flash_attn: false
+    # ── Voice Clone ──
+    ref_audio_path: "E:/anima_data/tts_training/kuonji_arisu/training_ready/S_alice_confirmed/ref_10s.wav"
+    x_vector_only: true
 
   # Mock（测试用）
   mock:
@@ -320,3 +322,51 @@ vad:
     db_threshold: -30.0
     min_speech_duration: 5
     min_silence_duration: 15
+
+# ===========================
+# VC 语音转换
+# ===========================
+
+vc:
+  # RVC (Retrieval-based Voice Conversion)
+  rvc:
+    type: rvc
+    model_path: "${RVC_PATH}/weights/alice.pth"
+    index_path: "${RVC_PATH}/logs/alice.index"
+    index_rate: 0.6
+    f0_method: "rmvpe"
+    key: 0
+    formant: 0
+    device: "cuda:0"
+    is_half: true
+    rms_mix_rate: 0.5
+    protect: 0.33
+
+  # Mock (测试用)
+  mock:
+    type: mock
+
+# ===========================
+# Separation 音频分离
+# ===========================
+
+separation:
+  # Demucs / Mel-Band RoFormer
+  demucs:
+    type: demucs
+    model_type: "mel_band_roformer"
+    config_path: "${DEMUCS_CONFIG_PATH:}"
+    checkpoint_path: ""
+    device: "cuda:0"
+    chunk_size: 131584
+    num_overlap: 4
+    batch_size: 1
+    normalize: true
+    is_half: true
+    sample_rate: 44100
+    instruments: ["vocals", "other"]
+    primary_stem: "vocals"
+
+  # Mock (测试用)
+  mock:
+    type: mock

@@ -5,6 +5,9 @@ Connects to a locally running GPT-SoVITS api_v2.py server.
 Supports reference audio based voice cloning with configurable inference parameters.
 """
 
+# Status: active
+# Last verified: 2026-05-23
+
 from typing import Union, Optional
 from pathlib import Path
 import tempfile
