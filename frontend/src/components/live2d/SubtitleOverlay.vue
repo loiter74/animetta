@@ -13,21 +13,6 @@ const {
 
 const subStore = useSubtitleStore()
 
-// ===== Font sizes (2-3x larger) =====
-const fontSizeMap: Record<string, string> = {
-  small: '1.5rem',
-  medium: '2rem',
-  large: '2.5rem',
-}
-const translationFontSizeMap: Record<string, string> = {
-  small: '1.2rem',
-  medium: '1.5rem',
-  large: '1.8rem',
-}
-
-const fontSizeStyle = computed(() => ({ fontSize: fontSizeMap[store.fontSize] }))
-const translationFontSizeStyle = computed(() => ({ fontSize: translationFontSizeMap[store.fontSize] }))
-
 const showOriginal = computed(() =>
   store.displayMode === 'original' || store.displayMode === 'bilingual'
 )
@@ -211,8 +196,8 @@ onUnmounted(() => {
     >
       <div
         ref="panelRef"
-        class="glass rounded-2xl px-6 py-4 flex flex-col items-center gap-2
-               border border-c-border/40 shadow-lg select-none"
+        class="bg-c-bg/70 backdrop-blur-[20px] border border-c-border rounded-xl
+               px-6 py-[14px] max-w-[560px] flex flex-col items-center gap-1.5 select-none"
         :class="[
           isDragging ? 'cursor-grabbing' : 'cursor-grab',
           'pointer-events-auto'
@@ -230,8 +215,7 @@ onUnmounted(() => {
         <!-- Original text -->
         <p
           v-if="showOriginal"
-          class="text-c-text font-bold text-center leading-snug"
-          :style="fontSizeStyle"
+          class="text-lg font-medium text-c-text text-center leading-snug"
         >
           {{ text }}
           <span
@@ -243,8 +227,7 @@ onUnmounted(() => {
         <!-- Translation text -->
         <p
           v-if="showTranslation"
-          class="text-c-text-dim/80 text-center leading-snug"
-          :style="translationFontSizeStyle"
+          class="text-xs text-c-accent text-center leading-snug"
         >
           {{ translation }}
         </p>

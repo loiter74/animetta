@@ -24,18 +24,18 @@ const particles = Array.from({ length: 20 }, (_, i) => ({
         opacity: p.opacity,
         animation: `fall ${p.duration}s linear ${p.delay}s infinite`,
         '--sway': p.sway + 'px',
-        boxShadow: `0 0 ${p.size * 2}px rgba(232, 121, 168, ${p.opacity * 0.5})`
+        boxShadow: `0 0 ${p.size * 2}px rgba(232, 121, 168, ${p.opacity * 0.5})` /* token: c-accent */
       }"
     />
 
     <!-- Corner glows -->
     <div
       class="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full"
-      style="background: radial-gradient(circle, rgba(232,121,168,0.08) 0%, transparent 70%); animation: glowBreath 6s ease-in-out infinite;"
+      style="background: radial-gradient(circle, rgba(232,121,168,0.08) 0%, transparent 70%); animation: glowBreath 6s ease-in-out infinite; /* token: c-accent */"
     />
     <div
       class="absolute -top-40 -right-40 w-[400px] h-[400px] rounded-full"
-      style="background: radial-gradient(circle, rgba(124,140,245,0.06) 0%, transparent 70%); animation: glowBreath 8s ease-in-out 2s infinite;"
+      style="background: radial-gradient(circle, rgba(124,140,245,0.06) 0%, transparent 70%); animation: glowBreath 8s ease-in-out 2s infinite; /* token: c-blue */"
     />
   </div>
 </template>

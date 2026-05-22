@@ -30,44 +30,49 @@ function goTo(name: string) {
 </script>
 
 <template>
-  <div class="relative flex items-center justify-between h-9 select-none z-40">
-    <div class="absolute inset-0 bg-c-bg/80 backdrop-blur-2xl" />
+  <div class="relative flex items-center justify-between h-11 select-none z-40 border border-c-border rounded-lg max-w-[720px] mx-auto px-4">
+    <div class="absolute inset-0 bg-c-surface/85 backdrop-blur-[16px]" />
     <div class="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-c-accent/20 to-transparent" />
 
     <div class="relative flex items-center justify-between w-full">
-      <div class="flex-1 flex items-center pl-4">
+      <div class="flex-1 flex items-center">
+        <div class="flex items-center gap-2 mr-2">
+          <span class="w-[10px] h-[10px] rounded-full bg-c-error" />
+          <span class="w-[10px] h-[10px] rounded-full bg-c-warning" />
+          <span class="w-[10px] h-[10px] rounded-full bg-c-success" />
+        </div>
         <span class="text-sm font-medium text-c-text tracking-wide">Anima</span>
         <div class="flex items-center gap-2 ml-4">
-          <span class="w-2 h-2 rounded-full" :class="statusColors[store.status]" />
-          <span class="text-xs text-c-text-dim">{{ statusLabels[store.status] }}</span>
+          <span class="w-[7px] h-[7px] rounded-full" :class="statusColors[store.status]" />
+          <span class="text-10px text-c-text-dim">{{ statusLabels[store.status] }}</span>
         </div>
       </div>
 
-      <div class="flex items-center pr-4 gap-2">
+      <div class="flex items-center gap-2">
         <button
           @click="goTo('music')"
-          class="px-3 py-1 text-xs rounded-lg transition-colors"
+          class="px-3 py-1.5 text-xs rounded-md transition-colors"
           :class="route.name === 'music'
-            ? 'bg-c-accent text-white'
-            : 'bg-white/10 text-c-text-dim hover:bg-white/20'"
+            ? 'text-c-accent bg-c-accent-soft'
+            : 'bg-transparent text-c-text-dim hover:bg-white/4'"
         >
           音乐制作
         </button>
         <button
           @click="goTo('meme-review')"
-          class="px-3 py-1 text-xs rounded-lg transition-colors"
+          class="px-3 py-1.5 text-xs rounded-md transition-colors"
           :class="route.name === 'meme-review'
-            ? 'bg-c-accent text-white'
-            : 'bg-white/10 text-c-text-dim hover:bg-white/20'"
+            ? 'text-c-accent bg-c-accent-soft'
+            : 'bg-transparent text-c-text-dim hover:bg-white/4'"
         >
           梗筛选
         </button>
         <button
           @click="goTo('dashboard')"
-          class="px-3 py-1 text-xs rounded-lg transition-colors"
+          class="px-3 py-1.5 text-xs rounded-md transition-colors"
           :class="route.name === 'dashboard'
-            ? 'bg-c-accent text-white'
-            : 'bg-white/10 text-c-text-dim hover:bg-white/20'"
+            ? 'text-c-accent bg-c-accent-soft'
+            : 'bg-transparent text-c-text-dim hover:bg-white/4'"
         >
           {{ route.name === 'dashboard' ? 'Chat' : 'Dashboard' }}
         </button>

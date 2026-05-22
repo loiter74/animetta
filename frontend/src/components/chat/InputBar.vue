@@ -31,13 +31,11 @@ function sendMessage(): void {
 </script>
 
 <template>
-  <div class="px-4 py-3 border-t border-c-border flex gap-2 items-end">
+  <div class="pl-4 pr-3 py-2.5 border border-c-border rounded-xl bg-c-panel flex gap-2.5 items-center max-w-[520px] mx-auto focus-within:border-c-border-accent focus-within:shadow-[0_0_0_3px_var(--c-accent-soft)]">
     <textarea
       ref="textareaRef"
       v-model="inputText"
-      class="flex-1 bg-c-panel/60 border border-c-border rounded-xl px-3 py-2.5 text-sm text-c-text
-             placeholder-c-text-muted/50 resize-none min-h-10 max-h-30
-             outline-none transition-colors focus:border-c-accent/40"
+      class="flex-1 bg-transparent border-0 outline-none text-sm text-c-text placeholder-c-text-muted resize-none min-h-10 max-h-30"
       placeholder="输入消息..."
       rows="1"
       @input="handleInput"
@@ -45,11 +43,11 @@ function sendMessage(): void {
     />
     <VoiceButton />
     <button
-      class="btn-accent w-10 h-10 flex items-center justify-center"
+      class="bg-c-accent hover:bg-c-accent-hover text-white rounded-md w-8 h-8 flex items-center justify-center transition-all duration-200 disabled:bg-c-card disabled:text-c-text-muted disabled:cursor-not-allowed"
       :disabled="!inputText.trim()"
       @click="sendMessage"
     >
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <svg width="14" height="14" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
         <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
       </svg>
     </button>

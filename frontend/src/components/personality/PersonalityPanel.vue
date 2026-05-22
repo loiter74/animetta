@@ -152,22 +152,22 @@ function toggleMode(): void {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: rgba(168, 130, 255, 1);
-  box-shadow: 0 0 8px rgba(168, 130, 255, 0.5);
+  background: rgba(168, 130, 255, 1); /* TODO: add token — no matching violet token in uno.config.ts */
+  box-shadow: 0 0 8px rgba(168, 130, 255, 0.5); /* TODO: add token */
   transition: box-shadow 0.2s;
 }
 
 .range-slider::-webkit-slider-thumb:hover {
-  box-shadow: 0 0 12px rgba(168, 130, 255, 0.7);
+  box-shadow: 0 0 12px rgba(168, 130, 255, 0.7); /* TODO: add token */
 }
 
 .range-slider::-moz-range-thumb {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: rgba(168, 130, 255, 1);
+  background: rgba(168, 130, 255, 1); /* TODO: add token */
   border: none;
-  box-shadow: 0 0 8px rgba(168, 130, 255, 0.5);
+  box-shadow: 0 0 8px rgba(168, 130, 255, 0.5); /* TODO: add token */
 }
 
 .range-slider::-moz-range-track {

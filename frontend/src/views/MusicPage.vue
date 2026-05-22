@@ -260,8 +260,7 @@ function formatTime(seconds: number): string {
 
           <div
             v-if="store.status === 'waiting_lyrics'"
-            class="px-3 py-2 rounded-lg"
-            style="background: rgba(245, 200, 114, 0.1); border: 1px solid rgba(245, 200, 114, 0.3);"
+            class="px-3 py-2 rounded-lg bg-c-gold/10 border border-c-gold/30"
           >
             <span class="text-xs" style="color: #f0c060;">
               歌词已生成，请在 <strong>Aegisub</strong> 中审核时间轴后确认。
