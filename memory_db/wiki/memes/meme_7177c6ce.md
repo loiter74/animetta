@@ -9,8 +9,8 @@ cognitive_analysis:
   source_url: https://www.bilibili.com/video/BV1wS516qETH
   usage_example: 这个视频的剧情真是答辩级别，理性分析不能。
 context_hint: 当讨论到质量极差或荒诞搞笑的视频内容时
-created: '2026-05-17T14:02:54.459692'
-current_score: 0.7765502153989149
+created: '2026-05-21T00:31:52.599407'
+current_score: 0.7046376623823057
 id: meme_7177c6ce
 is_active: true
 last_used_at: '2026-05-17T10:43:23.828672'
@@ -24,7 +24,7 @@ tags:
 - 反讽
 - 弹幕高频
 type: meme
-updated: '2026-05-17T14:02:54.459693'
+updated: '2026-05-21T00:31:52.599409'
 use_count: 0
 ---
 

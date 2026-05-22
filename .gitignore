@@ -96,3 +96,15 @@ coverage/
 .gitnexus/
 Users30262Projectrtk-ai/
 nul
+C:tmp_pip/
+
+# AI agent artifacts
+.opencode/
+.sisyphus/
+
+# Testing artifacts
+.pytest_cache/
+.playwright-mcp/
+
+# Temp files
+*.tmp

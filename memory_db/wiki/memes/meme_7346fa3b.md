@@ -9,7 +9,7 @@ cognitive_analysis:
   source_url: https://www.bilibili.com/video/BV1ss5q6QEXN
   usage_example: 哦？你又拒绝了约会邀请？真是凭实力单身啊。
 context_hint: 当用户描述自己或他人因为某些典型行为（如过于直男、不善交际、主动回避）而导致单身时
-created: '2026-05-17T14:02:53.585683'
+created: '2026-05-21T00:31:52.562566'
 current_score: 0.9820137900379085
 id: meme_7346fa3b
 is_active: true
@@ -23,7 +23,7 @@ tags:
 - mechanism:反讽
 - 反讽
 type: meme
-updated: '2026-05-17T14:02:53.585684'
+updated: '2026-05-21T00:31:52.562567'
 use_count: 0
 ---
 

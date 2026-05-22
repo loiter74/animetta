@@ -9,8 +9,8 @@ cognitive_analysis:
   source_url: https://www.bilibili.com/video/BV1GC596CEtP
   usage_example: 表哥，这就是你说的体面工作？一天坐十小时腰都直不起来。
 context_hint: 当用户或主播描述或展示一份外表光鲜但实际辛苦枯燥的工作时
-created: '2026-05-17T14:02:53.321276'
-current_score: 1.0192221577110758
+created: '2026-05-21T00:31:52.585726'
+current_score: 0.9248369318767765
 id: meme_ba4a5b9a
 is_active: true
 last_used_at: '2026-05-17T09:58:40.544099'
@@ -23,7 +23,7 @@ tags:
 - 反讽
 - mechanism:反讽
 type: meme
-updated: '2026-05-17T14:02:53.321278'
+updated: '2026-05-21T00:31:52.585728'
 use_count: 0
 ---
 

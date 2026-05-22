@@ -9,7 +9,7 @@ cognitive_analysis:
   source_url: https://www.bilibili.com/video/BV1wS516qETH
   usage_example: 这个标题就像在说'点进来看优秀作业'，但实际是反义。
 context_hint: 当视频内容质量不佳，标题以自嘲方式吸引观众点击时
-created: '2026-05-17T14:02:53.807564'
+created: '2026-05-21T00:31:52.577702'
 current_score: 0.9820137900379085
 id: meme_8cf1dcbd
 is_active: true
@@ -23,7 +23,7 @@ tags:
 - 自指
 - mechanism:谐音
 type: meme
-updated: '2026-05-17T14:02:53.807566'
+updated: '2026-05-21T00:31:52.577705'
 use_count: 0
 ---
 

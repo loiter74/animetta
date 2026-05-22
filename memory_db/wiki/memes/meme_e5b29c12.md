@@ -9,8 +9,8 @@ cognitive_analysis:
   source_url: https://www.bilibili.com/video/BV1ez5y6sE2H
   usage_example: 网络卡顿？理性建议：重启路由。若无效，不妨念此咒语。
 context_hint: 当用户抱怨网速慢或求资源时
-created: '2026-05-17T14:02:54.679550'
-current_score: 0.7765502153989149
+created: '2026-05-21T00:31:52.605476'
+current_score: 0.7046376623823057
 id: meme_e5b29c12
 is_active: true
 last_used_at: '2026-05-17T00:56:17.143046'
@@ -23,7 +23,7 @@ tags:
 - 求愿
 - mechanism:荒诞/反差
 type: meme
-updated: '2026-05-17T14:02:54.679552'
+updated: '2026-05-21T00:31:52.605478'
 use_count: 0
 ---
 
