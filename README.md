@@ -20,6 +20,7 @@
 </div>
 
 ---
+<img width="2477" height="1856" alt="ScreenShot_2026-05-20_005548_312" src="https://github.com/user-attachments/assets/e083d019-5c9d-49a3-a072-b0632c7cb5bb" />
 
 ## ✨ 一眼看懂 | At a Glance
 
