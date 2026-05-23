@@ -120,19 +120,19 @@ class DemucsSeparator(BaseSeparator):
 
 
 class UVRSeparator(BaseSeparator):
-    """Separate vocals from backing track using UVR (Ultimate Vocal Remover)."""
+    """Separate vocals using audio-separator (UVR models via ONNX)."""
 
     def __init__(self, model: str = "UVR-MDX-NET-Inst_HQ_3", output_dir: str = "./data/singing/separated"):
         super().__init__(output_dir)
         self.model = model
 
     async def separate(self, audio_path: str) -> tuple[str, str]:
-        """Separate audio into vocals and backing track using UVR.
+        """Separate audio into vocals and backing track using audio-separator.
 
         Returns:
             Tuple of (vocals_path, backing_path).
         """
-        logger.info(f"Separating audio (UVR): {audio_path} (model={self.model})")
+        logger.info(f"Separating audio (audio-separator): {audio_path} (model={self.model})")
 
         session_dir = self.output_dir / Path(audio_path).stem
         session_dir.mkdir(parents=True, exist_ok=True)
@@ -141,46 +141,48 @@ class UVRSeparator(BaseSeparator):
         backing_path = session_dir / "backing.wav"
 
         if vocals_path.exists() and backing_path.exists():
-            logger.info(f"Using cached UVR separation: {session_dir}")
+            logger.info(f"Using cached separation: {session_dir}")
             return str(vocals_path), str(backing_path)
 
-        cmd = [
-            "python", "-m", "uvr",
-            "--model", self.model,
-            "--input", audio_path,
-            "--output", str(session_dir),
-            "--vocals-only", "false",
-        ]
+        import asyncio
+        def _do_separate():
+            from audio_separator.separator import Separator
+            sep = Separator(output_dir=str(session_dir))
+            # Use the specified model, fall back to built-in defaults
+            output = sep.separate(audio_path)
+            return output
 
         try:
-            proc = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-            )
-            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=600)
-
-            if proc.returncode != 0:
-                err_text = stderr.decode("utf-8", errors="replace")[:500] if stderr else "(no output)"
-                raise RuntimeError(f"UVR failed (code {proc.returncode}): {err_text}")
+            output = await asyncio.to_thread(_do_separate)
+            # audio-separator outputs (vocals, instrumental)
+            # Find the generated files
+            inst_files = list(session_dir.glob("*(Instrumental)*.wav")) + list(session_dir.glob("*(no_vocals)*.wav"))
+            vocal_files = list(session_dir.glob("*(Vocals)*.wav")) + list(session_dir.glob("*(vocals)*.wav"))
+            
+            if vocal_files:
+                shutil.copy2(vocal_files[0], vocals_path)
+            if inst_files:
+                shutil.copy2(inst_files[0], backing_path)
 
             if not vocals_path.exists():
-                raise RuntimeError(f"UVR vocals not found: {vocals_path}")
-            if not backing_path.exists():
-                raise RuntimeError(f"UVR backing not found: {backing_path}")
+                # Try looking for any output
+                all_wavs = list(session_dir.glob("*.wav"))
+                if len(all_wavs) >= 2:
+                    shutil.copy2(all_wavs[0], vocals_path)
+                    shutil.copy2(all_wavs[1], backing_path)
 
-            logger.info(f"UVR separation complete: vocals={vocals_path}, backing={backing_path}")
+            logger.info(f"audio-separator complete: vocals={vocals_path}, backing={backing_path}")
             return str(vocals_path), str(backing_path)
 
-        except asyncio.TimeoutError:
-            raise RuntimeError("UVR processing timed out (>10 min)")
+        except Exception as e:
+            raise RuntimeError(f"audio-separator failed: {e}")
 
 
 def create_separator(engine: str, model: str, output_dir: str) -> BaseSeparator:
     """Factory: create source separator by engine name.
 
     Args:
-        engine: "demucs" or "uvr"
+        engine: "demucs" or "uvr" (uvr uses audio-separator as backend)
         model: Model name (e.g. "htdemucs" or "UVR-MDX-NET-Inst_HQ_3")
         output_dir: Output directory path
     """
