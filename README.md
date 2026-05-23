@@ -1,408 +1,316 @@
-# Anima
-
-<div align="center">
-
-![Anima Chat Demo](assets/demo/anima-chat-preview.gif)
-<!-- ↑ Replace with your demo GIF: record 15s of chat + Live2D interaction -->
-
-**AI Virtual Companion with Live2D + Real-time Voice + LangGraph Orchestration** 🎭
-> 不是套壳 ChatGPT。LangGraph 状态机编排 · 插件化 AI 模型 · 实时语音管线 · Wiki 记忆系统
-> Not a ChatGPT wrapper. State machine orchestration · Plugin-based AI models · Real-time audio pipeline · Wiki memory
-
-[![Test](https://github.com/loiter74/Anima-LLM-Vtuber/actions/workflows/test.yml/badge.svg)](https://github.com/loiter74/Anima-LLM-Vtuber/actions/workflows/test.yml)
-[![Docker](https://img.shields.io/badge/docker-ready-blue)](https://github.com/loiter74/Anima-LLM-Vtuber)
-[![Frontend](https://github.com/loiter74/Anima-LLM-Vtuber/actions/workflows/frontend.yml/badge.svg)](https://github.com/loiter74/Anima-LLM-Vtuber/actions/workflows/frontend.yml)
-![Python](https://img.shields.io/badge/python-3.12%20|%203.13-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
-![Tests](https://img.shields.io/badge/tests-81%20passing-brightgreen)
-![Lines](https://img.shields.io/badge/code-30K%2B%20lines-informational)
-
-</div>
-
----
-<img width="2477" height="1856" alt="ScreenShot_2026-05-20_005548_312" src="https://github.com/user-attachments/assets/e083d019-5c9d-49a3-a072-b0632c7cb5bb" />
-
-## ✨ 一眼看懂 | At a Glance
-
-<div align="center">
-
-| 🎭 | 💬 | 🔄 |
-|:---:|:---:|:---:|
-| **会动的虚拟角色** | **流式自然对话** | **换模型不改代码** |
-| **Living Avatar** | **Streaming Chat** | **Swap Models Freely** |
-| Live2D 角色根据对话内容 | Token 级流式输出 | 装饰器注册新 LLM/ASR/TTS |
-| 改变表情和动作 | 边说边显示，像真人聊天 | 无需修改框架代码 |
-| Reacts with expressions & gestures | Stream output token by token | Register via `@ProviderRegistry` |
-
-</div>
+<p align="center">
+  <h1 align="center">🤖 Anima — AI Virtual Companion / VTuber Framework</h1>
+  <p align="center">
+    可配置、可扩展的 AI 虚拟伴侣框架<br>
+    插件化架构 · LangGraph 编排 · 混合记忆 · Live2D 驱动 · 多模态交互
+  </p>
+  <p align="center">
+    <img src="https://img.shields.io/badge/python-3.11+-blue?logo=python&logoColor=white" alt="Python">
+    <img src="https://img.shields.io/badge/Vue_3-vite-green?logo=vue.js" alt="Vue 3">
+    <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
+    <img src="https://img.shields.io/badge/LangGraph-orchestration-orange" alt="LangGraph">
+    <img src="https://img.shields.io/badge/OpenTelemetry-tracing-purple" alt="OpenTelemetry">
+  </p>
+</p>
 
 ---
 
-## 🚀 快速开始 | Quick Start
+## ✨ 项目亮点
+
+Anima 不是又一个 "ChatGPT + TTS" 的简单拼接。它是一个**工程化的 AI 伴侣框架**，核心设计原则是**可配置、可观测、可扩展**：
+
+- **LangGraph 状态图编排** — 不是线性 pipeline，而是基于 LangGraph 的有向图，支持条件路由、工具调用循环、中断恢复
+- **插件化 Provider 架构** — 通过 `@ProviderRegistry` 装饰器注册新服务商，零侵入核心代码
+- **混合记忆系统** — Chroma 向量搜索 (70%) + SQLite FTS5 关键词匹配 (30%) + Markdown Wiki 知识库
+- **Live2D 情感驱动** — LLM 输出 → 情感分析 → Live2D 参数映射，表情随对话内容实时变化
+- **全链路可观测** — OpenTelemetry 分布式追踪 + Prometheus 指标 + 内置 Stats Dashboard
+
+---
+
+## 🏗️ 系统架构
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     Frontend (Vue 3 + Vite)                     │
+│              Live2D Renderer · Chat UI · Stats Dashboard        │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │ Socket.IO / REST
+┌──────────────────────────▼──────────────────────────────────────┐
+│                    WebSocket Server (FastAPI + Socket.IO)        │
+│                Session Management · Desktop App · Live2D Events │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │
+┌──────────────────────────▼──────────────────────────────────────┐
+│                  LangGraph Orchestration Engine                  │
+│                                                                  │
+│  ┌─────────┐  ┌─────────┐  ┌──────────┐  ┌────────────────┐   │
+│  │ASR Node │→ │Persona  │→ │ LLM Node │→ │ Emotion Node   │   │
+│  │         │  │  Node   │  │ + RAG    │  │ → Live2D Map   │   │
+│  └─────────┘  └─────────┘  └────┬─────┘  └────────────────┘   │
+│                                  │                               │
+│                          ┌───────▼───────┐  ┌──────────────┐   │
+│                          │  Tool Node    │  │ Output Node  │   │
+│                          │ MC/MCP/Custom │  │ TTS + Memory │   │
+│                          └───────────────┘  └──────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+                           │
+        ┌──────────────────┼──────────────────┐
+        ▼                  ▼                  ▼
+┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+│   Services   │  │    Memory    │  │   Tracing    │
+│ LLM/ASR/TTS  │  │ Chroma+SQLite│  │  OTel+Stats  │
+│  Live2D/VAD  │  │  +Wiki+Meme  │  │ +Prometheus  │
+└──────────────┘  └──────────────┘  └──────────────┘
+```
+
+---
+
+## 🔧 核心模块
+
+### 🧠 LangGraph 编排引擎
+
+请求不是走 `if/else` 分支，而是通过 **LangGraph 状态图** 流转。每个 Node 是纯状态变换函数，业务逻辑委托给 `services/` 层：
+
+| Node | 职责 |
+|------|------|
+| `asr_node` | 语音识别 → 文本 |
+| `personality_node` | 注入人设 prompt |
+| `memory_middleware` | RAG 检索记忆上下文 |
+| `llm_node` | LLM 推理 + 工具调用 |
+| `tool_node` | 执行工具（Minecraft / MCP / 自定义） |
+| `emotion_node` | 情感分析 → Live2D 表情 |
+| `output_node` | TTS 合成 + 记忆存储 + 字幕翻译 |
+
+### 🔌 Provider 插件系统
+
+通过装饰器注册，完全解耦：
+
+```python
+# 1. 注册配置
+@ProviderRegistry.register_config("llm", "my_llm")
+class MyLLMConfig(LLMBaseConfig):
+    type: Literal["my_llm"] = "my_llm"
+    api_key: str
+
+# 2. 注册服务
+@ProviderRegistry.register_service("llm", "my_llm")
+class MyLLMAgent(AgentInterface):
+    @classmethod
+    def from_config(cls, config, **kwargs):
+        return cls(api_key=config.api_key)
+```
+
+**已支持的服务商：**
+
+| 类型 | Provider |
+|------|----------|
+| **LLM** | OpenAI · GLM (智谱) · Ollama · Mock |
+| **ASR** | OpenAI Whisper · GLM ASR · Mock |
+| **TTS** | OpenAI TTS · GLM TTS · Edge TTS · Mock |
+| **VAD** | Silero VAD |
+
+### 🧩 混合记忆系统
+
+三层存储 + 双路搜索：
+
+```
+memory/
+├── storage/
+│   ├── chroma.py        # 向量语义搜索 (70% 权重)
+│   └── sqlite.py        # FTS5 关键词搜索 (30% 权重)
+├── wiki/                # Markdown 知识库
+│   ├── entities/        # 实体页 (人物、宠物、项目)
+│   ├── concepts/        # 概念页 (偏好、兴趣、习惯)
+│   ├── sources/         # 每日对话摘要
+│   ├── synthesis/       # 跨时间线主题综合
+│   └── memes/           # AI 生成的梗
+└── learner/             # 周期性学习
+    ├── pattern_extractor   # 行为模式提取
+    ├── fact_extractor      # 事实知识提取
+    └── meme_discovery      # 梗生成与评分
+```
+
+记忆系统自带 **LINT 健康检查**：断链检测、孤立页面发现、索引漂移告警。
+
+### 🎭 Live2D 情感表达
+
+LLM 输出 → 情感标签提取 → Live2D 参数映射，支持 6 种基础情感：
+
+```
+happy → 嘴角上扬 + 眉毛上挑 + 眼睛放大 + 身体前倾
+sad   → 嘴角下垂 + 眉毛下压 + 半闭眼 + 低头
+angry → 紧咬牙关 + 皱眉 + 身体后仰
+...
+```
+
+架构采用策略模式：`IEmotionAnalyzer` → `ITimelineStrategy` → `IEmotionParamMapper`，可自定义情感分析器和参数映射。
+
+### 🎤 唱歌 Pipeline
+
+从一条 Bilibili 链接到 AI 翻唱，全自动：
+
+```
+Bilibili URL → yt-dlp 下载 → Demucs/UVR 人声分离
+    → Whisper 歌词识别 (或 B站原生歌词)
+    → GPT-SoVITS / RVC 声线转换
+    → AudioMixer 混音 → 成品输出
+```
+
+支持实时进度回调、歌词确认中断、lip sync 音量包络计算。
+
+### ⛏️ Minecraft 集成
+
+通过 Node.js Mineflayer 子进程驱动，LLM 可以自主操控 Minecraft 角色：
+
+```
+LLM Tool Call → MinecraftBridge (JSON over stdin/stdout) → Mineflayer Bot
+```
+
+支持的操作：移动 (`mc_goto`)、挖矿 (`mc_mine`)、建造 (`mc_build`)、战斗 (`mc_attack`)、聊天 (`mc_chat`)。附带自主行为循环 (`AutonomousLoop`) 和规则引擎 (`RulesEngine`)。
+
+### 📡 可观测性
+
+```yaml
+# config/observability.yaml
+tracing:
+  enabled: true
+  service_name: anima
+otlp:
+  enabled: true          # 双写：SQLite + OTel Collector
+  endpoint: http://localhost:4317
+```
+
+- **OpenTelemetry Tracing** — 每个 Graph Node 自动 span，双写至 SQLite + OTLP Collector
+- **Prometheus Metrics** — Node 耗时、LLM token 用量、RAG 检索质量、WebSocket 会话数
+- **Stats Dashboard** — 内置 REST API (`/api/stats/`) + 前端面板
+- **健康检查** — 7 组件并发探针 (`/health`)，返回 ok / degraded / error
+
+---
+
+## 🚀 快速开始
+
+### 1. 安装依赖
 
 ```bash
-pip install -r requirements.txt    # 安装依赖 | Install
-cp .env.example .env               # 配置 API Key | Configure
-python scripts/start.py            # 启动 | Launch
+pip install -r requirements.txt
+cd frontend && npm install
 ```
 
-打开桌面应用，开始和你的 AI 角色聊天吧！ | Open the desktop app and start chatting!
-
----
-
-## 🎮 能力矩阵 | Capability Matrix
-
-### 🤖 AI 模型支持 | AI Models
-
-| 类型 Type | 支持的服务 Providers |
-|-----------|---------------------|
-| **LLM** 大语言模型 | DeepSeek · GLM · OpenAI · Ollama · 本地模型 Local |
-| **ASR** 语音识别 | FasterWhisper · GLM · OpenAI · FunASR |
-| **TTS** 语音合成 | Edge TTS · ChatTTS · GPT-SoVITS · Kokoro · GLM · OpenAI · VibeVoice |
-| **VAD** 语音检测 | Silero VAD |
-
-### 🎭 角色表现 | Character Features
-
-| 功能 Feature | 说明 Description |
-|-------------|-----------------|
-| **表情同步** Expression Sync | 情绪驱动 Live2D 面部表情 / Emotion-driven facial expressions |
-| **口型同步** Lip Sync | 语音与嘴型精确匹配 / Audio-driven viseme matching |
-| **🎬 双语字幕** Bilingual Subtitles | 萌系泡泡风格，LLM 实时翻译，支持英日韩法德西俄 / Anime-style overlay with LLM translation (EN/JA/KO/FR/DE/ES/RU) |
-| **自定义人设** Persona | 创建独一无二的角色性格 / Create unique character personalities |
-
-### 🚀 扩展能力 | Extensions
-
-| 功能 Feature | 说明 Description |
-|-------------|-----------------|
-| **🔧 工具调用** Tool Calling | LLM 可调用计算器、网页搜索、MCP 协议工具 / Calculator, web search, MCP protocol tools |
-| **🎮 Minecraft 游戏** Gameplay | Mineflayer 机器人，AI 操控角色挖掘、建造、战斗 / AI controls a Minecraft bot via LangChain tools |
-| **📺 B站直播** Livestream | 实时弹幕接入，AI 与观众互动回复 / Bilibili danmaku integration, AI responds to live comments |
-| **📊 数据看板** Dashboard | 对话统计、延迟分布、Token 用量可视化 / Conversation stats, latency distribution, token usage charts |
-
----
-
-## 🏗️ 系统架构 | Architecture
-
-### C4 系统上下文 | System Context
-
-```mermaid
-graph TB
-    User([User])
-    subgraph "Anima System"
-        FE[Vue3 Frontend<br/>Electron + Web]
-        BE[FastAPI Backend<br/>Socket.IO + REST]
-        LG[LangGraph Engine<br/>State Graph]
-    end
-    subgraph "External Services"
-        LLM[LLM Providers<br/>DeepSeek / GLM / OpenAI / Ollama]
-        TTS[TTS Providers<br/>Edge / GLM / VibeVoice]
-        ASR[ASR Providers<br/>Whisper / GLM / FunASR]
-    end
-    subgraph "Data Stores"
-        SQL[(SQLite FTS5<br/>Keyword Index)]
-        VDB[(Chroma<br/>Vector DB)]
-        MD[(Markdown Files<br/>Conversation Logs)]
-    end
-
-    User -->|text/audio| FE
-    FE -->|Socket.IO| BE
-    BE --> LG
-    LG -->|API calls| LLM
-    LG -->|API calls| TTS
-    LG -->|API calls| ASR
-    LG -.->|RAG| VDB
-    LG -.->|search| SQL
-    LG -.->|store| MD
-```
-
-### 🔄 请求全链路 | Request Lifecycle
-
-```
-User Input (Text / Audio)
-    ↓
-[START] → route_input()
-    │
-    ├── (audio) → [asr_node] → Speech Recognition → user_text
-    │
-    └── (text) ──────────────────→ [llm_node]
-                                       │
-                                   RAG: Retrieve Memory Context
-                                       │
-                                   LLM Reasoning (Streaming / Tools)
-                                       │
-                              ┌────────┴────────┐
-                              │                 │
-                        (Tool Calls)      (Direct Reply)
-                              │                 │
-                         [tool_node]      [tts_node]
-                              │                 │
-                       Execute Results ←─────────┤
-                                                ↓
-                                          [emotion_node]
-                                                ↓
-                                          [output_node]
-                                     ┌──────────┴──────────┐
-                                     ↓                     ↓
-                             Socket.IO Events        Memory Storage
-                               → Frontend           → SQLite / Chroma
-```
-
-### 🧩 LangGraph 状态机 | State Machine
-
-7 个节点 + 条件边，全流式，可中断 | 7 nodes + conditional edges, streaming-first, interruptible:
-
-```
-START → route_input ─┬─ audio → ASR ─┐
-                      └─ text ────────┤
-                                      ↓
-                      LLM ←─ Tool ──→ LLM    (RAG: Hybrid Search)
-                                      ↓
-                               TTS → Emotion → Output → END
-```
-
-### 🔌 插件架构 | Plugin Architecture
-
-开放-封闭原则：新增 LLM/ASR/TTS 只需写一个类 + 一行装饰器，**零框架代码改动** | Add a provider with one class + one decorator, zero framework changes:
-
-```
-interface.py (ABC)
-    ↓ implements
-glm_llm.py, openai_llm.py, deepseek_llm.py ...
-    ↓ @ProviderRegistry.register_service
-factory.py → __init__.py (统一导出 | unified re-export)
-```
-
-### 🧠 记忆系统 | Memory System
-
-```
-Hybrid Search (ADR-002)         Wiki Memory (ADR-005)        Periodic Learner
-70% Vector + 30% BM25     →    Markdown = Source of Truth → Auto-extract knowledge
-Chroma + SQLite FTS5          可审计 · 可版本控制              写入 Wiki 知识库
-                               Auditable · Versionable       Writes to Wiki KB
-```
-
-**深度特性 | Deep Features:**
-- **FuzzyLayer** 分级记忆注入：上下文层 → 支撑层 → 精确层，按相关性逐级注入 LLM 上下文
-- **MemePool** 时间衰减记忆池：10 个活跃槽位，半衰期衰减 + 复活机制 + AI 自动发现梗
-- **UserProfile** 双轨用户画像：静态画像（Wiki 长期事实）+ 动态画像（当前对话上下文）
-
----
-
-## 📐 工程实践 | Engineering
-
-### 架构决策记录 | Architecture Decision Records
-
-5 个正式 ADR，所有架构决策有据可查 | 5 formal ADRs documenting all key architectural decisions:
-
-| ID | 决策 Decision | 要点 Highlight |
-|----|--------------|----------------|
-| [ADR-001](docs/adrs/ADR-001-langgraph-over-eventbus.md) | LangGraph 替代 EventBus | 状态机编排 > 事件驱动 / State machine > event-driven |
-| [ADR-002](docs/adrs/ADR-002-hybrid-search.md) | Chroma + SQLite 混合搜索 | 70/30 向量+关键词融合 / Vector + keyword fusion |
-| [ADR-003](docs/adrs/ADR-003-plugin-architecture.md) | 装饰器插件注册 | 开放-封闭原则 / Open-closed principle |
-| [ADR-004](docs/adrs/ADR-004-streaming-response.md) | 流式响应优先 | Token 级流式，全链路 / End-to-end streaming |
-| [ADR-005](docs/adrs/ADR-005-wiki-memory.md) | Wiki 记忆架构 | Markdown=真实来源 / Markdown as truth source |
-
-### 工程指标 | Engineering Metrics
-
-| 指标 Metric | 状态 Status |
-|-------------|-------------|
-| **测试 Tests** | 81 passing · pytest + pytest-asyncio |
-| **CI/CD** | GitHub Actions · Python 3.12/3.13 矩阵 |
-| **类型安全 Type Safety** | mypy strict mode |
-| **代码规范 Lint** | ruff |
-| **可观测性 Observability** | OpenTelemetry 全链路追踪 + Stats API + 数据看板 |
-| **代码规模 Code Scale** | 202 files · ~30K lines Python |
-| **容器化 Container** | Docker + docker-compose |
+### 2. 配置
 
 ```bash
-# 测试 | Tests
-PYTHONPATH=src python -m pytest tests/ -v
-PYTHONPATH=src python -m pytest tests/ --cov=src/anima --cov-report=term-missing
-
-# 类型检查 + 代码规范 | Type check + Lint
-mypy src/ --ignore-missing-imports
-ruff check src/ tests/
+cp config/config.default.yaml config/config.yaml
 ```
 
----
+编辑 `config/config.yaml`：
 
-## 📦 部署 | Deployment
+```yaml
+profile: "glm"            # mock / openai / glm / ollama
+persona: "neuro-vtuber"   # default / neuro-vtuber
+system:
+  host: "localhost"
+  port: 12394
+```
+
+设置 API Key：
 
 ```bash
-# Docker 一键部署 | One-command deploy
-docker-compose up --build -d
-
-# 健康检查 | Health check
-curl http://localhost:12394/health
+export LLM_API_KEY="your-api-key"
 ```
 
----
-
-## 🔧 项目治理 | Governance
-
-> **最新整改 (2026-05-23):** [治理报告](docs/plans/2026-05-23-governance-report.md) — 4 大结构性问题修复
-
-### 📋 整改摘要 | Summary
-
-| 类别 | 问题 | 修复 |
-|------|------|------|
-| 🔴 **隐私** | `memory_db/raw/` 对话记录已在仓库中 | 已从 git 追踪移除，.gitignore 排除 |
-| 🔴 **卫生** | 生成文件误入仓库 (cov_report, test-results, etc.) | 已 `git rm --cached` |
-| 🟡 **配置** | 硬编码 Windows 绝对路径 (GPT-SoVITS, RVC, Demucs) | 改为 `${ENV_VAR}` 环境变量 |
-| 🟢 **架构** | TTS 实现过多 (9 个)，维护成本高 | core/contrib 分层 + 生命周期标记 |
-| 🟢 **架构** | 跨层依赖检测 | `scripts/check_deps.py` CI 检查脚本 |
-| 🔵 **耦合** | meme→memory / tracing→orchestration 跨层导入 | 提取共享协议 / TYPE_CHECKING 守卫 |
-
-### 🏷️ TTS 分层 | TTS Layering
-
-```
-services/speech/tts/
-├── edge_tts.py           # core: active — 零依赖，开箱即用
-├── qwen3_tts.py          # core: active — 当前默认
-├── gpt_sovits_tts.py     # core: active — 本地推理
-└── contrib/              # contrib: maintained/experimental
-    ├── glm_tts.py
-    ├── kokoro_tts.py
-    ├── vibe_voice_tts.py
-    ├── chattts_tts.py    # experimental
-    └── glados_effect.py
-```
-
-### 📐 分层架构 | Layer Architecture
-
-```
-Layer 0 (Foundation):  utils, config, tracing, persistence
-Layer 1 (Domain):      memory, avatar, tools, notifier, services
-Layer 2 (Orchestration): orchestration/graph
-Layer 3 (Infrastructure): orchestration/server, core
-
-规则: 只允许向下依赖 → scripts/check_deps.py 自动检测
-```
-
-### 🔑 新增环境变量 | New Env Vars
+### 3. 启动
 
 ```bash
-# GPT-SoVITS 本地推理 (config/config.yaml)
-GPT_SOVITS_PATH=/path/to/GPT-SoVITS
-GPT_SOVITS_PYTHON=python
+# 后端
+python -m anima.core.socketio_server
 
-# RVC 语音转换 (config/singing.yaml, config/services.yaml)
-RVC_PATH=/path/to/RVC
-
-# 项目根目录 (自动检测，通常无需设置)
-# ANIMA_PROJECT_ROOT=/path/to/Anima
+# 前端 (另一个终端)
+cd frontend && npm run dev
 ```
 
 ---
 
-## 📖 文档导航 | Documentation
-
-| Document | Description |
-|----------|-------------|
-| [ARCHITECTURE.md](ARCHITECTURE.md) | 系统架构总览 + C4 图 + 时序图 / System Architecture |
-| [TESTING.md](TESTING.md) | 测试指南 / Testing Guide |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | 贡献指南 / Contributing Guide |
-| [docs/adrs/](docs/adrs/) | 5 个架构决策记录 / 5 Architecture Decision Records |
-| [docs/plans/](docs/plans/) | 工程升级计划 / Engineering Upgrade Plans |
-
----
-
-## 📂 项目结构 | Project Structure
+## 📁 项目结构
 
 ```
-src/anima/                  # Python backend (202 files, 30K lines)
-├── core/                   # Entry point + service container
-├── orchestration/          # LangGraph state graph + WebSocket server
-│   ├── graph/              # 7 nodes + builder + orchestrator
-│   └── server/             # Socket.IO routes + session management
-├── services/               # LLM / ASR / TTS / VAD implementations
-│   ├── speech/{asr,tts}/   # Provider interface → impl → factory pattern
-│   ├── intelligence/{llm,vad}/
-│   └── live/               # Bilibili danmaku livestream integration
-├── memory/                 # Wiki-architecture memory (Chroma + SQLite FTS5)
-│   ├── search/             # Hybrid search (70% vector + 30% BM25)
-│   ├── wiki/               # Markdown knowledge base
-│   └── learner/            # Periodic pattern extraction
-├── config/                 # Pydantic configs + @ProviderRegistry
-├── avatar/                 # Live2D expression analysis
-│   ├── analyzers/          # Emotion extraction (keyword + LLM)
-│   ├── mappers/            # Emotion → Live2D parameter mapping
-│   └── strategies/         # Duration/intensity/position strategies
-├── tools/                  # Tool calling + MCP bridge + Minecraft bot
-│   ├── base.py             # Built-in tools (calculator, web search)
-│   ├── mcp_bridge.py       # MCP protocol bridge
-│   └── minecraft/          # Mineflayer bot gameplay integration
-└── tracing/                # OpenTelemetry observability
-frontend/                   # Vue 3 + TypeScript + Electron (UnoCSS, Pinia)
+Anima-LLM-Vtuber/
+├── config/
+│   ├── config.yaml               # 主配置
+│   ├── profiles/                  # 服务方案 (mock/openai/glm/ollama)
+│   ├── personas/                  # 人设配置
+│   └── observability.yaml         # 追踪 & 指标配置
+├── src/anima/
+│   ├── core/                      # 入口 + 服务容器
+│   ├── orchestration/
+│   │   ├── graph/                 # LangGraph 状态图 + Nodes
+│   │   └── server/                # WebSocket + REST API
+│   ├── services/
+│   │   ├── intelligence/llm/      # LLM 服务
+│   │   ├── speech/asr/            # 语音识别
+│   │   ├── speech/tts/            # 语音合成
+│   │   ├── live2d/                # Live2D 动作队列
+│   │   └── singing/               # 唱歌 Pipeline
+│   ├── memory/                    # 混合记忆系统
+│   ├── avatar/                    # 情感分析 → Live2D 映射
+│   ├── tools/                     # 工具调用 (Minecraft/MCP/Custom)
+│   ├── tracing/                   # OpenTelemetry 可观测性
+│   ├── inspection/                # 健康检查 & 一致性检查
+│   └── config/                    # Pydantic 配置模型
+├── frontend/                      # Next.js 前端
+├── memory_db/                     # Wiki 知识库持久化
+├── docs/                          # 文档
+└── tools/training/                # LoRA 训练工具
 ```
 
 ---
 
-## 🔭 可观测性 | Observability
+## 🧪 扩展开发
 
-Anima 集成了完整的本地化可观测性栈：**OTel Collector + Prometheus + Tempo + Loki + Grafana + Notifier**，全链路 trace、业务指标、日志聚合、成本追踪、多渠道告警一站到位。
+### 添加新 Provider
 
-### 启动可观测性栈
+只需两个文件 + 一个装饰器，参考 `services/intelligence/llm/` 下的现有实现。框架会通过 `ProviderRegistry` 自动发现和加载。
 
-```bash
-# 一键启动所有组件 (首次拉取镜像约 2 分钟)
-docker-compose -f observability/docker-compose.yml up -d
+### 添加新 Graph Node
+
+```python
+async def my_node(state: AgentState) -> dict[str, Any]:
+    """Node 只做状态变换，业务逻辑委托给 services/"""
+    result = await some_service.process(state["messages"])
+    return {"my_output": result}
 ```
 
-### 端口与服务
+在 `graph/builder.py` 中注册节点和边。
 
-| 服务 | 端口 | 用途 | 默认账号 |
-|------|------|------|----------|
-| **前端 Vite** | `5173` | Vue 3 桌面应用开发服务器 | — |
-| **后端 API** | `12394` | FastAPI + Socket.IO 后端 | — |
-| **Grafana** | `3000` | Dashboard + Trace + Logs 查看 | `admin` / `admin` |
-| **Prometheus** | `9090` | 指标查询 + 告警规则 | — |
-| **Tempo** | `3200` | 分布式追踪 (trace) 存储 | — |
-| **Loki** | `3100` | 日志聚合 (logs) 存储 | — |
-| **OTel Collector** | `4317` (gRPC) / `4318` (HTTP) | 遥测数据入口 | — |
-| **Notifier** | `9094` | 告警通知中继 (Discord/飞书/邮件) | — |
+### 添加新 Tool
 
-### Dashboard 概览
+```python
+from langchain_core.tools import tool
 
-启动后可访问 `http://localhost:3000`，预置 4 张 Dashboard：
-
-| Dashboard | 内容 |
-|-----------|------|
-| **Anima - Overview** | QPS、端到端延迟 p50/p95/p99、错误率、成本率、活跃会话数 |
-| **Anima - LangGraph Pipeline** | 7 节点延迟堆叠图、错误率热图、工具调用分布、LLM vs Tool 调用对比 |
-| **Anima - RAG Performance** | 检索延迟 p50/p95 按策略对比、chunk 数量分布、Top Score 直方图 |
-| **Anima - Cost & Tokens** | 累计成本曲线、Token 用量趋势、提供商成本占比、月度预测 |
-
-### Trace 查看
-
-在 Grafana → Explore → 选择 **Tempo** datasource → Search，可查看每次对话的完整 trace（含 LangGraph 7 节点 span + LLM/ASR/TTS 服务调用 span）。
-
-### 日志查看
-
-在 Grafana → Explore → 选择 **Loki** datasource，可查看应用日志（loguru 格式）。后端启动时自动输出日志到 `logs/anima.log`，由 OTel Collector 的 filelog receiver 采集。
-
-### 告警
-
-5 条预置 Prometheus 告警规则（高错误率、高延迟、月度成本预警/严重、服务宕机）。告警通过 Notifier 中继推送到 Discord / 飞书 / 邮件：
-
-```bash
-# 1. 创建 .env.notifier 或从 .env.example 复制
-cp .env.example .env.notifier
-
-# 2. 编辑 .env.notifier，填写至少一个渠道的 webhook URL
-NOTIFIER_DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/xxx/yyy
-NOTIFIER_FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/xxx
-NOTIFIER_EMAIL_TO=admin@example.com
+@tool
+async def my_tool(query: str) -> str:
+    """工具描述 — LLM 会根据这段文字决定何时调用"""
+    return await do_something(query)
 ```
+
+在 `tools/custom_tools.py` 注册，或通过 MCP Bridge 接入外部服务。
 
 ---
 
-## 📄 许可证 | License
+## 📊 技术栈
 
-MIT License — 自由使用、修改和分发 | Free to use, modify, and distribute.
+| 层级 | 技术 |
+|------|------|
+| **编排** | LangGraph · LangChain |
+| **后端** | FastAPI · Socket.IO · Starlette |
+| **前端** | Vue 3 · Vite · TypeScript · pixi.js · Live2D Cubism SDK |
+| **记忆** | ChromaDB · SQLite FTS5 · Markdown Wiki |
+| **追踪** | OpenTelemetry · Prometheus · Langfuse |
+| **AI** | OpenAI · 智谱 GLM · Ollama · Whisper · Edge TTS |
+| **音频** | Demucs · GPT-SoVITS · RVC · yt-dlp |
+| **游戏** | Mineflayer (Node.js) |
 
 ---
 
-<div align="center">
-<sub>Built with ❤️ by the Anima team</sub>
-</div>
+## 📄 License
+
+[MIT License](LICENSE)
