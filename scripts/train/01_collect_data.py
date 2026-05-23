@@ -31,7 +31,7 @@ from loguru import logger
 
 def load_config() -> dict:
     config_path = Path(__file__).parent / "config.yaml"
-    with open(config_path) as f:
+    with open(config_path, encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 
@@ -55,7 +55,7 @@ def collect_huggingface(raw_dir: Path) -> list[Path]:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     try:
-        ds = load_dataset("Plachta/Umamusume-voice-text-pairs", split="train", trust_remote_code=True)
+        ds = load_dataset("Plachta/Umamusume-voice-text-pairs", split="train")
         logger.info(f"Loaded dataset: {len(ds)} samples")
 
         saved = 0

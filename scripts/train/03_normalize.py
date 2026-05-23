@@ -17,7 +17,7 @@ from loguru import logger
 
 def load_config() -> dict:
     config_path = Path(__file__).parent / "config.yaml"
-    with open(config_path) as f:
+    with open(config_path, encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 
