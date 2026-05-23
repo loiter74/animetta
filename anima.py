@@ -58,8 +58,10 @@ class RVCEnv:
         return (self.root / "logs") if self.root else Path(".")
 
     def run(self, cmd, **kwargs):
+        """Run with RVC Python + ffmpeg in PATH, force CPU."""
         env = os.environ.copy()
         env["PATH"] = f"{self.root}\\runtime;{self.root};{env.get('PATH','')}"
+        env["CUDA_VISIBLE_DEVICES"] = "-1"
         return subprocess.run(cmd, cwd=str(self.root), env=env, **kwargs)
 
 
@@ -82,19 +84,21 @@ def run_pipeline(rvc, exp_name, data_dir, sr="48000", version="v2",
                  epochs=100, batch=16, pretrained_g=""):
     os.makedirs(str(rvc.logs_dir / exp_name), exist_ok=True)
 
+    # sr for argparse-based scripts uses "48k" format
+    sr_k = f"{int(sr)//1000}k"
+
     steps = [
         ("Preprocess audio", [
             "infer/modules/train/preprocess.py",
             data_dir, sr, "4", f"logs/{exp_name}", "False", "3.7",
         ]),
-        ("Extract F0 (RMVPE)", [
-            "infer/modules/train/extract/extract_f0_rmvpe.py",
-            "4", "0", "1", f"logs/{exp_name}", version,
+        ("Extract F0 (harvest)", [
+            "infer/modules/train/extract/extract_f0_print.py",
+            f"logs/{exp_name}", "4", "harvest",
         ]),
         ("Extract features (ContentVec)", [
             "infer/modules/train/extract_feature_print.py",
-            "0", "4", "assets/hubert/hubert_base.pt",
-            "1", f"logs/{exp_name}", version, sr,
+            "cpu", "1", "0", f"logs/{exp_name}", version, "true",
         ]),
     ]
 
@@ -109,13 +113,68 @@ def run_pipeline(rvc, exp_name, data_dir, sr="48000", version="v2",
         print("OK")
 
     print(f"\n  [{total}/{total}] Training ({epochs} epochs)...", end=" ", flush=True)
+
+    # Generate filelist.txt (format: audio|feature|pitch|pitchf|dv)
+    import json, random
+    wav_dir = rvc.logs_dir / exp_name / "0_gt_wavs"
+    feat_dir = rvc.logs_dir / exp_name / ("3_feature768" if version == "v2" else "3_feature256")
+    f0a_dir = rvc.logs_dir / exp_name / "2a_f0"
+    f0b_dir = rvc.logs_dir / exp_name / "2b-f0nsf"
+    filelist_path = rvc.logs_dir / exp_name / "filelist.txt"
+    if wav_dir.is_dir() and feat_dir.is_dir():
+        lines = []
+        for wav in sorted(wav_dir.glob("*.wav")):
+            feat = feat_dir / (wav.stem + ".npy")
+            if not feat.exists():
+                continue
+            # F0 files use .wav.npy naming convention
+            f0a = f0a_dir / (wav.name + ".npy") if f0a_dir.is_dir() else None
+            f0b = f0b_dir / (wav.name + ".npy") if f0b_dir.is_dir() else None
+            if f0a and f0a.exists() and f0b and f0b.exists():
+                lines.append(f"{wav}|{feat}|{f0a}|{f0b}|0")
+        if lines:
+            random.shuffle(lines)
+            filelist_path.write_text("\n".join(lines))
+            info(f"filelist: {len(lines)} entries")
+        else:
+            info("filelist: no entries — check F0 extraction")
+
+    # Ensure config.json exists
+    config_json_path = rvc.logs_dir / exp_name / "config.json"
+    if not config_json_path.exists():
+        src_config = rvc.root / "configs" / version / f"{sr_k}.json"
+        if src_config.exists():
+            with open(src_config) as f:
+                cfg = json.load(f)
+            with open(str(config_json_path), "w") as f:
+                json.dump(cfg, f, indent=4, sort_keys=True)
+            info(f"Created config.json from {version}/{sr_k}.json")
+
     cmd = [
         rvc.python, "infer/modules/train/train.py",
-        "-e", exp_name, "-sr", sr, "-f0", "1",
+        "-e", exp_name, "-sr", sr_k, "-f0", "1",
         "-bs", str(batch), "-g", "0",
         "-te", str(epochs), "-se", "50",
         "-l", "1", "-c", "0", "-sw", "0", "-v", version,
     ]
+    # Convert model if needed (HuggingFace format uses 'weight' key, RVC expects 'model')
+    # Only attempt conversion for fine-tuning; for scratch training, use base pretrained
+    if pretrained_g:
+        pg_path = Path(str(rvc.root)) / pretrained_g
+        if pg_path.exists():
+            try:
+                import torch
+                ckpt = torch.load(str(pg_path), map_location="cpu", weights_only=False)
+                if "weight" in ckpt and "model" not in ckpt:
+                    # HuggingFace format - try conversion (may not work if architecture differs)
+                    conv_path = pg_path.with_name(pg_path.stem + "_ft.pth")
+                    torch.save({"model": ckpt["weight"]}, str(conv_path))
+                    pretrained_g = str(conv_path.relative_to(rvc.root))
+                    info(f"Converted model format")
+            except Exception:
+                info("Model conversion failed, training without pretrained")
+                pretrained_g = ""
+
     if pretrained_g:
         cmd += ["-pg", pretrained_g]
 
@@ -204,6 +263,42 @@ def cmd_list(rvc):
         print(f"  {m.stem:30s} {sz:6.1f} MB{tag}")
 
 
+def cmd_train(rvc):
+    """Train a model from scratch using RVC base pretrained."""
+    name = ask("Experiment name", "")
+    if not name:
+        return
+    data = ask("Data directory", str(PROJECT_ROOT / "data/training/rvc_input"))
+    sr = ask("Sample rate (40000/48000)", "40000")
+    epochs = ask("Epochs", "300")
+
+    if not Path(data).is_dir():
+        return err(f"Not found: {data}")
+    wavs = list(Path(data).glob("*.wav"))
+    if not wavs:
+        return err("No WAV files found")
+
+    sr_k = f"{int(sr)//1000}k"
+    pg = f"assets/pretrained_v2/f0G{sr_k}.pth"
+    pd = f"assets/pretrained_v2/f0D{sr_k}.pth"
+
+    total_size = sum(f.stat().st_size for f in wavs)
+    info(f"Data: {len(wavs)} files, {total_size/1024/1024:.0f} MB")
+    info(f"SR: {sr_k}")
+    info(f"Base: {pg}")
+
+    if not confirm("Start training?"):
+        return print("  Cancelled")
+
+    ok_result = run_pipeline(rvc, name, data, sr=sr, epochs=int(epochs),
+                             pretrained_g=pg if Path(str(rvc.root), pg).exists() else "")
+    if not ok_result:
+        return err("Training failed")
+    build_index(rvc, name)
+    deploy_model(rvc, name)
+    print(f"\n  Done! Model: weights/{name}.pth")
+
+
 def cmd_finetune(rvc):
     models = sorted(rvc.weights_dir.glob("*.pth"))
     if not models:
@@ -221,6 +316,17 @@ def cmd_finetune(rvc):
     data = ask("Data directory", str(PROJECT_ROOT / "data/training/rvc_input"))
     epochs = ask("Epochs", "100")
 
+    # Auto-detect model SR
+    pth_path = rvc.weights_dir / f"{model}.pth"
+    try:
+        import torch
+        ckpt = torch.load(str(pth_path), map_location="cpu", weights_only=False)
+        model_sr = str(ckpt.get("sr", 40000))
+    except Exception:
+        model_sr = "40000"
+    model_sr_k = f"{int(model_sr)//1000}k"
+    info(f"Model SR: {model_sr_k}")
+
     if not Path(data).is_dir():
         return err(f"Not found: {data}")
     wavs = list(Path(data).glob("*.wav"))
@@ -235,7 +341,7 @@ def cmd_finetune(rvc):
     if not confirm("Start fine-tuning?"):
         return print("  Cancelled")
 
-    ok_result = run_pipeline(rvc, name, data, epochs=int(epochs),
+    ok_result = run_pipeline(rvc, name, data, sr=model_sr, epochs=int(epochs),
                              pretrained_g=f"weights/{model}.pth")
     if not ok_result:
         return err("Training failed")
@@ -371,7 +477,8 @@ def main():
     else:
         print(MENU)
         c = ask("Select", "2")
-        if c == "2": cmd_finetune(rvc)
+        if c == "1": cmd_train(rvc)
+        elif c == "2": cmd_finetune(rvc)
         elif c == "3": cmd_cover(rvc)
         elif c == "4": cmd_list(rvc)
         elif c == "5": cmd_env(rvc)
