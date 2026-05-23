@@ -60,14 +60,27 @@ class DemucsSeparator(BaseSeparator):
             return str(vocals_path), str(backing_path)
 
         # Demucs separates into model_dir/original_name/stem.wav
-        cmd = [
-            "python", "-m", "demucs",
-            "-n", self.model,
-            "--two-stems", "vocals",
-            "-d", "cpu",
-            "-o", str(session_dir),
-            audio_path,
-        ]
+        # Use wrapper script to bypass torchcodec incompatibility with torch 2.11+
+        project_root = Path(__file__).parent.parent.parent.parent.parent
+        demucs_wrapper = project_root / "scripts" / "demucs_fix.py"
+        if demucs_wrapper.exists():
+            cmd = [
+                "python", str(demucs_wrapper),
+                "-n", self.model,
+                "--two-stems", "vocals",
+                "-d", "cpu",
+                "-o", str(session_dir),
+                audio_path,
+            ]
+        else:
+            cmd = [
+                "python", "-m", "demucs",
+                "-n", self.model,
+                "--two-stems", "vocals",
+                "-d", "cpu",
+                "-o", str(session_dir),
+                audio_path,
+            ]
 
         try:
             proc = await asyncio.create_subprocess_exec(
