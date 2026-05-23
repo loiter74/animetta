@@ -8,8 +8,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from anima.memory.meme.engine import MemePool
-from anima.memory.meme.models import CognitiveAnalysis, Meme, MemeSource
+from animetta import $$$
+from animetta import $$$
 
 
 # ── fixtures ────────────────────────────────────────────────────────────

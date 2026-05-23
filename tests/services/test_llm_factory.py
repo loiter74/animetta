@@ -39,8 +39,8 @@ class TestCreateFromConfig:
 
     def test_mock_config(self):
         """MockLLMConfig creates a service via ProviderRegistry."""
-        from anima.services.intelligence.llm.factory import LLMFactory
-        from anima.config import MockLLMConfig
+        from animetta import $$$
+        from animetta import $$$
 
         mock_svc = _mock_service()
 
@@ -61,8 +61,8 @@ class TestCreateFromConfig:
 
     def test_openai_config(self):
         """OpenAILLMConfig creates a service via ProviderRegistry."""
-        from anima.services.intelligence.llm.factory import LLMFactory
-        from anima.config import OpenAILLMConfig
+        from animetta import $$$
+        from animetta import $$$
 
         mock_svc = _mock_service()
 
@@ -82,8 +82,8 @@ class TestCreateFromConfig:
 
     def test_glm_config(self):
         """GLMLLMConfig creates a service via ProviderRegistry."""
-        from anima.services.intelligence.llm.factory import LLMFactory
-        from anima.config import GLMLLMConfig
+        from animetta import $$$
+        from animetta import $$$
 
         mock_svc = _mock_service()
 
@@ -103,8 +103,8 @@ class TestCreateFromConfig:
 
     def test_ollama_config(self):
         """OllamaLLMConfig creates a service via ProviderRegistry."""
-        from anima.services.intelligence.llm.factory import LLMFactory
-        from anima.config import OllamaLLMConfig
+        from animetta import $$$
+        from animetta import $$$
 
         mock_svc = _mock_service()
 
@@ -126,9 +126,9 @@ class TestCreateFromConfig:
 
     def test_wraps_in_tracing_proxy(self):
         """The returned service is wrapped in a TracingProxy."""
-        from anima.services.intelligence.llm.factory import LLMFactory
-        from anima.config import MockLLMConfig
-        from anima.tracing import TracingProxy
+        from animetta import $$$
+        from animetta import $$$
+        from animetta import $$$
 
         mock_svc = _mock_service()
 
@@ -150,8 +150,8 @@ class TestCreateFromConfig:
 
     def test_fallback_to_mock_on_error(self):
         """When ProviderRegistry raises, factory falls back to MockLLM."""
-        from anima.services.intelligence.llm.factory import LLMFactory
-        from anima.config import OpenAILLMConfig
+        from animetta import $$$
+        from animetta import $$$
 
         with patch(
             "anima.services.intelligence.llm.factory.ProviderRegistry.create_service",
@@ -171,8 +171,8 @@ class TestCreateFromConfig:
 
     def test_fallback_to_mock_on_import_error(self):
         """ImportError during service creation also triggers fallback."""
-        from anima.services.intelligence.llm.factory import LLMFactory
-        from anima.config import MockLLMConfig
+        from animetta import $$$
+        from animetta import $$$
 
         with patch(
             "anima.services.intelligence.llm.factory.ProviderRegistry.create_service",
@@ -192,8 +192,8 @@ class TestCreateFromConfig:
 
     def test_fallback_uses_original_system_prompt(self):
         """Fallback MockLLM receives the same system_prompt."""
-        from anima.services.intelligence.llm.factory import LLMFactory
-        from anima.config import MockLLMConfig
+        from animetta import $$$
+        from animetta import $$$
 
         with patch(
             "anima.services.intelligence.llm.factory.ProviderRegistry.create_service",
@@ -221,7 +221,7 @@ class TestCreate:
 
     def test_mock_provider(self):
         """``create("mock")`` returns a MockLLM instance."""
-        from anima.services.intelligence.llm.factory import LLMFactory
+        from animetta import $$$
 
         with patch(
             "anima.services.intelligence.llm.factory.LLMFactory.create_from_config",
@@ -233,12 +233,12 @@ class TestCreate:
             mock_create.assert_called_once()
             # Verify the config passed is MockLLMConfig
             config_arg = mock_create.call_args[0][0]
-            from anima.config import MockLLMConfig
+            from animetta import $$$
             assert isinstance(config_arg, MockLLMConfig)
 
     def test_openai_provider(self):
         """``create("openai", api_key=..., model=...)`` passes kwargs to config."""
-        from anima.services.intelligence.llm.factory import LLMFactory
+        from animetta import $$$
 
         with patch(
             "anima.services.intelligence.llm.factory.LLMFactory.create_from_config",
@@ -255,7 +255,7 @@ class TestCreate:
             )
 
             config_arg = mock_create.call_args[0][0]
-            from anima.config import OpenAILLMConfig
+            from animetta import $$$
             assert isinstance(config_arg, OpenAILLMConfig)
             assert config_arg.api_key == "sk-test"
             assert config_arg.model == "gpt-4"
@@ -264,7 +264,7 @@ class TestCreate:
 
     def test_glm_provider(self):
         """``create("glm", api_key=...)`` builds a GLMLLMConfig with defaults."""
-        from anima.services.intelligence.llm.factory import LLMFactory
+        from animetta import $$$
 
         with patch(
             "anima.services.intelligence.llm.factory.LLMFactory.create_from_config",
@@ -278,7 +278,7 @@ class TestCreate:
             )
 
             config_arg = mock_create.call_args[0][0]
-            from anima.config import GLMLLMConfig
+            from animetta import $$$
             assert isinstance(config_arg, GLMLLMConfig)
             assert config_arg.api_key == "glm-key"
             assert config_arg.model == "glm-4-flash"  # default
@@ -286,7 +286,7 @@ class TestCreate:
 
     def test_ollama_provider(self):
         """``create("ollama")`` builds an OllamaLLMConfig with defaults."""
-        from anima.services.intelligence.llm.factory import LLMFactory
+        from animetta import $$$
 
         with patch(
             "anima.services.intelligence.llm.factory.LLMFactory.create_from_config",
@@ -300,14 +300,14 @@ class TestCreate:
             )
 
             config_arg = mock_create.call_args[0][0]
-            from anima.config import OllamaLLMConfig
+            from animetta import $$$
             assert isinstance(config_arg, OllamaLLMConfig)
             assert config_arg.model == "llama3.2"
             assert config_arg.base_url == "http://192.168.1.100:11434"
 
     def test_system_prompt_propagation(self):
         """``system_prompt`` is forwarded as positional arg to ``create_from_config``."""
-        from anima.services.intelligence.llm.factory import LLMFactory
+        from animetta import $$$
 
         with patch(
             "anima.services.intelligence.llm.factory.LLMFactory.create_from_config",
@@ -323,7 +323,7 @@ class TestCreate:
 
     def test_unknown_provider_falls_back_to_mock(self):
         """An unrecognised provider name results in a MockLLMConfig."""
-        from anima.services.intelligence.llm.factory import LLMFactory
+        from animetta import $$$
 
         with patch(
             "anima.services.intelligence.llm.factory.LLMFactory.create_from_config",
@@ -333,12 +333,12 @@ class TestCreate:
             result = LLMFactory.create("nonexistent_provider")
 
             config_arg = mock_create.call_args[0][0]
-            from anima.config import MockLLMConfig
+            from animetta import $$$
             assert isinstance(config_arg, MockLLMConfig)
 
     def test_unknown_provider_warns(self):
         """An unknown provider triggers a warning log and MockLLM config."""
-        from anima.services.intelligence.llm.factory import LLMFactory
+        from animetta import $$$
 
         with patch(
             "anima.services.intelligence.llm.factory.LLMFactory.create_from_config",
@@ -362,7 +362,7 @@ class TestGetAvailableProviders:
     """LLMFactory.get_available_providers() — registry listing."""
 
     def test_returns_list(self):
-        from anima.services.intelligence.llm.factory import LLMFactory
+        from animetta import $$$
 
         with patch(
             "anima.services.intelligence.llm.factory.ProviderRegistry.list_services",

@@ -6,7 +6,7 @@ from datetime import datetime
 
 import pytest
 
-from anima.memory.fuzzy.models import FuzzyMemory, Granularity, InvertedIndexEntry
+from animetta import $$$
 
 
 class TestGranularity:

@@ -5,7 +5,7 @@ import asyncio
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from anima.orchestration.server.lifecycle import LifecycleManager
+from animetta import $$$
 
 
 # ── Fixtures ───────────────────────────────────────────────────────

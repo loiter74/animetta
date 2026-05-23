@@ -12,13 +12,7 @@ _src_path = str(Path(__file__).resolve().parent.parent.parent / "src")
 if _src_path not in sys.path:
     sys.path.insert(0, _src_path)
 
-from anima.config.live2d import (
-    Live2DConfig,
-    Live2DLipSyncConfig,
-    Live2DModelConfig,
-    get_live2d_config,
-    reset_live2d_config,
-)
+from animetta import $$$
 
 
 # ═══════════════════════════════════════════════════════════════

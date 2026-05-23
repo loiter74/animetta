@@ -22,7 +22,7 @@ def mock_openai_llm():
 @pytest.fixture
 def handler(mock_openai_llm):
     """Create an OpenAIStreamHandler with a mock LLM."""
-    from anima.services.intelligence.llm.stream_handler import OpenAIStreamHandler
+    from animetta import $$$
     return OpenAIStreamHandler(mock_openai_llm)
 
 

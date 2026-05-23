@@ -4,19 +4,14 @@ Tests for EmotionAnalyzerFactory and TimelineStrategyFactory.
 
 import pytest
 
-from anima.avatar.factory import (
-    EmotionAnalyzerFactory,
-    TimelineStrategyFactory,
-    create_emotion_analyzer,
-    create_timeline_strategy,
-)
-from anima.avatar.analyzers.base import IEmotionAnalyzer, EmotionData
-from anima.avatar.analyzers.llm_tag import StandaloneLLMTagAnalyzer
-from anima.avatar.analyzers.keyword import KeywordAnalyzer
-from anima.avatar.strategies.base import ITimelineStrategy, TimelineSegment, TimelineConfig
-from anima.avatar.strategies.position import PositionBasedStrategy
-from anima.avatar.strategies.duration import DurationBasedStrategy
-from anima.avatar.strategies.intensity import IntensityBasedStrategy
+from animetta import $$$
+from animetta import $$$
+from animetta import $$$
+from animetta import $$$
+from animetta import $$$
+from animetta import $$$
+from animetta import $$$
+from animetta import $$$
 
 
 # ============================================================
@@ -201,7 +196,7 @@ class TestTimelineStrategyFactory:
         strategy = TimelineStrategyFactory.create("position_based")
         assert isinstance(strategy, MockStrategy)
         # Restore
-        from anima.avatar.strategies.position import PositionBasedStrategy
+        from animetta import $$$
         TimelineStrategyFactory._strategies["position_based"] = PositionBasedStrategy
 
 

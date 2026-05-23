@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Animetta — Brand</title>
+<link rel="icon" href="assets/favicon.svg" />
+<link rel="stylesheet" href="colors_and_type.css" />
+<style>
+  .brand-hero {
+    position: relative;
+    border-radius: var(--r-2xl);
+    overflow: hidden;
+    padding: 56px 56px 48px;
+    background:
+      radial-gradient(80% 100% at 100% 0%, rgba(232,121,168,0.30), transparent 60%),
+      radial-gradient(60% 80% at 0% 100%, rgba(124,140,245,0.22), transparent 60%),
+      linear-gradient(180deg, #2d1b45 0%, #1a1028 100%);
+    border: 1px solid var(--c-border-accent);
+    box-shadow: var(--shadow-panel);
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 48px;
+    align-items: center;
+  }
+  .brand-hero::after {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(2px 2px at 12% 18%, rgba(255,255,255,0.6), transparent 70%),
+      radial-gradient(2px 2px at 28% 72%, rgba(232,121,168,0.7), transparent 70%),
+      radial-gradient(1px 1px at 65% 22%, rgba(255,255,255,0.5), transparent 70%),
+      radial-gradient(1.5px 1.5px at 82% 64%, rgba(168,130,255,0.7), transparent 70%),
+      radial-gradient(1px 1px at 92% 12%, rgba(255,255,255,0.55), transparent 70%);
+    pointer-events: none;
+  }
+
+  .wordmark {
+    font-size: 96px;
+    font-weight: 700;
+    letter-spacing: -0.045em;
+    line-height: 0.9;
+    margin: 0;
+    background: linear-gradient(180deg, #ffffff 0%, #f3c8df 50%, #e879a8 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 6px 24px rgba(232,121,168,0.35));
+  }
+  .wordmark .dot {
+    color: var(--c-accent);
+    -webkit-text-fill-color: var(--c-accent);
+    margin-left: -8px;
+  }
+  .brand-tag {
+    margin: 18px 0 0;
+    font-size: var(--fs-lg);
+    color: var(--c-text);
+    max-width: 26ch;
+    line-height: var(--lh-snug);
+  }
+  .brand-tag em {
+    color: var(--c-accent);
+    font-style: normal;
+  }
+  .brand-meta {
+    margin-top: 28px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .brand-meta span {
+    font-size: var(--fs-10);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 6px 10px;
+    border-radius: var(--r-full);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--c-border);
+    color: var(--c-text-dim);
+    white-space: nowrap;
+  }
+
+  .avatar-card {
+    position: relative;
+    z-index: 1;
+    border-radius: var(--r-2xl);
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
+    background:
+      radial-gradient(60% 70% at 50% 40%, rgba(232,121,168,0.35), transparent 70%),
+      linear-gradient(180deg, #36205a 0%, #1a1028 100%);
+    border: 1px solid var(--c-border-accent);
+    box-shadow: 0 30px 80px rgba(232,121,168,0.25);
+  }
+  .avatar-card img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center bottom;
+  }
+  .avatar-card .ring {
+    position: absolute;
+    inset: 20px;
+    border-radius: 50%;
+    border: 1px dashed var(--c-border-accent);
+    pointer-events: none;
+    opacity: 0.55;
+  }
+
+  /* Three columns of brand pillars ------------------------------------ */
+  .pillars {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .pillar {
+    padding: 24px 22px;
+    border-radius: var(--r-xl);
+    background: rgba(45, 27, 69, 0.55);
+    border: 1px solid var(--c-border);
+  }
+  .pillar h4 {
+    margin: 0 0 8px;
+    font-size: var(--fs-sm);
+    color: var(--c-accent);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .pillar p {
+    margin: 0;
+    font-size: var(--fs-xs);
+    line-height: var(--lh-relax);
+    color: var(--c-text-dim);
+  }
+
+  /* Voice & tone two-column ------------------------------------------- */
+  .voice-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .voice-col {
+    padding: 20px 22px;
+    border-radius: var(--r-xl);
+    background: rgba(45, 27, 69, 0.45);
+    border: 1px solid var(--c-border);
+  }
+  .voice-col h5 {
+    margin: 0 0 10px;
+    font-size: var(--fs-xs);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .voice-col.do  h5 { color: var(--c-mint); }
+  .voice-col.dont h5 { color: var(--c-error); }
+  .voice-col ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .voice-col li {
+    font-size: var(--fs-xs);
+    color: var(--c-text-dim);
+    line-height: var(--lh-snug);
+    padding-left: 18px;
+    position: relative;
+  }
+  .voice-col.do  li::before { content: "✓"; position: absolute; left: 0; color: var(--c-mint); }
+  .voice-col.dont li::before { content: "✕"; position: absolute; left: 0; color: var(--c-error); }
+  .voice-col li b { color: var(--c-text); font-weight: 600; }
+
+  /* Logo lockups ---------------------------------------------------- */
+  .lockups {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .lockup {
+    aspect-ratio: 1 / 1;
+    border-radius: var(--r-xl);
+    border: 1px solid var(--c-border);
+    display: grid;
+    place-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .lockup .lab {
+    position: absolute;
+    left: 12px; bottom: 10px;
+    font-size: var(--fs-9);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--c-text-muted);
+  }
+  .lockup .mark {
+    font-size: 44px;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .lockup .mark .dot { color: var(--c-accent); margin-left: -3px; }
+  .lockup.dark { background: var(--c-bg); }
+  .lockup.dark .mark { color: var(--c-text); }
+  .lockup.purple {
+    background:
+      radial-gradient(80% 80% at 30% 30%, rgba(232,121,168,0.25), transparent),
+      var(--c-panel);
+  }
+  .lockup.purple .mark { color: var(--c-text); }
+  .lockup.pink { background: var(--c-accent); }
+  .lockup.pink .mark { color: #2d1b45; }
+  .lockup.pink .mark .dot { color: #fff; }
+  .lockup.outline {
+    background: transparent;
+    border: 1px dashed var(--c-border-accent);
+  }
+  .lockup.outline .mark { color: var(--c-accent); }
+
+  /* Favicon strip --------------------------------------------------- */
+  .favicons {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    padding: 18px 20px;
+    border-radius: var(--r-lg);
+    background: rgba(45, 27, 69, 0.4);
+    border: 1px solid var(--c-border);
+  }
+  .favicons .fav {
+    border-radius: var(--r-sm);
+    overflow: hidden;
+    border: 1px solid var(--c-border);
+  }
+  .fav-32 { width: 32px; height: 32px; }
+  .fav-48 { width: 48px; height: 48px; }
+  .fav-64 { width: 64px; height: 64px; }
+  .fav-96 { width: 96px; height: 96px; }
+  .fav-cap {
+    font-family: var(--font-mono);
+    font-size: var(--fs-10);
+    color: var(--c-text-muted);
+    margin-left: auto;
+  }
+
+  /* index card */
+  .ds-index {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 24px;
+  }
+  .ds-index a {
+    display: block;
+    padding: 16px 18px;
+    border-radius: var(--r-lg);
+    background: rgba(45,27,69,0.4);
+    border: 1px solid var(--c-border);
+    text-decoration: none;
+    color: var(--c-text);
+    transition: all var(--d-base) var(--ease-out-expo);
+  }
+  .ds-index a:hover {
+    border-color: var(--c-border-accent);
+    background: rgba(232,121,168,0.08);
+    transform: translateY(-2px);
+  }
+  .ds-index a .num {
+    font-family: var(--font-mono);
+    font-size: var(--fs-10);
+    color: var(--c-accent);
+    letter-spacing: 0.1em;
+  }
+  .ds-index a .nm {
+    display: block;
+    margin-top: 6px;
+    font-size: var(--fs-sm);
+    font-weight: 600;
+  }
+  .ds-index a .sub {
+    display: block;
+    margin-top: 4px;
+    font-size: var(--fs-xs);
+    color: var(--c-text-dim);
+  }
+</style>
+</head>
+<body class="ds-page">
+
+<main class="ds-shell">
+
+  <span class="ds-eyebrow">Design System · v1 · Brand</span>
+
+  <section class="brand-hero">
+    <div style="position: relative; z-index: 2;">
+      <h1 class="wordmark">Animetta<span class="dot">.</span></h1>
+      <p class="brand-tag">
+        Your <em>AI virtual companion</em> — a Live2D-rendered character that
+        chats, speaks, listens, and lives on your desktop.
+      </p>
+      <div class="brand-meta">
+        <span>Desktop · Electron</span>
+        <span>Vue 3 + UnoCSS</span>
+        <span>日系二次元</span>
+        <span>Bilingual: ZH · EN</span>
+      </div>
+    </div>
+    <div class="avatar-card">
+      <div class="ring"></div>
+      <img src="assets/avatar.png" alt="Anima character avatar" />
+    </div>
+  </section>
+
+  <!-- Brand pillars ------------------------------------------------- -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Brand pillars</h2>
+    <p class="ds-section-sub">
+      Animetta is not a productivity tool. It is a companion. Every design decision
+      should reinforce these three feelings before adding any function.
+    </p>
+    <div class="pillars">
+      <div class="pillar">
+        <h4>① Alive</h4>
+        <p>
+          Live2D, voice, particles, soft motion. The interface should always
+          feel a heartbeat away from breathing. Static screens are failures.
+        </p>
+      </div>
+      <div class="pillar">
+        <h4>② Intimate</h4>
+        <p>
+          Small type. Soft glow. Chat bubbles, not pages. Animetta sits in a
+          quiet corner of the desktop — the design is closer to a journal
+          than a dashboard.
+        </p>
+      </div>
+      <div class="pillar">
+        <h4>③ Anime-native</h4>
+        <p>
+          Cherry-blossom pink, deep night purple, neon city blues. Lean into
+          the 二次元 visual canon — sakura petals, glow, glass — never into
+          generic enterprise gradients.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Voice & tone -------------------------------------------------- -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Voice &amp; tone</h2>
+    <p class="ds-section-sub">
+      Anima speaks in two registers: the <b>character</b> (warm, playful,
+      first-person) and the <b>system</b> (terse, technical, plain). Never mix
+      them in one string.
+    </p>
+    <div class="voice-grid">
+      <div class="voice-col do">
+        <h5>Do</h5>
+        <ul>
+          <li><b>"我在听呢～"</b> — character voice in chat bubbles.</li>
+          <li><b>"Connected · 12ms"</b> — system voice in status pills.</li>
+          <li>Short. 12–18 chars per chat message when possible.</li>
+          <li>Use kaomoji sparingly — <code class="tok">(*´ω｀*)</code>, <code class="tok">～</code>.</li>
+          <li>Bilingual subtitles are paired: top = source, below = translation.</li>
+        </ul>
+      </div>
+      <div class="voice-col dont">
+        <h5>Don't</h5>
+        <ul>
+          <li>"As an AI assistant, I can help you with…" — corporate slop.</li>
+          <li>Hard error language. Prefer <b>"我没听清"</b> over "ERROR 500".</li>
+          <li>ALL-CAPS shouting, even in modals.</li>
+          <li>Emoji-spam in character lines (one or zero per message).</li>
+          <li>Marketing exclamation marks in the system register.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Logo lockups -------------------------------------------------- -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Wordmark &amp; lockups</h2>
+    <p class="ds-section-sub">
+      Animetta has no glyph mark — the wordmark <i>is</i> the logo. The terminal
+      dot is a fixed character, always in <code class="tok tok-accent">#e879a8</code>.
+      Keep the kerning tight (<code class="tok">letter-spacing: -0.045em</code>)
+      and never set the wordmark below 24&nbsp;px.
+    </p>
+    <div class="lockups">
+      <div class="lockup dark">
+        <div class="mark">Animetta<span class="dot">.</span></div>
+        <div class="lab">Primary · dark</div>
+      </div>
+      <div class="lockup purple">
+        <div class="mark">Animetta<span class="dot">.</span></div>
+        <div class="lab">On panel</div>
+      </div>
+      <div class="lockup pink">
+        <div class="mark">Animetta<span class="dot">.</span></div>
+        <div class="lab">Inverse · pink</div>
+      </div>
+      <div class="lockup outline">
+        <div class="mark">Animetta<span class="dot">.</span></div>
+        <div class="lab">Accent · outline</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- App icon / favicon -------------------------------------------- -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">App icon</h2>
+    <p class="ds-section-sub">
+      A lavender rounded square with a centered <b>A</b>, weight 700. The icon
+      keeps a softer violet (<code class="tok">#a78bfa</code>) than the brand
+      pink — it has to read at 16&nbsp;px in a Windows tray.
+    </p>
+    <div class="favicons">
+      <img src="assets/favicon.svg" class="fav fav-96" alt="" />
+      <img src="assets/favicon.svg" class="fav fav-64" alt="" />
+      <img src="assets/favicon.svg" class="fav fav-48" alt="" />
+      <img src="assets/favicon.svg" class="fav fav-32" alt="" />
+      <div class="fav-cap">favicon.svg · 32×32 native · scales to 16/24/96</div>
+    </div>
+  </section>
+
+  <hr class="ds-rule" />
+
+  <!-- Index --------------------------------------------------------- -->
+  <section>
+    <h2 class="ds-section-title">The rest of the system</h2>
+    <p class="ds-section-sub">
+      Each page below is direct-editable. Tokens are defined once in
+      <code class="tok">colors_and_type.css</code>; every other page consumes them.
+    </p>
+    <div class="ds-index">
+      <a href="colors.html">
+        <span class="num">01 / FOUNDATIONS</span>
+        <span class="nm">Colors</span>
+        <span class="sub">Surface scale, accent, semantic, gradients.</span>
+      </a>
+      <a href="typography.html">
+        <span class="num">02 / FOUNDATIONS</span>
+        <span class="nm">Typography</span>
+        <span class="sub">CJK-safe OS stack, the small-text scale.</span>
+      </a>
+      <a href="spacing.html">
+        <span class="num">03 / FOUNDATIONS</span>
+        <span class="nm">Spacing, radii, motion</span>
+        <span class="sub">Rhythm, corners, shadows, easings.</span>
+      </a>
+      <a href="iconography.html">
+        <span class="num">04 / VISUAL</span>
+        <span class="nm">Iconography &amp; scenes</span>
+        <span class="sub">Section icons, atmosphere backgrounds.</span>
+      </a>
+      <a href="components.html">
+        <span class="num">05 / COMPONENTS</span>
+        <span class="nm">Components</span>
+        <span class="sub">Glass, buttons, bubbles, input, indicators.</span>
+      </a>
+      <a href="ui-kit.html">
+        <span class="num">06 / IN&nbsp;USE</span>
+        <span class="nm">UI kit — full screen</span>
+        <span class="sub">All the pieces composed into the real app.</span>
+      </a>
+    </div>
+  </section>
+
+</main>
+</body>
+</html>

@@ -4,7 +4,7 @@ import { ref, watch } from 'vue'
 export type SubtitleDisplayMode = 'original' | 'translated' | 'bilingual'
 export type SubtitleFontSize = 'small' | 'medium' | 'large'
 
-const STORAGE_KEY = 'anima_subtitle_config'
+const STORAGE_KEY = 'animetta_subtitle_config'
 
 interface SubtitleConfig {
   _version: number                    // storage format version (2 = ratio-based)

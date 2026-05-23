@@ -14,12 +14,12 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root / "src"))
 
-from anima.utils.env_helper import EnvHelper
+from animetta import AutoConfig
 
 
 def main():
     print("=" * 60)
-    print("  Anima 快速环境配置工具")
+    print("  Animetta 快速环境配置工具")
     print("=" * 60)
     print()
 
@@ -99,7 +99,7 @@ def main():
     print("  1. 检查 .env 文件中的路径是否正确")
     print("  2. 如果路径不同，请手动修改 .env 文件")
     print("  3. 启动服务:")
-    print("     python -m anima.socketio_server")
+    print("     python -m animetta.socketio_server")
     print()
 
 

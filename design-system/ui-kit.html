@@ -1,0 +1,752 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Animetta — UI Kit</title>
+<link rel="icon" href="assets/favicon.svg" />
+<link rel="stylesheet" href="colors_and_type.css" />
+<style>
+  body.ds-page { padding: 0; }
+  .kit-wrap {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 40px 32px 64px;
+  }
+
+  /* App window ----------------------------------------------------- */
+  .app {
+    position: relative;
+    height: 760px;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid var(--c-border-accent);
+    box-shadow: 0 40px 100px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04) inset;
+    background-image: url("assets/backgrounds/sakura-night.png");
+    background-size: cover;
+    background-position: center;
+    background-color: #1a1028;
+  }
+  .app::after {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(60% 100% at 50% 100%, rgba(26,16,40,0.6), transparent 70%),
+      linear-gradient(180deg, rgba(26,16,40,0.30) 0%, transparent 30%, rgba(26,16,40,0.45) 100%);
+    pointer-events: none;
+  }
+
+  /* Title bar ---------------------------------------------------- */
+  .tb {
+    position: relative;
+    z-index: 4;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 16px;
+    background: rgba(26,16,40,0.55);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--c-border);
+  }
+  .tb .traffic { display: flex; gap: 8px; }
+  .tb .traffic span { width: 11px; height: 11px; border-radius: 50%; }
+  .tb .traffic .c { background: #f87171; }
+  .tb .traffic .m { background: #fbbf24; }
+  .tb .traffic .x { background: #4ade80; }
+  .tb .brand {
+    font-size: var(--fs-sm); font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--c-text);
+  }
+  .tb .brand .dot { color: var(--c-accent); }
+  .tb nav { display: flex; gap: 4px; margin-left: 8px; }
+  .tb nav button {
+    padding: 6px 12px;
+    font-size: var(--fs-xs);
+    color: var(--c-text-dim);
+    background: transparent;
+    border: 0;
+    border-radius: var(--r-md);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all var(--d-base) var(--ease-out-expo);
+  }
+  .tb nav button:hover { color: var(--c-text); background: rgba(255,255,255,0.04); }
+  .tb nav button.active { color: var(--c-accent); background: var(--c-accent-soft); }
+  .tb .status {
+    margin-left: auto;
+    display: flex; align-items: center; gap: 10px;
+    font-size: var(--fs-10);
+    color: var(--c-text-dim);
+    letter-spacing: 0.06em;
+    font-family: var(--font-mono);
+    white-space: nowrap;
+  }
+  .tb .status .ind {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--c-success);
+    box-shadow: var(--shadow-glow-success);
+  }
+
+  /* Stage ------------------------------------------------------ */
+  .stage {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 280px 1fr 340px;
+    height: calc(760px - 44px);
+  }
+
+  /* Left drawer ----------------------------------------------- */
+  .drawer {
+    position: relative;
+    padding: 20px 18px;
+    overflow-y: auto;
+    background: rgba(26,16,40,0.45);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid var(--c-border);
+  }
+  .drawer h4 {
+    margin: 0 0 12px;
+    font-size: var(--fs-9);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--c-text-muted);
+  }
+  .drawer .persona {
+    padding: 14px 16px;
+    border-radius: var(--r-xl);
+    background: rgba(232,121,168,0.08);
+    border: 1px solid var(--c-border-accent);
+    margin-bottom: 18px;
+  }
+  .drawer .persona .row {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .drawer .persona .av {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e879a8, #b14f7e);
+    display: grid; place-items: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .drawer .persona .nm { font-size: var(--fs-sm); font-weight: 600; color: var(--c-text); }
+  .drawer .persona .sub { font-size: var(--fs-9); color: var(--c-text-dim); letter-spacing: 0.06em; margin-top: 2px; }
+  .drawer .persona .traits {
+    margin-top: 12px;
+    display: flex; flex-wrap: wrap; gap: 5px;
+  }
+  .drawer .persona .traits span {
+    font-size: var(--fs-9);
+    padding: 3px 7px;
+    background: rgba(255,255,255,0.05);
+    border-radius: var(--r-sm);
+    color: var(--c-text-dim);
+    letter-spacing: 0.04em;
+  }
+
+  .sections {
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .sec-row {
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 9px 12px;
+    border-radius: var(--r-md);
+    cursor: pointer;
+    transition: all var(--d-base) var(--ease-out-expo);
+  }
+  .sec-row .ic {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    background: rgba(232,121,168,0.10);
+    border: 1px solid var(--c-border-accent);
+  }
+  .sec-row .ic img { width: 16px; height: 16px; }
+  .sec-row .lab { font-size: var(--fs-xs); color: var(--c-text); }
+  .sec-row .val { font-family: var(--font-mono); font-size: var(--fs-9); color: var(--c-text-muted); }
+  .sec-row:hover { background: rgba(232,121,168,0.05); }
+  .sec-row.active { background: var(--c-accent-soft); }
+  .sec-row.active .lab { color: var(--c-accent); }
+
+  .drawer .group { margin-top: 22px; }
+
+  .memory-list {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .mem {
+    padding: 10px 12px;
+    border-radius: var(--r-md);
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--c-border);
+  }
+  .mem .ts {
+    font-family: var(--font-mono);
+    font-size: var(--fs-9);
+    color: var(--c-text-muted);
+    letter-spacing: 0.08em;
+  }
+  .mem .copy {
+    margin-top: 4px;
+    font-size: var(--fs-xs);
+    color: var(--c-text-dim);
+    line-height: var(--lh-snug);
+  }
+  .mem .copy b { color: var(--c-accent); font-weight: 500; }
+
+  /* Live2D middle ---------------------------------------------- */
+  .live2d {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+  .live2d .char {
+    position: absolute;
+    inset: 0;
+    background-image: url("assets/avatar.png");
+    background-size: contain;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    transform: translateY(8%) scale(1.05);
+    filter: drop-shadow(0 24px 64px rgba(232,121,168,0.35));
+  }
+  .live2d .scene-tag {
+    position: absolute;
+    top: 16px; left: 16px;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 5px 10px;
+    background: rgba(26,16,40,0.65);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-full);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--c-text-dim);
+    white-space: nowrap;
+    z-index: 2;
+  }
+  .live2d .scene-tag::before {
+    content: ""; width: 5px; height: 5px;
+    border-radius: 50%; background: var(--c-accent);
+  }
+  .live2d .stage-controls {
+    position: absolute;
+    top: 16px; right: 16px;
+    display: flex; gap: 6px;
+    z-index: 2;
+  }
+  .live2d .stage-controls button {
+    width: 32px; height: 32px;
+    border-radius: var(--r-md);
+    background: rgba(26,16,40,0.55);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--c-border);
+    color: var(--c-text-dim);
+    cursor: pointer;
+    display: grid; place-items: center;
+    transition: all var(--d-base) var(--ease-out-expo);
+  }
+  .live2d .stage-controls button:hover {
+    color: var(--c-accent); border-color: var(--c-border-accent);
+  }
+  .live2d .stage-controls button svg { width: 14px; height: 14px; }
+
+  .subtitle {
+    position: relative;
+    z-index: 2;
+    margin: 0 auto 24px;
+    padding: 12px 22px;
+    background: rgba(26,16,40,0.70);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-xl);
+    text-align: center;
+    max-width: 88%;
+  }
+  .subtitle .source {
+    font-size: var(--fs-lg);
+    font-weight: 500;
+    color: var(--c-text);
+    line-height: var(--lh-snug);
+  }
+  .subtitle .tr {
+    margin-top: 4px;
+    font-size: var(--fs-xs);
+    color: var(--c-accent);
+    line-height: var(--lh-snug);
+  }
+
+  /* Right chat panel ---------------------------------------- */
+  .chat {
+    position: relative;
+    z-index: 2;
+    background: rgba(26,16,40,0.65);
+    backdrop-filter: blur(24px);
+    border-left: 1px solid var(--c-border);
+    display: flex;
+    flex-direction: column;
+  }
+  .chat-head {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--c-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .chat-head .lab {
+    font-size: var(--fs-9);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--c-text-muted);
+  }
+  .chat-head .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 9px;
+    font-family: var(--font-mono);
+    color: var(--c-success);
+    padding: 3px 8px;
+    border: 1px solid rgba(74,222,128,0.30);
+    background: rgba(74,222,128,0.06);
+    border-radius: var(--r-full);
+    letter-spacing: 0.06em;
+  }
+  .chat-head .badge::before {
+    content: ""; width: 5px; height: 5px;
+    border-radius: 50%; background: var(--c-success);
+    box-shadow: var(--shadow-glow-success);
+  }
+
+  .chat-body {
+    flex: 1;
+    padding: 16px 18px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .day-stamp {
+    text-align: center;
+    margin: 4px 0;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--c-text-muted);
+    font-family: var(--font-mono);
+  }
+  .day-stamp::before, .day-stamp::after {
+    content: " — ";
+    color: var(--c-text-muted);
+    opacity: 0.4;
+  }
+
+  .row { display: flex; align-items: flex-end; gap: 6px; }
+  .row.me { justify-content: flex-end; }
+  .row .av {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #e879a8, #b14f7e);
+    color: #fff;
+    font-weight: 700;
+    font-size: 11px;
+    display: grid; place-items: center;
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .bubble {
+    padding: 8px 12px;
+    border-radius: var(--r-xl);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-snug);
+    color: var(--c-text);
+    max-width: 78%;
+    border: 1px solid;
+  }
+  .bubble.ai {
+    background: var(--c-ai-bubble);
+    border-color: var(--c-border-accent);
+    border-bottom-left-radius: 6px;
+  }
+  .bubble.me {
+    background: var(--c-user-bubble);
+    border-color: rgba(124,140,245,0.30);
+    border-bottom-right-radius: 6px;
+  }
+  .typing {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 8px 14px;
+    background: var(--c-ai-bubble);
+    border: 1px solid var(--c-border-accent);
+    border-radius: var(--r-xl);
+    border-bottom-left-radius: 6px;
+  }
+  .typing span {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--c-accent);
+    animation: tb 1.4s ease-in-out infinite;
+  }
+  .typing span:nth-child(2) { animation-delay: 0.15s; }
+  .typing span:nth-child(3) { animation-delay: 0.30s; }
+  @keyframes tb {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-4px); opacity: 1; }
+  }
+
+  .chat-input {
+    padding: 12px 14px;
+    border-top: 1px solid var(--c-border);
+    display: flex; gap: 8px;
+    background: rgba(45,27,69,0.40);
+  }
+  .chat-input .field {
+    flex: 1;
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px;
+    background: var(--c-panel);
+    border: 1px solid var(--c-border-accent);
+    border-radius: var(--r-lg);
+    box-shadow: 0 0 0 3px var(--c-accent-soft);
+  }
+  .chat-input .field input {
+    flex: 1; background: transparent; border: 0; outline: 0;
+    font-family: inherit; font-size: var(--fs-sm); color: var(--c-text);
+    min-width: 0;
+  }
+  .chat-input .field input::placeholder { color: var(--c-text-muted); }
+  .chat-input .mic {
+    width: 30px; height: 30px;
+    border-radius: var(--r-md);
+    background: var(--c-accent);
+    color: #fff;
+    border: 0;
+    display: grid; place-items: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-glow-accent);
+  }
+  .chat-input .mic svg { width: 14px; height: 14px; }
+  .chat-input .send {
+    width: 36px; height: 36px;
+    border-radius: var(--r-lg);
+    background: var(--c-accent);
+    color: #fff;
+    border: 0;
+    display: grid; place-items: center;
+    cursor: pointer;
+    transition: all var(--d-base) var(--ease-out-expo);
+  }
+  .chat-input .send:hover { background: var(--c-accent-hover); box-shadow: var(--shadow-glow-accent); }
+  .chat-input .send svg { width: 14px; height: 14px; }
+
+  /* Caption ------------------------------------------------- */
+  .kit-head {
+    margin-bottom: 32px;
+  }
+  .kit-head .ds-title { margin: 8px 0 12px; }
+  .annotations {
+    margin-top: 32px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .anno {
+    padding: 18px 20px;
+    border-radius: var(--r-lg);
+    background: rgba(45,27,69,0.40);
+    border: 1px solid var(--c-border);
+  }
+  .anno h5 {
+    margin: 0 0 6px;
+    font-size: var(--fs-10);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--c-accent);
+  }
+  .anno h5 .num {
+    color: var(--c-text-muted);
+    margin-right: 8px;
+  }
+  .anno p {
+    margin: 0;
+    font-size: var(--fs-xs);
+    color: var(--c-text-dim);
+    line-height: var(--lh-relax);
+  }
+  .anno p code {
+    font-family: var(--font-mono);
+    font-size: var(--fs-9);
+    color: var(--c-text);
+  }
+</style>
+</head>
+<body class="ds-page">
+
+<main class="kit-wrap">
+
+  <header class="kit-head">
+    <span class="ds-eyebrow">06 · In use</span>
+    <h1 class="ds-title">UI kit — full screen</h1>
+    <p class="ds-lede">
+      The whole vocabulary composed into the actual Animetta window: glass title bar,
+      persona drawer, Live2D stage with bilingual subtitle, chat with active
+      typing indicator. Every pixel below resolves to a token defined elsewhere
+      in the system.
+    </p>
+  </header>
+
+  <!-- Application window ============================================ -->
+  <div class="app">
+
+    <!-- Title bar -->
+    <div class="tb">
+      <div class="traffic"><span class="c"></span><span class="m"></span><span class="x"></span></div>
+      <div class="brand">Animetta<span class="dot">.</span></div>
+      <nav>
+        <button class="active">Chat</button>
+        <button>Persona</button>
+        <button>Memory</button>
+        <button>Dashboard</button>
+        <button>Settings</button>
+      </nav>
+      <div class="status">
+        <span class="ind"></span>
+        CONNECTED · 14 ms · gpt-4o-mini
+      </div>
+    </div>
+
+    <!-- Three-column stage -->
+    <div class="stage">
+
+      <!-- Left drawer ============================================ -->
+      <aside class="drawer">
+
+        <div class="persona">
+          <div class="row">
+            <div class="av">織</div>
+            <div>
+              <div class="nm">樱井小织</div>
+              <div class="sub">SAKURAI ORI · 17歳</div>
+            </div>
+          </div>
+          <div class="traits">
+            <span>关西腔</span>
+            <span>傲娇</span>
+            <span>夜猫子</span>
+            <span>爱看动漫</span>
+            <span>烘焙师</span>
+          </div>
+        </div>
+
+        <h4>Settings</h4>
+        <div class="sections">
+          <div class="sec-row active">
+            <div class="ic"><img src="assets/icons/chat.png" alt="" /></div>
+            <div class="lab">Chat</div>
+          </div>
+          <div class="sec-row">
+            <div class="ic"><img src="assets/icons/persona.png" alt="" /></div>
+            <div class="lab">Persona</div>
+          </div>
+          <div class="sec-row">
+            <div class="ic"><img src="assets/icons/llm.png" alt="" /></div>
+            <div class="lab">LLM</div>
+            <div class="val">gpt-4o-mini</div>
+          </div>
+          <div class="sec-row">
+            <div class="ic"><img src="assets/icons/tts.png" alt="" /></div>
+            <div class="lab">TTS</div>
+            <div class="val">樱井</div>
+          </div>
+          <div class="sec-row">
+            <div class="ic"><img src="assets/icons/asr.png" alt="" /></div>
+            <div class="lab">ASR</div>
+            <div class="val">whisper-l</div>
+          </div>
+          <div class="sec-row">
+            <div class="ic"><img src="assets/icons/vad.png" alt="" /></div>
+            <div class="lab">VAD</div>
+            <div class="val">0.65</div>
+          </div>
+          <div class="sec-row">
+            <div class="ic"><img src="assets/icons/live2d.png" alt="" /></div>
+            <div class="lab">Live2D</div>
+          </div>
+          <div class="sec-row">
+            <div class="ic"><img src="assets/icons/background.png" alt="" /></div>
+            <div class="lab">Background</div>
+            <div class="val">樱花夜</div>
+          </div>
+        </div>
+
+        <div class="group">
+          <h4>Recent memory</h4>
+          <div class="memory-list">
+            <div class="mem">
+              <div class="ts">2 MIN AGO</div>
+              <div class="copy">User likes <b>樱花</b> and mentioned wanting to go for a walk together this weekend.</div>
+            </div>
+            <div class="mem">
+              <div class="ts">14 MIN AGO</div>
+              <div class="copy">Preferred name: <b>あなた</b>. Switched to bilingual subtitles.</div>
+            </div>
+            <div class="mem">
+              <div class="ts">YESTERDAY</div>
+              <div class="copy">Late-night conversation about <b>新海诚</b> films, mostly 「言叶之庭」.</div>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- Live2D stage ============================================ -->
+      <section class="live2d">
+        <div class="char"></div>
+        <div class="scene-tag">SCENE · 樱花夜 · SAKURA NIGHT</div>
+        <div class="stage-controls">
+          <button title="Reset position" aria-label="Reset">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v6h6"/></svg>
+          </button>
+          <button title="Scale" aria-label="Scale">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8V3h5M16 3h5v5M21 16v5h-5M8 21H3v-5"/></svg>
+          </button>
+          <button title="Interrupt" aria-label="Interrupt" style="color: var(--c-accent); border-color: var(--c-border-accent);">
+            <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+          </button>
+        </div>
+
+        <div class="subtitle">
+          <div class="source">嗯！我也想出去走走～要一起看樱花吗？</div>
+          <div class="tr">Mhm! I want to go out too — should we go see the cherry blossoms together?</div>
+        </div>
+      </section>
+
+      <!-- Chat ============================================ -->
+      <section class="chat">
+        <div class="chat-head">
+          <div class="lab">Conversation</div>
+          <div class="badge">LIVE</div>
+        </div>
+        <div class="chat-body">
+
+          <div class="day-stamp">TODAY · 14:30</div>
+
+          <div class="row">
+            <div class="av">織</div>
+            <div class="bubble ai">欢迎回家～<br/>今天有点累吗？</div>
+          </div>
+
+          <div class="row me">
+            <div class="bubble me">嗯，还好啦。你今天过得怎么样？</div>
+          </div>
+
+          <div class="row">
+            <div class="av">織</div>
+            <div class="bubble ai">挺好的！我一直在等你回来呢～外面樱花都开了。</div>
+          </div>
+
+          <div class="row me">
+            <div class="bubble me">真的吗？我都没注意到</div>
+          </div>
+
+          <div class="row">
+            <div class="av">織</div>
+            <div class="bubble ai">嗯！我也想出去走走～要一起看樱花吗？</div>
+          </div>
+
+          <div class="row me">
+            <div class="bubble me">好啊，等我换件衣服</div>
+          </div>
+
+          <div class="row">
+            <div class="av">織</div>
+            <div class="bubble ai">慢慢来！我在这里等你 (*´ω｀*)</div>
+          </div>
+
+          <div class="row">
+            <div class="av">織</div>
+            <div class="typing"><span></span><span></span><span></span></div>
+          </div>
+
+        </div>
+
+        <div class="chat-input">
+          <div class="field">
+            <input value="对了，要不要带相机？" />
+            <button class="mic" aria-label="Voice">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10a7 7 0 0 1-14 0M12 19v3"/></svg>
+            </button>
+          </div>
+          <button class="send" aria-label="Send">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Anchors ============================================ -->
+  <section class="annotations">
+    <div class="anno">
+      <h5><span class="num">01</span>Title bar</h5>
+      <p>
+        44 px tall glass strip. Drag-region runs across the empty middle. The
+        right-side status pill is a <code>mono</code> string — never wraps,
+        never grows past <code>18 ch</code>.
+      </p>
+    </div>
+    <div class="anno">
+      <h5><span class="num">02</span>Persona drawer</h5>
+      <p>
+        Pinned <code>280 px</code> column with the active persona on top, then
+        the settings list (each row tagged with its section icon), then a
+        memory feed. Background sits at <code>45%</code> alpha so the scene
+        shows through.
+      </p>
+    </div>
+    <div class="anno">
+      <h5><span class="num">03</span>Live2D stage</h5>
+      <p>
+        Center-fluid column. The character is anchored to the lower-center
+        third. Stage controls float top-right; the scene tag floats top-left.
+        Bilingual subtitle docks above the bottom edge.
+      </p>
+    </div>
+    <div class="anno">
+      <h5><span class="num">04</span>Chat panel</h5>
+      <p>
+        <code>340 px</code> right column. AI bubbles ride the left, user
+        bubbles ride the right; the speaker is identified by tail corner
+        more than by alignment. Day stamps every ~30&nbsp;min.
+      </p>
+    </div>
+    <div class="anno">
+      <h5><span class="num">05</span>Input bar</h5>
+      <p>
+        Always shows the focus ring while the panel is the active surface, even
+        when the field is empty — Anima is always ready to listen. The mic
+        button sits <i>inside</i> the field; the send button sits outside.
+      </p>
+    </div>
+    <div class="anno">
+      <h5><span class="num">06</span>Status badge</h5>
+      <p>
+        Tiny green dot + <code>LIVE</code>. Switches to amber with the latency
+        number if &gt; 200&nbsp;ms, red with <code>OFFLINE</code> if the
+        websocket drops.
+      </p>
+    </div>
+  </section>
+
+</main>
+</body>
+</html>

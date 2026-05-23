@@ -15,7 +15,7 @@
 ### Task 1: Create ModelLoadingManager class
 
 **Files:**
-- Create: `src/anima/core/model_loading_manager.py`
+- Create: `src/animetta/core/model_loading_manager.py`
 - Test: `tests/core/test_model_loading_manager.py`
 
 **Step 1: Write the test**
@@ -303,7 +303,7 @@ Expected: PASS
 **Step 5: Commit**
 
 ```bash
-git add tests/core/test_model_loading_manager.py src/anima/core/model_loading_manager.py
+git add tests/core/test_model_loading_manager.py src/animetta/core/model_loading_manager.py
 git commit -m "feat: add ModelLoadingManager for centralized model lifecycle"
 ```
 
@@ -312,7 +312,7 @@ git commit -m "feat: add ModelLoadingManager for centralized model lifecycle"
 ### Task 2: Add preload() to FasterWhisperASR (idempotent)
 
 **Files:**
-- Modify: `src/anima/services/speech/asr/faster_whisper_asr.py:116-130`
+- Modify: `src/animetta/services/speech/asr/faster_whisper_asr.py:116-130`
 
 **Step 1: Write the failing test**
 
@@ -369,7 +369,7 @@ Expected: PASS
 **Step 4: Commit**
 
 ```bash
-git add src/anima/services/speech/asr/faster_whisper_asr.py
+git add src/animetta/services/speech/asr/faster_whisper_asr.py
 git commit -m "refactor: make FasterWhisperASR.preload() idempotent"
 ```
 
@@ -378,7 +378,7 @@ git commit -m "refactor: make FasterWhisperASR.preload() idempotent"
 ### Task 3: Add preload() to ChatTTSTTS
 
 **Files:**
-- Modify: `src/anima/services/speech/tts/chattts_tts.py:58-93`
+- Modify: `src/animetta/services/speech/tts/chattts_tts.py:58-93`
 
 **Step 1: Write the test**
 
@@ -423,7 +423,7 @@ Expected: PASS
 **Step 4: Commit**
 
 ```bash
-git add src/anima/services/speech/tts/chattts_tts.py
+git add src/animetta/services/speech/tts/chattts_tts.py
 git commit -m "feat: add preload() to ChatTTSTTS for eager loading support"
 ```
 
@@ -432,7 +432,7 @@ git commit -m "feat: add preload() to ChatTTSTTS for eager loading support"
 ### Task 4: Add preload() to SileroVAD
 
 **Files:**
-- Modify: `src/anima/services/intelligence/vad/silero_vad.py:48,77-90`
+- Modify: `src/animetta/services/intelligence/vad/silero_vad.py:48,77-90`
 
 **Step 1: Write test**
 
@@ -473,7 +473,7 @@ Expected: PASS
 **Step 4: Commit**
 
 ```bash
-git add src/anima/services/intelligence/vad/silero_vad.py
+git add src/animetta/services/intelligence/vad/silero_vad.py
 git commit -m "feat: add preload() to SileroVAD for unified loading interface"
 ```
 
@@ -482,7 +482,7 @@ git commit -m "feat: add preload() to SileroVAD for unified loading interface"
 ### Task 5: Add preload() to GLMLLM
 
 **Files:**
-- Modify: `src/anima/services/intelligence/llm/glm_llm.py:36-39`
+- Modify: `src/animetta/services/intelligence/llm/glm_llm.py:36-39`
 
 **Step 1: Write test**
 
@@ -531,7 +531,7 @@ Expected: PASS
 **Step 4: Commit**
 
 ```bash
-git add src/anima/services/intelligence/llm/glm_llm.py
+git add src/animetta/services/intelligence/llm/glm_llm.py
 git commit -m "feat: add preload() to GLMLLM for eager client init"
 ```
 
@@ -540,8 +540,8 @@ git commit -m "feat: add preload() to GLMLLM for eager client init"
 ### Task 6: Integrate ModelLoadingManager into WebSocketServer lifecycle
 
 **Files:**
-- Modify: `src/anima/orchestration/server/websocket.py`
-- Modify: `src/anima/core/socketio_server.py`
+- Modify: `src/animetta/orchestration/server/websocket.py`
+- Modify: `src/animetta/core/socketio_server.py`
 
 **Step 1: Write integration test**
 
@@ -600,7 +600,7 @@ Expected: PASS
 **Step 4: Commit**
 
 ```bash
-git add src/anima/orchestration/server/websocket.py src/anima/core/socketio_server.py
+git add src/animetta/orchestration/server/websocket.py src/animetta/core/socketio_server.py
 git commit -m "feat: integrate ModelLoadingManager into server lifecycle"
 ```
 
@@ -609,7 +609,7 @@ git commit -m "feat: integrate ModelLoadingManager into server lifecycle"
 ### Task 7: Modify ServiceContext to use ModelLoadingManager
 
 **Files:**
-- Modify: `src/anima/core/service_context.py`
+- Modify: `src/animetta/core/service_context.py`
 
 **Step 1: Identify loading points**
 
@@ -666,7 +666,7 @@ Expected: PASS (or note pre-existing failures)
 **Step 4: Commit**
 
 ```bash
-git add src/anima/core/service_context.py
+git add src/animetta/core/service_context.py
 git commit -m "refactor: ServiceContext uses ModelLoadingManager for coordinated loading"
 ```
 
@@ -675,8 +675,8 @@ git commit -m "refactor: ServiceContext uses ModelLoadingManager for coordinated
 ### Task 8: Register services with ModelLoadingManager at server startup
 
 **Files:**
-- Modify: `src/anima/orchestration/server/websocket.py`
-- Modify: `src/anima/core/service_context.py` (touch)
+- Modify: `src/animetta/orchestration/server/websocket.py`
+- Modify: `src/animetta/core/service_context.py` (touch)
 
 **Step 1: Write test for service registration**
 
@@ -724,7 +724,7 @@ async def _register_services_with_manager(self, config):
 **Step 3:** Commit
 
 ```bash
-git add src/anima/orchestration/server/websocket.py src/anima/core/service_context.py
+git add src/animetta/orchestration/server/websocket.py src/animetta/core/service_context.py
 git commit -m "feat: register all model services with ModelLoadingManager"
 ```
 
@@ -733,7 +733,7 @@ git commit -m "feat: register all model services with ModelLoadingManager"
 ### Task 9: Add warmup call to server startup
 
 **Files:**
-- Modify: `src/anima/core/socketio_server.py`
+- Modify: `src/animetta/core/socketio_server.py`
 
 **Step 1: Implement warmup**
 
@@ -788,7 +788,7 @@ Expected: No crash, models start warming in background
 **Step 3: Commit**
 
 ```bash
-git add src/anima/core/socketio_server.py
+git add src/animetta/core/socketio_server.py
 git commit -m "feat: add model warmup on server startup"
 ```
 
@@ -797,7 +797,7 @@ git commit -m "feat: add model warmup on server startup"
 ### Task 10: Remove ad-hoc preload from ServiceContext (cleanup)
 
 **Files:**
-- Modify: `src/anima/core/service_context.py:129-140`
+- Modify: `src/animetta/core/service_context.py:129-140`
 - Remove `_preload_asr_background()` method
 
 **Step 1: Remove the fire-and-forget preload**
@@ -829,6 +829,6 @@ Expected: PASS
 **Step 3: Commit**
 
 ```bash
-git add src/anima/core/service_context.py
+git add src/animetta/core/service_context.py
 git commit -m "refactor: remove ad-hoc ASR preload (replaced by ModelLoadingManager)"
 ```

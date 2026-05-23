@@ -12,7 +12,7 @@ from starlette.applications import Starlette
 
 def _build_test_app(store_mock=None):
     """Build a Starlette app with the stats routes and optional mocked store."""
-    from anima.orchestration.server.stats_api import get_stats_routes
+    from animetta import $$$
     routes = get_stats_routes()
     app = Starlette(routes=routes)
     return app
@@ -242,7 +242,7 @@ class TestRouteRegistration:
 
     def test_get_stats_routes_returns_all_routes(self):
         """get_stats_routes returns all expected routes."""
-        from anima.orchestration.server.stats_api import get_stats_routes
+        from animetta import $$$
         routes = get_stats_routes()
 
         path_set = {r.path for r in routes if hasattr(r, "path")}

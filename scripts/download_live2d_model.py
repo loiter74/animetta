@@ -71,7 +71,7 @@ def main():
     if success_count == len(files):
         print("\n✅ 所有文件下载完成！")
         print("\n下一步:")
-        print("1. 启动后端: python -m anima.socketio_server")
+        print("1. 启动后端: python -m animetta.socketio_server")
         print("2. 启动前端: cd frontend && pnpm dev")
         print("3. 打开浏览器: http://localhost:3000")
         print("4. 打开测试页面: test_live2d_emotion.html")

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 
-const STORAGE_KEY = 'anima_background'
+const STORAGE_KEY = 'animetta_background'
 const DEFAULT_BG = '/backgrounds/赛博都市.png'
 
 const presets = [

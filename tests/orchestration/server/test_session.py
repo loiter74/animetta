@@ -3,7 +3,7 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from anima.orchestration.server.session import SessionManager
+from animetta import $$$
 
 
 # ── Fixtures ───────────────────────────────────────────────────────

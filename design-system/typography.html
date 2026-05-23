@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Animetta — Typography</title>
+<link rel="icon" href="assets/favicon.svg" />
+<link rel="stylesheet" href="colors_and_type.css" />
+<style>
+  .stack-card {
+    margin-top: var(--s-6);
+    border-radius: var(--r-2xl);
+    border: 1px solid var(--c-border);
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(45,27,69,0.55) 0%, rgba(36,21,56,0.55) 100%);
+  }
+  .stack-card .head {
+    padding: 28px 32px 18px;
+    border-bottom: 1px solid var(--c-border);
+  }
+  .stack-card .head h3 {
+    margin: 0;
+    font-size: var(--fs-xl);
+    letter-spacing: -0.01em;
+  }
+  .stack-card .head .stack {
+    margin-top: 14px;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--c-text-dim);
+    line-height: var(--lh-relax);
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-md);
+    padding: 12px 14px;
+    word-break: break-word;
+  }
+  .stack-card .head .stack b { color: var(--c-accent); }
+
+  .stack-card .demo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+  .stack-card .demo > div {
+    padding: 28px 32px;
+  }
+  .stack-card .demo > div + div {
+    border-left: 1px solid var(--c-border);
+  }
+  .stack-card .demo .lab {
+    font-size: var(--fs-9);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--c-text-muted);
+    margin-bottom: 12px;
+  }
+  .stack-card .demo .latin {
+    font-size: 28px;
+    line-height: var(--lh-snug);
+    color: var(--c-text);
+  }
+  .stack-card .demo .latin .muted { color: var(--c-text-dim); }
+  .stack-card .demo .cjk {
+    font-size: 28px;
+    line-height: var(--lh-snug);
+    color: var(--c-text);
+  }
+  .stack-card .demo .cjk .muted { color: var(--c-text-dim); }
+
+  /* Scale ledger ---------------------------------------------------- */
+  .scale {
+    margin-top: var(--s-6);
+    border-radius: var(--r-2xl);
+    border: 1px solid var(--c-border);
+    overflow: hidden;
+  }
+  .scale-row {
+    display: grid;
+    grid-template-columns: 96px 1fr 240px;
+    align-items: center;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--c-border);
+    background: rgba(45,27,69,0.30);
+  }
+  .scale-row:last-child { border-bottom: 0; }
+  .scale-row:hover { background: rgba(232,121,168,0.06); }
+
+  .scale-size {
+    font-family: var(--font-mono);
+    color: var(--c-accent);
+    font-size: var(--fs-xs);
+  }
+  .scale-size b { color: var(--c-text); font-size: var(--fs-sm); }
+  .scale-sample { color: var(--c-text); line-height: 1.2; }
+  .scale-use {
+    font-size: var(--fs-xs);
+    color: var(--c-text-dim);
+    line-height: var(--lh-snug);
+    border-left: 1px dashed var(--c-border);
+    padding-left: 18px;
+  }
+  .scale-use code {
+    font-family: var(--font-mono);
+    font-size: var(--fs-9);
+    color: var(--c-text-muted);
+  }
+
+  /* Weight + line height demo ---------------------------------------- */
+  .meta-grid {
+    margin-top: var(--s-6);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .meta-card {
+    padding: 24px 26px;
+    border-radius: var(--r-xl);
+    background: rgba(45,27,69,0.40);
+    border: 1px solid var(--c-border);
+  }
+  .meta-card h4 {
+    margin: 0 0 16px;
+    font-size: var(--fs-10);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--c-text-muted);
+  }
+  .weight-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--c-border);
+  }
+  .weight-row:last-child { border-bottom: 0; }
+  .weight-row .sample { font-size: 24px; }
+  .weight-row .label { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--c-text-dim); }
+  .weight-row .label b { color: var(--c-accent); }
+
+  .lh-row { display: flex; align-items: flex-start; gap: 18px; padding: 12px 0; border-bottom: 1px dashed var(--c-border); }
+  .lh-row:last-child { border-bottom: 0; }
+  .lh-row .label { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--c-text-dim); width: 90px; flex-shrink: 0; padding-top: 3px; }
+  .lh-row .label b { color: var(--c-accent); }
+  .lh-row .copy {
+    font-size: var(--fs-sm);
+    color: var(--c-text);
+    max-width: 36ch;
+  }
+
+  /* Specimen / chat usage ------------------------------------------- */
+  .specimen {
+    margin-top: var(--s-6);
+    border-radius: var(--r-2xl);
+    border: 1px solid var(--c-border);
+    background:
+      radial-gradient(60% 80% at 100% 0%, rgba(232,121,168,0.10), transparent 60%),
+      var(--c-surface);
+    padding: 36px 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 36px;
+  }
+  .specimen h5 {
+    margin: 0 0 14px;
+    font-size: var(--fs-9);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--c-text-muted);
+  }
+  .spec-bubble {
+    padding: 10px 14px;
+    border-radius: var(--r-xl);
+    border-bottom-left-radius: 6px;
+    background: var(--c-ai-bubble);
+    border: 1px solid var(--c-border-accent);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-snug);
+    color: var(--c-text);
+    max-width: 30ch;
+  }
+  .spec-time { margin-top: 4px; font-size: var(--fs-9); color: var(--c-text-muted); font-family: var(--font-mono); }
+  .spec-label {
+    margin-top: 18px;
+    font-size: var(--fs-xs);
+    color: var(--c-text-dim);
+  }
+  .spec-status {
+    margin-top: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px;
+    font-size: var(--fs-10);
+    font-family: var(--font-mono);
+    color: var(--c-success);
+    border: 1px solid rgba(74,222,128,0.30);
+    border-radius: var(--r-full);
+    background: rgba(74,222,128,0.06);
+  }
+  .spec-status::before {
+    content: ""; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--c-success); box-shadow: var(--shadow-glow-success);
+  }
+
+  .spec-display {
+    font-size: 56px;
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    line-height: 1;
+    color: var(--c-text);
+  }
+  .spec-display em {
+    color: var(--c-accent);
+    font-style: normal;
+  }
+  .spec-eyebrow {
+    font-size: var(--fs-10);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--c-accent);
+    margin-bottom: 14px;
+  }
+
+  /* Rules block ----------------------------------------------------- */
+  .rules {
+    margin-top: var(--s-6);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .rule {
+    padding: 18px 18px 20px;
+    border-radius: var(--r-lg);
+    background: rgba(45,27,69,0.40);
+    border: 1px solid var(--c-border);
+  }
+  .rule h6 {
+    margin: 0 0 6px;
+    font-size: var(--fs-xs);
+    color: var(--c-accent);
+    letter-spacing: 0.05em;
+  }
+  .rule p {
+    margin: 0;
+    font-size: var(--fs-xs);
+    color: var(--c-text-dim);
+    line-height: var(--lh-relax);
+  }
+  .rule p code {
+    font-family: var(--font-mono);
+    font-size: var(--fs-9);
+    color: var(--c-text);
+  }
+</style>
+</head>
+<body class="ds-page">
+
+<main class="ds-shell">
+
+  <span class="ds-eyebrow">02 · Foundations</span>
+  <h1 class="ds-title">Typography</h1>
+  <p class="ds-lede">
+    Animetta is a <b>small-text product</b>. Most copy lives at 12–14px and the page
+    feels denser than a typical web app. There is no custom webfont — we lean on
+    each OS's native CJK font so Chinese characters render at their proper
+    hinting weight.
+  </p>
+
+  <!-- Stack card -------------------------------------------------- -->
+  <section class="stack-card">
+    <div class="head">
+      <h3>The font stack</h3>
+      <div class="stack">
+        font-family:
+        <b>-apple-system</b>, <b>BlinkMacSystemFont</b>, <b>"Segoe UI"</b>, Roboto,
+        <b>"Hiragino Sans"</b>, <b>"Noto Sans SC"</b>, <b>"Microsoft YaHei"</b>, sans-serif;
+      </div>
+      <p style="margin: 14px 0 0; font-size: var(--fs-xs); color: var(--c-text-dim); line-height: var(--lh-relax); max-width: 78ch;">
+        macOS users get San Francisco + Hiragino. Windows users get Segoe + YaHei.
+        Linux falls back to Noto Sans SC. Each OS therefore renders Animetta in the
+        font its CJK rasterizer is tuned for — there are no missing glyph rectangles
+        on Windows and no chunky pseudo-bold faux-rendering on macOS.
+      </p>
+    </div>
+    <div class="demo">
+      <div>
+        <div class="lab">Latin</div>
+        <div class="latin">
+          The avatar is listening<br/>
+          <span class="muted">Latency&nbsp;·&nbsp;12&nbsp;ms&nbsp;·&nbsp;Connected</span>
+        </div>
+      </div>
+      <div>
+        <div class="lab">CJK · 中文</div>
+        <div class="cjk">
+          我正在听你说话呢<br/>
+          <span class="muted">延迟&nbsp;·&nbsp;12&nbsp;毫秒&nbsp;·&nbsp;已连接</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Type scale ---------------------------------------------------- -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">The scale</h2>
+    <p class="ds-section-sub">
+      Animetta only uses nine sizes. New designs do not invent intermediate sizes —
+      they reach for a different weight or color first.
+    </p>
+    <div class="scale">
+
+      <div class="scale-row">
+        <div class="scale-size"><b>40 / 1.0</b><br/>--fs-3xl</div>
+        <div class="scale-sample" style="font-size: 40px; font-weight: 700; letter-spacing: -0.025em;">Animetta.</div>
+        <div class="scale-use">Display / hero only. Wordmark, splash, welcome screen.</div>
+      </div>
+
+      <div class="scale-row">
+        <div class="scale-size"><b>28 / 1.15</b><br/>--fs-2xl</div>
+        <div class="scale-sample" style="font-size: 28px; font-weight: 600; letter-spacing: -0.015em;">Settings &amp; persona</div>
+        <div class="scale-use">Page titles. Section headers inside Settings.</div>
+      </div>
+
+      <div class="scale-row">
+        <div class="scale-size"><b>20 / 1.30</b><br/>--fs-xl</div>
+        <div class="scale-sample" style="font-size: 20px; font-weight: 600;">Welcome back, traveler</div>
+        <div class="scale-use">Welcome screen subtitle, modal title.</div>
+      </div>
+
+      <div class="scale-row">
+        <div class="scale-size"><b>18 / 1.30</b><br/>--fs-lg</div>
+        <div class="scale-sample" style="font-size: 18px; font-weight: 600;">Meme: 「这就是命运吗？」</div>
+        <div class="scale-use">Meme card headline. Subtitle overlay (the bigger of the bilingual pair).</div>
+      </div>
+
+      <div class="scale-row">
+        <div class="scale-size"><b>16 / 1.50</b><br/>--fs-base</div>
+        <div class="scale-sample" style="font-size: 16px;">Default body for non-chat surfaces.</div>
+        <div class="scale-use">Settings descriptions. Lede paragraphs. <i>Rare</i> in-app.</div>
+      </div>
+
+      <div class="scale-row">
+        <div class="scale-size"><b>14 / 1.50</b><br/>--fs-sm</div>
+        <div class="scale-sample" style="font-size: 14px;">「今天天气真好啊」 — chat bubble copy.</div>
+        <div class="scale-use">Chat messages. Buttons. Input field. <b>The workhorse size.</b></div>
+      </div>
+
+      <div class="scale-row">
+        <div class="scale-size"><b>12 / 1.50</b><br/>--fs-xs</div>
+        <div class="scale-sample" style="font-size: 12px; color: var(--c-text-dim);">Persona: 樱井小织 · 关西腔 · 17岁</div>
+        <div class="scale-use">Secondary copy. Tab labels. List meta lines.</div>
+      </div>
+
+      <div class="scale-row">
+        <div class="scale-size"><b>10 / 1.4</b><br/>--fs-10</div>
+        <div class="scale-sample" style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--c-text-dim);">VOICE&nbsp;·&nbsp;CONNECTED&nbsp;·&nbsp;14&nbsp;MS</div>
+        <div class="scale-use">All-caps eyebrows. Status pills. Tab caps.</div>
+      </div>
+
+      <div class="scale-row">
+        <div class="scale-size"><b>9 / 1.3</b><br/>--fs-9</div>
+        <div class="scale-sample" style="font-size: 9px; font-family: var(--font-mono); color: var(--c-text-muted);">14:32 · TODAY · 03 / 12</div>
+        <div class="scale-use">Timestamps. Pagination. Mono numeric chips.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Weights + line heights ----------------------------------------- -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Weight &amp; line-height</h2>
+    <p class="ds-section-sub">
+      We carry only three weights. Body sits on a generous 1.5 leading because
+      CJK glyphs need vertical room — anything tighter feels squashed.
+    </p>
+    <div class="meta-grid">
+      <div class="meta-card">
+        <h4>Weights</h4>
+        <div class="weight-row">
+          <div class="sample">Anima · 樱井小织</div>
+          <div class="label"><b>400</b> · Regular</div>
+        </div>
+        <div class="weight-row">
+          <div class="sample" style="font-weight: 500;">Anima · 樱井小织</div>
+          <div class="label"><b>500</b> · Medium · interactive labels</div>
+        </div>
+        <div class="weight-row">
+          <div class="sample" style="font-weight: 600;">Anima · 樱井小织</div>
+          <div class="label"><b>600</b> · Semibold · titles + active tab</div>
+        </div>
+        <div class="weight-row">
+          <div class="sample" style="font-weight: 700;">Anima · 樱井小织</div>
+          <div class="label"><b>700</b> · Bold · display only</div>
+        </div>
+      </div>
+
+      <div class="meta-card">
+        <h4>Line-heights</h4>
+        <div class="lh-row">
+          <div class="label"><b>1.15</b> tight</div>
+          <div class="copy" style="line-height: 1.15;">Display copy &amp; the Animetta wordmark. Compresses pairs of big letters so the brand feels confident.</div>
+        </div>
+        <div class="lh-row">
+          <div class="label"><b>1.30</b> snug</div>
+          <div class="copy" style="line-height: 1.30;">Chat bubbles + subtitle overlay. Just loose enough to read fluently, just tight enough that two-line bubbles still look like one thought.</div>
+        </div>
+        <div class="lh-row">
+          <div class="label"><b>1.50</b> body</div>
+          <div class="copy" style="line-height: 1.50;">Default. Settings descriptions, all multi-line system copy. Gives CJK glyphs the vertical air they need.</div>
+        </div>
+        <div class="lh-row">
+          <div class="label"><b>1.65</b> relax</div>
+          <div class="copy" style="line-height: 1.65;">Long-form helper text — onboarding paragraphs, persona descriptions, release notes.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Specimen ----------------------------------------------------- -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">In situ</h2>
+    <p class="ds-section-sub">
+      A look at the full hierarchy as it lands in the app. Notice how much real
+      estate the 14px chat copy occupies — display sizes are reserved for first
+      paint, not running UI.
+    </p>
+    <div class="specimen">
+      <div>
+        <div class="spec-eyebrow">Welcome screen</div>
+        <div class="spec-display">Animetta<em>.</em></div>
+        <div class="spec-display" style="font-size: 28px; font-weight: 600; margin-top: 12px; letter-spacing: -0.01em;">和我一起聊会儿天吧</div>
+        <div class="spec-label">Press <code class="tok">⌘&nbsp;K</code> to start a new conversation, or just type below.</div>
+        <div class="spec-status">Connected · 12 ms</div>
+      </div>
+      <div>
+        <h5>Chat in flight</h5>
+        <div class="spec-bubble">嗯！我正想跟你说这个呢～你今天上班累不累啊？</div>
+        <div class="spec-time">14:32 · ANIMA</div>
+        <div class="spec-bubble" style="margin-top: 14px;">Actually, can we switch to English? I want to practice.</div>
+        <div class="spec-time">14:33 · YOU</div>
+        <div class="spec-bubble" style="margin-top: 14px;">Of course! What would you like to talk about today?</div>
+        <div class="spec-time">14:33 · ANIMA</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rules ------------------------------------------------------- -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Working rules</h2>
+    <div class="rules">
+      <div class="rule">
+        <h6>① No third weight per block.</h6>
+        <p>Pick one weight per UI block. Mixing 500 and 600 inside the same bubble or button label flattens the hierarchy.</p>
+      </div>
+      <div class="rule">
+        <h6>② Numerals always mono.</h6>
+        <p>Timestamps, latencies, version strings, model parameters — switch to <code>--font-mono</code> so columns of numbers don't wiggle.</p>
+      </div>
+      <div class="rule">
+        <h6>③ Eyebrows in 10/UPPER.</h6>
+        <p>Section eyebrows are always <code>--fs-10</code>, 0.18–0.20em letter-spacing, uppercase, accent-pink color.</p>
+      </div>
+      <div class="rule">
+        <h6>④ Negative tracking on display.</h6>
+        <p>Anything ≥ 28px gets <code>letter-spacing: -0.015em</code> to -0.04em. Anything below 16px never gets negative tracking — it kills CJK glyph balance.</p>
+      </div>
+      <div class="rule">
+        <h6>⑤ Mix scripts mid-line.</h6>
+        <p>Latin + CJK on the same line is fine; the OS stack handles vertical alignment. <i>Don't</i> add `font-feature-settings: "palt"` — it ruins kana spacing.</p>
+      </div>
+      <div class="rule">
+        <h6>⑥ Never italic Han.</h6>
+        <p>CSS italic on Chinese/Japanese glyphs is a synthetic slant and looks broken. Use the accent color for emphasis instead.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+</body>
+</html>

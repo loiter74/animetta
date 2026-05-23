@@ -19,7 +19,7 @@ def mock_store():
 
 @pytest.fixture
 def exporter(mock_store):
-    from anima.tracing.exporter import StatsSpanExporter
+    from animetta import $$$
 
     return StatsSpanExporter(stats_store=mock_store)
 
@@ -213,19 +213,19 @@ class TestStatsSpanExporter:
     # ── _format helpers ──────────────────────────────────────────────
 
     def test_format_trace_id(self):
-        from anima.tracing.exporter import _format_trace_id
+        from animetta import $$$
 
         assert _format_trace_id(0xABC) == "00000000000000000000000000000abc"
         assert _format_trace_id(0) == "00000000000000000000000000000000"
 
     def test_format_span_id(self):
-        from anima.tracing.exporter import _format_span_id
+        from animetta import $$$
 
         assert _format_span_id(0x123) == "0000000000000123"
         assert _format_span_id(0) == "0000000000000000"
 
     def test_format_trace_id_large(self):
-        from anima.tracing.exporter import _format_trace_id
+        from animetta import $$$
 
         tid = 0xDEADBEEFCAFE1234567890ABCDEF0001
         formatted = _format_trace_id(tid)

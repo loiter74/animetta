@@ -35,14 +35,14 @@ class TestPlanStepDataclass:
     """PlanStep data model tests."""
 
     def test_default_values(self):
-        from anima.tools.minecraft.planner import PlanStep
+        from animetta import $$$
         step = PlanStep(action="goto")
         assert step.action == "goto"
         assert step.params == {}
         assert step.description == ""
 
     def test_full_creation(self):
-        from anima.tools.minecraft.planner import PlanStep
+        from animetta import $$$
         step = PlanStep(
             action="collect",
             params={"block_type": "oak_log", "count": 16},
@@ -57,14 +57,14 @@ class TestPlanDataclass:
     """Plan data model tests."""
 
     def test_default_values(self):
-        from anima.tools.minecraft.planner import Plan, PlanStep
+        from animetta import $$$
         plan = Plan(goal="test")
         assert plan.goal == "test"
         assert plan.steps == []
         assert plan.status == "pending"
 
     def test_with_steps(self):
-        from anima.tools.minecraft.planner import Plan, PlanStep
+        from animetta import $$$
         steps = [
             PlanStep(action="goto", params={"x": 0, "y": 64, "z": 0}),
             PlanStep(action="mine", params={"block_type": "stone"}),
@@ -79,18 +79,18 @@ class TestMinecraftPlannerInit:
     """Planner initialization tests."""
 
     def test_init_without_llm(self):
-        from anima.tools.minecraft.planner import MinecraftPlanner
+        from animetta import $$$
         planner = MinecraftPlanner()
         assert planner._llm is None
         assert planner._last_plan is None
 
     def test_init_with_llm(self, mock_llm):
-        from anima.tools.minecraft.planner import MinecraftPlanner
+        from animetta import $$$
         planner = MinecraftPlanner(llm_service=mock_llm)
         assert planner._llm is mock_llm
 
     def test_set_llm_updates_service(self, mock_llm):
-        from anima.tools.minecraft.planner import MinecraftPlanner
+        from animetta import $$$
         planner = MinecraftPlanner()
         planner.set_llm(mock_llm)
         assert planner._llm is mock_llm
@@ -100,13 +100,13 @@ class TestMinecraftPlannerPlan:
     """Planner.plan() tests."""
 
     async def test_plan_no_llm_raises_error(self):
-        from anima.tools.minecraft.planner import MinecraftPlanner, PlannerError
+        from animetta import $$$
         planner = MinecraftPlanner()
         with pytest.raises(PlannerError, match="No LLM service"):
             await planner.plan("build a house")
 
     async def test_plan_success(self, mock_llm):
-        from anima.tools.minecraft.planner import MinecraftPlanner
+        from animetta import $$$
         planner = MinecraftPlanner(llm_service=mock_llm)
 
         plan_data = sample_plan_json()
@@ -124,7 +124,7 @@ class TestMinecraftPlannerPlan:
         assert planner.last_plan is result
 
     async def test_plan_with_context(self, mock_llm):
-        from anima.tools.minecraft.planner import MinecraftPlanner
+        from animetta import $$$
         planner = MinecraftPlanner(llm_service=mock_llm)
 
         plan_data = sample_plan_json()
@@ -148,7 +148,7 @@ class TestMinecraftPlannerPlan:
         assert "100" in user_msg
 
     async def test_plan_with_inventory_empty_context(self, mock_llm):
-        from anima.tools.minecraft.planner import MinecraftPlanner
+        from animetta import $$$
         planner = MinecraftPlanner(llm_service=mock_llm)
 
         plan_data = sample_plan_json()
@@ -164,7 +164,7 @@ class TestMinecraftPlannerPlan:
         assert "empty" in user_msg
 
     async def test_plan_invalid_json_raises_error(self, mock_llm):
-        from anima.tools.minecraft.planner import MinecraftPlanner, PlannerError
+        from animetta import $$$
         planner = MinecraftPlanner(llm_service=mock_llm)
 
         response = MagicMock()
@@ -175,7 +175,7 @@ class TestMinecraftPlannerPlan:
             await planner.plan("do something")
 
     async def test_plan_llm_chat_exception(self, mock_llm):
-        from anima.tools.minecraft.planner import MinecraftPlanner, PlannerError
+        from animetta import $$$
         planner = MinecraftPlanner(llm_service=mock_llm)
 
         mock_llm.chat.side_effect = RuntimeError("LLM connection failed")
@@ -188,27 +188,27 @@ class TestMinecraftPlannerExtractJson:
     """Planner._extract_json() tests."""
 
     def test_extract_direct_json(self):
-        from anima.tools.minecraft.planner import MinecraftPlanner
+        from animetta import $$$
         planner = MinecraftPlanner()
         result = planner._extract_json('{"key": "value"}')
         assert result == {"key": "value"}
 
     def test_extract_from_markdown_code_block(self):
-        from anima.tools.minecraft.planner import MinecraftPlanner
+        from animetta import $$$
         planner = MinecraftPlanner()
         text = '```json\n{"key": "value"}\n```'
         result = planner._extract_json(text)
         assert result == {"key": "value"}
 
     def test_extract_from_generic_code_block(self):
-        from anima.tools.minecraft.planner import MinecraftPlanner
+        from animetta import $$$
         planner = MinecraftPlanner()
         text = '```\n{"key": "value"}\n```'
         result = planner._extract_json(text)
         assert result == {"key": "value"}
 
     def test_extract_no_valid_json_raises(self):
-        from anima.tools.minecraft.planner import MinecraftPlanner
+        from animetta import $$$
         import json as json_mod
         planner = MinecraftPlanner()
         with pytest.raises(json_mod.JSONDecodeError):
@@ -219,7 +219,7 @@ class TestMinecraftPlannerParsePlan:
     """Planner._parse_plan() tests."""
 
     def test_parse_plan_with_steps(self):
-        from anima.tools.minecraft.planner import MinecraftPlanner
+        from animetta import $$$
         planner = MinecraftPlanner()
         raw = sample_plan_json()
         plan = planner._parse_plan("Build house", raw)
@@ -228,7 +228,7 @@ class TestMinecraftPlannerParsePlan:
         assert plan.steps[0].action == "collect"
 
     def test_parse_plan_empty_steps(self):
-        from anima.tools.minecraft.planner import MinecraftPlanner
+        from animetta import $$$
         planner = MinecraftPlanner()
         raw = {"goal": "idle", "steps": []}
         plan = planner._parse_plan("idle", raw)
@@ -236,7 +236,7 @@ class TestMinecraftPlannerParsePlan:
         assert len(plan.steps) == 0
 
     def test_parse_plan_missing_description(self):
-        from anima.tools.minecraft.planner import MinecraftPlanner
+        from animetta import $$$
         planner = MinecraftPlanner()
         raw = {
             "goal": "test",
@@ -251,7 +251,7 @@ class TestMinecraftPlannerValidatePlan:
     """Planner._validate_plan() tests."""
 
     def test_validate_known_actions_pass(self):
-        from anima.tools.minecraft.planner import MinecraftPlanner, Plan, PlanStep
+        from animetta import $$$
         planner = MinecraftPlanner()
         plan = Plan(
             goal="test",
@@ -264,7 +264,7 @@ class TestMinecraftPlannerValidatePlan:
         planner._validate_plan(plan)  # Should not raise
 
     def test_validate_unknown_action_logs_warning(self):
-        from anima.tools.minecraft.planner import MinecraftPlanner, Plan, PlanStep
+        from animetta import $$$
         planner = MinecraftPlanner()
         plan = Plan(
             goal="test",
@@ -273,7 +273,7 @@ class TestMinecraftPlannerValidatePlan:
         planner._validate_plan(plan)  # Should not raise, just log warning
 
     def test_validate_non_dict_params_fixed(self):
-        from anima.tools.minecraft.planner import MinecraftPlanner, Plan, PlanStep
+        from animetta import $$$
         planner = MinecraftPlanner()
         step = PlanStep(action="goto")
         step.params = "not a dict"  # type: ignore[assignment]
@@ -286,13 +286,13 @@ class TestMinecraftPlannerReplan:
     """Planner.replan() tests."""
 
     async def test_replan_no_previous_plan_raises_error(self):
-        from anima.tools.minecraft.planner import MinecraftPlanner, PlannerError
+        from animetta import $$$
         planner = MinecraftPlanner()
         with pytest.raises(PlannerError, match="No previous plan"):
             await planner.replan(0, "step failed")
 
     async def test_replan_success(self, mock_llm):
-        from anima.tools.minecraft.planner import MinecraftPlanner, Plan, PlanStep
+        from animetta import $$$
         planner = MinecraftPlanner(llm_service=mock_llm)
 
         # Set a previous plan
@@ -323,7 +323,7 @@ class TestModeSelector:
     """ModeSelector tests."""
 
     def test_init_stores_planner(self):
-        from anima.tools.minecraft.planner import ModeSelector, MinecraftPlanner
+        from animetta import $$$
         planner = MinecraftPlanner()
         selector = ModeSelector(planner)
         assert selector._planner is planner
@@ -331,7 +331,7 @@ class TestModeSelector:
         assert selector._goal is None
 
     def test_set_goal_with_valid_string(self):
-        from anima.tools.minecraft.planner import ModeSelector, MinecraftPlanner
+        from animetta import $$$
         planner = MinecraftPlanner()
         selector = ModeSelector(planner)
         selector.set_goal("build a castle")
@@ -339,21 +339,21 @@ class TestModeSelector:
         assert selector._has_goal is True
 
     def test_set_goal_with_empty_string(self):
-        from anima.tools.minecraft.planner import ModeSelector, MinecraftPlanner
+        from animetta import $$$
         planner = MinecraftPlanner()
         selector = ModeSelector(planner)
         selector.set_goal("")
         assert selector._has_goal is False
 
     def test_set_goal_with_none(self):
-        from anima.tools.minecraft.planner import ModeSelector, MinecraftPlanner
+        from animetta import $$$
         planner = MinecraftPlanner()
         selector = ModeSelector(planner)
         selector.set_goal(None)
         assert selector._has_goal is False
 
     async def test_select_mode_no_goal_returns_rule(self):
-        from anima.tools.minecraft.planner import ModeSelector, MinecraftPlanner
+        from animetta import $$$
         planner = MinecraftPlanner()
         selector = ModeSelector(planner)
         result = await selector.select_mode()
@@ -361,7 +361,7 @@ class TestModeSelector:
         assert result["plan"] is None
 
     async def test_select_mode_with_goal_returns_planner(self, mock_llm):
-        from anima.tools.minecraft.planner import ModeSelector, MinecraftPlanner
+        from animetta import $$$
         planner = MinecraftPlanner(llm_service=mock_llm)
 
         plan_data = sample_plan_json()
@@ -378,7 +378,7 @@ class TestModeSelector:
         assert result["plan"][0]["action"] == "collect"
 
     async def test_select_mode_planner_error_falls_back(self, mock_llm):
-        from anima.tools.minecraft.planner import ModeSelector, MinecraftPlanner, PlannerError
+        from animetta import $$$
         planner = MinecraftPlanner(llm_service=mock_llm)
         mock_llm.chat.side_effect = PlannerError("test failure")
 
@@ -391,7 +391,7 @@ class TestModeSelector:
         assert "test failure" in result["error"]
 
     async def test_select_mode_passes_context_to_planner(self, mock_llm):
-        from anima.tools.minecraft.planner import ModeSelector, MinecraftPlanner
+        from animetta import $$$
         planner = MinecraftPlanner(llm_service=mock_llm)
 
         plan_data = sample_plan_json()

@@ -58,14 +58,11 @@ def check_file(filepath: Path) -> list[str]:
 
 if __name__ == "__main__":
     project_root = Path(__file__).resolve().parent.parent
-    anima_src = project_root / "src" / "anima"
-    
-    if not anima_src.exists():
-        print(f"ERROR: src/anima not found at {anima_src}")
-        sys.exit(2)
-
-    all_violations: list[str] = []
-    for py_file in anima_src.rglob("*.py"):
+    animetta_src = project_root / "src" / "animetta"
+    if not animetta_src.exists():
+        print(f"ERROR: src/animetta not found at {animetta_src}")
+        return False
+    for py_file in animetta_src.rglob("*.py"):
         all_violations.extend(check_file(py_file))
 
     if all_violations:

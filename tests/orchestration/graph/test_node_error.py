@@ -4,7 +4,7 @@ import json
 import uuid
 import pytest_asyncio
 
-from anima.orchestration.graph.stats_store import StatsStore
+from animetta import $$$
 
 
 class TestLogNodeError:
@@ -22,7 +22,7 @@ class TestLogNodeError:
     @pytest_asyncio.fixture
     async def mock_get_store(self, monkeypatch, store):
         """Patch get_stats_store to return our test store."""
-        from anima.orchestration.graph import stats_store as ss
+        from animetta import $$$
         ss._store = store
         yield
         ss._store = None
@@ -36,7 +36,7 @@ class TestLogNodeError:
 
     async def test_with_valid_trace_id_creates_span(self, mock_get_store, store, trace_id):
         """log_node_error with valid trace_id should create an error span."""
-        from anima.orchestration.graph.node_error import log_node_error
+        from animetta import $$$
 
         await log_node_error(
             session_id="test-session",
@@ -62,7 +62,7 @@ class TestLogNodeError:
 
     async def test_invalid_error_type_defaults_to_unknown(self, mock_get_store, store, trace_id):
         """Unknown error_type should be mapped to 'unknown'."""
-        from anima.orchestration.graph.node_error import log_node_error
+        from animetta import $$$
 
         await log_node_error(
             session_id="test-session",
@@ -81,7 +81,7 @@ class TestLogNodeError:
 
     async def test_none_trace_id_skips_span(self, mock_get_store, store, trace_id):
         """When trace_id is None, no span should be created and no exception."""
-        from anima.orchestration.graph.node_error import log_node_error
+        from animetta import $$$
 
         # Should not raise
         await log_node_error(
@@ -100,7 +100,7 @@ class TestLogNodeError:
 
     async def test_all_valid_error_types_accepted(self, mock_get_store, store, trace_id):
         """All 4 valid error types should be accepted without mapping to 'unknown'."""
-        from anima.orchestration.graph.node_error import log_node_error, VALID_ERROR_TYPES
+        from animetta import $$$
 
         for error_type in sorted(VALID_ERROR_TYPES):
             await log_node_error(
@@ -119,7 +119,7 @@ class TestLogNodeError:
 
     async def test_validation_set_matches_spec(self):
         """VALID_ERROR_TYPES should contain exactly the 4 expected values."""
-        from anima.orchestration.graph.node_error import VALID_ERROR_TYPES
+        from animetta import $$$
 
         assert VALID_ERROR_TYPES == frozenset({
             "timeout", "rate_limit", "network_error", "invalid_response",

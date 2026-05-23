@@ -2,10 +2,7 @@
 
 import pytest
 
-from anima.orchestration.graph.interrupt_handler import (
-    InterruptHandler,
-    get_interrupt_handler,
-)
+from animetta import $$$
 
 
 class TestInterruptHandler:

@@ -13,7 +13,7 @@
 ### Task 1: SQLite 存储层 —— StatsStore
 
 **Files:**
-- Create: `src/anima/orchestration/graph/stats_store.py`
+- Create: `src/animetta/orchestration/graph/stats_store.py`
 
 **Step 1: 创建 StatsStore 类**
 
@@ -250,7 +250,7 @@ Expected: `OK`
 **Step 3: Commit**
 
 ```bash
-git add src/anima/orchestration/graph/stats_store.py
+git add src/animetta/orchestration/graph/stats_store.py
 git commit -m "feat: 添加 StatsStore SQLite 存储层"
 ```
 
@@ -259,7 +259,7 @@ git commit -m "feat: 添加 StatsStore SQLite 存储层"
 ### Task 2: Callback Handler —— StatsCallbackHandler
 
 **Files:**
-- Create: `src/anima/orchestration/graph/stats_handler.py`
+- Create: `src/animetta/orchestration/graph/stats_handler.py`
 
 **Step 1: 创建 StatsCallbackHandler**
 
@@ -473,7 +473,7 @@ Expected: `OK`
 **Step 3: Commit**
 
 ```bash
-git add src/anima/orchestration/graph/stats_handler.py
+git add src/animetta/orchestration/graph/stats_handler.py
 git commit -m "feat: 添加 StatsCallbackHandler 数据采集"
 ```
 
@@ -482,7 +482,7 @@ git commit -m "feat: 添加 StatsCallbackHandler 数据采集"
 ### Task 3: 集成到 Orchestrator
 
 **Files:**
-- Modify: `src/anima/orchestration/graph/orchestrator.py`
+- Modify: `src/animetta/orchestration/graph/orchestrator.py`
 
 **Step 1: 在 orchestrator.py 中注入 StatsCallbackHandler**
 
@@ -533,7 +533,7 @@ Expected: `OK`
 **Step 3: Commit**
 
 ```bash
-git add src/anima/orchestration/graph/orchestrator.py
+git add src/animetta/orchestration/graph/orchestrator.py
 git commit -m "feat: 集成 StatsCallbackHandler 到 Orchestrator"
 ```
 
@@ -542,8 +542,8 @@ git commit -m "feat: 集成 StatsCallbackHandler 到 Orchestrator"
 ### Task 4: HTTP API 路由
 
 **Files:**
-- Create: `src/anima/orchestration/server/stats_api.py`
-- Modify: `src/anima/orchestration/server/websocket.py`
+- Create: `src/animetta/orchestration/server/stats_api.py`
+- Modify: `src/animetta/orchestration/server/websocket.py`
 
 **Step 1: 创建 Stats API 路由**
 
@@ -663,7 +663,7 @@ Expected: `ASGI app type: <class 'starlette.applications.Starlette'>` 和 `OK`
 **Step 4: Commit**
 
 ```bash
-git add src/anima/orchestration/server/stats_api.py src/anima/orchestration/server/websocket.py
+git add src/animetta/orchestration/server/stats_api.py src/animetta/orchestration/server/websocket.py
 git commit -m "feat: 添加 Stats HTTP API 和 Starlette 路由挂载"
 ```
 
@@ -1135,11 +1135,11 @@ git commit -m "feat: Pipeline Stats Dashboard 完成"
 
 | 操作 | 文件 |
 |------|------|
-| 新增 | `src/anima/orchestration/graph/stats_store.py` |
-| 新增 | `src/anima/orchestration/graph/stats_handler.py` |
-| 新增 | `src/anima/orchestration/server/stats_api.py` |
-| 修改 | `src/anima/orchestration/graph/orchestrator.py`（注入 handler） |
-| 修改 | `src/anima/orchestration/server/websocket.py`（挂载 API 路由） |
+| 新增 | `src/animetta/orchestration/graph/stats_store.py` |
+| 新增 | `src/animetta/orchestration/graph/stats_handler.py` |
+| 新增 | `src/animetta/orchestration/server/stats_api.py` |
+| 修改 | `src/animetta/orchestration/graph/orchestrator.py`（注入 handler） |
+| 修改 | `src/animetta/orchestration/server/websocket.py`（挂载 API 路由） |
 | 修改 | `.gitignore`（添加 data/stats.db） |
 | 可能修改 | `requirements.txt`（添加 aiosqlite） |
 | 新增 | `frontend/stats/index.html` |

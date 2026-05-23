@@ -36,7 +36,7 @@ Bilibili URL → ① Download (jjdown)
 ### Service Package
 
 ```
-src/anima/services/singing/
+src/animetta/services/singing/
 ├── __init__.py          # Re-exports
 ├── interface.py         # SingingService ABC
 ├── svc_pipeline.py      # Pipeline orchestrator

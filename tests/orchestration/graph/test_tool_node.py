@@ -4,7 +4,7 @@ import pytest
 from langgraph.types import RunnableConfig
 from unittest.mock import MagicMock, AsyncMock
 
-from anima.orchestration.graph.state import create_initial_state
+from animetta import $$$
 
 
 class TestToolNode:
@@ -13,7 +13,7 @@ class TestToolNode:
     @pytest.mark.asyncio
     async def test_no_tool_calls_returns_empty(self):
         """When tool_calls is None or empty, return empty results."""
-        from anima.orchestration.graph.tool_node import tool_node
+        from animetta import $$$
 
         state = create_initial_state(session_id="test")
         state["tool_calls"] = None
@@ -25,7 +25,7 @@ class TestToolNode:
     @pytest.mark.asyncio
     async def test_no_tool_calls_empty_list(self):
         """Empty list of tool_calls also returns empty results."""
-        from anima.orchestration.graph.tool_node import tool_node
+        from animetta import $$$
 
         state = create_initial_state(session_id="test")
         state["tool_calls"] = []
@@ -37,7 +37,7 @@ class TestToolNode:
     @pytest.mark.asyncio
     async def test_no_tools_map_in_config_returns_error(self):
         """When tools_map is missing from config, return error."""
-        from anima.orchestration.graph.tool_node import tool_node
+        from animetta import $$$
 
         state = create_initial_state(session_id="test")
         state["tool_calls"] = [{"id": "1", "name": "calculator", "args": {}}]
@@ -51,7 +51,7 @@ class TestToolNode:
     @pytest.mark.asyncio
     async def test_successful_ainvoke_tool(self):
         """Tool with ainvoke method executes asynchronously."""
-        from anima.orchestration.graph.tool_node import tool_node
+        from animetta import $$$
 
         mock_tool = MagicMock()
         mock_tool.ainvoke = AsyncMock(return_value={"result": 42})
@@ -79,7 +79,7 @@ class TestToolNode:
     @pytest.mark.asyncio
     async def test_tool_not_found_returns_error(self):
         """Unknown tool name returns an error result."""
-        from anima.orchestration.graph.tool_node import tool_node
+        from animetta import $$$
 
         mock_tool = MagicMock()
         mock_tool.ainvoke = AsyncMock(return_value="ok")
@@ -101,7 +101,7 @@ class TestToolNode:
     @pytest.mark.asyncio
     async def test_tool_execution_error_handled_gracefully(self):
         """When a tool raises, error is captured without crashing the node."""
-        from anima.orchestration.graph.tool_node import tool_node
+        from animetta import $$$
 
         failing_tool = MagicMock()
         failing_tool.ainvoke = AsyncMock(side_effect=ValueError("division by zero"))
@@ -126,7 +126,7 @@ class TestToolNode:
     @pytest.mark.asyncio
     async def test_multiple_tool_calls(self):
         """Multiple tool calls are executed sequentially and all results returned."""
-        from anima.orchestration.graph.tool_node import tool_node
+        from animetta import $$$
 
         tool_a = MagicMock()
         tool_a.ainvoke = AsyncMock(return_value="result_a")
@@ -156,7 +156,7 @@ class TestToolNode:
     @pytest.mark.asyncio
     async def test_sync_tool_via_run_method(self):
         """Tool with _run method is called synchronously."""
-        from anima.orchestration.graph.tool_node import tool_node
+        from animetta import $$$
 
         class SyncRunTool:
             """A tool-like object that has _run but not ainvoke."""
@@ -180,7 +180,7 @@ class TestToolNode:
     @pytest.mark.asyncio
     async def test_sync_callable_tool(self):
         """A plain synchronous callable is called directly."""
-        from anima.orchestration.graph.tool_node import tool_node
+        from animetta import $$$
 
         def plain_tool(greeting: str) -> str:
             return f"{greeting}, world!"
@@ -200,7 +200,7 @@ class TestToolNode:
     @pytest.mark.asyncio
     async def test_async_callable_tool(self):
         """A plain async function is awaited directly."""
-        from anima.orchestration.graph.tool_node import tool_node
+        from animetta import $$$
 
         async def async_plain_tool(text: str) -> str:
             return f"async: {text}"
@@ -220,7 +220,7 @@ class TestToolNode:
     @pytest.mark.asyncio
     async def test_mixed_success_and_failure(self):
         """Partial failures collect both results and errors."""
-        from anima.orchestration.graph.tool_node import tool_node
+        from animetta import $$$
 
         good_tool = MagicMock()
         good_tool.ainvoke = AsyncMock(return_value="ok")
@@ -248,7 +248,7 @@ class TestToolNode:
     @pytest.mark.asyncio
     async def test_none_result_formatted(self):
         """Tool returning None should produce '(no return value)' string."""
-        from anima.orchestration.graph.tool_node import tool_node
+        from animetta import $$$
 
         null_tool = MagicMock()
         null_tool.ainvoke = AsyncMock(return_value=None)
@@ -268,7 +268,7 @@ class TestToolNode:
     @pytest.mark.asyncio
     async def test_dict_result_json_serialized(self):
         """Dict results should be JSON-serialized in the message."""
-        from anima.orchestration.graph.tool_node import tool_node
+        from animetta import $$$
 
         dict_tool = MagicMock()
         dict_tool.ainvoke = AsyncMock(return_value={"a": 1, "b": [2, 3]})

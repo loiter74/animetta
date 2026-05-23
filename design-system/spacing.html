@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Animetta — Spacing, Radii, Motion</title>
+<link rel="icon" href="assets/favicon.svg" />
+<link rel="stylesheet" href="colors_and_type.css" />
+<style>
+  /* Spacing ruler -------------------------------------------------- */
+  .ruler {
+    margin-top: var(--s-6);
+    border-radius: var(--r-2xl);
+    border: 1px solid var(--c-border);
+    background: rgba(45,27,69,0.40);
+    padding: 32px;
+  }
+  .ruler-row {
+    display: grid;
+    grid-template-columns: 110px 1fr 220px;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--c-border);
+  }
+  .ruler-row:last-child { border-bottom: 0; }
+  .ruler-name {
+    font-family: var(--font-mono);
+    color: var(--c-accent);
+    font-size: var(--fs-xs);
+  }
+  .ruler-name b { color: var(--c-text); }
+  .ruler-bar {
+    height: 28px;
+    background: linear-gradient(90deg, var(--c-accent) 0%, rgba(232,121,168,0.4) 100%);
+    border-radius: 2px;
+    box-shadow: 0 0 16px rgba(232,121,168,0.25);
+  }
+  .ruler-use {
+    font-size: var(--fs-xs);
+    color: var(--c-text-dim);
+    padding-left: 20px;
+    border-left: 1px dashed var(--c-border);
+    line-height: var(--lh-snug);
+  }
+
+  /* Radii showcase ------------------------------------------------- */
+  .radii {
+    margin-top: var(--s-6);
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+  }
+  .radii-card {
+    aspect-ratio: 1 / 1.1;
+    background: rgba(45,27,69,0.50);
+    border: 1px solid var(--c-border);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 16px 14px;
+    position: relative;
+  }
+  .radii-card.r-sm  { border-radius: 6px; }
+  .radii-card.r-md  { border-radius: 8px; }
+  .radii-card.r-lg  { border-radius: 12px; }
+  .radii-card.r-xl  { border-radius: 16px; }
+  .radii-card.r-2xl { border-radius: 20px; }
+  .radii-card.r-full { border-radius: 9999px; }
+
+  .radii-card .px {
+    font-family: var(--font-mono);
+    color: var(--c-accent);
+    font-size: var(--fs-base);
+    font-weight: 600;
+  }
+  .radii-card .tok-nm {
+    font-family: var(--font-mono);
+    color: var(--c-text-muted);
+    font-size: var(--fs-9);
+  }
+  .radii-card .use {
+    font-size: var(--fs-9);
+    color: var(--c-text-dim);
+    line-height: var(--lh-snug);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* Shadow lab ---------------------------------------------------- */
+  .shadow-lab {
+    margin-top: var(--s-6);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .shadow-card {
+    background: var(--c-surface);
+    border-radius: var(--r-xl);
+    border: 1px solid var(--c-border);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    aspect-ratio: 1 / 1.05;
+  }
+  .shadow-card .demo-box {
+    width: 64px; height: 64px;
+    border-radius: var(--r-lg);
+    background: var(--c-panel);
+    border: 1px solid var(--c-border-accent);
+    margin: 0 auto;
+  }
+  .shadow-card .lab { font-size: var(--fs-10); letter-spacing: 0.15em; text-transform: uppercase; color: var(--c-text-muted); }
+  .shadow-card .nm  { font-size: var(--fs-sm); font-weight: 600; color: var(--c-text); margin-top: 6px; }
+  .shadow-card .tok-nm { font-family: var(--font-mono); font-size: var(--fs-9); color: var(--c-accent); margin-top: 6px; }
+  .shadow-card .use { font-size: var(--fs-xs); color: var(--c-text-dim); margin-top: 10px; line-height: var(--lh-snug); }
+  .shadow-card .use code.tok { white-space: nowrap; display: inline-block; margin-top: 2px; }
+
+  .sh-soft   .demo-box { box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); }
+  .sh-panel  .demo-box { box-shadow: 0 20px 48px rgba(0, 0, 0, 0.45); }
+  .sh-accent .demo-box { box-shadow: 0 0 8px rgba(232, 121, 168, 0.6); }
+  .sh-success .demo-box { box-shadow: 0 0 8px rgba(74, 222, 128, 0.6); border-color: rgba(74, 222, 128, 0.30); }
+  .sh-violet .demo-box { box-shadow: 0 0 12px rgba(168, 130, 255, 0.5); border-color: rgba(168, 130, 255, 0.30); }
+
+  /* Motion timeline ----------------------------------------------- */
+  .motion {
+    margin-top: var(--s-6);
+    border-radius: var(--r-2xl);
+    border: 1px solid var(--c-border);
+    background: rgba(45,27,69,0.40);
+    padding: 32px;
+  }
+  .motion-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .motion-block h4 {
+    margin: 0 0 14px;
+    font-size: var(--fs-10);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--c-text-muted);
+  }
+  .timing {
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .timing-row {
+    display: grid;
+    grid-template-columns: 110px 1fr 90px;
+    align-items: center;
+    gap: 12px;
+  }
+  .timing-row .nm { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--c-accent); }
+  .timing-row .nm b { color: var(--c-text); }
+  .timing-row .ms { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--c-text-muted); text-align: right; }
+  .timing-track {
+    position: relative;
+    height: 8px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .timing-fill {
+    position: absolute; top: 0; left: 0; height: 100%;
+    background: linear-gradient(90deg, var(--c-accent), var(--c-blue));
+    border-radius: 4px;
+    animation: pulse 2.4s var(--ease-out-expo) infinite;
+  }
+  .timing-fill.f-fast { width: 30%; animation-duration: 1.5s; }
+  .timing-fill.f-base { width: 50%; animation-duration: 2s; }
+  .timing-fill.f-slow { width: 80%; animation-duration: 2.4s; }
+  @keyframes pulse {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(0%); }
+  }
+
+  .ease-canvas {
+    position: relative;
+    height: 200px;
+    border-radius: var(--r-lg);
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--c-border);
+    overflow: hidden;
+    padding: 16px;
+  }
+  .ease-canvas svg { width: 100%; height: 100%; overflow: visible; }
+  .ease-canvas .grid line { stroke: rgba(255,255,255,0.05); stroke-width: 1; }
+  .ease-canvas .axis line { stroke: rgba(255,255,255,0.15); stroke-width: 1; }
+  .ease-canvas .curve { fill: none; stroke-width: 2; }
+  .ease-canvas .c-expo { stroke: var(--c-accent); }
+  .ease-canvas .c-back { stroke: var(--c-blue); }
+  .ease-canvas .lab-row {
+    display: flex; gap: 18px; margin-top: 10px;
+    font-family: var(--font-mono); font-size: var(--fs-9); color: var(--c-text-dim);
+  }
+  .ease-canvas .lab-row .key {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    vertical-align: middle; margin-right: 6px;
+  }
+  .ease-canvas .lab-row .expo { background: var(--c-accent); }
+  .ease-canvas .lab-row .back { background: var(--c-blue); }
+
+  /* Layout grid demo --------------------------------------------- */
+  .layout-demo {
+    margin-top: var(--s-6);
+    background: var(--c-bg);
+    border-radius: var(--r-2xl);
+    border: 1px solid var(--c-border);
+    padding: 24px;
+    position: relative;
+  }
+  .layout-frame {
+    display: grid;
+    grid-template-columns: 280px 1fr 320px;
+    grid-template-rows: 44px 1fr;
+    gap: 12px;
+    height: 360px;
+  }
+  .layout-frame > div {
+    border-radius: var(--r-xl);
+    background: rgba(36,21,56,0.70);
+    border: 1px solid var(--c-border);
+    padding: 14px 16px;
+    font-size: var(--fs-xs);
+    color: var(--c-text-dim);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .layout-frame .lf-title { grid-column: 1 / -1; flex-direction: row; align-items: center; }
+  .layout-frame .lf-title b { color: var(--c-accent); margin-right: 8px; }
+  .layout-frame > div .nm { font-size: var(--fs-9); letter-spacing: 0.18em; text-transform: uppercase; color: var(--c-text-muted); }
+  .layout-frame > div .meas { font-family: var(--font-mono); color: var(--c-accent); font-size: var(--fs-9); }
+</style>
+</head>
+<body class="ds-page">
+
+<main class="ds-shell">
+
+  <span class="ds-eyebrow">03 · Foundations</span>
+  <h1 class="ds-title">Spacing, radii, motion</h1>
+  <p class="ds-lede">
+    Animetta inherits its rhythm from Tailwind / UnoCSS — a 4-pixel base. Radii are
+    deliberately generous (the smallest button is already <code class="tok">12px</code>),
+    and motion is fast and springy. Stiff or slow easing reads as "broken,"
+    not "elegant," in a companion product.
+  </p>
+
+  <!-- Spacing scale ------------------------------------------------- -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Spacing scale</h2>
+    <p class="ds-section-sub">
+      A 4-pixel base with a 6-pixel half-step. Most component padding lives at
+      <code class="tok">12px</code> or <code class="tok">16px</code>; component
+      gaps live at <code class="tok">8px</code> or <code class="tok">12px</code>.
+      Anything above 32&nbsp;px is layout breathing room.
+    </p>
+    <div class="ruler">
+      <div class="ruler-row">
+        <div class="ruler-name"><b>4&nbsp;px</b><br/>--s-1</div>
+        <div><div class="ruler-bar" style="width: 4px;"></div></div>
+        <div class="ruler-use">Icon-to-label gap. Inner badge padding.</div>
+      </div>
+      <div class="ruler-row">
+        <div class="ruler-name"><b>6&nbsp;px</b><br/>--s-1_5</div>
+        <div><div class="ruler-bar" style="width: 6px;"></div></div>
+        <div class="ruler-use">Half-step. Used for tight chip padding.</div>
+      </div>
+      <div class="ruler-row">
+        <div class="ruler-name"><b>8&nbsp;px</b><br/>--s-2</div>
+        <div><div class="ruler-bar" style="width: 8px;"></div></div>
+        <div class="ruler-use">Default flex / grid gap. Status-pill side padding.</div>
+      </div>
+      <div class="ruler-row">
+        <div class="ruler-name"><b>10&nbsp;px</b><br/>--s-2_5</div>
+        <div><div class="ruler-bar" style="width: 10px;"></div></div>
+        <div class="ruler-use">Bubble vertical padding. Compact button height delta.</div>
+      </div>
+      <div class="ruler-row">
+        <div class="ruler-name"><b>12&nbsp;px</b><br/>--s-3</div>
+        <div><div class="ruler-bar" style="width: 12px;"></div></div>
+        <div class="ruler-use">Bubble horizontal padding. List row gap. Most icon-to-label.</div>
+      </div>
+      <div class="ruler-row">
+        <div class="ruler-name"><b>16&nbsp;px</b><br/>--s-4</div>
+        <div><div class="ruler-bar" style="width: 16px;"></div></div>
+        <div class="ruler-use">Default card padding. Modal margins. Grid gap on dense layouts.</div>
+      </div>
+      <div class="ruler-row">
+        <div class="ruler-name"><b>20&nbsp;px</b><br/>--s-5</div>
+        <div><div class="ruler-bar" style="width: 20px;"></div></div>
+        <div class="ruler-use">Glass panel inner padding (Y).</div>
+      </div>
+      <div class="ruler-row">
+        <div class="ruler-name"><b>24&nbsp;px</b><br/>--s-6</div>
+        <div><div class="ruler-bar" style="width: 24px;"></div></div>
+        <div class="ruler-use">Glass panel inner padding (X). Section gap.</div>
+      </div>
+      <div class="ruler-row">
+        <div class="ruler-name"><b>32&nbsp;px</b><br/>--s-8</div>
+        <div><div class="ruler-bar" style="width: 32px;"></div></div>
+        <div class="ruler-use">Hero / page padding. Block separator.</div>
+      </div>
+      <div class="ruler-row">
+        <div class="ruler-name"><b>48&nbsp;px</b><br/>--s-12</div>
+        <div><div class="ruler-bar" style="width: 48px;"></div></div>
+        <div class="ruler-use">Major section separator. App margins on wide windows.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Radii --------------------------------------------------------- -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Radii</h2>
+    <p class="ds-section-sub">
+      Animetta is round. There are no 90-degree corners in the system other than the
+      window itself. The default for any new component is <code class="tok">--r-lg</code> (12&nbsp;px).
+    </p>
+    <div class="radii">
+      <div class="radii-card r-sm">
+        <div><div class="px">6&nbsp;px</div><div class="tok-nm">--r-sm</div></div>
+        <div class="use">Mono chips · Badges</div>
+      </div>
+      <div class="radii-card r-md">
+        <div><div class="px">8&nbsp;px</div><div class="tok-nm">--r-md</div></div>
+        <div class="use">Tab pills · Small chips</div>
+      </div>
+      <div class="radii-card r-lg">
+        <div><div class="px">12&nbsp;px</div><div class="tok-nm">--r-lg</div></div>
+        <div class="use">Buttons · Inputs · Default</div>
+      </div>
+      <div class="radii-card r-xl">
+        <div><div class="px">16&nbsp;px</div><div class="tok-nm">--r-xl</div></div>
+        <div class="use">Cards · List rows</div>
+      </div>
+      <div class="radii-card r-2xl">
+        <div><div class="px">20&nbsp;px</div><div class="tok-nm">--r-2xl</div></div>
+        <div class="use">Glass panels · Bubbles</div>
+      </div>
+      <div class="radii-card r-full">
+        <div><div class="px">9999</div><div class="tok-nm">--r-full</div></div>
+        <div class="use">Avatars · Status pills</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Shadows ----------------------------------------------------- -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Shadows &amp; glows</h2>
+    <p class="ds-section-sub">
+      Animetta uses two real shadows (depth) and three glows (state). Glows are
+      always tinted; depth shadows are pure black at low alpha.
+    </p>
+    <div class="shadow-lab">
+      <div class="shadow-card sh-soft">
+        <div class="lab">Depth · 01</div>
+        <div class="demo-box"></div>
+        <div>
+          <div class="nm">Soft</div>
+          <div class="tok-nm">--shadow-soft</div>
+          <div class="use">Default lift for cards. <code class="tok">0 8px 24px / 35%</code></div>
+        </div>
+      </div>
+      <div class="shadow-card sh-panel">
+        <div class="lab">Depth · 02</div>
+        <div class="demo-box"></div>
+        <div>
+          <div class="nm">Panel</div>
+          <div class="tok-nm">--shadow-panel</div>
+          <div class="use">Floating glass panels. <code class="tok">0 20px 48px / 45%</code></div>
+        </div>
+      </div>
+      <div class="shadow-card sh-accent">
+        <div class="lab">Glow · accent</div>
+        <div class="demo-box"></div>
+        <div>
+          <div class="nm">Accent glow</div>
+          <div class="tok-nm">--shadow-glow-accent</div>
+          <div class="use">Active CTA, focused input, "listening" pulse.</div>
+        </div>
+      </div>
+      <div class="shadow-card sh-success">
+        <div class="lab">Glow · success</div>
+        <div class="demo-box"></div>
+        <div>
+          <div class="nm">Success glow</div>
+          <div class="tok-nm">--shadow-glow-success</div>
+          <div class="use">Connected indicator. Save confirmation.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Motion ----------------------------------------------------- -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Motion</h2>
+    <p class="ds-section-sub">
+      Three durations. Two easings. Anything else is a custom animation that
+      should be reviewed.
+    </p>
+
+    <div class="motion">
+      <div class="motion-grid">
+        <div class="motion-block">
+          <h4>Durations</h4>
+          <div class="timing">
+            <div class="timing-row">
+              <div class="nm"><b>fast</b><br/>--d-fast</div>
+              <div class="timing-track"><div class="timing-fill f-fast"></div></div>
+              <div class="ms">150 ms</div>
+            </div>
+            <div class="timing-row">
+              <div class="nm"><b>base</b><br/>--d-base</div>
+              <div class="timing-track"><div class="timing-fill f-base"></div></div>
+              <div class="ms">200 ms</div>
+            </div>
+            <div class="timing-row">
+              <div class="nm"><b>slow</b><br/>--d-slow</div>
+              <div class="timing-track"><div class="timing-fill f-slow"></div></div>
+              <div class="ms">300 ms</div>
+            </div>
+          </div>
+          <p style="margin: 18px 0 0; font-size: var(--fs-xs); color: var(--c-text-dim); line-height: var(--lh-relax);">
+            <b>fast</b> for button presses and hovers (no perceptible delay).
+            <b>base</b> for the vast majority of transitions: tab switches,
+            panel open/close, focus rings. <b>slow</b> only when something is
+            physically moving across a meaningful distance, e.g. the settings
+            drawer sliding in from the right.
+          </p>
+        </div>
+
+        <div class="motion-block">
+          <h4>Easings</h4>
+          <div class="ease-canvas">
+            <svg viewBox="0 0 200 100" preserveAspectRatio="none">
+              <g class="grid">
+                <line x1="0" y1="25" x2="200" y2="25" />
+                <line x1="0" y1="50" x2="200" y2="50" />
+                <line x1="0" y1="75" x2="200" y2="75" />
+                <line x1="50" y1="0" x2="50" y2="100" />
+                <line x1="100" y1="0" x2="100" y2="100" />
+                <line x1="150" y1="0" x2="150" y2="100" />
+              </g>
+              <g class="axis">
+                <line x1="0" y1="100" x2="200" y2="100" />
+                <line x1="0" y1="0" x2="0" y2="100" />
+              </g>
+              <!-- out-expo: cubic-bezier(0.16, 1, 0.3, 1) -->
+              <path class="curve c-expo" d="M 0 100 C 32 -1, 60 0, 200 0" />
+              <!-- back-soft: cubic-bezier(0.34, 1.56, 0.64, 1) -->
+              <path class="curve c-back" d="M 0 100 C 68 -55, 128 0, 200 0" />
+            </svg>
+          </div>
+          <div class="lab-row">
+            <span><span class="key expo"></span>--ease-out-expo · default</span>
+            <span><span class="key back"></span>--ease-back-soft · entry</span>
+          </div>
+          <p style="margin: 18px 0 0; font-size: var(--fs-xs); color: var(--c-text-dim); line-height: var(--lh-relax);">
+            <b>out-expo</b> handles 90% of cases — a fast initial move that
+            settles softly. <b>back-soft</b> adds a tiny overshoot, used when a
+            new element enters from off-screen (notification toast, new bubble)
+            so it feels alive instead of dropped.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Layout reference ------------------------------------------- -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Layout: the three-column app</h2>
+    <p class="ds-section-sub">
+      The Animetta window is a fixed three-column composition. Live2D is the
+      central performer; chat sits on the right; persona / settings open as
+      a left drawer.
+    </p>
+    <div class="layout-demo">
+      <div class="layout-frame">
+        <div class="lf-title">
+          <b>TitleBar</b> · height 44 px · drag region · status pill right-aligned
+        </div>
+        <div>
+          <div>
+            <div class="nm">Left · 280 px</div>
+            <div style="font-size: var(--fs-sm); color: var(--c-text); margin-top: 6px;">Persona / Memory / Dashboard</div>
+          </div>
+          <div class="meas">280 × auto</div>
+        </div>
+        <div>
+          <div>
+            <div class="nm">Center · fluid</div>
+            <div style="font-size: var(--fs-sm); color: var(--c-text); margin-top: 6px;">Live2D stage</div>
+          </div>
+          <div class="meas">flex · 1</div>
+        </div>
+        <div>
+          <div>
+            <div class="nm">Right · 320 px</div>
+            <div style="font-size: var(--fs-sm); color: var(--c-text); margin-top: 6px;">Chat / Live chat</div>
+          </div>
+          <div class="meas">320 × auto</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+</body>
+</html>

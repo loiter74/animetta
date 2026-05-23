@@ -7,11 +7,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from anima.inspection.checks.pipeline import (
-    EXPECTED_EVENTS,
-    check_conversation_pipeline,
-)
-from anima.inspection.models import CheckResult
+from animetta import $$$
+from animetta import $$$
 
 
 # ── Helpers ──────────────────────────────────────────────────────────

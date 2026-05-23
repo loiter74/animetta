@@ -239,13 +239,13 @@ git commit -m "chore: add ruff and mypy configuration"
 ### Task 1.5: Fix Pydantic V2 deprecation warnings
 
 **Files:**
-- Modify: `src/anima/config/core/base.py`
-- Modify: `src/anima/config/providers/llm/local_lora_llm.py`
+- Modify: `src/animetta/config/core/base.py`
+- Modify: `src/animetta/config/providers/llm/local_lora_llm.py`
 - Check: any other files using `class Config:`
 
 **Step 1: Fix base.py**
 
-In `src/anima/config/core/base.py`, replace `class Config:` with `model_config`:
+In `src/animetta/config/core/base.py`, replace `class Config:` with `model_config`:
 
 ```python
 from pydantic import ConfigDict
@@ -265,7 +265,7 @@ Same pattern: replace `class Config:` with `model_config = ConfigDict(...)`.
 
 **Step 3: Check for other occurrences**
 
-Run: `grep -rn "class Config:" src/anima/ --include="*.py"`
+Run: `grep -rn "class Config:" src/animetta/ --include="*.py"`
 If any remain, fix them with the same pattern.
 
 **Step 4: Run tests to verify**
@@ -276,7 +276,7 @@ Expected: Zero Pydantic V2 deprecation warnings
 **Step 5: Commit**
 
 ```bash
-git add src/anima/config/core/base.py src/anima/config/providers/llm/local_lora_llm.py
+git add src/animetta/config/core/base.py src/animetta/config/providers/llm/local_lora_llm.py
 git commit -m "fix: migrate Pydantic V2 class Config to model_config"
 ```
 
@@ -463,7 +463,7 @@ Test cases:
 ### Task 2.6: Write MCP bridge graceful degradation
 
 **Files:**
-- Modify: `src/anima/tools/mcp_bridge.py`
+- Modify: `src/animetta/tools/mcp_bridge.py`
 
 **Step 1: Change Docker failure from ERROR to WARNING**
 
@@ -531,7 +531,7 @@ Test cases:
 ### Task 2.9: Register stats_api routes on main ASGI app
 
 **Files:**
-- Modify: `src/anima/core/socketio_server.py` or the ASGI app setup
+- Modify: `src/animetta/core/socketio_server.py` or the ASGI app setup
 
 **Step 1: Find where the ASGI app is created**
 
@@ -556,7 +556,7 @@ Expected: 200 with JSON response
 ### Task 2.10: Add /health endpoint
 
 **Files:**
-- Modify: `src/anima/orchestration/server/routes.py` or appropriate file
+- Modify: `src/animetta/orchestration/server/routes.py` or appropriate file
 
 **Step 1: Create health check function**
 
@@ -749,14 +749,14 @@ app = "anima-demo"
 
 ### Task 3.6: Translate Chinese comments to English
 
-**Files:** All `src/anima/*.py`
+**Files:** All `src/animetta/*.py`
 
-Run: `grep -rn "[\u4e00-\u9fff]" src/anima/ --include="*.py"` to find all Chinese comments, then translate each to English.
+Run: `grep -rn "[\u4e00-\u9fff]" src/animetta/ --include="*.py"` to find all Chinese comments, then translate each to English.
 
 Focus areas:
-- `src/anima/orchestration/server/routes.py` — heavy Chinese logging
-- `src/anima/core/service_context.py` — Chinese log messages
-- `src/anima/config/` — Chinese docstrings
+- `src/animetta/orchestration/server/routes.py` — heavy Chinese logging
+- `src/animetta/core/service_context.py` — Chinese log messages
+- `src/animetta/config/` — Chinese docstrings
 
 ---
 

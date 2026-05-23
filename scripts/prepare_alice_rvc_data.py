@@ -27,7 +27,7 @@ except ImportError:
     import librosa
 
 # ── Config ──────────────────────────────────────────────
-SOURCE_DIR = Path("E:/anima_data/tts_training/kuonji_arisu/training_ready/alice_training_set")
+SOURCE_DIR = Path("E:/animetta_data/tts_training/kuonji_arisu/training_ready/alice_training_set")
 TARGET_DIR = Path("C:/Users/30262/RVC20240604Nvidia/dataset/alice")
 TARGET_SR = 44100          # Safe input for RVC (will be resampled to 40k internally)
 SOURCE_SR = 24000          # Current sample rate

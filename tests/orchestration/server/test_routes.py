@@ -3,7 +3,7 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from anima.orchestration.server.routes import RouteHandlers, register_routes
+from animetta import $$$
 
 
 # ── Helper fixture ─────────────────────────────────────────────────
@@ -43,8 +43,8 @@ class TestRouteHandlersInit:
 
     def test_init_with_explicit_managers(self, mock_socketio, mock_session_manager):
         """Explicit desktop_manager and live2d_manager are used."""
-        from anima.orchestration.server.desktop import DesktopClientManager
-        from anima.orchestration.server.live2d import Live2DManager
+        from animetta import $$$
+        from animetta import $$$
         dcm = DesktopClientManager()
         l2d = Live2DManager()
         handlers = RouteHandlers(mock_socketio, mock_session_manager,

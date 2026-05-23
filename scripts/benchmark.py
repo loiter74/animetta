@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Anima performance benchmark suite.
+Animetta performance benchmark suite.
 
 Measures end-to-end latency for the LangGraph pipeline across different
 providers and scenarios. Results are written to docs/benchmarks/results.md.
@@ -23,12 +23,12 @@ from typing import List, Dict, Any
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from anima.orchestration.graph.orchestrator import LangGraphOrchestratorFactory
-from anima.core.service_context import ServiceContext
+from animetta import $$$
+from animetta import $$$
 
 
 class Benchmark:
-    """Latency benchmark for the Anima LangGraph pipeline."""
+    """Latency benchmark for the Animetta LangGraph pipeline."""
 
     def __init__(self, mode: str = "quick"):
         self.mode = mode
@@ -133,8 +133,8 @@ class Benchmark:
     async def _create_real_context(self, provider: str) -> ServiceContext:
         """Create a ServiceContext with a real LLM provider + mock TTS/ASR."""
         from unittest.mock import MagicMock, AsyncMock
-        from anima.services.intelligence.llm.factory import LLMFactory
-        from anima.config import DeepSeekLLMConfig, OpenAILLMConfig, GLMLLMConfig, MockLLMConfig
+        from animetta import $$$
+        from animetta import $$$
 
         # Build the appropriate config for the provider
         provider_lower = provider.lower()
@@ -468,7 +468,7 @@ class Benchmark:
 # ═══════════════════════════════════════════════════════════════
 
 class RealServer:
-    """Manages a real Anima server subprocess for benchmarking."""
+    """Manages a real Animetta server subprocess for benchmarking."""
 
     DEFAULT_PORT = 12395
     MAX_PORT_TRIES = 5
@@ -493,7 +493,7 @@ class RealServer:
         self._log_file = open(log_path, "w", encoding="utf-8")
         self._process = subprocess.Popen(
             [sys.executable, "-m", "uvicorn",
-             "anima.core.socketio_server:get_asgi_app",
+             "animetta.core.socketio_server:get_asgi_app",
              "--host", "127.0.0.1",
              "--port", str(self.port),
              "--log-level", "info"],
@@ -568,7 +568,7 @@ async def run_auto():
     import atexit
 
     print(f"\n{'='*60}")
-    print("  Anima Auto Benchmark (Real Services)")
+    print("  Animetta Auto Benchmark (Real Services)")
     print(f"{'='*60}")
 
     # 1. Validate
@@ -796,7 +796,7 @@ def _print_baseline_diff(runs_dir: Path, run_data: dict):
 
 def parse_args() -> argparse.Namespace:
     """Parse CLI arguments for the benchmark suite."""
-    parser = argparse.ArgumentParser(description="Anima performance benchmark")
+    parser = argparse.ArgumentParser(description="Animetta performance benchmark")
     parser.add_argument(
         "--turns", type=int, default=10,
         help="Number of conversation turns (default: 10)")
@@ -834,7 +834,7 @@ async def main():
         db_path = str(Path(__file__).parent.parent / "data" / "stats.db")
         if not Path(db_path).exists():
             print(f"StatsDB not found: {db_path}")
-            print("Start Anima and run some conversations first.")
+            print("Start Animetta and run some conversations first.")
             return
 
         conn = sqlite3.connect(db_path)

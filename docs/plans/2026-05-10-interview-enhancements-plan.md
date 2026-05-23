@@ -277,7 +277,7 @@ Verify: check file exists and contains valid JSON with latency array
 ### Task 2.1: Add configurable timeout to LLM provider calls
 
 **Files:**
-- Modify: `src/anima/orchestration/graph/llm_node.py` — wrap streaming loop with `asyncio.timeout`
+- Modify: `src/animetta/orchestration/graph/llm_node.py` — wrap streaming loop with `asyncio.timeout`
 
 **Step 1: Identify the streaming loop**
 
@@ -319,7 +319,7 @@ Expected: no import error
 ### Task 2.2: Implement catch-and-fallback in llm_node.py
 
 **Files:**
-- Modify: `src/anima/orchestration/graph/llm_node.py` — add fallback + StatsStore logging
+- Modify: `src/animetta/orchestration/graph/llm_node.py` — add fallback + StatsStore logging
 
 **Step 1: Add error tracking to return dict**
 
@@ -352,8 +352,8 @@ await timer.checkpoint("llm_api_call_timeout")
 ### Task 2.3: Implement catch-and-fallback in tts_node.py and asr_node.py
 
 **Files:**
-- Modify: `src/anima/orchestration/graph/tts_node.py:81` — wrap `synthesize()` call
-- Modify: `src/anima/orchestration/graph/asr_node.py:47` — wrap `transcribe()` call
+- Modify: `src/animetta/orchestration/graph/tts_node.py:81` — wrap `synthesize()` call
+- Modify: `src/animetta/orchestration/graph/asr_node.py:47` — wrap `transcribe()` call
 
 **Step 1: tts_node.py — wrap synthesize**
 
@@ -380,7 +380,7 @@ except Exception as e:
 ### Task 2.4: Add error_type field to StatsStore traces/spans
 
 **Files:**
-- Modify: `src/anima/orchestration/graph/stats_store.py` — check existing schema (already has `attributes` TEXT on spans)
+- Modify: `src/animetta/orchestration/graph/stats_store.py` — check existing schema (already has `attributes` TEXT on spans)
 - Verify: no schema migration needed; use `attributes` column to store `{"error_type": "timeout"}` JSON
 
 **Step 1: Verify existing schema**
@@ -530,7 +530,7 @@ redis[hiredis]>=5.0
 ### Task 3.2: Implement AsyncRedisSaver
 
 **Files:**
-- Create: `src/anima/core/redis_checkpoint.py`
+- Create: `src/animetta/core/redis_checkpoint.py`
 
 ```python
 """Redis-backed LangGraph checkpoint saver."""
@@ -593,7 +593,7 @@ class AsyncRedisSaver(BaseCheckpointSaver):
 ### Task 3.3: Add --redis-url CLI argument to socketio_server.py
 
 **Files:**
-- Modify: `src/anima/core/socketio_server.py` — add argparse
+- Modify: `src/animetta/core/socketio_server.py` — add argparse
 
 ```python
 import argparse
@@ -613,7 +613,7 @@ redis_url = _server_args.redis_url
 ### Task 3.4: Wire Redis checkpoint into builder.py
 
 **Files:**
-- Modify: `src/anima/orchestration/graph/builder.py` — accept checkpointer as parameter
+- Modify: `src/animetta/orchestration/graph/builder.py` — accept checkpointer as parameter
 
 **Builder already accepts `checkpointer` parameter** in `build_graph()` — just need to pass the right one.
 
@@ -883,16 +883,16 @@ Verify: check `eval_results.json` has correct structure
 | Action | File | Capability |
 |--------|------|------------|
 | Modify | `scripts/benchmark.py` | P1 |
-| Create | `src/anima/core/redis_checkpoint.py` | P3 |
+| Create | `src/animetta/core/redis_checkpoint.py` | P3 |
 | Create | `scripts/eval_llm.py` | P4 |
 | Create | `eval_prompts.txt` | P4 |
 | Create | `tests/test_error_resilience.py` | P2 |
 | Create | `tests/test_redis_checkpoint.py` | P3 |
-| Modify | `src/anima/orchestration/graph/llm_node.py` | P2 |
-| Modify | `src/anima/orchestration/graph/tts_node.py` | P2 |
-| Modify | `src/anima/orchestration/graph/asr_node.py` | P2 |
-| Modify | `src/anima/orchestration/graph/builder.py` | P3 |
-| Modify | `src/anima/core/socketio_server.py` | P3 |
+| Modify | `src/animetta/orchestration/graph/llm_node.py` | P2 |
+| Modify | `src/animetta/orchestration/graph/tts_node.py` | P2 |
+| Modify | `src/animetta/orchestration/graph/asr_node.py` | P2 |
+| Modify | `src/animetta/orchestration/graph/builder.py` | P3 |
+| Modify | `src/animetta/core/socketio_server.py` | P3 |
 | Modify | `frontend/stats/stats.js` | P2 |
 | Modify | `frontend/stats/index.html` | P2 |
 | Modify | `requirements.txt` | P3, P4 |

@@ -10,9 +10,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from anima.memory.learner.engine import PeriodicLearner
-from anima.memory.learner.summarizer import LearningLog
-from anima.memory.models.turns import MemoryTurn
+from animetta import $$$
+from animetta import $$$
+from animetta import $$$
 
 
 def _make_turn(turn_id: str, session_id: str = "s1") -> MemoryTurn:

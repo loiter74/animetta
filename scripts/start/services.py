@@ -55,7 +55,7 @@ def start_vibe_voice(project_root: Path, pm: ProcessManager):
     info("Starting VibeVoice TTS server (port 8765)...")
     python_exe = sys.executable
     server_script = project_root / "scripts" / "vibe_voice_server.py"
-    model_path = "E:/anima_data/models/VibeVoice/VibeVoice-1.5B"
+    model_path = "E:/animetta_data/models/VibeVoice/VibeVoice-1.5B"
     if not server_script.exists():
         warn(f"VibeVoice server script not found: {server_script}")
         return None

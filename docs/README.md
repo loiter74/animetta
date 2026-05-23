@@ -1,4 +1,4 @@
-# Anima 项目文档
+# Animetta 项目文档
 
 AI 虚拟伴侣/VTuber 框架。
 
@@ -39,7 +39,7 @@ AI 虚拟伴侣/VTuber 框架。
 ## 项目结构
 
 ```
-src/anima/
+src/animetta/
 ├── core/                 # 入口点 + 服务容器
 ├── orchestration/       # LangGraph 状态图 + WebSocket 服务器
 │   ├── graph/           # 7 个节点 + builder + orchestrator

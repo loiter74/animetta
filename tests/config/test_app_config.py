@@ -6,13 +6,7 @@ from unittest.mock import patch, MagicMock, call
 
 import pytest
 
-from anima.config.app import (
-    AppConfig,
-    ServicesConfig,
-    expand_env_vars,
-    _load_env_file,
-    _load_service_config,
-)
+from animetta import $$$
 
 
 # =============================================================================
@@ -751,7 +745,7 @@ class TestGetPersona:
 
     def test_returns_persona_config(self):
         """get_persona returns a PersonaConfig instance."""
-        from anima.config.persona import PersonaConfig
+        from animetta import $$$
 
         cfg = AppConfig(persona="default")
         persona = cfg.get_persona()
@@ -769,7 +763,7 @@ class TestGetPersona:
         cfg = AppConfig(persona="custom_name")
         persona = cfg.get_persona()
         # If no custom file exists, returns default PersonaConfig
-        from anima.config.persona import PersonaConfig
+        from animetta import $$$
         assert isinstance(persona, PersonaConfig)
         assert persona.name == "Anima"  # default name
 
@@ -804,7 +798,7 @@ class TestGetSystemPrompt:
 
     def test_live2d_arg_overrides_persona_prompt(self):
         """Explicit live2d_prompt argument overrides persona's configured prompt."""
-        from anima.config.persona import PersonaConfig
+        from animetta import $$$
         cfg = AppConfig(persona="default")
         # Access persona to set live2d_prompt
         persona = cfg.get_persona()
@@ -826,7 +820,7 @@ class TestValidate:
     """Tests for AppConfig.validate method."""
 
     def _get_provider_registry(self):
-        from anima.config.core.registry import ProviderRegistry
+        from animetta import $$$
         return ProviderRegistry
 
     def test_no_warnings_for_registered_providers(self):

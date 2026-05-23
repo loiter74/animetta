@@ -12,7 +12,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
       "targets": [
         {
-          "expr": "anima_llm_cost_usd_total",
+          "expr": "animetta_llm_cost_usd_total",
           "legendFormat": "{{provider}}/{{model}}"
         }
       ],
@@ -24,11 +24,11 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
       "targets": [
         {
-          "expr": "rate(anima_llm_tokens_total{type=\"input\"}[5m])",
+          "expr": "rate(animetta_llm_tokens_total{type=\"input\"}[5m])",
           "legendFormat": "{{provider}} input"
         },
         {
-          "expr": "rate(anima_llm_tokens_total{type=\"output\"}[5m])",
+          "expr": "rate(animetta_llm_tokens_total{type=\"output\"}[5m])",
           "legendFormat": "{{provider}} output"
         }
       ]
@@ -39,7 +39,7 @@
       "gridPos": { "h": 8, "w": 8, "x": 0, "y": 8 },
       "targets": [
         {
-          "expr": "anima_llm_cost_usd_total - anima_llm_cost_usd_total offset 1d",
+          "expr": "animetta_llm_cost_usd_total - animetta_llm_cost_usd_total offset 1d",
           "legendFormat": "{{provider}}"
         }
       ]
@@ -50,7 +50,7 @@
       "gridPos": { "h": 8, "w": 8, "x": 8, "y": 8 },
       "targets": [
         {
-          "expr": "predict_linear(anima_llm_cost_usd_total[24h], 30 * 86400)",
+          "expr": "predict_linear(animetta_llm_cost_usd_total[24h], 30 * 86400)",
           "legendFormat": "Forecast"
         }
       ],
@@ -62,11 +62,11 @@
       "gridPos": { "h": 8, "w": 8, "x": 16, "y": 8 },
       "targets": [
         {
-          "expr": "histogram_quantile(0.50, sum(rate(anima_llm_request_duration_seconds_bucket[5m])) by (le, provider))",
+          "expr": "histogram_quantile(0.50, sum(rate(animetta_llm_request_duration_seconds_bucket[5m])) by (le, provider))",
           "legendFormat": "{{provider}} p50"
         },
         {
-          "expr": "histogram_quantile(0.95, sum(rate(anima_llm_request_duration_seconds_bucket[5m])) by (le, provider))",
+          "expr": "histogram_quantile(0.95, sum(rate(animetta_llm_request_duration_seconds_bucket[5m])) by (le, provider))",
           "legendFormat": "{{provider}} p95"
         }
       ],
@@ -78,7 +78,7 @@
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
       "targets": [
         {
-          "expr": "increase(anima_llm_cost_usd_total[1h])",
+          "expr": "increase(animetta_llm_cost_usd_total[1h])",
           "legendFormat": "{{provider}}/{{model}}"
         }
       ],
@@ -87,14 +87,14 @@
   ],
   "refresh": "10s",
   "schemaVersion": 39,
-  "tags": ["anima", "cost"],
+  "tags": ["animetta", "cost"],
   "templating": {
     "list": [
       {
         "name": "provider",
         "type": "query",
         "datasource": { "type": "prometheus", "uid": "prometheus" },
-        "query": "label_values(anima_llm_cost_usd_total, provider)",
+        "query": "label_values(animetta_llm_cost_usd_total, provider)",
         "multi": true,
         "includeAll": true
       }
@@ -102,7 +102,7 @@
   },
   "time": { "from": "now-24h", "to": "now" },
   "timepicker": {},
-  "title": "Anima - Cost & Tokens",
-  "uid": "anima-cost",
+  "title": "Animetta - Cost & Tokens",
+  "uid": "animetta-cost",
   "version": 1
 }

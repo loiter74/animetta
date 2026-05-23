@@ -6,11 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from anima.orchestration.graph.scheduler import (
-    AsyncScheduler,
-    ScheduledTask,
-    TaskMetrics,
-)
+from animetta import $$$
 
 
 # ── Fixtures ────────────────────────────────────────────────

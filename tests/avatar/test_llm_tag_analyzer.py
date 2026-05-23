@@ -5,12 +5,8 @@ Tests for StandaloneLLMTagAnalyzer — emotion tag extraction from LLM text.
 import pytest
 from unittest.mock import patch
 
-from anima.avatar.analyzers.llm_tag import (
-    StandaloneLLMTagAnalyzer,
-    EmotionTag,
-    EmotionExtractionResult,
-)
-from anima.avatar.analyzers.base import EmotionData
+from animetta import $$$
+from animetta import $$$
 
 
 class TestStandaloneLLMTagAnalyzerInit:

@@ -3,16 +3,16 @@ Transcribe alice_training_set WAV files using FasterWhisper.
 Generates train.jsonl for Qwen3-TTS fine-tuning.
 
 Usage: python scripts/transcribe_alice.py
-Output: E:/anima_data/tts_training/kuonji_arisu/training_ready/train.jsonl
+Output: E:/animetta_data/tts_training/kuonji_arisu/training_ready/train.jsonl
 """
 import json
 import os
 import sys
 from pathlib import Path
 
-DATA_DIR = Path("E:/anima_data/tts_training/kuonji_arisu/training_ready/alice_training_set")
-OUTPUT = Path("E:/anima_data/tts_training/kuonji_arisu/training_ready/train.jsonl")
-CHECKPOINT = Path("E:/anima_data/tts_training/kuonji_arisu/training_ready/transcribe_checkpoint.json")
+DATA_DIR = Path("E:/animetta_data/tts_training/kuonji_arisu/training_ready/alice_training_set")
+OUTPUT = Path("E:/animetta_data/tts_training/kuonji_arisu/training_ready/train.jsonl")
+CHECKPOINT = Path("E:/animetta_data/tts_training/kuonji_arisu/training_ready/transcribe_checkpoint.json")
 
 def main():
     # Collect WAV files

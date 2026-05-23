@@ -15,7 +15,7 @@ async def test_session_persists_with_redis():
     """Session state survives checkpointer re-creation (simulating restart)."""
     pytest.importorskip("redis", reason="redis-py not installed")
 
-    from anima.core.redis_checkpoint import AsyncRedisSaver
+    from animetta import $$$
 
     redis_url = "redis://localhost:6379/15"
 
@@ -61,7 +61,7 @@ async def test_redis_saver_handles_missing_key():
     """aget_tuple returns None for a thread_id with no stored checkpoint."""
     pytest.importorskip("redis", reason="redis-py not installed")
 
-    from anima.core.redis_checkpoint import AsyncRedisSaver
+    from animetta import $$$
 
     redis_url = "redis://localhost:6379/15"
 
@@ -128,7 +128,7 @@ async def test_redis_fallback_on_invalid_url():
     """
     pytest.importorskip("redis", reason="redis-py not installed")
 
-    from anima.core.redis_checkpoint import AsyncRedisSaver
+    from animetta import $$$
 
     try:
         AsyncRedisSaver("redis://nonexistent-host:9999/0")

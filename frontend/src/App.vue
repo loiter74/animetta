@@ -7,7 +7,7 @@ import { useSocket } from '@/composables/useSocket'
 const router = useRouter()
 useSocket()  // Initialize Socket.IO connection
 
-const STORAGE_KEY = 'anima_background'
+const STORAGE_KEY = 'animetta_background'
 const bgSrc = ref('')
 
 const bgStyle = computed(() => {

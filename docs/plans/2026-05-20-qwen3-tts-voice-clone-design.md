@@ -29,8 +29,8 @@ Anima TTS Service (qwen3_tts.py)
 
 | File | Change |
 |------|--------|
-| `src/anima/config/providers/tts/qwen3.py` | Add `voice_clone` config fields: `ref_audio_path`, `x_vector_only`, `ref_text` |
-| `src/anima/services/speech/tts/qwen3_tts.py` | Add `_synthesize_via_voice_clone()` method, wire into `synthesize()` dispatch |
+| `src/animetta/config/providers/tts/qwen3.py` | Add `voice_clone` config fields: `ref_audio_path`, `x_vector_only`, `ref_text` |
+| `src/animetta/services/speech/tts/qwen3_tts.py` | Add `_synthesize_via_voice_clone()` method, wire into `synthesize()` dispatch |
 | `config/services.yaml` | Add `qwen3_voice_clone` service entry pointing to reference audio |
 
 ### Config Fields (Qwen3TTSConfig)

@@ -92,8 +92,8 @@ def main():
     )
     parser.add_argument(
         "--model-dir",
-        default="E:/anima_data/models/VibeVoice",
-        help="模型权重目录 (默认 E:/anima_data/models/VibeVoice)",
+        default="E:/animetta_data/models/VibeVoice",
+        help="模型权重目录 (默认 E:/animetta_data/models/VibeVoice)",
     )
     parser.add_argument(
         "--skip-clone", action="store_true", help="跳过 git clone（目录已存在时）"

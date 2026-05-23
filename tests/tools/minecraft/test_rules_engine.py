@@ -48,7 +48,7 @@ class TestRulesEngineLoading:
     """RulesEngine loading and defaulting behavior."""
 
     def test_load_valid_rules(self):
-        from anima.tools.minecraft.rules_engine import RulesEngine
+        from animetta import $$$
 
         sample = _make_rules_yaml()
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", encoding="utf-8", delete=False) as f:
@@ -68,13 +68,13 @@ class TestRulesEngineLoading:
             os.unlink(path)
 
     def test_defaults_on_missing_file(self):
-        from anima.tools.minecraft.rules_engine import RulesEngine
+        from animetta import $$$
         engine = RulesEngine(rules_path="/tmp/nonexistent_rules_test.md")
         assert engine.rules.character_name == "AnimaBot"
         assert len(engine.rules.priorities) > 0
 
     def test_defaults_on_empty_file(self):
-        from anima.tools.minecraft.rules_engine import RulesEngine
+        from animetta import $$$
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", encoding="utf-8", delete=False) as f:
             f.write("")
@@ -89,7 +89,7 @@ class TestRulesEngineLoading:
 
     def test_partial_rules_merge_with_defaults(self):
         """Partial YAML should merge with defaults, not replace them entirely."""
-        from anima.tools.minecraft.rules_engine import RulesEngine
+        from animetta import $$$
 
         partial = {"character_name": "PartialBot"}
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", encoding="utf-8", delete=False) as f:
@@ -111,7 +111,7 @@ class TestRulesEngineValidation:
     @pytest.mark.skip(reason="Needs rules.md file")
     def test_validation_no_priorities(self):
         """Empty priorities should not override defaults."""
-        from anima.tools.minecraft.rules_engine import RulesEngine
+        from animetta import $$$
 
         sample = _make_rules_yaml({"priorities": []})
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", encoding="utf-8", delete=False) as f:
@@ -127,7 +127,7 @@ class TestRulesEngineValidation:
 
     def test_validation_auto_heal_threshold(self):
         """High auto_heal_threshold should be accepted (warnings go to loguru)."""
-        from anima.tools.minecraft.rules_engine import RulesEngine
+        from animetta import $$$
 
         sample = _make_rules_yaml({"safety": {"auto_heal_threshold": 25}})
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", encoding="utf-8", delete=False) as f:
@@ -147,7 +147,7 @@ class TestRulesEngineQueries:
 
     @pytest.fixture
     def engine(self):
-        from anima.tools.minecraft.rules_engine import RulesEngine
+        from animetta import $$$
 
         sample = _make_rules_yaml()
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", encoding="utf-8", delete=False) as f:
@@ -191,7 +191,7 @@ class TestRulesEngineQueries:
         assert engine.is_category_allowed("flying") is False
 
     def test_safety_hardcodes(self, engine):
-        from anima.tools.minecraft.rules_engine import RulesEngine
+        from animetta import $$$
         assert RulesEngine.SAFETY_HARDCODED["no_griefing"] is True
         assert RulesEngine.SAFETY_HARDCODED["max_distance"] == 500
         assert RulesEngine.SAFETY_HARDCODED["min_health_to_fight"] == 6
@@ -201,7 +201,7 @@ class TestRulesEngineSafetyOverride:
     """Safety config override from config/tools.yaml."""
 
     def test_safety_override_applied(self):
-        from anima.tools.minecraft.rules_engine import RulesEngine
+        from animetta import $$$
 
         sample = _make_rules_yaml()
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", encoding="utf-8", delete=False) as f:
@@ -216,7 +216,7 @@ class TestRulesEngineSafetyOverride:
             os.unlink(path)
 
     def test_safety_override_not_applied_when_larger(self):
-        from anima.tools.minecraft.rules_engine import RulesEngine
+        from animetta import $$$
 
         sample = _make_rules_yaml()
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", encoding="utf-8", delete=False) as f:

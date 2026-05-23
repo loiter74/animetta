@@ -28,13 +28,13 @@ COPY scripts/ scripts/
 COPY .env.example .env.example
 
 ENV PYTHONPATH=/app/src
-ENV ANIMA_HOST=0.0.0.0
-ENV ANIMA_PORT=12394
-ENV ANIMA_LOG_LEVEL=INFO
+ENV ANIMETTA_HOST=0.0.0.0
+ENV ANIMETTA_PORT=12394
+ENV ANIMETTA_LOG_LEVEL=INFO
 
 EXPOSE 12394
 
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:12394/health')" || exit 1
 
-CMD ["python", "-m", "anima.core.socketio_server"]
+CMD ["python", "-m", "animetta.core.socketio_server"]

@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import type { ChatMessage } from '@/types/chat'
 
-const DB_NAME = 'anima-messages'
+const DB_NAME = 'animetta-messages'
 const DB_VERSION = 1
 const STORE_NAME = 'messages'
 

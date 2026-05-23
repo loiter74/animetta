@@ -135,7 +135,7 @@ describe('useSubtitleStore', () => {
       // Watch fires asynchronously — wait for next tick
       await nextTick()
 
-      const saved = JSON.parse(localStorage.getItem('anima_subtitle_config')!)
+      const saved = JSON.parse(localStorage.getItem('animetta_subtitle_config')!)
       expect(saved.displayMode).toBe('original')
       expect(saved.fontSize).toBe('small')
       expect(saved.targetLanguage).toBe('Chinese')
@@ -147,7 +147,7 @@ describe('useSubtitleStore', () => {
 
       await nextTick()
 
-      const saved = JSON.parse(localStorage.getItem('anima_subtitle_config')!)
+      const saved = JSON.parse(localStorage.getItem('animetta_subtitle_config')!)
       expect(saved.posX).toBe(320)
       expect(saved.posY).toBe(240)
     })

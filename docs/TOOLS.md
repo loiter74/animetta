@@ -1,8 +1,8 @@
-# Anima 工具系统使用说明
+# Animetta 工具系统使用说明
 
 ## 概述
 
-Anima 工具系统为 AI Agent 提供工具调用能力，支持 LLM（如 GLM-4）调用外部工具获取实时信息或执行操作。
+Animetta 工具系统为 AI Agent 提供工具调用能力，支持 LLM（如 GLM-4）调用外部工具获取实时信息或执行操作。
 
 ## 支持的功能
 
@@ -13,7 +13,7 @@ Anima 工具系统为 AI Agent 提供工具调用能力，支持 LLM（如 GLM-4
 ## 目录结构
 
 ```
-src/anima/tools/
+src/animetta/tools/
 ├── __init__.py          # 模块导出
 ├── base.py              # 内置工具定义和注册表
 ├── config.py            # 工具配置加载器
@@ -92,7 +92,7 @@ tool_settings:
 工具配置通过 `SessionManager._load_tools_config()` 加载：
 
 ```python
-# src/anima/server/session.py
+# src/animetta/server/session.py
 tools_config = load_tools_config()
 enable_tools = tools_config.get("tool_settings", {}).get("enable_tools", False)
 
@@ -119,8 +119,8 @@ ConfigStore.set(session_id, "chat_model", chat_model)
 ### 代码示例
 
 ```python
-from anima.tools.base import create_tool_registry
-from anima.tools.config import load_tools_config
+from animetta.tools.base import create_tool_registry
+from animetta.tools.config import load_tools_config
 
 # 加载配置
 tools_config = load_tools_config()
@@ -139,7 +139,7 @@ print(result)  # "4"
 
 ```python
 from langchain_core.tools import tool
-from anima.tools.base import create_tool_registry
+from animetta.tools.base import create_tool_registry
 
 @tool
 async def my_custom_tool(param: str) -> str:
@@ -200,11 +200,11 @@ tools, tools_map = create_tool_registry(
 
 | 文件 | 功能 |
 |------|------|
-| `src/anima/graph/nodes/llm_node.py` | LLM 推理节点，处理工具调用 |
-| `src/anima/graph/nodes/tool_node.py` | 工具执行节点 |
-| `src/anima/services/llm/implementations/glm_llm.py` | GLM-4 工具调用实现 |
-| `src/anima/tools/base.py` | 内置工具定义 |
-| `src/anima/tools/config.py` | 配置加载 |
+| `src/animetta/graph/nodes/llm_node.py` | LLM 推理节点，处理工具调用 |
+| `src/animetta/graph/nodes/tool_node.py` | 工具执行节点 |
+| `src/animetta/services/llm/implementations/glm_llm.py` | GLM-4 工具调用实现 |
+| `src/animetta/tools/base.py` | 内置工具定义 |
+| `src/animetta/tools/config.py` | 配置加载 |
 
 ## 故障排除
 
@@ -217,14 +217,14 @@ tools, tools_map = create_tool_registry(
 1. 检查配置是否启用：
 ```bash
 # 查看日志
-grep "enable_tools" logs/anima.log
+grep "enable_tools" logs/animetta.log
 # 应该看到: enable_tools=True
 ```
 
 2. 检查工具是否加载：
 ```bash
 # 查看日志
-grep "工具调用已启用" logs/anima.log
+grep "工具调用已启用" logs/animetta.log
 # 应该看到: 工具调用已启用，加载 X 个工具
 ```
 

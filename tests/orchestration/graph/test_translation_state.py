@@ -2,7 +2,7 @@
 
 import pytest
 
-from anima.orchestration.graph.translation_state import TranslationState
+from animetta import $$$
 
 
 class TestTranslationStateInit:
@@ -149,19 +149,13 @@ class TestTranslationStateSingleton:
 
     def test_singleton_importable(self):
         """The module-level translation_state singleton is accessible."""
-        from anima.orchestration.graph.translation_state import (
-            translation_state,
-        )
+        from animetta import $$$
 
         assert isinstance(translation_state, TranslationState)
 
     def test_singleton_is_same_object(self):
         """Repeated imports return the same singleton."""
-        from anima.orchestration.graph.translation_state import (
-            translation_state as ts1,
-        )
-        from anima.orchestration.graph.translation_state import (
-            translation_state as ts2,
-        )
+        from animetta import $$$
+        from animetta import $$$
 
         assert ts1 is ts2

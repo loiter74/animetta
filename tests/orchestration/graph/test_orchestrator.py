@@ -3,7 +3,7 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from anima.orchestration.graph.orchestrator import LangGraphOrchestrator
+from animetta import $$$
 
 
 @pytest.fixture

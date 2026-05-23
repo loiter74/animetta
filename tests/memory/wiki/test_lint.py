@@ -7,8 +7,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from anima.memory.wiki.lint import LintReport, WikiLint
-from anima.memory.wiki.models import PageType, WikiPage
+from animetta import $$$
+from animetta import $$$
 
 
 @pytest.fixture

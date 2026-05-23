@@ -1,4 +1,4 @@
-# ── Anima Observability Stack ──
+# ── Animetta Observability Stack ──
 # 启动: docker-compose -f observability/docker-compose.yml up -d
 # 组件: OTel Collector | Prometheus | Tempo | Grafana | Alertmanager | Loki | Notifier
 
@@ -6,7 +6,7 @@ services:
   # ── OpenTelemetry Collector ──
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.119.0
-    container_name: anima-otel-collector
+    container_name: animetta-otel-collector
     command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
@@ -16,12 +16,12 @@ services:
       - "4318:4318"   # OTLP HTTP
       - "8889:8889"   # Prometheus metrics exporter
     networks:
-      - anima-obs
+      - animetta-obs
 
   # ── Prometheus ──
   prometheus:
     image: prom/prometheus:v2.55.0
-    container_name: anima-prometheus
+    container_name: animetta-prometheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
@@ -34,12 +34,12 @@ services:
     ports:
       - "9090:9090"
     networks:
-      - anima-obs
+      - animetta-obs
 
   # ── Grafana Tempo (Trace Backend) ──
   tempo:
     image: grafana/tempo:2.6.1
-    container_name: anima-tempo
+    container_name: animetta-tempo
     command: ["-config.file=/etc/tempo-config.yaml"]
     volumes:
       - ./tempo-config.yaml:/etc/tempo-config.yaml:ro
@@ -47,12 +47,12 @@ services:
     ports:
       - "3200:3200"   # Tempo HTTP API
     networks:
-      - anima-obs
+      - animetta-obs
 
   # ── Loki (Log Backend) ──
   loki:
     image: grafana/loki:3.2.0
-    container_name: anima-loki
+    container_name: animetta-loki
     command: ["-config.file=/etc/loki/config.yaml"]
     volumes:
       - ./loki-config.yaml:/etc/loki/config.yaml:ro
@@ -60,12 +60,12 @@ services:
     ports:
       - "3100:3100"
     networks:
-      - anima-obs
+      - animetta-obs
 
   # ── Grafana ──
   grafana:
     image: grafana/grafana:11.5.0
-    container_name: anima-grafana
+    container_name: animetta-grafana
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
@@ -78,7 +78,7 @@ services:
     ports:
       - "3001:3000"
     networks:
-      - anima-obs
+      - animetta-obs
     depends_on:
       - prometheus
       - tempo
@@ -87,7 +87,7 @@ services:
   # ── Alertmanager ──
   alertmanager:
     image: prom/alertmanager:v0.27.0
-    container_name: anima-alertmanager
+    container_name: animetta-alertmanager
     command:
       - "--config.file=/etc/alertmanager/alertmanager.yml"
     volumes:
@@ -95,23 +95,23 @@ services:
     ports:
       - "9093:9093"
     networks:
-      - anima-obs
+      - animetta-obs
 
   # ── Notifier (告警通知中继) ──
   notifier:
     build:
       context: ../
       dockerfile: observability/Dockerfile.notifier
-    container_name: anima-notifier
+    container_name: animetta-notifier
     env_file:
       - ../.env.notifier
     ports:
       - "9094:9094"
     networks:
-      - anima-obs
+      - animetta-obs
 
 networks:
-  anima-obs:
+  animetta-obs:
     driver: bridge
 
 volumes:

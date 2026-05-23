@@ -3,8 +3,8 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from anima.orchestration.server.live2d import Live2DManager
-from anima.services.live2d.action_queue import QueuePolicy
+from animetta import $$$
+from animetta import $$$
 
 
 # ── Fixtures ───────────────────────────────────────────────────────

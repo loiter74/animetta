@@ -8,13 +8,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from anima.memory.learner.summarizer import (
-    ConversationSummarizer,
-    LearningLog,
-    _count_messages,
-    _format_turns,
-)
-from anima.memory.models.turns import MemoryTurn
+from animetta import $$$
+from animetta import $$$
 
 
 def _make_turn(

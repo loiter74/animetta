@@ -15,7 +15,7 @@ persona: "neuro-vtuber"     # 人设配置（personas/ 目录）
 ### 通过代码加载
 
 ```python
-from anima.config import AppConfig, PersonaConfig
+from animetta.config import AppConfig, PersonaConfig
 
 # 方式1：通过 AppConfig
 config = AppConfig.load()

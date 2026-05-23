@@ -3,7 +3,7 @@
 import pytest
 from unittest.mock import MagicMock
 
-from anima.orchestration.server.desktop import DesktopClientManager, DESKTOP_CLIENT_TYPES
+from animetta import $$$
 
 
 # ── Fixtures ───────────────────────────────────────────────────────

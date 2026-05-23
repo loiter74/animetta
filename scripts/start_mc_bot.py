@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Persistent Minecraft Bot launcher.
-Keeps AnimaBot connected to the MC server indefinitely.
+Keeps AnimettaBot connected to the MC server indefinitely.
 """
 import asyncio
 import sys
@@ -10,9 +10,9 @@ import os
 # Ensure project root is on path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from anima.tools.minecraft.config import MinecraftConfig
-from anima.tools.minecraft.bridge import MinecraftBridge
-from anima.tools.minecraft.tools import cleanup_bridge
+from animetta import $$$
+from animetta import $$$
+from animetta import $$$
 from loguru import logger
 
 logger.remove()
@@ -26,7 +26,7 @@ async def main():
         "bot": {
             "host": "localhost",
             "port": 25565,
-            "username": "AnimaBot"
+            "username": "AnimettaBot"
         },
         "safety": {
             "no_griefing": True,
@@ -46,7 +46,7 @@ async def main():
     await asyncio.sleep(3)
     
     if bridge.is_running:
-        logger.info("✓ AnimaBot is now connected to Minecraft!")
+        logger.info("✓ AnimettaBot is now connected to Minecraft!")
         logger.info("  Press Ctrl+C to disconnect")
     else:
         logger.error("✗ Bot failed to connect")

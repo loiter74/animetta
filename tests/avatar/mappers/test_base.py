@@ -5,11 +5,7 @@ Tests for mapper base — ParameterState, ExpressionFrame, IEmotionParamMapper.
 import pytest
 from abc import ABC
 
-from anima.avatar.mappers.base import (
-    IEmotionParamMapper,
-    ParameterState,
-    ExpressionFrame,
-)
+from animetta import $$$
 
 
 # ============================================================
@@ -172,7 +168,7 @@ class TestIEmotionParamMapperConcreteMethods:
 # Helper: create a concrete IEmotionParamMapper for testing default methods.
 def _create_concrete_mapper():
     """Create a minimal concrete mapper for testing interface defaults."""
-    from anima.avatar.mappers.base import ExpressionFrame, ParameterState
+    from animetta import $$$
 
     class ConcreteMapper(IEmotionParamMapper):
         def map_emotion(self, emotion, intensity=1.0, context=None):

@@ -62,7 +62,7 @@ def mock_service():
 
 @pytest.fixture
 def proxy(mock_service):
-    from anima.tracing.proxy import TracingProxy
+    from animetta import $$$
     return TracingProxy(mock_service, service_name="test")
 
 
@@ -102,7 +102,7 @@ class TestTracingProxy:
 
     async def test_lazy_tracer_resolution(self, mock_service):
         """Proxy should work even when created before TracerProvider is set."""
-        from anima.tracing.proxy import TracingProxy
+        from animetta import $$$
         p = TracingProxy(mock_service, tracer=None, service_name="lazy_test")
         result = await p.chat("lazy")
         assert result == "response: lazy"
@@ -117,6 +117,6 @@ class TestTracingProxy:
         """__bool__ delegates to target."""
         svc = MagicMock()
         svc.__bool__ = MagicMock(return_value=True)
-        from anima.tracing.proxy import TracingProxy
+        from animetta import $$$
         p = TracingProxy(svc, service_name="bool_test")
         assert bool(p) is True

@@ -1,7 +1,7 @@
 """Tests for inspection data models."""
 
 import pytest
-from anima.inspection.models import CheckResult, InspectionReport
+from animetta import $$$
 
 
 class TestCheckResult:

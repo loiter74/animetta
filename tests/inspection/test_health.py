@@ -8,27 +8,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from anima.inspection.checks.health import (
-    COMPONENT_CHECKS,
-    ComponentCheck,
-    STATS_STORE_TIMEOUT,
-    CHROMA_TIMEOUT,
-    LLM_TIMEOUT,
-    TTS_TIMEOUT,
-    ASR_TIMEOUT,
-    MEMORY_TIMEOUT,
-    METRICS_TIMEOUT,
-    _probe_stats_store,
-    _probe_chroma,
-    _probe_llm_available,
-    _probe_tts_available,
-    _probe_asr_available,
-    _probe_memory_read,
-    _probe_metrics_endpoint,
-    _run_single_probe,
-    check_all_components,
-)
-from anima.inspection.models import CheckResult
+from animetta import $$$
+from animetta import $$$
 
 
 # ── Helpers ─────────────────────────────────────────────────

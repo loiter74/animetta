@@ -35,7 +35,7 @@ ServicePool.init()
 
 ## Files to Create
 
-### 1. `src/anima/config/providers/tts/qwen3.py`
+### 1. `src/animetta/config/providers/tts/qwen3.py`
 
 Pydantic config class following `vibe_voice.py` pattern:
 
@@ -55,7 +55,7 @@ class Qwen3TTSConfig(TTSBaseConfig):
     streaming: bool = True            # Enable streaming output
 ```
 
-### 2. `src/anima/services/speech/tts/qwen3_tts.py`
+### 2. `src/animetta/services/speech/tts/qwen3_tts.py`
 
 Service class following `chattts_tts.py` local inference pattern:
 
@@ -68,15 +68,15 @@ Service class following `chattts_tts.py` local inference pattern:
 
 ## Files to Modify
 
-### 3. `src/anima/config/providers/tts/__init__.py`
+### 3. `src/animetta/config/providers/tts/__init__.py`
 - Import `Qwen3TTSConfig`
 - Add to `TTSConfig` union type
 
-### 4. `src/anima/services/speech/tts/__init__.py`
+### 4. `src/animetta/services/speech/tts/__init__.py`
 - Import `Qwen3TTSTTS`
 - Add to `__all__`
 
-### 5. `src/anima/services/speech/tts/factory.py`
+### 5. `src/animetta/services/speech/tts/factory.py`
 - Add `elif provider == "qwen3":` block in `_build_config()`
 
 ### 6. `config/services.yaml`

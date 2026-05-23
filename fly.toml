@@ -1,10 +1,10 @@
-# ── Anima Fly.io Deployment Configuration ────────────────────────────
+# ── Animetta Fly.io Deployment Configuration ────────────────────────────
 # Deploy: flyctl launch --ha=false --generate-name
 # Visit: https://your-app-name.fly.dev
 #
 # If "app name taken" error, use --generate-name to auto-generate
 
-app = "anima-demo"
+app = "animetta-demo"
 primary_region = "hkg"
 
 [build]
@@ -32,13 +32,13 @@ primary_region = "hkg"
     soft_limit = 10
 
 [env]
-  ANIMA_HOST = "0.0.0.0"
-  ANIMA_PORT = "12394"
-  ANIMA_LOG_LEVEL = "INFO"
+  ANIMETTA_HOST = "0.0.0.0"
+  ANIMETTA_PORT = "12394"
+  ANIMETTA_LOG_LEVEL = "INFO"
   PYTHONPATH = "/app/src"
 
 [mounts]
-  source = "anima_data"
+  source = "animetta_data"
   destination = "/app/data"
 
 [[vm]]

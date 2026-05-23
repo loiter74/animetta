@@ -43,7 +43,7 @@ Trace (一次完整请求)
 
 ### 1. 数据采集 —— StatsCallbackHandler
 
-**文件：** `src/anima/orchestration/graph/stats_handler.py`
+**文件：** `src/animetta/orchestration/graph/stats_handler.py`
 
 继承 `langchain_core.callbacks.BaseCallbackHandler`，监听 LangGraph 节点生命周期：
 
@@ -57,7 +57,7 @@ Trace (一次完整请求)
 
 ### 2. 数据存储 —— SQLite
 
-**文件：** `src/anima/orchestration/graph/stats_store.py`
+**文件：** `src/animetta/orchestration/graph/stats_store.py`
 
 ```sql
 CREATE TABLE traces (
@@ -92,7 +92,7 @@ CREATE INDEX idx_spans_node ON spans(node_name);
 
 ### 3. 后端 API —— FastAPI 路由
 
-**文件：** `src/anima/orchestration/server/routes.py`（扩展现有路由）
+**文件：** `src/animetta/orchestration/server/routes.py`（扩展现有路由）
 
 ```
 GET /api/stats/overview         → 总览（总请求数、成功率、P50/P95 延迟）
@@ -169,10 +169,10 @@ Trace (用户请求)
 
 | 操作 | 文件 |
 |------|------|
-| 新增 | `src/anima/orchestration/graph/stats_handler.py` |
-| 新增 | `src/anima/orchestration/graph/stats_store.py` |
-| 修改 | `src/anima/orchestration/graph/orchestrator.py`（注入 handler） |
-| 修改 | `src/anima/orchestration/server/routes.py`（新增 API 路由） |
+| 新增 | `src/animetta/orchestration/graph/stats_handler.py` |
+| 新增 | `src/animetta/orchestration/graph/stats_store.py` |
+| 修改 | `src/animetta/orchestration/graph/orchestrator.py`（注入 handler） |
+| 修改 | `src/animetta/orchestration/server/routes.py`（新增 API 路由） |
 | 新增 | `frontend/stats/index.html` |
 | 新增 | `frontend/stats/stats.js` |
 | 新增 | `frontend/stats/stats.css` |

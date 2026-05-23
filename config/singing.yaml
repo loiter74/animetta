@@ -1,4 +1,4 @@
-# Anima 唱歌模块配置
+# Animetta 唱歌模块配置
 singing:
   gpt_sovits:
     base_url: "http://127.0.0.1:9880"
@@ -34,7 +34,7 @@ singing:
     model_size: "large-v3"     # was "base"
     language: null             # was "zh" — auto-detect
     output_dir: "./data/singing/lyrics"
-    download_root: "E:/anima_data/models/whisper"  # NEW — configurable path
+    download_root: "E:/animetta_data/models/whisper"  # NEW — configurable path
   svc:
     output_dir: "./data/singing/converted"
   output_dir: "./data/singing/outputs"

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Anima is a configurable AI virtual companion / VTuber framework with Live2D avatar support. It features:
+Animetta is a configurable AI virtual companion / VTuber framework with Live2D avatar support. It features:
 - Plugin-based architecture with decorator-based service registration
 - Profile-driven configuration (switch between LLM/ASR/TTS providers)
 - **LangGraph state graph for dialogue orchestration** (migrated from EventBus)
@@ -34,7 +34,7 @@ python scripts/start.py --install        # Reinstall dependencies
 python scripts/stop.py
 
 # Run backend directly
-python -m anima.socketio_server
+python -m animetta.socketio_server
 ```
 
 ### Development
@@ -56,7 +56,7 @@ pnpm typecheck        # TypeScript type checking
 ### Backend (Python/FastAPI/Socket.IO)
 
 ```
-src/anima/
+src/animetta/
 ├── socketio_server.py    # Main entry point, WebSocket server
 ├── service_context.py    # Service container, manages ASR/TTS/LLM instances
 ├── config/               # Configuration loading (YAML + Pydantic)
@@ -252,7 +252,7 @@ async def my_node(state: AgentState, config: RunnableConfig) -> AgentState:
 ### Graph Builder
 
 ```python
-from anima.graph.builder import build_graph
+from animetta.graph.builder import build_graph
 
 # Build graph with tools
 graph = build_graph(
@@ -270,7 +270,7 @@ result = await compiled.ainvoke(initial_state)
 ### Orchestrator Usage
 
 ```python
-from anima.graph.orchestrator import LangGraphOrchestratorFactory
+from animetta.graph.orchestrator import LangGraphOrchestratorFactory
 
 # Create orchestrator
 orchestrator = await LangGraphOrchestratorFactory.create(
@@ -403,16 +403,16 @@ Define character personality, speaking style, and behavior rules.
 ```bash
 GLM_API_KEY=xxx           # Zhipu AI API key
 OPENAI_API_KEY=xxx        # OpenAI API key (optional)
-ANIMA_BASE_MODEL_PATH=xxx # For local LoRA
-ANIMA_LORA_PATH=xxx       # For local LoRA
+ANIMETTA_BASE_MODEL_PATH=xxx # For local LoRA
+ANIMETTA_LORA_PATH=xxx       # For local LoRA
 ```
 
 ## Key Patterns
 
 ### Adding a New Service Provider
 
-1. Create config class in `src/anima/config/providers/llm/my_llm.py`
-2. Create service in `src/anima/services/llm/implementations/my_llm.py`
+1. Create config class in `src/animetta/config/providers/llm/my_llm.py`
+2. Create service in `src/animetta/services/llm/implementations/my_llm.py`
 3. Register with decorators:
 ```python
 @ProviderRegistry.register_config("llm", "my_llm")
@@ -428,9 +428,9 @@ class MyLLMAgent(LLMInterface):
 
 ### Adding a New Graph Node
 
-1. Create node function in `src/anima/graph/nodes/my_node.py`:
+1. Create node function in `src/animetta/graph/nodes/my_node.py`:
 ```python
-from anima.graph.state import AgentState
+from animetta.graph.state import AgentState
 from langgraph.graph import RunnableConfig
 
 async def my_node(state: AgentState, config: RunnableConfig) -> AgentState:
@@ -445,12 +445,12 @@ async def my_node(state: AgentState, config: RunnableConfig) -> AgentState:
     return {"output_field": result}
 ```
 
-2. Register in `src/anima/graph/nodes/__init__.py`:
+2. Register in `src/animetta/graph/nodes/__init__.py`:
 ```python
 from .my_node import my_node
 ```
 
-3. Add to graph in `src/anima/graph/builder.py`:
+3. Add to graph in `src/animetta/graph/builder.py`:
 ```python
 graph.add_node("my_node", my_node)
 graph.add_edge("previous_node", "my_node")
@@ -461,7 +461,7 @@ graph.add_edge("previous_node", "my_node")
 LangGraph's config system doesn't pass all needed data to nodes. Use `ConfigStore` for node access:
 
 ```python
-from anima.graph.config_store import ConfigStore
+from animetta.graph.config_store import ConfigStore
 
 # Set config (in orchestrator)
 ConfigStore.set(session_id, "service_context", service_context)
@@ -509,17 +509,17 @@ The frontend was migrated from pure Electron + vanilla JS/HTML/CSS to Vue 3 + Ty
 ### From EventBus to LangGraph (Completed)
 
 The following modules have been **removed**:
-- `src/anima/pipeline/` - Pipeline processing
-- `src/anima/events/` - EventBus system
-- `src/anima/handlers/` - Event handlers
-- `src/anima/adapters/` - Adapter layer
-- `src/anima/core/` - Core abstractions
-- `src/anima/services/conversation/` - Old orchestrator
-- `src/anima/state/` - Old state modules
+- `src/animetta/pipeline/` - Pipeline processing
+- `src/animetta/events/` - EventBus system
+- `src/animetta/handlers/` - Event handlers
+- `src/animetta/adapters/` - Adapter layer
+- `src/animetta/core/` - Core abstractions
+- `src/animetta/services/conversation/` - Old orchestrator
+- `src/animetta/state/` - Old state modules
 
 Replaced by:
-- `src/anima/graph/` - LangGraph state graph
-- `src/anima/tools/` - Tool system with MCP support
+- `src/animetta/graph/` - LangGraph state graph
+- `src/animetta/tools/` - Tool system with MCP support
 
 See [docs/LANGGRAPH_MIGRATION_COMPLETE.md](docs/LANGGRAPH_MIGRATION_COMPLETE.md) for details.
 

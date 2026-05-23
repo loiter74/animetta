@@ -12,7 +12,7 @@
       "gridPos": { "h": 10, "w": 24, "x": 0, "y": 0 },
       "targets": [
         {
-          "expr": "sum(rate(anima_node_duration_seconds_sum[5m])) by (node_name) / sum(rate(anima_node_duration_seconds_count[5m])) by (node_name)",
+          "expr": "sum(rate(animetta_node_duration_seconds_sum[5m])) by (node_name) / sum(rate(animetta_node_duration_seconds_count[5m])) by (node_name)",
           "legendFormat": "{{node_name}}"
         }
       ],
@@ -26,7 +26,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 10 },
       "targets": [
         {
-          "expr": "rate(anima_node_errors_total[5m]) / rate(anima_node_duration_seconds_count[5m]) * 100",
+          "expr": "rate(animetta_node_errors_total[5m]) / rate(animetta_node_duration_seconds_count[5m]) * 100",
           "legendFormat": "{{node_name}}"
         }
       ]
@@ -37,7 +37,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 10 },
       "targets": [
         {
-          "expr": "sum(rate(anima_tool_calls_total[1h])) by (tool_name)",
+          "expr": "sum(rate(animetta_tool_calls_total[1h])) by (tool_name)",
           "legendFormat": "{{tool_name}}"
         }
       ]
@@ -48,11 +48,11 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 18 },
       "targets": [
         {
-          "expr": "rate(anima_llm_request_duration_seconds_count[5m])",
+          "expr": "rate(animetta_llm_request_duration_seconds_count[5m])",
           "legendFormat": "LLM Calls"
         },
         {
-          "expr": "rate(anima_tool_calls_total[5m])",
+          "expr": "rate(animetta_tool_calls_total[5m])",
           "legendFormat": "Tool Calls"
         }
       ]
@@ -63,7 +63,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 18 },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum(rate(anima_node_duration_seconds_bucket[5m])) by (le, node_name))",
+          "expr": "histogram_quantile(0.95, sum(rate(animetta_node_duration_seconds_bucket[5m])) by (le, node_name))",
           "legendFormat": "{{node_name}} p95"
         }
       ],
@@ -72,14 +72,14 @@
   ],
   "refresh": "10s",
   "schemaVersion": 39,
-  "tags": ["anima", "pipeline"],
+  "tags": ["animetta", "pipeline"],
   "templating": {
     "list": [
       {
         "name": "session_id",
         "type": "query",
         "datasource": { "type": "prometheus", "uid": "prometheus" },
-        "query": "label_values(anima_node_duration_seconds_count, node_name)",
+        "query": "label_values(animetta_node_duration_seconds_count, node_name)",
         "multi": false,
         "includeAll": true
       }
@@ -87,7 +87,7 @@
   },
   "time": { "from": "now-1h", "to": "now" },
   "timepicker": {},
-  "title": "Anima - LangGraph Pipeline",
-  "uid": "anima-pipeline",
+  "title": "Animetta - LangGraph Pipeline",
+  "uid": "animetta-pipeline",
   "version": 1
 }

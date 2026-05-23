@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import yaml
 
-from anima.orchestration.graph.observability import ObservabilityManager, get_observability
+from animetta import $$$
 
 
 # ── Fixtures ────────────────────────────────────────────────

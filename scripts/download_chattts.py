@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 ChatTTS 模型下载脚本
-将 ChatTTS 模型下载到 E:/anima_data/models/ChatTTS
+将 ChatTTS 模型下载到 E:/animetta_data/models/ChatTTS
 """
 
 import os
@@ -12,7 +12,7 @@ from pathlib import Path
 def download_chattts_model():
     """下载 ChatTTS 模型到指定目录"""
 
-    model_dir = Path("E:/anima_data/models/ChatTTS")
+    model_dir = Path("E:/animetta_data/models/ChatTTS")
     model_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"Target directory: {model_dir}")

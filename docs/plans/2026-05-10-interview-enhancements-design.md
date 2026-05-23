@@ -139,9 +139,9 @@ return result       log to StatsStore (error_type + provider)
 - If real provider is healthy, next turn uses it normally
 
 **Files affected:**
-- `src/anima/orchestration/graph/llm_node.py` — add `asyncio.timeout` around streaming loop
-- `src/anima/orchestration/graph/tts_node.py` — add `try/except` around `synthesize()`
-- `src/anima/orchestration/graph/asr_node.py` — add `try/except` around `transcribe()`
+- `src/animetta/orchestration/graph/llm_node.py` — add `asyncio.timeout` around streaming loop
+- `src/animetta/orchestration/graph/tts_node.py` — add `try/except` around `synthesize()`
+- `src/animetta/orchestration/graph/asr_node.py` — add `try/except` around `transcribe()`
 - `frontend/stats/stats.js` — add `fetchErrorRate()` function
 - `frontend/stats/index.html` — add Error Rate KPI card
 
@@ -157,7 +157,7 @@ to current in-memory `MemorySaver`.
 
 ### Design
 
-**New file: `src/anima/core/redis_checkpoint.py`**
+**New file: `src/animetta/core/redis_checkpoint.py`**
 
 ```python
 class AsyncRedisSaver(BaseCheckpointSaver):
@@ -197,8 +197,8 @@ class AsyncRedisSaver(BaseCheckpointSaver):
 **Wire into server startup:**
 
 ```python
-# src/anima/core/socketio_server.py — new --redis-url CLI arg
-# src/anima/orchestration/graph/builder.py — accept any BaseCheckpointSaver
+# src/animetta/core/socketio_server.py — new --redis-url CLI arg
+# src/animetta/orchestration/graph/builder.py — accept any BaseCheckpointSaver
 
 if redis_url:
     try:
@@ -222,9 +222,9 @@ graph = build_graph(checkpointer=checkpointer, ...)
 - `redis[hiredis]` — optional, only imported when `--redis-url` is provided
 
 **Files affected:**
-- `src/anima/core/redis_checkpoint.py` — new file
-- `src/anima/core/socketio_server.py` — add `--redis-url` arg, init `AsyncRedisSaver`
-- `src/anima/orchestration/graph/builder.py` — pass `checkpointer` through to `graph.compile()`
+- `src/animetta/core/redis_checkpoint.py` — new file
+- `src/animetta/core/socketio_server.py` — add `--redis-url` arg, init `AsyncRedisSaver`
+- `src/animetta/orchestration/graph/builder.py` — pass `checkpointer` through to `graph.compile()`
 
 ---
 

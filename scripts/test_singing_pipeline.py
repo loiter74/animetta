@@ -16,7 +16,7 @@ import yaml
 
 
 def load_config():
-    from anima.config.singing_config import SingingConfig
+    from animetta import $$$
     config_path = Path(__file__).parent.parent / "config" / "singing.yaml"
     with open(config_path, "r", encoding="utf-8") as f:
         raw = yaml.safe_load(f)
@@ -39,8 +39,8 @@ async def main():
     logger.info(f"ASR: {config.asr.model_size}, language={config.asr.language}")
     logger.info(f"RVC: {config.rvc.model_name}, index={config.rvc.index_path}")
 
-    from anima.services.singing.svc_pipeline import SVCPipeline
-    from anima.services.singing.interface import PipelineProgress
+    from animetta import $$$
+    from animetta import $$$
 
     pipeline = SVCPipeline(config)
     

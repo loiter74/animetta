@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from anima.avatar.analyzers.audio import AudioAnalyzer, compute_volume_envelope
+from animetta import $$$
 
 
 # ============================================================
@@ -264,7 +264,7 @@ class TestOutputNodeComputeVolumes:
 
     def test_compute_volumes_from_wav(self, tmp_path):
         """_compute_volumes should return volumes for a valid WAV."""
-        from anima.orchestration.graph.output_node import _compute_volumes
+        from animetta import $$$
         wav = _create_sine_wave_wav(str(tmp_path / "test.wav"))
         volumes = _compute_volumes(wav)
         assert isinstance(volumes, list)
@@ -273,27 +273,27 @@ class TestOutputNodeComputeVolumes:
 
     def test_compute_volumes_fallback_on_error(self, tmp_path):
         """_compute_volumes should return empty list on error."""
-        from anima.orchestration.graph.output_node import _compute_volumes
+        from animetta import $$$
         volumes = _compute_volumes(str(tmp_path / "nonexistent.mp3"))
         assert volumes == []
 
     def test_compute_volumes_uses_default_gain(self, tmp_path):
         """_compute_volumes should use default gain of 3.5."""
-        from anima.orchestration.graph.output_node import _compute_volumes
+        from animetta import $$$
         wav = _create_sine_wave_wav(str(tmp_path / "gain_test.wav"))
         volumes = _compute_volumes(wav)
         assert all(v >= 0.0 for v in volumes)
 
     def test_compute_volumes_clamps_to_01(self, tmp_path):
         """_compute_volumes volumes should be clamped to [0, 1]."""
-        from anima.orchestration.graph.output_node import _compute_volumes
+        from animetta import $$$
         wav = _create_sine_wave_wav(str(tmp_path / "clamp.wav"), max_amplitude=0.9)
         volumes = _compute_volumes(wav)
         assert all(0.0 <= v <= 1.0 for v in volumes)
 
     def test_compute_volumes_uses_peak_mode(self, tmp_path):
         """_compute_volumes should use peak amplitude mode."""
-        from anima.orchestration.graph.output_node import _compute_volumes
+        from animetta import $$$
         wav = _create_sine_wave_wav(str(tmp_path / "peak_mode.wav"))
         volumes = _compute_volumes(wav)
         # Peak mode means some values should be > 0 for non-silent audio
@@ -301,7 +301,7 @@ class TestOutputNodeComputeVolumes:
 
     def test_compute_volumes_no_normalize(self, tmp_path):
         """_compute_volumes should NOT normalize globally (use_peak=True, normalize=False)."""
-        from anima.orchestration.graph.output_node import _compute_volumes
+        from animetta import $$$
         wav = _create_sine_wave_wav(str(tmp_path / "nonorm.wav"), max_amplitude=0.3)
         volumes = _compute_volumes(wav)
         # Volumes are in [0, 1] range even if not normalized
@@ -309,14 +309,14 @@ class TestOutputNodeComputeVolumes:
 
     def test_trim_leading_silence_no_silence(self, tmp_path):
         """Audio without silence should not be trimmed."""
-        from anima.orchestration.graph.output_node import _trim_leading_silence
+        from animetta import $$$
         wav = _create_sine_wave_wav(str(tmp_path / "no_silence.wav"))
         result = _trim_leading_silence(wav)
         assert result is None, "Should return None when no silence to trim"
 
     def test_trim_leading_silence_removes_silence(self, tmp_path):
         """Audio with leading silence should be trimmed."""
-        from anima.orchestration.graph.output_node import _trim_leading_silence
+        from animetta import $$$
         wav = _create_wav_with_leading_silence(
             str(tmp_path / "has_silence.wav"),
             silence_sec=0.3, duration_sec=0.3)
@@ -329,7 +329,7 @@ class TestOutputNodeComputeVolumes:
 
     def test_trim_leading_silence_short_silence_ignored(self, tmp_path):
         """Leading silence shorter than 50ms should not be trimmed."""
-        from anima.orchestration.graph.output_node import _trim_leading_silence
+        from animetta import $$$
         wav = _create_wav_with_leading_silence(
             str(tmp_path / "short_silence.wav"),
             silence_sec=0.03, duration_sec=0.3)
@@ -338,14 +338,14 @@ class TestOutputNodeComputeVolumes:
 
     def test_trim_leading_silence_full_silence(self, tmp_path):
         """Fully silent audio should not be trimmed (no onset detected)."""
-        from anima.orchestration.graph.output_node import _trim_leading_silence
+        from animetta import $$$
         wav = _create_silent_wav(str(tmp_path / "full_silence.wav"), duration_sec=1.0)
         result = _trim_leading_silence(wav)
         assert result is None
 
     def test_compute_volumes_skips_leading_silence(self, tmp_path):
         """_trim_leading_silence should remove silence so volumes match speech onset."""
-        from anima.orchestration.graph.output_node import _trim_leading_silence, _compute_volumes
+        from animetta import $$$
         wav = _create_wav_with_leading_silence(
             str(tmp_path / "silence_lead.wav"),
             silence_sec=0.3, duration_sec=0.5)
@@ -362,7 +362,7 @@ class TestOutputNodeComputeVolumes:
 
     def test_compute_volumes_silent_audio_no_trim_error(self, tmp_path):
         """_compute_volumes should handle fully silent audio gracefully."""
-        from anima.orchestration.graph.output_node import _compute_volumes
+        from animetta import $$$
         wav = _create_silent_wav(str(tmp_path / "all_silent.wav"), duration_sec=1.0)
         volumes = _compute_volumes(wav)
         # Silent audio with gain=3.5 might still produce 0s

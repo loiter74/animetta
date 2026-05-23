@@ -1,0 +1,311 @@
+"""
+GLM (ZhipuAI) LLM implementation
+Uses the zhipuai SDK to call Zhipu AI's GLM models
+"""
+
+from typing import AsyncIterator, List, Dict, Any, Optional, TYPE_CHECKING
+from loguru import logger
+from zhipuai import ZhipuAI
+import asyncio
+
+from .interface import LLMInterface
+from animetta import $$$
+from animetta import $$$
+from .glm_message_converter import GLMMessageConverter, GLMToolConverter
+
+if TYPE_CHECKING:
+    from animetta import $$$
+
+
+@ProviderRegistry.register_service("llm", "glm")
+class GLMLLM(LLMInterface):
+    """GLM (Zhipu AI) LLM implementation"""
+
+    def __init__(self, config: GLMLLMConfig):
+        self.config = config
+        self.client = None
+        self._conversation_history: List[Dict[str, Any]] = []
+        self._call_count = 0
+        self._total_input_tokens = 0
+        self._total_output_tokens = 0
+
+    @classmethod
+    def from_config(cls, config: GLMLLMConfig, **kwargs):
+        return cls(config=config)
+
+    async def _ensure_client(self):
+        if self.client is None:
+            self.client = ZhipuAI(api_key=self.config.api_key, disable_token_cache=False)
+            logger.info(f"[GLM] ZhipuAI client initialized")
+
+    async def preload(self) -> None:
+        """Preload the ZhipuAI API client (lightweight, idempotent)"""
+        if self.client is not None:
+            return
+        await self._ensure_client()
+        logger.info(f"[GLM] API client preloaded (model={self.config.model})")
+
+    async def chat_stream(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        tools: Optional[List[Any]] = None,
+    ) -> AsyncIterator[str]:
+        await self._ensure_client()
+
+        messages = self._build_messages(prompt, system_prompt, include_history=True)
+        glm_tools = self._convert_tools_if_needed(tools)
+
+        logger.debug(f"[GLM] Sending message, history count: {len(self._conversation_history)}, tools count: {len(glm_tools) if glm_tools else 0}")
+
+        try:
+            def _create_stream():
+                return self.client.chat.completions.create(
+                    model=self.config.model,
+                    messages=messages,
+                    tools=glm_tools,
+                    stream=True,
+                    temperature=self.config.temperature,
+                )
+
+            response = await asyncio.to_thread(_create_stream)
+            full_response = ""
+
+            for chunk in response:
+                content = self._extract_chunk_content(chunk)
+                if content:
+                    full_response += content
+                    yield content
+
+            self._update_history(prompt, full_response)
+
+        except Exception as e:
+            logger.error(f"[GLM] Chat failed: {e}")
+            raise
+
+    async def chat(
+        self,
+        user_input: str,
+        system_prompt: Optional[str] = None,
+        tools: Optional[List[Any]] = None,
+    ) -> str:
+        await self._ensure_client()
+
+        messages = self._build_messages(user_input, system_prompt, include_history=True)
+        glm_tools = self._convert_tools_if_needed(tools)
+
+        try:
+            def _create_completion():
+                return self.client.chat.completions.create(
+                    model=self.config.model,
+                    messages=messages,
+                    tools=glm_tools,
+                    stream=False,
+                    temperature=self.config.temperature,
+                )
+
+            response = await asyncio.to_thread(_create_completion)
+            full_response = response.choices[0].message.content
+
+            # Track token usage
+            self._track_usage(response)
+
+            self._update_history(user_input, full_response)
+            return full_response
+
+        except Exception as e:
+            logger.error(f"[GLM] Chat failed: {e}")
+            raise
+
+    async def chat_with_tools(
+        self,
+        user_input: str,
+        tools: List[Any],
+        langchain_history: List[Any],
+        system_prompt: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Conversation with tool calls (LangGraph specific)"""
+        await self._ensure_client()
+
+        logger.debug(f"[GLM] chat_with_tools called: tools={len(tools)}, user_input={user_input[:50]}")
+
+        glm_tools = GLMToolConverter.convert_tools(tools)
+        messages = self._build_langchain_messages(langchain_history, system_prompt, user_input)
+
+        logger.debug(f"[GLM] Sending message (tool mode), tools: {len(glm_tools)}, history: {len(messages)}")
+
+        try:
+            def _create_completion():
+                return self.client.chat.completions.create(
+                    model=self.config.model,
+                    messages=messages,
+                    tools=glm_tools,
+                    tool_choice="auto",
+                    stream=False,
+                    temperature=self.config.temperature,
+                )
+
+            response = await asyncio.to_thread(_create_completion)
+
+            # Token 追踪
+            self._track_usage(response)
+
+            return GLMToolConverter.parse_tool_response(response.choices[0].message)
+
+        except Exception as e:
+            logger.error(f"[GLM] Tool call failed: {e}")
+            raise
+
+    def _track_usage(self, response: Any) -> None:
+        """Track token consumption and record OTel metrics."""
+        try:
+            usage = getattr(response, "usage", None)
+            if usage:
+                input_tokens = getattr(usage, "prompt_tokens", 0) or 0
+                output_tokens = getattr(usage, "completion_tokens", 0) or 0
+                self._total_input_tokens += input_tokens
+                self._total_output_tokens += output_tokens
+                logger.debug(
+                    f"[GLM] Token usage: input={input_tokens}, output={output_tokens}, "
+                    f"cumulative input={self._total_input_tokens}, output={self._total_output_tokens}"
+                )
+
+                # OTel metrics: record token usage + cost
+                try:
+                    from animetta import $$$
+                    from animetta import $$$
+
+                    tok = get_llm_tokens()
+                    if tok is not None:
+                        tok.add(input_tokens, {"provider": "glm", "model": self.model, "type": "input"})
+                        tok.add(output_tokens, {"provider": "glm", "model": self.model, "type": "output"})
+
+                    cost = calculate_cost("glm", self.model, input_tokens, output_tokens)
+                    if cost > 0:
+                        cst = get_llm_cost()
+                        if cst is not None:
+                            cst.add(cost, {"provider": "glm", "model": self.model})
+                except Exception as e:
+                    logger.debug(f"[GLM] Token tracking cost metric failed: {e}")
+
+        except Exception as e:
+            logger.debug(f"[GLM] Token tracking failed: {e}")
+
+    def get_token_usage(self) -> Dict[str, int]:
+        """Get cumulative token usage"""
+        return {
+            "input_tokens": self._total_input_tokens,
+            "output_tokens": self._total_output_tokens,
+            "total_tokens": self._total_input_tokens + self._total_output_tokens,
+            "call_count": self._call_count,
+        }
+
+    def _build_messages(
+        self,
+        prompt: str,
+        system_prompt: Optional[str],
+        include_history: bool = True
+    ) -> List[Dict[str, Any]]:
+        """Build messages list"""
+        messages = []
+
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+
+        if include_history:
+            for msg in self._conversation_history:
+                messages.append(msg.copy() if isinstance(msg, dict) else msg)
+
+        messages.append({"role": "user", "content": prompt})
+        return messages
+
+    def _build_langchain_messages(
+        self,
+        langchain_history: List[Any],
+        system_prompt: Optional[str],
+        user_input: str
+    ) -> List[Dict[str, Any]]:
+        """Build GLM messages from LangChain history"""
+        messages = []
+
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+
+        for msg in langchain_history:
+            glm_msg = GLMMessageConverter.convert_to_glm(msg)
+            messages.append(glm_msg)
+            logger.debug(f"[GLM] Converted history message: {type(msg).__name__} -> {glm_msg.get('role')}")
+
+        messages.append({"role": "user", "content": user_input})
+        return messages
+
+    def _convert_tools_if_needed(self, tools: Optional[List[Any]]) -> Optional[List[Dict]]:
+        """Convert tool format if there are tool calls in history"""
+        if not tools:
+            return None
+
+        has_tool_calls = any(
+            msg.get("role") == "assistant" and "tool_calls" in msg
+            for msg in self._conversation_history
+        )
+
+        if has_tool_calls:
+            return GLMToolConverter.convert_tools(tools)
+        return None
+
+    def _extract_chunk_content(self, chunk: Any) -> str:
+        """Extract content from a streaming response chunk"""
+        if hasattr(chunk, 'choices') and chunk.choices:
+            delta = chunk.choices[0].delta
+            if hasattr(delta, 'content') and delta.content:
+                return delta.content
+        elif hasattr(chunk, 'content') and chunk.content:
+            return chunk.content
+        return ""
+
+    def _update_history(self, user_input: str, response: str):
+        """Update conversation history"""
+        self._conversation_history.append({"role": "user", "content": user_input})
+        self._conversation_history.append({"role": "assistant", "content": response})
+
+        self._call_count += 1
+
+        if self._call_count % 100 == 0 and len(self._conversation_history) > 100:
+            self._conversation_history = self._conversation_history[-50:]
+
+    def clear_history(self):
+        self._conversation_history = []
+        logger.debug("[GLM] Conversation history cleared")
+
+    def set_system_prompt(self, prompt: str) -> None:
+        self._conversation_history = [msg for msg in self._conversation_history if msg.get("role") != "system"]
+        if prompt:
+            self._conversation_history.insert(0, {"role": "system", "content": prompt})
+        logger.debug(f"[GLM] System prompt updated: {prompt[:50]}...")
+
+    def get_history(self) -> List[Dict[str, Any]]:
+        return self._conversation_history.copy()
+
+    def handle_interrupt(self, heard_response: str = "") -> None:
+        if heard_response and self._conversation_history:
+            if self._conversation_history[-1].get("role") == "user":
+                self._conversation_history.append({"role": "assistant", "content": heard_response})
+                self._conversation_history.append({"role": "system", "content": "[用户打断了对话]"})
+        logger.info(f"[GLM] Conversation interrupted, partial response saved: {heard_response[:50] if heard_response else '(empty)'}...")
+
+    @property
+    def max_tokens(self) -> Optional[int]:
+        return self.config.max_tokens
+
+    def set_max_tokens(self, max_tokens: int):
+        self.config.max_tokens = max_tokens
+
+    def supports_tool_calls(self) -> bool:
+        return self.config.model.startswith("glm-4")
+
+    def set_memory_from_history(self, conf_uid: str, history_uid: str) -> None:
+        logger.info(f"[GLM] Attempting to restore memory from history: conf_uid={conf_uid}, history_uid={history_uid}")
+
+    async def close(self):
+        self.client = None
+        logger.info("[GLM] Connection closed")

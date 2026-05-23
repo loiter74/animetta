@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Animetta — Colors</title>
+<link rel="icon" href="assets/favicon.svg" />
+<link rel="stylesheet" href="colors_and_type.css" />
+<style>
+  /* Hero swatch ----------------------------------------------------- */
+  .palette-hero {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 24px;
+    margin-top: var(--s-6);
+  }
+  .hero-accent {
+    border-radius: var(--r-2xl);
+    padding: 36px 32px;
+    background:
+      radial-gradient(80% 100% at 100% 0%, #ffb0d3, transparent 60%),
+      linear-gradient(135deg, #e879a8 0%, #b14f7e 100%);
+    color: #2d1b45;
+    box-shadow: 0 24px 64px rgba(232,121,168,0.28);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-accent .hex {
+    font-family: var(--font-mono);
+    font-size: 64px;
+    line-height: 1;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .hero-accent .nm {
+    font-size: var(--fs-10);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    opacity: 0.85;
+    margin-bottom: 14px;
+  }
+  .hero-accent .note {
+    margin-top: 20px;
+    font-size: var(--fs-xs);
+    line-height: var(--lh-relax);
+    max-width: 32ch;
+    opacity: 0.9;
+  }
+  .hero-accent .meta {
+    margin-top: 16px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .hero-accent .meta span {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    background: rgba(45,27,69,0.20);
+    border: 1px solid rgba(45,27,69,0.25);
+    color: #2d1b45;
+    padding: 4px 8px;
+    border-radius: var(--r-sm);
+  }
+
+  .hero-side {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    gap: 24px;
+  }
+  .hero-bg-tile {
+    border-radius: var(--r-2xl);
+    padding: 28px;
+    background: #1a1028;
+    border: 1px solid var(--c-border);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    position: relative;
+  }
+  .hero-bg-tile::after {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(400px 200px at 80% 100%, rgba(232,121,168,0.18), transparent 60%),
+      radial-gradient(300px 200px at 10% 0%, rgba(124,140,245,0.12), transparent 60%);
+    pointer-events: none;
+  }
+  .hero-bg-tile .hex {
+    font-family: var(--font-mono);
+    font-size: 36px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--c-text);
+  }
+  .hero-bg-tile .nm {
+    font-size: var(--fs-10);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--c-text-muted);
+  }
+  .hero-bg-tile .note {
+    font-size: var(--fs-xs);
+    color: var(--c-text-dim);
+    line-height: var(--lh-relax);
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Generic palette grid ------------------------------------------- */
+  .swatch-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .swatch-row.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .swatch-row.cols-5 { grid-template-columns: repeat(5, 1fr); }
+
+  .swatch {
+    border-radius: var(--r-xl);
+    padding: 16px 16px 14px;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 1px solid var(--c-border);
+    position: relative;
+    overflow: hidden;
+  }
+  .swatch .nm {
+    font-size: var(--fs-9);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+  .swatch .hex {
+    font-family: var(--font-mono);
+    font-size: var(--fs-base);
+    font-weight: 600;
+  }
+  .swatch .tok-name {
+    font-family: var(--font-mono);
+    font-size: var(--fs-9);
+    opacity: 0.6;
+    margin-top: 2px;
+  }
+  .swatch.on-dark { color: var(--c-text); }
+  .swatch.on-light { color: #2d1b45; }
+  .swatch.on-dim { color: var(--c-text-dim); }
+
+  /* Usage matrix --------------------------------------------------- */
+  .usage {
+    margin-top: var(--s-4);
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-xl);
+    overflow: hidden;
+  }
+  .usage th, .usage td {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: var(--fs-xs);
+    border-bottom: 1px solid var(--c-border);
+  }
+  .usage th {
+    background: rgba(232,121,168,0.06);
+    font-size: var(--fs-9);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--c-text-dim);
+    font-weight: 600;
+  }
+  .usage td.role { color: var(--c-text); font-weight: 500; }
+  .usage td.tok { color: var(--c-accent); font-family: var(--font-mono); }
+  .usage td.use { color: var(--c-text-dim); }
+  .usage td .chip {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border-radius: 4px;
+    vertical-align: -3px;
+    margin-right: 8px;
+    border: 1px solid var(--c-border);
+  }
+  .usage tr:last-child th,
+  .usage tr:last-child td { border-bottom: 0; }
+
+  /* Bubble pair demo ---------------------------------------------- */
+  .bubble-demo {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-top: var(--s-4);
+  }
+  .bubble-card {
+    padding: 22px;
+    border-radius: var(--r-xl);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+  }
+  .bubble-card h5 {
+    margin: 0 0 14px;
+    font-size: var(--fs-10);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--c-text-muted);
+  }
+  .bubble {
+    padding: 10px 14px;
+    border-radius: var(--r-xl);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-snug);
+    max-width: 22ch;
+    border: 1px solid var(--c-border);
+  }
+  .bubble.user {
+    background: var(--c-user-bubble);
+    color: var(--c-text);
+    border-color: rgba(124,140,245,0.30);
+    margin-left: auto;
+    border-bottom-right-radius: 6px;
+  }
+  .bubble.ai {
+    background: var(--c-ai-bubble);
+    color: var(--c-text);
+    border-color: var(--c-border-accent);
+    border-bottom-left-radius: 6px;
+  }
+  .bubble-card .row { display: flex; }
+  .bubble-card .meta-row {
+    font-family: var(--font-mono);
+    font-size: var(--fs-9);
+    color: var(--c-text-muted);
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--c-border);
+    display: flex;
+    justify-content: space-between;
+  }
+</style>
+</head>
+<body class="ds-page">
+
+<main class="ds-shell">
+
+  <span class="ds-eyebrow">01 · Foundations</span>
+  <h1 class="ds-title">Colors</h1>
+  <p class="ds-lede">
+    Animetta lives on two axes: a deep night-violet <b>surface scale</b> from black
+    to plum, and a single warm <b>sakura-pink accent</b> that does almost all
+    the talking. Anything else is a guest, used in a strict role.
+  </p>
+
+  <!-- Hero -------------------------------------------------------- -->
+  <section class="palette-hero">
+    <div class="hero-accent">
+      <div class="nm">Primary accent</div>
+      <div class="hex">#e879a8</div>
+      <div style="font-family: var(--font-mono); font-size: 11px; opacity: 0.7;">--c-accent</div>
+      <div class="note">
+        Used for every call-to-action, every glow, every "Anima is paying attention"
+        signal. If a screen has no pink, something is wrong — but if a screen has
+        <i>more than ~10%</i> pink coverage, something is wrong too.
+      </div>
+      <div class="meta">
+        <span>HEX&nbsp;#e879a8</span>
+        <span>RGB&nbsp;232 121 168</span>
+        <span>HSL&nbsp;331° 71% 69%</span>
+      </div>
+    </div>
+    <div class="hero-side">
+      <div class="hero-bg-tile">
+        <div>
+          <div class="nm">App background</div>
+          <div class="hex">#1a1028</div>
+          <div style="font-family: var(--font-mono); font-size: 11px; color: var(--c-text-muted);">--c-bg</div>
+        </div>
+        <div class="note">Almost-black violet. Everything else floats above this.</div>
+      </div>
+      <div class="hero-bg-tile" style="background: #241538;">
+        <div>
+          <div class="nm">Surface</div>
+          <div class="hex">#241538</div>
+          <div style="font-family: var(--font-mono); font-size: 11px; color: var(--c-text-muted);">--c-surface</div>
+        </div>
+        <div class="note">The glass-panel substrate, used at 70% opacity with blur.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Surface scale ----------------------------------------------- -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Surface scale</h2>
+    <p class="ds-section-sub">
+      Four steps, each ~10% lighter than the last. Used as a stacking order — <b>bg → surface → panel → card</b>.
+      Anything that floats higher than <code class="tok">--c-card</code> should
+      get a border or glow instead of another lighter fill.
+    </p>
+    <div class="swatch-row">
+      <div class="swatch on-dark" style="background: #1a1028;">
+        <div class="nm">bg</div>
+        <div>
+          <div class="hex">#1a1028</div>
+          <div class="tok-name">--c-bg</div>
+        </div>
+      </div>
+      <div class="swatch on-dark" style="background: #241538;">
+        <div class="nm">surface</div>
+        <div>
+          <div class="hex">#241538</div>
+          <div class="tok-name">--c-surface</div>
+        </div>
+      </div>
+      <div class="swatch on-dark" style="background: #2d1b45;">
+        <div class="nm">panel</div>
+        <div>
+          <div class="hex">#2d1b45</div>
+          <div class="tok-name">--c-panel</div>
+        </div>
+      </div>
+      <div class="swatch on-dark" style="background: #36205a;">
+        <div class="nm">card</div>
+        <div>
+          <div class="hex">#36205a</div>
+          <div class="tok-name">--c-card</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Text colors ------------------------------------------------- -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Text scale</h2>
+    <p class="ds-section-sub">
+      Three steps — never four. <b>Muted</b> is for timestamps and disabled
+      states; <b>dim</b> is for body and labels; <b>text</b> is reserved for the
+      thing the user is actually reading.
+    </p>
+    <div class="swatch-row cols-3">
+      <div class="swatch" style="background: #2d1b45; color: #e8e0f0; min-height: 130px;">
+        <div class="nm" style="color: #e8e0f0;">Primary · text</div>
+        <div style="font-size: var(--fs-lg); line-height: 1.3;">「我在这里呢。」</div>
+        <div>
+          <div class="hex">#e8e0f0</div>
+          <div class="tok-name">--c-text</div>
+        </div>
+      </div>
+      <div class="swatch" style="background: #2d1b45; color: #9b8bb0; min-height: 130px;">
+        <div class="nm" style="color: #9b8bb0;">Secondary · dim</div>
+        <div style="font-size: var(--fs-lg); line-height: 1.3; color: #9b8bb0;">Connected — 14ms</div>
+        <div>
+          <div class="hex">#9b8bb0</div>
+          <div class="tok-name">--c-text-dim</div>
+        </div>
+      </div>
+      <div class="swatch" style="background: #2d1b45; color: #6b5a80; min-height: 130px;">
+        <div class="nm" style="color: #6b5a80;">Tertiary · muted</div>
+        <div style="font-size: var(--fs-lg); line-height: 1.3; color: #6b5a80;">14:32 · Today</div>
+        <div>
+          <div class="hex">#6b5a80</div>
+          <div class="tok-name">--c-text-muted</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Supporting hues --------------------------------------------- -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Supporting hues</h2>
+    <p class="ds-section-sub">
+      Each non-pink color is locked to a single role. They never appear in
+      decoration — only when they're actually meaning something.
+    </p>
+    <div class="swatch-row cols-3">
+      <div class="swatch on-light" style="background: #7c8cf5;">
+        <div class="nm">User bubble · cyber blue</div>
+        <div>
+          <div class="hex">#7c8cf5</div>
+          <div class="tok-name">--c-blue</div>
+        </div>
+      </div>
+      <div class="swatch on-light" style="background: #6ee7b7;">
+        <div class="nm">Mint accent</div>
+        <div>
+          <div class="hex">#6ee7b7</div>
+          <div class="tok-name">--c-mint</div>
+        </div>
+      </div>
+      <div class="swatch on-light" style="background: #f5c872;">
+        <div class="nm">Gold accent</div>
+        <div>
+          <div class="hex">#f5c872</div>
+          <div class="tok-name">--c-gold</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Semantic ------------------------------------------------------- -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Semantic states</h2>
+    <p class="ds-section-sub">
+      For status pills, system feedback and inline validation. These never
+      bleed into character voice (no green-on-success in chat bubbles).
+    </p>
+    <div class="swatch-row cols-3">
+      <div class="swatch on-light" style="background: #4ade80;">
+        <div class="nm">Success</div>
+        <div>
+          <div class="hex">#4ade80</div>
+          <div class="tok-name">--c-success</div>
+        </div>
+      </div>
+      <div class="swatch on-light" style="background: #fbbf24;">
+        <div class="nm">Warning</div>
+        <div>
+          <div class="hex">#fbbf24</div>
+          <div class="tok-name">--c-warning</div>
+        </div>
+      </div>
+      <div class="swatch on-light" style="background: #f87171;">
+        <div class="nm">Error</div>
+        <div>
+          <div class="hex">#f87171</div>
+          <div class="tok-name">--c-error</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bubbles & lines --------------------------------------------- -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Bubbles &amp; lines (alpha tokens)</h2>
+    <p class="ds-section-sub">
+      Animetta's chat is built on two translucent fills that read as colored mist
+      against the violet backdrop, not solid bricks.
+    </p>
+    <div class="bubble-demo">
+      <div class="bubble-card">
+        <h5>User · cyber blue, 20%</h5>
+        <div class="row"><div class="bubble user">今天天气真好啊</div></div>
+        <div class="row" style="margin-top: 8px;"><div class="bubble user">我们去散步吧 (*´ω｀*)</div></div>
+        <div class="meta-row">
+          <span>--c-user-bubble</span>
+          <span>rgba(124,140,245,0.20)</span>
+        </div>
+      </div>
+      <div class="bubble-card">
+        <h5>Anima · sakura pink, 15%</h5>
+        <div class="row"><div class="bubble ai">嗯！我也想出去走走～</div></div>
+        <div class="row" style="margin-top: 8px;"><div class="bubble ai">要一起看樱花吗？</div></div>
+        <div class="meta-row">
+          <span>--c-ai-bubble</span>
+          <span>rgba(232,121,168,0.15)</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Glow tokens ------------------------------------------------- -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Glows &amp; borders</h2>
+    <p class="ds-section-sub">
+      Animetta's depth comes from <i>glow + border</i>, not shadow. Glows are
+      always the accent tinted to 15–40% alpha and never blurred more than 12px
+      — softer makes the UI feel hazy, harder makes it feel neon.
+    </p>
+    <div class="swatch-row cols-3">
+      <div class="swatch" style="background: #2d1b45; border-color: var(--c-border);">
+        <div class="nm" style="color: var(--c-text-dim);">Hairline border</div>
+        <div>
+          <div class="hex" style="color: var(--c-text);">rgba(255,255,255,0.08)</div>
+          <div class="tok-name" style="color: var(--c-text-muted);">--c-border</div>
+        </div>
+      </div>
+      <div class="swatch" style="background: #2d1b45; border: 1px solid var(--c-border-accent); box-shadow: inset 0 0 0 1px var(--c-border-accent);">
+        <div class="nm" style="color: var(--c-accent);">Accent border</div>
+        <div>
+          <div class="hex" style="color: var(--c-text);">rgba(232,121,168,0.30)</div>
+          <div class="tok-name" style="color: var(--c-text-muted);">--c-border-accent</div>
+        </div>
+      </div>
+      <div class="swatch" style="background: #2d1b45; box-shadow: 0 0 24px 4px var(--c-glow); border-color: var(--c-border-accent);">
+        <div class="nm" style="color: var(--c-accent);">Active glow</div>
+        <div>
+          <div class="hex" style="color: var(--c-text);">rgba(232,121,168,0.40)</div>
+          <div class="tok-name" style="color: var(--c-text-muted);">--c-glow</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Usage matrix ------------------------------------------------ -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Where each color goes</h2>
+    <p class="ds-section-sub">
+      Memorize the table or the system collapses into noise. If a new component
+      needs a color outside this list, escalate it — don't invent.
+    </p>
+    <table class="usage">
+      <thead>
+        <tr><th>Role</th><th>Token</th><th>Used for</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="role"><span class="chip" style="background:#1a1028;"></span>App background</td>
+          <td class="tok">--c-bg</td>
+          <td class="use">Window backdrop. Almost never directly visible — sits under glass panels and a scene background image.</td>
+        </tr>
+        <tr>
+          <td class="role"><span class="chip" style="background:#241538;"></span>Surface</td>
+          <td class="tok">--c-surface</td>
+          <td class="use">Glass panels (at 70% alpha), main sidebar, modal substrate.</td>
+        </tr>
+        <tr>
+          <td class="role"><span class="chip" style="background:#2d1b45;"></span>Panel</td>
+          <td class="tok">--c-panel</td>
+          <td class="use">Nested panels inside a glass: input field, dropdown surface.</td>
+        </tr>
+        <tr>
+          <td class="role"><span class="chip" style="background:#36205a;"></span>Card</td>
+          <td class="tok">--c-card</td>
+          <td class="use">List rows, meme cards, hovered selection.</td>
+        </tr>
+        <tr>
+          <td class="role"><span class="chip" style="background:#e879a8;"></span>Accent</td>
+          <td class="tok">--c-accent</td>
+          <td class="use">Primary buttons. Send icon. Active tab underline. AI bubble border. Glow source.</td>
+        </tr>
+        <tr>
+          <td class="role"><span class="chip" style="background:#7c8cf5;"></span>Cyber blue</td>
+          <td class="tok">--c-blue</td>
+          <td class="use">User chat bubble (at 20% alpha). Never as a fill on its own.</td>
+        </tr>
+        <tr>
+          <td class="role"><span class="chip" style="background:#4ade80;"></span>Success</td>
+          <td class="tok">--c-success</td>
+          <td class="use">Connection indicator dot. Saved-state toast. Audio "you spoke" pulse.</td>
+        </tr>
+        <tr>
+          <td class="role"><span class="chip" style="background:#fbbf24;"></span>Warning</td>
+          <td class="tok">--c-warning</td>
+          <td class="use">Latency-over-threshold pill. Unsaved-changes badge.</td>
+        </tr>
+        <tr>
+          <td class="role"><span class="chip" style="background:#f87171;"></span>Error</td>
+          <td class="tok">--c-error</td>
+          <td class="use">Disconnected. Voice "cannot hear" hint. Live2D failed-to-load message.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+</main>
+</body>
+</html>

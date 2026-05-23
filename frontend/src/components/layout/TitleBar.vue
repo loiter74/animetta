@@ -35,19 +35,15 @@ function goTo(name: string) {
     <div class="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-c-accent/20 to-transparent" />
 
     <div class="relative flex items-center justify-between w-full">
-      <div class="flex-1 flex items-center">
-        <div class="flex items-center gap-2 mr-2">
-          <span class="w-[10px] h-[10px] rounded-full bg-c-error" />
-          <span class="w-[10px] h-[10px] rounded-full bg-c-warning" />
-          <span class="w-[10px] h-[10px] rounded-full bg-c-success" />
-        </div>
-        <span class="text-sm font-medium text-c-text tracking-wide">Anima</span>
-        <div class="flex items-center gap-2 ml-4">
-          <span class="w-[7px] h-[7px] rounded-full" :class="statusColors[store.status]" />
-          <span class="text-10px text-c-text-dim">{{ statusLabels[store.status] }}</span>
-        </div>
+      <!-- Left: traffic lights + brand -->
+      <div class="flex items-center gap-2">
+        <span class="w-[10px] h-[10px] rounded-full bg-c-error" />
+        <span class="w-[10px] h-[10px] rounded-full bg-c-warning" />
+        <span class="w-[10px] h-[10px] rounded-full bg-c-success" />
+        <span class="text-sm font-medium text-c-text tracking-wide ml-2">Anima</span>
       </div>
 
+      <!-- Center: nav buttons -->
       <div class="flex items-center gap-2">
         <button
           @click="goTo('music')"
@@ -76,6 +72,12 @@ function goTo(name: string) {
         >
           {{ route.name === 'dashboard' ? 'Chat' : 'Dashboard' }}
         </button>
+      </div>
+
+      <!-- Right: connection status -->
+      <div class="flex items-center gap-2">
+        <span class="w-[7px] h-[7px] rounded-full" :class="statusColors[store.status]" />
+        <span class="text-10px text-c-text-dim whitespace-nowrap">{{ statusLabels[store.status] }}</span>
       </div>
     </div>
   </div>

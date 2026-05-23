@@ -5,11 +5,8 @@ Tests for EmotionParamMapper — emotion to Live2D parameter mapping.
 import pytest
 from unittest.mock import patch
 
-from anima.avatar.mappers.emotion_param_mapper import (
-    EmotionParamMapper,
-    DEFAULT_EMOTION_MAPPINGS,
-)
-from anima.avatar.mappers.base import ExpressionFrame, ParameterState
+from animetta import $$$
+from animetta import $$$
 
 
 # ============================================================

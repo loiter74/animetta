@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">🤖 Anima — AI Virtual Companion / VTuber Framework</h1>
+  <h1 align="center">🤖 Animetta — AI Virtual Companion / VTuber Framework</h1>
   <p align="center">
     可配置、可扩展的 AI 虚拟伴侣框架<br>
     插件化架构 · LangGraph 编排 · 混合记忆 · Live2D 驱动 · 多模态交互
@@ -17,7 +17,7 @@
 
 ## ✨ 项目亮点
 
-Anima 不是又一个 "ChatGPT + TTS" 的简单拼接。它是一个**工程化的 AI 伴侣框架**，核心设计原则是**可配置、可观测、可扩展**：
+Animetta 不是又一个 "ChatGPT + TTS" 的简单拼接。它是一个**工程化的 AI 伴侣框架**，核心设计原则是**可配置、可观测、可扩展**：
 
 - **LangGraph 状态图编排** — 不是线性 pipeline，而是基于 LangGraph 的有向图，支持条件路由、工具调用循环、中断恢复
 - **插件化 Provider 架构** — 通过 `@ProviderRegistry` 装饰器注册新服务商，零侵入核心代码
@@ -174,7 +174,7 @@ LLM Tool Call → MinecraftBridge (JSON over stdin/stdout) → Mineflayer Bot
 # config/observability.yaml
 tracing:
   enabled: true
-  service_name: anima
+  service_name: animetta
 otlp:
   enabled: true          # 双写：SQLite + OTel Collector
   endpoint: http://localhost:4317
@@ -222,7 +222,7 @@ export LLM_API_KEY="your-api-key"
 
 ```bash
 # 后端
-python -m anima.core.socketio_server
+python -m animetta.core.socketio_server
 
 # 前端 (另一个终端)
 cd frontend && npm run dev
@@ -233,13 +233,13 @@ cd frontend && npm run dev
 ## 📁 项目结构
 
 ```
-Anima-LLM-Vtuber/
+animetta/
 ├── config/
 │   ├── config.yaml               # 主配置
 │   ├── profiles/                  # 服务方案 (mock/openai/glm/ollama)
 │   ├── personas/                  # 人设配置
 │   └── observability.yaml         # 追踪 & 指标配置
-├── src/anima/
+├── src/animetta/
 │   ├── core/                      # 入口 + 服务容器
 │   ├── orchestration/
 │   │   ├── graph/                 # LangGraph 状态图 + Nodes

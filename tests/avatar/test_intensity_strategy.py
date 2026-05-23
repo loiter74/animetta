@@ -4,8 +4,8 @@ Tests for IntensityBasedStrategy — intensity-based time allocation.
 
 import pytest
 
-from anima.avatar.strategies.intensity import IntensityBasedStrategy
-from anima.avatar.strategies.base import TimelineSegment, TimelineConfig
+from animetta import $$$
+from animetta import $$$
 
 
 # ============================================================

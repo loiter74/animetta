@@ -13,7 +13,7 @@ class TestMemeStoreInit:
 
     def test_meme_store_creates_with_valid_wiki(self):
         """MemeStore.__init__ should import WikiPage and store it."""
-        from anima.memory.meme.store import MemeStore
+        from animetta import $$$
 
         wiki = MagicMock()
         store = MemeStore(wiki)
@@ -28,7 +28,7 @@ class TestFuzzyLayerStop:
 
     def test_stop_survives_fuzzy_without_close(self):
         """stop() with FuzzyLayer that lacks close() should not raise."""
-        from anima.memory.system import MemorySystem
+        from animetta import $$$
 
         # Simulate a minimal config that avoids full init
         config = {
@@ -72,7 +72,7 @@ class TestMemorySystemGracefulDegrade:
 
     def test_meme_pool_none_after_failure(self):
         """When MemePool init fails, meme_pool should remain None, not crash."""
-        from anima.memory.system import MemorySystem
+        from animetta import $$$
         import tempfile
 
         config = {

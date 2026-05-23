@@ -4,9 +4,9 @@
 apiVersion: 1
 
 providers:
-  - name: "Anima Dashboards"
+  - name: "Animetta Dashboards"
     orgId: 1
-    folder: "Anima"
+    folder: "Animetta"
     type: file
     disableDeletion: false
     updateIntervalSeconds: 10

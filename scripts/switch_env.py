@@ -60,7 +60,7 @@ def main():
     project_root = Path(__file__).parent.parent
     env_file = project_root / ".env"
 
-    print_header("Anima 环境配置切换工具")
+    print_header("Animetta 环境配置切换工具")
     print(f"项目根目录: {project_root}\n")
 
     # 备份现有 .env 文件
@@ -116,7 +116,7 @@ def main():
     print()
     with open(env_file, 'r', encoding='utf-8') as f:
         for line in f:
-            if line.strip().startswith('ANIMA_'):
+            if line.strip().startswith('ANIMETTA_'):
                 print(f"  {line.rstrip()}")
     print()
 
@@ -124,7 +124,7 @@ def main():
     print()
     print("下一步:")
     print("  1. 编辑 .env 文件，确认路径正确")
-    print("  2. 启动服务: python -m anima.socketio_server")
+    print("  2. 启动服务: python -m animetta.socketio_server")
 
 
 if __name__ == "__main__":

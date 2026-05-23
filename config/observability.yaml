@@ -1,4 +1,4 @@
-# Anima 可观测性配置
+# Animetta 可观测性配置
 # 支持同时启用 LangSmith 和 LangFuse, 互不冲突
 
 # ========================================
@@ -9,7 +9,7 @@
 langsmith:
   enabled: false
   # api_key: "lsv2_pt_xxx"       # 或通过环境变量 LANGCHAIN_API_KEY 设置
-  project: "anima"                # 项目名称
+  project: "animetta"                # 项目名称
   # endpoint: "https://api.smith.langchain.com"  # 默认
 
 # ========================================
@@ -28,7 +28,7 @@ langfuse:
 # ========================================
 tracing:
   enabled: true                    # 关闭时使用 NoOpTracerProvider, 零开销
-  service_name: "anima"           # 服务名称
+  service_name: "animetta"           # 服务名称
   max_export_batch_size: 512      # 批量写入最大条数
   schedule_delay_millis: 5000     # 批量写入间隔(ms)
 

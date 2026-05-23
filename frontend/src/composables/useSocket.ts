@@ -14,7 +14,7 @@ let socket: Socket | null = null
 let _initialized = false
 
 /**
- * Create a singleton Socket.IO connection to the Anima backend.
+ * Create a singleton Socket.IO connection to the Animetta backend.
  * Call once at app startup. Composables import the socket ref for use.
  */
 export function useSocket() {

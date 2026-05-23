@@ -8,27 +8,27 @@ class TestUserProfile:
     """UserProfile dataclass behavior."""
 
     def test_is_empty_when_no_data(self):
-        from anima.memory.user_profile import UserProfile
+        from animetta import $$$
         p = UserProfile()
         assert p.is_empty() is True
 
     def test_is_empty_when_has_static(self):
-        from anima.memory.user_profile import UserProfile
+        from animetta import $$$
         p = UserProfile(static=["likes Python"])
         assert p.is_empty() is False
 
     def test_is_empty_when_has_dynamic(self):
-        from anima.memory.user_profile import UserProfile
+        from animetta import $$$
         p = UserProfile(dynamic=["debugging issue #42"])
         assert p.is_empty() is False
 
     def test_format_for_prompt_empty(self):
-        from anima.memory.user_profile import UserProfile
+        from animetta import $$$
         p = UserProfile()
         assert p.format_for_prompt() == ""
 
     def test_format_for_prompt_with_static(self):
-        from anima.memory.user_profile import UserProfile
+        from animetta import $$$
         p = UserProfile(static=["likes Python", "uses Vim"])
         result = p.format_for_prompt()
         assert "likes Python" in result
@@ -36,7 +36,7 @@ class TestUserProfile:
         assert "current" in result or "动态" in result or "画像" in result
 
     def test_format_for_prompt_with_dynamic(self):
-        from anima.memory.user_profile import UserProfile
+        from animetta import $$$
         p = UserProfile(dynamic=["debugging rate limits"])
         result = p.format_for_prompt()
         assert "debugging rate limits" in result
@@ -46,7 +46,7 @@ class TestUserProfileBuilder:
     """UserProfileBuilder build logic."""
 
     def test_build_empty_when_no_sources(self):
-        from anima.memory.user_profile import UserProfileBuilder
+        from animetta import $$$
 
         builder = UserProfileBuilder(
             wiki_manager=None,
@@ -55,7 +55,7 @@ class TestUserProfileBuilder:
         assert profile.is_empty() is True
 
     def test_build_with_short_term_memory(self):
-        from anima.memory.user_profile import UserProfile, UserProfileBuilder
+        from animetta import $$$
 
         mock_stm = MagicMock()
         mock_stm.get_recent = MagicMock(return_value=[

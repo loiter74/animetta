@@ -34,8 +34,8 @@ for _p in (str(_PROJECT_ROOT), str(_SRC_ROOT)):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-from anima.memory.config import MemoryConfig, SearchConfig, ChunkConfig, EmbeddingConfig
-from anima.memory.manager import MemoryManager
+from animetta import $$$
+from animetta import $$$
 
 from evaluations.rag.metrics import (
     recall_at_k,

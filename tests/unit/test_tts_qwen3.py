@@ -2,9 +2,9 @@
 
 import pytest
 
-from anima.config.providers.tts.qwen3 import Qwen3TTSConfig
-from anima.services.speech.tts.qwen3_tts import Qwen3TTSTTS
-from anima.config.core.registry import ProviderRegistry
+from animetta import $$$
+from animetta import $$$
+from animetta import $$$
 
 
 class TestQwen3TTSConfigUnit:

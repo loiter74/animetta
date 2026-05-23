@@ -9,7 +9,7 @@ class TestInitMetrics:
 
     def test_init_creates_meter(self):
         """init_metrics returns a valid Meter and sets initialized flag."""
-        from anima.tracing import metrics as metrics_mod
+        from animetta import $$$
 
         # Reset module state
         metrics_mod._initialized = False
@@ -28,7 +28,7 @@ class TestInitMetrics:
 
     def test_init_is_idempotent(self):
         """Calling init_metrics twice returns same meter without re-initializing."""
-        from anima.tracing import metrics as metrics_mod
+        from animetta import $$$
 
         metrics_mod._initialized = False
         metrics_mod._meter = None
@@ -48,7 +48,7 @@ class TestInitMetrics:
 
     def test_all_instruments_created(self):
         """init_metrics creates all 17 instruments."""
-        from anima.tracing import metrics as metrics_mod
+        from animetta import $$$
 
         metrics_mod._initialized = False
         metrics_mod._meter = None
@@ -79,7 +79,7 @@ class TestAccessors:
 
     def test_get_node_duration_after_init(self):
         """get_node_duration returns Histogram after initialization."""
-        from anima.tracing import metrics as metrics_mod
+        from animetta import $$$
 
         metrics_mod._initialized = False
         metrics_mod._meter = None
@@ -101,7 +101,7 @@ class TestAccessors:
 
     def test_accessor_before_init_returns_none_safe(self):
         """Accessors before init return None/NoOp but don't crash."""
-        from anima.tracing import metrics as metrics_mod
+        from animetta import $$$
 
         metrics_mod._initialized = False
         metrics_mod._meter = None

@@ -7,10 +7,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from anima.memory.wiki.query import WikiQuery
-from anima.memory.wiki.models import PageType, WikiPage
-from anima.memory.models.base import SearchResult
-from anima.memory.models.turns import MemoryTurn
+from animetta import $$$
+from animetta import $$$
+from animetta import $$$
+from animetta import $$$
 
 
 @pytest.fixture

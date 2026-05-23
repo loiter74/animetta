@@ -4,8 +4,8 @@ Tests for PositionBasedStrategy — even time distribution of emotion segments.
 
 import pytest
 
-from anima.avatar.strategies.position import PositionBasedStrategy
-from anima.avatar.strategies.base import TimelineSegment, TimelineConfig
+from animetta import $$$
+from animetta import $$$
 
 
 # ============================================================

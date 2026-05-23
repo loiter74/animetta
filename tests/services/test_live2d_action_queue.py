@@ -9,7 +9,7 @@ class TestActionMessage:
     """ActionMessage data class tests."""
 
     def test_create_action_message(self):
-        from anima.services.live2d.action_queue import ActionMessage, QueuePolicy
+        from animetta import $$$
         msg = ActionMessage(
             action_id="test_1",
             action={"type": "expression", "name": "happy"},
@@ -22,7 +22,7 @@ class TestActionMessage:
         assert msg.queue_policy == QueuePolicy.APPEND
 
     def test_queue_policy_enum_conversion(self):
-        from anima.services.live2d.action_queue import ActionMessage, QueuePolicy
+        from animetta import $$$
         msg = ActionMessage(
             action_id="test",
             action={},
@@ -31,7 +31,7 @@ class TestActionMessage:
         assert msg.queue_policy == QueuePolicy.REPLACE
 
     def test_queue_policy_invalid_value(self):
-        from anima.services.live2d.action_queue import ActionMessage
+        from animetta import $$$
         with pytest.raises(ValueError):
             ActionMessage(
                 action_id="test",
@@ -45,15 +45,11 @@ class TestLive2DActionQueueBasic:
 
     @pytest.fixture
     def queue(self):
-        from anima.services.live2d.action_queue import (
-            Live2DActionQueue, OverflowPolicy,
-        )
+        from animetta import $$$
         return Live2DActionQueue()
 
     def test_init_defaults(self):
-        from anima.services.live2d.action_queue import (
-            Live2DActionQueue, OverflowPolicy,
-        )
+        from animetta import $$$
         q = Live2DActionQueue()
         assert q.max_size == 120
         assert q.overflow_policy == OverflowPolicy.DROP_OLDEST
@@ -62,22 +58,20 @@ class TestLive2DActionQueueBasic:
         assert q.current_action is None
 
     def test_init_custom(self):
-        from anima.services.live2d.action_queue import (
-            Live2DActionQueue, OverflowPolicy,
-        )
+        from animetta import $$$
         q = Live2DActionQueue(max_size=10, overflow_policy=OverflowPolicy.REJECT)
         assert q.max_size == 10
         assert q.overflow_policy == OverflowPolicy.REJECT
 
     def test_queue_size_property(self):
-        from anima.services.live2d.action_queue import Live2DActionQueue, ActionMessage
+        from animetta import $$$
         q = Live2DActionQueue()
         assert q.queue_size == 0
         q.queue.append(ActionMessage("a", {}, queue_policy="append"))
         assert q.queue_size == 1
 
     def test_clear_queue(self):
-        from anima.services.live2d.action_queue import Live2DActionQueue, ActionMessage
+        from animetta import $$$
         q = Live2DActionQueue()
         q.queue.append(ActionMessage("a", {}, queue_policy="append"))
         q.queue.append(ActionMessage("b", {}, queue_policy="append"))
@@ -90,7 +84,7 @@ class TestLive2DActionQueueEnqueue:
 
     @pytest.mark.asyncio
     async def test_enqueue_append(self):
-        from anima.services.live2d.action_queue import Live2DActionQueue, ActionMessage
+        from animetta import $$$
         q = Live2DActionQueue()
         result = await q.enqueue(ActionMessage("a", {"type": "test"}, queue_policy="append"))
         assert result["ok"] is True
@@ -98,7 +92,7 @@ class TestLive2DActionQueueEnqueue:
 
     @pytest.mark.asyncio
     async def test_enqueue_replace_clears_queue(self):
-        from anima.services.live2d.action_queue import Live2DActionQueue, ActionMessage, QueuePolicy
+        from animetta import $$$
         q = Live2DActionQueue()
         q.queue.append(ActionMessage("old1", {}, queue_policy="append"))
         q.queue.append(ActionMessage("old2", {}, queue_policy="append"))
@@ -110,7 +104,7 @@ class TestLive2DActionQueueEnqueue:
 
     @pytest.mark.asyncio
     async def test_enqueue_interrupt(self):
-        from anima.services.live2d.action_queue import Live2DActionQueue, ActionMessage, QueuePolicy
+        from animetta import $$$
         q = Live2DActionQueue()
         q.queue.append(ActionMessage("old1", {}, queue_policy="append"))
 
@@ -121,9 +115,7 @@ class TestLive2DActionQueueEnqueue:
 
     @pytest.mark.asyncio
     async def test_process_queue_with_multiple_actions(self):
-        from anima.services.live2d.action_queue import (
-            Live2DActionQueue, Live2DActionMutex, ActionMessage,
-        )
+        from animetta import $$$
 
         # Use a zero-cooldown mutex so actions process quickly
         q = Live2DActionQueue(mutex=Live2DActionMutex(cooldown_ms=0))
@@ -138,7 +130,7 @@ class TestLive2DActionQueueEnqueue:
 
     @pytest.mark.asyncio
     async def test_process_queue_stops_when_empty(self):
-        from anima.services.live2d.action_queue import Live2DActionQueue, ActionMessage
+        from animetta import $$$
 
         q = Live2DActionQueue()
         q.set_execute_callback(AsyncMock())
@@ -150,7 +142,7 @@ class TestLive2DActionQueueEnqueue:
 
     @pytest.mark.asyncio
     async def test_stop_queue(self):
-        from anima.services.live2d.action_queue import Live2DActionQueue, ActionMessage
+        from animetta import $$$
 
         q = Live2DActionQueue()
         q.set_execute_callback(AsyncMock())
@@ -163,7 +155,7 @@ class TestLive2DActionQueueEnqueue:
     @pytest.mark.asyncio
     async def test_no_callback_logs_warning(self):
         """Enqueuing without a callback should not crash."""
-        from anima.services.live2d.action_queue import Live2DActionQueue, ActionMessage
+        from animetta import $$$
 
         q = Live2DActionQueue()
         # Enqueue and stop - should not raise

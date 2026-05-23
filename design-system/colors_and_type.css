@@ -1,0 +1,233 @@
+/* =========================================================================
+   Anima Design System — Tokens
+   Source of truth: frontend/uno.config.ts (loiter74/Anima-LLM-Vtuber)
+   Aesthetic: 日系二次元 — anime night sky, sakura-pink accent, glass panels.
+   ========================================================================= */
+
+:root {
+  /* ---------- SURFACE SCALE (deep night-violet) ------------------------ */
+  --c-bg:        #1a1028;
+  --c-surface:   #241538;
+  --c-panel:     #2d1b45;
+  --c-card:      #36205a;
+
+  /* ---------- TEXT ----------------------------------------------------- */
+  --c-text:        #e8e0f0;
+  --c-text-dim:    #9b8bb0;
+  --c-text-muted:  #6b5a80;
+
+  /* ---------- ACCENT (sakura pink — Anima's heart) -------------------- */
+  --c-accent:        #e879a8;
+  --c-accent-hover:  #f090c0;
+  --c-accent-soft:   rgba(232, 121, 168, 0.15);
+  --c-glow:          rgba(232, 121, 168, 0.40);
+  --c-glow-soft:     rgba(232, 121, 168, 0.15);
+
+  /* ---------- SUPPORTING HUES ----------------------------------------- */
+  --c-blue:  #7c8cf5;    /* user message bubble                 */
+  --c-mint:  #6ee7b7;
+  --c-gold:  #f5c872;
+
+  /* ---------- SEMANTIC ------------------------------------------------- */
+  --c-success: #4ade80;
+  --c-warning: #fbbf24;
+  --c-error:   #f87171;
+
+  /* ---------- LINES + BUBBLES ----------------------------------------- */
+  --c-border:        rgba(255, 255, 255, 0.08);
+  --c-border-accent: rgba(232, 121, 168, 0.30);
+  --c-user-bubble:   rgba(124, 140, 245, 0.20);
+  --c-ai-bubble:     rgba(232, 121, 168, 0.15);
+
+  /* ---------- RADII ---------------------------------------------------- */
+  --r-sm:   6px;
+  --r-md:   8px;
+  --r-lg:  12px;
+  --r-xl:  16px;
+  --r-2xl: 20px;
+  --r-full: 9999px;
+
+  /* ---------- SPACING -------------------------------------------------- */
+  --s-1:    4px;
+  --s-1_5:  6px;
+  --s-2:    8px;
+  --s-2_5: 10px;
+  --s-3:   12px;
+  --s-4:   16px;
+  --s-5:   20px;
+  --s-6:   24px;
+  --s-8:   32px;
+  --s-10:  40px;
+  --s-12:  48px;
+
+  /* ---------- SHADOWS + GLOWS ----------------------------------------- */
+  --shadow-soft:         0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-panel:        0 20px 48px rgba(0, 0, 0, 0.45);
+  --shadow-glow-accent:  0 0 8px rgba(232, 121, 168, 0.6);
+  --shadow-glow-success: 0 0 8px rgba(74, 222, 128, 0.6);
+  --shadow-glow-violet:  0 0 12px rgba(168, 130, 255, 0.5);
+
+  /* ---------- MOTION --------------------------------------------------- */
+  --d-fast: 150ms;
+  --d-base: 200ms;
+  --d-slow: 300ms;
+  --ease-out-expo:  cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-back-soft: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ---------- TYPE ----------------------------------------------------- */
+  /* Anima ships no webfont. It relies on the OS stack for CJK fidelity. */
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Hiragino Sans", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  --font-mono:
+    "JetBrains Mono", "SF Mono", Menlo, Consolas,
+    "Source Han Mono SC", monospace;
+
+  /* Size scale — Anima is a small-text product. Most copy is 12–14px. */
+  --fs-9:    9px;     /* timestamp foot, meme tag                */
+  --fs-10:  10px;     /* badges, button caption                   */
+  --fs-xs:  12px;     /* secondary body                           */
+  --fs-sm:  14px;     /* primary body, chat message               */
+  --fs-base:16px;
+  --fs-lg:  18px;     /* meme card headline                       */
+  --fs-xl:  20px;     /* welcome heading                          */
+  --fs-2xl: 28px;     /* page title                               */
+  --fs-3xl: 40px;     /* hero / display                           */
+
+  /* line-heights */
+  --lh-tight:  1.15;
+  --lh-snug:   1.30;
+  --lh-body:   1.50;
+  --lh-relax:  1.65;
+}
+
+/* =========================================================================
+   Page chrome — every doc page in this design system inherits these.
+   ========================================================================= */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--c-bg);
+  color: var(--c-text);
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Subtle starfield + sakura aurora — Anima's signature page backdrop. */
+body.ds-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(1100px 600px at 88% -10%,
+       rgba(232, 121, 168, 0.18), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%,
+       rgba(124, 140, 245, 0.14), transparent 60%),
+    radial-gradient(600px 400px at 50% 50%,
+       rgba(168, 130, 255, 0.06), transparent 70%),
+    var(--c-bg);
+}
+
+/* Shared layout primitives ------------------------------------------------ */
+
+.ds-shell {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 64px 48px 96px;
+}
+
+.ds-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-10);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+  font-weight: 600;
+}
+.ds-eyebrow::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--c-accent);
+  box-shadow: var(--shadow-glow-accent);
+}
+
+.ds-title {
+  font-size: var(--fs-3xl);
+  font-weight: 700;
+  line-height: var(--lh-tight);
+  letter-spacing: -0.02em;
+  margin: var(--s-3) 0 var(--s-4);
+}
+
+.ds-lede {
+  font-size: var(--fs-base);
+  color: var(--c-text-dim);
+  max-width: 64ch;
+  line-height: var(--lh-relax);
+  margin: 0;
+}
+
+.ds-section {
+  margin-top: var(--s-12);
+}
+
+.ds-section-title {
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 var(--s-2);
+}
+
+.ds-section-sub {
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+  margin: 0 0 var(--s-6);
+  max-width: 60ch;
+}
+
+.ds-rule {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--c-border) 12%,
+    var(--c-border) 88%,
+    transparent);
+  border: 0;
+  margin: var(--s-8) 0;
+}
+
+/* Reusable Anima glass panel --------------------------------------------- */
+
+.ds-glass {
+  background: rgba(36, 21, 56, 0.70);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-2xl);
+  box-shadow: var(--shadow-panel);
+}
+
+/* Token chips, used across docs ------------------------------------------ */
+
+.tok {
+  font-family: var(--font-mono);
+  font-size: var(--fs-10);
+  color: var(--c-text-muted);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-sm);
+  padding: 2px 6px;
+}
+
+.tok-accent { color: var(--c-accent); border-color: var(--c-border-accent); }

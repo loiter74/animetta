@@ -15,8 +15,8 @@
 ### Task 1: PageType 加 MEME + Wiki 目录初始化
 
 **Files:**
-- Modify: `src/anima/memory/wiki/models.py`
-- Modify: `src/anima/memory/wiki/manager.py`
+- Modify: `src/animetta/memory/wiki/models.py`
+- Modify: `src/animetta/memory/wiki/manager.py`
 
 **Step 1: PageType 加 MEME**
 
@@ -64,7 +64,7 @@ Expected: no error
 **Step 4: Commit**
 
 ```bash
-git add src/anima/memory/wiki/models.py src/anima/memory/wiki/manager.py
+git add src/animetta/memory/wiki/models.py src/animetta/memory/wiki/manager.py
 git commit -m "refactor(memory): add PageType.MEME and wiki/memes/ directory"
 ```
 
@@ -73,9 +73,9 @@ git commit -m "refactor(memory): add PageType.MEME and wiki/memes/ directory"
 ### Task 2: MemeStore 改为 Wiki 适配层
 
 **Files:**
-- Rewrite: `src/anima/memory/meme/store.py`
-- Modify: `src/anima/memory/meme/engine.py`
-- Modify: `src/anima/memory/system.py`
+- Rewrite: `src/animetta/memory/meme/store.py`
+- Modify: `src/animetta/memory/meme/engine.py`
+- Modify: `src/animetta/memory/system.py`
 
 **Step 1: 重写 MemeStore，读写走 wiki**
 
@@ -240,7 +240,7 @@ Expected: 12 passed
 **Step 5: Commit**
 
 ```bash
-git add src/anima/memory/meme/ src/anima/memory/system.py
+git add src/animetta/memory/meme/ src/animetta/memory/system.py
 git commit -m "refactor(memory): MemeStore backed by WikiManager"
 ```
 
@@ -313,8 +313,8 @@ git commit -m "feat: migrate FuzzyMemory → wiki synthesis pages"
 ### Task 4: 实现 FuzzyLayer 虚层
 
 **Files:**
-- Create: `src/anima/memory/fuzzy_layer.py`
-- Modify: `src/anima/memory/__init__.py`
+- Create: `src/animetta/memory/fuzzy_layer.py`
+- Modify: `src/animetta/memory/__init__.py`
 
 **Step 1: 创建 FuzzyLayer**
 
@@ -436,7 +436,7 @@ Run: `PYTHONPATH=src python -c "from anima.memory.fuzzy_layer import FuzzyLayer;
 **Step 4: Commit**
 
 ```bash
-git add src/anima/memory/fuzzy_layer.py src/anima/memory/__init__.py
+git add src/animetta/memory/fuzzy_layer.py src/animetta/memory/__init__.py
 git commit -m "refactor(memory): add FuzzyLayer — runtime fuzzification without storage"
 ```
 
@@ -445,8 +445,8 @@ git commit -m "refactor(memory): add FuzzyLayer — runtime fuzzification withou
 ### Task 5: MemoryMiddleware 改用 FuzzyLayer
 
 **Files:**
-- Modify: `src/anima/orchestration/graph/memory_middleware.py`
-- Modify: `src/anima/memory/system.py`
+- Modify: `src/animetta/orchestration/graph/memory_middleware.py`
+- Modify: `src/animetta/memory/system.py`
 
 **Step 1: system.py 初始化 FuzzyLayer**
 
@@ -525,7 +525,7 @@ Run: `PYTHONPATH=src python -c "from anima.orchestration.graph.memory_middleware
 **Step 4: Commit**
 
 ```bash
-git add src/anima/memory/system.py src/anima/orchestration/graph/memory_middleware.py
+git add src/animetta/memory/system.py src/animetta/orchestration/graph/memory_middleware.py
 git commit -m "refactor(memory): MemoryMiddleware uses FuzzyLayer, remove old MemoryLayer path"
 ```
 
@@ -537,7 +537,7 @@ git commit -m "refactor(memory): MemoryMiddleware uses FuzzyLayer, remove old Me
 - Rewrite: `frontend/src/stores/memory.ts`
 - Modify: `frontend/src/components/memory/MemoryPanel.vue`
 - Modify: `frontend/src/composables/useChat.ts`
-- Modify: `src/anima/orchestration/server/routes.py`
+- Modify: `src/animetta/orchestration/server/routes.py`
 
 **Step 1: 后端加 get_wiki_pages 事件，删旧 fuzzy 事件**
 
@@ -630,7 +630,7 @@ Expected: no output
 **Step 6: Commit**
 
 ```bash
-git add frontend/src/ src/anima/orchestration/server/routes.py
+git add frontend/src/ src/animetta/orchestration/server/routes.py
 git commit -m "refactor: replace fuzzy memory search with wiki page browsing"
 ```
 
@@ -639,20 +639,20 @@ git commit -m "refactor: replace fuzzy memory search with wiki page browsing"
 ### Task 7: 清理废弃代码 + 删除旧 SQLite 表
 
 **Files:**
-- Remove: `src/anima/memory/fuzzy/store.py`
-- Remove: `src/anima/memory/fuzzy/consolidator.py`
-- Remove: `src/anima/orchestration/graph/meme_inject_node.py`
-- Remove: `src/anima/orchestration/graph/memory_layer.py` (deprecated, logic in FuzzyLayer)
-- Modify: `src/anima/memory/fuzzy/__init__.py`
-- Modify: `src/anima/orchestration/graph/__init__.py` (if meme_inject_node exported)
+- Remove: `src/animetta/memory/fuzzy/store.py`
+- Remove: `src/animetta/memory/fuzzy/consolidator.py`
+- Remove: `src/animetta/orchestration/graph/meme_inject_node.py`
+- Remove: `src/animetta/orchestration/graph/memory_layer.py` (deprecated, logic in FuzzyLayer)
+- Modify: `src/animetta/memory/fuzzy/__init__.py`
+- Modify: `src/animetta/orchestration/graph/__init__.py` (if meme_inject_node exported)
 
 **Step 1: git rm 废弃文件**
 
 ```bash
-git rm src/anima/memory/fuzzy/store.py
-git rm src/anima/memory/fuzzy/consolidator.py
-git rm src/anima/orchestration/graph/meme_inject_node.py
-git rm src/anima/orchestration/graph/memory_layer.py
+git rm src/animetta/memory/fuzzy/store.py
+git rm src/animetta/memory/fuzzy/consolidator.py
+git rm src/animetta/orchestration/graph/meme_inject_node.py
+git rm src/animetta/orchestration/graph/memory_layer.py
 ```
 
 **Step 2: 更新 `fuzzy/__init__.py`**
@@ -684,7 +684,7 @@ git commit -m "cleanup: remove deprecated FuzzyMemoryStore, memory_layer, meme_i
 ### Task 8: 调度任务改为写 wiki
 
 **Files:**
-- Modify: `src/anima/memory/learner/engine.py`
+- Modify: `src/animetta/memory/learner/engine.py`
 
 **Step 1: 简化 engine.py — 去掉 SQLite 存储方法**
 
@@ -749,6 +749,6 @@ Run: `PYTHONPATH=src python -c "from anima.memory.learner.engine import Periodic
 **Step 7: Commit**
 
 ```bash
-git add src/anima/memory/learner/engine.py
+git add src/animetta/memory/learner/engine.py
 git commit -m "refactor(learner): PeriodicLearner writes to wiki instead of SQLite"
 ```

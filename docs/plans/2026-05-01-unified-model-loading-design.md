@@ -25,12 +25,12 @@ This causes:
 ### Architecture
 
 ```
-src/anima/core/
+src/animetta/core/
 ├── model_loading_manager.py    # NEW: central loading orchestration
 ├── service_context.py          # MODIFIED: uses manager instead of ad-hoc loading
 └── socketio_server.py          # MODIFIED: calls warmup() at startup
 
-src/anima/services/
+src/animetta/services/
 ├── speech/asr/faster_whisper_asr.py    # MODIFIED: preload() returns immediately if already loaded
 ├── speech/tts/chattts_tts.py            # MODIFIED: add preload() method
 ├── intelligence/vad/silero_vad.py       # MINOR: extract model loading to preload()

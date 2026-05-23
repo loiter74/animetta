@@ -65,7 +65,7 @@ async def query_providers(
     Uses asyncio.gather for parallel execution within each prompt batch.
     Individual provider errors are caught and recorded — other providers continue.
     """
-    from anima.services.intelligence.llm.factory import LLMFactory
+    from animetta import $$$
 
     results: list[dict[str, Any]] = []
 

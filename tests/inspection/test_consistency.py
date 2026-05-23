@@ -53,7 +53,7 @@ class TestHasTraceInLast:
 
     @pytest.mark.asyncio
     async def test_has_recent_traces(self):
-        from anima.inspection.checks.consistency import has_trace_in_last
+        from animetta import $$$
 
         mock_store = _make_mock_store(trace_count=3)
         with patch(
@@ -65,7 +65,7 @@ class TestHasTraceInLast:
 
     @pytest.mark.asyncio
     async def test_no_recent_traces(self):
-        from anima.inspection.checks.consistency import has_trace_in_last
+        from animetta import $$$
 
         mock_store = _make_mock_store(trace_count=0)
         with patch(
@@ -77,7 +77,7 @@ class TestHasTraceInLast:
 
     @pytest.mark.asyncio
     async def test_db_not_initialized(self):
-        from anima.inspection.checks.consistency import has_trace_in_last
+        from animetta import $$$
 
         mock_store = _make_mock_store(raises=True)
         with patch(
@@ -89,7 +89,7 @@ class TestHasTraceInLast:
 
     @pytest.mark.asyncio
     async def test_get_stats_store_raises(self):
-        from anima.inspection.checks.consistency import has_trace_in_last
+        from animetta import $$$
 
         with patch(
             "anima.inspection.checks.consistency.get_stats_store",
@@ -113,7 +113,7 @@ class TestChromaResponds:
 
     @pytest.mark.asyncio
     async def test_chroma_reachable(self):
-        from anima.inspection.checks.consistency import chroma_responds
+        from animetta import $$$
 
         with patch("chromadb.PersistentClient", _make_mock_chroma(raises=False)):
             result = await chroma_responds()
@@ -121,7 +121,7 @@ class TestChromaResponds:
 
     @pytest.mark.asyncio
     async def test_chroma_unreachable_raises(self):
-        from anima.inspection.checks.consistency import chroma_responds
+        from animetta import $$$
 
         with patch(
             "chromadb.PersistentClient",
@@ -132,7 +132,7 @@ class TestChromaResponds:
 
     @pytest.mark.asyncio
     async def test_chroma_unreachable_runtime_error(self):
-        from anima.inspection.checks.consistency import chroma_responds
+        from animetta import $$$
 
         with patch(
             "chromadb.PersistentClient",
@@ -151,7 +151,7 @@ class TestLogFileStale:
     """Probe: log file freshness."""
 
     def test_log_fresh(self):
-        from anima.inspection.checks.consistency import log_file_stale
+        from animetta import $$$
 
         now = time.time()
         with patch.object(Path, "exists", return_value=True), patch.object(
@@ -161,14 +161,14 @@ class TestLogFileStale:
             assert result is False
 
     def test_log_file_missing(self):
-        from anima.inspection.checks.consistency import log_file_stale
+        from animetta import $$$
 
         with patch.object(Path, "exists", return_value=False):
             result = log_file_stale(minutes=60)
             assert result is True
 
     def test_log_file_stale(self):
-        from anima.inspection.checks.consistency import log_file_stale
+        from animetta import $$$
 
         old_time = time.time() - 7200  # 2 hours ago
         with patch.object(Path, "exists", return_value=True), patch.object(
@@ -178,7 +178,7 @@ class TestLogFileStale:
             assert result is True
 
     def test_log_file_boundary_fresh(self):
-        from anima.inspection.checks.consistency import log_file_stale
+        from animetta import $$$
 
         recent = time.time() - 30  # 30 seconds ago — within 60 min window
         with patch.object(Path, "exists", return_value=True), patch.object(
@@ -201,7 +201,7 @@ class TestCheckDataConsistency:
 
     @pytest.mark.asyncio
     async def test_all_pass(self):
-        from anima.inspection.checks.consistency import check_data_consistency
+        from animetta import $$$
 
         mock_store = _make_mock_store(trace_count=5)
         mock_chroma = _make_mock_chroma(raises=False)
@@ -224,7 +224,7 @@ class TestCheckDataConsistency:
 
     @pytest.mark.asyncio
     async def test_no_recent_trace_fails(self):
-        from anima.inspection.checks.consistency import check_data_consistency
+        from animetta import $$$
 
         mock_store = _make_mock_store(trace_count=0)
         mock_chroma = _make_mock_chroma(raises=False)
@@ -240,7 +240,7 @@ class TestCheckDataConsistency:
 
     @pytest.mark.asyncio
     async def test_chroma_unreachable_fails(self):
-        from anima.inspection.checks.consistency import check_data_consistency
+        from animetta import $$$
 
         mock_store = _make_mock_store(trace_count=5)
         now = time.time()
@@ -255,7 +255,7 @@ class TestCheckDataConsistency:
 
     @pytest.mark.asyncio
     async def test_log_file_stale_fails(self):
-        from anima.inspection.checks.consistency import check_data_consistency
+        from animetta import $$$
 
         mock_store = _make_mock_store(trace_count=5)
         mock_chroma = _make_mock_chroma(raises=False)
@@ -271,7 +271,7 @@ class TestCheckDataConsistency:
 
     @pytest.mark.asyncio
     async def test_all_fail(self):
-        from anima.inspection.checks.consistency import check_data_consistency
+        from animetta import $$$
 
         mock_store = _make_mock_store(trace_count=0)
         old_time = time.time() - 7200
@@ -289,7 +289,7 @@ class TestCheckDataConsistency:
 
     @pytest.mark.asyncio
     async def test_duration_ms_positive(self):
-        from anima.inspection.checks.consistency import check_data_consistency
+        from animetta import $$$
 
         mock_store = _make_mock_store(trace_count=1)
         mock_chroma = _make_mock_chroma(raises=False)

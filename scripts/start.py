@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Anima unified startup script.
+Animetta unified startup script.
 Usage: python scripts/start.py [options]
 """
 
@@ -28,7 +28,7 @@ from scripts.start import (
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Anima unified startup script",
+        description="Animetta unified startup script",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -59,7 +59,7 @@ Examples:
     # Project root
     os.chdir(_project_root)
     print()
-    header = "Anima Startup Script"
+    header = "Animetta Startup Script"
     if Colors.enabled():
         print(f"{Colors.MAGENTA}{'=' * 50}{Colors.NC}")
         print(f"{Colors.MAGENTA}  {header}{Colors.NC}")

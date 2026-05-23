@@ -15,10 +15,7 @@ from langchain_core.messages import (
     ToolMessage,
 )
 
-from anima.services.intelligence.llm.glm_message_converter import (
-    GLMMessageConverter,
-    GLMToolConverter,
-)
+from animetta import $$$
 
 
 # ═══════════════════════════════════════════════════════════════════════

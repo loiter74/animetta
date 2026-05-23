@@ -4,11 +4,11 @@ services:
   backend:
     build: .
     ports:
-      - "${ANIMA_PORT:-12394}:12394"
+      - "${ANIMETTA_PORT:-12394}:12394"
     environment:
-      - ANIMA_HOST=0.0.0.0
-      - ANIMA_PORT=12394
-      - ANIMA_LOG_LEVEL=${ANIMA_LOG_LEVEL:-INFO}
+      - ANIMETTA_HOST=0.0.0.0
+      - ANIMETTA_PORT=12394
+      - ANIMETTA_LOG_LEVEL=${ANIMETTA_LOG_LEVEL:-INFO}
       - GLM_API_KEY=${GLM_API_KEY:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - OPENAI_BASE_URL=${OPENAI_BASE_URL:-}

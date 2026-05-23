@@ -35,10 +35,10 @@ PersonaPanel.vue ──► persona_handlers.py │
 | File | Change |
 |------|--------|
 | `config/personas/arisu.yaml` | NEW — persona with `tts_voice: arisu` |
-| `src/anima/config/persona/base.py` | Add `tts_voice: Optional[str]` field |
+| `src/animetta/config/persona/base.py` | Add `tts_voice: Optional[str]` field |
 | `config/services.yaml` | Add `persona_voices.arisu` section |
-| `src/anima/services/speech/tts/qwen3_tts.py` | Add `set_voice_clone(ref_audio)` method |
-| `src/anima/orchestration/server/handlers/persona_handlers.py` | Call `tts.set_voice_clone()` on switch |
+| `src/animetta/services/speech/tts/qwen3_tts.py` | Add `set_voice_clone(ref_audio)` method |
+| `src/animetta/orchestration/server/handlers/persona_handlers.py` | Call `tts.set_voice_clone()` on switch |
 | `frontend/.../PersonalityPanel.vue` | Fix socket event key (`persona` → `persona_name`) |
 
 ## Scope

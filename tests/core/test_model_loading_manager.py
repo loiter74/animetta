@@ -4,11 +4,7 @@ import asyncio
 
 import pytest
 
-from anima.core.model_loading_manager import (
-    ModelLoadingManager,
-    ModelLoadState,
-    ModelSlot,
-)
+from animetta import $$$
 
 
 # ── Fixtures ───────────────────────────────────────────────────────

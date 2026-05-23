@@ -1,11 +1,94 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { usePersonalityStore } from '@/stores/personality'
+import { Radar } from 'vue-chartjs'
+import {
+  Chart as ChartJS,
+  RadialLinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Tooltip,
+  Legend,
+} from 'chart.js'
+
+ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend)
 
 const store = usePersonalityStore()
 
 const collapsed = ref(false)
+const mbtiCollapsed = ref(false)
 const selectedPersona = ref('')
+
+const chartData = computed(() => {
+  const d = store.mbtiDimensions ?? { ei: 50, sn: 50, tf: 50, jp: 50 }
+  return {
+    labels: ['E/I', 'S/N', 'T/F', 'J/P'],
+    datasets: [
+      {
+        label: 'MBTI',
+        data: [d.ei, d.sn, d.tf, d.jp],
+        backgroundColor: 'rgba(232, 121, 168, 0.15)',
+        borderColor: 'rgba(232, 121, 168, 0.5)',
+        pointBackgroundColor: 'rgba(232, 121, 168, 1)',
+        pointBorderColor: '#1a1028',
+        pointBorderWidth: 1.5,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        borderWidth: 1.5,
+        fill: true,
+      },
+    ],
+  }
+})
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    r: {
+      min: 0,
+      max: 100,
+      ticks: {
+        stepSize: 25,
+        backdropColor: 'transparent',
+        color: 'rgba(255, 255, 255, 0.2)',
+        font: { size: 10 },
+      },
+      grid: {
+        color: 'rgba(255, 255, 255, 0.06)',
+      },
+      angleLines: {
+        color: 'rgba(255, 255, 255, 0.06)',
+      },
+      pointLabels: {
+        color: 'rgba(255, 255, 255, 0.5)',
+        font: { size: 11, weight: '500' as const },
+      },
+    },
+  },
+  plugins: {
+    legend: { display: false },
+    tooltip: { enabled: false },
+  },
+}
+
+const computedMbtiType = computed(() => {
+  if (store.mbtiType) return store.mbtiType
+  if (!store.mbtiDimensions) return null
+  const { ei, sn, tf, jp } = store.mbtiDimensions
+  return `${ei >= 50 ? 'E' : 'I'}${sn >= 50 ? 'S' : 'N'}${tf >= 50 ? 'T' : 'F'}${jp >= 50 ? 'J' : 'P'}`
+})
+
+const dimensions = computed(() => {
+  const d = store.mbtiDimensions ?? { ei: 50, sn: 50, tf: 50, jp: 50 }
+  return [
+    { label: 'E/I', val: d.ei, color: '#a882ff' },
+    { label: 'S/N', val: d.sn, color: '#5dade2' },
+    { label: 'T/F', val: d.tf, color: '#f39c12' },
+    { label: 'J/P', val: d.jp, color: '#2ecc71' },
+  ]
+})
 
 watch(() => store.availablePersonas, (personas) => {
   if (personas.length > 0 && !selectedPersona.value) {
@@ -129,6 +212,52 @@ function toggleMode(): void {
           <span class="text-sm">💭</span>
           <span v-if="store.currentMood" class="text-sm text-c-text capitalize">{{ store.currentMood }}</span>
           <span v-else class="text-sm text-c-text-muted">暂无检测数据</span>
+        </div>
+      </div>
+
+      <!-- MBTI -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-xs font-medium text-c-text-dim uppercase tracking-wider">MBTI 人格</label>
+          <button
+            class="w-7 h-7 flex items-center justify-center rounded-lg bg-c-bg/40 text-c-text-dim hover:text-c-text hover:bg-c-bg/60 transition-colors"
+            @click="mbtiCollapsed = !mbtiCollapsed"
+          >
+            <svg
+              width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              :class="mbtiCollapsed ? '' : 'rotate-180'"
+              class="transition-transform"
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+        </div>
+
+        <div v-show="!mbtiCollapsed" class="space-y-3">
+          <!-- Type badge -->
+          <div class="bg-c-card/50 rounded-xl px-3 py-2.5 flex items-center gap-2">
+            <span v-if="computedMbtiType" class="text-sm font-bold text-c-accent">{{ computedMbtiType }}</span>
+            <span v-else class="text-sm text-c-text-muted">暂无检测数据</span>
+          </div>
+
+          <!-- Radar chart -->
+          <div class="bg-c-card/50 rounded-xl p-3" style="height: 200px">
+            <Radar :data="chartData" :options="chartOptions" />
+          </div>
+
+          <!-- Dimension bars -->
+          <div class="bg-c-card/50 rounded-xl px-3 py-2.5 space-y-2.5">
+            <div v-for="dim in dimensions" :key="dim.label" class="flex items-center gap-2">
+              <span class="text-xs text-c-text-dim w-8 shrink-0">{{ dim.label }}</span>
+              <div class="flex-1 h-1.5 rounded-full bg-c-bg/60 overflow-hidden">
+                <div
+                  class="h-full rounded-full transition-all duration-500"
+                  :style="{ width: dim.val + '%', background: dim.color }"
+                />
+              </div>
+              <span class="text-xs tabular-nums text-c-text-dim w-6 text-right shrink-0">{{ dim.val }}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -13,7 +13,7 @@ just yolo coding. With tests, it's a superpower.
 PYTHONPATH=src python -m pytest tests/
 
 # With coverage report
-PYTHONPATH=src python -m pytest tests/ --cov=src/anima --cov-report=term-missing
+PYTHONPATH=src python -m pytest tests/ --cov=src/animetta --cov-report=term-missing
 
 # Run a specific test file
 PYTHONPATH=src python -m pytest tests/test_main_path.py -v

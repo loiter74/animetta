@@ -48,7 +48,7 @@ class TestPresetLoaderLoading:
     """PresetLoader YAML loading tests."""
 
     def test_load_valid_yaml(self):
-        from anima.services.live2d.preset_loader import PresetLoader
+        from animetta import $$$
 
         sample = _make_sample_presets()
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", encoding="utf-8", delete=False) as f:
@@ -64,12 +64,12 @@ class TestPresetLoaderLoading:
             os.unlink(path)
 
     def test_load_nonexistent_file(self):
-        from anima.services.live2d.preset_loader import PresetLoader
+        from animetta import $$$
         loader = PresetLoader(config_path="/tmp/nonexistent_presets.yaml")
         assert loader.presets == {}
 
     def test_load_invalid_yaml(self):
-        from anima.services.live2d.preset_loader import PresetLoader
+        from animetta import $$$
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", encoding="utf-8", delete=False) as f:
             f.write("::: invalid yaml :::")
@@ -87,7 +87,7 @@ class TestPresetLoaderQueries:
 
     @pytest.fixture
     def loader(self):
-        from anima.services.live2d.preset_loader import PresetLoader
+        from animetta import $$$
 
         sample = _make_sample_presets()
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", encoding="utf-8", delete=False) as f:
@@ -153,7 +153,7 @@ class TestPresetLoaderCreateActions:
 
     @pytest.fixture
     def loader(self):
-        from anima.services.live2d.preset_loader import PresetLoader
+        from animetta import $$$
 
         sample = _make_sample_presets()
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", encoding="utf-8", delete=False) as f:
@@ -173,7 +173,7 @@ class TestPresetLoaderCreateActions:
 
     def test_create_emote_action_single_action_via_custom_preset(self):
         """When emote has only one action, return a simple ActionMessage."""
-        from anima.services.live2d.preset_loader import PresetLoader
+        from animetta import $$$
         import tempfile, os, yaml
 
         # Create a preset with expression-only (no params)
@@ -226,13 +226,13 @@ class TestPresetLoaderGlobalInstance:
     """Global preset loader singleton."""
 
     def test_get_preset_loader(self):
-        from anima.services.live2d.preset_loader import get_preset_loader
+        from animetta import $$$
         loader = get_preset_loader()
         assert loader is not None
         assert hasattr(loader, "get_emote")
 
     def test_get_preset_loader_is_singleton(self):
-        from anima.services.live2d.preset_loader import get_preset_loader
+        from animetta import $$$
         loader1 = get_preset_loader()
         loader2 = get_preset_loader()
         assert loader1 is loader2

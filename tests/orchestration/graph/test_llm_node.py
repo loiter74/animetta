@@ -5,7 +5,7 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock
 from langgraph.types import RunnableConfig
 
-from anima.orchestration.graph.state import create_initial_state
+from animetta import $$$
 
 
 def _make_config(service_context=None, enable_tools=False, chat_model=None):
@@ -31,7 +31,7 @@ class TestLLMNodeErrors:
     @pytest.mark.asyncio
     async def test_empty_user_text_returns_error(self):
         """Empty user_text should immediately return an error without calling LLM."""
-        from anima.orchestration.graph.llm_node import llm_node
+        from animetta import $$$
 
         state = create_initial_state(
             session_id="test-session",
@@ -44,7 +44,7 @@ class TestLLMNodeErrors:
     @pytest.mark.asyncio
     async def test_no_service_context_returns_error(self):
         """Missing service_context in config returns error."""
-        from anima.orchestration.graph.llm_node import llm_node
+        from animetta import $$$
 
         state = create_initial_state(
             session_id="test-session",
@@ -59,7 +59,7 @@ class TestLLMNodeErrors:
     @pytest.mark.asyncio
     async def test_no_llm_engine_returns_error(self, mock_service_context):
         """Service context without llm_engine returns error."""
-        from anima.orchestration.graph.llm_node import llm_node
+        from animetta import $$$
 
         ctx = MagicMock()
         ctx.llm_engine = None
@@ -84,7 +84,7 @@ class TestLLMNodeWithoutTools:
     @pytest.mark.asyncio
     async def test_streaming_returns_response_text(self, mock_service_context):
         """llm_node returns response_text from streaming LLM."""
-        from anima.orchestration.graph.llm_node import llm_node
+        from animetta import $$$
 
         async def _chat_stream(user_text, system_prompt=""):
             yield "Hello"
@@ -107,7 +107,7 @@ class TestLLMNodeWithoutTools:
     @pytest.mark.asyncio
     async def test_streaming_empty_response(self, mock_service_context):
         """Empty stream should result in empty response_text."""
-        from anima.orchestration.graph.llm_node import llm_node
+        from animetta import $$$
 
         async def _chat_stream(user_text, system_prompt=""):
             if False:
@@ -130,7 +130,7 @@ class TestLLMNodeWithoutTools:
     @pytest.mark.asyncio
     async def test_streaming_injects_system_prompt(self, mock_service_context):
         """System prompt from state should be passed to LLM."""
-        from anima.orchestration.graph.llm_node import llm_node
+        from animetta import $$$
 
         captured_system_prompt = None
 
@@ -163,7 +163,7 @@ class TestLLMNodeWithTools:
     @pytest.mark.asyncio
     async def test_tool_call_returns_tool_calls(self, mock_service_context):
         """When LLM returns tool_calls, they should be in the result."""
-        from anima.orchestration.graph.llm_node import llm_node
+        from animetta import $$$
 
         mock_chat_model = MagicMock()
         mock_chat_model.bound_tools = [
@@ -199,7 +199,7 @@ class TestLLMNodeWithTools:
     @pytest.mark.asyncio
     async def test_tool_call_without_tools_returns_text(self, mock_service_context):
         """When LLM returns content without tool_calls, response_text is set."""
-        from anima.orchestration.graph.llm_node import llm_node
+        from animetta import $$$
 
         mock_chat_model = MagicMock()
         mock_chat_model.bound_tools = []
@@ -227,7 +227,7 @@ class TestLLMNodeWithTools:
     @pytest.mark.asyncio
     async def test_tool_call_error_falls_back_to_streaming(self, mock_service_context):
         """When chat_with_tools raises, it should fall back to streaming path."""
-        from anima.orchestration.graph.llm_node import llm_node
+        from animetta import $$$
 
         mock_chat_model = MagicMock()
         mock_chat_model.bound_tools = [MagicMock(name="web_search")]
@@ -268,7 +268,7 @@ class TestLLMTimeout:
     @pytest.mark.asyncio
     async def test_llm_timeout_triggers_fallback(self, mock_service_context):
         """When LLM streaming times out, fallback text is returned, no exception propagates."""
-        from anima.orchestration.graph.llm_node import llm_node, FALLBACK_RESPONSE
+        from animetta import $$$
 
         async def _chat_stream_hangs(user_text, system_prompt=""):
             await asyncio.sleep(999)
@@ -293,7 +293,7 @@ class TestLLMTimeout:
     @pytest.mark.asyncio
     async def test_fallback_is_per_turn(self, mock_service_context):
         """After timeout on turn N, turn N+1 attempts real provider again."""
-        from anima.orchestration.graph.llm_node import llm_node
+        from animetta import $$$
 
         # Turn 1: force timeout → fallback
         async def _chat_stream_timeout(user_text, system_prompt=""):

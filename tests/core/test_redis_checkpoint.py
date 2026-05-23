@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from langgraph.checkpoint.base import CheckpointTuple
 
-from anima.core.redis_checkpoint import AsyncRedisSaver
+from animetta import $$$
 
 
 # ── Fixtures ───────────────────────────────────────────────────────

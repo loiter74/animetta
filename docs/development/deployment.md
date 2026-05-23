@@ -21,12 +21,12 @@ flyctl secrets set OPENAI_BASE_URL=https://api.deepseek.com/v1
 flyctl launch --ha=false
 
 # 4. Verify
-curl https://anima-demo.fly.dev/health
+curl https://animetta-demo.fly.dev/health
 ```
 
 Expected response:
 ```json
-{"status": "ok", "service": "anima", "timestamp": 1714512345.678}
+{"status": "ok", "service": "animetta", "timestamp": 1714512345.678}
 ```
 
 ## Free Tier Config
@@ -69,7 +69,7 @@ Endpoint: `GET /health`
 ```json
 {
   "status": "ok",
-  "service": "anima",
+  "service": "animetta",
   "timestamp": 1714512345.678
 }
 ```

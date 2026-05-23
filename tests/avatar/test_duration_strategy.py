@@ -4,8 +4,8 @@ Tests for DurationBasedStrategy — emotion-weight based time allocation.
 
 import pytest
 
-from anima.avatar.strategies.duration import DurationBasedStrategy
-from anima.avatar.strategies.base import TimelineSegment, TimelineConfig
+from animetta import $$$
+from animetta import $$$
 
 
 # ============================================================

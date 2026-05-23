@@ -29,7 +29,7 @@ def mock_openai_llm():
 @pytest.fixture
 def handler(mock_openai_llm):
     """Create an OpenAIToolHandler with a mock LLM."""
-    from anima.services.intelligence.llm.tool_handler import OpenAIToolHandler
+    from animetta import $$$
     return OpenAIToolHandler(mock_openai_llm)
 
 

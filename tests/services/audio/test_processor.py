@@ -12,13 +12,13 @@ class TestAudioProcessorInterfaceABC:
 
     def test_cannot_instantiate_directly(self):
         """Instantiating the ABC directly raises TypeError."""
-        from anima.services.audio.processor import AudioProcessorInterface
+        from animetta import $$$
         with pytest.raises(TypeError):
             AudioProcessorInterface()  # type: ignore[abstract]
 
     def test_must_implement_process_chunk(self):
         """Subclass missing process_chunk raises TypeError."""
-        from anima.services.audio.processor import AudioProcessorInterface
+        from animetta import $$$
 
         class Incomplete(AudioProcessorInterface):
             async def process_end(self) -> None:
@@ -33,7 +33,7 @@ class TestAudioProcessorInterfaceABC:
 
     def test_must_implement_process_end(self):
         """Subclass missing process_end raises TypeError."""
-        from anima.services.audio.processor import AudioProcessorInterface
+        from animetta import $$$
 
         class Incomplete(AudioProcessorInterface):
             async def process_chunk(self, audio_data) -> None:
@@ -48,7 +48,7 @@ class TestAudioProcessorInterfaceABC:
 
     def test_must_implement_reset(self):
         """Subclass missing reset raises TypeError."""
-        from anima.services.audio.processor import AudioProcessorInterface
+        from animetta import $$$
 
         class Incomplete(AudioProcessorInterface):
             async def process_chunk(self, audio_data) -> None:
@@ -63,7 +63,7 @@ class TestAudioProcessorInterfaceABC:
 
     def test_must_implement_is_speaking(self):
         """Subclass missing is_speaking raises TypeError."""
-        from anima.services.audio.processor import AudioProcessorInterface
+        from animetta import $$$
 
         class Incomplete(AudioProcessorInterface):
             async def process_chunk(self, audio_data) -> None:
@@ -85,7 +85,7 @@ class TestCompleteSubclass:
 
     @pytest.fixture
     def complete_impl(self):
-        from anima.services.audio.processor import AudioProcessorInterface
+        from animetta import $$$
 
         class Complete(AudioProcessorInterface):
             def __init__(self):
@@ -172,13 +172,13 @@ class TestVADAudioProcessorCompliance:
 
     def test_vad_audio_processor_is_subclass(self):
         """VADAudioProcessor inherits from AudioProcessorInterface."""
-        from anima.services.audio.processor import AudioProcessorInterface
-        from anima.services.audio.vad_audio_processor import VADAudioProcessor
+        from animetta import $$$
+        from animetta import $$$
         assert issubclass(VADAudioProcessor, AudioProcessorInterface)
 
     def test_vad_audio_processor_implements_all_methods(self):
         """VADAudioProcessor has all 4 required abstract methods."""
-        from anima.services.audio.vad_audio_processor import VADAudioProcessor
+        from animetta import $$$
         assert hasattr(VADAudioProcessor, 'process_chunk')
         assert hasattr(VADAudioProcessor, 'process_end')
         assert hasattr(VADAudioProcessor, 'reset')
@@ -186,7 +186,7 @@ class TestVADAudioProcessorCompliance:
 
     def test_vad_audio_processor_instantiates(self):
         """VADAudioProcessor can be instantiated (with VAD mock)."""
-        from anima.services.audio.vad_audio_processor import VADAudioProcessor
+        from animetta import $$$
         mock_vad = MagicMock()
         proc = VADAudioProcessor(session_id="test", vad_engine=mock_vad)
         assert proc is not None
@@ -194,6 +194,6 @@ class TestVADAudioProcessorCompliance:
 
     def test_simple_vad_processor_does_not_inherit_interface(self):
         """SimpleVADProcessor does NOT implement AudioProcessorInterface."""
-        from anima.services.audio.processor import AudioProcessorInterface
-        from anima.services.audio.simple_vad_processor import SimpleVADProcessor
+        from animetta import $$$
+        from animetta import $$$
         assert not issubclass(SimpleVADProcessor, AudioProcessorInterface)

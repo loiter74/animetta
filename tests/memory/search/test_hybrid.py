@@ -37,8 +37,8 @@ class TestHybridSearch:
 
     def test_hybrid_search_fusion(self, mock_sqlite, mock_chroma):
         """Fusion scores should combine vector (70%) and keyword (30%) weights."""
-        from anima.memory.search.hybrid import hybrid_search
-        from anima.memory.config import SearchConfig
+        from animetta import $$$
+        from animetta import $$$
 
         config = SearchConfig()
         config.vector_weight = 0.7
@@ -64,7 +64,7 @@ class TestHybridSearch:
 
     def test_hybrid_search_empty(self, mock_sqlite, mock_chroma):
         """Empty results from both stores returns empty list."""
-        from anima.memory.search.hybrid import hybrid_search
+        from animetta import $$$
 
         mock_sqlite.keyword_search = MagicMock(return_value=[])
         mock_chroma.vector_search = MagicMock(return_value=[])
@@ -78,7 +78,7 @@ class TestHybridSearch:
 
     def test_hybrid_search_vector_fallback(self, mock_sqlite):
         """When Chroma fails, fall back to keyword-only results."""
-        from anima.memory.search.hybrid import hybrid_search
+        from animetta import $$$
 
         mock_chroma = MagicMock()
         mock_chroma.vector_search = MagicMock(side_effect=Exception("Chroma down"))
@@ -93,7 +93,7 @@ class TestHybridSearch:
 
     def test_hybrid_search_keyword_fallback(self, mock_chroma):
         """When SQLite FTS5 fails, fall back to vector-only results."""
-        from anima.memory.search.hybrid import hybrid_search
+        from animetta import $$$
 
         mock_sqlite = MagicMock()
         mock_sqlite.keyword_search = MagicMock(side_effect=Exception("FTS5 down"))
@@ -110,8 +110,8 @@ class TestHybridSearch:
 
     def test_hybrid_search_min_score_filter(self, mock_sqlite, mock_chroma):
         """Results below min_score should be excluded."""
-        from anima.memory.search.hybrid import hybrid_search
-        from anima.memory.config import SearchConfig
+        from animetta import $$$
+        from animetta import $$$
 
         config = SearchConfig()
         config.default_min_score = 0.6

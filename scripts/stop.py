@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Anima Project Stop Script (Cross-platform)
+Animetta Project Stop Script (Cross-platform)
 Usage: python scripts/stop.py [options]
 """
 
@@ -229,7 +229,7 @@ class ProcessManager:
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Anima Project Stop Script',
+        description='Animetta Project Stop Script',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 示例:
@@ -249,11 +249,11 @@ def main():
     print()
     if Colors.enabled():
         print(f"{Colors.MAGENTA}{'=' * 40}{Colors.NC}")
-        print(f"{Colors.MAGENTA}  Anima 停止脚本{Colors.NC}")
+        print(f"{Colors.MAGENTA}  Animetta 停止脚本{Colors.NC}")
         print(f"{Colors.MAGENTA}{'=' * 40}{Colors.NC}")
     else:
         print('=' * 40)
-        print('  Anima 停止脚本')
+        print('  Animetta 停止脚本')
         print('=' * 40)
     print()
 

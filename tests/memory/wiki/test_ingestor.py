@@ -7,9 +7,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from anima.memory.wiki.ingestor import WikiIngestor
-from anima.memory.wiki.models import PageType, WikiPage
-from anima.memory.models.turns import MemoryTurn
+from animetta import $$$
+from animetta import $$$
+from animetta import $$$
 
 
 @pytest.fixture

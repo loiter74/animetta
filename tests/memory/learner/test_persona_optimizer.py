@@ -8,16 +8,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from anima.memory.learner.persona_optimizer import (
-    PERSONA_ANALYSIS_SYSTEM_PROMPT,
-    PERSONA_ANALYSIS_USER_PROMPT,
-    analyze_persona_performance,
-    format_suggestions_yaml,
-    apply_suggestion,
-    _summarize_persona,
-    _format_logs,
-    _clean_json,
-)
+from animetta import $$$
 
 
 # ── Helpers ────────────────────────────────────────────────────

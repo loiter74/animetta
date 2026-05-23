@@ -75,24 +75,24 @@ class TestCooldownTracker:
     """CooldownTracker unit tests."""
 
     def test_can_execute_initially_true(self):
-        from anima.tools.minecraft.autonomous import CooldownTracker
+        from animetta import $$$
         tracker = CooldownTracker(default_cooldown=30.0)
         assert tracker.can_execute("build") is True
 
     def test_cannot_execute_during_cooldown(self):
-        from anima.tools.minecraft.autonomous import CooldownTracker
+        from animetta import $$$
         tracker = CooldownTracker(default_cooldown=30.0)
         tracker.mark_executed("build")
         assert tracker.can_execute("build") is False
 
     def test_can_execute_different_action_during_cooldown(self):
-        from anima.tools.minecraft.autonomous import CooldownTracker
+        from animetta import $$$
         tracker = CooldownTracker(default_cooldown=30.0)
         tracker.mark_executed("build")
         assert tracker.can_execute("gather") is True
 
     def test_reset_clears_cooldown(self):
-        from anima.tools.minecraft.autonomous import CooldownTracker
+        from animetta import $$$
         tracker = CooldownTracker(default_cooldown=30.0)
         tracker.mark_executed("build")
         tracker.reset("build")
@@ -103,9 +103,9 @@ class TestAutonomousLoopInit:
     """AutonomousLoop construction tests."""
 
     def test_init_default_rules(self):
-        from anima.tools.minecraft.autonomous import AutonomousLoop
-        from anima.tools.minecraft.bridge import MinecraftBridge
-        from anima.tools.minecraft.config import MinecraftConfig
+        from animetta import $$$
+        from animetta import $$$
+        from animetta import $$$
 
         config = MagicMock()
         config.bot.host = "localhost"
@@ -120,9 +120,9 @@ class TestAutonomousLoopInit:
         assert loop._rules is not None
 
     def test_init_with_custom_rules(self):
-        from anima.tools.minecraft.autonomous import AutonomousLoop
-        from anima.tools.minecraft.bridge import MinecraftBridge
-        from anima.tools.minecraft.config import MinecraftConfig
+        from animetta import $$$
+        from animetta import $$$
+        from animetta import $$$
 
         config = MagicMock()
         config.bot.host = "localhost"
@@ -139,9 +139,9 @@ class TestAutonomousLoopLifecycle:
     """AutonomousLoop lifecycle (start/stop/pause/resume) tests."""
 
     def test_start_sets_running_true(self):
-        from anima.tools.minecraft.autonomous import AutonomousLoop
-        from anima.tools.minecraft.bridge import MinecraftBridge
-        from anima.tools.minecraft.config import MinecraftConfig
+        from animetta import $$$
+        from animetta import $$$
+        from animetta import $$$
 
         config = MagicMock()
         config.bot.host = "localhost"
@@ -156,9 +156,9 @@ class TestAutonomousLoopLifecycle:
         assert loop.is_running is True
 
     def test_calling_start_twice_does_nothing(self):
-        from anima.tools.minecraft.autonomous import AutonomousLoop
-        from anima.tools.minecraft.bridge import MinecraftBridge
-        from anima.tools.minecraft.config import MinecraftConfig
+        from animetta import $$$
+        from animetta import $$$
+        from animetta import $$$
 
         config = MagicMock()
         config.bot.host = "localhost"
@@ -174,9 +174,9 @@ class TestAutonomousLoopLifecycle:
         assert mock_create.call_count == 1
 
     def test_stop_sets_running_false(self):
-        from anima.tools.minecraft.autonomous import AutonomousLoop
-        from anima.tools.minecraft.bridge import MinecraftBridge
-        from anima.tools.minecraft.config import MinecraftConfig
+        from animetta import $$$
+        from animetta import $$$
+        from animetta import $$$
 
         config = MagicMock()
         config.bot.host = "localhost"
@@ -190,9 +190,9 @@ class TestAutonomousLoopLifecycle:
         assert loop.is_running is False
 
     def test_pause_and_resume(self):
-        from anima.tools.minecraft.autonomous import AutonomousLoop
-        from anima.tools.minecraft.bridge import MinecraftBridge
-        from anima.tools.minecraft.config import MinecraftConfig
+        from animetta import $$$
+        from animetta import $$$
+        from animetta import $$$
 
         config = MagicMock()
         config.bot.host = "localhost"
@@ -208,9 +208,9 @@ class TestAutonomousLoopLifecycle:
         assert loop._paused is False
 
     async def test_stop_cancels_loop_task(self):
-        from anima.tools.minecraft.autonomous import AutonomousLoop
-        from anima.tools.minecraft.bridge import MinecraftBridge
-        from anima.tools.minecraft.config import MinecraftConfig
+        from animetta import $$$
+        from animetta import $$$
+        from animetta import $$$
 
         config = MagicMock()
         config.bot.host = "localhost"
@@ -241,7 +241,7 @@ class TestAutonomousLoopEvaluate:
     """AutonomousLoop._evaluate() decision engine tests."""
 
     def _make_loop(self, bridge=None):
-        from anima.tools.minecraft.autonomous import AutonomousLoop
+        from animetta import $$$
         if bridge is None:
             bridge = MagicMock()
             bridge.send_command = AsyncMock()
@@ -249,11 +249,11 @@ class TestAutonomousLoopEvaluate:
         return AutonomousLoop(bridge, rules=rules)
 
     def _make_state(self, **kwargs):
-        from anima.tools.minecraft.world_state import WorldState
+        from animetta import $$$
         return WorldState(**kwargs)
 
     def test_evaluate_threat_nearby_triggers_survive(self):
-        from anima.tools.minecraft.world_state import Entity
+        from animetta import $$$
         loop = self._make_loop()
         state = self._make_state(
             health=20.0,
@@ -264,7 +264,7 @@ class TestAutonomousLoopEvaluate:
         assert params["reason"] == "threat_nearby"
 
     def test_evaluate_low_health_triggers_survive(self):
-        from anima.tools.minecraft.world_state import Entity
+        from animetta import $$$
         loop = self._make_loop()
         loop._rules.auto_heal_threshold = 12
         state = self._make_state(health=8.0)  # below threshold
@@ -297,9 +297,9 @@ class TestAutonomousLoopEvaluate:
         assert action != loop.ACTION_SURVIVE
 
     def test_evaluate_building_in_progress_checks_materials(self):
-        from anima.tools.minecraft.autonomous import AutonomousLoop
-        from anima.tools.minecraft.bridge import MinecraftBridge
-        from anima.tools.minecraft.config import MinecraftConfig
+        from animetta import $$$
+        from animetta import $$$
+        from animetta import $$$
 
         config = MagicMock()
         config.bot.host = "localhost"
@@ -309,7 +309,7 @@ class TestAutonomousLoopEvaluate:
         rules = make_rules_engine()
 
         # Set up building target
-        from anima.tools.minecraft.rules_engine import BuildTarget, BuildPlanStep
+        from animetta import $$$
         rules.rules.building = BuildTarget(
             target="house",
             blueprint="platform",
@@ -357,9 +357,9 @@ class TestAutonomousLoopExecute:
     """AutonomousLoop._execute() action dispatch tests."""
 
     def _make_loop(self):
-        from anima.tools.minecraft.autonomous import AutonomousLoop
-        from anima.tools.minecraft.bridge import MinecraftBridge
-        from anima.tools.minecraft.config import MinecraftConfig
+        from animetta import $$$
+        from animetta import $$$
+        from animetta import $$$
 
         config = MagicMock()
         config.bot.host = "localhost"
@@ -374,7 +374,7 @@ class TestAutonomousLoopExecute:
 
     @staticmethod
     def default_state():
-        from anima.tools.minecraft.world_state import WorldState
+        from animetta import $$$
         return WorldState()
 
     async def test_execute_survive_threat_attacks(self):
@@ -434,9 +434,9 @@ class TestAutonomousLoopChatTrigger:
     """AutonomousLoop._get_chat_trigger() tests."""
 
     def _make_loop(self):
-        from anima.tools.minecraft.autonomous import AutonomousLoop
-        from anima.tools.minecraft.bridge import MinecraftBridge
-        from anima.tools.minecraft.config import MinecraftConfig
+        from animetta import $$$
+        from animetta import $$$
+        from animetta import $$$
 
         config = MagicMock()
         config.bot.host = "localhost"
@@ -447,7 +447,7 @@ class TestAutonomousLoopChatTrigger:
         return AutonomousLoop(bridge, rules=rules)
 
     def test_chat_cooldown_active_returns_none(self):
-        from anima.tools.minecraft.world_state import WorldState, Entity
+        from animetta import $$$
         loop = self._make_loop()
         loop._chat_cooldown_until = time.time() + 999
         state = WorldState(
@@ -458,7 +458,7 @@ class TestAutonomousLoopChatTrigger:
         assert result is None
 
     def test_random_check_above_threshold_returns_none(self):
-        from anima.tools.minecraft.world_state import WorldState, Entity
+        from animetta import $$$
         loop = self._make_loop()
         state = WorldState(
             entities=[Entity(name="Steve", type="player", distance=5, count=1)]
@@ -469,7 +469,7 @@ class TestAutonomousLoopChatTrigger:
 
     def test_player_nearby_triggers_chat(self):
         loop = self._make_loop()
-        from anima.tools.minecraft.world_state import WorldState, Entity
+        from animetta import $$$
         state = WorldState(
             entities=[Entity(name="Steve", type="player", distance=5, count=1)]
         )
@@ -479,7 +479,7 @@ class TestAutonomousLoopChatTrigger:
 
     def test_night_time_triggers_chat(self):
         loop = self._make_loop()
-        from anima.tools.minecraft.world_state import WorldState
+        from animetta import $$$
         state = WorldState(time="night")
         with patch("random.random", return_value=0.1):
             result = loop._get_chat_trigger(state)
@@ -487,7 +487,7 @@ class TestAutonomousLoopChatTrigger:
 
     def test_rain_triggers_chat(self):
         loop = self._make_loop()
-        from anima.tools.minecraft.world_state import WorldState
+        from animetta import $$$
         state = WorldState(weather="rain")
         with patch("random.random", return_value=0.1):
             result = loop._get_chat_trigger(state)
@@ -495,7 +495,7 @@ class TestAutonomousLoopChatTrigger:
 
     def test_no_trigger_returns_none(self):
         loop = self._make_loop()
-        from anima.tools.minecraft.world_state import WorldState
+        from animetta import $$$
         state = WorldState(time="day", weather="clear")
         with patch("random.random", return_value=0.1):
             result = loop._get_chat_trigger(state)
@@ -506,9 +506,9 @@ class TestAutonomousLoopThreatCheck:
     """AutonomousLoop._threat_check() tests."""
 
     def _make_loop(self):
-        from anima.tools.minecraft.autonomous import AutonomousLoop
-        from anima.tools.minecraft.bridge import MinecraftBridge
-        from anima.tools.minecraft.config import MinecraftConfig
+        from animetta import $$$
+        from animetta import $$$
+        from animetta import $$$
 
         config = MagicMock()
         config.bot.host = "localhost"

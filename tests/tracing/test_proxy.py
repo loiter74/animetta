@@ -67,7 +67,7 @@ class TestTracingProxy:
 
     @pytest.fixture
     def proxy(self, mock_service):
-        from anima.tracing.proxy import TracingProxy
+        from animetta import $$$
 
         return TracingProxy(mock_service, service_name="test")
 
@@ -120,7 +120,7 @@ class TestTracingProxy:
 
     async def test_lazy_tracer_resolution(self, mock_service):
         """Proxy should work when created before TracerProvider is set."""
-        from anima.tracing.proxy import TracingProxy
+        from animetta import $$$
 
         p = TracingProxy(mock_service, tracer=None, service_name="lazy_test")
         result = await p.chat("lazy")
@@ -140,7 +140,7 @@ class TestTracingProxy:
         """__bool__ delegates to target."""
         svc = MagicMock()
         svc.__bool__ = MagicMock(return_value=True)
-        from anima.tracing.proxy import TracingProxy
+        from animetta import $$$
 
         p = TracingProxy(svc, service_name="bool_test")
         assert bool(p) is True
@@ -156,7 +156,7 @@ class TestTracingProxy:
 
     def test_is_async_method_static(self):
         """_is_async_method detects coroutine functions."""
-        from anima.tracing.proxy import TracingProxy
+        from animetta import $$$
 
         async def fake_coro():
             pass
@@ -172,7 +172,7 @@ class TestTracingProxy:
 
     def test_proxy_wraps_empty_service(self):
         """A service with no public methods should not crash."""
-        from anima.tracing.proxy import TracingProxy
+        from animetta import $$$
 
         class Empty:
             pass
@@ -184,7 +184,7 @@ class TestTracingProxy:
 
     async def test_bytes_first_arg(self, mock_service):
         """Byte arguments should be represented as '<N bytes>'."""
-        from anima.tracing.proxy import TracingProxy
+        from animetta import $$$
 
         class BytesService:
             async def process(self, data: bytes) -> str:

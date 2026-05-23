@@ -4,7 +4,7 @@ import pytest
 from unittest.mock import MagicMock
 from langgraph.types import RunnableConfig
 
-from anima.orchestration.graph.state import create_initial_state
+from animetta import $$$
 
 
 class TestEmotionNode:
@@ -13,7 +13,7 @@ class TestEmotionNode:
     @pytest.mark.asyncio
     async def test_empty_text_returns_default_emotion(self):
         """No response_text should default to neutral."""
-        from anima.orchestration.graph.emotion_node import emotion_node
+        from animetta import $$$
 
         state = create_initial_state(session_id="test")
         state["response_text"] = ""
@@ -23,7 +23,7 @@ class TestEmotionNode:
     @pytest.mark.asyncio
     async def test_no_analyzer_in_config_returns_neutral(self):
         """Without emotion_analyzer or service_context, default to neutral."""
-        from anima.orchestration.graph.emotion_node import emotion_node
+        from animetta import $$$
 
         state = create_initial_state(session_id="test")
         state["response_text"] = "Hello world"
@@ -34,7 +34,7 @@ class TestEmotionNode:
     @pytest.mark.asyncio
     async def test_analyzer_via_service_context(self, mock_service_context):
         """emotion_analyzer from service_context is used when available."""
-        from anima.orchestration.graph.emotion_node import emotion_node
+        from animetta import $$$
 
         mock_result = MagicMock()
         mock_result.primary = "happy"
@@ -55,7 +55,7 @@ class TestEmotionNode:
     @pytest.mark.asyncio
     async def test_analyzer_error_returns_default(self, mock_service_context):
         """If the analyzer raises, fall back to neutral."""
-        from anima.orchestration.graph.emotion_node import emotion_node
+        from animetta import $$$
 
         mock_service_context.emotion_analyzer.extract = MagicMock(
             side_effect=ValueError("fail")

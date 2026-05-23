@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Animetta — Iconography &amp; Scenes</title>
+<link rel="icon" href="assets/favicon.svg" />
+<link rel="stylesheet" href="colors_and_type.css" />
+<style>
+  /* Section icon grid ---------------------------------------------- */
+  .section-icons {
+    margin-top: var(--s-6);
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+  }
+  .sec-icon {
+    aspect-ratio: 1 / 1.05;
+    border-radius: var(--r-xl);
+    background:
+      radial-gradient(60% 70% at 50% 30%, rgba(232,121,168,0.18), transparent 70%),
+      var(--c-panel);
+    border: 1px solid var(--c-border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 18px 10px;
+    transition: all var(--d-base) var(--ease-out-expo);
+  }
+  .sec-icon:hover {
+    border-color: var(--c-border-accent);
+    box-shadow: var(--shadow-glow-accent);
+    transform: translateY(-2px);
+  }
+  .sec-icon .glyph {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: rgba(232,121,168,0.12);
+    border: 1px solid var(--c-border-accent);
+  }
+  .sec-icon .glyph img {
+    width: 36px; height: 36px;
+    filter: drop-shadow(0 0 6px rgba(232,121,168,0.45));
+  }
+  .sec-icon .nm {
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--c-text);
+  }
+  .sec-icon .key {
+    font-family: var(--font-mono);
+    font-size: var(--fs-9);
+    color: var(--c-text-muted);
+  }
+
+  /* Icon usage strip --------------------------------------------- */
+  .icon-strip {
+    margin-top: var(--s-6);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  .strip-card {
+    border-radius: var(--r-xl);
+    background: rgba(45,27,69,0.40);
+    border: 1px solid var(--c-border);
+    padding: 22px 24px;
+  }
+  .strip-card h4 {
+    margin: 0 0 8px;
+    font-size: var(--fs-10);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--c-accent);
+  }
+  .strip-card p {
+    margin: 0 0 16px;
+    font-size: var(--fs-xs);
+    color: var(--c-text-dim);
+    line-height: var(--lh-relax);
+  }
+  /* Tab demo */
+  .tabs-demo {
+    display: flex;
+    gap: 6px;
+    padding: 8px;
+    border-radius: var(--r-xl);
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--c-border);
+    overflow-x: auto;
+  }
+  .tab-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: var(--r-md);
+    font-size: var(--fs-xs);
+    color: var(--c-text-dim);
+    background: transparent;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all var(--d-base) var(--ease-out-expo);
+    white-space: nowrap;
+  }
+  .tab-pill img { width: 20px; height: 20px; opacity: 0.65; }
+  .tab-pill.active {
+    color: var(--c-accent);
+    background: var(--c-accent-soft);
+    border-color: var(--c-border-accent);
+  }
+  .tab-pill.active img { opacity: 1; filter: drop-shadow(0 0 4px rgba(232,121,168,0.5)); }
+  .tab-pill:hover:not(.active) { color: var(--c-text); }
+
+  /* List-row demo */
+  .list-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .list-row {
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: var(--r-md);
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--c-border);
+  }
+  .list-row .ic {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    background: rgba(232,121,168,0.10);
+    border: 1px solid var(--c-border-accent);
+  }
+  .list-row .ic img { width: 18px; height: 18px; }
+  .list-row .lab { font-size: var(--fs-sm); color: var(--c-text); font-weight: 500; }
+  .list-row .sub { font-size: var(--fs-9); color: var(--c-text-muted); display: block; margin-top: 2px; letter-spacing: 0.06em; }
+  .list-row .val { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--c-text-dim); }
+  .list-row .val .on  { color: var(--c-success); }
+  .list-row .val .off { color: var(--c-text-muted); }
+
+  /* Style rules ------------------------------------------------ */
+  .icon-rules {
+    margin-top: var(--s-6);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .ic-rule {
+    padding: 20px 22px;
+    border-radius: var(--r-lg);
+    background: rgba(45,27,69,0.40);
+    border: 1px solid var(--c-border);
+  }
+  .ic-rule h5 {
+    margin: 0 0 8px;
+    font-size: var(--fs-xs);
+    color: var(--c-accent);
+  }
+  .ic-rule p {
+    margin: 0;
+    font-size: var(--fs-xs);
+    color: var(--c-text-dim);
+    line-height: var(--lh-relax);
+  }
+  .ic-rule p code {
+    font-family: var(--font-mono);
+    font-size: var(--fs-9);
+    color: var(--c-text);
+  }
+
+  /* Scenes hero --------------------------------------------- */
+  .scenes-hero {
+    margin-top: var(--s-6);
+    border-radius: var(--r-2xl);
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border: 1px solid var(--c-border-accent);
+    box-shadow: var(--shadow-panel);
+  }
+  .scenes-hero img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+  .scenes-hero .overlay {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(50% 60% at 20% 50%, rgba(26,16,40,0.65), transparent 70%),
+      linear-gradient(180deg, transparent 60%, rgba(26,16,40,0.8) 100%);
+  }
+  .scenes-hero .caption {
+    position: absolute;
+    left: 36px; bottom: 32px;
+    max-width: 36ch;
+  }
+  .scenes-hero .caption .eyebrow {
+    font-size: var(--fs-10);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--c-accent);
+    margin-bottom: 8px;
+  }
+  .scenes-hero .caption h3 {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .scenes-hero .caption p {
+    margin: 10px 0 0;
+    font-size: var(--fs-sm);
+    color: var(--c-text-dim);
+    line-height: var(--lh-snug);
+  }
+
+  /* Scenes grid ---------------------------------------------- */
+  .scenes-grid {
+    margin-top: var(--s-4);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .scene-card {
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    border: 1px solid var(--c-border);
+    background: var(--c-surface);
+    position: relative;
+    aspect-ratio: 16 / 10;
+  }
+  .scene-card img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform var(--d-slow) var(--ease-out-expo);
+  }
+  .scene-card:hover img { transform: scale(1.04); }
+  .scene-card .meta {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 14px 16px;
+    background: linear-gradient(180deg, transparent, rgba(26,16,40,0.88));
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+  .scene-card .meta .nm {
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--c-text);
+  }
+  .scene-card .meta .cjk {
+    font-size: var(--fs-9);
+    letter-spacing: 0.06em;
+    color: var(--c-text-muted);
+    margin-top: 2px;
+  }
+  .scene-card .meta .file {
+    font-family: var(--font-mono);
+    font-size: var(--fs-9);
+    color: var(--c-accent);
+  }
+  .scene-card .badge {
+    position: absolute;
+    top: 10px; left: 12px;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--c-text);
+    background: rgba(26,16,40,0.65);
+    border: 1px solid var(--c-border);
+    backdrop-filter: blur(8px);
+    padding: 3px 7px;
+    border-radius: var(--r-sm);
+  }
+
+  /* Default scene SVG ---------------------------------------- */
+  .default-scene {
+    margin-top: var(--s-6);
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    border: 1px solid var(--c-border);
+    background: var(--c-bg);
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+  }
+  .default-scene .img {
+    position: relative;
+    min-height: 240px;
+  }
+  .default-scene .img img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+  .default-scene .copy {
+    padding: 28px 32px;
+    border-left: 1px solid var(--c-border);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .default-scene .copy h4 {
+    margin: 0 0 10px;
+    font-size: var(--fs-lg);
+    font-weight: 600;
+  }
+  .default-scene .copy p {
+    margin: 0 0 12px;
+    font-size: var(--fs-xs);
+    color: var(--c-text-dim);
+    line-height: var(--lh-relax);
+  }
+  .default-scene .copy .pair {
+    font-family: var(--font-mono);
+    font-size: var(--fs-9);
+    color: var(--c-text-muted);
+    background: rgba(255,255,255,0.03);
+    padding: 6px 10px;
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-sm);
+    display: inline-block;
+    margin-top: 6px;
+  }
+</style>
+</head>
+<body class="ds-page">
+
+<main class="ds-shell">
+
+  <span class="ds-eyebrow">04 · Visual</span>
+  <h1 class="ds-title">Iconography &amp; scenes</h1>
+  <p class="ds-lede">
+    Animetta ships two visual asset libraries: a small set of <b>section icons</b> for
+    navigation, and a curated set of <b>atmosphere backgrounds</b> for the Live2D
+    stage. The icons are pure single-line strokes; the backgrounds are full-bleed
+    anime paintings. They sit at opposite ends of the visual scale on purpose.
+  </p>
+
+  <!-- Section icons --------------------------------------------- -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Section icons</h2>
+    <p class="ds-section-sub">
+      One icon per top-level concern. Each lives under
+      <code class="tok">/icons/&lt;key&gt;/&lt;key&gt;.png</code> and is exactly
+      64×64, white-on-transparent so it can be tinted by the surrounding state.
+    </p>
+    <div class="section-icons">
+      <div class="sec-icon">
+        <div class="glyph"><img src="assets/icons/chat.png" alt="" /></div>
+        <div>
+          <div class="nm">Chat</div>
+          <div class="key">chat</div>
+        </div>
+      </div>
+      <div class="sec-icon">
+        <div class="glyph"><img src="assets/icons/persona.png" alt="" /></div>
+        <div>
+          <div class="nm">Persona</div>
+          <div class="key">persona</div>
+        </div>
+      </div>
+      <div class="sec-icon">
+        <div class="glyph"><img src="assets/icons/memory.png" alt="" /></div>
+        <div>
+          <div class="nm">Memory</div>
+          <div class="key">memory</div>
+        </div>
+      </div>
+      <div class="sec-icon">
+        <div class="glyph"><img src="assets/icons/llm.png" alt="" /></div>
+        <div>
+          <div class="nm">LLM</div>
+          <div class="key">llm</div>
+        </div>
+      </div>
+      <div class="sec-icon">
+        <div class="glyph"><img src="assets/icons/tts.png" alt="" /></div>
+        <div>
+          <div class="nm">TTS</div>
+          <div class="key">tts</div>
+        </div>
+      </div>
+      <div class="sec-icon">
+        <div class="glyph"><img src="assets/icons/asr.png" alt="" /></div>
+        <div>
+          <div class="nm">ASR</div>
+          <div class="key">asr</div>
+        </div>
+      </div>
+      <div class="sec-icon">
+        <div class="glyph"><img src="assets/icons/vad.png" alt="" /></div>
+        <div>
+          <div class="nm">VAD</div>
+          <div class="key">vad</div>
+        </div>
+      </div>
+      <div class="sec-icon">
+        <div class="glyph"><img src="assets/icons/live2d.png" alt="" /></div>
+        <div>
+          <div class="nm">Live2D</div>
+          <div class="key">live2d</div>
+        </div>
+      </div>
+      <div class="sec-icon">
+        <div class="glyph"><img src="assets/icons/background.png" alt="" /></div>
+        <div>
+          <div class="nm">Background</div>
+          <div class="key">background</div>
+        </div>
+      </div>
+      <div class="sec-icon">
+        <div class="glyph"><img src="assets/icons/controls.png" alt="" /></div>
+        <div>
+          <div class="nm">Controls</div>
+          <div class="key">controls</div>
+        </div>
+      </div>
+      <div class="sec-icon">
+        <div class="glyph"><img src="assets/icons/interrupt.png" alt="" /></div>
+        <div>
+          <div class="nm">Interrupt</div>
+          <div class="key">interrupt</div>
+        </div>
+      </div>
+      <div class="sec-icon" style="border-style: dashed; opacity: 0.7;">
+        <div class="glyph" style="background: rgba(255,255,255,0.04); border-color: var(--c-border);">
+          <span style="color: var(--c-text-muted); font-size: 24px;">+</span>
+        </div>
+        <div>
+          <div class="nm" style="color: var(--c-text-dim);">Reserved</div>
+          <div class="key">future</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Icon usage --------------------------------------------- -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">In context</h2>
+    <p class="ds-section-sub">
+      Section icons appear in two places: as <b>tab pills</b> in the Settings
+      drawer, and as <b>row markers</b> in the Settings list. They never appear
+      inline in chat copy.
+    </p>
+    <div class="icon-strip">
+
+      <div class="strip-card">
+        <h4>① Settings tabs</h4>
+        <p>20&nbsp;px icon + label. Active tab takes the accent color; idle tabs sit at <code>text-dim</code>.</p>
+        <div class="tabs-demo">
+          <button class="tab-pill active"><img src="assets/icons/chat.png" alt="" />Chat</button>
+          <button class="tab-pill"><img src="assets/icons/persona.png" alt="" />Persona</button>
+          <button class="tab-pill"><img src="assets/icons/llm.png" alt="" />LLM</button>
+          <button class="tab-pill"><img src="assets/icons/tts.png" alt="" />TTS</button>
+          <button class="tab-pill"><img src="assets/icons/asr.png" alt="" />ASR</button>
+          <button class="tab-pill"><img src="assets/icons/memory.png" alt="" />Memory</button>
+        </div>
+      </div>
+
+      <div class="strip-card">
+        <h4>② Settings rows</h4>
+        <p>18&nbsp;px icon in a pink ring. State value lives in mono on the right.</p>
+        <div class="list-rows">
+          <div class="list-row">
+            <div class="ic"><img src="assets/icons/llm.png" alt="" /></div>
+            <div>
+              <div class="lab">Language model</div>
+              <div class="sub">PROVIDER · OPENAI</div>
+            </div>
+            <div class="val">gpt-4o-mini</div>
+          </div>
+          <div class="list-row">
+            <div class="ic"><img src="assets/icons/tts.png" alt="" /></div>
+            <div>
+              <div class="lab">Voice synthesis</div>
+              <div class="sub">PROVIDER · GPT-SOVITS</div>
+            </div>
+            <div class="val"><span class="on">ON</span> · 樱井</div>
+          </div>
+          <div class="list-row">
+            <div class="ic"><img src="assets/icons/vad.png" alt="" /></div>
+            <div>
+              <div class="lab">Voice activity</div>
+              <div class="sub">THRESHOLD · 0.65</div>
+            </div>
+            <div class="val"><span class="on">ON</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Icon rules -------------------------------------------- -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Style rules</h2>
+    <div class="icon-rules">
+      <div class="ic-rule">
+        <h5>① Soft single-line strokes</h5>
+        <p>
+          Section icons are minimal single-weight line drawings — readable at
+          18&nbsp;px and recognizable at 64. No two-tone fills, no chunky solid
+          glyphs. For chevrons, ×, dots and the like, draw inline SVG with
+          <code>currentColor</code> at 14–16&nbsp;px instead of shipping a PNG.
+        </p>
+      </div>
+      <div class="ic-rule">
+        <h5>② White on transparent, tinted in CSS</h5>
+        <p>
+          Source PNGs are <i>white-on-transparent</i>. They take their color from
+          the surrounding state: pink ring when idle, pink drop-shadow glow when
+          active. Never bake the accent color into the asset itself.
+        </p>
+      </div>
+      <div class="ic-rule">
+        <h5>③ Always paired with a label</h5>
+        <p>
+          No icon ever ships alone. There is no spelunking — Animetta users are
+          looking at a small panel, and there is room for both the icon and the
+          word.
+        </p>
+      </div>
+      <div class="ic-rule">
+        <h5>④ Size ladder · 18 / 20 / 36 / 48</h5>
+        <p>
+          18&nbsp;px in list rows, 20&nbsp;px in tabs, 36&nbsp;px in the section
+          showcase, 48&nbsp;px in the welcome screen. The 64&nbsp;px native
+          asset always downsamples cleanly — never upscale beyond 64.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="ds-rule" />
+
+  <!-- Scenes ---------------------------------------------------- -->
+  <span class="ds-eyebrow">04b · Atmosphere</span>
+  <h2 class="ds-section-title" style="margin-top: 12px;">Background scenes</h2>
+  <p class="ds-section-sub" style="max-width: 78ch;">
+    Animetta ships seven curated <b>scenes</b> — full-bleed anime backgrounds that
+    sit behind the Live2D character and define the mood of the conversation.
+    Users pick one in <b>Settings → Background</b>; the choice persists to
+    <code class="tok">localStorage</code> under
+      <code class="tok">animetta_background</code>.
+  </p>
+
+  <div class="scenes-hero">
+    <img src="assets/backgrounds/sakura-night.png" alt="Sakura at night — Animetta's default seasonal background" />
+    <div class="overlay"></div>
+    <div class="caption">
+      <div class="eyebrow">Hero scene · 樱花夜</div>
+      <h3>Sakura at night</h3>
+      <p>
+        The first thing a new user sees. Establishes the brand palette in a single
+        image — pink petals on deep violet — before they've read a single line of UI.
+      </p>
+    </div>
+  </div>
+
+  <div class="scenes-grid">
+    <div class="scene-card">
+      <img src="assets/backgrounds/sakura-night.png" alt="" />
+      <div class="badge">Default</div>
+      <div class="meta">
+        <div>
+          <div class="nm">Sakura night</div>
+          <div class="cjk">樱花夜</div>
+        </div>
+        <div class="file">sakura-night.png</div>
+      </div>
+    </div>
+    <div class="scene-card">
+      <img src="assets/backgrounds/cyber-city.png" alt="" />
+      <div class="meta">
+        <div>
+          <div class="nm">Cyber city</div>
+          <div class="cjk">赛博都市</div>
+        </div>
+        <div class="file">cyber-city.png</div>
+      </div>
+    </div>
+    <div class="scene-card">
+      <img src="assets/backgrounds/cozy-studio.png" alt="" />
+      <div class="meta">
+        <div>
+          <div class="nm">Cozy studio</div>
+          <div class="cjk">温馨直播室</div>
+        </div>
+        <div class="file">cozy-studio.png</div>
+      </div>
+    </div>
+    <div class="scene-card">
+      <img src="assets/backgrounds/sunset.png" alt="" />
+      <div class="meta">
+        <div>
+          <div class="nm">Sunset</div>
+          <div class="cjk">落日</div>
+        </div>
+        <div class="file">sunset.png</div>
+      </div>
+    </div>
+    <div class="scene-card">
+      <img src="assets/backgrounds/forest.png" alt="" />
+      <div class="meta">
+        <div>
+          <div class="nm">Forest</div>
+          <div class="cjk">森林</div>
+        </div>
+        <div class="file">forest.png</div>
+      </div>
+    </div>
+    <div class="scene-card">
+      <img src="assets/backgrounds/midnight.png" alt="" />
+      <div class="meta">
+        <div>
+          <div class="nm">Midnight</div>
+          <div class="cjk">午夜</div>
+        </div>
+        <div class="file">midnight.png</div>
+      </div>
+    </div>
+    <div class="scene-card">
+      <img src="assets/backgrounds/deep-sea.png" alt="" />
+      <div class="meta">
+        <div>
+          <div class="nm">Deep sea</div>
+          <div class="cjk">深海</div>
+        </div>
+        <div class="file">deep-sea.png</div>
+      </div>
+    </div>
+  </div>
+
+  <section class="ds-section">
+    <h2 class="ds-section-title">Built-in fallback</h2>
+    <p class="ds-section-sub">
+      When no scene image is available — first launch before the user has
+      chosen, or a corrupted preference — Animetta falls back to a
+      <code class="tok">default.svg</code> CSS gradient. It uses the same
+      palette as the brand so the loading state never breaks the mood.
+    </p>
+    <div class="default-scene">
+      <div class="img">
+        <img src="assets/backgrounds/default.svg" alt="" />
+      </div>
+      <div class="copy">
+        <h4>default.svg</h4>
+        <p>
+          A pure-vector gradient that ships in the bundle. Renders instantly,
+          weighs less than 1&nbsp;KB, and serves as the always-available
+          placeholder while the chosen scene loads from disk.
+        </p>
+        <p style="margin-top: 4px;">
+          New scenes are added by dropping a 1920×1080 PNG into
+          <code class="tok">public/backgrounds/</code> and registering the
+          filename in <code class="tok">BackgroundSettings.vue</code>.
+        </p>
+        <span class="pair">aspect: 1920 × 1080 · &lt; 500 KB · jpg or png</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Composition rules ----------------------------------- -->
+  <section class="ds-section">
+    <h2 class="ds-section-title">Composition rules</h2>
+    <div class="icon-rules">
+      <div class="ic-rule">
+        <h5>① Center-clear</h5>
+        <p>
+          The Live2D character lives in the lower-center third. Scene focal
+          points must sit in the upper third or far edges so they don't fight
+          the avatar's face.
+        </p>
+      </div>
+      <div class="ic-rule">
+        <h5>② Dim enough for glass</h5>
+        <p>
+          Chat glass panels float over scenes. If your scene averages brighter
+          than <code>~30% L*</code>, the glass will read as a frosted
+          rectangle instead of a window. Mostly-dark scenes only.
+        </p>
+      </div>
+      <div class="ic-rule">
+        <h5>③ One light source</h5>
+        <p>
+          Every scene has a single directional warmth source (sunset, lamp,
+          street neon). It gives the page a believable "where is the light
+          coming from?" and ties to Anima's character lighting.
+        </p>
+      </div>
+      <div class="ic-rule">
+        <h5>④ No on-canvas text</h5>
+        <p>
+          Backgrounds carry no logos, watermarks, or shop signs in legible
+          characters. The UI provides all text; the scene is mood only.
+        </p>
+      </div>
+    </div>
+  </section>
+
+</main>
+</body>
+</html>

@@ -25,7 +25,7 @@ class TestStatsStore:
     @pytest_asyncio.fixture
     async def store(self, tmp_path):
         """每个测试用独立的临时数据库"""
-        from anima.orchestration.graph.stats_store import StatsStore
+        from animetta import $$$
 
         db_path = str(tmp_path / "test_stats.db")
         s = StatsStore(db_path=db_path)
@@ -175,8 +175,8 @@ class TestStatsStore:
     @pytest.mark.asyncio
     async def test_concurrent_get_stats_store(self, tmp_path):
         """并发调用 get_stats_store 不应竞态"""
-        from anima import orchestration
-        from anima.orchestration.graph import stats_store
+        from animetta import $$$
+        from animetta import $$$
 
         # 重置单例
         stats_store._store = None
@@ -219,7 +219,7 @@ class TestStatsCallbackHandler:
 
     def test_known_nodes_filter(self):
         """已知节点名应被识别"""
-        from anima.orchestration.graph.stats_handler import KNOWN_NODES
+        from animetta import $$$
 
         assert "llm" in KNOWN_NODES
         assert "tts" in KNOWN_NODES
@@ -232,7 +232,7 @@ class TestStatsCallbackHandler:
 
     def test_handler_instantiation(self):
         """Handler 应正确初始化"""
-        from anima.orchestration.graph.stats_handler import StatsCallbackHandler
+        from animetta import $$$
 
         handler = StatsCallbackHandler()
         assert handler._active_spans == {}
@@ -240,7 +240,7 @@ class TestStatsCallbackHandler:
 
     def test_start_trace_returns_id(self):
         """start_trace 应返回 UUID 字符串"""
-        from anima.orchestration.graph.stats_handler import StatsCallbackHandler
+        from animetta import $$$
 
         handler = StatsCallbackHandler()
         trace_id = handler.start_trace("session-1", "text", "你好")
@@ -249,7 +249,7 @@ class TestStatsCallbackHandler:
 
     def test_summarize_input(self):
         """输入摘要应截断到 200 字符"""
-        from anima.orchestration.graph.stats_handler import StatsCallbackHandler
+        from animetta import $$$
 
         state = {"user_text": "a" * 300}
         result = StatsCallbackHandler._summarize_input("llm", {"state": state})
@@ -257,7 +257,7 @@ class TestStatsCallbackHandler:
 
     def test_summarize_output(self):
         """输出摘要优先取 response_text"""
-        from anima.orchestration.graph.stats_handler import StatsCallbackHandler
+        from animetta import $$$
 
         outputs = {"response_text": "你好呀", "emotion": "happy"}
         result = StatsCallbackHandler._summarize_output("llm", outputs)
@@ -275,8 +275,8 @@ class TestStatsAPI:
     async def client(self, tmp_path):
         """创建测试用 httpx 客户端 + 临时数据库"""
         import httpx
-        from anima.orchestration.graph import stats_store
-        from anima.orchestration.server.stats_api import get_stats_routes
+        from animetta import $$$
+        from animetta import $$$
         from starlette.applications import Starlette
         from starlette.routing import Mount
         import socketio
@@ -337,7 +337,7 @@ class TestStatsAPI:
     @pytest.mark.asyncio
     async def test_full_flow(self, client):
         """完整流程：写入数据 → 查询 API"""
-        from anima.orchestration.graph.stats_store import get_stats_store
+        from animetta import $$$
 
         store = await get_stats_store()
 

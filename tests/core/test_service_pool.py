@@ -9,7 +9,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from anima.core.service_pool import ServicePool
+from animetta import $$$
 
 
 # ── Fixtures ────────────────────────────────────────────────────────

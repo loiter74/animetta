@@ -31,12 +31,12 @@ These are the 7 defects found by Oracle review that MUST be addressed in the imp
 ### Task 1: Create Qwen3TTSConfig (Pydantic config class)
 
 **Files:**
-- Create: `src/anima/config/providers/tts/qwen3.py`
-- Reference: `src/anima/config/providers/tts/vibe_voice.py`, `src/anima/config/providers/tts/base.py`
+- Create: `src/animetta/config/providers/tts/qwen3.py`
+- Reference: `src/animetta/config/providers/tts/vibe_voice.py`, `src/animetta/config/providers/tts/base.py`
 
 **Step 1: Read reference files**
 
-Read `src/anima/config/providers/tts/base.py` (TTSBaseConfig) and `src/anima/config/providers/tts/vibe_voice.py` (dual-mode pattern).
+Read `src/animetta/config/providers/tts/base.py` (TTSBaseConfig) and `src/animetta/config/providers/tts/vibe_voice.py` (dual-mode pattern).
 
 **Step 2: Create `qwen3.py`**
 
@@ -134,7 +134,7 @@ Expected: `OK`
 **Step 4: Commit**
 
 ```bash
-git add src/anima/config/providers/tts/qwen3.py
+git add src/animetta/config/providers/tts/qwen3.py
 git commit -m "feat(tts): add Qwen3TTSConfig for Qwen3-TTS provider"
 ```
 
@@ -143,9 +143,9 @@ git commit -m "feat(tts): add Qwen3TTSConfig for Qwen3-TTS provider"
 ### Task 2: Create Qwen3TTSTTS (service implementation — with Oracle fixes)
 
 **Files:**
-- Create: `src/anima/services/speech/tts/qwen3_tts.py`
-- Reference: `src/anima/services/speech/tts/chattts_tts.py` (local model + preload pattern)
-- Reference: `src/anima/services/speech/tts/vibe_voice_tts.py` (from_config + streaming pattern)
+- Create: `src/animetta/services/speech/tts/qwen3_tts.py`
+- Reference: `src/animetta/services/speech/tts/chattts_tts.py` (local model + preload pattern)
+- Reference: `src/animetta/services/speech/tts/vibe_voice_tts.py` (from_config + streaming pattern)
 
 **Step 1: Read reference implementations**
 
@@ -494,7 +494,7 @@ Expected: `OK` (imports should not load the model — lazy loading)
 **Step 4: Commit**
 
 ```bash
-git add src/anima/services/speech/tts/qwen3_tts.py
+git add src/animetta/services/speech/tts/qwen3_tts.py
 git commit -m "feat(tts): add Qwen3TTSTTS service with thread-safe model loading"
 ```
 
@@ -503,9 +503,9 @@ git commit -m "feat(tts): add Qwen3TTSTTS service with thread-safe model loading
 ### Task 3: Register provider in __init__.py files and factory
 
 **Files:**
-- Modify: `src/anima/config/providers/tts/__init__.py`
-- Modify: `src/anima/services/speech/tts/__init__.py`
-- Modify: `src/anima/services/speech/tts/factory.py`
+- Modify: `src/animetta/config/providers/tts/__init__.py`
+- Modify: `src/animetta/services/speech/tts/__init__.py`
+- Modify: `src/animetta/services/speech/tts/factory.py`
 
 **Step 1: Read current __init__.py contents**
 
@@ -569,7 +569,7 @@ Expected: All existing tests pass
 **Step 7: Commit**
 
 ```bash
-git add src/anima/config/providers/tts/__init__.py src/anima/services/speech/tts/__init__.py src/anima/services/speech/tts/factory.py
+git add src/animetta/config/providers/tts/__init__.py src/animetta/services/speech/tts/__init__.py src/animetta/services/speech/tts/factory.py
 git commit -m "feat(tts): register Qwen3-TTS provider in factory and exports"
 ```
 
@@ -884,8 +884,8 @@ git commit -m "test(tts): add Qwen3-TTS tests with mocked model loading"
 
 ```bash
 # Check each changed file for type errors
-python -m mypy src/anima/config/providers/tts/qwen3.py --ignore-missing-imports
-python -m mypy src/anima/services/speech/tts/qwen3_tts.py --ignore-missing-imports
+python -m mypy src/animetta/config/providers/tts/qwen3.py --ignore-missing-imports
+python -m mypy src/animetta/services/speech/tts/qwen3_tts.py --ignore-missing-imports
 ```
 
 **Step 2: Run full test suite**
@@ -919,11 +919,11 @@ Expected: ~10 files changed, clean diff
 
 | # | Action | File | Notes |
 |---|--------|------|-------|
-| 1 | Create | `src/anima/config/providers/tts/qwen3.py` | Config with `default_instruct` field |
-| 2 | Create | `src/anima/services/speech/tts/qwen3_tts.py` | Service with thread-safety, preload executor, close guard |
-| 3a | Modify | `src/anima/config/providers/tts/__init__.py` | Add to union type |
-| 3b | Modify | `src/anima/services/speech/tts/__init__.py` | Add export |
-| 3c | Modify | `src/anima/services/speech/tts/factory.py` | Add factory case |
+| 1 | Create | `src/animetta/config/providers/tts/qwen3.py` | Config with `default_instruct` field |
+| 2 | Create | `src/animetta/services/speech/tts/qwen3_tts.py` | Service with thread-safety, preload executor, close guard |
+| 3a | Modify | `src/animetta/config/providers/tts/__init__.py` | Add to union type |
+| 3b | Modify | `src/animetta/services/speech/tts/__init__.py` | Add export |
+| 3c | Modify | `src/animetta/services/speech/tts/factory.py` | Add factory case |
 | 4 | Modify | `config/services.yaml` | Add `qwen3_custom_voice` entry |
 | 5 | Modify | `requirements.txt` | Add `qwen-tts` |
 | 6a | Modify | `tests/services/test_tts_providers.py` | Add fake module + TestInterfaceContract + test class |

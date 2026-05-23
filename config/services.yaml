@@ -1,4 +1,4 @@
-# Anima 服务配置统一文件
+# Animetta 服务配置统一文件
 # 所有 ASR、TTS、LLM、VAD 服务的配置
 
 # ===========================
@@ -27,7 +27,7 @@ asr:
     language: zh
     device: cuda
     compute_type: float16
-    download_root: "E:/anima_data/models/whisper"  # 模型存储在 E 盘
+    download_root: "E:/animetta_data/models/whisper"  # 模型存储在 E 盘
     beam_size: 5
     vad_filter: true  # 启用 VAD 过滤静音，提升识别效果
     vad_parameters:
@@ -129,7 +129,7 @@ tts:
   # ChatTTS（开源对话式语音合成）
   chattts:
     type: chattts
-    model_path: "E:/anima_data/models/ChatTTS"  # 模型文件路径
+    model_path: "E:/animetta_data/models/ChatTTS"  # 模型文件路径
     device: cpu  # cuda / cpu
     compile: false  # Windows 建议关闭
     speaker_seed: 42  # 固定音色，None 则随机
@@ -168,12 +168,12 @@ tts:
   gpt_sovits_evil:
     type: gpt_sovits
     base_url: "http://127.0.0.1:9880"
-    ref_audio_path: "${ANIMA_PROJECT_ROOT}/config/gpt_sovits/evil/ref_audio.wav"
+    ref_audio_path: "${ANIMETTA_PROJECT_ROOT}/config/gpt_sovits/evil/ref_audio.wav"
     prompt_text: "I played Shovel Knight once. It turns out AI doesn't exactly have perfect hand-eye coordination."
     prompt_lang: "en"
     text_lang: "auto"   # auto 自动检测语种（支持中英混合）
     aux_ref_audio_paths:
-      - "${ANIMA_PROJECT_ROOT}/config/gpt_sovits/evil/ref_audio_zh.wav"
+      - "${ANIMETTA_PROJECT_ROOT}/config/gpt_sovits/evil/ref_audio_zh.wav"
     top_k: 10
     top_p: 0.8
     temperature: 0.7
@@ -195,7 +195,7 @@ tts:
     model: "vibe-voice-1.5b"
     voice: "default"
     model_size: "1.5b"           # 1.5b / 7b（local 模式）
-    model_path: "E:/anima_data/models/VibeVoice"  # 模型路径（local 模式）
+    model_path: "E:/animetta_data/models/VibeVoice"  # 模型路径（local 模式）
     device: "cuda:0"             # 推理设备（local 模式）
     num_speakers: 1              # 说话人数 1-4
     language: "zh"               # zh / en / mix
@@ -209,7 +209,7 @@ tts:
     dtype: "float16"
     default_instruct: ""
     language: "Chinese"
-    max_new_tokens: 128
+    max_new_tokens: 4096
     top_p: 0.9
     temperature: 0.9
     repetition_penalty: 1.05
@@ -223,14 +223,14 @@ tts:
     model: "Qwen/Qwen3-TTS-12Hz-1.7B-Base"   # 原生 voice clone，已在 HF cache
     device: "cuda:0"
     dtype: "float16"
-    language: "japanese"
-    max_new_tokens: 1024
+    language: "Chinese"
+    max_new_tokens: 4096
     top_p: 0.9
     temperature: 0.8
     repetition_penalty: 1.05
     use_flash_attn: false
     # ── Voice Clone ──
-    ref_audio_path: "E:/anima_data/tts_training/kuonji_arisu/training_ready/S_alice_confirmed/ref_10s.wav"
+    ref_audio_path: "E:/animetta_data/tts_training/kuonji_arisu/training_ready/S_alice_confirmed/ref_10s.wav"
     x_vector_only: true
 
   # Mock（测试用）
@@ -288,9 +288,9 @@ llm:
     llm_config:
       type: local_lora
       # 使用本地缓存的 Qwen2.5-7B-Instruct 模型（避免重新下载）
-      base_model_name: "E:/anima_data/models/huggingface/models--Qwen--Qwen2.5-7B-Instruct/snapshots/a09a35458c702b33eeacc393d103063234e8bc28"
+      base_model_name: "E:/animetta_data/models/huggingface/models--Qwen--Qwen2.5-7B-Instruct/snapshots/a09a35458c702b33eeacc393d103063234e8bc28"
       # 使用 style_transfer 训练的 LoRA（与 7B 模型兼容）
-      lora_path: "E:/anima_data/models/style_transfer/final/lora"
+      lora_path: "E:/animetta_data/models/style_transfer/final/lora"
       device: cpu  # cuda / cpu
       temperature: 0.8
       top_p: 0.9

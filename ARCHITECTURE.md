@@ -9,7 +9,7 @@
 ```mermaid
 graph TB
     User([User])
-    subgraph "Anima System"
+    subgraph "Animetta System"
         FE[Vue3 Frontend<br/>Electron + Web]
         BE[FastAPI Backend<br/>Socket.IO + REST]
         LG[LangGraph Engine<br/>State Graph]
@@ -170,7 +170,7 @@ graph TD
 
 ## Core Components
 
-### 1. LangGraph State Graph (`src/anima/orchestration/graph/`)
+### 1. LangGraph State Graph (`src/animetta/orchestration/graph/`)
 
 | Node | Input | Output | Responsibility |
 |------|-------|--------|----------------|
@@ -185,7 +185,7 @@ Two execution paths:
 - **Direct**: `llm_node → tts_node → emotion_node → output_node`
 - **Tool-calling**: `llm_node → tool_node → llm_node → ... → output_node`
 
-### 2. Service Registry (`src/anima/config/core/registry.py`)
+### 2. Service Registry (`src/animetta/config/core/registry.py`)
 
 Decorator-based plugin system ([ADR-003](docs/adrs/ADR-003-plugin-architecture.md)):
 
@@ -202,7 +202,7 @@ services:
   asr: mock          # picks ASR provider
 ```
 
-### 3. Memory System (`src/anima/memory/`)
+### 3. Memory System (`src/animetta/memory/`)
 
 Wiki-architecture ([ADR-005](docs/adrs/ADR-005-wiki-memory.md)) with three storage layers:
 
@@ -219,14 +219,14 @@ Retrieval: **Hybrid search** ([ADR-002](docs/adrs/ADR-002-hybrid-search.md)) wit
 score = 0.7 × vector_similarity + 0.3 × bm25_score
 ```
 
-### 4. Tool System (`src/anima/tools/`)
+### 4. Tool System (`src/animetta/tools/`)
 
 Three tool sources:
 - **Built-in**: `web_search`, `get_current_time`, `calculator`, `get_weather`
 - **LangChain tools**: Python REPL, extensible via config
 - **MCP tools**: Docker-sandboxed external servers via Model Context Protocol
 
-### 5. WebSocket Server (`src/anima/orchestration/server/`)
+### 5. WebSocket Server (`src/animetta/orchestration/server/`)
 
 FastAPI + Socket.IO ASGI app:
 - Event-based communication (`text_input`, `raw_audio_data`, `interrupt_signal`)

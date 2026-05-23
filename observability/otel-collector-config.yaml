@@ -1,5 +1,5 @@
 # ── OpenTelemetry Collector Configuration ──
-# Receives OTLP data from Anima backend, exports traces to Tempo,
+# Receives OTLP data from Animetta backend, exports traces to Tempo,
 # metrics to Prometheus, and logs to Loki via filelog receiver.
 
 receivers:
@@ -10,7 +10,7 @@ receivers:
       http:
         endpoint: 0.0.0.0:4318
   filelog:
-    include: [/logs/anima.log]
+    include: [/logs/animetta.log]
     start_at: beginning
     include_file_name: false
     operators:
@@ -27,14 +27,14 @@ processors:
   attributes/loki:
     actions:
       - key: app
-        value: anima
+        value: animetta
         action: upsert
 
 exporters:
   # Prometheus endpoint for metrics scraping
   prometheus:
     endpoint: "0.0.0.0:8889"
-    namespace: anima
+    namespace: animetta
 
   # Tempo OTLP trace backend
   otlp/tempo:

@@ -1,6 +1,6 @@
 # FRONTEND — VUE 3 + ELECTRON + LIVE2D
 
-**Generated:** 2026-05-10
+**Generated:** 2026-05-23
 
 > Parent: [../AGENTS.md](../AGENTS.md) — root project conventions.
 
@@ -17,9 +17,14 @@ frontend/
 │   ├── App.vue              # Root component
 │   ├── components/          # UI components
 │   │   ├── chat/            # Chat interface (bubbles, input, streaming)
-│   │   ├── live2d/          # Live2D canvas + model management
+│   │   ├── dashboard/       # Stats widgets, charts
 │   │   ├── layout/          # App layout (sidebar, panels)
-│   │   └── shared/          # Shared UI primitives
+│   │   ├── live2d/          # Live2D canvas + model management
+│   │   ├── meme/            # MemeCard, meme display
+│   │   ├── memory/          # MemoryPanel, knowledge browsing
+│   │   ├── personality/     # PersonalityPanel, persona config
+│   │   ├── shared/          # Shared UI primitives
+│   │   └── singing/         # MusicCard, PlaybackControls, WaveformDisplay
 │   ├── composables/         # Vue composables (reusable logic)
 │   ├── stores/              # Pinia state stores
 │   ├── views/               # Route-level views
@@ -30,8 +35,7 @@ frontend/
 ├── package.json              # Dependencies + scripts
 ├── tsconfig.json             # TypeScript config
 ├── vite.config.ts            # Vite build config
-├── uno.config.ts             # UnoCSS config
-└── electron.vite.config.ts   # Electron-specific Vite config
+└── uno.config.ts             # UnoCSS config
 ```
 
 ## WHERE TO LOOK
@@ -39,12 +43,14 @@ frontend/
 | Task | Location | Notes |
 |------|----------|-------|
 | Chat UI | `src/components/chat/` | Message bubbles, input, streaming display |
+| Dashboard stats | `src/components/dashboard/` | Stats widgets, usage charts |
 | Live2D rendering | `src/components/live2d/useLive2D.ts` | Model loading, scaling, expression control |
 | Live2D viseme sync | `src/components/live2d/` | Audio-driven mouth shape matching |
-| State management | `src/stores/` | Pinia stores (chat, settings, live2d) |
+| Memory panel | `src/components/memory/` | Memory browsing, search results |
+| Singing UI | `src/components/singing/` | MusicCard, PlaybackControls, WaveformDisplay |
+| State management | `src/stores/` | 11 Pinia stores (chat, settings, live2d, stats, etc.) |
 | Settings panel | `src/views/` or `src/components/` | Provider selection, persona config |
 | Subtitle overlay | `src/components/live2d/` | Bilingual subtitle rendering |
-| Electron main | `main.ts` (root) | Electron main process |
 
 ## KEY PATTERNS
 
@@ -64,6 +70,7 @@ frontend/
 ### Electron
 - **Main process vs renderer**: Electron main process handles window management, renderer handles UI.
 - **IPC**: Use Electron IPC for main↔renderer communication.
+- **Build status**: Electron builder not yet configured — runs as Vite dev server (port 3000). No `electron.vite.config.ts` on disk.
 
 ## ANTI-PATTERNS
 
@@ -75,17 +82,10 @@ frontend/
 ## COMMANDS
 
 ```bash
-# Install
-cd frontend && pnpm install
-
-# Dev server
-pnpm dev
-
-# Build
-pnpm build
-
-# Type check
-pnpm vue-tsc --noEmit
+cd frontend && pnpm install  # Install
+pnpm dev                     # Dev server (port 3000)
+pnpm build                   # Build
+pnpm vue-tsc --noEmit        # Type check
 ```
 
 ## NOTES
@@ -93,4 +93,4 @@ pnpm vue-tsc --noEmit
 - **No frontend tests exist** — test framework not yet installed (vitest recommended).
 - Live2D model files (`.moc3`, textures) are loaded from `assets/` at runtime.
 - Bilingual subtitle feature uses LLM translation — configured in Settings panel.
-- Electron build uses `electron-builder` or `electron-vite` depending on config.
+- **Dev server runs on port 3000** (Vite, not 5173). Electron builder is not configured.

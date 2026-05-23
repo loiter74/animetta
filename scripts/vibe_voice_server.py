@@ -2,7 +2,7 @@
 VibeVoice 1.5B TTS FastAPI Server
 ==================================
 本地推理服务，监听 localhost:8765，暴露 POST /tts 接口。
-供 Anima 的 VibeVoiceTTS (remote 模式) 调用。
+供 Animetta 的 VibeVoiceTTS (remote 模式) 调用。
 
 用法:
     python scripts/vibe_voice_server.py --port 8765
@@ -13,7 +13,7 @@ VibeVoice 1.5B TTS FastAPI Server
 
 模型:
     需先下载 microsoft/VibeVoice-1.5B 到本地目录。
-    huggingface-cli download microsoft/VibeVoice-1.5B --local-dir E:/anima_data/models/VibeVoice
+    huggingface-cli download microsoft/VibeVoice-1.5B --local-dir E:/animetta_data/models/VibeVoice
 """
 
 import io
@@ -182,7 +182,7 @@ if __name__ == "__main__":
     parser.add_argument("--port", type=int, default=8765, help="端口")
     parser.add_argument(
         "--model",
-        default="E:/anima_data/models/VibeVoice/VibeVoice-1.5B",
+        default="E:/animetta_data/models/VibeVoice/VibeVoice-1.5B",
         help="模型权重路径",
     )
     parser.add_argument("--device", default="cuda", help="推理设备 cuda / cpu")

@@ -12,7 +12,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
       "targets": [
         {
-          "expr": "rate(anima_session_messages_total[5m])",
+          "expr": "rate(animetta_session_messages_total[5m])",
           "legendFormat": "QPS"
         }
       ],
@@ -26,15 +26,15 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
       "targets": [
         {
-          "expr": "histogram_quantile(0.50, sum(rate(anima_node_duration_seconds_bucket{node_name=\"output\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.50, sum(rate(animetta_node_duration_seconds_bucket{node_name=\"output\"}[5m])) by (le))",
           "legendFormat": "p50"
         },
         {
-          "expr": "histogram_quantile(0.95, sum(rate(anima_node_duration_seconds_bucket{node_name=\"output\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(animetta_node_duration_seconds_bucket{node_name=\"output\"}[5m])) by (le))",
           "legendFormat": "p95"
         },
         {
-          "expr": "histogram_quantile(0.99, sum(rate(anima_node_duration_seconds_bucket{node_name=\"output\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.99, sum(rate(animetta_node_duration_seconds_bucket{node_name=\"output\"}[5m])) by (le))",
           "legendFormat": "p99"
         }
       ],
@@ -46,7 +46,7 @@
       "gridPos": { "h": 8, "w": 8, "x": 0, "y": 8 },
       "targets": [
         {
-          "expr": "rate(anima_node_errors_total[5m]) / rate(anima_node_duration_seconds_count[5m]) * 100",
+          "expr": "rate(animetta_node_errors_total[5m]) / rate(animetta_node_duration_seconds_count[5m]) * 100",
           "legendFormat": "Error Rate"
         }
       ],
@@ -58,7 +58,7 @@
       "gridPos": { "h": 8, "w": 8, "x": 8, "y": 8 },
       "targets": [
         {
-          "expr": "rate(anima_llm_cost_usd_total[1h]) * 3600",
+          "expr": "rate(animetta_llm_cost_usd_total[1h]) * 3600",
           "legendFormat": "Cost Rate"
         }
       ],
@@ -69,7 +69,7 @@
       "type": "stat",
       "gridPos": { "h": 8, "w": 8, "x": 16, "y": 8 },
       "targets": [
-        { "expr": "anima_active_sessions", "legendFormat": "Sessions" }
+        { "expr": "animetta_active_sessions", "legendFormat": "Sessions" }
       ]
     },
     {
@@ -78,7 +78,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
       "targets": [
         {
-          "expr": "rate(anima_session_messages_total[5m])",
+          "expr": "rate(animetta_session_messages_total[5m])",
           "legendFormat": "Messages/sec"
         }
       ],
@@ -90,7 +90,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
       "targets": [
         {
-          "expr": "rate(anima_websocket_errors_total[5m])",
+          "expr": "rate(animetta_websocket_errors_total[5m])",
           "legendFormat": "WS Errors/sec"
         }
       ]
@@ -98,14 +98,14 @@
   ],
   "refresh": "10s",
   "schemaVersion": 39,
-  "tags": ["anima", "overview"],
+  "tags": ["animetta", "overview"],
   "templating": {
     "list": [
       {
         "name": "session_id",
         "type": "query",
         "datasource": { "type": "prometheus", "uid": "prometheus" },
-        "query": "label_values(anima_session_messages_total, session_id)",
+        "query": "label_values(animetta_session_messages_total, session_id)",
         "multi": false,
         "includeAll": true
       }
@@ -113,7 +113,7 @@
   },
   "time": { "from": "now-1h", "to": "now" },
   "timepicker": {},
-  "title": "Anima - Overview",
-  "uid": "anima-overview",
+  "title": "Animetta - Overview",
+  "uid": "animetta-overview",
   "version": 1
 }

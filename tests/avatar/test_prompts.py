@@ -7,7 +7,7 @@ from pathlib import Path
 import tempfile
 import os
 
-from anima.avatar.prompts import EmotionPromptBuilder, load_prompt_template
+from animetta import $$$
 
 
 # ============================================================

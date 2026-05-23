@@ -7,6 +7,8 @@ export const usePersonalityStore = defineStore('personality', () => {
   const currentMood = ref<string | null>(null)
   const availablePersonas = ref<string[]>([])
   const memoryInfluence = ref(0.3)
+  const mbtiType = ref<string | null>(null)
+  const mbtiDimensions = ref<{ ei: number; sn: number; tf: number; jp: number } | null>(null)
 
   function setPersona(name: string): void {
     const socket = getSocket()
@@ -32,14 +34,26 @@ export const usePersonalityStore = defineStore('personality', () => {
     memoryInfluence.value = Math.max(0, Math.min(1, value))
   }
 
+  function setMbtiType(type: string | null): void {
+    mbtiType.value = type
+  }
+
+  function setMbtiDimensions(dimensions: { ei: number; sn: number; tf: number; jp: number } | null): void {
+    mbtiDimensions.value = dimensions
+  }
+
   return {
     currentMode,
     currentMood,
     availablePersonas,
     memoryInfluence,
+    mbtiType,
+    mbtiDimensions,
     setPersona,
     setMode,
     setMood,
     setMemoryInfluence,
+    setMbtiType,
+    setMbtiDimensions,
   }
 })

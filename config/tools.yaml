@@ -1,4 +1,4 @@
-# Anima 工具配置
+# Animetta 工具配置
 
 # ========================================
 # 内置工具（不需要 API Key）
@@ -39,7 +39,7 @@ mcp_servers:
     transport: "stdio"
     sandbox:
       type: "docker"
-      image: "anima-mcp-filesystem"
+      image: "animetta-mcp-filesystem"
       mounts:
         - "./data:/data:rw"
       memory: "128m"
@@ -65,7 +65,7 @@ minecraft:
   bot:
     host: "localhost"
     port: 25565
-    username: "AnimaBot"
+    username: "AnimettaBot"
   safety:
     no_griefing: true           # 不破坏玩家建筑
     auto_heal: true             # 自动回血

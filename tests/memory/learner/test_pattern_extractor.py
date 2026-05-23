@@ -7,15 +7,8 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from anima.memory.learner.pattern_extractor import (
-    EXTRACTION_SYSTEM_PROMPT,
-    EXTRACTION_USER_PROMPT,
-    CATEGORY_KEYWORDS,
-    EMOTION_KEYWORD_GROUPS,
-    PATTERN_CATEGORIES,
-    PatternExtractor,
-)
-from anima.memory.models.turns import MemoryTurn
+from animetta import $$$
+from animetta import $$$
 
 
 # ── Helpers ────────────────────────────────────────────────────

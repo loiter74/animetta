@@ -6,18 +6,8 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from anima.memory.learner.meme_discovery import (
-    FALLBACK_TEMPLATES,
-    MEME_SYSTEM_PROMPT,
-    MEME_USER_PROMPT,
-    MemeCandidate,
-    MemeDiscoverer,
-    _clean_json,
-    _format_patterns,
-    _generate_fallback_candidates,
-    _parse_llm_result,
-)
-from anima.memory.learner.summarizer import LearningLog
+from animetta import $$$
+from animetta import $$$
 
 
 # ── Helpers ────────────────────────────────────────────────────

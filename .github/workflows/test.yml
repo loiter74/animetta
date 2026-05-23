@@ -36,7 +36,7 @@ jobs:
     - name: Fast parallel tests (default)
       run: |
         PYTHONPATH=src python -m pytest tests/ --ignore=tests/memory/test_manager.py \
-          --cov=src/anima --cov-report=term-missing --cov-report=xml --cov-fail-under=70
+          --cov=src/animetta --cov-report=term-missing --cov-report=xml --cov-fail-under=70
 
     - name: Upload coverage report
       if: always()
@@ -46,7 +46,7 @@ jobs:
         path: coverage.xml
 
     - name: Verify import
-      run: python -c "import anima; print('Import OK')"
+      run: python -c "import animetta; print('Import OK')"
 
   rag-eval:
     needs: test

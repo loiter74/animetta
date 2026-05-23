@@ -56,8 +56,8 @@ Deliverables:
 
 Files to modify:
 - `pyproject.toml`
-- `src/anima/config/core/base.py` (Pydantic Config → model_config)
-- `src/anima/config/providers/llm/local_lora_llm.py` (same)
+- `src/animetta/config/core/base.py` (Pydantic Config → model_config)
+- `src/animetta/config/providers/llm/local_lora_llm.py` (same)
 - Plus any files that fail strict mypy after initial pass
 
 ### 1.3 CI/CD Pipeline (Week 2)
@@ -90,15 +90,15 @@ Current state: All nodes exist and function, but zero unit tests. Critical path:
 
 Deliverables per node (≥5 tests each):
 - **llm_node**: mock LLM responses, RAG context injection, tool_calling branch,
-  empty input, error recovery. Key file: `src/anima/orchestration/graph/llm_node.py`.
+  empty input, error recovery. Key file: `src/animetta/orchestration/graph/llm_node.py`.
 - **tts_node**: mock TTS service (success + failure paths), empty text skip.
-  Key file: `src/anima/orchestration/graph/tts_node.py`.
+  Key file: `src/animetta/orchestration/graph/tts_node.py`.
 - **emotion_node**: mock analyzer, emotion extraction from text, default on empty.
-  Key file: `src/anima/orchestration/graph/emotion_node.py`.
+  Key file: `src/animetta/orchestration/graph/emotion_node.py`.
 - **output_node**: mock Socket.IO callback, event format validation, memory storage.
-  Key file: `src/anima/orchestration/graph/output_node.py`.
+  Key file: `src/animetta/orchestration/graph/output_node.py`.
 - **orchestrator integration**: `process_text` and `process_audio` full flow.
-  Key file: `src/anima/orchestration/graph/orchestrator.py`.
+  Key file: `src/animetta/orchestration/graph/orchestrator.py`.
 
 Design decision: All external services (LLM API, TTS HTTP, databases) must be
 mocked. No real network calls in unit tests. Global fixtures in `conftest.py`.
@@ -123,15 +123,15 @@ Key components: chunker, hybrid_search, chroma_store, sqlite_store.
 
 Deliverables:
 - **chunker tests**: Markdown chunk boundaries, overlap windows, empty documents,
-  edge cases. File: `src/anima/memory/chunker.py`.
+  edge cases. File: `src/animetta/memory/chunker.py`.
 - **hybrid_search tests**: Vector (70%) + BM25 (30%) weighting, empty results,
-  boundary scores. File: `src/anima/memory/hybrid_search.py`.
+  boundary scores. File: `src/animetta/memory/hybrid_search.py`.
 - **chroma_store tests**: CRUD, collection management, persistence.
-  File: `src/anima/memory/chroma_store.py`.
+  File: `src/animetta/memory/chroma_store.py`.
 - **sqlite_store tests**: FTS5 search, metadata filtering, concurrent access.
-  File: `src/anima/memory/sqlite_store.py`.
+  File: `src/animetta/memory/sqlite_store.py`.
 - **memory_system integration test**: store_turn → retrieve_context end-to-end.
-  File: `src/anima/memory/memory_system.py`.
+  File: `src/animetta/memory/memory_system.py`.
 
 ### 2.4 Observability (Weeks 5-6)
 

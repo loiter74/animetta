@@ -17,7 +17,7 @@ class TestInitTracingDisabled:
         mock_load.return_value = {"tracing": {"enabled": False}}
         mock_proxy.return_value = MagicMock()
 
-        from anima.tracing.bootstrap import init_tracing
+        from animetta import $$$
         init_tracing()
 
         mock_proxy.assert_called_once()
@@ -28,7 +28,7 @@ class TestInitTracingDisabled:
         mock_load.return_value = {"tracing": {"enabled": True}}
         mock_proxy.return_value = MagicMock()
 
-        from anima.tracing.bootstrap import init_tracing
+        from animetta import $$$
         init_tracing(enabled=False)
 
         mock_proxy.assert_called_once()
@@ -52,7 +52,7 @@ class TestInitTracingBasic:
         mock_provider = MagicMock()
         mock_tp.return_value = mock_provider
 
-        from anima.tracing.bootstrap import init_tracing
+        from animetta import $$$
         with patch("anima.tracing.metrics.init_metrics"):
             init_tracing()
 
@@ -69,7 +69,7 @@ class TestInitTracingBasic:
         }
         mock_tp.return_value = MagicMock()
 
-        from anima.tracing.bootstrap import init_tracing
+        from animetta import $$$
         with patch("opentelemetry.sdk.trace.export.SimpleSpanProcessor"), \
              patch("anima.tracing.exporter.StatsSpanExporter"), \
              patch("opentelemetry.sdk.resources.Resource"), \
@@ -90,7 +90,7 @@ class TestInitTracingOtlp:
         }
         mock_tp.return_value = MagicMock()
 
-        from anima.tracing.bootstrap import init_tracing
+        from animetta import $$$
         with patch("opentelemetry.sdk.trace.export.SimpleSpanProcessor"), \
              patch("anima.tracing.exporter.StatsSpanExporter"), \
              patch("opentelemetry.sdk.resources.Resource"), \
@@ -108,7 +108,7 @@ class TestInitTracingOtlp:
         }
         mock_tp.return_value = MagicMock()
 
-        from anima.tracing.bootstrap import init_tracing
+        from animetta import $$$
         with patch("opentelemetry.sdk.trace.export.SimpleSpanProcessor"), \
              patch("anima.tracing.exporter.StatsSpanExporter"), \
              patch("opentelemetry.sdk.resources.Resource"), \

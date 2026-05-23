@@ -1,7 +1,7 @@
 """Tests for cost_calculator.py — provider pricing and cost computation."""
 
 import pytest
-from anima.tracing.cost_calculator import calculate_cost, PROVIDER_PRICING
+from animetta import $$$
 
 
 class TestCalculateCost:

@@ -4,8 +4,8 @@
 
 ```bash
 # Clone and enter
-git clone https://github.com/loiter74/Anima-LLM-Vtuber.git
-cd Anima-LLM-Vtuber
+git clone https://github.com/loiter74/animetta.git
+cd animetta
 
 # Backend
 pip install -r requirements.txt
@@ -19,7 +19,7 @@ python scripts/start.py --backend-only
 ## Project Structure
 
 ```
-src/anima/          # Python backend
+src/animetta/          # Python backend
   ├── core/         # Server entry + service container
   ├── orchestration/# LangGraph state graph
   ├── services/     # LLM / ASR / TTS / VAD implementations
@@ -46,7 +46,7 @@ tests/              # Test suite
 PYTHONPATH=src python -m pytest tests/
 
 # With coverage
-PYTHONPATH=src python -m pytest tests/ --cov=src/anima
+PYTHONPATH=src python -m pytest tests/ --cov=src/animetta
 
 # Single file
 PYTHONPATH=src python -m pytest tests/orchestration/graph/test_llm_node.py -v

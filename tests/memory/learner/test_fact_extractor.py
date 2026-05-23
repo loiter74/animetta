@@ -7,8 +7,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from anima.memory.learner.fact_extractor import extract_facts_batch, format_facts_for_wiki
-from anima.memory.models.turns import MemoryTurn
+from animetta import $$$
+from animetta import $$$
 
 
 def _make_turn(

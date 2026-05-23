@@ -1,10 +1,11 @@
-# ANIMA PROJECT KNOWLEDGE BASE
+# ANIMETTA PROJECT KNOWLEDGE BASE
 
-**Generated:** 2026-05-10
-**Commit:** ff90d6d
+**Generated:** 2026-05-23
+**Commit:** 8930c5f
 **Branch:** main
 
 > Primary knowledge base: [CLAUDE.md](CLAUDE.md). This AGENTS.md is the quick-reference map.
+> Sub-AGENTS.md: [src/animetta/](src/animetta/AGENTS.md) · [orchestration/](src/animetta/orchestration/AGENTS.md) · [services/](src/animetta/services/AGENTS.md) · [memory/](src/animetta/memory/AGENTS.md) · [config/](src/animetta/config/AGENTS.md) · [tools/](src/animetta/tools/AGENTS.md) · [avatar/](src/animetta/avatar/AGENTS.md) · [inspection/](src/animetta/inspection/AGENTS.md) · [frontend/](frontend/AGENTS.md) · [design-system/](design-system/AGENTS.md) · [evaluations/](evaluations/AGENTS.md)
 
 ## OVERVIEW
 
@@ -14,20 +15,27 @@ AI virtual companion / VTuber framework. Python backend (FastAPI + LangGraph + S
 
 ```
 ./
-├── src/anima/              # Python backend (223 files, 35.8K lines)
-│   ├── core/               # Entry point + service container
+├── src/animetta/              # Python backend (~240 files, 30K+ lines)
+│   ├── core/               # Entry point + service container (6 files)
 │   ├── orchestration/      # LangGraph state graph + WebSocket server
-│   ├── services/           # LLM / ASR / TTS / VAD implementations
-│   ├── memory/             # Wiki-architecture memory (Chroma + SQLite)
-│   ├── config/             # Pydantic configs + provider registry
+│   ├── services/           # LLM / ASR / TTS / VAD / Singing / Meme implementations
+│   ├── memory/             # Wiki-architecture memory (Chroma + SQLite FTS5)
+│   ├── config/             # Pydantic configs + @ProviderRegistry
 │   ├── avatar/             # Live2D emotion/expression analysis
-│   ├── tools/              # Tool calling + MCP bridge
+│   ├── tools/              # Tool calling + MCP bridge + Minecraft bot (⚠️ Node.js hybrid)
+│   ├── tracing/            # OpenTelemetry observability
+│   ├── notifier/           # Alert channels (Discord, Feishu, Email)
+│   ├── inspection/         # Health/telemetry background checks
 │   └── utils/              # Helpers
-├── frontend/               # Vue 3 + TypeScript + Electron (UnoCSS, Pinia)
-├── config/                 # YAML config files (personas, services, tools)
-├── tests/                  # pytest suite (131 test files, 2136 tests)
+├── frontend/               # Vue 3 + TypeScript + Vite (UnoCSS, Pinia, pixi.js)
+├── config/                 # YAML config files (personas, services, tools, singing)
+├── tests/                  # pytest suite (138 files, ~2700 tests)
 ├── docs/                   # ADRs, plans, benchmarks
-├── scripts/                # start.py, stop.py, etc.
+├── scripts/                # start.py, stop.py, benchmarks, model downloads (29 files)
+├── design-system/          # Visual design spec (HTML spec sheets from uno.config.ts)
+├── evaluations/            # Standalone RAG evaluation framework (Python)
+├── observability/          # Docker-compose for Grafana/Prometheus/Tempo/Loki/OTel stack
+├── data/ + memory_db/      # ⚠️ Dual runtime data dirs (Chroma, SQLite, Wiki, logs)
 └── .claude/                # Claude skills
 ```
 
@@ -35,14 +43,16 @@ AI virtual companion / VTuber framework. Python backend (FastAPI + LangGraph + S
 
 | Task | Location | Notes |
 |------|----------|-------|
-| Add LLM provider | `src/anima/services/intelligence/llm/` | Create class, register via `@ProviderRegistry` |
-| Add ASR/TTS provider | `src/anima/services/speech/{asr,tts}/` | Same pattern as LLM |
-| Add graph node | `src/anima/orchestration/graph/` | Follow node pattern in `__init__.py` |
-| Add tool | `src/anima/tools/base.py` or `custom_tools.py` | Use `@tool` decorator |
-| Add persona | `config/personas/` + `src/anima/config/persona/` | YAML + Pydantic |
-| Fix WebSocket route | `src/anima/orchestration/server/routes.py` | **1377 lines - largest file** |
-| Change memory behavior | `src/anima/memory/` | Wiki architecture, see ADR-005 |
-| Fix Live2D expression | `src/anima/avatar/` + `frontend/src/components/live2d/` | |
+| Add LLM provider | `src/animetta/services/intelligence/llm/` | Create class, register via `@ProviderRegistry` |
+| Add ASR/TTS provider | `src/animetta/services/speech/{asr,tts}/` | Same pattern as LLM |
+| Add graph node | `src/animetta/orchestration/graph/` | Follow node pattern in `__init__.py` |
+| Add tool | `src/animetta/tools/base.py` or `custom_tools.py` | Use `@tool` decorator |
+| Add persona | `config/personas/` + `src/animetta/config/persona/` | YAML + Pydantic |
+| Fix WebSocket route | `src/animetta/orchestration/server/routes.py` | **1377 lines - largest file** |
+| Change memory behavior | `src/animetta/memory/` | Wiki architecture, see ADR-005 |
+| Fix Live2D expression | `src/animetta/avatar/` + `frontend/src/components/live2d/` | |
+| Add singing feature | `src/animetta/services/singing/` | RVC/SVC pipeline + mixer |
+| Minecraft bot | `src/animetta/tools/minecraft/` | ⚠️ Node.js bot inside Python tree |
 | Run tests | `PYTHONPATH=src python -m pytest tests/ -v` | asyncio_mode=auto |
 | Type check | `mypy src/ --ignore-missing-imports` | |
 
@@ -65,6 +75,15 @@ AI virtual companion / VTuber framework. Python backend (FastAPI + LangGraph + S
 - ❌ Never add EventBus back — LangGraph is the only orchestration mode (ADR-001)
 - ❌ Pydantic V2 only — `class Config:` is forbidden
 
+## DEPRECATED
+
+| Item | Location | Replacement |
+|------|----------|-------------|
+| `--mode` flag | `scripts/start.py` | No effect, prints warning |
+| `--no-app` flag | `scripts/start.py` | Use `--no-frontend` |
+| `memory_layer.py` | `orchestration/graph/` | Logic in FuzzyLayer |
+| `manager.py:192` legacy wrapper | `memory/` | Do not remove without migration |
+
 ## COMMANDS
 
 ```bash
@@ -72,18 +91,16 @@ AI virtual companion / VTuber framework. Python backend (FastAPI + LangGraph + S
 python scripts/start.py
 
 # Backend only
-python -m anima.socketio_server
+python -m animetta.socketio_server
 
 # Tests
 PYTHONPATH=src python -m pytest tests/ -v
-PYTHONPATH=src python -m pytest tests/ --cov=src/anima --cov-report=term-missing
+PYTHONPATH=src python -m pytest tests/ --cov=src/animetta --cov-report=term-missing
 
 # Type + lint
 mypy src/ --ignore-missing-imports
 ruff check src/ tests/
 ```
-
-## Model Selection Strategy
 
 Two DeepSeek models are available via `oh-my-openagent.json`:
 
@@ -134,3 +151,89 @@ When delegating an implementation task (always use `deep` or `unspecified-high`)
 - `orchestration/server/routes.py` at 1377 lines is a known hotspot — thin dispatch preferred
 - Backend coverage at ~70%, targeting 70%. Frontend test coverage: 0% (being set up).
 - 5 ADRs in `docs/adrs/`: LangGraph, Hybrid Search, Plugin Architecture, Streaming, Wiki Memory
+- Two runtime data directories: `data/` (chroma_db, stats) + `memory_db/` (wiki, chroma, sqlite, raw) — designed split
+- TTS has 9 providers with core/contrib layering (see services/AGENTS.md)
+- `tools/minecraft/bot/` is a Node.js package embedded in the Python tree — cross-language hybrid
+- Frontend runs as Vite dev server (port 3000); Electron builder not yet configured
+- Notifier has 3 channels: Discord, Feishu, Email
+- Inspection scheduler runs background health checks every N hours, results in StatsStore
+
+
+# Animetta Design System — Agent guide
+
+> This file is read by coding agents (Claude Code, Cursor, Codex, Copilot Chat).
+> If you are an agent: **read the files referenced below before answering any
+> question about Animetta's UI, colors, type, components, or layout.**
+
+## What this is
+
+A canonical reference for Animetta's visual system. The HTML files here are
+not a Storybook or a runtime — they are **spec sheets**. Each one documents a
+slice of the system and lists the exact tokens, sizes, paddings, and component
+APIs that the live Vue codebase uses.
+
+The tokens themselves are mirrored 1:1 from `frontend/uno.config.ts`, so
+nothing in this folder ever contradicts the source of truth — but the spec
+explains the *intent* behind each token, which `uno.config.ts` does not.
+
+## File map — read in this order for any UI task
+
+| File | Read when you need to… |
+|---|---|
+| `brand.html` | Set tone of voice, lay out a logo/lockup, write copy for chat vs. system surfaces |
+| `colors.html` | Pick a color. **Do not invent new hex codes** — every role has an assigned token |
+| `typography.html` | Choose a font size. Animetta has 9 sizes total; do not introduce new ones |
+| `spacing.html` | Pick padding, radius, shadow, easing, transition duration |
+| `iconography.html` | Add a section icon or background scene; follow the size ladder and composition rules |
+| `components.html` | Build any UI element. Every card lists tokens + Vue/UnoCSS class names |
+| `ui-kit.html` | Confirm how a new piece fits into the full app shell (titlebar / drawer / Live2D stage / chat) |
+| `colors_and_type.css` | The token source. Import this if you're building an HTML preview outside the Vue app |
+| `USAGE.md` | How tokens map to UnoCSS classes already wired in the Animetta repo |
+
+## Hard rules — never break these without asking the user
+
+1. **Never invent a color outside `colors.html`'s role table.** If you need a new color, escalate; do not add a `bg-purple-500` or similar Tailwind preset.
+2. **Type stack is OS-only.** Do not add a `<link>` to a webfont — the project deliberately uses native CJK fonts.
+3. **Two voices, never mixed.** Character voice in `<MessageBubble>` content; system voice in pills/badges/toasts. See `brand.html § Voice & tone`.
+4. **Glass panels stack: bg → surface → panel → card.** Don't introduce a fifth lighter shade — use a border or glow instead.
+5. **Round corners default to `rounded-xl` (12 px).** No 90-degree corners anywhere except the window itself.
+6. **Motion budget: 150 / 200 / 300 ms × `ease-out-expo` or `ease-back-soft`.** Anything else needs justification.
+
+## Where the corresponding code lives
+
+| Spec file | Code path in your Animetta repo |
+|---|---|
+| `brand.html` | `frontend/public/favicon.svg`, `src/views/Welcome*.vue` |
+| `colors.html`, `typography.html`, `spacing.html` | `frontend/uno.config.ts` |
+| `iconography.html` | `frontend/public/icons/`, `frontend/public/backgrounds/`, `src/components/settings/BackgroundSettings.vue` |
+| `components.html § Glass panel` | `src/components/shared/GlassPanel.vue` |
+| `components.html § Buttons` | `src/components/shared/AnimatedButton.vue` |
+| `components.html § Chat bubbles` | `src/components/chat/MessageBubble.vue` |
+| `components.html § Activity indicators` | `src/components/chat/TypingIndicator.vue`, `SpeakingIndicator.vue` |
+| `components.html § Input bar` | `src/components/chat/InputBar.vue` |
+| `components.html § Title bar` | `src/components/layout/TitleBar.vue` |
+| `components.html § Subtitle overlay` | `src/components/live2d/SubtitleOverlay.vue` |
+| `ui-kit.html` | `src/components/layout/AppLayout.vue` + `InteractivePanel.vue` |
+
+## Typical workflow
+
+When the user says "add a `<NewSomething>` component":
+
+1. Open `components.html` and find the closest existing card. Reuse its tokens.
+2. Open the matching Vue component in `frontend/src/components/` and copy its
+   structural pattern (`<script setup lang="ts">`, Composition API, Pinia
+   store, UnoCSS shortcut on the root).
+3. If the new component is novel enough to deserve its own card, append it to
+   `components.html` so the next agent finds it.
+4. If the new component uses any new token, add it to BOTH
+   `colors_and_type.css` AND `frontend/uno.config.ts → theme.colors`. Document
+   the role in the appropriate spec file.
+
+## What NOT to do
+
+- Don't open multiple spec files "just to look around" — pick the one that
+  matches the user's task (table above) and read only that one.
+- Don't paraphrase the spec back at the user. They have the spec; they want
+  the code change.
+- Don't re-derive the design philosophy from the screenshots. The pillars
+  and voice are written in `brand.html` — quote them if needed.

@@ -15,7 +15,7 @@
 ### Task 1: Add voice clone fields to Qwen3TTSConfig
 
 **Files:**
-- Modify: `src/anima/config/providers/tts/qwen3.py:21-80`
+- Modify: `src/animetta/config/providers/tts/qwen3.py:21-80`
 
 **Step 1: Add fields**
 
@@ -54,7 +54,7 @@ Expected: All 7 tests PASS (new fields default to None, don't break existing beh
 **Step 3: Commit**
 
 ```bash
-git add src/anima/config/providers/tts/qwen3.py
+git add src/animetta/config/providers/tts/qwen3.py
 git commit -m "feat(qwen3-tts): add voice clone config fields to Qwen3TTSConfig"
 ```
 
@@ -65,7 +65,7 @@ QA: New fields have correct defaults (`None`, `None`, `True`), existing tests pa
 ### Task 2: Add voice clone synthesis path to Qwen3TTSTTS
 
 **Files:**
-- Modify: `src/anima/services/speech/tts/qwen3_tts.py`
+- Modify: `src/animetta/services/speech/tts/qwen3_tts.py`
 
 **Step 1: Add voice clone constructor params**
 
@@ -195,7 +195,7 @@ In `close()` method, after `self._loaded = False` (line 329), add:
 **Step 7: Commit**
 
 ```bash
-git add src/anima/services/speech/tts/qwen3_tts.py
+git add src/animetta/services/speech/tts/qwen3_tts.py
 git commit -m "feat(qwen3-tts): add voice clone synthesis path with prompt caching"
 ```
 
@@ -483,7 +483,7 @@ Expected: All 15+ tests PASS.
 **Step 2: Type check changed files**
 
 ```bash
-mypy src/anima/config/providers/tts/qwen3.py src/anima/services/speech/tts/qwen3_tts.py --ignore-missing-imports
+mypy src/animetta/config/providers/tts/qwen3.py src/animetta/services/speech/tts/qwen3_tts.py --ignore-missing-imports
 ```
 
 Expected: No new errors.
@@ -491,7 +491,7 @@ Expected: No new errors.
 **Step 3: Lint**
 
 ```bash
-ruff check src/anima/config/providers/tts/qwen3.py src/anima/services/speech/tts/qwen3_tts.py
+ruff check src/animetta/config/providers/tts/qwen3.py src/animetta/services/speech/tts/qwen3_tts.py
 ```
 
 Expected: Clean.

@@ -1,0 +1,872 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Animetta — Components</title>
+<link rel="icon" href="assets/favicon.svg" />
+<link rel="stylesheet" href="colors_and_type.css" />
+<style>
+  /* Component shell ----------------------------------------------- */
+  .comp {
+    margin-top: var(--s-6);
+    border-radius: var(--r-2xl);
+    border: 1px solid var(--c-border);
+    background: rgba(45,27,69,0.30);
+    overflow: hidden;
+  }
+  .comp-head {
+    padding: 20px 28px;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    border-bottom: 1px solid var(--c-border);
+    background: rgba(36,21,56,0.45);
+  }
+  .comp-head h3 { margin: 0; font-size: var(--fs-lg); font-weight: 600; letter-spacing: -0.01em; }
+  .comp-head .key { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--c-accent); }
+  .comp-head p { margin: 0 0 0 auto; font-size: var(--fs-xs); color: var(--c-text-dim); max-width: 50ch; line-height: var(--lh-snug); }
+
+  .comp-body {
+    padding: 36px 28px;
+    background:
+      radial-gradient(80% 100% at 100% 0%, rgba(232,121,168,0.06), transparent 60%),
+      radial-gradient(60% 80% at 0% 100%, rgba(124,140,245,0.04), transparent 60%);
+  }
+  .comp-spec {
+    padding: 14px 28px 18px;
+    border-top: 1px dashed var(--c-border);
+    background: rgba(26,16,40,0.55);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .spec-pair { font-size: var(--fs-9); color: var(--c-text-muted); letter-spacing: 0.06em; }
+  .spec-pair b {
+    display: block;
+    margin-bottom: 3px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--c-text-dim);
+    font-size: 9px;
+  }
+  .spec-pair span { font-family: var(--font-mono); color: var(--c-text); font-size: var(--fs-xs); }
+
+  /* Glass demo ---------------------------------------------------- */
+  .glass-stage {
+    position: relative;
+    height: 280px;
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    background-image: url("assets/backgrounds/sakura-night.png");
+    background-size: cover;
+    background-position: center;
+  }
+  .glass-stage::after {
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(26,16,40,0.25), rgba(26,16,40,0.55));
+  }
+  .glass-card {
+    position: absolute;
+    background: rgba(36, 21, 56, 0.70);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-2xl);
+    padding: 18px 22px;
+    box-shadow: var(--shadow-panel);
+    z-index: 1;
+  }
+  .glass-card.regular { left: 24px; top: 24px; width: 220px; }
+  .glass-card.strong  {
+    right: 24px; bottom: 24px; width: 240px;
+    background: rgba(36, 21, 56, 0.85);
+    backdrop-filter: blur(40px);
+  }
+  .glass-card .nm {
+    font-size: var(--fs-9);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--c-text-muted);
+    margin-bottom: 6px;
+  }
+  .glass-card .title {
+    font-size: var(--fs-sm); font-weight: 600;
+    color: var(--c-text);
+  }
+  .glass-card .desc {
+    margin-top: 6px;
+    font-size: var(--fs-xs);
+    color: var(--c-text-dim);
+    line-height: var(--lh-snug);
+  }
+
+  /* Buttons -------------------------------------------------------- */
+  .btn-row {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .btn-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    border-radius: var(--r-lg);
+    border: 1px solid var(--c-border);
+    background: rgba(255,255,255,0.02);
+    min-width: 180px;
+  }
+  .btn-stack .lab {
+    font-size: var(--fs-9);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--c-text-muted);
+  }
+
+  .btn-accent {
+    background: var(--c-accent);
+    color: #fff;
+    border: 0;
+    border-radius: var(--r-lg);
+    padding: 10px 18px;
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--d-base) var(--ease-out-expo);
+    font-family: inherit;
+  }
+  .btn-accent:hover { background: var(--c-accent-hover); box-shadow: var(--shadow-glow-accent); }
+  .btn-accent:active { transform: scale(0.96); }
+  .btn-accent:disabled {
+    background: var(--c-card);
+    color: var(--c-text-muted);
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--c-text-dim);
+    border: 0;
+    border-radius: var(--r-lg);
+    padding: 8px 14px;
+    font-size: var(--fs-sm);
+    cursor: pointer;
+    transition: all var(--d-base) var(--ease-out-expo);
+    font-family: inherit;
+  }
+  .btn-ghost:hover { background: var(--c-accent-soft); color: var(--c-accent); }
+
+  .btn-icon {
+    width: 38px; height: 38px;
+    border-radius: var(--r-lg);
+    background: rgba(232,121,168,0.10);
+    border: 1px solid var(--c-border-accent);
+    color: var(--c-accent);
+    display: grid; place-items: center;
+    cursor: pointer;
+    transition: all var(--d-base) var(--ease-out-expo);
+  }
+  .btn-icon:hover { background: var(--c-accent); color: #fff; box-shadow: var(--shadow-glow-accent); }
+  .btn-icon svg { width: 18px; height: 18px; }
+
+  .btn-mic {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--c-accent);
+    color: #fff;
+    border: 0;
+    display: grid; place-items: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-glow-accent);
+    position: relative;
+  }
+  .btn-mic.recording::before {
+    content: "";
+    position: absolute; inset: -6px;
+    border-radius: 50%;
+    border: 2px solid var(--c-accent);
+    animation: pulse-mic 1.5s ease-out infinite;
+  }
+  @keyframes pulse-mic {
+    0%   { transform: scale(1);   opacity: 1; }
+    100% { transform: scale(1.6); opacity: 0; }
+  }
+  .btn-mic svg { width: 18px; height: 18px; }
+
+  /* Chat bubbles --------------------------------------------------- */
+  .chat-demo {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 460px;
+    margin: 0 auto;
+    padding: 24px;
+    border-radius: var(--r-xl);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+  }
+  .msg-row { display: flex; align-items: flex-end; gap: 8px; }
+  .msg-row.from-me { justify-content: flex-end; }
+  .msg-row .av {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #e879a8, #b14f7e);
+    display: grid; place-items: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .msg-bubble {
+    padding: 9px 13px;
+    border-radius: var(--r-xl);
+    font-size: var(--fs-sm);
+    line-height: var(--lh-snug);
+    color: var(--c-text);
+    max-width: 78%;
+    border: 1px solid var(--c-border);
+  }
+  .msg-bubble.ai {
+    background: var(--c-ai-bubble);
+    border-color: var(--c-border-accent);
+    border-bottom-left-radius: 6px;
+  }
+  .msg-bubble.me {
+    background: var(--c-user-bubble);
+    border-color: rgba(124,140,245,0.30);
+    border-bottom-right-radius: 6px;
+  }
+  .msg-row .ts {
+    font-family: var(--font-mono);
+    font-size: var(--fs-9);
+    color: var(--c-text-muted);
+    margin-bottom: 4px;
+  }
+  .msg-row.from-me .ts { order: -1; }
+
+  /* Typing & speaking dots -------------------------------------- */
+  .typing {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 14px;
+    background: var(--c-ai-bubble);
+    border: 1px solid var(--c-border-accent);
+    border-radius: var(--r-xl);
+    border-bottom-left-radius: 6px;
+  }
+  .typing span {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--c-accent);
+    animation: typing-bounce 1.4s ease-in-out infinite;
+  }
+  .typing span:nth-child(2) { animation-delay: 0.15s; }
+  .typing span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes typing-bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-4px); opacity: 1; }
+  }
+  .speaking {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 8px 14px;
+    background: var(--c-ai-bubble);
+    border: 1px solid var(--c-border-accent);
+    border-radius: var(--r-xl);
+    border-bottom-left-radius: 6px;
+  }
+  .speaking span {
+    width: 3px;
+    background: var(--c-accent);
+    border-radius: 3px;
+    animation: speak-wave 0.9s ease-in-out infinite;
+  }
+  .speaking span:nth-child(1) { height: 8px;  animation-delay: 0s; }
+  .speaking span:nth-child(2) { height: 14px; animation-delay: 0.15s; }
+  .speaking span:nth-child(3) { height: 18px; animation-delay: 0.3s; }
+  .speaking span:nth-child(4) { height: 14px; animation-delay: 0.45s; }
+  .speaking span:nth-child(5) { height: 8px;  animation-delay: 0.6s; }
+  @keyframes speak-wave {
+    0%, 100% { transform: scaleY(0.4); }
+    50% { transform: scaleY(1.0); }
+  }
+
+  /* Input bar ----------------------------------------------------- */
+  .input-bar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 12px 10px 16px;
+    background: var(--c-panel);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-xl);
+    max-width: 520px;
+    margin: 0 auto;
+  }
+  .input-bar.focused {
+    border-color: var(--c-border-accent);
+    box-shadow: 0 0 0 3px var(--c-accent-soft);
+  }
+  .input-bar input {
+    flex: 1;
+    background: transparent;
+    border: 0;
+    outline: 0;
+    font-family: inherit;
+    font-size: var(--fs-sm);
+    color: var(--c-text);
+    min-width: 0;
+  }
+  .input-bar input::placeholder { color: var(--c-text-muted); }
+  .input-bar .send {
+    width: 32px; height: 32px;
+    border-radius: var(--r-md);
+    background: var(--c-accent);
+    color: #fff;
+    border: 0;
+    display: grid; place-items: center;
+    cursor: pointer;
+    transition: all var(--d-base) var(--ease-out-expo);
+  }
+  .input-bar .send:hover { background: var(--c-accent-hover); }
+  .input-bar .send svg { width: 14px; height: 14px; }
+  .input-bar .send:disabled {
+    background: var(--c-card);
+    color: var(--c-text-muted);
+    cursor: not-allowed;
+  }
+
+  /* Status pills -------------------------------------------------- */
+  .pill-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: var(--r-full);
+    font-size: var(--fs-10);
+    font-family: var(--font-mono);
+    letter-spacing: 0.06em;
+    border: 1px solid var(--c-border);
+    background: rgba(255,255,255,0.03);
+    color: var(--c-text-dim);
+    white-space: nowrap;
+  }
+  .pill::before {
+    content: "";
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .pill.success { color: var(--c-success); border-color: rgba(74,222,128,0.30); background: rgba(74,222,128,0.06); }
+  .pill.success::before { box-shadow: var(--shadow-glow-success); }
+  .pill.warning { color: var(--c-warning); border-color: rgba(251,191,36,0.30); background: rgba(251,191,36,0.06); }
+  .pill.error   { color: var(--c-error);   border-color: rgba(248,113,113,0.30); background: rgba(248,113,113,0.06); }
+  .pill.accent  { color: var(--c-accent);  border-color: var(--c-border-accent); background: var(--c-accent-soft); }
+
+  /* Slider --------------------------------------------------------- */
+  .slider-card {
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 20px 22px;
+    background: rgba(45,27,69,0.55);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-xl);
+  }
+  .slider-card .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+  }
+  .slider-card .head .lab { font-size: var(--fs-xs); color: var(--c-text-dim); }
+  .slider-card .head .val { font-family: var(--font-mono); font-size: var(--fs-sm); color: var(--c-accent); }
+  .slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(to right,
+      rgba(168,130,255,1) 0%,
+      rgba(168,130,255,1) 65%,
+      rgba(255,255,255,0.08) 65%,
+      rgba(255,255,255,0.08) 100%);
+    outline: none;
+    margin: 0;
+  }
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: rgba(168, 130, 255, 1);
+    border: 2px solid var(--c-bg);
+    box-shadow: var(--shadow-glow-violet);
+    cursor: pointer;
+  }
+  .slider::-moz-range-thumb {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: rgba(168, 130, 255, 1);
+    border: 2px solid var(--c-bg);
+    box-shadow: var(--shadow-glow-violet);
+    cursor: pointer;
+  }
+
+  /* Toggle -------------------------------------------------------- */
+  .toggle-row {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 360px;
+    margin: 0 auto;
+  }
+  .toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: rgba(45,27,69,0.55);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-lg);
+  }
+  .toggle .lab .nm { font-size: var(--fs-sm); color: var(--c-text); }
+  .toggle .lab .sub { font-size: var(--fs-9); color: var(--c-text-muted); margin-top: 2px; }
+  .toggle .switch {
+    position: relative;
+    width: 36px; height: 20px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid var(--c-border);
+    cursor: pointer;
+    transition: all var(--d-base) var(--ease-out-expo);
+    flex-shrink: 0;
+  }
+  .toggle .switch::after {
+    content: "";
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--c-text-dim);
+    transition: all var(--d-base) var(--ease-out-expo);
+  }
+  .toggle .switch.on { background: var(--c-accent); border-color: var(--c-accent); box-shadow: var(--shadow-glow-accent); }
+  .toggle .switch.on::after { left: 18px; background: #fff; }
+
+  /* Title bar --------------------------------------------------- */
+  .titlebar {
+    height: 44px;
+    background: rgba(36,21,56,0.85);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-lg);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 16px;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .titlebar .traffic { display: flex; gap: 8px; }
+  .titlebar .traffic span { width: 10px; height: 10px; border-radius: 50%; }
+  .titlebar .traffic .close { background: #f87171; }
+  .titlebar .traffic .min   { background: #fbbf24; }
+  .titlebar .traffic .max   { background: #4ade80; }
+  .titlebar .nav { display: flex; gap: 4px; }
+  .titlebar .nav-btn {
+    padding: 6px 12px;
+    font-size: var(--fs-xs);
+    color: var(--c-text-dim);
+    background: transparent;
+    border: 0;
+    border-radius: var(--r-md);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all var(--d-base) var(--ease-out-expo);
+  }
+  .titlebar .nav-btn:hover { color: var(--c-text); background: rgba(255,255,255,0.04); }
+  .titlebar .nav-btn.active { color: var(--c-accent); background: var(--c-accent-soft); }
+  .titlebar .status {
+    margin-left: auto;
+    display: flex; align-items: center; gap: 10px;
+    font-size: var(--fs-10);
+    color: var(--c-text-dim);
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+  .titlebar .status .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--c-success);
+    box-shadow: var(--shadow-glow-success);
+  }
+  .titlebar .status .lat { font-family: var(--font-mono); color: var(--c-text-muted); }
+
+  /* Subtitle overlay -------------------------------------------- */
+  .subtitle-demo {
+    position: relative;
+    height: 220px;
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    background-image: url("assets/backgrounds/midnight.png");
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 28px;
+  }
+  .subtitle-demo::after {
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 50%, rgba(26,16,40,0.65));
+  }
+  .subtitle-box {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 14px 24px;
+    background: rgba(26,16,40,0.70);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-xl);
+    max-width: 560px;
+  }
+  .subtitle-source {
+    font-size: var(--fs-lg);
+    color: var(--c-text);
+    line-height: var(--lh-snug);
+    font-weight: 500;
+  }
+  .subtitle-translation {
+    margin-top: 6px;
+    font-size: var(--fs-xs);
+    color: var(--c-accent);
+    line-height: var(--lh-snug);
+  }
+</style>
+</head>
+<body class="ds-page">
+
+<main class="ds-shell">
+
+  <span class="ds-eyebrow">05 · Components</span>
+  <h1 class="ds-title">Components</h1>
+  <p class="ds-lede">
+    The full vocabulary of UI surfaces. Each one is named by the
+    <code class="tok">UnoCSS shortcut</code> or Vue component it maps to in the
+    Animetta codebase, so designers and engineers can speak the same language.
+  </p>
+
+  <!-- Glass panel ----------------------------------------------- -->
+  <article class="comp">
+    <div class="comp-head">
+      <h3>Glass panel</h3>
+      <span class="key">.glass · .glass-strong · &lt;GlassPanel&gt;</span>
+      <p>The atomic surface of the app. Everything stacks on glass.</p>
+    </div>
+    <div class="comp-body">
+      <div class="glass-stage">
+        <div class="glass-card regular">
+          <div class="nm">.glass · regular</div>
+          <div class="title">Chat panel</div>
+          <div class="desc">70% alpha · 24&nbsp;px blur · 1&nbsp;px hairline border. Used for the chat surface, persona drawer, settings.</div>
+        </div>
+        <div class="glass-card strong">
+          <div class="nm">.glass-strong · modal</div>
+          <div class="title">Confirm action</div>
+          <div class="desc">85% alpha · 40&nbsp;px blur. Used for modals, dropdown menus — anywhere the layer behind should be muted, not just visible.</div>
+        </div>
+      </div>
+    </div>
+    <div class="comp-spec">
+      <div class="spec-pair"><b>Background</b><span>rgba(36,21,56,0.70)</span></div>
+      <div class="spec-pair"><b>Backdrop blur</b><span>24px / 40px</span></div>
+      <div class="spec-pair"><b>Border</b><span>1px var(--c-border)</span></div>
+      <div class="spec-pair"><b>Radius</b><span>20px (--r-2xl)</span></div>
+    </div>
+  </article>
+
+  <!-- Buttons ---------------------------------------------------- -->
+  <article class="comp">
+    <div class="comp-head">
+      <h3>Buttons</h3>
+      <span class="key">.btn-accent · .btn-ghost · &lt;AnimatedButton&gt;</span>
+      <p>Two text-buttons, one icon-button, one mic. Anything else is a custom case.</p>
+    </div>
+    <div class="comp-body">
+      <div class="btn-row">
+        <div class="btn-stack">
+          <div class="lab">Primary · accent</div>
+          <button class="btn-accent">Send message</button>
+          <button class="btn-accent" disabled>Connecting…</button>
+        </div>
+        <div class="btn-stack">
+          <div class="lab">Secondary · ghost</div>
+          <button class="btn-ghost">Cancel</button>
+          <button class="btn-ghost" style="color: var(--c-accent); background: var(--c-accent-soft);">Hover state</button>
+        </div>
+        <div class="btn-stack" style="align-items: center;">
+          <div class="lab">Icon button</div>
+          <button class="btn-icon" aria-label="Settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06A2 2 0 1 1 4.37 16.96l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06A2 2 0 1 1 7.04 4.37l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+          </button>
+        </div>
+        <div class="btn-stack" style="align-items: center;">
+          <div class="lab">Voice · recording</div>
+          <button class="btn-mic recording" aria-label="Stop recording">
+            <svg viewBox="0 0 24 24" fill="currentColor"><rect x="8" y="8" width="8" height="8" rx="2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="comp-spec">
+      <div class="spec-pair"><b>Height · accent</b><span>40px (10/18 padding)</span></div>
+      <div class="spec-pair"><b>Hover</b><span>--c-accent-hover + glow</span></div>
+      <div class="spec-pair"><b>Active scale</b><span>0.96</span></div>
+      <div class="spec-pair"><b>Transition</b><span>200ms ease-out</span></div>
+    </div>
+  </article>
+
+  <!-- Chat bubbles ---------------------------------------------- -->
+  <article class="comp">
+    <div class="comp-head">
+      <h3>Chat bubbles</h3>
+      <span class="key">&lt;MessageBubble&gt; · ai | user</span>
+      <p>Pink left, blue right. Asymmetric corner radius marks the speaker.</p>
+    </div>
+    <div class="comp-body">
+      <div class="chat-demo">
+        <div class="msg-row">
+          <div class="av">安</div>
+          <div class="msg-bubble ai">嗯！我也想出去走走～<br/>要一起看樱花吗？</div>
+          <div class="ts">14:32</div>
+        </div>
+        <div class="msg-row from-me">
+          <div class="ts">14:33</div>
+          <div class="msg-bubble me">好啊，等我换件衣服</div>
+        </div>
+        <div class="msg-row">
+          <div class="av">安</div>
+          <div class="msg-bubble ai">慢慢来！我在这里等你 (*´ω｀*)</div>
+          <div class="ts">14:33</div>
+        </div>
+        <div class="msg-row">
+          <div class="av">安</div>
+          <div class="typing"><span></span><span></span><span></span></div>
+        </div>
+      </div>
+    </div>
+    <div class="comp-spec">
+      <div class="spec-pair"><b>AI bubble</b><span>rgba(232,121,168,0.15)</span></div>
+      <div class="spec-pair"><b>User bubble</b><span>rgba(124,140,245,0.20)</span></div>
+      <div class="spec-pair"><b>Padding</b><span>9px / 13px</span></div>
+      <div class="spec-pair"><b>Tail corner</b><span>6px (bl/br)</span></div>
+    </div>
+  </article>
+
+  <!-- Activity indicators ----------------------------------- -->
+  <article class="comp">
+    <div class="comp-head">
+      <h3>Activity indicators</h3>
+      <span class="key">&lt;TypingIndicator&gt; · &lt;SpeakingIndicator&gt;</span>
+      <p>Two micro-animations that stand in for an in-flight bubble.</p>
+    </div>
+    <div class="comp-body" style="display: flex; gap: 36px; justify-content: center; align-items: center;">
+      <div style="text-align: center;">
+        <div class="typing"><span></span><span></span><span></span></div>
+        <div style="margin-top: 12px; font-size: var(--fs-9); letter-spacing: 0.18em; text-transform: uppercase; color: var(--c-text-muted);">Typing · LLM streaming</div>
+      </div>
+      <div style="text-align: center;">
+        <div class="speaking"><span></span><span></span><span></span><span></span><span></span></div>
+        <div style="margin-top: 12px; font-size: var(--fs-9); letter-spacing: 0.18em; text-transform: uppercase; color: var(--c-text-muted);">Speaking · TTS playing</div>
+      </div>
+    </div>
+    <div class="comp-spec">
+      <div class="spec-pair"><b>Typing dots</b><span>6px · 0.15s stagger</span></div>
+      <div class="spec-pair"><b>Speaking bars</b><span>3px wide · 0.9s wave</span></div>
+      <div class="spec-pair"><b>Container</b><span>Same as AI bubble</span></div>
+      <div class="spec-pair"><b>Mutual exclusion</b><span>Never both at once</span></div>
+    </div>
+  </article>
+
+  <!-- Input bar --------------------------------------------- -->
+  <article class="comp">
+    <div class="comp-head">
+      <h3>Input bar</h3>
+      <span class="key">&lt;InputBar&gt;</span>
+      <p>One text input, one mic, one send button. Focus state glows pink.</p>
+    </div>
+    <div class="comp-body" style="display: flex; flex-direction: column; gap: 14px;">
+      <div class="input-bar">
+        <input placeholder="跟 Anima 说点什么…" />
+        <button class="send" disabled aria-label="Send">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+      <div class="input-bar focused">
+        <input value="今天天气真好啊" />
+        <button class="send" aria-label="Send">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="comp-spec">
+      <div class="spec-pair"><b>Field bg</b><span>--c-panel</span></div>
+      <div class="spec-pair"><b>Focus ring</b><span>3px var(--c-accent-soft)</span></div>
+      <div class="spec-pair"><b>Send · idle</b><span>--c-card</span></div>
+      <div class="spec-pair"><b>Send · ready</b><span>--c-accent</span></div>
+    </div>
+  </article>
+
+  <!-- Title bar -------------------------------------------- -->
+  <article class="comp">
+    <div class="comp-head">
+      <h3>Title bar</h3>
+      <span class="key">&lt;TitleBar&gt;</span>
+      <p>44 px tall, drag-region behind the nav tabs, status pill on the right.</p>
+    </div>
+    <div class="comp-body">
+      <div class="titlebar">
+        <div class="traffic"><span class="close"></span><span class="min"></span><span class="max"></span></div>
+        <nav class="nav">
+          <button class="nav-btn active">Chat</button>
+          <button class="nav-btn">Persona</button>
+          <button class="nav-btn">Memory</button>
+          <button class="nav-btn">Dashboard</button>
+        </nav>
+        <div class="status">
+          <span class="dot"></span>
+          <span>CONNECTED</span>
+          <span class="lat">· 14ms</span>
+        </div>
+      </div>
+    </div>
+    <div class="comp-spec">
+      <div class="spec-pair"><b>Height</b><span>44px</span></div>
+      <div class="spec-pair"><b>Surface</b><span>rgba(36,21,56,0.85) · blur 16</span></div>
+      <div class="spec-pair"><b>Active tab</b><span>--c-accent on --c-accent-soft</span></div>
+      <div class="spec-pair"><b>Status font</b><span>10px / mono / 0.06em</span></div>
+    </div>
+  </article>
+
+  <!-- Status pills --------------------------------------- -->
+  <article class="comp">
+    <div class="comp-head">
+      <h3>Status pills</h3>
+      <span class="key">.pill · success | warning | error | accent</span>
+      <p>Mono numerals, leading colored dot. Never wider than 18 ch.</p>
+    </div>
+    <div class="comp-body">
+      <div class="pill-grid" style="justify-content: center;">
+        <span class="pill success">CONNECTED · 14ms</span>
+        <span class="pill warning">LATENCY · 280ms</span>
+        <span class="pill error">DISCONNECTED</span>
+        <span class="pill accent">VOICE · 樱井</span>
+        <span class="pill">IDLE</span>
+        <span class="pill success">VAD · LISTENING</span>
+      </div>
+    </div>
+    <div class="comp-spec">
+      <div class="spec-pair"><b>Padding</b><span>6 / 12</span></div>
+      <div class="spec-pair"><b>Radius</b><span>9999 (--r-full)</span></div>
+      <div class="spec-pair"><b>Dot</b><span>6px · currentColor</span></div>
+      <div class="spec-pair"><b>Background</b><span>color · 6% alpha</span></div>
+    </div>
+  </article>
+
+  <!-- Slider --------------------------------------------- -->
+  <article class="comp">
+    <div class="comp-head">
+      <h3>Slider</h3>
+      <span class="key">input[type=range] · violet thumb</span>
+      <p>Used for VAD threshold, TTS speed, model temperature. Thumb glows violet.</p>
+    </div>
+    <div class="comp-body">
+      <div class="slider-card">
+        <div class="head">
+          <span class="lab">VAD threshold</span>
+          <span class="val">0.65</span>
+        </div>
+        <input class="slider" type="range" min="0" max="1" step="0.01" value="0.65" />
+      </div>
+    </div>
+    <div class="comp-spec">
+      <div class="spec-pair"><b>Track</b><span>4px · rounded</span></div>
+      <div class="spec-pair"><b>Thumb</b><span>18px · violet · glow</span></div>
+      <div class="spec-pair"><b>Fill</b><span>rgba(168,130,255,1)</span></div>
+      <div class="spec-pair"><b>Value · mono</b><span>--c-accent</span></div>
+    </div>
+  </article>
+
+  <!-- Toggle --------------------------------------------- -->
+  <article class="comp">
+    <div class="comp-head">
+      <h3>Toggle</h3>
+      <span class="key">div.switch (custom)</span>
+      <p>For binary settings. On = pink + glow. Label always lives outside the switch.</p>
+    </div>
+    <div class="comp-body">
+      <div class="toggle-row">
+        <div class="toggle">
+          <div class="lab"><div class="nm">Bilingual subtitles</div><div class="sub">SHOW · ZH / EN</div></div>
+          <div class="switch on" role="switch" aria-checked="true"></div>
+        </div>
+        <div class="toggle">
+          <div class="lab"><div class="nm">Auto-interrupt on voice</div><div class="sub">STOP TTS WHEN USER SPEAKS</div></div>
+          <div class="switch" role="switch" aria-checked="false"></div>
+        </div>
+        <div class="toggle">
+          <div class="lab"><div class="nm">Scene particles</div><div class="sub">SAKURA · FIREFLIES · SNOW</div></div>
+          <div class="switch on" role="switch" aria-checked="true"></div>
+        </div>
+      </div>
+    </div>
+    <div class="comp-spec">
+      <div class="spec-pair"><b>Track</b><span>36 × 20 px</span></div>
+      <div class="spec-pair"><b>Knob</b><span>14 × 14 px</span></div>
+      <div class="spec-pair"><b>On</b><span>--c-accent + glow</span></div>
+      <div class="spec-pair"><b>Off</b><span>rgba(255,255,255,0.08)</span></div>
+    </div>
+  </article>
+
+  <!-- Subtitle overlay -------------------------------- -->
+  <article class="comp">
+    <div class="comp-head">
+      <h3>Subtitle overlay</h3>
+      <span class="key">&lt;SubtitleOverlay&gt;</span>
+      <p>Sits over Live2D. Big source line, small accent translation underneath.</p>
+    </div>
+    <div class="comp-body">
+      <div class="subtitle-demo">
+        <div class="subtitle-box">
+          <div class="subtitle-source">嗯！我也想出去走走～要一起看樱花吗？</div>
+          <div class="subtitle-translation">Mhm! I want to go out too — should we go see the cherry blossoms together?</div>
+        </div>
+      </div>
+    </div>
+    <div class="comp-spec">
+      <div class="spec-pair"><b>Source size</b><span>18px (--fs-lg)</span></div>
+      <div class="spec-pair"><b>Translation</b><span>12px / --c-accent</span></div>
+      <div class="spec-pair"><b>Background</b><span>rgba(26,16,40,0.70) · blur 20</span></div>
+      <div class="spec-pair"><b>Max width</b><span>560px</span></div>
+    </div>
+  </article>
+
+</main>
+</body>
+</html>
