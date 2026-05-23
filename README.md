@@ -14,6 +14,7 @@
 </p>
 
 ---
+<img width="2477" height="1856" alt="ScreenShot_2026-05-20_005548_312" src="https://github.com/user-attachments/assets/8b3cb1f7-ef61-4cb0-b702-546b3aa8e65e" />
 
 ## ✨ 项目亮点
 
