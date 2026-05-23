@@ -1,21 +1,17 @@
 # Training Paradigm — Character Singing Voice Model
 
-## Quick Start (for a new character)
+## Quick Start
 
 ```bash
-# 1. Edit config.yaml (change character name)
-# 2. Place raw audio files in data/training/raw/
-# 3. Run preprocessing pipeline
-python scripts/train/02_slice_and_denoise.py
-python scripts/train/03_normalize.py
-python scripts/train/04_augment_pitch.py
-python scripts/train/05_split_dataset.py
-# 4. Open RVC WebUI → train with resulting dataset
-#    Experiment name: {character.name}
-#    Sample rate: {rvc.sample_rate}
-#    Version: {rvc.version}
-# 5. Deploy to Anima
-python scripts/train/deploy_to_anima.py
+# 1. Put raw audio in data/training/raw/
+# 2. One command: prep → train → deploy
+python -m scripts.train.cli --character shige_utage
+
+# Or step by step:
+python scripts/train/prepare_data.py                         # 数据预处理
+python -m scripts.train.cli --character shige_utage --skip-prep  # 训练+部署
+python -m scripts.train.cli --character shige_utage --deploy-only  # 仅部署
+python -m scripts.train.cli --character shige_utage --epochs 500   # 自定义轮数
 ```
 
 ## Data Requirements
@@ -32,5 +28,19 @@ data/training/
 ├── raw/              # Raw input — place files here
 ├── processed/        # After slicing + denoising
 ├── augmented/        # After pitch augmentation
-└── ready/            # Final dataset for RVC WebUI
+└── ready/            # Final dataset for RVC training
 ```
+
+## CLI Reference
+
+| Flag | Description |
+|------|-------------|
+| `-c, --character` | Character name (from config.yaml) |
+| `-d, --data` | Custom data directory |
+| `-e, --epochs` | Training epochs (default: 300) |
+| `-b, --batch-size` | Batch size (default: 16) |
+| `--sr` | Sample rate (default: 48000) |
+| `--skip-prep` | Skip data preparation |
+| `--preprocess-only` | Only preprocess, no training |
+| `--deploy-only` | Only deploy existing model |
+| `--dry-run` | Show commands without running |

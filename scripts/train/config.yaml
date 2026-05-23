@@ -15,7 +15,7 @@ audio:
   target_sr: 48000                # Target sample rate (Hz)
   min_duration: 4.0               # Min clip duration (seconds)
   max_duration: 15.0              # Max clip duration (seconds)
-  silence_threshold: 0.02         # Silence detection threshold
+  silence_threshold: -40          # Silence detection threshold (dB)
   target_loudness: -20            # Target integrated loudness (LUFS)
 
 augmentation:
