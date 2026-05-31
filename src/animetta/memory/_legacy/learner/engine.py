@@ -484,8 +484,6 @@ class PeriodicLearner:
         try:
             # Lazy import to avoid import-time failures if module is unavailable
             try:
-                from animetta import $$$
-                from animetta import $$$
             except ImportError:
                 logger.warning(
                     "[PeriodicLearner] Bilibili meme services not available, "
@@ -614,7 +612,6 @@ class PeriodicLearner:
 
         try:
             try:
-                from animetta import $$$
             except ImportError:
                 logger.warning(
                     "[PeriodicLearner] Bilibili interaction services not available, "

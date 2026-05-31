@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from animetta import $$$
 
 __all__ = [
     "CognitiveAnalysis",
