@@ -101,3 +101,30 @@ class TestEmotionalField:
         # Should not flip signs
         assert shifted.valence < 0.0  # still mostly negative
         assert shifted.arousal > 0.0  # still high (shift bounded)
+
+class TestEmotionalFieldEdgeCases:
+    def test_cosine_zero_vector(self):
+        zero = VADVector(0.0, 0.0, 0.0)
+        v = VADVector(1.0, 0.0, 0.0)
+        assert EmotionalField.cosine_similarity(zero, v) == 0.0
+
+    def test_cosine_orthogonal(self):
+        v1 = VADVector(1.0, 0.0, 0.0)
+        v2 = VADVector(0.0, 1.0, 0.0)
+        sim = EmotionalField.cosine_similarity(v1, v2)
+        assert abs(sim) < 0.01
+
+    def test_encoding_confidence_boundary_arousal_zero(self):
+        conf = EmotionalField.encoding_confidence(VADVector(0.0, 0.0, 0.0))
+        assert conf >= 0.45 and conf <= 0.55
+
+    def test_encoding_confidence_boundary_arousal_max(self):
+        conf = EmotionalField.encoding_confidence(VADVector(1.0, 1.0, 1.0))
+        assert conf <= 1.0
+
+    def test_emotion_shift_respects_max(self):
+        mem = VADVector(-1.0, 0.0, -1.0)
+        cur = VADVector(1.0, 0.0, 1.0)
+        shifted = EmotionalField.emotion_shift(cur, mem, max_shift=0.1)
+        # Should not flip sign with small max_shift
+        assert shifted.valence < 0.0

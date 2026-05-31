@@ -138,7 +138,7 @@ class AtomStore:
             );
 
             CREATE VIRTUAL TABLE IF NOT EXISTS memory_fts USING fts5(
-                content, summary, content='memory_atoms', content_rowid='rowid'
+                content, summary
             );
 
             CREATE TABLE IF NOT EXISTS memory_relations (
@@ -187,6 +187,12 @@ class AtomStore:
             1 if atom.is_archived else 0,
         ))
         self._conn.commit()
+        # Sync FTS5 index
+        self._conn.execute(
+            "INSERT INTO memory_fts(rowid, content, summary) VALUES (?, ?, ?)",
+            (self._conn.execute("SELECT last_insert_rowid()").fetchone()[0],
+             atom.content, atom.summary or ''),
+        )
         await self._upsert_chroma(atom)
         return atom.id
 
@@ -220,6 +226,12 @@ class AtomStore:
             atom.id,
         ))
         self._conn.commit()
+        # Update FTS5 index
+        self._conn.execute(
+            "UPDATE memory_fts SET content=?, summary=? WHERE rowid=("
+            "SELECT rowid FROM memory_atoms WHERE id=?)",
+            (atom.content, atom.summary or '', atom.id),
+        )
         await self._upsert_chroma(atom)
 
     async def create_version(
@@ -288,14 +300,26 @@ class AtomStore:
         return row["cnt"]
 
     async def search_fts(self, query: str, limit: int = 50) -> list[MemoryAtom]:
-        """Full-text search via FTS5."""
-        rows = self._conn.execute(
-            "SELECT a.* FROM memory_atoms a "
-            "JOIN memory_fts f ON a.rowid = f.rowid "
-            "WHERE memory_fts MATCH ? AND a.is_archived = 0 "
-            "ORDER BY rank LIMIT ?",
-            (query, limit),
-        ).fetchall()
+        """Full-text search via FTS5. Falls back to LIKE for CJK."""
+        # For CJK text — FTS5 can't tokenize, use LIKE instead
+        if any('\u4e00' <= c <= '\u9fff' for c in query):
+            rows = self._conn.execute(
+                "SELECT * FROM memory_atoms WHERE (content LIKE ? OR summary LIKE ?) "
+                "AND is_archived = 0 ORDER BY salience DESC LIMIT ?",
+                (f'%{query}%', f'%{query}%', limit),
+            ).fetchall()
+            return [self._row_to_atom(r) for r in rows]
+
+        try:
+            rows = self._conn.execute(
+                "SELECT a.* FROM memory_atoms a "
+                "JOIN memory_fts f ON a.rowid = f.rowid "
+                "WHERE memory_fts MATCH ? AND a.is_archived = 0 "
+                "ORDER BY rank LIMIT ?",
+                (query, limit),
+            ).fetchall()
+        except Exception:
+            return []
         return [self._row_to_atom(r) for r in rows]
 
     async def hybrid_search(

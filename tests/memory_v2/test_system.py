@@ -99,3 +99,21 @@ class TestLivingMemorySystem:
             assert first.emotion_valence > second.emotion_valence, (
                 f"Happy memory should rank first. Got valence {first.emotion_valence} vs {second.emotion_valence}"
             )
+
+class TestLivingMemorySystemEdgeCases:
+    @pytest.mark.asyncio
+    async def test_encode_empty_input(self, system):
+        atom = await system.encode("", "", VAD_MAP["neutral"], "s1")
+        assert atom is not None
+        assert atom.layer == Layer.RAW
+
+    @pytest.mark.asyncio
+    async def test_recall_no_stored_atoms(self, system):
+        result = await system.recall("nothing", "empty_session", VAD_MAP["neutral"])
+        assert isinstance(result, RecallResult)
+        assert len(result.atoms) == 0
+
+    @pytest.mark.asyncio
+    async def test_shutdown_without_init(self):
+        system = LivingMemorySystem(db_path=":memory:")
+        await system.shutdown()  # Should not crash

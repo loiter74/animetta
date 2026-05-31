@@ -107,3 +107,14 @@ class TestReconsolidationIntegration:
         # But at minimum, the atom still exists
 
         await system.shutdown()
+
+class TestReconsolidationEdgeCases:
+    async def test_metadata_fallback_without_llm(self):
+        system = LivingMemorySystem(db_path=":memory:")
+        await system.initialize()
+        atom = MemoryAtom(id="r2", layer=Layer.RAW, content="test",
+                          occurred_at=datetime.now(timezone.utc), confidence=0.7)
+        # Reconsolidate without LLM — should use metadata fallback
+        await system._reconsolidate_atom(atom, VAD_MAP["happy"], "query")
+        assert atom.version >= 2  # Metadata fallback still increments version
+        await system.shutdown()

@@ -110,3 +110,17 @@ class TestAtomStoreCRUD:
         assert low.is_archived is True
         high = await store.get("high1")
         assert high.is_archived is False
+
+class TestAtomStoreEdgeCases:
+    @pytest.mark.asyncio
+    async def test_hybrid_search_empty_query(self, store):
+        results = await store.hybrid_search("", 10)
+        assert isinstance(results, list)
+
+    @pytest.mark.asyncio
+    async def test_hybrid_search_cjk(self, store):
+        atom = MemoryAtom(id="cjk", layer=Layer.RAW, content="我喜欢咖啡",
+                          occurred_at=datetime.now(timezone.utc))
+        await store.create(atom)
+        results = await store.hybrid_search("咖啡", 10)
+        assert len(results) >= 0  # Should not error

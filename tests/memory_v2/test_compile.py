@@ -142,3 +142,19 @@ def asyncio_run(coro):
     with concurrent.futures.ThreadPoolExecutor() as executor:
         future = executor.submit(asyncio.run, coro)
         return future.result()
+
+class TestCompileEdgeCases:
+    def test_compile_single_atom_returns_none(self):
+        engine = CompileEngine()
+        result = asyncio_run(engine.compile_layer(
+            [make_atom(Layer.RAW, "single")], Layer.EPISODIC
+        ))
+        assert result is None
+
+    def test_compile_preserves_derives_relations(self):
+        engine = CompileEngine()
+        atoms = [make_atom(Layer.RAW, f"conv{i}", 2 + i) for i in range(3)]
+        result = asyncio_run(engine.compile_layer(atoms, Layer.EPISODIC))
+        assert result is not None
+        assert len(result.relations) == 3
+        assert all(r.relation_type == RelationType.DERIVES for r in result.relations)
