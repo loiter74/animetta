@@ -237,8 +237,9 @@ cd frontend && npm run dev
 animetta/
 ├── config/
 │   ├── config.yaml               # 主配置
-│   ├── profiles/                  # 服务方案 (mock/openai/glm/ollama)
+│   ├── features/                  # 功能开关配置
 │   ├── personas/                  # 人设配置
+│   ├── services.yaml              # 服务商配置
 │   └── observability.yaml         # 追踪 & 指标配置
 ├── src/animetta/
 │   ├── core/                      # 入口 + 服务容器
@@ -250,17 +251,25 @@ animetta/
 │   │   ├── speech/asr/            # 语音识别
 │   │   ├── speech/tts/            # 语音合成
 │   │   ├── live2d/                # Live2D 动作队列
-│   │   └── singing/               # 唱歌 Pipeline
+│   │   ├── singing/               # 唱歌 Pipeline
+│   │   ├── audio/                 # 音频处理
+│   │   └── meme/                  # 梗生成
 │   ├── memory/                    # 混合记忆系统
 │   ├── avatar/                    # 情感分析 → Live2D 映射
 │   ├── tools/                     # 工具调用 (Minecraft/MCP/Custom)
 │   ├── tracing/                   # OpenTelemetry 可观测性
 │   ├── inspection/                # 健康检查 & 一致性检查
 │   └── config/                    # Pydantic 配置模型
-├── frontend/                      # Next.js 前端
+├── frontend/                      # Vue 3 + Vite 前端
+├── scripts/                       # 工具脚本 (启动/训练/基准测试等)
+├── tests/                         # pytest 测试套件
+├── evaluations/                   # RAG 评估框架
+├── design-system/                 # 视觉设计规范
+├── observability/                 # Grafana/Prometheus/Tempo 监控栈
 ├── memory_db/                     # Wiki 知识库持久化
-├── docs/                          # 文档
-└── tools/training/                # LoRA 训练工具
+├── data/                          # Chroma 向量库 + 统计数据
+├── docker/                        # Docker 配置
+└── docs/                          # ADR 架构决策记录 + 文档
 ```
 
 ---

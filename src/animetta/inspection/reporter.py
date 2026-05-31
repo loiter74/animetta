@@ -10,8 +10,6 @@ import json
 
 from loguru import logger
 
-from animetta import $$$
-from animetta import $$$
 
 
 async def store_report(report: InspectionReport) -> None:
@@ -85,7 +83,6 @@ async def send_alert(report: InspectionReport) -> None:
     }
 
     try:
-        from animetta import $$$
 
         notifier = NotifierManager()
         if not notifier._enabled:

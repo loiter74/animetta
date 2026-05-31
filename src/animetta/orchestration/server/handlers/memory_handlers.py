@@ -127,7 +127,6 @@ class MemoryHandlers(BaseSocketHandler):
                 )
                 return
 
-            from animetta import $$$
 
             llm_client = None
             if ctx.llm_engine:

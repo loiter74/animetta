@@ -31,15 +31,12 @@ class MinecraftHandlers:
         Emits minecraft.status on success or failure.
         """
         try:
-            from animetta import $$$
-            from animetta import $$$
 
             config = MinecraftConfig(enabled=True, autonomous=True)
             logger.info("[Minecraft] Frontend requested start")
 
             # Init bridge (creates the singleton if not exists) and start
             init_bridge(config.model_dump())
-            from animetta import $$$
 
             bridge = get_bridge()
             if bridge is None:
@@ -71,8 +68,6 @@ class MinecraftHandlers:
         Terminates the Mineflayer subprocess and cleans up the bridge.
         """
         try:
-            from animetta import $$$
-            from animetta import $$$
 
             logger.info("[Minecraft] Frontend requested stop")
 

@@ -24,13 +24,11 @@ class ToolManager:
             logger.info(f"[{self.session_id}] [ToolManager] Starting tool loading...")
 
             # 1. Load built-in/LangChain/custom tools (sync)
-            from animetta import $$$
             self.tools, self.tools_map = load_tools_from_config(tools_config)
 
             # 2. Load MCP tools (async)
             mcp_servers = tools_config.get("mcp_servers", [])
             if mcp_servers:
-                from animetta import $$$
                 self._mcp_manager = MCPManager()
                 mcp_tools = await self._mcp_manager.load(mcp_servers)
                 self.tools.extend(mcp_tools)
@@ -53,7 +51,6 @@ class ToolManager:
     async def _create_chat_model(self) -> Optional[Any]:
         """Create LangChain ChatModel"""
         try:
-            from animetta import $$$
             chat_model = create_chat_model_from_service(
                 llm_service=self.service_context.llm_engine,
                 enable_tooling=True,
@@ -84,7 +81,6 @@ class ToolManager:
 
         # Cleanup Minecraft bridge
         try:
-            from animetta import $$$
             bridge = get_bridge()
             if bridge and bridge.is_running:
                 await bridge.stop()

@@ -14,7 +14,6 @@ from base64 import b64encode
 
 import httpx
 
-from animetta import $$$
 
 logger = logging.getLogger(__name__)
 

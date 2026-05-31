@@ -45,7 +45,6 @@ class ChatHandlers:
 
         # OTel metrics: session messages counter
         try:
-            from animetta import $$$
 
             sm = get_session_messages()
             if sm is not None:
@@ -66,7 +65,6 @@ class ChatHandlers:
 
             # OTel metrics: websocket errors counter
             try:
-                from animetta import $$$
 
                 we = get_websocket_errors()
                 if we is not None:
@@ -128,7 +126,6 @@ class ChatHandlers:
             f"heard response: {heard_response[:50] if heard_response else '(empty)'}..."
         )
 
-        from animetta import $$$
 
         interrupt_handler = get_interrupt_handler()
         interrupt_handler.set_interrupt(sid)

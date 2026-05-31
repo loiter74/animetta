@@ -13,7 +13,6 @@ import time
 import httpx
 from loguru import logger
 
-from animetta import $$$
 
 METRICS_ENDPOINT = "http://localhost:12394/metrics"
 EXPECTED_METRICS = [

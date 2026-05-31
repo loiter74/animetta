@@ -20,7 +20,6 @@ from typing import Awaitable, Callable
 
 from loguru import logger
 
-from animetta import $$$
 
 # ── Timeout constants (seconds) ─────────────────────────────
 
@@ -59,7 +58,6 @@ class ComponentCheck:
 async def _probe_stats_store() -> bool:
     """Check StatsStore SQLite is accessible via SELECT 1."""
     try:
-        from animetta import $$$
 
         store = await get_stats_store()
         cursor = await store._db.execute("SELECT 1")
@@ -96,7 +94,6 @@ async def _probe_chroma() -> bool:
 async def _probe_llm_available() -> bool:
     """Check LLM service is loaded in ServicePool."""
     try:
-        from animetta import $$$
 
         if not ServicePool._ready:
             logger.debug("[health/llm] ServicePool not initialized — not configured")
@@ -110,7 +107,6 @@ async def _probe_llm_available() -> bool:
 async def _probe_tts_available() -> bool:
     """Check TTS engine is initialized."""
     try:
-        from animetta import $$$
 
         if not ServicePool._ready:
             logger.debug("[health/tts] ServicePool not initialized — not configured")
@@ -124,7 +120,6 @@ async def _probe_tts_available() -> bool:
 async def _probe_asr_available() -> bool:
     """Check ASR model is ready."""
     try:
-        from animetta import $$$
 
         if not ServicePool._ready:
             logger.debug("[health/asr] ServicePool not initialized — not configured")

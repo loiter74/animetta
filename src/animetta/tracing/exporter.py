@@ -16,7 +16,6 @@ from opentelemetry.sdk.trace import ReadableSpan
 from opentelemetry.sdk.trace.export import SpanExporter, SpanExportResult
 from opentelemetry.trace import StatusCode
 
-from animetta import $$$
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +39,6 @@ class StatsSpanExporter(SpanExporter):
             # lazy-imported inside function body to avoid import-time cycle.
             # Prefer injecting store via __init__ to avoid this dependency.
             try:
-                from animetta import $$$
                 self._stats_store = await _get_stats()
             except ImportError:
                 from loguru import logger

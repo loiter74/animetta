@@ -6,9 +6,6 @@ Provides:
 - CheckResult / InspectionReport — data models
 """
 
-from animetta import $$$
-from animetta import $$$
-from animetta import $$$
 
 __all__ = [
     "CheckResult",

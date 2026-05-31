@@ -18,7 +18,6 @@ from typing import Any
 import socketio
 from loguru import logger
 
-from animetta import $$$
 
 # ── Constants ────────────────────────────────────────────────────────
 

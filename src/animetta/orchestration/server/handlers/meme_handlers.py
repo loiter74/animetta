@@ -57,7 +57,6 @@ class MemeHandlers(BaseSocketHandler):
                 )
                 return
 
-            from animetta import $$$
 
             meme = ctx.memory_system.meme_pool.add_meme(
                 text=text,
@@ -263,7 +262,6 @@ class MemeHandlers(BaseSocketHandler):
             if feedback and meme.cognitive_analysis:
                 meme.cognitive_analysis.roast = feedback
             elif feedback:
-                from animetta import $$$
 
                 meme.cognitive_analysis = CognitiveAnalysis(roast=feedback)
 

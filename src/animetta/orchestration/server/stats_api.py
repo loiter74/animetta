@@ -126,7 +126,6 @@ async def health_check(request):
 
     timestamp = time.time()
     try:
-        from animetta import $$$
 
         checks = await check_all_components()
         all_ok = all(c.ok for c in checks.values())

@@ -63,7 +63,6 @@ class LifecycleHandlers(BaseSocketHandler):
 
         # OTel metrics: active sessions gauge
         try:
-            from animetta import $$$
 
             g = get_active_sessions()
             if g is not None:
@@ -85,7 +84,6 @@ class LifecycleHandlers(BaseSocketHandler):
 
         # OTel metrics: active sessions gauge
         try:
-            from animetta import $$$
 
             g = get_active_sessions()
             if g is not None:

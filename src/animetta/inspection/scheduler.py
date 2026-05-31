@@ -74,8 +74,6 @@ class InspectionScheduler:
 
         while not self._stop_event.is_set():
             try:
-                from animetta import $$$
-                from animetta import $$$
 
                 report = await run_full_inspection()
                 await store_report(report)

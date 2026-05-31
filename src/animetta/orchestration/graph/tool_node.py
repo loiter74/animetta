@@ -123,7 +123,6 @@ def _format_tool_result(result: Any) -> str:
 def _record_tool_metrics(tool_name: str, status: str, duration_s: float) -> None:
     """Record OTel metrics for a tool execution."""
     try:
-        from animetta import $$$
         tc = get_tool_calls()
         if tc is not None:
             tc.add(1, {"tool_name": tool_name, "status": status})

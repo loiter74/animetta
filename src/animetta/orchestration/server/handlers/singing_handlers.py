@@ -59,8 +59,6 @@ class SingingHandlers(BaseSocketHandler):
             return
 
         try:
-            from animetta import $$$
-            from animetta import $$$
 
             config_path = os.path.join(
                 os.path.dirname(__file__), "../../../../../config/singing.yaml"

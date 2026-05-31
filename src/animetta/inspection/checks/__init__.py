@@ -7,10 +7,6 @@ Each check returns a CheckResult:
 - metrics.py — observability pipeline self-check (Prometheus metrics endpoint)
 """
 
-from animetta import $$$
-from animetta import $$$
-from animetta import $$$
-from animetta import $$$
 
 __all__ = [
     "check_all_components",

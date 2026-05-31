@@ -7,7 +7,6 @@ from datetime import datetime, timezone
 
 from loguru import logger
 
-from animetta import $$$
 
 
 async def run_full_inspection() -> InspectionReport:
@@ -36,7 +35,6 @@ async def run_full_inspection() -> InspectionReport:
 
     # ── 1. Component health checks ──────────────────────────────
     try:
-        from animetta import $$$
 
         results = await check_all_components()
         checks.update(results)
@@ -49,7 +47,6 @@ async def run_full_inspection() -> InspectionReport:
 
     # ── 2. Pipeline smoke test ──────────────────────────────────
     try:
-        from animetta import $$$
 
         result = await check_conversation_pipeline()
         checks[result.name] = result
@@ -62,7 +59,6 @@ async def run_full_inspection() -> InspectionReport:
 
     # ── 3. Data consistency checks ──────────────────────────────
     try:
-        from animetta import $$$
 
         result = await check_data_consistency()
         checks[result.name] = result
@@ -75,7 +71,6 @@ async def run_full_inspection() -> InspectionReport:
 
     # ── 4. Metrics pipeline checks ──────────────────────────────
     try:
-        from animetta import $$$
 
         result = await check_metrics_pipeline()
         checks[result.name] = result

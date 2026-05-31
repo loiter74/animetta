@@ -195,7 +195,6 @@ class StatsCallbackHandler(BaseCallbackHandler):
 
         # OTel metrics: node duration histogram
         try:
-            from animetta import $$$
             metric = get_node_duration()
             if metric is not None:
                 metric.observe(duration / 1000.0, {"node_name": span_info["node_name"]})
@@ -222,7 +221,6 @@ class StatsCallbackHandler(BaseCallbackHandler):
 
         # OTel metrics: node error counter
         try:
-            from animetta import $$$
             metric = get_node_errors()
             if metric is not None:
                 metric.add(1, {"node_name": span_info["node_name"], "error_type": "exception"})

@@ -1,68 +1,23 @@
 """
 Memory System — LivingMemory V2.
 
-Legacy modules have been moved to src/animetta/memory/_legacy/.
-Active subsystems:
-  - v2/       LivingMemorySystem (MemoryAtom, EmotionalField, Metabolism)
-  - storage/  Chroma + SQLite drivers (reused by v2)
-  - wiki/     Read-only archive / export layer
+Public API: import directly from memory.v2 for full access.
+This module re-exports the core symbols for convenience.
 """
 
-from __future__ import annotations
-
-# Only import from modules that still exist in memory/ (not _legacy/)
-# Everything else uses try/except for backward compat
-
-try:
-    from .models.turns import MemoryTurn
-except Exception:
-    MemoryTurn = None  # type: ignore[assignment]
-
-try:
-    from .config import MemoryConfig, ChunkConfig, SearchConfig, EmbeddingConfig
-except Exception:
-    MemoryConfig = ChunkConfig = SearchConfig = EmbeddingConfig = None  # type: ignore[assignment]
-
-try:
-    from .models.base import SearchResult, Chunk, FileEntry, MemoryFlushSignal
-except Exception:
-    SearchResult = Chunk = FileEntry = MemoryFlushSignal = None  # type: ignore[assignment]
-
-try:
-    from .tools import get_tool_schemas, execute_tool
-except Exception:
-    get_tool_schemas = execute_tool = None  # type: ignore[assignment]
-
-try:
-    from .system import MemorySystem
-except Exception:
-    MemorySystem = None  # type: ignore[assignment]
-
-try:
-    from .manager import MemoryManager
-except Exception:
-    MemoryManager = None  # type: ignore[assignment]
-
-try:
-    from .wiki import (
-        WikiManager, WikiIngestor, WikiQuery, WikiLint,
-        LintReport, WikiPage, PageType,
-    )
-except Exception:
-    WikiManager = WikiIngestor = WikiQuery = WikiLint = None  # type: ignore[assignment]
-    LintReport = WikiPage = PageType = None  # type: ignore[assignment]
-
-try:
-    from .fuzzy_layer import FuzzyLayer
-except Exception:
-    FuzzyLayer = None  # type: ignore[assignment]
+from animetta.memory.v2.system import LivingMemorySystem, RecallResult
+from animetta.memory.v2.atom import MemoryAtom, Layer, Relation, RelationType
+from animetta.memory.v2.emotion_field import VADVector, VAD_MAP, EmotionalField
+from animetta.memory.v2.metabolism import MetabolismScheduler
+from animetta.memory.v2.search import MemorySearch
+from animetta.memory.v2.store import AtomStore
+from animetta.memory.v2.compile import CompileEngine
+from animetta.memory.v2.reconsolidation import ReconsolidationClient
 
 __all__ = [
-    "MemoryTurn", "MemorySystem",
-    "MemoryConfig", "ChunkConfig", "SearchConfig", "EmbeddingConfig",
-    "MemoryManager", "SearchResult", "Chunk", "FileEntry", "MemoryFlushSignal",
-    "WikiManager", "WikiIngestor", "WikiQuery", "WikiLint",
-    "LintReport", "WikiPage", "PageType",
-    "get_tool_schemas", "execute_tool",
-    "FuzzyLayer",
+    "LivingMemorySystem", "RecallResult",
+    "MemoryAtom", "Layer", "Relation", "RelationType",
+    "VADVector", "VAD_MAP", "EmotionalField",
+    "MetabolismScheduler", "MemorySearch", "AtomStore",
+    "CompileEngine", "ReconsolidationClient",
 ]

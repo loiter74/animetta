@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 
 from loguru import logger
 
-from animetta import $$$
 from .base_handler import BaseSocketHandler
 
 if TYPE_CHECKING:
@@ -59,7 +58,6 @@ class ConfigHandlers(BaseSocketHandler):
 
     async def on_set_log_level(self, sid: str, data: dict) -> None:
         """Set backend log level."""
-        from animetta import $$$
 
         level = data.get("level", "INFO").upper()
         logger.info(f"[{sid}] Requested to set log level to: {level}")
@@ -85,8 +83,6 @@ class ConfigHandlers(BaseSocketHandler):
     async def on_get_config(self, sid: str, data: dict) -> None:
         """Return current config (sanitized) to frontend."""
         logger.info(f"[{sid}] Requested config data")
-        from animetta import $$$
-        from animetta import $$$
 
         config = self.global_config or AppConfig.load()
 

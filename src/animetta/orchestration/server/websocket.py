@@ -18,8 +18,6 @@ from .lifecycle import LifecycleManager
 from .desktop import DesktopClientManager
 from .live2d import Live2DManager
 from .stats_api import get_stats_routes
-from animetta import $$$
-from animetta import $$$
 
 
 class WebSocketServer:
@@ -148,7 +146,6 @@ class WebSocketServer:
             logger.info("[Prewarm] No config loaded yet, skipping")
             return
 
-        from animetta import $$$
         await ServicePool.init(self.config, model_manager=self.model_manager)
 
     def _load_bilibili_config(self) -> Optional[Dict[str, Any]]:

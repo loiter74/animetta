@@ -56,7 +56,6 @@ class PersonaHandlers(BaseSocketHandler):
                 )
                 return
 
-            from animetta import $$$
 
             new_persona = PersonaConfig.load(persona_name)
             if not new_persona:
@@ -74,8 +73,6 @@ class PersonaHandlers(BaseSocketHandler):
             if ctx.llm_engine and ctx.config:
                 live2d_prompt = None
                 try:
-                    from animetta import $$$
-                    from animetta import $$$
 
                     live2d_cfg = get_live2d_config()
                     if live2d_cfg and live2d_cfg.enabled:

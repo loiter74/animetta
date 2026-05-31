@@ -20,18 +20,8 @@ from .config import (
     SystemConfig,
 )
 
-# Lazy imports — tolerate failures for lightweight consumers (e.g. memory_v2)
-try:
-    from .core.service_context import ServiceContext
-except Exception:
-    ServiceContext = None  # type: ignore[assignment]
-
-try:
-    from .services import ASRInterface, TTSInterface, LLMInterface
-except Exception:
-    ASRInterface = None  # type: ignore[assignment]
-    TTSInterface = None  # type: ignore[assignment]
-    LLMInterface = None  # type: ignore[assignment]
+from .core.service_context import ServiceContext
+from .services import ASRInterface, TTSInterface, LLMInterface
 
 __all__ = [
     "AppConfig",

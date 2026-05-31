@@ -10,7 +10,6 @@ import logging
 
 import httpx
 
-from animetta import $$$
 
 logger = logging.getLogger(__name__)
 

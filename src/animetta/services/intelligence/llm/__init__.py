@@ -1,10 +1,10 @@
-from __future__ import annotations
-"""
-LLM service implementation module
+"""LLM service implementation module.
 
-Import on demand; implementations with missing dependencies are skipped
-Decorators execute registration at module import time
+Import on demand; implementations with missing dependencies are skipped.
+Decorators execute registration at module import time.
 """
+
+from __future__ import annotations
 
 from .interface import LLMInterface
 from .factory import LLMFactory

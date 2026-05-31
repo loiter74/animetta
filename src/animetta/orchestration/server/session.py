@@ -65,7 +65,6 @@ class SessionManager:
             ctx.send_text = websocket_send
 
             # Use ServicePool when available — skips LLM/TTS/ASR init
-            from animetta import $$$
             pool = ServicePool.get_context()
             if pool:
                 logger.info(f"[{sid}] Using pooled engines (LLM/TTS/ASR)")

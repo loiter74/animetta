@@ -6,7 +6,6 @@ from typing import Optional, Dict, Any, List
 from pathlib import Path
 from loguru import logger
 
-from animetta import $$$
 
 
 def _retry_on_locked(max_retries: int = 3, delay: float = 0.5):

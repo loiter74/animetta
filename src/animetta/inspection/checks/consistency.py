@@ -14,8 +14,6 @@ from pathlib import Path
 
 from loguru import logger
 
-from animetta import $$$
-from animetta import $$$
 
 # Project root relative to this file: 5 levels up
 _PROJECT_ROOT = Path(__file__).parent.parent.parent.parent.parent

@@ -15,7 +15,6 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from animetta import $$$
 
 logger = logging.getLogger(__name__)
 

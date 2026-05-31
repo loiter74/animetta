@@ -24,7 +24,6 @@ class Live2DManager:
     def action_queue(self):
         """Get the Live2D action queue (lazy initialization)"""
         if self._action_queue is None:
-            from animetta import $$$
             self._action_queue = Live2DActionQueue()
             logger.info("[Live2D] Action queue initialized")
 
@@ -62,7 +61,6 @@ class Live2DManager:
         Returns:
             dict: Enqueue result
         """
-        from animetta import $$$
 
         action = ActionMessage(
             action_id=action_id,

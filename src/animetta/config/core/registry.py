@@ -45,8 +45,7 @@ class ProviderRegistry:
         "vad": {},
     }
     
-    # Compatible with old API
-    _providers = _configs  # Alias for backward compatibility
+    # Compatible with old API — removed: _providers alias (unused)
     
     # ==================== Config Class Registration ====================
     
@@ -69,8 +68,8 @@ class ProviderRegistry:
         return decorator
 
     @classmethod
-    def register(cls, category: Literal["llm", "asr", "tts"], provider_type: str):
-        """Alias: register_config (backward compatible)"""
+    def register(cls, category: str, provider_type: str):
+        """Register a provider config class (shorthand for register_config)."""
         return cls.register_config(category, provider_type)
     
     # ==================== Service Class Registration ====================

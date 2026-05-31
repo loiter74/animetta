@@ -33,10 +33,6 @@ import threading
 import uvicorn
 import asyncio
 
-from animetta import $$$
-from animetta import $$$
-from animetta import $$$
-from animetta import $$$
 
 
 def parse_server_args() -> argparse.Namespace:
@@ -159,7 +155,6 @@ def get_asgi_app():
 
         # ── Initialize OpenTelemetry tracing + metrics pipeline ──
         try:
-            from animetta import $$$
             init_tracing()
             logger.info("[Tracing] OTel pipeline initialized")
         except Exception as e:
@@ -197,7 +192,6 @@ def get_asgi_app():
 
         # ── Start daily inspection scheduler ────────────────────────
         try:
-            from animetta import $$$
 
             _inspection_scheduler = InspectionScheduler(interval_hours=24)
             _INIT_TASKS.append(asyncio.ensure_future(_inspection_scheduler.start()))
@@ -220,7 +214,6 @@ def _setup_checkpointer() -> None:
     On failure, or if --redis-url is absent, falls back to MemorySaver.
     """
     from langgraph.checkpoint.memory import MemorySaver
-    from animetta import $$$
 
     redis_url = _server_args.redis_url
 
@@ -229,7 +222,6 @@ def _setup_checkpointer() -> None:
         return  # keep default builder behavior (no external checkpointer)
 
     try:
-        from animetta import $$$
         checkpointer = AsyncRedisSaver(redis_url)
         set_external_checkpointer(checkpointer)
         logger.info(f"[Checkpoint] Redis checkpointer active: {redis_url}")

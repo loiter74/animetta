@@ -12,8 +12,6 @@ from typing import Dict, Any, Optional, TYPE_CHECKING
 
 from loguru import logger
 
-from animetta import $$$
-from animetta import $$$
 
 if TYPE_CHECKING:
     from socketio import AsyncServer
@@ -45,7 +43,6 @@ class BilibiliHandlers:
 
     def start_bilibili(self, room_id: int, sessdata: str = "") -> None:
         """Start Bilibili danmaku service. Stops existing service if running."""
-        from animetta import $$$
 
         if self._bilibili_service is not None:
             self.stop_bilibili()
