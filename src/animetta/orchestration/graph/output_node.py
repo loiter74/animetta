@@ -11,6 +11,7 @@ from loguru import logger
 
 from .state import AgentState
 from .translation_state import translation_state
+from animetta.avatar.analyzers.audio import AudioAnalyzer
 
 
 def _get_from_config(config: RunnableConfig | None, key: str) -> Any | None:
