@@ -263,51 +263,14 @@ class ServiceContext:
         logger.debug(f"[{self.session_id}] Audio processor will be created by SessionManager")
 
     async def init_memory(self) -> None:
-        """Initialize memory system"""
+        """Initialize LivingMemorySystem V2."""
         try:
-            memory_config_path = Path(__file__).parent.parent.parent.parent / "config" / "features" / "memory.yaml"
-            if not memory_config_path.exists():
-                logger.info(f"[{self.session_id}] Memory system config file not found: {memory_config_path}")
-                return
-
-            with open(memory_config_path, 'r', encoding='utf-8') as f:
-                memory_config = yaml.safe_load(f)
-
-            if not memory_config.get('memory', {}).get('enabled', False):
-                logger.info(f"[{self.session_id}] Memory system not enabled")
-                return
-
-            mem_cfg = memory_config['memory']
-            config = {
-                "workspace_dir": mem_cfg.get('workspace_dir', '~/.anima/workspace'),
-                "short_term_max_turns": mem_cfg.get('short_term', {}).get('max_turns', 20),
-                # Forward search configuration (hybrid weights, defaults from MemoryConfig)
-                "search": mem_cfg.get('search', {}),
-                # Forward chunk configuration (token/overlap settings)
-                "chunk": mem_cfg.get('chunk', {}),
-                # Forward meme/learner/scheduler configs to MemorySystem
-                "meme_pool": mem_cfg.get('meme_pool', {}),
-                "learner": mem_cfg.get('learner', {}),
-                "scheduler": mem_cfg.get('scheduler', {}),
-                "llm_client": self.llm_engine,
-            }
-
-            embedding_cfg = mem_cfg.get('embedding', {})
-            if embedding_cfg.get('model_name'):
-                config['embedding_model'] = embedding_cfg['model_name']
-
-            # MemorySystem.__init__ loads SentenceTransformer synchronously.
-            # Run in thread so HF Hub downloads don't block the event loop.
-            self.memory_system = await asyncio.wait_for(
-                asyncio.to_thread(MemorySystem, config),
-                timeout=60.0,
+            from animetta.memory.v2.system import LivingMemorySystem
+            self.memory_system = LivingMemorySystem(
+                db_path="memory_db/living_memory.sqlite"
             )
-            await self.memory_system.start()
-            self.memory_system.sync()
-
-            logger.info(f"[{self.session_id}] Memory system initialized")
-            logger.info(f"[{self.session_id}] Workspace directory: {config['workspace_dir']}")
-
+            await self.memory_system.initialize()
+            logger.info(f"[{self.session_id}] LivingMemory V2 initialized")
         except Exception as e:
             logger.warning(f"[{self.session_id}] Memory system initialization failed: {e}")
             self.memory_system = None
@@ -336,10 +299,12 @@ class ServiceContext:
         logger.info(f"[{self.session_id}] Shutting down service context...")
 
         if self.memory_system:
-            await self.memory_system.stop()
-            self.memory_system.close()
-            self.memory_system = None
-            logger.info(f"[{self.session_id}] Memory system closed")
+            try:
+                await self.memory_system.shutdown()
+                self.memory_system = None
+                logger.info(f"[{self.session_id}] LivingMemory V2 closed")
+            except Exception as e:
+                logger.warning(f"[{self.session_id}] Memory shutdown failed: {e}")
 
         if self.asr_engine:
             await self.asr_engine.close()

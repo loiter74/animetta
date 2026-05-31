@@ -4,7 +4,6 @@ import asyncio
 import base64
 from typing import Dict, Any, Optional
 from loguru import logger
-from datetime import datetime
 import os
 from functools import partial
 from langgraph.types import RunnableConfig
@@ -217,7 +216,6 @@ def _compute_volumes(audio_path: str) -> list:
     at the start doesn't suppress the rest of the mouth movement.
     """
     try:
-        from animetta import $$$
         analyzer = AudioAnalyzer()
         volumes = analyzer.compute_volume_envelope(
             audio_path, normalize=False, gain=3.5, use_peak=True)
@@ -241,7 +239,7 @@ async def _store_conversation_to_memory(
     state: AgentState,
     config: Optional[RunnableConfig],
 ) -> None:
-    """Store the current conversation turn into the memory system"""
+    """Store conversation turn into LivingMemorySystem V2."""
     session_id = state.get("session_id", "unknown")
 
     try:
@@ -249,7 +247,7 @@ async def _store_conversation_to_memory(
         if not service_context:
             return
 
-        memory_system = service_context.memory_system
+        memory_system = getattr(service_context, "memory_system", None)
         if not memory_system:
             return
 
@@ -259,51 +257,18 @@ async def _store_conversation_to_memory(
         if not user_text or not response_text:
             return
 
-        emotion = state.get("emotion")
-        emotions = [emotion] if emotion else []
-        metadata = state.get("metadata", {})
+        vad_tuple = state.get("emotion_vad")
+        from animetta.memory.v2.emotion_field import VADVector
+        vad = VADVector(*vad_tuple) if vad_tuple else None
 
-        from ...memory.models.turns import MemoryTurn
-
-        turn = MemoryTurn(
-            turn_id=f"{session_id}_{int(datetime.now().timestamp())}",
-            session_id=session_id,
-            timestamp=datetime.now(),
+        await memory_system.encode(
             user_input=user_text,
             agent_response=response_text,
-            emotions=emotions,
-            metadata=metadata,
+            emotion_vad=vad,
+            session_id=session_id,
         )
 
-        await memory_system.store_turn(turn)
-
-        # Meme scoring hook (Phase 5.9): if a meme was injected, evaluate effectiveness
-        meme_injected = state.get("meme_injected", False)
-        if meme_injected and hasattr(memory_system, 'meme_pool') and memory_system.meme_pool:
-            try:
-                meme_candidates = state.get("meme_candidates", [])
-                if meme_candidates:
-                    meme_id = meme_candidates[0].get("id", "")
-                    if meme_id:
-                        # Simple effectiveness heuristic: user responded (not just listened)
-                        # Higher score if user replied with positive sentiment
-                        effectiveness = 0.6  # default: mildly effective
-                        if user_text and len(user_text) > 3:
-                            effectiveness = 0.8  # user engaged further
-                        if any(kw in user_text for kw in ["哈哈", "笑", "hh", "lol", "😂", "好梗", "有趣"]):
-                            effectiveness = 1.0  # positive reaction
-                        elif any(kw in user_text for kw in ["?", "？", "什么", "不懂"]):
-                            effectiveness = 0.3  # confused
-
-                        memory_system.meme_pool.score_after_use(meme_id, effectiveness)
-                        logger.debug(
-                            f"[{session_id}] [OutputNode] Scored meme {meme_id}: "
-                            f"effectiveness={effectiveness}"
-                        )
-            except Exception as e:
-                logger.warning(f"[{session_id}] [OutputNode] Meme scoring failed: {e}")
-
-        logger.debug(f"[{session_id}] [OutputNode] Stored conversation in memory system")
+        logger.debug(f"[{session_id}] [OutputNode] Stored conversation in LivingMemory V2")
 
     except Exception as e:
         logger.warning(f"[{session_id}] [OutputNode] Memory storage failed: {e}")

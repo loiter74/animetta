@@ -49,17 +49,17 @@ async def _retrieve_memory_context(
     query: str,
     config: Optional[RunnableConfig],
     max_turns: int = 5,
-    injection_tier: int = 1,
+    current_emotion: Any = None,
 ) -> str:
     """
-    Retrieve memory context via MemoryMiddleware with tiered injection.
+    Retrieve memory context via LivingMemorySystem V2 recall().
 
     Args:
         session_id: Session ID
         query: Query text (user input)
         config: LangGraph config
         max_turns: Maximum number of turns to retrieve
-        injection_tier: Memory injection tier (1=fuzzy, 2=supporting, 3=exact)
+        current_emotion: VADVector for mood-congruent recall
 
     Returns:
         Enriched system prompt with memory and profile
@@ -73,17 +73,11 @@ async def _retrieve_memory_context(
         enriched, metadata = await middleware.before_llm_call(
             session_id=session_id,
             user_input=query,
-            injection_tier=injection_tier,
+            current_emotion=current_emotion,
         )
         if metadata:
-            counts = []
-            if metadata.get("memory_count", 0) > 0:
-                counts.append(f"memories={metadata['memory_count']}")
-            if metadata.get("fuzzy_count", 0) > 0:
-                counts.append(f"fuzzy={metadata['fuzzy_count']}")
-            if counts:
-                logger.info(f"[{session_id}] [LLMNode] Middleware tier={injection_tier}: {', '.join(counts)}")
-        return enriched, metadata or {}
+            logger.info(f"[{session_id}] [LLMNode] Memory injected")
+        return enriched
     except Exception as e:
         logger.warning(f"[{session_id}] [LLMNode] MemoryMiddleware retrieval failed: {e}")
         return ""
@@ -184,23 +178,24 @@ async def llm_node(
         await log_node_error(session_id, "llm_node", "invalid_response", duration_ms=0)
         return {"error": "LLM engine not initialized", "response_text": "", "response_chunks": [], "tool_calls": None}
 
-    # RAG + Profile: retrieve via MemoryMiddleware (tiered) — once before branching
-    injection_tier = state.get("injection_tier", 1)
+    # RAG: retrieve via LivingMemorySystem V2 recall()
+    vad_tuple = state.get("emotion_vad")
+    from animetta.memory.v2.emotion_field import VADVector
+    current_emotion = VADVector(*vad_tuple) if vad_tuple else None
     t_rag = time_module.perf_counter()
     retrieval_result = await _retrieve_memory_context(
         session_id=session_id,
         query=user_text,
         config=config,
         max_turns=5,
-        injection_tier=injection_tier,
+        current_emotion=current_emotion,
     )
-    memory_context, rag_metadata = retrieval_result if isinstance(retrieval_result, tuple) else (retrieval_result, {})
+    memory_context = retrieval_result if isinstance(retrieval_result, str) else retrieval_result[0] if isinstance(retrieval_result, tuple) else ""
     rag_duration = (time_module.perf_counter() - t_rag) * 1000
     log_timing(state, "llm.rag_retrieval", rag_duration, f"query='{user_text[:50]}'")
 
     # OTel metrics: RAG retrieval duration + chunk count + top score
     try:
-        from animetta import $$$
         rd = get_rag_duration()
         if rd is not None:
             rd.observe(rag_duration / 1000.0, {"strategy": "hybrid"})
