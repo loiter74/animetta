@@ -22,7 +22,7 @@ def start_backend(project_root: Path, pm: ProcessManager) -> tuple:
     env["PYTHONPATH"] = str(src_path)
     env["PYTHONIOENCODING"] = "utf-8"
     process = subprocess.Popen(
-        [python_exe, "-m", "anima.core.socketio_server"],
+        [python_exe, "-m", "animetta.core.socketio_server"],
         cwd=project_root, env=env, stdout=None, stderr=None,
     )
     return ("Backend", process, 12394)
