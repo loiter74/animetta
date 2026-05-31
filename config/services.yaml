@@ -131,7 +131,7 @@ tts:
   gpt_sovits:
     type: gpt_sovits
     base_url: "http://127.0.0.1:9880"   # GPT-SoVITS api_v2.py 服务地址
-    ref_audio_path: ""                   # 参考音频路径（服务端路径，必填）
+    ref_audio_path: "C:/Users/30262/Project/Anima/config/gpt_sovits/evil/ref_audio.wav"
     prompt_text: ""                      # 参考音频的文字转录（必填）
     prompt_lang: "zh"                    # 参考音频语种：zh/en/ja/ko/yue/auto
     text_lang: "zh"                      # 合成文本语种：zh/en/ja/ko/yue/auto
@@ -151,7 +151,7 @@ tts:
   gpt_sovits_evil:
     type: gpt_sovits
     base_url: "http://127.0.0.1:9880"
-    ref_audio_path: "${ANIMETTA_PROJECT_ROOT}/config/gpt_sovits/evil/ref_audio.wav"
+    ref_audio_path: "C:/Users/30262/Project/Anima/config/gpt_sovits/evil/ref_audio.wav"
     prompt_text: "I played Shovel Knight once. It turns out AI doesn't exactly have perfect hand-eye coordination."
     prompt_lang: "en"
     text_lang: "auto"   # auto 自动检测语种（支持中英混合）
@@ -213,7 +213,7 @@ tts:
     repetition_penalty: 1.05
     use_flash_attn: false
     # ── Voice Clone ──
-    ref_audio_path: "E:/animetta_data/tts_training/kuonji_arisu/training_ready/S_alice_confirmed/ref_10s.wav"
+    ref_audio_path: "C:/Users/30262/Project/Anima/config/gpt_sovits/evil/ref_audio.wav"
     x_vector_only: true
 
   # Mock（测试用）
