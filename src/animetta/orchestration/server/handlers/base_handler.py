@@ -8,6 +8,7 @@ broadcast_to_desktop_clients, etc.).
 
 import json
 from typing import TYPE_CHECKING
+from animetta.config.app import AppConfig
 
 if TYPE_CHECKING:
     from socketio import AsyncServer
