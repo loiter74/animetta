@@ -1,12 +1,12 @@
 from __future__ import annotations
+
 """
 Mock Separation implementation - for testing and development
 """
 
-from animetta.config.core.registry import ProviderRegistry
-
-from typing import Dict, Union, Optional
 from pathlib import Path
+
+from animetta.config.core.registry import ProviderRegistry
 
 from .interface import SeparationInterface
 
@@ -31,10 +31,10 @@ class MockSeparation(SeparationInterface):
     async def separate(
         self,
         audio: bytes,
-        target: Optional[str] = None,
-        output_dir: Optional[Union[str, Path]] = None,
+        target: str | None = None,
+        output_dir: str | Path | None = None,
         **kwargs
-    ) -> Dict[str, Union[bytes, str]]:
+    ) -> dict[str, bytes | str]:
         """Return audio as mock stems."""
         import asyncio
         await asyncio.sleep(0.1)

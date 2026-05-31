@@ -14,7 +14,6 @@ from base64 import b64encode
 
 import httpx
 
-
 logger = logging.getLogger(__name__)
 
 SEVERITY_TEMPLATES = {

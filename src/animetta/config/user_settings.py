@@ -3,8 +3,9 @@ User settings management
 Manages user personal configuration (not committed to git)
 """
 
-import yaml
 from pathlib import Path
+
+import yaml
 from loguru import logger
 
 
@@ -21,7 +22,7 @@ class UserSettings:
             return self._create_default()
 
         try:
-            with open(self.config_file, 'r', encoding='utf-8') as f:
+            with open(self.config_file, encoding='utf-8') as f:
                 return yaml.safe_load(f) or {}
         except Exception as e:
             logger.warning(f"Failed to load user configuration: {e}")

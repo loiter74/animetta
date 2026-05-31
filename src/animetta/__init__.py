@@ -11,17 +11,16 @@ __version__ = "0.1.0"
 __author__ = "Animetta Team"
 
 from .config import (
+    AgentConfig,
     AppConfig,
     ASRConfig,
-    TTSConfig,
     LLMConfig,
-    AgentConfig,
     PersonaConfig,
     SystemConfig,
+    TTSConfig,
 )
-
 from .core.service_context import ServiceContext
-from .services import ASRInterface, TTSInterface, LLMInterface
+from .services import ASRInterface, LLMInterface, TTSInterface
 
 __all__ = [
     "AppConfig",

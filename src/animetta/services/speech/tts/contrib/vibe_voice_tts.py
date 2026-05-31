@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """
 VibeVoice TTS implementation - Microsoft open-source long-text multi-speaker speech synthesis
 
@@ -12,19 +13,18 @@ For local RTX 5090D, Remote mode + persistent FastAPI inference service is recom
 # Status: maintained
 # Last verified: 2026-05-23
 
-from typing import Union, Optional, AsyncGenerator
-from pathlib import Path
+import asyncio
 import os
 import tempfile
-import asyncio
-from io import BytesIO
+from collections.abc import AsyncGenerator
+from pathlib import Path
 
 from loguru import logger
 
+from animetta.config.core.registry import ProviderRegistry
+
 from ..interface import TTSInterface
 
-
-from animetta.config.core.registry import ProviderRegistry
 
 @ProviderRegistry.register_service("tts", "vibe_voice")
 class VibeVoiceTTS(TTSInterface):
@@ -46,13 +46,13 @@ class VibeVoiceTTS(TTSInterface):
 
     def __init__(
         self,
-        api_key: Optional[str] = None,
+        api_key: str | None = None,
         model: str = "vibe-voice-1.5b",
         voice: str = "default",
         base_url: str = "http://localhost:8765",
         mode: str = "remote",
         model_size: str = "1.5b",
-        model_path: Optional[str] = None,
+        model_path: str | None = None,
         device: str = "cuda:0",
         num_speakers: int = 1,
         language: str = "zh",
@@ -106,7 +106,7 @@ class VibeVoiceTTS(TTSInterface):
         return self._client
 
     @classmethod
-    def from_config(cls, config: VibeVoiceTTSConfig, **kwargs) -> "VibeVoiceTTS":
+    def from_config(cls, config: VibeVoiceTTSConfig, **kwargs) -> VibeVoiceTTS:
         """Create instance from config object (supports ProviderRegistry.create_service path)"""
         return cls(
             api_key=config.api_key,
@@ -124,10 +124,10 @@ class VibeVoiceTTS(TTSInterface):
     async def synthesize(
         self,
         text: str,
-        output_path: Optional[Union[str, Path]] = None,
-        voice: Optional[str] = None,
+        output_path: str | Path | None = None,
+        voice: str | None = None,
         **kwargs,
-    ) -> Union[bytes, str]:
+    ) -> bytes | str:
         """
         Synthesize text to speech
 
@@ -172,11 +172,11 @@ class VibeVoiceTTS(TTSInterface):
     async def _synthesize_remote(
         self,
         text: str,
-        output_path: Optional[Union[str, Path]],
+        output_path: str | Path | None,
         voice: str,
         num_speakers: int,
         language: str,
-    ) -> Union[bytes, str]:
+    ) -> bytes | str:
         """Synthesize speech via HTTP API"""
         import httpx
 
@@ -226,9 +226,9 @@ class VibeVoiceTTS(TTSInterface):
     async def _synthesize_local(
         self,
         text: str,
-        output_path: Optional[Union[str, Path]],
+        output_path: str | Path | None,
         voice: str,
-    ) -> Union[bytes, str]:
+    ) -> bytes | str:
         """Synthesize speech via subprocess local inference"""
         if output_path:
             out_file = Path(output_path)
@@ -281,7 +281,7 @@ class VibeVoiceTTS(TTSInterface):
 
         except FileNotFoundError as e:
             raise RuntimeError(
-                f"VibeVoice inference script not found. Please ensure the model is downloaded and model_path is configured."
+                "VibeVoice inference script not found. Please ensure the model is downloaded and model_path is configured."
             ) from e
 
     def _find_infer_script(self) -> str:
@@ -307,16 +307,15 @@ class VibeVoiceTTS(TTSInterface):
     async def synthesize_stream(
         self,
         text: str,
-        voice: Optional[str] = None,
+        voice: str | None = None,
         **kwargs,
-    ) -> AsyncGenerator[bytes, None]:
+    ) -> AsyncGenerator[bytes]:
         """
         Streaming speech synthesis (Remote mode supports streaming response)
 
         Yields:
             bytes: Audio data chunks
         """
-        import httpx
 
         if self.mode != "remote":
             # Local mode does not support streaming, fallback to full synthesis

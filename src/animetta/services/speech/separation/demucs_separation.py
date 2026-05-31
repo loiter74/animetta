@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """
 Demucs / MDX-based audio source separation via Music-Source-Separation-Training (MSST)
 
@@ -13,11 +14,10 @@ import asyncio
 import io as _io
 import sys
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 import numpy as np
 from loguru import logger
-
 
 from .interface import SeparationInterface
 
@@ -25,6 +25,7 @@ MSST_ROOT = "C:/Users/30262/Music-Source-Separation-Training"
 
 
 from animetta.config.core.registry import ProviderRegistry
+
 
 @ProviderRegistry.register_service("separation", "demucs")
 class DemucsSeparation(SeparationInterface):
@@ -52,7 +53,7 @@ class DemucsSeparation(SeparationInterface):
     # ── classmethod ────────────────────────────────────────────────
 
     @classmethod
-    def from_config(cls, config: DemucsSeparationConfig) -> "DemucsSeparation":
+    def from_config(cls, config: DemucsSeparationConfig) -> DemucsSeparation:
         """Create instance from provider configuration."""
         return cls(config)
 
@@ -61,10 +62,10 @@ class DemucsSeparation(SeparationInterface):
     async def separate(
         self,
         audio: bytes,
-        target: Optional[str] = None,
-        output_dir: Optional[Union[str, Path]] = None,
+        target: str | None = None,
+        output_dir: str | Path | None = None,
         **kwargs: Any,
-    ) -> Dict[str, Union[bytes, str]]:
+    ) -> dict[str, bytes | str]:
         """
         Separate audio mixture into constituent stems.
 
@@ -106,7 +107,7 @@ class DemucsSeparation(SeparationInterface):
                 )
 
             # ── blocking demix → background thread ──
-            waveforms: Dict[str, np.ndarray] = await asyncio.to_thread(
+            waveforms: dict[str, np.ndarray] = await asyncio.to_thread(
                 self._demix_fn,
                 self._msst_config,
                 self._model,
@@ -130,7 +131,7 @@ class DemucsSeparation(SeparationInterface):
             if output_dir is not None:
                 out = Path(output_dir)
                 out.mkdir(parents=True, exist_ok=True)
-                result: Dict[str, Union[bytes, str]] = {}
+                result: dict[str, bytes | str] = {}
                 for stem_name, waveform in waveforms.items():
                     stem_path = out / f"{stem_name}.wav"
                     sf.write(str(stem_path), waveform.T, self._config.sample_rate, subtype="FLOAT")
@@ -204,10 +205,9 @@ class DemucsSeparation(SeparationInterface):
         if self._is_loaded:
             return
 
+        import torch
         from utils.model_utils import demix as _demix
         from utils.settings import get_model_from_config
-
-        import torch
 
         # ── device ──
         device_str = self._config.device

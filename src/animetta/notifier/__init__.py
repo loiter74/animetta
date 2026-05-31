@@ -7,8 +7,8 @@ notification channels (Discord, Feishu, Email, etc.).
 Plugins register via @register_notifier(name) decorator.
 """
 
-from .base import NotifierBase, register_notifier, get_notifier_registry
-from .manager import NotifierManager, Alert, parse_alertmanager_payload
+from .base import NotifierBase, get_notifier_registry, register_notifier
+from .manager import Alert, NotifierManager, parse_alertmanager_payload
 
 __all__ = [
     "NotifierBase",

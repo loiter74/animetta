@@ -8,18 +8,19 @@ Replaces MemorySystem with unified encode/recall API.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import logging
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
-from animetta.memory.v2.atom import MemoryAtom, Layer, Relation, RelationType
-from animetta.memory.v2.store import AtomStore
+from animetta.memory.v2.atom import Layer, MemoryAtom, Relation, RelationType
+from animetta.memory.v2.compile import COMPILE_TRIGGERS, CompileEngine
 from animetta.memory.v2.emotion_field import EmotionalField, VADVector
-from animetta.memory.v2.search import MemorySearch
-from animetta.memory.v2.reconsolidation import get_reconsolidation_client
 from animetta.memory.v2.metabolism import MetabolismScheduler
-from animetta.memory.v2.compile import CompileEngine, COMPILE_TRIGGERS
+from animetta.memory.v2.reconsolidation import get_reconsolidation_client
+from animetta.memory.v2.search import MemorySearch
+from animetta.memory.v2.store import AtomStore
 
 logger = logging.getLogger(__name__)
 
@@ -95,10 +96,8 @@ class LivingMemorySystem:
         """Stop the background metabolism loop."""
         if self._metabolism_task and not self._metabolism_task.done():
             self._metabolism_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self._metabolism_task
-            except asyncio.CancelledError:
-                pass
         logger.info("Metabolism loop stopped")
 
     async def _metabolism_loop(self) -> None:
@@ -182,7 +181,7 @@ class LivingMemorySystem:
             emotion_vad = VADVector(0.0, 0.0, 0.0)
 
         content = f"用户: {user_input}\n助手: {agent_response}"
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         conf = EmotionalField.encoding_confidence(emotion_vad)
 
@@ -271,7 +270,7 @@ class LivingMemorySystem:
         The LLM rewrite is a placeholder — in production, this calls the
         actual LLM service with the reconsolidation prompt.
         """
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         cooldown = timedelta(minutes=self.RECONSOLIDATION_COOLDOWN_MINUTES)
         reconsolidated = 0
 
@@ -347,8 +346,8 @@ class LivingMemorySystem:
         atom.decay_rate = new_decay_rate
         atom.version += 1
         atom.version_chain = list(atom.version_chain) + [atom.id]
-        atom.rewritten_at = datetime.now(timezone.utc)
+        atom.rewritten_at = datetime.now(UTC)
         atom.retrieval_count += 1
-        atom.last_accessed_at = datetime.now(timezone.utc)
+        atom.last_accessed_at = datetime.now(UTC)
 
         await self.store.update(atom)

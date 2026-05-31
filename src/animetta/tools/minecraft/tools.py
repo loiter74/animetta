@@ -5,7 +5,8 @@ Each tool maps to a Mineflayer bot action and is registered as a LangChain @tool
 The bridge (MinecraftBridge) manages the Node.js subprocess lifecycle.
 """
 
-from typing import Optional, Dict, Any, List
+from typing import Any
+
 from langchain_core.tools import tool
 from loguru import logger
 
@@ -13,7 +14,7 @@ from loguru import logger
 _bridge = None
 
 
-def init_bridge(config: Optional[Dict] = None):
+def init_bridge(config: dict | None = None):
     """Initialize the Minecraft bridge (called from load_tools_from_config)
 
     Args:
@@ -56,7 +57,7 @@ async def cleanup_bridge():
         logger.info("[MinecraftTools] Bridge cleaned up")
 
 
-def get_minecraft_tools() -> List[Any]:
+def get_minecraft_tools() -> list[Any]:
     """Get all minecraft tools for registration
 
     Returns:
@@ -69,7 +70,7 @@ def get_minecraft_tools() -> List[Any]:
 import asyncio
 
 
-async def _send(action: str, params: Optional[Dict] = None, timeout: float = 60.0) -> str:
+async def _send(action: str, params: dict | None = None, timeout: float = 60.0) -> str:
     """Send command via bridge and format result for LLM consumption"""
     global _bridge
     if _bridge is None or not _bridge.is_running:

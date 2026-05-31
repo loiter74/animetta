@@ -1,8 +1,7 @@
 """Audio Source Separation service implementation module"""
 
-from .interface import SeparationInterface
 from .factory import SeparationFactory
-
+from .interface import SeparationInterface
 from .mock_separation import MockSeparation
 
 __all__ = [

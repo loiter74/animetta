@@ -11,17 +11,16 @@ The result is stored in state["vc_audio"].
 import asyncio
 import io
 import time as time_module
-from typing import Dict, Any, Optional
-from pathlib import Path
+from typing import Any
 
-from loguru import logger
 from langgraph.types import RunnableConfig
+from loguru import logger
 
-from .state import AgentState, log_timing
 from .node_error import log_node_error
+from .state import AgentState
 
 
-def _get_service_context(config: Optional[RunnableConfig]) -> Optional[Any]:
+def _get_service_context(config: RunnableConfig | None) -> Any | None:
     """Get service_context from LangGraph config"""
     if config:
         return config.get("configurable", {}).get("service_context")
@@ -34,8 +33,9 @@ def _mix_audio(vocals: bytes, instrumental: bytes) -> bytes:
     Both inputs must have the same sample rate and format.
     Normalizes output to prevent clipping.
     """
-    import numpy as np
     import struct
+
+    import numpy as np
 
     # Parse WAV headers
     def _read_wav(data: bytes) -> tuple[np.ndarray, int]:
@@ -53,7 +53,7 @@ def _mix_audio(vocals: bytes, instrumental: bytes) -> bytes:
             bio.read(size)
             fmt = bio.read(4)
         bio.read(4)  # chunk size
-        audio_format = struct.unpack('<H', bio.read(2))[0]
+        struct.unpack('<H', bio.read(2))[0]
         num_channels = struct.unpack('<H', bio.read(2))[0]
         sample_rate = struct.unpack('<I', bio.read(4))[0]
         bio.read(6)  # byte rate, block align
@@ -116,8 +116,8 @@ def _mix_audio(vocals: bytes, instrumental: bytes) -> bytes:
 
 async def vc_node(
     state: AgentState,
-    config: Optional[RunnableConfig] = None,
-) -> Dict[str, Any]:
+    config: RunnableConfig | None = None,
+) -> dict[str, Any]:
     """
     Singing voice replacement node.
 
@@ -200,7 +200,7 @@ async def vc_node(
 
         return {"vc_audio": final_audio}
 
-    except asyncio.TimeoutError:
+    except TimeoutError:
         logger.error(f"[{session_id}] [VCNode] Pipeline timed out")
         await log_node_error(session_id, "vc_node", "timeout", duration_ms=300000)
         return {"vc_audio": None, "error": "Voice conversion pipeline timed out"}

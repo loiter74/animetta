@@ -21,12 +21,12 @@ Usage:
 """
 
 import json
-from typing import Optional, FrozenSet
+
 from loguru import logger
 
 LOGGER = logger.bind(name="NodeError")
 
-VALID_ERROR_TYPES: FrozenSet[str] = frozenset({
+VALID_ERROR_TYPES: frozenset[str] = frozenset({
     "timeout",
     "rate_limit",
     "network_error",
@@ -40,7 +40,7 @@ async def log_node_error(
     error_type: str,
     provider: str = "",
     duration_ms: float = 0.0,
-    trace_id: Optional[str] = None,
+    trace_id: str | None = None,
 ) -> None:
     """Log a provider failure to StatsStore with structured metadata.
 
@@ -60,7 +60,7 @@ async def log_node_error(
         )
         error_type = "unknown"
 
-    attributes = json.dumps({
+    json.dumps({
         "error_type": error_type,
         "provider": provider,
         "duration_ms": duration_ms,
@@ -80,6 +80,7 @@ async def log_node_error(
     # Write error span to StatsStore
     try:
         import uuid
+
         from .stats_store import get_stats_store
 
         store = await get_stats_store()

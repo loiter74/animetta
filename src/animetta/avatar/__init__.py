@@ -6,13 +6,10 @@ The new architecture uses pluggable emotion analyzers and the strategy pattern.
 """
 
 # New pluggable architecture
-from .analyzers.base import IEmotionAnalyzer, EmotionData
-from .analyzers.llm_tag import (
-    StandaloneLLMTagAnalyzer,
-    EmotionTag,
-    EmotionExtractionResult
-)
-from .strategies.base import ITimelineStrategy, TimelineSegment
+# Retained utility classes
+from .analyzers.audio import AudioAnalyzer
+from .analyzers.base import EmotionData, IEmotionAnalyzer
+from .analyzers.llm_tag import EmotionExtractionResult, EmotionTag, StandaloneLLMTagAnalyzer
 from .factory import (
     EmotionAnalyzerFactory,
     TimelineStrategyFactory,
@@ -21,19 +18,10 @@ from .factory import (
 )
 
 # Parameter mapper (new)
-from .mappers.base import (
-    IEmotionParamMapper,
-    ParameterState,
-    ExpressionFrame
-)
-from .mappers.emotion_param_mapper import (
-    EmotionParamMapper,
-    DEFAULT_EMOTION_MAPPINGS
-)
-
-# Retained utility classes
-from .analyzers.audio import AudioAnalyzer
+from .mappers.base import ExpressionFrame, IEmotionParamMapper, ParameterState
+from .mappers.emotion_param_mapper import DEFAULT_EMOTION_MAPPINGS, EmotionParamMapper
 from .prompts import EmotionPromptBuilder
+from .strategies.base import ITimelineStrategy, TimelineSegment
 
 __all__ = [
     # New architecture - analyzers

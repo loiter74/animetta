@@ -5,16 +5,15 @@ Manages the BilibiliDanmakuService lifecycle and processes
 incoming danmaku messages through the AI orchestrator.
 """
 
-import json
-import time
 import asyncio
-from typing import Dict, Any, Optional, TYPE_CHECKING
+import time
+from typing import TYPE_CHECKING
 
 from loguru import logger
 
-
 if TYPE_CHECKING:
     from socketio import AsyncServer
+
     from ..session import SessionManager
     from .base_handler import BaseSocketHandler
 
@@ -37,7 +36,7 @@ class BilibiliHandlers:
         self.admin = admin
 
         self._bilibili_service = None
-        self._main_loop: Optional[asyncio.AbstractEventLoop] = None
+        self._main_loop: asyncio.AbstractEventLoop | None = None
 
     # ── Service lifecycle ─────────────────────────────────────────────
 

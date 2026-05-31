@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """
 OpenAI LLM tool handler — handles tool calling logic.
 
@@ -8,9 +9,10 @@ core LLM implementation.
 
 import json
 import time as time_module
-from typing import List, Dict, Any, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
+
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from loguru import logger
-from langchain_core.messages import SystemMessage, HumanMessage, AIMessage, ToolMessage
 
 if TYPE_CHECKING:
     from .openai_llm import OpenAILLM
@@ -24,14 +26,14 @@ class OpenAIToolHandler:
     and the chat_with_tools invocation with result processing.
     """
 
-    def __init__(self, llm_instance: "OpenAILLM"):
+    def __init__(self, llm_instance: OpenAILLM):
         """
         Args:
             llm_instance: The OpenAILLM instance that owns this handler.
         """
         self.llm = llm_instance
 
-    def _convert_tools_to_openai(self, tools: List[Any]) -> List[Dict[str, Any]]:
+    def _convert_tools_to_openai(self, tools: list[Any]) -> list[dict[str, Any]]:
         """
         Convert a list of LangChain tools to OpenAI API format
 
@@ -62,10 +64,10 @@ class OpenAIToolHandler:
 
     def _build_langchain_messages(
         self,
-        langchain_history: List[Any],
-        system_prompt: Optional[str],
+        langchain_history: list[Any],
+        system_prompt: str | None,
         user_input: str,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Build an OpenAI API message list from LangChain messages
 
@@ -118,10 +120,10 @@ class OpenAIToolHandler:
     async def chat_with_tools(
         self,
         user_input: str,
-        tools: List[Any],
-        langchain_history: List[Any],
-        system_prompt: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        tools: list[Any],
+        langchain_history: list[Any],
+        system_prompt: str | None = None,
+    ) -> dict[str, Any]:
         """
         Conversation with tool calls (LangGraph specific)
 

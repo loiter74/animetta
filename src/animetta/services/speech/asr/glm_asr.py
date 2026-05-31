@@ -1,19 +1,18 @@
 from __future__ import annotations
+
 """
 GLM ASR implementation - uses Zhipu AI GLM ASR API
 """
 
-from typing import Union, Optional
-from pathlib import Path
-import wave
 import io
+from pathlib import Path
 
 from loguru import logger
 
+from animetta.config.core.registry import ProviderRegistry
+
 from .interface import ASRInterface
 
-
-from animetta.config.core.registry import ProviderRegistry
 
 @ProviderRegistry.register_service("asr", "glm")
 class GLMASR(ASRInterface):
@@ -56,8 +55,9 @@ class GLMASR(ASRInterface):
 
         # Try to convert to MP3 using pydub (more reliable)
         try:
-            from pydub import AudioSegment
             import io
+
+            from pydub import AudioSegment
 
             # Convert numpy array to AudioSegment
             if audio_np.dtype == np.float32 or audio_np.dtype == np.float64:
@@ -148,8 +148,8 @@ class GLMASR(ASRInterface):
 
     async def transcribe(
         self,
-        audio_data: Union[bytes, str, Path, list],
-        stream: Optional[bool] = None,
+        audio_data: bytes | str | Path | list,
+        stream: bool | None = None,
         **kwargs
     ) -> str:
         """
@@ -200,7 +200,6 @@ class GLMASR(ASRInterface):
     async def _transcribe_sync(self, client, audio_bytes: bytes, ext: str = "mp3") -> str:
         """Non-streaming recognition"""
         import asyncio
-        import io
 
         loop = asyncio.get_event_loop()
 
@@ -232,7 +231,6 @@ class GLMASR(ASRInterface):
     async def _transcribe_stream(self, client, audio_bytes: bytes, ext: str = "mp3") -> str:
         """Streaming recognition"""
         import asyncio
-        import io
 
         loop = asyncio.get_event_loop()
 
@@ -284,7 +282,7 @@ class GLMASR(ASRInterface):
 
     async def transcribe_stream(
         self,
-        audio_data: Union[bytes, str, Path, list],
+        audio_data: bytes | str | Path | list,
         **kwargs
     ):
         """
@@ -297,7 +295,6 @@ class GLMASR(ASRInterface):
             str: Recognized text chunks
         """
         import asyncio
-        import io
 
         client = self._get_client()
 

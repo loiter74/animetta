@@ -16,14 +16,15 @@ Lifecycle:
     4. stop() → cancel loop, cleanup
 """
 import asyncio
+import contextlib
 import random
 import time
-from typing import Optional, Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from loguru import logger
 
+from .rules_engine import RulesEngine
 from .world_state import WorldState
-from .rules_engine import RulesEngine, BuildTarget, BuildPlanStep
 
 if TYPE_CHECKING:
     from .bridge import MinecraftBridge
@@ -63,22 +64,22 @@ class AutonomousLoop:
     ACTION_EXPLORE = "explore"
     ACTION_IDLE = "idle"
 
-    def __init__(self, bridge: "MinecraftBridge", rules: Optional[RulesEngine] = None):
+    def __init__(self, bridge: "MinecraftBridge", rules: RulesEngine | None = None):
         self._bridge = bridge
         self._rules = rules or RulesEngine()
         self._running = False
         self._paused = False
-        self._loop_task: Optional[asyncio.Task] = None
+        self._loop_task: asyncio.Task | None = None
         self._cooldown = CooldownTracker(default_cooldown=30.0)
 
         # Collect-build state
-        self._build_site: Optional[dict] = None  # {"x", "y", "z"}
+        self._build_site: dict | None = None  # {"x", "y", "z"}
         self._current_step: int = 0
-        self._gathering_for: Optional[str] = None
+        self._gathering_for: str | None = None
         self._chat_cooldown_until: float = 0.0
 
         # Safety: base position (set on first night return or manual trigger)
-        self._base_pos: Optional[dict] = None
+        self._base_pos: dict | None = None
 
         logger.info("[AutonomousLoop] Initialized with rules for '{}'",
                    self._rules.rules.character_name)
@@ -98,10 +99,8 @@ class AutonomousLoop:
         self._running = False
         if self._loop_task:
             self._loop_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self._loop_task
-            except asyncio.CancelledError:
-                pass
             self._loop_task = None
         logger.info("[AutonomousLoop] Stopped")
 
@@ -125,7 +124,7 @@ class AutonomousLoop:
             status = await self._bridge.send_command("status", timeout=5.0)
             state = WorldState.from_status(status)
             if state.get_threat_level() >= 2 and state.nearest_threat_distance < 15:
-                logger.info(f"[AutonomousLoop] Threat detected during action! Attacking.")
+                logger.info("[AutonomousLoop] Threat detected during action! Attacking.")
                 await self._bridge.send_command("attack", {"target": "nearest_hostile"}, timeout=10.0)
                 return True
         except Exception:
@@ -179,26 +178,24 @@ class AutonomousLoop:
 
     # ── Evaluation & Decision ──
 
-    def _evaluate(self, state: WorldState) -> tuple[str, Optional[dict]]:
+    def _evaluate(self, state: WorldState) -> tuple[str, dict | None]:
         """Priority-based decision engine"""
 
         # === SURVIVAL (always #1) ===
         # Threat check
         threat_level = state.get_threat_level()
-        if threat_level >= 2:
-            if state.nearest_threat_distance < 15:
-                return (self.ACTION_SURVIVE, {"reason": "threat_nearby", "threat_level": threat_level})
+        if threat_level >= 2 and state.nearest_threat_distance < 15:
+            return (self.ACTION_SURVIVE, {"reason": "threat_nearby", "threat_level": threat_level})
 
         # Health check
         if state.health < self._rules.auto_heal_threshold:
             return (self.ACTION_SURVIVE, {"reason": "low_health", "health": state.health})
 
         # Night safety
-        if state.is_night and self._rules.return_to_base_at_night:
-            if self._base_pos:
-                dist = state.distance_to(self._base_pos["x"], self._base_pos["y"], self._base_pos["z"])
-                if dist > 5:
-                    return (self.ACTION_SURVIVE, {"reason": "night_return", "base": self._base_pos})
+        if state.is_night and self._rules.return_to_base_at_night and self._base_pos:
+            dist = state.distance_to(self._base_pos["x"], self._base_pos["y"], self._base_pos["z"])
+            if dist > 5:
+                return (self.ACTION_SURVIVE, {"reason": "night_return", "base": self._base_pos})
 
         # === MAINTENANCE (building progress) ===
         if self._rules.rules.building and self._current_step < len(self._rules.rules.building.build_plan):
@@ -249,7 +246,7 @@ class AutonomousLoop:
 
     # ── Execution ──
 
-    async def _execute(self, action: str, params: Optional[dict], state: WorldState):
+    async def _execute(self, action: str, params: dict | None, state: WorldState):
         """Execute the decided action with timeout"""
         timeout = 30.0
         try:
@@ -264,7 +261,7 @@ class AutonomousLoop:
             elif action == self.ACTION_EXPLORE:
                 await self._execute_explore(params, timeout)
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning(f"[AutonomousLoop] Action '{action}' timed out")
             self._cooldown.reset(action)
         except Exception as e:
@@ -351,7 +348,7 @@ class AutonomousLoop:
 
     # ── Proactive Chat ──
 
-    def _get_chat_trigger(self, state: WorldState) -> Optional[str]:
+    def _get_chat_trigger(self, state: WorldState) -> str | None:
         """Determine if and why we should chat"""
         now = time.time()
         if now < self._chat_cooldown_until:

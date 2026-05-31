@@ -1,19 +1,20 @@
 from __future__ import annotations
+
 """
 Silero VAD implementation
 Based on Open-LLM-VTuber's VADEngine and StateMachine implementation
 """
 
 from collections import deque
-from typing import Union
+
 import numpy as np
 from loguru import logger
 
-from .interface import VADInterface, VADState, VADResult
-from .detector import SileroDetector
-
-
 from animetta.config.core.registry import ProviderRegistry
+
+from .detector import SileroDetector
+from .interface import VADInterface, VADResult, VADState
+
 
 @ProviderRegistry.register_service("vad", "silero")
 class SileroVAD(VADInterface):
@@ -53,7 +54,7 @@ class SileroVAD(VADInterface):
         # State machine
         self.state_machine = SileroStateMachine(self)
 
-        logger.info(f"✅ Silero VAD initialization complete")
+        logger.info("✅ Silero VAD initialization complete")
         logger.info(f"   - Sample rate: {sample_rate} Hz")
         logger.info(f"   - Probability threshold: {prob_threshold}")
         logger.info(f"   - Decibel threshold: {db_threshold}")
@@ -84,7 +85,7 @@ class SileroVAD(VADInterface):
         self.detector.model = await loop.run_in_executor(None, self.detector._load_vad_model)
         logger.info("Silero-VAD model preloaded")
 
-    def detect_speech(self, audio_data: Union[list, np.ndarray]) -> VADResult:
+    def detect_speech(self, audio_data: list | np.ndarray) -> VADResult:
         """
         Detect voice activity in audio data
 
@@ -193,7 +194,7 @@ class SileroStateMachine:
         self.dbs.clear()
         self.bytes.clear()
 
-    def process(self, prob: float, float_chunk_np: np.ndarray) -> Union[VADResult, None]:
+    def process(self, prob: float, float_chunk_np: np.ndarray) -> VADResult | None:
         """
         Process an audio chunk
 
@@ -240,7 +241,7 @@ class SileroStateMachine:
                     self.state = VADState.ACTIVE
                     self.update(chunk_bytes, smoothed_prob, smoothed_db)
                     self.hit_count = 0
-                    logger.debug(f"[VAD] Speech started")
+                    logger.debug("[VAD] Speech started")
                     return VADResult(
                         audio_data=b"",
                         is_speech_start=True,
@@ -266,7 +267,7 @@ class SileroStateMachine:
                     self.state = VADState.INACTIVE
                     self.miss_count = 0
                     self._inactive_start_time = None  # Reset timeout timer
-                    logger.info(f"[VAD] Speech paused (ACTIVE→INACTIVE)")
+                    logger.info("[VAD] Speech paused (ACTIVE→INACTIVE)")
 
         elif self.state == VADState.INACTIVE:
             # Inactive state: waiting for speech to continue or end
@@ -276,15 +277,15 @@ class SileroStateMachine:
             import time
             if self._inactive_start_time is None:
                 self._inactive_start_time = time.time()
-                logger.debug(f"[VAD] Entered INACTIVE state, starting timeout timer")
+                logger.debug("[VAD] Entered INACTIVE state, starting timeout timer")
 
             inactive_duration = time.time() - self._inactive_start_time
-            
+
             # Print status every 0.5 seconds
             if not hasattr(self, "_last_logged_duration") or inactive_duration - self._last_logged_duration >= 0.5:
                 logger.info(f"[VAD] INACTIVE state has lasted {inactive_duration:.1f}s (timeout threshold: {self._inactive_timeout}s)")
                 self._last_logged_duration = inactive_duration
-            
+
             if inactive_duration > self._inactive_timeout:
                 # Timeout, force end
                 logger.info(f"[VAD] INACTIVE timeout ({inactive_duration:.2f}s), forcing end")

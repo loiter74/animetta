@@ -7,16 +7,16 @@ Responsibilities:
 3. Handle state graph execution and result return
 """
 
-import asyncio
-from typing import Optional, Any, Dict
+from typing import Any
+
 from loguru import logger
 
-from .state import AgentState, create_initial_state
 from .builder import create_default_graph
 from .interrupt_handler import get_interrupt_handler
-from .tool_manager import ToolManager
 from .observability import get_observability
+from .state import AgentState, create_initial_state
 from .stats_handler import StatsCallbackHandler
+from .tool_manager import ToolManager
 
 
 class LangGraphOrchestrator:
@@ -26,10 +26,10 @@ class LangGraphOrchestrator:
         self,
         service_context: Any,
         socketio: Any,
-        emotion_analyzer: Optional[Any] = None,
+        emotion_analyzer: Any | None = None,
         enable_tools: bool = False,
         enable_memory: bool = True,
-        tools_config: Optional[Dict[str, Any]] = None,
+        tools_config: dict[str, Any] | None = None,
     ):
         self.service_context = service_context
         self.socketio = socketio
@@ -45,7 +45,7 @@ class LangGraphOrchestrator:
         self._processing_audio = False  # guard against concurrent audio processing
 
         # Initialize tool manager
-        self.tool_manager: Optional[ToolManager] = None
+        self.tool_manager: ToolManager | None = None
 
         # Build LangGraph config (passed to nodes via config parameter)
         self._langgraph_config = {
@@ -135,11 +135,11 @@ class LangGraphOrchestrator:
     async def process_text(
         self,
         text: str,
-        user_id: Optional[str] = None,
-        user_name: Optional[str] = None,
-        channel_id: Optional[str] = None,
+        user_id: str | None = None,
+        user_name: str | None = None,
+        channel_id: str | None = None,
         **metadata,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Process text input"""
         if not self._is_running:
             return {"error": "Orchestrator not started"}
@@ -168,11 +168,11 @@ class LangGraphOrchestrator:
     async def process_audio(
         self,
         audio_data: bytes,
-        user_id: Optional[str] = None,
-        user_name: Optional[str] = None,
-        channel_id: Optional[str] = None,
+        user_id: str | None = None,
+        user_name: str | None = None,
+        channel_id: str | None = None,
         **metadata,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Process audio input"""
         if not self._is_running:
             return {"error": "Orchestrator not started"}
@@ -210,11 +210,11 @@ class LangGraphOrchestrator:
         self,
         input_type: str,
         user_text: str = "",
-        raw_audio: Optional[bytes] = None,
-        channel_id: Optional[str] = None,
-        user_id: Optional[str] = None,
-        user_name: Optional[str] = None,
-        metadata: Optional[Dict] = None,
+        raw_audio: bytes | None = None,
+        channel_id: str | None = None,
+        user_id: str | None = None,
+        user_name: str | None = None,
+        metadata: dict | None = None,
     ) -> AgentState:
         """Create initial state"""
         initial_state = create_initial_state(
@@ -234,7 +234,7 @@ class LangGraphOrchestrator:
 
         return initial_state
 
-    async def _run_graph(self, initial_state: AgentState) -> Dict[str, Any]:
+    async def _run_graph(self, initial_state: AgentState) -> dict[str, Any]:
         """Run the state graph, passing service context through LangGraph config"""
         # Start trace
         input_type = initial_state.get("input_type", "text")
@@ -259,7 +259,7 @@ class LangGraphOrchestrator:
         finally:
             detach_trace_context(_token)
 
-    def _clean_result(self, final_state: Dict[str, Any]) -> Dict[str, Any]:
+    def _clean_result(self, final_state: dict[str, Any]) -> dict[str, Any]:
         """Clean up return value"""
         return {
             "response_text": final_state.get("response_text", ""),
@@ -269,7 +269,7 @@ class LangGraphOrchestrator:
             "error": final_state.get("error"),
         }
 
-    def _get_persona_dict(self) -> Optional[Dict[str, Any]]:
+    def _get_persona_dict(self) -> dict[str, Any] | None:
         """Get persona config dict"""
         if self.service_context and self.service_context.config:
             persona = self.service_context.config.get_persona()
@@ -294,10 +294,10 @@ class LangGraphOrchestrator:
         session_id: str,
         service_context: Any,
         socketio: Any,
-        emotion_analyzer: Optional[Any] = None,
+        emotion_analyzer: Any | None = None,
         enable_tools: bool = False,
         enable_memory: bool = True,
-        tools_config: Optional[Dict[str, Any]] = None,
+        tools_config: dict[str, Any] | None = None,
     ) -> LangGraphOrchestrator:
         """Create orchestrator instance"""
         orchestrator = LangGraphOrchestrator(
@@ -314,7 +314,7 @@ class LangGraphOrchestrator:
         return orchestrator
 
     @classmethod
-    def get(cls, session_id: str) -> Optional[LangGraphOrchestrator]:
+    def get(cls, session_id: str) -> LangGraphOrchestrator | None:
         return cls._instances.get(session_id)
 
     @classmethod

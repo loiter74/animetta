@@ -1,21 +1,23 @@
 """Application configuration - service-driven configuration loading"""
 
+import contextlib
 import os
 import re
 from pathlib import Path
-from typing import Optional, Dict, Any
-from pydantic import Field, PrivateAttr, TypeAdapter
+from typing import Any
+
 from dotenv import load_dotenv
 from loguru import logger
+from pydantic import Field, PrivateAttr, TypeAdapter
 
+from .agent import AgentConfig
 from .core.base import BaseConfig
-from .system import SystemConfig
+from .persona import PersonaConfig
 from .providers.asr import ASRConfig
+from .providers.llm import LLMConfig
 from .providers.tts import TTSConfig
 from .providers.vad import VADConfig
-from .providers.llm import LLMConfig
-from .agent import AgentConfig
-from .persona import PersonaConfig
+from .system import SystemConfig
 
 # Create TypeAdapter for validating Discriminated Union types
 _asr_adapter = TypeAdapter(ASRConfig)
@@ -50,7 +52,7 @@ def expand_env_vars(value):
                     logger.debug(f"[expand_env_vars] GLM_API_KEY loaded: {env_value[:20]}...")
                     replace_var._logged = True
                 elif not env_value and not hasattr(replace_var, '_error_logged'):
-                    logger.error(f"[expand_env_vars] GLM_API_KEY not set!")
+                    logger.error("[expand_env_vars] GLM_API_KEY not set!")
                     replace_var._error_logged = True
 
             return env_value
@@ -110,27 +112,27 @@ _services_yaml_cache = None
 _services_config_logged = set()
 
 
-def _load_yaml_file(path: Path) -> Dict[str, Any]:
+def _load_yaml_file(path: Path) -> dict[str, Any]:
     """Load YAML file"""
     try:
         import yaml
     except ImportError:
         raise ImportError("Please install PyYAML: pip install pyyaml")
-    
+
     if not path.exists():
         return {}
-    
-    with open(path, 'r', encoding='utf-8') as f:
+
+    with open(path, encoding='utf-8') as f:
         data = yaml.safe_load(f)
     return data or {}
 
 
 # Cache loaded service configs to avoid duplicate logs
-_services_yaml_cache: Optional[Dict[str, Any]] = None
+_services_yaml_cache: dict[str, Any] | None = None
 _services_config_logged: set = set()
 
 
-def _load_service_config(service_type: str, service_name: str) -> Dict[str, Any]:
+def _load_service_config(service_type: str, service_name: str) -> dict[str, Any]:
     """
     Load configuration for a single service
 
@@ -173,7 +175,7 @@ class ServicesConfig(BaseConfig):
     asr: str = Field(default="mock", description="ASR service name")
     tts: str = Field(default="mock", description="TTS service name")
     agent: str = Field(default="mock", description="Agent service name (base LLM)")
-    local_llm: Optional[str] = Field(default=None, description="Local LLM service name (optional, skipped if not set)")
+    local_llm: str | None = Field(default=None, description="Local LLM service name (optional, skipped if not set)")
     vad: str = Field(default="mock", description="VAD service name")
 
 
@@ -185,22 +187,22 @@ class AppConfig(BaseConfig):
     """
     # Persona
     persona: str = Field(default="default", description="Persona name")
-    
+
     # Service composition
     services: ServicesConfig = Field(default_factory=ServicesConfig)
-    
+
     # System configuration
     system: SystemConfig = Field(default_factory=SystemConfig)
-    
+
     # AI service configuration (loaded from service config files)
-    asr: Optional[ASRConfig] = Field(default=None)
-    tts: Optional[TTSConfig] = Field(default=None)
-    agent: Optional[AgentConfig] = Field(default=None)
-    local_llm: Optional[LLMConfig] = Field(default=None, description="Local LLM config (no persona)")
-    vad: Optional[VADConfig] = Field(default=None)
-    
+    asr: ASRConfig | None = Field(default=None)
+    tts: TTSConfig | None = Field(default=None)
+    agent: AgentConfig | None = Field(default=None)
+    local_llm: LLMConfig | None = Field(default=None, description="Local LLM config (no persona)")
+    vad: VADConfig | None = Field(default=None)
+
     # Private fields
-    _persona: Optional[PersonaConfig] = PrivateAttr(default=None)
+    _persona: PersonaConfig | None = PrivateAttr(default=None)
 
     def get_persona(self) -> PersonaConfig:
         """Get persona configuration (lazy loaded)"""
@@ -208,7 +210,7 @@ class AppConfig(BaseConfig):
             self._persona = PersonaConfig.load(self.persona)
         return self._persona
 
-    def get_system_prompt(self, live2d_prompt: Optional[str] = None) -> str:
+    def get_system_prompt(self, live2d_prompt: str | None = None) -> str:
         """
         Get the complete system prompt
 
@@ -231,25 +233,25 @@ class AppConfig(BaseConfig):
         """
         # Load .env file into environment variables (so ${VAR} syntax works)
         _load_env_file()
-        
+
         path = Path(path)
         if not path.exists():
             raise FileNotFoundError(f"Configuration file not found: {path}")
-        
+
         main_config = _load_yaml_file(path)
         config = cls._load_services_mode(main_config)
-        
+
         # Expand environment variables
         config._apply_env_expansion()
-        
+
         # Apply environment variable overrides
         config._apply_env_overrides()
-        
+
         logger.debug(f"Configuration loaded: persona={config.persona}")
         return config
 
     @classmethod
-    def _load_services_mode(cls, main_config: Dict[str, Any]) -> "AppConfig":
+    def _load_services_mode(cls, main_config: dict[str, Any]) -> "AppConfig":
         """Services mode loading"""
         services_config = main_config.get("services", {})
 
@@ -298,13 +300,13 @@ class AppConfig(BaseConfig):
             asr_dict = expand_env_vars(asr_dict)
             self.asr = _asr_adapter.validate_python(asr_dict)
             logger.debug(f"ASR config after expansion: type={self.asr.type}")
-        
+
         if self.tts:
             tts_dict = self.tts.model_dump()
             tts_dict = expand_env_vars(tts_dict)
             self.tts = _tts_adapter.validate_python(tts_dict)
             logger.debug(f"TTS config after expansion: type={self.tts.type}")
-        
+
         if self.agent:
             agent_dict = self.agent.model_dump()
             logger.debug(f"Agent config before expansion: {agent_dict}")
@@ -343,7 +345,7 @@ class AppConfig(BaseConfig):
                 if api_key:
                     logger.debug(f"[AppConfig] Local LLM API Key set: {api_key[:20]}... (length: {len(api_key)})")
                 else:
-                    logger.debug(f"[AppConfig] Local LLM does not need API Key (local model)")
+                    logger.debug("[AppConfig] Local LLM does not need API Key (local model)")
 
     def _apply_env_overrides(self) -> None:
         """Apply environment variable overrides"""
@@ -353,23 +355,21 @@ class AppConfig(BaseConfig):
                 self.agent.llm_config.api_key = os.getenv("LLM_API_KEY")
             if os.getenv("LLM_MODEL") and hasattr(self.agent.llm_config, 'model'):
                 self.agent.llm_config.model = os.getenv("LLM_MODEL")
-        
+
         # ASR configuration
         if self.asr and hasattr(self.asr, 'api_key') and os.getenv("ASR_API_KEY"):
             self.asr.api_key = os.getenv("ASR_API_KEY")
-        
+
         # TTS configuration
         if self.tts and hasattr(self.tts, 'api_key') and os.getenv("TTS_API_KEY"):
             self.tts.api_key = os.getenv("TTS_API_KEY")
-        
+
         # System configuration
         if os.getenv("ANIMETTA_HOST"):
             self.system.host = os.getenv("ANIMETTA_HOST")
         if os.getenv("ANIMETTA_PORT"):
-            try:
+            with contextlib.suppress(ValueError):
                 self.system.port = int(os.getenv("ANIMETTA_PORT"))
-            except ValueError:
-                pass
 
     def validate(self) -> None:
         """Validate configuration — verify required providers are available."""
@@ -400,7 +400,7 @@ class AppConfig(BaseConfig):
                 logger.warning(f"[Config] {w}")
 
     @classmethod
-    def load(cls, config_path: Optional[str] = None) -> "AppConfig":
+    def load(cls, config_path: str | None = None) -> "AppConfig":
         """
         Smart config loading
 
@@ -424,11 +424,11 @@ class AppConfig(BaseConfig):
                 if p.exists():
                     path = str(p)
                     break
-        
+
         if path and Path(path).exists():
             logger.debug(f"Loading config from file: {path}")
             return cls.from_yaml(path)
-        
+
         raise FileNotFoundError(
             "Configuration file not found. Please create config/config.yaml or set the ANIMETTA_CONFIG environment variable"
         )

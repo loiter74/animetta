@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """
 Audio processor service interface
 
@@ -10,15 +11,13 @@ Responsibilities:
 """
 
 from abc import ABC, abstractmethod
-from typing import List, Callable, Optional, Any
-from typing import Dict
 
 
 class AudioProcessorInterface(ABC):
     """Audio processor interface"""
 
     @abstractmethod
-    async def process_chunk(self, audio_data: List[float]) -> None:
+    async def process_chunk(self, audio_data: list[float]) -> None:
         """
         Process audio data chunk
 

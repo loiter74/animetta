@@ -3,7 +3,9 @@ Live2D action queue management
 Manages Live2D action queuing and execution
 """
 
-from typing import Optional, Callable, Any
+from collections.abc import Callable
+from typing import Any
+
 from loguru import logger
 
 
@@ -18,7 +20,7 @@ class Live2DManager:
 
     def __init__(self):
         self._action_queue = None
-        self._execute_callback: Optional[Callable] = None
+        self._execute_callback: Callable | None = None
 
     @property
     def action_queue(self):

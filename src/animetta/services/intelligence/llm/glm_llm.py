@@ -1,20 +1,22 @@
 from __future__ import annotations
+
 """
 GLM (ZhipuAI) LLM implementation
 Uses the zhipuai SDK to call Zhipu AI's GLM models
 
 """
 
-from animetta.config.core.registry import ProviderRegistry
-from animetta.config.core.registry import ProviderRegistry
+import asyncio
+from collections.abc import AsyncIterator
+from typing import Any
 
-from typing import AsyncIterator, List, Dict, Any, Optional, TYPE_CHECKING
 from loguru import logger
 from zhipuai import ZhipuAI
-import asyncio
 
-from .interface import LLMInterface
+from animetta.config.core.registry import ProviderRegistry
+
 from .glm_message_converter import GLMMessageConverter, GLMToolConverter
+from .interface import LLMInterface
 
 
 @ProviderRegistry.register_service("llm", "glm")
@@ -24,7 +26,7 @@ class GLMLLM(LLMInterface):
     def __init__(self, config: GLMLLMConfig):
         self.config = config
         self.client = None
-        self._conversation_history: List[Dict[str, Any]] = []
+        self._conversation_history: list[dict[str, Any]] = []
         self._call_count = 0
         self._total_input_tokens = 0
         self._total_output_tokens = 0
@@ -36,7 +38,7 @@ class GLMLLM(LLMInterface):
     async def _ensure_client(self):
         if self.client is None:
             self.client = ZhipuAI(api_key=self.config.api_key, disable_token_cache=False)
-            logger.info(f"[GLM] ZhipuAI client initialized")
+            logger.info("[GLM] ZhipuAI client initialized")
 
     async def preload(self) -> None:
         """Preload the ZhipuAI API client (lightweight, idempotent)"""
@@ -48,8 +50,8 @@ class GLMLLM(LLMInterface):
     async def chat_stream(
         self,
         prompt: str,
-        system_prompt: Optional[str] = None,
-        tools: Optional[List[Any]] = None,
+        system_prompt: str | None = None,
+        tools: list[Any] | None = None,
     ) -> AsyncIterator[str]:
         await self._ensure_client()
 
@@ -86,8 +88,8 @@ class GLMLLM(LLMInterface):
     async def chat(
         self,
         user_input: str,
-        system_prompt: Optional[str] = None,
-        tools: Optional[List[Any]] = None,
+        system_prompt: str | None = None,
+        tools: list[Any] | None = None,
     ) -> str:
         await self._ensure_client()
 
@@ -120,10 +122,10 @@ class GLMLLM(LLMInterface):
     async def chat_with_tools(
         self,
         user_input: str,
-        tools: List[Any],
-        langchain_history: List[Any],
-        system_prompt: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        tools: list[Any],
+        langchain_history: list[Any],
+        system_prompt: str | None = None,
+    ) -> dict[str, Any]:
         """Conversation with tool calls (LangGraph specific)"""
         await self._ensure_client()
 
@@ -189,7 +191,7 @@ class GLMLLM(LLMInterface):
         except Exception as e:
             logger.debug(f"[GLM] Token tracking failed: {e}")
 
-    def get_token_usage(self) -> Dict[str, int]:
+    def get_token_usage(self) -> dict[str, int]:
         """Get cumulative token usage"""
         return {
             "input_tokens": self._total_input_tokens,
@@ -201,9 +203,9 @@ class GLMLLM(LLMInterface):
     def _build_messages(
         self,
         prompt: str,
-        system_prompt: Optional[str],
+        system_prompt: str | None,
         include_history: bool = True
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Build messages list"""
         messages = []
 
@@ -219,10 +221,10 @@ class GLMLLM(LLMInterface):
 
     def _build_langchain_messages(
         self,
-        langchain_history: List[Any],
-        system_prompt: Optional[str],
+        langchain_history: list[Any],
+        system_prompt: str | None,
         user_input: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Build GLM messages from LangChain history"""
         messages = []
 
@@ -237,7 +239,7 @@ class GLMLLM(LLMInterface):
         messages.append({"role": "user", "content": user_input})
         return messages
 
-    def _convert_tools_if_needed(self, tools: Optional[List[Any]]) -> Optional[List[Dict]]:
+    def _convert_tools_if_needed(self, tools: list[Any] | None) -> list[dict] | None:
         """Convert tool format if there are tool calls in history"""
         if not tools:
             return None
@@ -281,7 +283,7 @@ class GLMLLM(LLMInterface):
             self._conversation_history.insert(0, {"role": "system", "content": prompt})
         logger.debug(f"[GLM] System prompt updated: {prompt[:50]}...")
 
-    def get_history(self) -> List[Dict[str, Any]]:
+    def get_history(self) -> list[dict[str, Any]]:
         return self._conversation_history.copy()
 
     def handle_interrupt(self, heard_response: str = "") -> None:
@@ -292,7 +294,7 @@ class GLMLLM(LLMInterface):
         logger.info(f"[GLM] Conversation interrupted, partial response saved: {heard_response[:50] if heard_response else '(empty)'}...")
 
     @property
-    def max_tokens(self) -> Optional[int]:
+    def max_tokens(self) -> int | None:
         return self.config.max_tokens
 
     def set_max_tokens(self, max_tokens: int):

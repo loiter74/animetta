@@ -1,11 +1,12 @@
 from __future__ import annotations
+
 """Source separation — supports Demucs (default) and UVR."""
 
 import asyncio
 import os
 import shutil
-from pathlib import Path
 from abc import ABC, abstractmethod
+from pathlib import Path
 
 from loguru import logger
 
@@ -44,7 +45,7 @@ class DemucsSeparator(BaseSeparator):
 
     async def separate(self, audio_path: str) -> tuple[str, str]:
         """Separate audio into vocals and backing track.
-        
+
         Returns:
             Tuple of (vocals_path, backing_path).
         """
@@ -116,7 +117,7 @@ class DemucsSeparator(BaseSeparator):
             logger.info(f"Separation complete: vocals={vocals_path}, backing={backing_path}")
             return str(vocals_path), str(backing_path)
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             raise RuntimeError("Demucs processing timed out (>10 min)")
 
 
@@ -154,12 +155,12 @@ class UVRSeparator(BaseSeparator):
             return output
 
         try:
-            output = await asyncio.to_thread(_do_separate)
+            await asyncio.to_thread(_do_separate)
             # audio-separator outputs (vocals, instrumental)
             # Find the generated files
             inst_files = list(session_dir.glob("*(Instrumental)*.wav")) + list(session_dir.glob("*(no_vocals)*.wav"))
             vocal_files = list(session_dir.glob("*(Vocals)*.wav")) + list(session_dir.glob("*(vocals)*.wav"))
-            
+
             if vocal_files:
                 shutil.copy2(vocal_files[0], vocals_path)
             if inst_files:

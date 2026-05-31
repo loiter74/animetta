@@ -5,12 +5,13 @@ Manages Live2D action execution callbacks and handles
 desktop (Electron) client registration and events.
 """
 
-from typing import Dict, Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from loguru import logger
 
 if TYPE_CHECKING:
     from socketio import AsyncServer
+
     from ..live2d import Live2DManager
     from .base_handler import BaseSocketHandler
 
@@ -113,10 +114,10 @@ class Live2DHandlers:
 
     async def on_desktop_voice_start(self, sid: str, data: dict) -> None:
         """Start voice input."""
-        logger.info(f"[Desktop][Chat] Voice input started")
+        logger.info("[Desktop][Chat] Voice input started")
         await self.sio.emit("desktop.voice_started", {}, to=sid)
 
     async def on_desktop_voice_stop(self, sid: str, data: dict) -> None:
         """Stop voice input."""
-        logger.info(f"[Desktop][Chat] Voice input stopped")
+        logger.info("[Desktop][Chat] Voice input stopped")
         await self.sio.emit("desktop.voice_stopped", {}, to=sid)

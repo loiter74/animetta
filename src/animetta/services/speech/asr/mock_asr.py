@@ -1,15 +1,15 @@
 from __future__ import annotations
+
 """
 Mock ASR implementation - for testing and development
 """
 
-from typing import Union
 from pathlib import Path
+
+from animetta.config.core.registry import ProviderRegistry
 
 from .interface import ASRInterface
 
-
-from animetta.config.core.registry import ProviderRegistry
 
 @ProviderRegistry.register_service("asr", "mock")
 class MockASR(ASRInterface):
@@ -46,7 +46,7 @@ class MockASR(ASRInterface):
 
     async def transcribe(
         self,
-        audio_data: Union[bytes, str, Path],
+        audio_data: bytes | str | Path,
         **kwargs
     ) -> str:
         """Return simulated recognition result"""

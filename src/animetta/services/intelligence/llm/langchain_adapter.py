@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """
 LangChain ChatModel adapter
 
@@ -8,14 +9,15 @@ enabling advanced features such as bind_tools().
 Note: Actual tool calls are handled directly by llm_node.py; this adapter is for basic conversation only.
 """
 
-from typing import Any, Dict, List, Optional, Iterator, AsyncIterator, Sequence, TypeVar, Union
-from loguru import logger
+from collections.abc import Sequence
+from typing import Any, TypeVar
 
-from langchain_core.messages import BaseMessage, AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.callbacks.manager import CallbackManagerForLLMRun
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.outputs import ChatResult, ChatGeneration
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
+from langchain_core.outputs import ChatGeneration, ChatResult
 from langchain_core.tools import BaseTool
+from loguru import logger
 
 # Pydantic v1/v2 compatibility handling
 try:
@@ -25,7 +27,6 @@ except ImportError:
 
 # Import existing LLM interface
 from ..llm.interface import LLMInterface
-
 
 GenericChatModel = TypeVar("GenericChatModel", bound="LLMChatModelAdapter")
 
@@ -47,15 +48,15 @@ class LLMChatModelAdapter(BaseChatModel):
         return f"anima_{self.model_name}"
 
     @property
-    def lc_secrets(self) -> Dict[str, str]:
+    def lc_secrets(self) -> dict[str, str]:
         """Hide sensitive information"""
         return {}
 
     def _generate(
         self,
-        messages: List[BaseMessage],
-        stop: Optional[List[str]] = None,
-        run_manager: Optional[CallbackManagerForLLMRun] = None,
+        messages: list[BaseMessage],
+        stop: list[str] | None = None,
+        run_manager: CallbackManagerForLLMRun | None = None,
         **kwargs: Any,
     ) -> ChatResult:
         """
@@ -79,9 +80,9 @@ class LLMChatModelAdapter(BaseChatModel):
 
     async def _agenerate(
         self,
-        messages: List[BaseMessage],
-        stop: Optional[List[str]] = None,
-        run_manager: Optional[CallbackManagerForLLMRun] = None,
+        messages: list[BaseMessage],
+        stop: list[str] | None = None,
+        run_manager: CallbackManagerForLLMRun | None = None,
         **kwargs: Any,
     ) -> ChatResult:
         """
@@ -140,9 +141,9 @@ class LLMChatModelAdapter(BaseChatModel):
 
     def bind_tools(
         self,
-        tools: Sequence[Union[Dict[str, Any], type, BaseTool]],
+        tools: Sequence[dict[str, Any] | type | BaseTool],
         **kwargs: Any,
-    ) -> "LLMChatModelAdapter":
+    ) -> LLMChatModelAdapter:
         """
         Bind tools (placeholder method; actual tool calls are handled by llm_node.py)
         """

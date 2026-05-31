@@ -2,17 +2,18 @@
 
 import asyncio
 import base64
-from typing import Dict, Any, Optional
-from loguru import logger
 import os
 from functools import partial
+from typing import Any
+
 from langgraph.types import RunnableConfig
+from loguru import logger
 
 from .state import AgentState
 from .translation_state import translation_state
 
 
-def _get_from_config(config: Optional[RunnableConfig], key: str) -> Optional[Any]:
+def _get_from_config(config: RunnableConfig | None, key: str) -> Any | None:
     """Get value from LangGraph config"""
     if config:
         return config.get("configurable", {}).get(key)
@@ -21,8 +22,8 @@ def _get_from_config(config: Optional[RunnableConfig], key: str) -> Optional[Any
 
 async def output_node(
     state: AgentState,
-    config: Optional[RunnableConfig] = None,
-) -> Dict[str, Any]:
+    config: RunnableConfig | None = None,
+) -> dict[str, Any]:
     """
     Output distribution node
 
@@ -185,8 +186,9 @@ def _trim_leading_silence(audio_path: str) -> str | None:
     Returns None if no trimming was needed.
     """
     try:
-        from pydub import AudioSegment
         import tempfile
+
+        from pydub import AudioSegment
 
         audio = AudioSegment.from_file(audio_path).set_channels(1)
         threshold = -45  # dBFS
@@ -237,7 +239,7 @@ def _compute_volumes(audio_path: str) -> list:
 
 async def _store_conversation_to_memory(
     state: AgentState,
-    config: Optional[RunnableConfig],
+    config: RunnableConfig | None,
 ) -> None:
     """Store conversation turn into LivingMemorySystem V2."""
     session_id = state.get("session_id", "unknown")

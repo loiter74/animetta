@@ -1,18 +1,19 @@
 """LangGraph state graph builder"""
 
-from typing import Dict, Any, Optional, Literal, List
-from loguru import logger
-from langgraph.graph import StateGraph, END
-from langgraph.checkpoint.memory import MemorySaver
+from typing import Any, Literal
 
-from .state import AgentState
-from . import asr_node, llm_node, tts_node, emotion_node, output_node, tool_node
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.graph import END, StateGraph
+from loguru import logger
+
+from . import asr_node, emotion_node, llm_node, output_node, tool_node, tts_node
 from .personality_node import personality_node
+from .state import AgentState
 
 # Module-level external checkpointer — set by socketio_server at startup.
 # When set, create_default_graph() uses this instead of constructing a new
 # MemorySaver.  Enables Redis session sharing via --redis-url CLI flag.
-_external_checkpointer: Optional[Any] = None
+_external_checkpointer: Any | None = None
 
 
 def set_external_checkpointer(checkpointer: Any) -> None:
@@ -22,7 +23,7 @@ def set_external_checkpointer(checkpointer: Any) -> None:
     logger.info(f"[LangGraph] External checkpointer registered: {type(checkpointer).__name__}")
 
 
-def get_external_checkpointer() -> Optional[Any]:
+def get_external_checkpointer() -> Any | None:
     """Get the current external checkpointer (or None)."""
     return _external_checkpointer
 
@@ -31,9 +32,9 @@ def route_input(state: AgentState) -> Literal["asr", "llm"]:
     """Determine the starting node based on input type"""
     input_type = state.get("input_type", "text")
     if input_type == "audio" and state.get("raw_audio"):
-        logger.debug(f"[Router] Audio input -> ASR node")
+        logger.debug("[Router] Audio input -> ASR node")
         return "asr"
-    logger.debug(f"[Router] Text input -> LLM node")
+    logger.debug("[Router] Text input -> LLM node")
     return "llm"
 
 
@@ -41,17 +42,17 @@ def should_use_tools(state: AgentState) -> Literal["tools", "tts"]:
     """Check if LLM requested tool calls"""
     tool_calls = state.get("tool_calls")
     if tool_calls:
-        logger.debug(f"[Router] LLM requested tool calls -> Tool node")
+        logger.debug("[Router] LLM requested tool calls -> Tool node")
         return "tools"
-    logger.debug(f"[Router] LLM direct reply -> TTS node")
+    logger.debug("[Router] LLM direct reply -> TTS node")
     return "tts"
 
 
 def build_graph(
-    checkpointer: Optional[Any] = None,
+    checkpointer: Any | None = None,
     enable_tools: bool = False,
-    tools: Optional[List[Any]] = None,
-    tools_map: Optional[Dict[str, Any]] = None,
+    tools: list[Any] | None = None,
+    tools_map: dict[str, Any] | None = None,
 ) -> StateGraph:
     """
     Build the LangGraph state graph
@@ -128,8 +129,8 @@ def build_graph(
 def create_default_graph(
     enable_memory: bool = True,
     enable_tools: bool = False,
-    tools: Optional[List[Any]] = None,
-    tools_map: Optional[Dict[str, Any]] = None,
+    tools: list[Any] | None = None,
+    tools_map: dict[str, Any] | None = None,
 ) -> StateGraph:
     """
     Create a state graph with default configuration

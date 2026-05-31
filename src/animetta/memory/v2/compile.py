@@ -6,13 +6,12 @@ Lower layers need more atoms to trigger compilation, higher layers consolidate.
 
 from __future__ import annotations
 
-import asyncio
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from typing import Callable
+from datetime import UTC, datetime
 
-from animetta.memory.v2.atom import MemoryAtom, Layer, Relation, RelationType
+from animetta.memory.v2.atom import Layer, MemoryAtom, Relation, RelationType
 
 logger = logging.getLogger(__name__)
 
@@ -142,7 +141,7 @@ class CompileEngine:
         avg_dominance = sum(a.emotion_dominance for a in source_atoms) / len(source_atoms)
 
         # Average confidence weighted by recency
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         weights = []
         for a in source_atoms:
             hours_old = (now - a.occurred_at).total_seconds() / 3600
@@ -158,7 +157,7 @@ class CompileEngine:
             layer=target_layer,
             content=combined,
             summary=summary,
-            occurred_at=datetime.now(timezone.utc),
+            occurred_at=datetime.now(UTC),
             confidence=min(1.0, avg_conf),
             salience=min(1.0, avg_conf),
             emotion_valence=avg_valence,
@@ -192,7 +191,7 @@ class CompileEngine:
         - Haven't been compiled yet (no outgoing DERIVES relation)
         - Are old enough
         """
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         eligible = []
         for a in atoms:
             if a.layer != source_layer:

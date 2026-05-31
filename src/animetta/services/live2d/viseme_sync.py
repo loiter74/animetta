@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """
 Viseme Lip Sync Engine
 Viseme-based lip sync engine, ported from open-yachiyo
@@ -6,20 +7,20 @@ Viseme-based lip sync engine, ported from open-yachiyo
 Uses spectral analysis to infer viseme weights for more natural lip sync
 """
 
-import numpy as np
-from typing import Dict, List, Tuple, Optional, Any
 from dataclasses import dataclass
-from loguru import logger
+from typing import Any
+
+import numpy as np
 
 
 @dataclass
 class VisemeConfig:
     """Viseme configuration"""
     # Band configuration (Hz)
-    bands: Dict[str, Tuple[int, int]] = None
+    bands: dict[str, tuple[int, int]] = None
 
     # Viseme weight configuration
-    weights: Dict[str, List[float]] = None
+    weights: dict[str, list[float]] = None
 
     # Smoothing configuration
     attack: float = 0.02  # Attack time (seconds)
@@ -109,7 +110,7 @@ class VisemeLipSync:
         self,
         audio_data: np.ndarray,
         voice_energy: float
-    ) -> List[float]:
+    ) -> list[float]:
         """
         Extract viseme features
 
@@ -149,7 +150,7 @@ class VisemeLipSync:
 
         return features
 
-    def infer_viseme_weights(self, features: List[float]) -> np.ndarray:
+    def infer_viseme_weights(self, features: list[float]) -> np.ndarray:
         """
         Infer viseme weights
 
@@ -163,10 +164,7 @@ class VisemeLipSync:
 
         # Normalize
         total = np.sum(features_array)
-        if total > 0:
-            normalized = features_array / total
-        else:
-            normalized = np.zeros_like(features_array)
+        normalized = features_array / total if total > 0 else np.zeros_like(features_array)
 
         # Calculate weight for each viseme
         weights = []
@@ -199,7 +197,7 @@ class VisemeLipSync:
         self,
         audio_data: np.ndarray,
         voice_energy: float = 1.0
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Process audio and return mouth parameters
 
@@ -226,7 +224,7 @@ class VisemeLipSync:
         self,
         weights: np.ndarray,
         voice_energy: float
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Convert viseme weights to Live2D parameters
 

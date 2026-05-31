@@ -4,10 +4,11 @@ A complete implementation independent of the legacy EmotionExtractor
 """
 
 import re
-from typing import List, Optional, Dict, Any
+from typing import Any
+
 from loguru import logger
 
-from .base import IEmotionAnalyzer, EmotionData
+from .base import EmotionData, IEmotionAnalyzer
 
 
 class EmotionTag:
@@ -28,7 +29,7 @@ class EmotionTag:
 
 class EmotionExtractionResult:
     """Emotion extraction result (standalone implementation)"""
-    def __init__(self, cleaned_text: str, emotions: List[EmotionTag], has_emotions: bool):
+    def __init__(self, cleaned_text: str, emotions: list[EmotionTag], has_emotions: bool):
         self.cleaned_text = cleaned_text
         self.emotions = emotions
         self.has_emotions = has_emotions
@@ -70,7 +71,7 @@ class StandaloneLLMTagAnalyzer(IEmotionAnalyzer):
 
     def __init__(
         self,
-        valid_emotions: Optional[List[str]] = None,
+        valid_emotions: list[str] | None = None,
         confidence_mode: str = "binary"
     ):
         """
@@ -139,7 +140,7 @@ class StandaloneLLMTagAnalyzer(IEmotionAnalyzer):
             has_emotions=len(emotions) > 0
         )
 
-    def extract(self, text: str, context: Optional[Dict[str, Any]] = None) -> EmotionData:
+    def extract(self, text: str, context: dict[str, Any] | None = None) -> EmotionData:
         """
         Extract emotion tags from text (new interface format)
 
@@ -193,7 +194,7 @@ class StandaloneLLMTagAnalyzer(IEmotionAnalyzer):
             # Return default emotion
             return self._get_default_emotion_data(text)
 
-    def _remove_segments(self, text: str, segments: List[tuple]) -> str:
+    def _remove_segments(self, text: str, segments: list[tuple]) -> str:
         """
         Remove specified segments from text
 
@@ -225,14 +226,14 @@ class StandaloneLLMTagAnalyzer(IEmotionAnalyzer):
             return 1.0
         elif self._confidence_mode == "frequency":
             emotion_count = len(result.emotions)
-            text_length = len(result.cleaned_text) or 1
+            len(result.cleaned_text) or 1
             return min(emotion_count / 10.0, 1.0)
         elif self._confidence_mode == "normalized":
             return 1.0
         else:
             return 1.0
 
-    def _build_timeline(self, result: EmotionExtractionResult) -> List[Dict[str, Any]]:
+    def _build_timeline(self, result: EmotionExtractionResult) -> list[dict[str, Any]]:
         """Build timeline data"""
         timeline = []
         for emotion_tag in result.emotions:
@@ -250,7 +251,7 @@ class StandaloneLLMTagAnalyzer(IEmotionAnalyzer):
         else:
             return "neutral"
 
-    def _count_emotions(self, result: EmotionExtractionResult) -> Dict[str, int]:
+    def _count_emotions(self, result: EmotionExtractionResult) -> dict[str, int]:
         """Count occurrences of each emotion"""
         counts = {}
         for emotion_tag in result.emotions:
@@ -283,7 +284,7 @@ class StandaloneLLMTagAnalyzer(IEmotionAnalyzer):
         """Priority (highest)"""
         return 1
 
-    def get_supported_emotions(self) -> List[str]:
+    def get_supported_emotions(self) -> list[str]:
         """Get supported emotions list"""
         if self.valid_emotions:
             return list(self.valid_emotions)

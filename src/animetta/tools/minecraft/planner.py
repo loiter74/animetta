@@ -5,11 +5,9 @@ Uses Anima's existing LLM service to plan Minecraft bot behaviors.
 Outputs structured JSON plans that the Node.js state machine can execute.
 """
 import json
-from typing import Optional, Any
 from dataclasses import dataclass, field
 
 from loguru import logger
-
 
 # ── Data models ──
 
@@ -90,13 +88,13 @@ class MinecraftPlanner:
 
     def __init__(self, llm_service=None):
         self._llm = llm_service
-        self._last_plan: Optional[Plan] = None
+        self._last_plan: Plan | None = None
 
     def set_llm(self, llm_service):
         """Set or update the LLM service"""
         self._llm = llm_service
 
-    async def plan(self, goal: str, context: Optional[dict] = None) -> Plan:
+    async def plan(self, goal: str, context: dict | None = None) -> Plan:
         """
         Decompose a natural language goal into a Plan.
 
@@ -155,7 +153,7 @@ class MinecraftPlanner:
             logger.error(f"[MinecraftPlanner] Planning failed: {e}")
             raise PlannerError(f"Planning failed: {e}")
 
-    async def replan(self, failed_step_index: int, error: str, context: Optional[dict] = None) -> Plan:
+    async def replan(self, failed_step_index: int, error: str, context: dict | None = None) -> Plan:
         """
         Replan after a step fails. Preserves completed steps, re-plans the rest.
 
@@ -215,7 +213,7 @@ class MinecraftPlanner:
                 step.params = {}
 
     @property
-    def last_plan(self) -> Optional[Plan]:
+    def last_plan(self) -> Plan | None:
         return self._last_plan
 
 
@@ -227,14 +225,14 @@ class ModeSelector:
     def __init__(self, planner: MinecraftPlanner):
         self._planner = planner
         self._has_goal = False
-        self._goal: Optional[str] = None
+        self._goal: str | None = None
 
-    def set_goal(self, goal: Optional[str]):
+    def set_goal(self, goal: str | None):
         """Set a natural language goal, or None to clear"""
         self._goal = goal
         self._has_goal = bool(goal and goal.strip())
 
-    async def select_mode(self, context: Optional[dict] = None) -> dict:
+    async def select_mode(self, context: dict | None = None) -> dict:
         """
         Select execution mode and generate plan if needed.
         Returns: {"mode": "planner"|"rule", "plan": [...]|null}

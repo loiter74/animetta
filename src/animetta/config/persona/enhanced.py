@@ -3,8 +3,9 @@ Enhanced persona configuration system
 Supports complex persona definitions, including emotion rules, response templates, example conversations, etc.
 """
 
-from typing import Optional, List, Dict, Any
 from pathlib import Path
+from typing import Any
+
 import yaml
 
 
@@ -25,22 +26,22 @@ class EnhancedPersonaBuilder:
         self.persona_path = Path(persona_path)
         self.persona_data = self._load_persona()
 
-    def _load_persona(self) -> Dict[str, Any]:
+    def _load_persona(self) -> dict[str, Any]:
         """Load persona YAML file"""
         if not self.persona_path.exists():
             raise FileNotFoundError(f"Persona file not found: {self.persona_path}")
 
-        with open(self.persona_path, 'r', encoding='utf-8') as f:
+        with open(self.persona_path, encoding='utf-8') as f:
             data = yaml.safe_load(f)
 
         return data
 
     def build_system_prompt(
         self,
-        user_context: Optional[Dict] = None,
-        mood_override: Optional[str] = None,
+        user_context: dict | None = None,
+        mood_override: str | None = None,
         streaming_mode: bool = False,
-        memory_traits: Optional[List[str]] = None,
+        memory_traits: list[str] | None = None,
     ) -> str:
         """
         Build the complete system prompt with optional personality layers.
@@ -235,7 +236,7 @@ class EnhancedPersonaBuilder:
 
     # ── Memory-influenced traits layer (Phase 6.4) ──────
 
-    def _build_memory_traits(self, traits: List[str]) -> str:
+    def _build_memory_traits(self, traits: list[str]) -> str:
         """Build memory-influenced personality traits section."""
         if not traits:
             return ""
@@ -252,7 +253,7 @@ class EnhancedPersonaBuilder:
 
         return "\n".join(parts)
 
-    def _build_mbti_profile(self, mbti_data: Optional[Dict[str, Any]] = None) -> str:
+    def _build_mbti_profile(self, mbti_data: dict[str, Any] | None = None) -> str:
         """Build MBTI personality profile section.
 
         Args:
@@ -418,7 +419,7 @@ class EnhancedPersonaBuilder:
 
         return "\n".join(parts)
 
-    def _build_user_context(self, user_context: Dict) -> str:
+    def _build_user_context(self, user_context: dict) -> str:
         """Build user context section (dynamic part)"""
         parts = ["## 用户信息"]
 
@@ -434,7 +435,7 @@ class EnhancedPersonaBuilder:
         return "\n".join(parts)
 
     @classmethod
-    def from_yaml(cls, persona_name: str, personas_dir: Optional[str] = None) -> "EnhancedPersonaBuilder":
+    def from_yaml(cls, persona_name: str, personas_dir: str | None = None) -> "EnhancedPersonaBuilder":
         """
         Create builder from persona name
 
@@ -454,15 +455,15 @@ class EnhancedPersonaBuilder:
 
         return cls(str(persona_path))
 
-    def get_metadata(self) -> Dict[str, Any]:
+    def get_metadata(self) -> dict[str, Any]:
         """Get persona metadata"""
         return self.persona_data.get("metadata", {})
 
 
 def create_enhanced_system_prompt(
     persona_name: str,
-    user_context: Optional[Dict] = None,
-    personas_dir: Optional[str] = None
+    user_context: dict | None = None,
+    personas_dir: str | None = None
 ) -> str:
     """
     Convenience function: create an enhanced system prompt

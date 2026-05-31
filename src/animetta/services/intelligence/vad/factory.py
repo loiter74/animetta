@@ -1,9 +1,10 @@
 from __future__ import annotations
+
 """
 VAD Factory - Create VAD instances based on configuration
 """
 
-from typing import List
+
 from loguru import logger
 
 from .interface import VADInterface
@@ -47,14 +48,14 @@ class VADFactory:
     def create(provider: str, **kwargs) -> VADInterface:
         """
         Create VAD instance by provider
-        
+
         Args:
             provider: Provider name
             **kwargs: Parameters passed to the implementation
-            
+
         Returns:
             VADInterface: VAD instance
-            
+
         Raises:
             ValueError: Unknown provider
         """
@@ -97,8 +98,8 @@ class VADFactory:
             logger.warning(f"Unknown VAD provider: {provider}, using Mock implementation")
             from .mock_vad import MockVAD
             return MockVAD()
-    
+
     @staticmethod
-    def get_available_providers() -> List[str]:
+    def get_available_providers() -> list[str]:
         """Get a list of all available providers"""
         return ["mock", "silero"]

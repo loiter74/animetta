@@ -7,7 +7,7 @@ Uses the strategy pattern and plugin architecture for dynamic extensibility.
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional
+from typing import Any
 
 
 @dataclass
@@ -41,10 +41,10 @@ class EmotionData:
     """
     primary: str
     confidence: float
-    timeline: List[Dict[str, Any]] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    timeline: list[dict[str, Any]] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert to dictionary (for serialization and logging)
 
@@ -95,7 +95,7 @@ class IEmotionAnalyzer(ABC):
     """
 
     @abstractmethod
-    def extract(self, text: str, context: Optional[Dict[str, Any]] = None) -> EmotionData:
+    def extract(self, text: str, context: dict[str, Any] | None = None) -> EmotionData:
         """
         Extract emotion information from text
 
@@ -177,7 +177,7 @@ class IEmotionAnalyzer(ABC):
         """
         return text is not None and len(text.strip()) > 0
 
-    def get_supported_emotions(self) -> List[str]:
+    def get_supported_emotions(self) -> list[str]:
         """
         Get the list of supported emotions (optional method)
 

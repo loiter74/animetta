@@ -1,15 +1,16 @@
 from __future__ import annotations
+
 """
 Preset Loader
 Loads Live2D action preset configuration (YAML format)
 Based on open-yachiyo's live2d-presets.yaml
 """
 
-import yaml
-import os
-from pathlib import Path
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+import yaml
 from loguru import logger
 
 from .action_queue import ActionFactory, ActionMessage
@@ -21,23 +22,23 @@ class EmotePreset:
     name: str
     intensity: str  # low, medium, high
     expression: str
-    params: List[Dict[str, Any]]
+    params: list[dict[str, Any]]
 
 
 @dataclass
 class GesturePreset:
     """Gesture preset"""
     name: str
-    expression: Optional[str]
-    motion_group: Optional[str]
-    motion_index: Optional[int]
+    expression: str | None
+    motion_group: str | None
+    motion_index: int | None
 
 
 @dataclass
 class ReactPreset:
     """Reaction preset"""
     name: str
-    actions: List[Dict[str, Any]]
+    actions: list[dict[str, Any]]
 
 
 class PresetLoader:
@@ -60,7 +61,7 @@ class PresetLoader:
             config_path = project_root / "config" / "live2d-presets.yaml"
 
         self.config_path = Path(config_path)
-        self.presets: Dict[str, Any] = {}
+        self.presets: dict[str, Any] = {}
         self._load_presets()
 
     def _load_presets(self):
@@ -70,13 +71,13 @@ class PresetLoader:
             return
 
         try:
-            with open(self.config_path, 'r', encoding='utf-8') as f:
+            with open(self.config_path, encoding='utf-8') as f:
                 self.presets = yaml.safe_load(f)
             logger.info(f"[PresetLoader] Preset loaded successfully: {self.config_path}")
         except Exception as e:
             logger.error(f"[PresetLoader] Failed to load preset: {e}")
 
-    def get_emote(self, emotion: str, intensity: str = "medium") -> Optional[Dict]:
+    def get_emote(self, emotion: str, intensity: str = "medium") -> dict | None:
         """
         Get emotion preset
 
@@ -97,7 +98,7 @@ class PresetLoader:
 
         return intensity_data
 
-    def get_gesture(self, gesture_name: str) -> Optional[Dict]:
+    def get_gesture(self, gesture_name: str) -> dict | None:
         """
         Get gesture preset
 
@@ -110,7 +111,7 @@ class PresetLoader:
         gesture_presets = self.presets.get('gesture', {})
         return gesture_presets.get(gesture_name)
 
-    def get_react(self, react_name: str) -> Optional[List[Dict]]:
+    def get_react(self, react_name: str) -> list[dict] | None:
         """
         Get reaction preset
 
@@ -123,7 +124,7 @@ class PresetLoader:
         react_presets = self.presets.get('react', {})
         return react_presets.get(react_name)
 
-    def create_emote_action(self, emotion: str, intensity: str = "medium") -> Optional[ActionMessage]:
+    def create_emote_action(self, emotion: str, intensity: str = "medium") -> ActionMessage | None:
         """
         Create an emotion action
 
@@ -170,7 +171,7 @@ class PresetLoader:
 
         return None
 
-    def create_gesture_action(self, gesture_name: str) -> Optional[ActionMessage]:
+    def create_gesture_action(self, gesture_name: str) -> ActionMessage | None:
         """
         Create a gesture action
 
@@ -214,7 +215,7 @@ class PresetLoader:
 
         return None
 
-    def create_react_action(self, react_name: str) -> Optional[ActionMessage]:
+    def create_react_action(self, react_name: str) -> ActionMessage | None:
         """
         Create a reaction action
 
@@ -245,21 +246,21 @@ class PresetLoader:
             duration_sec=total_duration
         )
 
-    def list_emotes(self) -> List[str]:
+    def list_emotes(self) -> list[str]:
         """List all available emotions"""
         return list(self.presets.get('emote', {}).keys())
 
-    def list_gestures(self) -> List[str]:
+    def list_gestures(self) -> list[str]:
         """List all available gestures"""
         return list(self.presets.get('gesture', {}).keys())
 
-    def list_reacts(self) -> List[str]:
+    def list_reacts(self) -> list[str]:
         """List all available reactions"""
         return list(self.presets.get('react', {}).keys())
 
 
 # Global instance
-_preset_loader: Optional[PresetLoader] = None
+_preset_loader: PresetLoader | None = None
 
 
 def get_preset_loader() -> PresetLoader:

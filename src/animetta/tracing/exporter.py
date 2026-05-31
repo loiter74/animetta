@@ -10,12 +10,11 @@ Usage:
 
 import json
 import logging
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from opentelemetry.sdk.trace import ReadableSpan
 from opentelemetry.sdk.trace.export import SpanExporter, SpanExportResult
 from opentelemetry.trace import StatusCode
-
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +53,7 @@ class StatsSpanExporter(SpanExporter):
         """Called by BatchSpanProcessor with a batch of finished spans."""
         try:
             import asyncio
-            loop = asyncio.get_running_loop()
+            asyncio.get_running_loop()
             asyncio.ensure_future(self._async_export(spans))
             return SpanExportResult.SUCCESS
         except RuntimeError:
@@ -94,9 +93,8 @@ class StatsSpanExporter(SpanExporter):
         attributes_json = json.dumps(dict(span.attributes), ensure_ascii=False) if span.attributes else None
 
         # Events as JSON
-        events_json = None
         if span.events:
-            events_json = json.dumps(
+            json.dumps(
                 [{"name": e.name, "timestamp": e.timestamp, "attributes": dict(e.attributes)}
                  for e in span.events],
                 ensure_ascii=False,

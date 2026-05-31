@@ -1,8 +1,8 @@
 """Provider configuration module"""
 
-from .llm import LLMConfig, LLMBaseConfig
-from .asr import ASRConfig, ASRBaseConfig
-from .tts import TTSConfig, TTSBaseConfig
+from .asr import ASRBaseConfig, ASRConfig
+from .llm import LLMBaseConfig, LLMConfig
+from .tts import TTSBaseConfig, TTSConfig
 
 __all__ = [
     # LLM

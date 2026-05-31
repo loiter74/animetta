@@ -15,12 +15,10 @@ Usage in LangGraph node functions::
 """
 
 import uuid
-from typing import Optional
 
-from opentelemetry import trace, context as otel_context
+from opentelemetry import context as otel_context
+from opentelemetry import trace
 from opentelemetry.trace import NonRecordingSpan, SpanContext, TraceFlags
-
-from .exporter import _format_trace_id, _format_span_id
 
 
 def _uuid_to_otel_trace_id(uuid_str: str) -> int:
@@ -38,7 +36,7 @@ def _make_otel_span_context(trace_id_int: int) -> SpanContext:
     )
 
 
-def attach_trace_context(trace_id_str: str) -> Optional[object]:
+def attach_trace_context(trace_id_str: str) -> object | None:
     """Attach an OTel SpanContext derived from a StatsHandler trace_id.
 
     After calling this, any ``tracer.start_span()`` in the same async context
@@ -64,7 +62,7 @@ def attach_trace_context(trace_id_str: str) -> Optional[object]:
         return None
 
 
-def detach_trace_context(token: Optional[object]) -> None:
+def detach_trace_context(token: object | None) -> None:
     """Detach a previously attached OTel context."""
     if token is not None:
         otel_context.detach(token)

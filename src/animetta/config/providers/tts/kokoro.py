@@ -1,16 +1,16 @@
 """Kokoro TTS provider configuration"""
 
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal
+
 from pydantic import Field
 
 from ...core.registry import ProviderRegistry
 from .base import TTSBaseConfig
 
-
 # Default GLaDOS effect chain parameters
 # Based on SoX effects chain for electronic/robotic voice:
 # pitch → stretch → overdrive → chorus → bandpass → compand → gain
-DEFAULT_GLADOS_EFFECTS: Dict[str, Any] = {
+DEFAULT_GLADOS_EFFECTS: dict[str, Any] = {
     "enabled": True,
     "pitch": -300,        # cents: lower = more deep/masculine
     "stretch": 1.05,      # ratio: >1 = slower, more deliberate
@@ -44,7 +44,7 @@ class KokoroTTSConfig(TTSBaseConfig):
         default="hexgrad/Kokoro-82M",
         description="HuggingFace repo ID for model weights and voice packs"
     )
-    model_path: Optional[str] = Field(
+    model_path: str | None = Field(
         default=None,
         description="Local path to model checkpoint. If None, downloads from HF."
     )
@@ -62,7 +62,7 @@ class KokoroTTSConfig(TTSBaseConfig):
         le=2.0,
         description="Speech speed multiplier"
     )
-    glados_effect: Optional[Dict[str, Any]] = Field(
+    glados_effect: dict[str, Any] | None = Field(
         default=None,
         description=(
             "GLaDOS-style audio effect parameters. Set to a dict with effect params "

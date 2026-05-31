@@ -5,11 +5,10 @@ Converts Alertmanager alerts to Discord embed format
 and sends via webhook.
 """
 
-import os
 import logging
+import os
 
 import httpx
-
 
 logger = logging.getLogger(__name__)
 

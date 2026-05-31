@@ -1,7 +1,9 @@
 from __future__ import annotations
+
 """Bilibili audio downloader — yt-dlp wrapper. Extracts video title for naming."""
 
 import asyncio
+import contextlib
 import hashlib
 import re
 from pathlib import Path
@@ -30,12 +32,11 @@ class BilibiliDownloader:
 
     async def fetch_lyrics_lrc(self, url: str) -> str | None:
         """Fetch LRC lyrics from B站 audio API. Returns LRC string or None.
-        
+
         For au (audio) URLs: directly GET the lyrics API.
         For BV (video) URLs: try to find associated audio first.
         Returns None when lyrics are unavailable (fallback to whisper).
         """
-        import httpx
 
         # Try AU audio URLs first
         au_id = self.extract_au_id(url)
@@ -111,7 +112,7 @@ class BilibiliDownloader:
 
     async def download(self, url: str) -> tuple[str, str, str]:
         """Download audio track from Bilibili URL.
-        
+
         Returns:
             Tuple of (file_path, video_title, bv_id).
         """
@@ -129,15 +130,11 @@ class BilibiliDownloader:
             meta_path = self.output_dir / f"{url_hash}.meta"
             cached_title = title
             if meta_path.exists() and not title:
-                try:
+                with contextlib.suppress(Exception):
                     cached_title = meta_path.read_text(encoding="utf-8").strip()
-                except Exception:
-                    pass
             else:
-                try:
+                with contextlib.suppress(Exception):
                     meta_path.write_text(title, encoding="utf-8")
-                except Exception:
-                    pass
             logger.info(f"Using cached download: {output_path} (title: {cached_title})")
             return str(output_path), cached_title, bv_id
 

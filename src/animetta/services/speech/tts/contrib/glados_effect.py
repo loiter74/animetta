@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """
 GLaDOS-style audio effect processor using SoX effects.
 
@@ -20,11 +21,9 @@ import io
 import os
 import subprocess
 import tempfile
-import wave
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any
 
-import numpy as np
 import torch
 import torchaudio
 from loguru import logger
@@ -36,7 +35,7 @@ KOKORO_SAMPLE_RATE = 24000
 TARGET_SAMPLE_RATE = 24000
 
 # Common SoX installation paths to search
-_SOX_CANDIDATE_PATHS: List[str] = [
+_SOX_CANDIDATE_PATHS: list[str] = [
     # Windows (winget/choco installs)
     r"C:\Program Files (x86)\sox\sox.exe",
     r"C:\Program Files\sox\sox.exe",
@@ -50,7 +49,7 @@ _SOX_CANDIDATE_PATHS: List[str] = [
 ]
 
 
-def _find_sox() -> Optional[str]:
+def _find_sox() -> str | None:
     """
     Find the sox executable by searching PATH and common locations.
 
@@ -93,20 +92,20 @@ def _find_sox() -> Optional[str]:
     return None
 
 
-def _build_effects_cli_args(params: Dict[str, Any]) -> List[str]:
+def _build_effects_cli_args(params: dict[str, Any]) -> list[str]:
     """
     Build SoX CLI effect arguments from a parameter dict.
 
     Returns a flat list of CLI args suitable for: sox input.wav output.wav <args>
     """
-    args: List[str] = []
+    args: list[str] = []
     effects_list = _build_effects_list(params)
     for effect in effects_list:
         args.extend(effect)
     return args
 
 
-def _build_effects_list(params: Dict[str, Any]) -> List[List[str]]:
+def _build_effects_list(params: dict[str, Any]) -> list[list[str]]:
     """
     Build a SoX effects list from a parameter dict.
 
@@ -120,7 +119,7 @@ def _build_effects_list(params: Dict[str, Any]) -> List[List[str]]:
     Returns:
         List of SoX effect argument lists, e.g. [['pitch', '-300'], ...]
     """
-    effects: List[List[str]] = []
+    effects: list[list[str]] = []
 
     # Step 1: Pitch shift (cents, negative = lower)
     pitch = params.get("pitch", -300)
@@ -170,7 +169,7 @@ class GladosEffectProcessor:
         processed_audio = await processor.process(raw_audio_bytes)
     """
 
-    def __init__(self, params: Optional[Dict[str, Any]] = None):
+    def __init__(self, params: dict[str, Any] | None = None):
         """
         Initialize the effect processor.
 
@@ -180,8 +179,8 @@ class GladosEffectProcessor:
         """
         self.params = params or {}
         self._enabled = self.params.get("enabled", True) and bool(self.params)
-        self._sox_path: Optional[str] = None
-        self._sox_available: Optional[bool] = None
+        self._sox_path: str | None = None
+        self._sox_available: bool | None = None
         self._using_cli: bool = False
 
     @property
@@ -309,7 +308,7 @@ class GladosEffectProcessor:
 
             effects = _build_effects_list(self.params)
 
-            if TARGET_SAMPLE_RATE != sr:
+            if sr != TARGET_SAMPLE_RATE:
                 effects.append(["rate", str(TARGET_SAMPLE_RATE)])
 
             processed_waveform, new_sr = torchaudio.sox_effects.apply_effects_tensor(

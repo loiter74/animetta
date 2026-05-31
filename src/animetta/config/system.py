@@ -1,6 +1,7 @@
 """System configuration"""
 
 from pydantic import Field
+
 from .core.base import BaseConfig
 
 

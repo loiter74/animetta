@@ -5,10 +5,11 @@ Calculates timeline segments based on emotion intensity.
 High-intensity emotions get more time and higher intensity values.
 """
 
-from typing import List, Optional, Dict, Any
+from typing import Any
+
 from loguru import logger
 
-from .base import ITimelineStrategy, TimelineSegment, TimelineConfig
+from .base import ITimelineStrategy, TimelineConfig, TimelineSegment
 
 
 class IntensityBasedStrategy(ITimelineStrategy):
@@ -58,7 +59,7 @@ class IntensityBasedStrategy(ITimelineStrategy):
     def __init__(
         self,
         config: TimelineConfig = None,
-        emotion_intensities: Optional[Dict[str, float]] = None,
+        emotion_intensities: dict[str, float] | None = None,
         min_intensity: float = 0.2,
         intensity_factor: float = 0.5,
         enable_smoothing: bool = True
@@ -81,12 +82,12 @@ class IntensityBasedStrategy(ITimelineStrategy):
 
     def calculate(
         self,
-        emotions: List[str],
+        emotions: list[str],
         text: str,
         audio_duration: float,
         config: TimelineConfig = None,
         **kwargs
-    ) -> List[TimelineSegment]:
+    ) -> list[TimelineSegment]:
         """
         Calculate the emotion timeline
 
@@ -107,7 +108,7 @@ class IntensityBasedStrategy(ITimelineStrategy):
 
         # Validate input
         if not self.validate_input(emotions, text, audio_duration):
-            raise ValueError(f"Invalid input parameters")
+            raise ValueError("Invalid input parameters")
 
         try:
             # Case 1: No emotions
@@ -158,10 +159,10 @@ class IntensityBasedStrategy(ITimelineStrategy):
 
     def _calculate_intensity_segments(
         self,
-        emotions: List[str],
+        emotions: list[str],
         audio_duration: float,
         config: TimelineConfig
-    ) -> List[TimelineSegment]:
+    ) -> list[TimelineSegment]:
         """
         Calculate time allocation and intensity values based on intensity
 
@@ -250,9 +251,9 @@ class IntensityBasedStrategy(ITimelineStrategy):
 
     def _filter_low_intensity_segments(
         self,
-        segments: List[TimelineSegment],
+        segments: list[TimelineSegment],
         min_duration: float
-    ) -> List[TimelineSegment]:
+    ) -> list[TimelineSegment]:
         """
         Filter out segments with low intensity or short duration
 
@@ -284,7 +285,7 @@ class IntensityBasedStrategy(ITimelineStrategy):
         self,
         emotion: str,
         duration: float
-    ) -> List[TimelineSegment]:
+    ) -> list[TimelineSegment]:
         """
         Create a default timeline segment
 
@@ -311,7 +312,7 @@ class IntensityBasedStrategy(ITimelineStrategy):
 
     def validate_input(
         self,
-        emotions: List[str],
+        emotions: list[str],
         text: str,
         audio_duration: float
     ) -> bool:
@@ -366,7 +367,7 @@ class IntensityBasedStrategy(ITimelineStrategy):
         """
         return self._emotion_intensities.get(emotion, 0.5)
 
-    def get_segment_info(self, segments: List[TimelineSegment]) -> Dict[str, Any]:
+    def get_segment_info(self, segments: list[TimelineSegment]) -> dict[str, Any]:
         """
         Get statistics for timeline segments
 

@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """
 ChatTTS implementation - open-source conversational speech synthesis
 Model stored on local disk, loaded to GPU memory at startup
@@ -7,18 +8,16 @@ Model stored on local disk, loaded to GPU memory at startup
 # Status: experimental
 # Last verified: 2026-05-23
 
-from typing import Union, Optional
-from pathlib import Path
 import tempfile
-import io
-import numpy as np
+from pathlib import Path
 
+import numpy as np
 from loguru import logger
+
+from animetta.config.core.registry import ProviderRegistry
 
 from ..interface import TTSInterface
 
-
-from animetta.config.core.registry import ProviderRegistry
 
 @ProviderRegistry.register_service("tts", "chattts")
 class ChatTTSTTS(TTSInterface):
@@ -35,7 +34,7 @@ class ChatTTSTTS(TTSInterface):
         model_path: str = "E:/models/ChatTTS",
         device: str = "cuda",
         compile: bool = False,
-        speaker_seed: Optional[int] = 42,
+        speaker_seed: int | None = 42,
         temperature: float = 0.3,
         top_p: float = 0.7,
         top_k: int = 20,
@@ -99,7 +98,7 @@ class ChatTTSTTS(TTSInterface):
     async def preload(self) -> None:
         """Preload the ChatTTS model from disk to GPU (idempotent)"""
         if self._chat is not None:
-            logger.debug(f"ChatTTS model already loaded, skipping preload")
+            logger.debug("ChatTTS model already loaded, skipping preload")
             return
 
         logger.info(f"Preloading ChatTTS model from {self.model_path}...")
@@ -108,7 +107,7 @@ class ChatTTSTTS(TTSInterface):
         loop = asyncio.get_event_loop()
         await loop.run_in_executor(None, self._ensure_loaded)
 
-        logger.info(f"ChatTTS model preloaded successfully")
+        logger.info("ChatTTS model preloaded successfully")
 
     @staticmethod
     def _clean_text(text: str) -> str:
@@ -210,10 +209,10 @@ class ChatTTSTTS(TTSInterface):
     async def synthesize(
         self,
         text: str,
-        output_path: Optional[Union[str, Path]] = None,
-        voice: Optional[str] = None,
+        output_path: str | Path | None = None,
+        voice: str | None = None,
         **kwargs
-    ) -> Union[bytes, str]:
+    ) -> bytes | str:
         """
         Synthesize text to speech
 
@@ -339,7 +338,7 @@ class ChatTTSTTS(TTSInterface):
             logger.info("ChatTTS resources released, GPU memory cleared")
 
     @classmethod
-    def from_config(cls, config: ChatTTSConfig) -> "ChatTTSTTS":
+    def from_config(cls, config: ChatTTSConfig) -> ChatTTSTTS:
         """Create instance from configuration"""
         return cls(
             model_path=config.model_path,

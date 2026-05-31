@@ -1,6 +1,5 @@
 """VAD base configuration"""
 
-from typing import Literal
 from ...core.base import BaseConfig
 
 

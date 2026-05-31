@@ -7,8 +7,7 @@ before memory injection and LLM inference.
 from __future__ import annotations
 
 import logging
-from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 from langgraph.types import RunnableConfig
 
@@ -22,8 +21,8 @@ MOOD_ORDER = ["neutral", "thinking", "surprised", "sad", "angry", "happy"]
 
 async def personality_node(
     state: AgentState,
-    config: Optional[RunnableConfig] = None,
-) -> Dict[str, Any]:
+    config: RunnableConfig | None = None,
+) -> dict[str, Any]:
     """Determine personality mode and mood, building overlay prompt.
 
     Reads from state:

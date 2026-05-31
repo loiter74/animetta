@@ -1,16 +1,17 @@
 """Pipeline stats Callback Handler - collect LangGraph node execution timing"""
 
-import time
-import uuid
 import asyncio
 import threading
+import time
+import uuid
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import Any, Dict, Optional, List, AsyncIterator
-from loguru import logger
+from typing import Any
 
 from langchain_core.callbacks import BaseCallbackHandler
+from loguru import logger
 
-from .stats_store import get_stats_store, StatsStore
+from .stats_store import get_stats_store
 
 # Known business node names (filter out LangGraph internal nodes)
 KNOWN_NODES = frozenset({
@@ -26,16 +27,16 @@ KNOWN_NODES = frozenset({
 
 class NodeTimer:
     """Records named checkpoints within a graph node.
-    
+
     Usage inside any node::
-    
+
         timer = NodeTimer("llm_node", trace_id, parent_span_id)
         with timer.checkpoint("rag_retrieval"):
             memories = await retrieve(...)
         with timer.checkpoint("llm_api_call"):
             response = await llm.chat(...)
         await timer.finish()
-    
+
     All checkpoints are flushed to StatsStore on finish().
     """
 
@@ -43,13 +44,13 @@ class NodeTimer:
         self,
         node_name: str,
         trace_id: str,
-        parent_span_id: Optional[str] = None,
+        parent_span_id: str | None = None,
     ):
         self.node_name = node_name
         self.trace_id = trace_id
         self.parent_span_id = parent_span_id
-        self._checkpoints: List[dict] = []
-        self._active: Optional[dict] = None
+        self._checkpoints: list[dict] = []
+        self._active: dict | None = None
         self._done = False
 
     # -- context manager checkpoint (sync start async end) --
@@ -119,11 +120,11 @@ class StatsCallbackHandler(BaseCallbackHandler):
     """Collect LangGraph node execution timing"""
 
     def __init__(self):
-        self._active_spans: Dict[str, dict] = {}
-        self._trace_id: Optional[str] = None
-        self._trace_start: Optional[float] = None
+        self._active_spans: dict[str, dict] = {}
+        self._trace_id: str | None = None
+        self._trace_start: float | None = None
         self._lock = threading.Lock()
-        self._loop: Optional[asyncio.AbstractEventLoop] = None
+        self._loop: asyncio.AbstractEventLoop | None = None
 
     def start_trace(self, session_id: str, input_type: str, user_text: str) -> str:
         """Start a trace (called from orchestrator layer)"""
@@ -152,7 +153,7 @@ class StatsCallbackHandler(BaseCallbackHandler):
     # -- LangChain Callback interface --
 
     def on_chain_start(
-        self, serialized: Dict[str, Any], inputs: Dict[str, Any], *,
+        self, serialized: dict[str, Any], inputs: dict[str, Any], *,
         run_id: Any, parent_run_id: Any = None, **kwargs: Any
     ) -> None:
         # Guard: LangGraph internal chains may pass None serialized/inputs
@@ -179,7 +180,7 @@ class StatsCallbackHandler(BaseCallbackHandler):
         )
 
     def on_chain_end(
-        self, outputs: Dict[str, Any], *, run_id: Any, **kwargs: Any
+        self, outputs: dict[str, Any], *, run_id: Any, **kwargs: Any
     ) -> None:
         run_key = str(run_id)
         with self._lock:
@@ -270,7 +271,7 @@ class StatsCallbackHandler(BaseCallbackHandler):
 
     def _schedule_async(self, coro):
         """Schedule a coroutine in a thread-safe async context.
-        
+
         Uses run_coroutine_threadsafe with the stored event loop reference
         (captured in start_trace). Falls back only when no loop is available.
         """
@@ -296,7 +297,7 @@ class StatsCallbackHandler(BaseCallbackHandler):
             logger.debug(f"[StatsHandler] Failed to schedule async task: {coro}")
 
     @staticmethod
-    def _summarize_input(node_name: str, inputs: Dict) -> str:
+    def _summarize_input(node_name: str, inputs: dict) -> str:
         state = inputs.get("state") or inputs
         if isinstance(state, dict):
             text = state.get("user_text", "")
@@ -305,7 +306,7 @@ class StatsCallbackHandler(BaseCallbackHandler):
         return ""
 
     @staticmethod
-    def _summarize_output(node_name: str, outputs: Dict) -> str:
+    def _summarize_output(node_name: str, outputs: dict) -> str:
         if isinstance(outputs, dict):
             for key in ("response_text", "user_text", "emotion"):
                 text = outputs.get(key, "")

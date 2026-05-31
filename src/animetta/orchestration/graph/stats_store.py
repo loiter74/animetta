@@ -1,11 +1,11 @@
 """Pipeline stats data storage - SQLite"""
 
 import asyncio
-import aiosqlite
-from typing import Optional, Dict, Any, List
 from pathlib import Path
-from loguru import logger
+from typing import Any
 
+import aiosqlite
+from loguru import logger
 
 
 def _retry_on_locked(max_retries: int = 3, delay: float = 0.5):
@@ -36,13 +36,13 @@ def _retry_on_locked(max_retries: int = 3, delay: float = 0.5):
 class StatsStore(StatsStoreProtocol):
     """SQLite stats storage"""
 
-    def __init__(self, db_path: Optional[str] = None):
+    def __init__(self, db_path: str | None = None):
         if db_path is None:
             db_path = str(
                 Path(__file__).parent.parent.parent.parent.parent / "data" / "stats.db"
             )
         self.db_path = db_path
-        self._db: Optional[aiosqlite.Connection] = None
+        self._db: aiosqlite.Connection | None = None
         self._write_lock = asyncio.Lock()
 
     async def init(self):
@@ -174,7 +174,7 @@ class StatsStore(StatsStoreProtocol):
             )
             await self._db.commit()
 
-    async def get_overview(self) -> Dict[str, Any]:
+    async def get_overview(self) -> dict[str, Any]:
         cursor = await self._db.execute("""
             SELECT
                 COUNT(*) as total_requests,
@@ -206,7 +206,7 @@ class StatsStore(StatsStoreProtocol):
             "p95_duration_ms": round(p95_row[0], 1) if p95_row else 0,
         }
 
-    async def get_node_stats(self) -> List[Dict[str, Any]]:
+    async def get_node_stats(self) -> list[dict[str, Any]]:
         cursor = await self._db.execute("""
             SELECT
                 node_name,
@@ -236,7 +236,7 @@ class StatsStore(StatsStoreProtocol):
 
     async def get_recent_traces(
         self, limit: int = 50, offset: int = 0
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         cursor = await self._db.execute(
             "SELECT trace_id, session_id, input_type, user_text, total_duration_ms, status, created_at "
             "FROM traces ORDER BY created_at DESC LIMIT ? OFFSET ?",
@@ -256,7 +256,7 @@ class StatsStore(StatsStoreProtocol):
             for row in rows
         ]
 
-    async def get_trace_detail(self, trace_id: str) -> Optional[Dict[str, Any]]:
+    async def get_trace_detail(self, trace_id: str) -> dict[str, Any] | None:
         cursor = await self._db.execute(
             "SELECT trace_id, session_id, input_type, user_text, total_duration_ms, status, error_msg, created_at "
             "FROM traces WHERE trace_id=?",
@@ -344,7 +344,7 @@ class StatsStore(StatsStoreProtocol):
 
 
 # Global singleton (with async lock to prevent race conditions)
-_store: Optional[StatsStore] = None
+_store: StatsStore | None = None
 _store_lock = asyncio.Lock()
 
 

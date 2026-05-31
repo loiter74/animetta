@@ -5,10 +5,11 @@ Allocates time based on the position of emotion tags in the text.
 Implements the new ITimelineStrategy interface with enhanced error handling and features.
 """
 
-from typing import List, Optional, Dict, Any
+from typing import Any
+
 from loguru import logger
 
-from .base import ITimelineStrategy, TimelineSegment, TimelineConfig
+from .base import ITimelineStrategy, TimelineConfig, TimelineSegment
 
 
 class PositionBasedStrategy(ITimelineStrategy):
@@ -60,12 +61,12 @@ class PositionBasedStrategy(ITimelineStrategy):
 
     def calculate(
         self,
-        emotions: List[str],
+        emotions: list[str],
         text: str,
         audio_duration: float,
         config: TimelineConfig = None,
         **kwargs
-    ) -> List[TimelineSegment]:
+    ) -> list[TimelineSegment]:
         """
         Calculate the emotion timeline
 
@@ -139,10 +140,10 @@ class PositionBasedStrategy(ITimelineStrategy):
 
     def _calculate_even_segments(
         self,
-        emotions: List[str],
+        emotions: list[str],
         audio_duration: float,
         config: TimelineConfig
-    ) -> List[TimelineSegment]:
+    ) -> list[TimelineSegment]:
         """
         Calculate evenly distributed segments
 
@@ -198,9 +199,9 @@ class PositionBasedStrategy(ITimelineStrategy):
 
     def _filter_short_segments(
         self,
-        segments: List[TimelineSegment],
+        segments: list[TimelineSegment],
         min_duration: float
-    ) -> List[TimelineSegment]:
+    ) -> list[TimelineSegment]:
         """
         Filter out segments that are too short
 
@@ -233,7 +234,7 @@ class PositionBasedStrategy(ITimelineStrategy):
         self,
         emotion: str,
         duration: float
-    ) -> List[TimelineSegment]:
+    ) -> list[TimelineSegment]:
         """
         Create a default timeline segment
 
@@ -260,7 +261,7 @@ class PositionBasedStrategy(ITimelineStrategy):
 
     def validate_input(
         self,
-        emotions: List[str],
+        emotions: list[str],
         text: str,
         audio_duration: float
     ) -> bool:
@@ -292,7 +293,7 @@ class PositionBasedStrategy(ITimelineStrategy):
 
         return True
 
-    def get_segment_info(self, segments: List[TimelineSegment]) -> Dict[str, Any]:
+    def get_segment_info(self, segments: list[TimelineSegment]) -> dict[str, Any]:
         """
         Get statistics for timeline segments
 

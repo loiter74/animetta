@@ -1,6 +1,7 @@
 """VibeVoice TTS provider configuration (Microsoft open-source long-form multi-speaker TTS)"""
 
-from typing import Literal, Optional
+from typing import Literal
+
 from pydantic import Field
 
 from ...core.registry import ProviderRegistry
@@ -40,7 +41,7 @@ class VibeVoiceTTSConfig(TTSBaseConfig):
         default="1.5b",
         description='Local mode: model size "1.5b" or "7b"',
     )
-    model_path: Optional[str] = Field(
+    model_path: str | None = Field(
         default=None,
         description="Local mode: model weight path (default HuggingFace auto-download)",
     )

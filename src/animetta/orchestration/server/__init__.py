@@ -4,12 +4,12 @@ Server module
 Contains WebSocket server, session management, route handling and lifecycle management
 """
 
-from .websocket import WebSocketServer, create_server
-from .session import SessionManager
-from .routes import RouteHandlers, register_routes
+from .desktop import DESKTOP_CLIENT_TYPES, DesktopClientManager
 from .lifecycle import LifecycleManager
-from .desktop import DesktopClientManager, DESKTOP_CLIENT_TYPES
 from .live2d import Live2DManager
+from .routes import RouteHandlers, register_routes
+from .session import SessionManager
+from .websocket import WebSocketServer, create_server
 
 __all__ = [
     # Server

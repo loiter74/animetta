@@ -1,6 +1,7 @@
 """Faster-Whisper ASR provider configuration"""
 
-from typing import Literal, Optional
+from typing import Literal
+
 from pydantic import Field
 
 from ...core.registry import ProviderRegistry
@@ -34,7 +35,7 @@ class FasterWhisperASRConfig(ASRBaseConfig):
         description="Compute precision (default/int8/float16/float32)"
     )
 
-    download_root: Optional[str] = Field(
+    download_root: str | None = Field(
         default=None,
         description="Model download directory"
     )

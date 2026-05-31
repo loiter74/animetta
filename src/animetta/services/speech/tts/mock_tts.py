@@ -1,12 +1,12 @@
 from __future__ import annotations
+
 """
 Mock TTS implementation - for testing and development
 """
 
-from animetta.config.core.registry import ProviderRegistry
-
-from typing import Union, Optional
 from pathlib import Path
+
+from animetta.config.core.registry import ProviderRegistry
 
 from .interface import TTSInterface
 
@@ -29,18 +29,18 @@ class MockTTS(TTSInterface):
     async def synthesize(
         self,
         text: str,
-        output_path: Optional[Union[str, Path]] = None,
+        output_path: str | Path | None = None,
         **kwargs
-    ) -> Union[bytes, str]:
+    ) -> bytes | str:
         """Return simulated audio path"""
         # Simulate processing delay
         import asyncio
         await asyncio.sleep(0.1)
-        
+
         if output_path:
             # If output path is specified, return that path
             return str(output_path)
-        
+
         # Otherwise return the mock path
         return self.mock_audio_path
 

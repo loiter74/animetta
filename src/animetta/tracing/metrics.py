@@ -18,46 +18,46 @@ Usage:
     NODE_DURATION.labels(node_name="llm").observe(1.23)
 """
 
-from typing import Optional
 
+from loguru import logger
 from opentelemetry import metrics
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
 from opentelemetry.sdk.resources import Resource
-from prometheus_client import Counter as PromCounter, Histogram as PromHistogram
-from loguru import logger
+from prometheus_client import Counter as PromCounter
+from prometheus_client import Histogram as PromHistogram
 
 # ── Metric instrument singletons (lazy-initialized) ──
 
-_NODE_DURATION: Optional[metrics.Histogram] = None
-_NODE_ERRORS: Optional[metrics.Counter] = None
-_LLM_REQUEST_DURATION: Optional[metrics.Histogram] = None
-_LLM_TOKENS: Optional[metrics.Counter] = None
-_LLM_COST: Optional[metrics.Counter] = None
-_LLM_ERRORS: Optional[metrics.Counter] = None
-_RAG_DURATION: Optional[metrics.Histogram] = None
-_RAG_CHUNKS: Optional[metrics.Histogram] = None
-_RAG_TOP_SCORE: Optional[metrics.Histogram] = None
-_ASR_DURATION: Optional[metrics.Histogram] = None
-_TTS_DURATION: Optional[metrics.Histogram] = None
-_TTS_CHARACTERS: Optional[metrics.Counter] = None
-_ACTIVE_SESSIONS: Optional[metrics.UpDownCounter] = None
-_SESSION_MESSAGES: Optional[metrics.Counter] = None
-_WEBSOCKET_ERRORS: Optional[metrics.Counter] = None
-_TOOL_CALLS: Optional[metrics.Counter] = None
-_TOOL_DURATION: Optional[metrics.Histogram] = None
+_NODE_DURATION: metrics.Histogram | None = None
+_NODE_ERRORS: metrics.Counter | None = None
+_LLM_REQUEST_DURATION: metrics.Histogram | None = None
+_LLM_TOKENS: metrics.Counter | None = None
+_LLM_COST: metrics.Counter | None = None
+_LLM_ERRORS: metrics.Counter | None = None
+_RAG_DURATION: metrics.Histogram | None = None
+_RAG_CHUNKS: metrics.Histogram | None = None
+_RAG_TOP_SCORE: metrics.Histogram | None = None
+_ASR_DURATION: metrics.Histogram | None = None
+_TTS_DURATION: metrics.Histogram | None = None
+_TTS_CHARACTERS: metrics.Counter | None = None
+_ACTIVE_SESSIONS: metrics.UpDownCounter | None = None
+_SESSION_MESSAGES: metrics.Counter | None = None
+_WEBSOCKET_ERRORS: metrics.Counter | None = None
+_TOOL_CALLS: metrics.Counter | None = None
+_TOOL_DURATION: metrics.Histogram | None = None
 
 # ── Prometheus-native duplicates (for /metrics HTTP endpoint) ──
-_PROM_LLM_ERRORS: Optional[PromCounter] = None
-_PROM_NODE_DURATION: Optional[PromHistogram] = None
+_PROM_LLM_ERRORS: PromCounter | None = None
+_PROM_NODE_DURATION: PromHistogram | None = None
 
-_meter: Optional[metrics.Meter] = None
+_meter: metrics.Meter | None = None
 _initialized: bool = False
 
 
 def init_metrics(
     service_name: str = "anima",
-    otlp_endpoint: Optional[str] = None,
+    otlp_endpoint: str | None = None,
 ) -> metrics.Meter:
     """Initialize OTel MeterProvider and define all metric instruments.
 

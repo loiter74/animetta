@@ -5,9 +5,11 @@ Uses LangGraph orchestrator
 """
 
 import asyncio
-from typing import Dict, Optional, Callable, Any
-from loguru import logger
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
+
+from loguru import logger
 
 from ...core.service_context import ServiceContext
 
@@ -25,17 +27,17 @@ class SessionManager:
     def __init__(self, model_manager=None):
         # Store ServiceContext per session
         # Key: session_id, Value: ServiceContext instance
-        self.contexts: Dict[str, ServiceContext] = {}
+        self.contexts: dict[str, ServiceContext] = {}
         self.model_manager = model_manager
 
         # Store orchestrator per session
         # Key: session_id, Value: LangGraphOrchestrator instance
-        self.orchestrators: Dict[str, Any] = {}
+        self.orchestrators: dict[str, Any] = {}
         self._orchestrator_lock = asyncio.Lock()
 
         # Store audio processor per session
         # Key: session_id, Value: AudioProcessor instance
-        self.audio_processors: Dict[str, Any] = {}
+        self.audio_processors: dict[str, Any] = {}
 
     # ========================================
     # Context management
@@ -81,7 +83,7 @@ class SessionManager:
 
         return self.contexts[sid]
 
-    def get_context(self, sid: str) -> Optional[ServiceContext]:
+    def get_context(self, sid: str) -> ServiceContext | None:
         """Get session context"""
         return self.contexts.get(sid)
 
@@ -144,7 +146,7 @@ class SessionManager:
 
         return self.orchestrators[sid]
 
-    async def _load_tools_config(self) -> Dict[str, Any]:
+    async def _load_tools_config(self) -> dict[str, Any]:
         """Load tools configuration"""
         try:
             import yaml
@@ -158,7 +160,7 @@ class SessionManager:
             logger.info(f"[_load_tools_config] File exists: {config_path.exists()}")
 
             if config_path.exists():
-                with open(config_path, 'r', encoding='utf-8') as f:
+                with open(config_path, encoding='utf-8') as f:
                     tools_config = yaml.safe_load(f)
 
                     # Verbose debug logging
@@ -192,7 +194,7 @@ class SessionManager:
             logger.error(traceback.format_exc())
             return {"enable_tools": False, "config": {}}
 
-    def get_orchestrator(self, sid: str) -> Optional[Any]:
+    def get_orchestrator(self, sid: str) -> Any | None:
         """Get session orchestrator"""
         return self.orchestrators.get(sid)
 
@@ -264,7 +266,7 @@ class SessionManager:
         logger.info("All sessions cleaned up")
 
 
-    def get_audio_processor(self, sid: str) -> Optional[Any]:
+    def get_audio_processor(self, sid: str) -> Any | None:
         """Get session audio processor"""
         return self.audio_processors.get(sid)
 

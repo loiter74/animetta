@@ -9,11 +9,11 @@ Responsibilities:
 """
 
 import os
-from typing import Any, Dict, List, Optional
-from loguru import logger
 from pathlib import Path
+from typing import Any, Optional
 
 import yaml
+from loguru import logger
 
 
 class ObservabilityManager:
@@ -31,13 +31,13 @@ class ObservabilityManager:
         if self._initialized:
             return
 
-        self._langfuse_handler: Optional[Any] = None
-        self._langfuse_client: Optional[Any] = None
+        self._langfuse_handler: Any | None = None
+        self._langfuse_client: Any | None = None
         self._langsmith_enabled: bool = False
         self._langfuse_enabled: bool = False
-        self._config: Dict[str, Any] = {}
+        self._config: dict[str, Any] = {}
 
-    def initialize(self, config_path: Optional[str] = None) -> None:
+    def initialize(self, config_path: str | None = None) -> None:
         """
         Initialize observability
 
@@ -59,7 +59,7 @@ class ObservabilityManager:
         self._initialized = True
         self._log_status()
 
-    def _load_config(self, config_path: Optional[str] = None) -> Dict[str, Any]:
+    def _load_config(self, config_path: str | None = None) -> dict[str, Any]:
         """Load configuration file"""
         if config_path is None:
             config_path = (
@@ -73,7 +73,7 @@ class ObservabilityManager:
             return {"langsmith": {"enabled": False}, "langfuse": {"enabled": False}}
 
         try:
-            with open(config_path, "r", encoding="utf-8") as f:
+            with open(config_path, encoding="utf-8") as f:
                 config = yaml.safe_load(f) or {}
             logger.info(f"[Observability] Config loaded: {config_path}")
             return config
@@ -157,7 +157,7 @@ class ObservabilityManager:
         logger.info(f"[Observability] Status: {', '.join(parts)}")
 
     @property
-    def callbacks(self) -> List[Any]:
+    def callbacks(self) -> list[Any]:
         """Return LangGraph/LangChain callback list"""
         if self._langfuse_handler:
             return [self._langfuse_handler]
@@ -171,7 +171,7 @@ class ObservabilityManager:
     def langfuse_enabled(self) -> bool:
         return self._langfuse_enabled
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """Get current status"""
         return {
             "langsmith_enabled": self._langsmith_enabled,

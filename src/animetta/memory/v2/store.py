@@ -10,10 +10,10 @@ from __future__ import annotations
 import json
 import logging
 import sqlite3
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
-from animetta.memory.v2.atom import MemoryAtom, Layer, Relation
+from animetta.memory.v2.atom import Layer, MemoryAtom, Relation
 
 logger = logging.getLogger(__name__)
 
@@ -241,7 +241,7 @@ class AtomStore:
               old.emotion_valence, old.emotion_arousal, old.emotion_dominance))
 
         # Update with new version
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         old.summary = new_summary
         old.confidence = new_confidence
         old.emotion_valence = new_emotion[0]

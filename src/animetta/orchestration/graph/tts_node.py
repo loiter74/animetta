@@ -2,14 +2,13 @@
 
 import asyncio
 import re
-import time as time_module
-from typing import Dict, Any, Optional
-from loguru import logger
+from typing import Any
+
 from langgraph.types import RunnableConfig
+from loguru import logger
 
-from .state import AgentState, log_timing
 from .node_error import log_node_error
-
+from .state import AgentState
 
 # Regex: emotion tags like [happy], [sad], [angry] etc.
 _EMOTION_TAG_RE = re.compile(r'\[[\w-]+\]')
@@ -40,7 +39,7 @@ def _clean_text_for_tts(text: str) -> str:
     return text
 
 
-def _get_service_context(config: Optional[RunnableConfig]) -> Optional[Any]:
+def _get_service_context(config: RunnableConfig | None) -> Any | None:
     """Get service_context from LangGraph config"""
     if config:
         return config.get("configurable", {}).get("service_context")
@@ -49,8 +48,8 @@ def _get_service_context(config: Optional[RunnableConfig]) -> Optional[Any]:
 
 async def tts_node(
     state: AgentState,
-    config: Optional[RunnableConfig] = None,
-) -> Dict[str, Any]:
+    config: RunnableConfig | None = None,
+) -> dict[str, Any]:
     """
     TTS speech synthesis node
 
@@ -84,7 +83,7 @@ async def tts_node(
         audio = await asyncio.wait_for(
             tts_engine.synthesize(clean_text), timeout=180.0
         )
-    except asyncio.TimeoutError:
+    except TimeoutError:
         logger.warning(
             f"[{session_id}] [TTSNode] TTS timed out after 30s"
         )

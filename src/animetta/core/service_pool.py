@@ -16,16 +16,17 @@ Usage:
         await ctx.init_memory()
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
+
 from loguru import logger
 
 
 class ServicePool:
     """Globally shared LLM/TTS/ASR engine instances."""
 
-    _llm: Optional[Any] = None
-    _tts: Optional[Any] = None
-    _asr: Optional[Any] = None
+    _llm: Any | None = None
+    _tts: Any | None = None
+    _asr: Any | None = None
     _ready: bool = False
 
     # ── Lifecycle ──────────────────────────────────────────
@@ -84,7 +85,7 @@ class ServicePool:
         logger.info(f"[ServicePool] Ready ({elapsed:.0f}ms) — shared LLM/TTS/ASR")
 
     @classmethod
-    def get_context(cls) -> Dict[str, Any]:
+    def get_context(cls) -> dict[str, Any]:
         """Return a dict of shareable engines for ``ServiceContext.load_cache()``.
 
         Returns an empty dict when the pool is not ready (caller falls

@@ -10,9 +10,10 @@ from .base_handler import BaseSocketHandler
 
 if TYPE_CHECKING:
     from socketio import AsyncServer
-    from ..session import SessionManager
+
     from ..desktop import DesktopClientManager
     from ..live2d import Live2DManager
+    from ..session import SessionManager
 
 
 class PersonaHandlers(BaseSocketHandler):

@@ -1,10 +1,9 @@
 """Pipeline stats HTTP API"""
 
-import json
 from pathlib import Path
-from typing import List, Dict, Any
-from loguru import logger
+from typing import Any
 
+from loguru import logger
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 from starlette.routing import Mount, Route
@@ -76,7 +75,7 @@ async def stats_trace_tree(request: Request) -> JSONResponse:
         if not detail:
             return JSONResponse({"error": "Trace not found"}, status_code=404)
 
-        spans: List[Dict[str, Any]] = detail.get("spans", [])
+        spans: list[dict[str, Any]] = detail.get("spans", [])
         tree = _build_span_tree(spans)
         return JSONResponse({
             "trace_id": trace_id,
@@ -91,13 +90,13 @@ async def stats_trace_tree(request: Request) -> JSONResponse:
         return JSONResponse({"error": str(e)}, status_code=500)
 
 
-def _build_span_tree(spans: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def _build_span_tree(spans: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Group flat span list into a parent-child nested tree.
 
     Returns a list of root spans (parent_span_id is None), each with a ``children`` list.
     """
-    by_id: Dict[str, Dict] = {}
-    roots: List[Dict] = []
+    by_id: dict[str, dict] = {}
+    roots: list[dict] = []
 
     for s in spans:
         node = dict(s)

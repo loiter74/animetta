@@ -1,12 +1,12 @@
 from __future__ import annotations
+
 """
 Mock VC implementation - for testing and development
 """
 
-from animetta.config.core.registry import ProviderRegistry
-
-from typing import Union, Optional
 from pathlib import Path
+
+from animetta.config.core.registry import ProviderRegistry
 
 from .interface import VCInterface
 
@@ -31,9 +31,9 @@ class MockVC(VCInterface):
     async def convert(
         self,
         audio: bytes,
-        output_path: Optional[Union[str, Path]] = None,
+        output_path: str | Path | None = None,
         **kwargs
-    ) -> Union[bytes, str]:
+    ) -> bytes | str:
         """Return audio unchanged (identity pass-through)."""
         import asyncio
         await asyncio.sleep(0.1)

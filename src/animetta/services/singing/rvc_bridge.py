@@ -1,8 +1,12 @@
 from __future__ import annotations
+
 """RVC bridge via direct Python subprocess wrapper."""
-import asyncio, os
+import asyncio
+import os
 from pathlib import Path
+
 from loguru import logger
+
 
 class RVCBridge:
     DEFAULT_RVC_PATH = r"C:\Users\30262\RVC20240604Nvidia"

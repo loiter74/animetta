@@ -5,10 +5,11 @@ Allocates different durations based on emotion type.
 Some emotions (e.g., sad) may need longer expression time.
 """
 
-from typing import List, Optional, Dict, Any
+from typing import Any
+
 from loguru import logger
 
-from .base import ITimelineStrategy, TimelineSegment, TimelineConfig
+from .base import ITimelineStrategy, TimelineConfig, TimelineSegment
 
 
 class DurationBasedStrategy(ITimelineStrategy):
@@ -55,7 +56,7 @@ class DurationBasedStrategy(ITimelineStrategy):
     def __init__(
         self,
         config: TimelineConfig = None,
-        duration_weights: Optional[Dict[str, float]] = None,
+        duration_weights: dict[str, float] | None = None,
         min_emotion_duration: float = 0.5,
         max_emotion_duration: float = 5.0,
         enable_smoothing: bool = True
@@ -78,12 +79,12 @@ class DurationBasedStrategy(ITimelineStrategy):
 
     def calculate(
         self,
-        emotions: List[str],
+        emotions: list[str],
         text: str,
         audio_duration: float,
         config: TimelineConfig = None,
         **kwargs
-    ) -> List[TimelineSegment]:
+    ) -> list[TimelineSegment]:
         """
         Calculate the emotion timeline
 
@@ -104,7 +105,7 @@ class DurationBasedStrategy(ITimelineStrategy):
 
         # Validate input
         if not self.validate_input(emotions, text, audio_duration):
-            raise ValueError(f"Invalid input parameters")
+            raise ValueError("Invalid input parameters")
 
         try:
             # Case 1: No emotions
@@ -155,10 +156,10 @@ class DurationBasedStrategy(ITimelineStrategy):
 
     def _calculate_weighted_segments(
         self,
-        emotions: List[str],
+        emotions: list[str],
         audio_duration: float,
         config: TimelineConfig
-    ) -> List[TimelineSegment]:
+    ) -> list[TimelineSegment]:
         """
         Calculate time allocation based on weights
 
@@ -180,10 +181,7 @@ class DurationBasedStrategy(ITimelineStrategy):
         total_weight = sum(weights)
 
         # If total weight is 0, distribute evenly
-        if total_weight == 0:
-            weight_sum = len(emotions)
-        else:
-            weight_sum = total_weight
+        len(emotions) if total_weight == 0 else total_weight
 
         # Allocate time based on weights
         segments = []
@@ -224,9 +222,9 @@ class DurationBasedStrategy(ITimelineStrategy):
 
     def _filter_short_segments(
         self,
-        segments: List[TimelineSegment],
+        segments: list[TimelineSegment],
         min_duration: float
-    ) -> List[TimelineSegment]:
+    ) -> list[TimelineSegment]:
         """
         Filter out segments that are too short
 
@@ -258,7 +256,7 @@ class DurationBasedStrategy(ITimelineStrategy):
         self,
         emotion: str,
         duration: float
-    ) -> List[TimelineSegment]:
+    ) -> list[TimelineSegment]:
         """
         Create a default timeline segment
 
@@ -285,7 +283,7 @@ class DurationBasedStrategy(ITimelineStrategy):
 
     def validate_input(
         self,
-        emotions: List[str],
+        emotions: list[str],
         text: str,
         audio_duration: float
     ) -> bool:
@@ -340,7 +338,7 @@ class DurationBasedStrategy(ITimelineStrategy):
         """
         return self._duration_weights.get(emotion, 1.0)
 
-    def get_segment_info(self, segments: List[TimelineSegment]) -> Dict[str, Any]:
+    def get_segment_info(self, segments: list[TimelineSegment]) -> dict[str, Any]:
         """
         Get statistics for timeline segments
 

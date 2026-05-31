@@ -1,6 +1,7 @@
 """OpenAI TTS provider configuration"""
 
-from typing import Optional, Literal
+from typing import Literal
+
 from pydantic import Field
 
 from ...core.registry import ProviderRegistry
@@ -13,4 +14,4 @@ class OpenAITTSConfig(TTSBaseConfig):
     type: Literal["openai"] = "openai"
     model: str = Field(default="tts-1", description="TTS model name")
     voice: str = Field(default="alloy", description="Voice / timbre")
-    base_url: Optional[str] = Field(default=None, description="API Base URL")
+    base_url: str | None = Field(default=None, description="API Base URL")

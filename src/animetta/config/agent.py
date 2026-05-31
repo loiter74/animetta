@@ -1,8 +1,9 @@
 """Agent configuration"""
 
 from pydantic import Field
+
 from .core.base import BaseConfig
-from .providers.llm import LLMConfig, GLMLLMConfig
+from .providers.llm import GLMLLMConfig, LLMConfig
 
 
 class AgentConfig(BaseConfig):

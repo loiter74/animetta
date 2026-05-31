@@ -9,16 +9,14 @@ Supports voice effects via SSML prosody adjustments:
 
 from __future__ import annotations
 
-from animetta.config.core.registry import ProviderRegistry
+import tempfile
+from pathlib import Path
 
 # Status: active
 # Last verified: 2026-05-23
-
-from typing import Union, Optional
-from pathlib import Path
-import tempfile
-
 from loguru import logger
+
+from animetta.config.core.registry import ProviderRegistry
 
 from .interface import TTSInterface
 
@@ -135,10 +133,10 @@ class EdgeTTS(TTSInterface):
     async def synthesize(
         self,
         text: str,
-        output_path: Union[str, Path, None] = None,
+        output_path: str | Path | None = None,
         voice: str | None = None,
         **kwargs
-    ) -> Union[bytes, str]:
+    ) -> bytes | str:
         """
         Synthesize text to speech.
 

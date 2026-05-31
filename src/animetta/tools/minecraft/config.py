@@ -2,15 +2,15 @@
 Minecraft configuration models
 """
 
+
 from pydantic import BaseModel
-from typing import Optional
 
 
 class MinecraftBotConfig(BaseModel):
     host: str = "localhost"
     port: int = 25565
     username: str = "AnimaBot"
-    version: Optional[str] = None  # None = auto-detect by Mineflayer
+    version: str | None = None  # None = auto-detect by Mineflayer
 
 
 class MinecraftSafetyConfig(BaseModel):

@@ -14,11 +14,10 @@ Usage:
 import asyncio
 import functools
 import inspect
-from typing import Any, Optional
+from typing import Any
 
 from opentelemetry import trace
 from opentelemetry.trace import Status, StatusCode
-from opentelemetry.trace.propagation import get_current_span as otel_get_current_span
 
 _INPUT_TRUNCATE_LEN = 200
 
@@ -39,7 +38,7 @@ class TracingProxy:
 
     _DEFAULT_TRACER_NAME = "anima"
 
-    def __init__(self, target: Any, tracer: Optional[trace.Tracer] = None, service_name: str = ""):
+    def __init__(self, target: Any, tracer: trace.Tracer | None = None, service_name: str = ""):
         object.__setattr__(self, "_target", target)
         object.__setattr__(self, "_tracer", tracer)  # None = resolve lazily
         object.__setattr__(self, "_service", service_name)
@@ -115,7 +114,7 @@ class TracingProxy:
             first = str(args[0]) if not isinstance(args[0], bytes) else f"<{len(args[0])} bytes>"
             attrs["arg.0"] = first[:_INPUT_TRUNCATE_LEN]
         if kwargs:
-            safe_keys = [k for k in list(kwargs.keys())[:3] if not k.lower() in ("api_key", "secret", "password", "token")]
+            safe_keys = [k for k in list(kwargs.keys())[:3] if k.lower() not in ("api_key", "secret", "password", "token")]
             if safe_keys:
                 attrs["kwarg_keys"] = ",".join(safe_keys)
 

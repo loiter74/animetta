@@ -1,17 +1,18 @@
 from __future__ import annotations
+
 """
 OpenAI LLM implementation
 Uses the openai SDK to call OpenAI GPT models
 """
 
-from animetta.config.core.registry import ProviderRegistry
-
-import json
 import time as time_module
-from typing import AsyncIterator, List, Dict, Any, Optional, TYPE_CHECKING
+from collections.abc import AsyncIterator
+from typing import Any
+
 from loguru import logger
 from openai import AsyncOpenAI
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, ToolMessage
+
+from animetta.config.core.registry import ProviderRegistry
 
 from .interface import LLMInterface
 from .stream_handler import OpenAIStreamHandler
@@ -23,24 +24,24 @@ from .tool_handler import OpenAIToolHandler
 class OpenAILLM(LLMInterface):
     """
     OpenAI GPT model Agent implementation
-    
+
     Uses the official openai SDK to call GPT-4, GPT-3.5, and other models
     Supports streaming output and custom base_url (compatible with other OpenAI API-compatible services)
     """
-    
+
     def __init__(
         self,
         api_key: str,
         model: str = "gpt-4o-mini",
         system_prompt: str = "",
-        base_url: Optional[str] = None,
+        base_url: str | None = None,
         temperature: float = 0.7,
         max_tokens: int = 1000,
         **kwargs
     ):
         """
         Initialize OpenAI LLM
-        
+
         Args:
             api_key: OpenAI API Key
             model: Model name (gpt-4, gpt-4o, gpt-3.5-turbo, etc.)
@@ -55,25 +56,25 @@ class OpenAILLM(LLMInterface):
         self.base_url = base_url
         self.temperature = temperature
         self.max_tokens = max_tokens
-        
+
         # Conversation history
-        self.history: List[Dict[str, str]] = []
-        
+        self.history: list[dict[str, str]] = []
+
         # Initialize async client
         client_kwargs = {"api_key": api_key}
         if base_url:
             client_kwargs["base_url"] = base_url
-        
+
         self.client = AsyncOpenAI(**client_kwargs)
-        
+
         # Initialize handler instances
         self.stream_handler = OpenAIStreamHandler(self)
         self.tool_handler = OpenAIToolHandler(self)
-        
+
         logger.info(f"OpenAILLM initialized: model={model}, base_url={base_url or 'default'}")
 
     @classmethod
-    def from_config(cls, config: "LLMBaseConfig", system_prompt: str = "", **kwargs) -> "OpenAILLM":
+    def from_config(cls, config: LLMBaseConfig, system_prompt: str = "", **kwargs) -> OpenAILLM:
         """
         Create an instance from a configuration object
 
@@ -105,7 +106,7 @@ class OpenAILLM(LLMInterface):
             max_tokens=max_tokens,
         )
 
-    def _build_messages(self, user_input: str, system_prompt: Optional[str] = None) -> List[Dict[str, str]]:
+    def _build_messages(self, user_input: str, system_prompt: str | None = None) -> list[dict[str, str]]:
         """
         Build messages list
 
@@ -125,16 +126,16 @@ class OpenAILLM(LLMInterface):
                 "role": "system",
                 "content": effective_prompt
             })
-        
+
         # Add conversation history
         messages.extend(self.history)
-        
+
         # Add current user input
         messages.append({
             "role": "user",
             "content": user_input
         })
-        
+
         return messages
 
     async def chat(self, user_input: str, **kwargs) -> str:
@@ -240,7 +241,7 @@ class OpenAILLM(LLMInterface):
         self.system_prompt = prompt
         logger.debug(f"System prompt updated: {prompt[:50]}...")
 
-    def get_history(self) -> List[Dict[str, Any]]:
+    def get_history(self) -> list[dict[str, Any]]:
         """Get conversation history"""
         return self.history.copy()
 
@@ -253,7 +254,7 @@ class OpenAILLM(LLMInterface):
         """Clean up resources"""
         await self.client.close()
         logger.info("OpenAILLM resources released")
-    
+
     def _get_provider_name(self) -> str:
         """Infer provider name from base_url."""
         if self.base_url and "deepseek" in str(self.base_url).lower():
@@ -315,7 +316,7 @@ class OpenAILLM(LLMInterface):
     def handle_interrupt(self, heard_response: str = "") -> None:
         """
         Handle user interruption
-        
+
         Args:
             heard_response: Partial response heard by the user
         """
@@ -323,7 +324,7 @@ class OpenAILLM(LLMInterface):
             # Save partial response to history
             if self.history and self.history[-1].get("role") == "user":
                 # Get the last user input
-                last_user_input = self.history[-1].get("content", "")
+                self.history[-1].get("content", "")
                 # Add partial AI response
                 self.history.append({
                     "role": "assistant",
@@ -334,17 +335,17 @@ class OpenAILLM(LLMInterface):
                     "role": "system",
                     "content": "[user interrupted the conversation]"
                 })
-        
+
         logger.info(f"Conversation interrupted, partial response saved: {heard_response[:50] if heard_response else '(empty)'}...")
-    
+
     def set_memory_from_history(
-        self, 
-        conf_uid: str, 
+        self,
+        conf_uid: str,
         history_uid: str
     ) -> None:
         """
         Restore conversation memory from history records
-         
+
         Args:
             conf_uid: Config UID
             history_uid: History UID
@@ -360,10 +361,10 @@ class OpenAILLM(LLMInterface):
     async def chat_with_tools(
         self,
         user_input: str,
-        tools: List[Any],
-        langchain_history: List[Any],
-        system_prompt: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        tools: list[Any],
+        langchain_history: list[Any],
+        system_prompt: str | None = None,
+    ) -> dict[str, Any]:
         """
         Conversation with tool calls (LangGraph specific)
 

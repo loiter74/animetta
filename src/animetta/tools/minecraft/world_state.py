@@ -8,7 +8,6 @@ Takes mc_status() output and enriches it with:
 - Entity classification (hostile/neutral/player/passive)
 """
 import math
-from typing import Optional
 from dataclasses import dataclass, field
 
 
@@ -53,7 +52,7 @@ class WorldState:
     entities: list[Entity] = field(default_factory=list)
 
     # Goal state
-    current_goal: Optional[str] = None
+    current_goal: str | None = None
 
     @classmethod
     def from_status(cls, status_result: dict) -> "WorldState":

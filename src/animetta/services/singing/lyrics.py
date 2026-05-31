@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """Lyrics recognition — ASR + .ass generation."""
 
 import asyncio
@@ -6,6 +7,7 @@ import re
 from pathlib import Path
 
 from loguru import logger
+
 from .interface import LyricLine
 
 

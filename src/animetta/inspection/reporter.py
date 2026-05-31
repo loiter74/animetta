@@ -11,7 +11,6 @@ import json
 from loguru import logger
 
 
-
 async def store_report(report: InspectionReport) -> None:
     """Persist an inspection report to the StatsStore SQLite database.
 

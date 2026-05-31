@@ -12,33 +12,33 @@ from .interface import LLMInterface
 class LLMFactory:
     """
     LLM service factory class (simplified version)
-    
+
     Uses ProviderRegistry to automatically find and instantiate services,
     eliminating the need to manually maintain if-elif chains.
-    
+
     To add a new provider, simply:
     1. Create a config class and register it
     2. Create a service class and register it
     No modifications to the factory code are required.
     """
-    
+
     @staticmethod
     def create_from_config(config: LLMConfig, system_prompt: str = "") -> LLMInterface:
         """
         Automatically create an LLM service instance from a config object
-        
+
         Args:
             config: LLM config object (Discriminated Union)
             system_prompt: System prompt
-            
+
         Returns:
             LLMInterface: LLM service instance
-        
+
         Raises:
             ValueError: If no matching service implementation is found
         """
         logger.debug(f"create_from_config: config.type={config.type}, config class={type(config).__name__}")
-        
+
         try:
             # Use Registry to automatically find and instantiate
             llm = ProviderRegistry.create_service("llm", config, system_prompt=system_prompt)
@@ -56,16 +56,16 @@ class LLMFactory:
     def create(provider: str, system_prompt: str = "", **kwargs) -> LLMInterface:
         """
         Create an LLM service instance by provider name (backward compatible)
-        
+
         Args:
             provider: Provider name
             system_prompt: System prompt
             **kwargs: Parameters passed to the concrete implementation
-            
+
         Returns:
             LLMInterface: LLM service instance
         """
-        
+
         # Build config object based on provider name
         config_map = {
             "openai": lambda: OpenAILLMConfig(
@@ -90,16 +90,16 @@ class LLMFactory:
             ),
             "mock": lambda: MockLLMConfig(),
         }
-        
+
         config_factory = config_map.get(provider)
         if config_factory is None:
             logger.warning(f"Unknown LLM provider: {provider}, using Mock implementation")
             config = MockLLMConfig()
         else:
             config = config_factory()
-        
+
         return LLMFactory.create_from_config(config, system_prompt)
-    
+
     @staticmethod
     def get_available_providers() -> list:
         """Get the list of all available providers"""

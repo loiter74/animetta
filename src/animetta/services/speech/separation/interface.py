@@ -1,10 +1,10 @@
 from __future__ import annotations
+
 """
 Audio Source Separation interface definition
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, Union, Optional
 from pathlib import Path
 
 
@@ -20,10 +20,10 @@ class SeparationInterface(ABC):
     async def separate(
         self,
         audio: bytes,
-        target: Optional[str] = None,
-        output_dir: Optional[Union[str, Path]] = None,
+        target: str | None = None,
+        output_dir: str | Path | None = None,
         **kwargs
-    ) -> Dict[str, Union[bytes, str]]:
+    ) -> dict[str, bytes | str]:
         """
         Separate audio mixture into constituent stems.
 

@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """
 Bilibili Live Danmaku Service
 
@@ -15,11 +16,13 @@ Usage:
 """
 
 import asyncio
-import json
+import contextlib
 import threading
 import time
-from dataclasses import dataclass, field, asdict
-from typing import Callable, Optional, Dict, Any, List, TYPE_CHECKING
+from collections.abc import Callable
+from dataclasses import asdict, dataclass, field
+from typing import Any
+
 from loguru import logger
 
 
@@ -31,7 +34,7 @@ class DanmakuMessage:
     user_id: int
     timestamp: float = field(default_factory=time.time)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -44,7 +47,7 @@ class DanmakuReply:
     character_name: str = "AI"
     timestamp: float = field(default_factory=time.time)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -76,22 +79,22 @@ class BilibiliDanmakuService:
         self.max_retries = max_retries
 
         # Threading
-        self._thread: Optional[threading.Thread] = None
-        self._loop: Optional[asyncio.AbstractEventLoop] = None
+        self._thread: threading.Thread | None = None
+        self._loop: asyncio.AbstractEventLoop | None = None
         self._running = False
 
         # Queue for cross-thread message passing
         self._queue: asyncio.Queue = asyncio.Queue(maxsize=max_queue_size)
 
         # Callback set by the consumer (RouteHandlers)
-        self._on_danmaku: Optional[Callable[[DanmakuMessage], None]] = None
-        self._on_status_change: Optional[Callable[[bool, str], None]] = None
+        self._on_danmaku: Callable[[DanmakuMessage], None] | None = None
+        self._on_status_change: Callable[[bool, str], None] | None = None
 
         # bilibili-api client (created inside the thread)
         self._monitor = None
 
         # DanmakuBuffer for meme collection pipeline
-        self._danmaku_buffer: Optional[DanmakuBuffer] = None
+        self._danmaku_buffer: DanmakuBuffer | None = None
 
         # Connection state
         self._connected = False
@@ -211,7 +214,7 @@ class BilibiliDanmakuService:
         Uses bilibili-api-python's LiveDanmaku class with event callbacks.
         """
         try:
-            from bilibili_api import live, Credential
+            from bilibili_api import Credential, live
         except ImportError:
             logger.error("[BilibiliDanmaku] bilibili-api-python not installed. Run: pip install bilibili-api-python")
             raise
@@ -323,16 +326,12 @@ class BilibiliDanmakuService:
 
             # Cancel consumer
             consumer_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await consumer_task
-            except asyncio.CancelledError:
-                pass
 
             # Clean up monitor
-            try:
+            with contextlib.suppress(Exception):
                 await self._monitor.disconnect()
-            except Exception:
-                pass
             self._monitor = None
 
     # ========================================
@@ -360,7 +359,7 @@ class BilibiliDanmakuService:
                     self._danmaku_buffer.add(msg.text, self.room_id)
 
                 self._queue.task_done()
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 continue
             except Exception as e:
                 logger.error(f"[BilibiliDanmaku] Queue consumer error: {e}")

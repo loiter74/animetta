@@ -1,19 +1,21 @@
 from __future__ import annotations
+
 """
 GLM message format converter
 Handles conversion between LangChain messages and GLM API format
 """
 
 import json
-from typing import Any, Dict
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, ToolMessage
+from typing import Any
+
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 
 
 class GLMMessageConverter:
     """Converts LangChain messages to GLM API format"""
 
     @staticmethod
-    def convert_to_glm(msg: Any) -> Dict[str, Any]:
+    def convert_to_glm(msg: Any) -> dict[str, Any]:
         """
         Convert a LangChain message to GLM API format
 
@@ -35,15 +37,15 @@ class GLMMessageConverter:
             return GLMMessageConverter._convert_fallback(msg)
 
     @staticmethod
-    def _convert_system(msg: SystemMessage) -> Dict[str, Any]:
+    def _convert_system(msg: SystemMessage) -> dict[str, Any]:
         return {"role": "system", "content": msg.content}
 
     @staticmethod
-    def _convert_human(msg: HumanMessage) -> Dict[str, Any]:
+    def _convert_human(msg: HumanMessage) -> dict[str, Any]:
         return {"role": "user", "content": msg.content}
 
     @staticmethod
-    def _convert_ai(msg: AIMessage) -> Dict[str, Any]:
+    def _convert_ai(msg: AIMessage) -> dict[str, Any]:
         glm_msg = {"role": "assistant", "content": msg.content or ""}
 
         if hasattr(msg, 'tool_calls') and msg.tool_calls:
@@ -55,7 +57,7 @@ class GLMMessageConverter:
         return glm_msg
 
     @staticmethod
-    def _convert_tool_call(tc: Any) -> Dict[str, Any]:
+    def _convert_tool_call(tc: Any) -> dict[str, Any]:
         """Convert a single tool call"""
         if isinstance(tc, dict):
             tc_id = tc.get("id", "")
@@ -78,7 +80,7 @@ class GLMMessageConverter:
         }
 
     @staticmethod
-    def _convert_tool(msg: ToolMessage) -> Dict[str, Any]:
+    def _convert_tool(msg: ToolMessage) -> dict[str, Any]:
         return {
             "role": "tool",
             "tool_call_id": msg.tool_call_id,
@@ -86,7 +88,7 @@ class GLMMessageConverter:
         }
 
     @staticmethod
-    def _convert_fallback(msg: Any) -> Dict[str, Any]:
+    def _convert_fallback(msg: Any) -> dict[str, Any]:
         content = str(msg.content) if hasattr(msg, 'content') else str(msg)
         return {"role": "user", "content": content}
 
@@ -95,7 +97,7 @@ class GLMToolConverter:
     """Converts LangChain tools to GLM API format"""
 
     @staticmethod
-    def convert_tools(tool_list: list[Any]) -> list[Dict[str, Any]]:
+    def convert_tools(tool_list: list[Any]) -> list[dict[str, Any]]:
         """
         Convert a list of LangChain tools to GLM format
 
@@ -122,7 +124,7 @@ class GLMToolConverter:
         return glm_tools
 
     @staticmethod
-    def _get_tool_parameters(tool: Any) -> Dict[str, Any]:
+    def _get_tool_parameters(tool: Any) -> dict[str, Any]:
         """Get tool parameter schema"""
         if hasattr(tool, 'args_schema') and tool.args_schema:
             return tool.args_schema.schema()
@@ -133,7 +135,7 @@ class GLMToolConverter:
         }
 
     @staticmethod
-    def parse_tool_response(message: Any) -> Dict[str, Any]:
+    def parse_tool_response(message: Any) -> dict[str, Any]:
         """
         Parse tool calls from a GLM API response
 

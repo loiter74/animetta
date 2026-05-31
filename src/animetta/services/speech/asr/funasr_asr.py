@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """
 FunASR Paraformer ASR implementation - Alibaba open-source speech recognition
 GitHub: https://github.com/modelscope/FunASR
@@ -15,15 +16,15 @@ Common models:
 - paraformer-en: English speech recognition
 """
 
-from typing import Union, Optional, List
 from pathlib import Path
+
 import numpy as np
 from loguru import logger
 
+from animetta.config.core.registry import ProviderRegistry
+
 from .interface import ASRInterface
 
-
-from animetta.config.core.registry import ProviderRegistry
 
 @ProviderRegistry.register_service("asr", "funasr")
 class FunASRASR(ASRInterface):
@@ -48,11 +49,11 @@ class FunASRASR(ASRInterface):
         language: str = "zh",
         device: str = "cuda",
         ncpu: int = 4,
-        vad_model: Optional[str] = "fsmn-vad",
-        punc_model: Optional[str] = "ct-punc",
-        spk_model: Optional[str] = None,
-        chunk_size: List[int] = None,
-        hotword: Optional[str] = None,
+        vad_model: str | None = "fsmn-vad",
+        punc_model: str | None = "ct-punc",
+        spk_model: str | None = None,
+        chunk_size: list[int] = None,
+        hotword: str | None = None,
         model_hub: str = "ms",
         disable_update: bool = True,
     ):
@@ -85,7 +86,7 @@ class FunASRASR(ASRInterface):
         self.disable_update = disable_update
         self._model = None
 
-        logger.info(f"FunASR Paraformer ASR initialization config:")
+        logger.info("FunASR Paraformer ASR initialization config:")
         logger.info(f"  Model: {model}")
         logger.info(f"  Language: {language}")
         logger.info(f"  Device: {device}")
@@ -118,7 +119,7 @@ class FunASRASR(ASRInterface):
 
                 logger.info(f"Loading FunASR model: {self.model_name}...")
                 self._model = AutoModel(**model_kwargs)
-                logger.info(f"FunASR model loaded successfully")
+                logger.info("FunASR model loaded successfully")
 
             except ImportError:
                 logger.error("funasr not installed, please run: pip install funasr modelscope")
@@ -133,7 +134,7 @@ class FunASRASR(ASRInterface):
 
     async def transcribe(
         self,
-        audio_data: Union[bytes, str, Path, list, np.ndarray],
+        audio_data: bytes | str | Path | list | np.ndarray,
         **kwargs
     ) -> str:
         """
@@ -149,9 +150,8 @@ class FunASRASR(ASRInterface):
             str: Recognized text
         """
         import asyncio
-        import tempfile
 
-        model = self._get_model()
+        self._get_model()
 
         # FunASR requires file path as input
         if isinstance(audio_data, np.ndarray):
@@ -199,17 +199,14 @@ class FunASRASR(ASRInterface):
 
         # result is a list, each element corresponds to an input
         first_result = result[0]
-        if isinstance(first_result, dict):
-            text = first_result.get("text", "")
-        else:
-            text = str(first_result)
+        text = first_result.get("text", "") if isinstance(first_result, dict) else str(first_result)
 
         return text.strip()
 
     async def _save_temp_wav(self, audio_np: np.ndarray) -> str:
         """Save numpy array to temporary WAV file"""
-        import wave
         import tempfile
+        import wave
 
         # Ensure float32 format
         if audio_np.dtype != np.float32:
@@ -250,7 +247,7 @@ class FunASRASR(ASRInterface):
 
     async def transcribe_stream(
         self,
-        audio_data: Union[bytes, str, Path, list, np.ndarray],
+        audio_data: bytes | str | Path | list | np.ndarray,
         **kwargs
     ):
         """

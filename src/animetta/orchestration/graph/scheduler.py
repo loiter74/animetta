@@ -15,12 +15,15 @@ from __future__ import annotations
 
 import asyncio
 import time
+from collections.abc import Callable, Coroutine
 from dataclasses import dataclass, field
-from typing import Any, Callable, Coroutine, Dict, List, Optional
+from typing import Any
 
 # AsyncCallable was added provisionally in Python 3.12 typing but may be absent
 # in some builds. Define an equivalent type alias.
 AsyncCallable = Callable[..., Coroutine[Any, Any, Any]]
+
+import contextlib
 
 from loguru import logger
 
@@ -29,8 +32,8 @@ from loguru import logger
 class TaskMetrics:
     """Per-task execution metrics."""
     name: str
-    last_run: Optional[float] = None       # timestamp
-    last_duration: Optional[float] = None  # seconds
+    last_run: float | None = None       # timestamp
+    last_duration: float | None = None  # seconds
     success_count: int = 0
     failure_count: int = 0
     total_runs: int = 0
@@ -44,7 +47,7 @@ class ScheduledTask:
     interval: float          # seconds
     timeout: float           # max execution time
     metrics: TaskMetrics = field(default_factory=lambda: TaskMetrics(name=""))
-    _task: Optional[asyncio.Task] = None
+    _task: asyncio.Task | None = None
     _cancel_event: asyncio.Event = field(default_factory=asyncio.Event)
 
     def __post_init__(self):
@@ -63,9 +66,9 @@ class AsyncScheduler:
     """
 
     def __init__(self):
-        self._tasks: Dict[str, ScheduledTask] = {}
+        self._tasks: dict[str, ScheduledTask] = {}
         self._running = False
-        self._main_loop_task: Optional[asyncio.Task] = None
+        self._main_loop_task: asyncio.Task | None = None
 
     # ── Lifecycle ─────────────────────────────────────────
 
@@ -131,20 +134,18 @@ class AsyncScheduler:
         # Cancel main loop
         if self._main_loop_task and not self._main_loop_task.done():
             self._main_loop_task.cancel()
-            try:
+            with contextlib.suppress(TimeoutError, asyncio.CancelledError):
                 await asyncio.wait_for(self._main_loop_task, timeout=10)
-            except (asyncio.CancelledError, asyncio.TimeoutError):
-                pass
 
         logger.info("[Scheduler] Stopped")
 
     # ── Metrics ────────────────────────────────────────────
 
-    def get_metrics(self) -> List[TaskMetrics]:
+    def get_metrics(self) -> list[TaskMetrics]:
         """Return metrics for all registered tasks."""
         return [t.metrics for t in self._tasks.values()]
 
-    def get_task_metrics(self, name: str) -> Optional[TaskMetrics]:
+    def get_task_metrics(self, name: str) -> TaskMetrics | None:
         """Return metrics for a specific task."""
         task = self._tasks.get(name)
         return task.metrics if task else None
@@ -218,7 +219,7 @@ class AsyncScheduler:
                 f"[Scheduler] Task '{task.name}' completed in {elapsed:.1f}s "
                 f"(success={task.metrics.success_count}, failure={task.metrics.failure_count})"
             )
-        except asyncio.TimeoutError:
+        except TimeoutError:
             elapsed = time.monotonic() - start
             logger.warning(
                 f"[Scheduler] Task '{task.name}' timed out after {elapsed:.1f}s "

@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """
 Qwen3-TTS implementation - 通义千问 open-source TTS (CustomVoice model)
 
@@ -15,20 +16,19 @@ For RTX 5090D: bfloat16 + FlashAttention 2 at ~4GB VRAM.
 # Status: active
 # Last verified: 2026-05-23
 
-from typing import Union, Optional, AsyncGenerator
-from pathlib import Path
-import os
-import tempfile
 import asyncio
 import gc
+import os
 import threading
+from collections.abc import AsyncGenerator
+from pathlib import Path
 
 from loguru import logger
 
+from animetta.config.core.registry import ProviderRegistry
+
 from .interface import TTSInterface
 
-
-from animetta.config.core.registry import ProviderRegistry
 
 @ProviderRegistry.register_service("tts", "qwen3")
 class Qwen3TTSTTS(TTSInterface):
@@ -109,8 +109,8 @@ class Qwen3TTSTTS(TTSInterface):
             logger.info(f"Loading Qwen3-TTS model: {self.model} (device={self.device}, dtype={self.dtype})")
             logger.info("First load downloads ~4GB model + tokenizer, may take 2-5 minutes depending on network...")
             try:
-                from qwen_tts import Qwen3TTSModel
                 import torch
+                from qwen_tts import Qwen3TTSModel
             except ImportError as e:
                 raise ImportError(
                     "qwen-tts not installed. Run: pip install -U qwen-tts"
@@ -194,7 +194,6 @@ class Qwen3TTSTTS(TTSInterface):
         if not self.ref_audio_path:
             raise ValueError("ref_audio_path must be set for voice clone mode")
 
-        import os
         if not os.path.exists(self.ref_audio_path):
             raise FileNotFoundError(f"Reference audio not found: {self.ref_audio_path}")
 
@@ -208,7 +207,7 @@ class Qwen3TTSTTS(TTSInterface):
         return self._voice_clone_prompt
 
     @classmethod
-    def from_config(cls, config: Qwen3TTSConfig, **kwargs) -> "Qwen3TTSTTS":
+    def from_config(cls, config: Qwen3TTSConfig, **kwargs) -> Qwen3TTSTTS:
         """Create instance from config object"""
         return cls(
             model=config.model,
@@ -230,11 +229,11 @@ class Qwen3TTSTTS(TTSInterface):
     async def synthesize(
         self,
         text: str,
-        output_path: Optional[Union[str, Path]] = None,
-        speaker: Optional[str] = None,
-        instruct: Optional[str] = None,
+        output_path: str | Path | None = None,
+        speaker: str | None = None,
+        instruct: str | None = None,
         **kwargs,
-    ) -> Union[bytes, str]:
+    ) -> bytes | str:
         """
         Synthesize text to speech using Qwen3-TTS CustomVoice model
 
@@ -302,9 +301,9 @@ class Qwen3TTSTTS(TTSInterface):
             if not wavs or len(wavs) == 0:
                 raise RuntimeError("Qwen3-TTS generated empty audio")
 
-            import numpy as np
-            import soundfile as sf
             from io import BytesIO
+
+            import soundfile as sf
 
             audio_data = wavs[0] if isinstance(wavs, list) else wavs
             buffer = BytesIO()
@@ -330,10 +329,10 @@ class Qwen3TTSTTS(TTSInterface):
     async def synthesize_stream(
         self,
         text: str,
-        speaker: Optional[str] = None,
-        instruct: Optional[str] = None,
+        speaker: str | None = None,
+        instruct: str | None = None,
         **kwargs,
-    ) -> AsyncGenerator[bytes, None]:
+    ) -> AsyncGenerator[bytes]:
         """Streaming speech synthesis — NOT YET IMPLEMENTED.
 
         Qwen3-TTS supports streaming via its Dual-Track architecture (97ms first-packet),
@@ -378,7 +377,7 @@ class Qwen3TTSTTS(TTSInterface):
             logger.debug("Waiting for in-flight synthesis to complete before closing...")
             try:
                 await asyncio.wait_for(self._synth_done.wait(), timeout=10.0)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 logger.warning("Timed out waiting for synthesis to complete. Force unloading.")
 
         logger.info("Unloading Qwen3-TTS model...")

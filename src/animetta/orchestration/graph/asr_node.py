@@ -1,15 +1,16 @@
 """ASR node - speech to text"""
 
-from typing import Dict, Any, Optional
-from loguru import logger
+from typing import Any
+
 from langchain_core.messages import HumanMessage
 from langgraph.types import RunnableConfig
+from loguru import logger
 
-from .state import AgentState
 from .node_error import log_node_error
+from .state import AgentState
 
 
-def _get_service_context(config: Optional[RunnableConfig]) -> Optional[Any]:
+def _get_service_context(config: RunnableConfig | None) -> Any | None:
     """Get service_context from LangGraph config"""
     if config:
         return config.get("configurable", {}).get("service_context")
@@ -18,8 +19,8 @@ def _get_service_context(config: Optional[RunnableConfig]) -> Optional[Any]:
 
 async def asr_node(
     state: AgentState,
-    config: Optional[RunnableConfig] = None,
-) -> Dict[str, Any]:
+    config: RunnableConfig | None = None,
+) -> dict[str, Any]:
     """
     ASR speech recognition node
 

@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """
 RVC (Retrieval-based Voice Conversion) service implementation.
 
@@ -12,11 +13,10 @@ Key design decisions:
 - Duck-typed config to bypass RVC's @singleton_variable pattern
 """
 
-from typing import Union, Optional
-from pathlib import Path
 import asyncio
 import io
 import sys
+from pathlib import Path
 from types import SimpleNamespace
 
 import numpy as np
@@ -29,6 +29,7 @@ RVC_PROJECT_ROOT = "C:/Users/30262/RVC20240604Nvidia"
 
 
 from animetta.config.core.registry import ProviderRegistry
+
 
 @ProviderRegistry.register_service("vc", "rvc")
 class RVCVC(VCInterface):
@@ -177,9 +178,9 @@ class RVCVC(VCInterface):
     async def convert(
         self,
         audio: bytes,
-        output_path: Optional[Union[str, Path]] = None,
+        output_path: str | Path | None = None,
         **kwargs,
-    ) -> Union[bytes, str]:
+    ) -> bytes | str:
         """
         Convert voice timbre of input audio using RVC.
 
@@ -294,7 +295,7 @@ class RVCVC(VCInterface):
     # ------------------------------------------------------------------
 
     @classmethod
-    def from_config(cls, config: RVCConfig) -> "RVCVC":
+    def from_config(cls, config: RVCConfig) -> RVCVC:
         """Create an RVCVC instance from an RVCConfig object.
 
         Used by ProviderRegistry.create_service("vc", config) for

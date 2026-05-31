@@ -1,6 +1,6 @@
 """Speech service module - ASR + TTS"""
 
-from .asr import ASRInterface, ASRFactory
-from .tts import TTSInterface, TTSFactory
+from .asr import ASRFactory, ASRInterface
+from .tts import TTSFactory, TTSInterface
 
 __all__ = ["ASRInterface", "ASRFactory", "TTSInterface", "TTSFactory"]

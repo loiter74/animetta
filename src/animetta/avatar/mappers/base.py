@@ -5,7 +5,7 @@ Converts emotions/expressions to Live2D parameters
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Dict, Any, List, Optional
+from typing import Any
 
 
 @dataclass
@@ -22,7 +22,7 @@ class ParameterState:
     value: float
     duration: float = 0.3
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "name": self.name,
             "value": self.value,
@@ -42,11 +42,11 @@ class ExpressionFrame:
         intensity: Overall intensity (0.0 - 1.0)
         timestamp: Timestamp in seconds
     """
-    parameters: List[ParameterState]
+    parameters: list[ParameterState]
     intensity: float = 1.0
     timestamp: float = 0.0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "parameters": [p.to_dict() for p in self.parameters],
             "intensity": self.intensity,
@@ -76,7 +76,7 @@ class IEmotionParamMapper(ABC):
         self,
         emotion: str,
         intensity: float = 1.0,
-        context: Optional[Dict[str, Any]] = None
+        context: dict[str, Any] | None = None
     ) -> ExpressionFrame:
         """
         Map an emotion to Live2D parameters
@@ -97,9 +97,9 @@ class IEmotionParamMapper(ABC):
     @abstractmethod
     def map_emotions_timeline(
         self,
-        emotions: List[tuple],  # [(emotion, start_time, end_time, intensity), ...]
+        emotions: list[tuple],  # [(emotion, start_time, end_time, intensity), ...]
         duration: float
-    ) -> List[ExpressionFrame]:
+    ) -> list[ExpressionFrame]:
         """
         Map an emotion timeline to a sequence of expression frames
 
@@ -118,7 +118,7 @@ class IEmotionParamMapper(ABC):
         """Mapper name"""
         pass
 
-    def get_supported_emotions(self) -> List[str]:
+    def get_supported_emotions(self) -> list[str]:
         """Get the list of supported emotions"""
         return []
 

@@ -1,8 +1,9 @@
 """Provider registry - the core for implementing plugin-based configuration and services"""
 
-from typing import Dict, Type, Literal, Union, Annotated, Any, Callable, Optional, List
-from pydantic import Field
+from typing import Annotated, Literal, Union
+
 from loguru import logger
+from pydantic import Field
 
 from .base import ProviderConfig
 
@@ -28,27 +29,27 @@ class ProviderRegistry:
             def from_config(cls, config: OpenAILLMConfig) -> "OpenAIAgent":
                 return cls(api_key=config.api_key, ...)
     """
-    
+
     # Config class storage: {"llm": {"openai": OpenAILLMConfig, ...}, ...}
-    _configs: Dict[str, Dict[str, Type[ProviderConfig]]] = {
+    _configs: dict[str, dict[str, type[ProviderConfig]]] = {
         "llm": {},
         "asr": {},
         "tts": {},
         "vad": {},
     }
-    
+
     # Service class storage: {"llm": {"openai": OpenAIAgent, ...}, ...}
-    _services: Dict[str, Dict[str, Type]] = {
+    _services: dict[str, dict[str, type]] = {
         "llm": {},
         "asr": {},
         "tts": {},
         "vad": {},
     }
-    
+
     # Compatible with old API — removed: _providers alias (unused)
-    
+
     # ==================== Config Class Registration ====================
-    
+
     @classmethod
     def register_config(cls, category: Literal["llm", "asr", "tts", "vad"], provider_type: str):
         """
@@ -61,7 +62,7 @@ class ProviderRegistry:
         Returns:
             Decorator function
         """
-        def decorator(config_class: Type[ProviderConfig]) -> Type[ProviderConfig]:
+        def decorator(config_class: type[ProviderConfig]) -> type[ProviderConfig]:
             cls._configs[category][provider_type] = config_class
             logger.debug(f"Registered config class: {category}.{provider_type} -> {config_class.__name__}")
             return config_class
@@ -71,9 +72,9 @@ class ProviderRegistry:
     def register(cls, category: str, provider_type: str):
         """Register a provider config class (shorthand for register_config)."""
         return cls.register_config(category, provider_type)
-    
+
     # ==================== Service Class Registration ====================
-    
+
     @classmethod
     def register_service(cls, category: Literal["llm", "asr", "tts"], provider_type: str):
         """
@@ -93,14 +94,14 @@ class ProviderRegistry:
                 def from_config(cls, config: OpenAILLMConfig) -> "OpenAIAgent":
                     return cls(api_key=config.api_key, model=config.model)
         """
-        def decorator(service_class: Type) -> Type:
+        def decorator(service_class: type) -> type:
             cls._services[category][provider_type] = service_class
             logger.debug(f"Registered service class: {category}.{provider_type} -> {service_class.__name__}")
             return service_class
         return decorator
-    
+
     @classmethod
-    def get_service_class(cls, category: str, provider_type: str) -> Optional[Type]:
+    def get_service_class(cls, category: str, provider_type: str) -> type | None:
         """
         Get the service implementation class
 
@@ -112,7 +113,7 @@ class ProviderRegistry:
             Service class, or None if not found
         """
         return cls._services.get(category, {}).get(provider_type)
-    
+
     @classmethod
     def create_service(cls, category: str, config: ProviderConfig, **extra_kwargs):
         """
@@ -135,7 +136,7 @@ class ProviderRegistry:
         """
         provider_type = config.type
         service_class = cls.get_service_class(category, provider_type)
-        
+
         if service_class is None:
             raise ValueError(
                 f"Service implementation not found: {category}.{provider_type}. "
@@ -149,14 +150,14 @@ class ProviderRegistry:
             raise ValueError(
                 f"Service class {service_class.__name__} is missing the from_config class method"
             )
-    
+
     @classmethod
-    def list_services(cls, category: str) -> List[str]:
+    def list_services(cls, category: str) -> list[str]:
         """List all registered services under a category"""
         return list(cls._services.get(category, {}).keys())
-    
+
     @classmethod
-    def get(cls, category: str, provider_type: str) -> Optional[Type[ProviderConfig]]:
+    def get(cls, category: str, provider_type: str) -> type[ProviderConfig] | None:
         """
         Get the specified provider configuration class
 
@@ -168,9 +169,9 @@ class ProviderRegistry:
             Configuration class, or None if not found
         """
         return cls._providers.get(category, {}).get(provider_type)
-    
+
     @classmethod
-    def list_providers(cls, category: str) -> List[str]:
+    def list_providers(cls, category: str) -> list[str]:
         """
         List all registered providers under a category
 
@@ -181,9 +182,9 @@ class ProviderRegistry:
             List of provider type identifiers
         """
         return list(cls._providers.get(category, {}).keys())
-    
+
     @classmethod
-    def get_all_providers(cls) -> Dict[str, Dict[str, Type[ProviderConfig]]]:
+    def get_all_providers(cls) -> dict[str, dict[str, type[ProviderConfig]]]:
         """
         Get all registered providers
 
@@ -191,7 +192,7 @@ class ProviderRegistry:
             Nested dictionary of all providers
         """
         return cls._providers.copy()
-    
+
     @classmethod
     def create_union_type(cls, category: str):
         """
@@ -215,7 +216,7 @@ class ProviderRegistry:
 
         # Use discriminator for automatic type identification
         return Annotated[union_type, Field(discriminator="type")]
-    
+
     @classmethod
     def clear(cls, category: str = None):
         """

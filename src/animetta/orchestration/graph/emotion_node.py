@@ -1,21 +1,23 @@
 """Emotion analysis node"""
 
-from typing import Dict, Any, Optional
-from loguru import logger
-from langgraph.types import RunnableConfig
+from typing import Any
 
-from .state import AgentState
+from langgraph.types import RunnableConfig
+from loguru import logger
+
 from animetta.memory.v2.emotion_field import VAD_MAP
 
+from .state import AgentState
 
-def _get_from_config(config: Optional[RunnableConfig], key: str) -> Optional[Any]:
+
+def _get_from_config(config: RunnableConfig | None, key: str) -> Any | None:
     """Get value from LangGraph config"""
     if config:
         return config.get("configurable", {}).get(key)
     return None
 
 
-def _emotion_result(emotion: str) -> Dict[str, Any]:
+def _emotion_result(emotion: str) -> dict[str, Any]:
     """Build result dict with both discrete emotion and VAD vector."""
     vad = VAD_MAP.get(emotion, VAD_MAP["neutral"])
     return {"emotion": emotion, "emotion_vad": vad.to_tuple()}
@@ -23,8 +25,8 @@ def _emotion_result(emotion: str) -> Dict[str, Any]:
 
 async def emotion_node(
     state: AgentState,
-    config: Optional[RunnableConfig] = None,
-) -> Dict[str, Any]:
+    config: RunnableConfig | None = None,
+) -> dict[str, Any]:
     """
     Emotion analysis node
 

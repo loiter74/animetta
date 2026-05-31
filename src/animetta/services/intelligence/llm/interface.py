@@ -1,10 +1,12 @@
 from __future__ import annotations
+
 """
 LLM (Large Language Model) service interface definition
 """
 
 from abc import ABC, abstractmethod
-from typing import AsyncIterator, Optional, List, Dict, Any
+from collections.abc import AsyncIterator
+from typing import Any
 
 
 class LLMInterface(ABC):
@@ -81,7 +83,7 @@ class LLMInterface(ABC):
         pass
 
     @abstractmethod
-    def get_history(self) -> List[Dict[str, Any]]:
+    def get_history(self) -> list[dict[str, Any]]:
         """
         Get conversation history
 

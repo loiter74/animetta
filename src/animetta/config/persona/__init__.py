@@ -5,12 +5,12 @@ Contains base persona configuration and enhanced persona builder
 """
 
 from .base import (
-    PersonalityTraits,
     BehaviorRules,
-    PersonaConfig,
-    MBTIProfile,
-    MBTIDimensions,
     MBTIDimensionDelta,
+    MBTIDimensions,
+    MBTIProfile,
+    PersonaConfig,
+    PersonalityTraits,
 )
 from .enhanced import (
     EnhancedPersonaBuilder,

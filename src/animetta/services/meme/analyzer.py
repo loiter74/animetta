@@ -9,8 +9,7 @@ from __future__ import annotations
 
 import json
 import logging
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -65,9 +64,9 @@ class MemeCognitiveAnalyzer:
 
     def __init__(
         self,
-        llm_client: Optional[Any] = None,
-        meme_pool: Optional[MemePool] = None,
-        config: Optional[Dict[str, Any]] = None,
+        llm_client: Any | None = None,
+        meme_pool: MemePool | None = None,
+        config: dict[str, Any] | None = None,
     ):
         """
         Args:
@@ -89,9 +88,9 @@ class MemeCognitiveAnalyzer:
         text: str,
         context_hint: str = "",
         source: str = "bilibili",
-        tags: Optional[List[str]] = None,
+        tags: list[str] | None = None,
         source_url: str = "",
-    ) -> Optional[CognitiveAnalysis]:
+    ) -> CognitiveAnalysis | None:
         """Analyze a single meme candidate and return structured cognitive analysis.
 
         Returns None if LLM analysis fails.
@@ -163,9 +162,9 @@ class MemeCognitiveAnalyzer:
         self,
         text: str,
         context_hint: str = "",
-        tags: Optional[List[str]] = None,
+        tags: list[str] | None = None,
         source_url: str = "",
-    ) -> Optional[Meme]:
+    ) -> Meme | None:
         """Analyze a meme candidate and ingest into MemePool if confidence is sufficient.
 
         Returns the created Meme if ingested, None if rejected.
@@ -220,7 +219,7 @@ class MemeCognitiveAnalyzer:
     # ── Internal helpers ────────────────────────────────────────────────
 
     @staticmethod
-    def _parse_json(raw: str) -> Dict[str, Any]:
+    def _parse_json(raw: str) -> dict[str, Any]:
         """Parse LLM JSON response with markdown fence stripping."""
         text = raw.strip()
         if text.startswith("```json"):
@@ -238,7 +237,7 @@ class MemeCognitiveAnalyzer:
             return {}
 
     @staticmethod
-    def _validate_analysis(data: Dict[str, Any]) -> bool:
+    def _validate_analysis(data: dict[str, Any]) -> bool:
         """Validate that all required fields are present."""
         if not data:
             return False

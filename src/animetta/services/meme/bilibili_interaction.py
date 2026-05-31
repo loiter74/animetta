@@ -11,7 +11,7 @@ import json
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ class InteractionPattern:
     """Analyzed interaction pattern from livestream danmaku."""
     name: str
     description: str
-    applicable_scenarios: List[str] = field(default_factory=list)
+    applicable_scenarios: list[str] = field(default_factory=list)
     confidence: float = 0.5
 
     def to_dict(self) -> dict:
@@ -117,9 +117,9 @@ class BilibiliInteractionLearner:
 
     def __init__(
         self,
-        llm_client: Optional[Any] = None,
-        wiki_manager: Optional[Any] = None,
-        config: Optional[Dict[str, Any]] = None,
+        llm_client: Any | None = None,
+        wiki_manager: Any | None = None,
+        config: dict[str, Any] | None = None,
     ):
         """
         Args:
@@ -134,14 +134,14 @@ class BilibiliInteractionLearner:
         self._llm = llm_client
         self._wiki = wiki_manager
         self._config = config or {}
-        self._room_ids: List[int] = self._config.get("room_ids", [])
+        self._room_ids: list[int] = self._config.get("room_ids", [])
         self._min_samples = self._config.get("min_samples_per_room", 100)
         self._collection_timeout = self._config.get("collection_timeout", 300)
         self._request_delay = self._config.get("request_delay", 2.0)
 
     # ── Public API ──────────────────────────────────────────────────────
 
-    async def learn_patterns(self) -> List[LivestreamStrategy]:
+    async def learn_patterns(self) -> list[LivestreamStrategy]:
         """Run the full interaction learning pipeline.
 
         Returns:
@@ -157,7 +157,7 @@ class BilibiliInteractionLearner:
             logger.info("[BilibiliInteractionLearner] No room IDs configured, skipping")
             return []
 
-        all_samples: Dict[int, List[DanmakuSample]] = {}
+        all_samples: dict[int, list[DanmakuSample]] = {}
 
         for room_id in self._room_ids:
             try:
@@ -197,7 +197,7 @@ class BilibiliInteractionLearner:
         self,
         min_freq: int = 3,
         max_phrases: int = 30,
-    ) -> List[str]:
+    ) -> list[str]:
         """Collect hot danmaku phrases from configured rooms.
 
         Useful for the meme collection pipeline to query what's trending
@@ -214,7 +214,7 @@ class BilibiliInteractionLearner:
             return []
 
         from collections import Counter
-        all_texts: List[str] = []
+        all_texts: list[str] = []
 
         for room_id in self._room_ids:
             try:
@@ -244,17 +244,17 @@ class BilibiliInteractionLearner:
 
     # ── Danmaku collection ──────────────────────────────────────────────
 
-    async def _collect_danmaku(self, room_id: int) -> List[DanmakuSample]:
+    async def _collect_danmaku(self, room_id: int) -> list[DanmakuSample]:
         """Collect danmaku samples from a live room."""
         try:
-            from bilibili_api import live, sync, Credential
+            from bilibili_api import Credential, live, sync
         except ImportError:
             logger.error(
                 "[BilibiliInteractionLearner] bilibili-api-python not installed"
             )
             return []
 
-        samples: List[DanmakuSample] = []
+        samples: list[DanmakuSample] = []
         start_time = asyncio.get_event_loop().time()
 
         try:
@@ -300,15 +300,15 @@ class BilibiliInteractionLearner:
 
     async def _analyze_patterns(
         self,
-        samples_by_room: Dict[int, List[DanmakuSample]],
-    ) -> List[LivestreamStrategy]:
+        samples_by_room: dict[int, list[DanmakuSample]],
+    ) -> list[LivestreamStrategy]:
         """Use LLM to analyze danmaku interaction patterns."""
         if not self._llm:
             logger.info("[BilibiliInteractionLearner] No LLM client, skipping analysis")
             return []
 
         # Build analysis context
-        room_sections: List[str] = []
+        room_sections: list[str] = []
         for room_id, samples in samples_by_room.items():
             # Take a representative sample (first 50 danmaku)
             sample_texts = [s.content for s in samples[:50]]
@@ -336,7 +336,7 @@ class BilibiliInteractionLearner:
             parsed = self._parse_json(content)
 
             strategies_raw = parsed.get("strategies", [])
-            strategies: List[LivestreamStrategy] = []
+            strategies: list[LivestreamStrategy] = []
             for s in strategies_raw:
                 strategies.append(LivestreamStrategy(
                     trigger_condition=s.get("trigger_condition", ""),
@@ -365,7 +365,7 @@ class BilibiliInteractionLearner:
 
     # ── Strategy storage ────────────────────────────────────────────────
 
-    async def _store_strategies(self, strategies: List[LivestreamStrategy]) -> None:
+    async def _store_strategies(self, strategies: list[LivestreamStrategy]) -> None:
         """Store strategies as a Wiki page for retrieval."""
         if not self._wiki:
             return
@@ -413,7 +413,7 @@ class BilibiliInteractionLearner:
     # ── Helpers ─────────────────────────────────────────────────────────
 
     @staticmethod
-    def _parse_json(raw: str) -> Dict[str, Any]:
+    def _parse_json(raw: str) -> dict[str, Any]:
         """Parse LLM JSON response."""
         text = raw.strip()
         if text.startswith("```json"):

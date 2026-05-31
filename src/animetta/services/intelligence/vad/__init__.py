@@ -2,15 +2,15 @@
 VAD (Voice Activity Detection) module
 """
 
-from .interface import VADInterface, VADState, VADResult
-from .factory import VADFactory
 from .detector import SileroDetector
+from .factory import VADFactory
+from .interface import VADInterface, VADResult, VADState
 
 # Import implementations to trigger ProviderRegistry registration
 try:
-    from . import silero_vad, mock_vad
-    from .silero_vad import SileroVAD, SileroStateMachine
+    from . import mock_vad, silero_vad
     from .mock_vad import MockVAD
+    from .silero_vad import SileroStateMachine, SileroVAD
 except ImportError:
     SileroVAD = None  # type: ignore
     SileroStateMachine = None  # type: ignore

@@ -1,10 +1,10 @@
 from __future__ import annotations
+
 """
 TTS (Text-to-Speech) interface definition
 """
 
 from abc import ABC, abstractmethod
-from typing import Union, Optional
 from pathlib import Path
 
 
@@ -18,9 +18,9 @@ class TTSInterface(ABC):
     async def synthesize(
         self,
         text: str,
-        output_path: Optional[Union[str, Path]] = None,
+        output_path: str | Path | None = None,
         **kwargs
-    ) -> Union[bytes, str]:
+    ) -> bytes | str:
         """
         Synthesize text to speech
 

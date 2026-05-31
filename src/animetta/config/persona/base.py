@@ -4,8 +4,9 @@ Supports defining LLM character personas via YAML files
 Merged functionality from the original CharacterConfig
 """
 
-from typing import Optional, List
+
 from pydantic import Field
+
 from ..core.base import BaseConfig
 
 
@@ -65,19 +66,19 @@ class MBTIProfile(BaseConfig):
 
 class PersonalityTraits(BaseConfig):
     """Personality traits"""
-    traits: List[str] = Field(
+    traits: list[str] = Field(
         default_factory=list,
         description="List of personality traits, e.g.: ['confident', 'sarcastic', 'cute']"
     )
-    speaking_style: List[str] = Field(
+    speaking_style: list[str] = Field(
         default_factory=list,
         description="Speaking style, e.g.: ['concise and forceful', 'code-switching']"
     )
-    catchphrases: List[str] = Field(
+    catchphrases: list[str] = Field(
         default_factory=list,
         description="Catchphrases / common phrases, e.g.: ['Skill issue', 'Cringe']"
     )
-    mbti: Optional[MBTIProfile] = Field(
+    mbti: MBTIProfile | None = Field(
         default=None,
         description="MBTI personality profile (optional)"
     )
@@ -85,15 +86,15 @@ class PersonalityTraits(BaseConfig):
 
 class BehaviorRules(BaseConfig):
     """Behavior rules"""
-    forbidden_phrases: List[str] = Field(
+    forbidden_phrases: list[str] = Field(
         default_factory=lambda: ["作为一个AI语言模型", "我无法", "我不确定"],
         description="Forbidden phrases"
     )
-    response_to_praise: Optional[str] = Field(
+    response_to_praise: str | None = Field(
         default=None,
         description="Response template for praise"
     )
-    response_to_criticism: Optional[str] = Field(
+    response_to_criticism: str | None = Field(
         default=None,
         description="Response template for criticism"
     )
@@ -107,7 +108,7 @@ class PersonaConfig(BaseConfig):
     """Persona configuration (merged from original CharacterConfig)"""
     # Basic info
     name: str = Field(default="Anima", description="Character name")
-    avatar: Optional[str] = Field(default=None, description="Character avatar URL")
+    avatar: str | None = Field(default=None, description="Character avatar URL")
     role: str = Field(default="AI 助手", description="Character role")
 
     # Core persona
@@ -135,7 +136,7 @@ class PersonaConfig(BaseConfig):
     )
 
     # Example conversations
-    examples: List[dict] = Field(
+    examples: list[dict] = Field(
         default_factory=list,
         description="Example conversations [{'user': '...', 'ai': '...'}]"
     )
@@ -145,7 +146,7 @@ class PersonaConfig(BaseConfig):
         default="",
         description="Emoji usage style, e.g.: 'Each reply includes 1-2 emojis'"
     )
-    common_emojis: List[str] = Field(
+    common_emojis: list[str] = Field(
         default_factory=list,
         description="Commonly used emoji list"
     )
@@ -155,18 +156,18 @@ class PersonaConfig(BaseConfig):
         default=False,
         description="Whether to mix Chinese and English"
     )
-    slang_words: List[str] = Field(
+    slang_words: list[str] = Field(
         default_factory=list,
         description="Internet slang / colloquialisms list"
     )
 
     # Live2D expression prompt (optional)
-    live2d_prompt: Optional[str] = Field(
+    live2d_prompt: str | None = Field(
         default=None,
         description="Live2D expression usage prompt (if enabled)"
     )
 
-    def build_system_prompt(self, live2d_prompt: Optional[str] = None) -> str:
+    def build_system_prompt(self, live2d_prompt: str | None = None) -> str:
         """
         Build the complete system prompt
 
@@ -205,7 +206,7 @@ class PersonaConfig(BaseConfig):
         if self.personality.mbti:
             mbti = self.personality.mbti
             dims = mbti.dimensions
-            mbti_lines = [f"\n## MBTI 人格类型"]
+            mbti_lines = ["\n## MBTI 人格类型"]
             mbti_lines.append(f"你的 MBTI 类型是 {mbti.type}，维度倾向如下：")
             # E/I
             ei_desc = dims.describe_dimension("ei")
@@ -269,16 +270,17 @@ class PersonaConfig(BaseConfig):
     @classmethod
     def from_yaml(cls, path: str) -> "PersonaConfig":
         """Load persona configuration from YAML file"""
-        import yaml
         from pathlib import Path
-        
+
+        import yaml
+
         path = Path(path)
         if not path.exists():
             raise FileNotFoundError(f"Persona configuration file not found: {path}")
-        
-        with open(path, 'r', encoding='utf-8') as f:
+
+        with open(path, encoding='utf-8') as f:
             data = yaml.safe_load(f)
-        
+
         return cls(**data)
 
     @classmethod
@@ -294,20 +296,20 @@ class PersonaConfig(BaseConfig):
             PersonaConfig: Persona configuration object
         """
         from pathlib import Path
-        
+
         if personas_dir is None:
             # Default path
             personas_dir = Path(__file__).parent.parent.parent.parent.parent / "config" / "personas"
         else:
             personas_dir = Path(personas_dir)
-        
+
         # Attempt to load
         yaml_path = personas_dir / f"{name}.yaml"
         if yaml_path.exists():
             return cls.from_yaml(str(yaml_path))
-        
+
         # If not found, return default
         if name != "default":
             return cls()
-        
+
         raise FileNotFoundError(f"Persona configuration not found: {name}")

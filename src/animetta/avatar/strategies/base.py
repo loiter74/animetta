@@ -7,7 +7,7 @@ Uses the strategy pattern to support different time allocation algorithms.
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Dict, Any
+from typing import Any
 
 
 @dataclass
@@ -41,7 +41,7 @@ class TimelineSegment:
         """Calculate segment duration"""
         return self.end_time - self.start_time
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert to dictionary (for WebSocket messages)
 
@@ -55,7 +55,7 @@ class TimelineSegment:
             "intensity": self.intensity
         }
 
-    def to_frontend_format(self) -> Dict[str, Any]:
+    def to_frontend_format(self) -> dict[str, Any]:
         """
         Convert to frontend format (compatible with audio_with_expression event)
 
@@ -163,12 +163,12 @@ class ITimelineStrategy(ABC):
     @abstractmethod
     def calculate(
         self,
-        emotions: List[str],
+        emotions: list[str],
         text: str,
         audio_duration: float,
         config: TimelineConfig = None,
         **kwargs
-    ) -> List[TimelineSegment]:
+    ) -> list[TimelineSegment]:
         """
         Calculate the emotion timeline
 
@@ -224,7 +224,7 @@ class ITimelineStrategy(ABC):
 
     def validate_input(
         self,
-        emotions: List[str],
+        emotions: list[str],
         text: str,
         audio_duration: float
     ) -> bool:
@@ -249,10 +249,10 @@ class ITimelineStrategy(ABC):
 
     def ensure_full_coverage(
         self,
-        segments: List[TimelineSegment],
+        segments: list[TimelineSegment],
         audio_duration: float,
         default_emotion: str = "neutral"
-    ) -> List[TimelineSegment]:
+    ) -> list[TimelineSegment]:
         """
         Ensure the timeline covers the entire audio duration
 
@@ -307,8 +307,8 @@ class ITimelineStrategy(ABC):
 
     def merge_adjacent_same_emotion(
         self,
-        segments: List[TimelineSegment]
-    ) -> List[TimelineSegment]:
+        segments: list[TimelineSegment]
+    ) -> list[TimelineSegment]:
         """
         Merge adjacent segments with the same emotion
 

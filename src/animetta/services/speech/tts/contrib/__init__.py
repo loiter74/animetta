@@ -9,10 +9,10 @@ should be archived.
 """
 
 from .chattts_tts import ChatTTSTTS
+from .glados_effect import GladosEffectProcessor
 from .glm_tts import GLMTTS
 from .kokoro_tts import KokoroTTS
 from .vibe_voice_tts import VibeVoiceTTS
-from .glados_effect import GladosEffectProcessor
 
 __all__ = [
     "ChatTTSTTS",

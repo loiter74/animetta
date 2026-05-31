@@ -7,7 +7,7 @@ emergent memes) are projections of the same MemoryAtom at different layers.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import IntEnum
 
 
@@ -35,7 +35,7 @@ class Relation:
     source_id: str
     target_id: str
     relation_type: str
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     metadata: dict = field(default_factory=dict)
 
 
@@ -103,5 +103,5 @@ class MemoryAtom:
         """Hours since last recall, or None if never recalled."""
         if self.last_accessed_at is None:
             return None
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         return (now - self.last_accessed_at).total_seconds() / 3600.0

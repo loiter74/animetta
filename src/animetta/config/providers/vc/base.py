@@ -1,6 +1,5 @@
 """Voice Conversion (VC) base configuration"""
 
-from typing import Optional
 from pydantic import Field
 
 from ...core.base import ProviderConfig

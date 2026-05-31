@@ -5,7 +5,7 @@ Manages interrupt signals for each session, used to interrupt ongoing LLM genera
 """
 
 import asyncio
-from typing import Dict
+
 from loguru import logger
 
 
@@ -18,7 +18,7 @@ class InterruptHandler:
 
     def __init__(self):
         # session_id -> asyncio.Event
-        self._signals: Dict[str, asyncio.Event] = {}
+        self._signals: dict[str, asyncio.Event] = {}
 
     def get_signal(self, session_id: str) -> asyncio.Event:
         """

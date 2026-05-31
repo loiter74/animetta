@@ -1,7 +1,9 @@
 """LangGraph state definition"""
 
-from typing import TypedDict, Annotated, Sequence, Optional, Any, Dict, List, Union
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage
+from collections.abc import Sequence
+from typing import Annotated, Any, TypedDict
+
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 from langgraph.graph.message import add_messages
 
 
@@ -10,58 +12,58 @@ class AgentState(TypedDict):
 
     # Input
     input_type: str
-    raw_audio: Optional[bytes]
+    raw_audio: bytes | None
     user_text: str
 
     # LLM conversation
     messages: Annotated[Sequence[BaseMessage], add_messages]
-    system_prompt: Optional[str]
+    system_prompt: str | None
 
     # Tool calling
-    tool_calls: Optional[List[Dict[str, Any]]]
-    tool_results: Optional[List[Dict[str, Any]]]
+    tool_calls: list[dict[str, Any]] | None
+    tool_results: list[dict[str, Any]] | None
 
     # Output
     response_text: str
-    response_chunks: List[str]
-    tts_audio: Optional[Union[bytes, str]]
-    emotion: Optional[str]
-    emotion_vad: Optional[tuple[float, float, float]]  # VAD vector from emotion_node
+    response_chunks: list[str]
+    tts_audio: bytes | str | None
+    emotion: str | None
+    emotion_vad: tuple[float, float, float] | None  # VAD vector from emotion_node
 
     # Control
-    control_signal: Optional[str]
+    control_signal: str | None
 
     # Metadata
     session_id: str
-    persona: Optional[Dict[str, Any]]
-    channel_id: Optional[str]
-    user_id: Optional[str]
-    user_name: Optional[str]
-    metadata: Dict[str, Any]
+    persona: dict[str, Any] | None
+    channel_id: str | None
+    user_id: str | None
+    user_name: str | None
+    metadata: dict[str, Any]
 
     # Error handling
-    error: Optional[str]
+    error: str | None
     should_retry: bool
     retry_count: int
 
     # Performance timing (collected at runtime for analysis)
-    _timings: List[Dict[str, Any]]
+    _timings: list[dict[str, Any]]
 
     # Personality
     personality_mode: str              # 'default' | 'streaming' | 'mood_xxx'
-    personality_mood: Optional[str]    # current mood override
+    personality_mood: str | None    # current mood override
 
 
 def create_initial_state(
     session_id: str,
     input_type: str = "text",
     user_text: str = "",
-    raw_audio: Optional[bytes] = None,
-    persona: Optional[Dict[str, Any]] = None,
-    system_prompt: Optional[str] = None,
-    channel_id: Optional[str] = None,
-    user_id: Optional[str] = None,
-    user_name: Optional[str] = None,
+    raw_audio: bytes | None = None,
+    persona: dict[str, Any] | None = None,
+    system_prompt: str | None = None,
+    channel_id: str | None = None,
+    user_id: str | None = None,
+    user_name: str | None = None,
 ) -> AgentState:
     """Create initial state"""
     return {
@@ -93,7 +95,7 @@ def create_initial_state(
     }
 
 
-def create_user_message(text: str, user_id: Optional[str] = None, user_name: Optional[str] = None) -> HumanMessage:
+def create_user_message(text: str, user_id: str | None = None, user_name: str | None = None) -> HumanMessage:
     """Create user message"""
     content = f"[{user_name}]: {text}" if user_name else text
     return HumanMessage(content=content, name=user_id or "user")

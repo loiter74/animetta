@@ -13,12 +13,10 @@ import io
 import os
 import struct
 import tempfile
-from typing import Optional, Dict
-from pathlib import Path
 
 import numpy as np
-from loguru import logger
 from langchain_core.tools import tool
+from loguru import logger
 
 
 def _read_audio_bytes(path: str) -> bytes:
@@ -40,7 +38,7 @@ def _write_audio_bytes(data: bytes, suffix: str = ".wav") -> str:
 async def separate_vocals(
     audio_path: str,
     target: str = "vocals",
-    output_dir: Optional[str] = None,
+    output_dir: str | None = None,
 ) -> str:
     """Separate vocals from an audio mixture (song) into stems.
 
@@ -66,8 +64,9 @@ async def separate_vocals(
         # For standalone tool use, we fall back to a direct import
         separation_engine = None
         try:
-            from langchain_core.runnables import RunnableConfig
             import inspect
+
+            from langchain_core.runnables import RunnableConfig
             # Walk up the call stack to find RunnableConfig
             frame = inspect.currentframe()
             while frame:
@@ -122,7 +121,7 @@ async def voice_convert(
     input_audio_path: str,
     key: int = 0,
     formant: int = 0,
-    output_path: Optional[str] = None,
+    output_path: str | None = None,
 ) -> str:
     """Convert the voice timbre of an audio file to a target voice.
 
@@ -143,6 +142,7 @@ async def voice_convert(
         vc_engine = None
         try:
             import inspect
+
             from langchain_core.runnables import RunnableConfig
             frame = inspect.currentframe()
             while frame:
@@ -163,7 +163,7 @@ async def voice_convert(
             pass
 
         if vc_engine is None:
-            return f"Error: VC engine not available. Please configure a vc provider in services.yaml."
+            return "Error: VC engine not available. Please configure a vc provider in services.yaml."
 
         audio_bytes = _read_audio_bytes(input_audio_path)
         result = await vc_engine.convert(
@@ -190,7 +190,7 @@ async def voice_convert(
 async def mix_audio(
     vocal_path: str,
     instrumental_path: str,
-    output_path: Optional[str] = None,
+    output_path: str | None = None,
 ) -> str:
     """Mix vocal and instrumental tracks into a single audio file.
 

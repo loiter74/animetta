@@ -3,7 +3,6 @@ Emotion Prompt Builder
 Generates expression usage guidelines for the LLM
 """
 
-from typing import List, Optional, Dict
 from pathlib import Path
 
 
@@ -15,7 +14,7 @@ class EmotionPromptBuilder:
     """
 
     # Default emotion definitions
-    DEFAULT_EMOTIONS: Dict[str, str] = {
+    DEFAULT_EMOTIONS: dict[str, str] = {
         "happy": "开心、快乐、愉快",
         "sad": "难过、悲伤、失落",
         "angry": "生气、愤怒、恼火",
@@ -26,7 +25,7 @@ class EmotionPromptBuilder:
 
     def __init__(
         self,
-        emotions: Optional[Dict[str, str]] = None,
+        emotions: dict[str, str] | None = None,
         language: str = "zh"
     ):
         """
@@ -128,7 +127,7 @@ class EmotionPromptBuilder:
 
         return "\n".join(lines)
 
-    def _get_examples(self) -> List[str]:
+    def _get_examples(self) -> list[str]:
         """Get Chinese examples"""
         examples = []
 
@@ -149,7 +148,7 @@ class EmotionPromptBuilder:
 
         return examples
 
-    def _get_examples_en(self) -> List[str]:
+    def _get_examples_en(self) -> list[str]:
         """Get English examples"""
         examples = []
 

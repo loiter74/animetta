@@ -18,7 +18,6 @@ from typing import Any
 import socketio
 from loguru import logger
 
-
 # ── Constants ────────────────────────────────────────────────────────
 
 BACKEND_URL = "http://localhost:12394"
@@ -66,7 +65,7 @@ async def check_conversation_pipeline() -> CheckResult:
                 timeout=CONNECTION_TIMEOUT,
             )
             logger.info("[inspection:pipeline] Connected to backend")
-        except asyncio.TimeoutError:
+        except TimeoutError:
             duration_ms = (time.perf_counter() - start_time) * 1000
             logger.error("[inspection:pipeline] Connection timed out")
             return CheckResult.failed(

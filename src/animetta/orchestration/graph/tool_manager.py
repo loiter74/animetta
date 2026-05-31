@@ -3,7 +3,8 @@ LangGraph tool manager
 Responsible for tool loading (built-in + MCP) and ChatModel creation
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from loguru import logger
 
 
@@ -13,12 +14,12 @@ class ToolManager:
     def __init__(self, session_id: str, service_context: Any):
         self.session_id = session_id
         self.service_context = service_context
-        self.tools: List[Any] = []
-        self.tools_map: Dict[str, Any] = {}
-        self.chat_model: Optional[Any] = None
-        self._mcp_manager: Optional[Any] = None
+        self.tools: list[Any] = []
+        self.tools_map: dict[str, Any] = {}
+        self.chat_model: Any | None = None
+        self._mcp_manager: Any | None = None
 
-    async def load_tools(self, tools_config: Dict[str, Any]) -> bool:
+    async def load_tools(self, tools_config: dict[str, Any]) -> bool:
         """Load tools and create ChatModel"""
         try:
             logger.info(f"[{self.session_id}] [ToolManager] Starting tool loading...")
@@ -48,7 +49,7 @@ class ToolManager:
             logger.error(f"[{self.session_id}] [ToolManager] Tool loading failed: {e}")
             return False
 
-    async def _create_chat_model(self) -> Optional[Any]:
+    async def _create_chat_model(self) -> Any | None:
         """Create LangChain ChatModel"""
         try:
             chat_model = create_chat_model_from_service(
@@ -61,7 +62,7 @@ class ToolManager:
             logger.error(f"[{self.session_id}] [ToolManager] ChatModel creation failed: {e}")
             return None
 
-    def get_config(self) -> Dict[str, Any]:
+    def get_config(self) -> dict[str, Any]:
         """Get tool config, for injecting into LangGraph config"""
         return {
             "tools": self.tools,

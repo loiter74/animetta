@@ -1,6 +1,7 @@
 """Demucs / MDX-based audio source separation provider configuration"""
 
-from typing import Literal, Optional
+from typing import Literal
+
 from pydantic import Field
 
 from ...core.registry import ProviderRegistry
@@ -57,7 +58,7 @@ class DemucsSeparationConfig(SeparationBaseConfig):
         default=["vocals", "other"],
         description="Instruments/stems to extract from the mixture",
     )
-    primary_stem: Optional[str] = Field(
+    primary_stem: str | None = Field(
         default=None,
         description="Primary stem for single-stem extraction (e.g., 'vocals')",
     )

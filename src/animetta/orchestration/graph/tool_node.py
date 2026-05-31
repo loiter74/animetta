@@ -1,16 +1,17 @@
 """Tool execution node"""
 
-import time as time_module
-from typing import Dict, Any, List, Optional
-from loguru import logger
-from langchain_core.messages import ToolMessage
 import json
+import time as time_module
+from typing import Any
+
+from langchain_core.messages import ToolMessage
 from langgraph.types import RunnableConfig
+from loguru import logger
 
 from .state import AgentState
 
 
-def _get_from_config(config: Optional[RunnableConfig], key: str) -> Optional[Any]:
+def _get_from_config(config: RunnableConfig | None, key: str) -> Any | None:
     """Get value from LangGraph config"""
     if config:
         return config.get("configurable", {}).get(key)
@@ -19,8 +20,8 @@ def _get_from_config(config: Optional[RunnableConfig], key: str) -> Optional[Any
 
 async def tool_node(
     state: AgentState,
-    config: Optional[RunnableConfig] = None,
-) -> Dict[str, Any]:
+    config: RunnableConfig | None = None,
+) -> dict[str, Any]:
     """
     Tool execution node
 

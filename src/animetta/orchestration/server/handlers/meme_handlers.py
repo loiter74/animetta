@@ -13,9 +13,10 @@ from .base_handler import BaseSocketHandler
 
 if TYPE_CHECKING:
     from socketio import AsyncServer
-    from ..session import SessionManager
+
     from ..desktop import DesktopClientManager
     from ..live2d import Live2DManager
+    from ..session import SessionManager
 
 
 class MemeHandlers(BaseSocketHandler):
@@ -382,7 +383,6 @@ class MemeHandlers(BaseSocketHandler):
                     f"{pending_count} pending memes"
                 )
             else:
-                import subprocess
 
                 project_root = os.path.dirname(
                     os.path.dirname(

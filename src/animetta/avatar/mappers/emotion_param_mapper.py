@@ -3,15 +3,11 @@ Emotion Parameter Mapper - Default Implementation
 Maps common emotions to Live2D model parameters
 """
 
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Any
+
 from loguru import logger
 
-from .base import (
-    IEmotionParamMapper,
-    ExpressionFrame,
-    ParameterState
-)
-
+from .base import ExpressionFrame, IEmotionParamMapper, ParameterState
 
 # Default emotion parameter mapping configuration
 DEFAULT_EMOTION_MAPPINGS = {
@@ -192,7 +188,7 @@ class EmotionParamMapper(IEmotionParamMapper):
 
     def __init__(
         self,
-        mappings: Optional[Dict[str, Dict[str, float]]] = None,
+        mappings: dict[str, dict[str, float]] | None = None,
         default_duration: float = 0.3
     ):
         """
@@ -209,7 +205,7 @@ class EmotionParamMapper(IEmotionParamMapper):
         self,
         emotion: str,
         intensity: float = 1.0,
-        context: Optional[Dict[str, Any]] = None
+        context: dict[str, Any] | None = None
     ) -> ExpressionFrame:
         """
         Map an emotion to Live2D parameters
@@ -253,9 +249,9 @@ class EmotionParamMapper(IEmotionParamMapper):
 
     def map_emotions_timeline(
         self,
-        emotions: List[Tuple[str, float, float, float]],
+        emotions: list[tuple[str, float, float, float]],
         duration: float
-    ) -> List[ExpressionFrame]:
+    ) -> list[ExpressionFrame]:
         """
         Map an emotion timeline to a sequence of expression frames
 
@@ -311,14 +307,14 @@ class EmotionParamMapper(IEmotionParamMapper):
     def name(self) -> str:
         return "emotion_param_mapper"
 
-    def get_supported_emotions(self) -> List[str]:
+    def get_supported_emotions(self) -> list[str]:
         """Get supported emotions list"""
         return list(self.mappings.keys())
 
     def add_emotion_mapping(
         self,
         emotion: str,
-        param_mappings: Dict[str, float]
+        param_mappings: dict[str, float]
     ):
         """
         Add or update emotion mapping
@@ -336,15 +332,16 @@ class EmotionParamMapper(IEmotionParamMapper):
         Args:
             yaml_path: YAML file path
         """
-        import yaml
         from pathlib import Path
+
+        import yaml
 
         path = Path(yaml_path)
         if not path.exists():
             logger.error(f"[EmotionParamMapper] Config file not found: {yaml_path}")
             return
 
-        with open(path, 'r', encoding='utf-8') as f:
+        with open(path, encoding='utf-8') as f:
             config = yaml.safe_load(f)
 
         if 'emotions' in config:

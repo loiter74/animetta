@@ -6,7 +6,6 @@ which accepts Alertmanager webhook payloads and routes them
 to enabled notification channels.
 """
 
-import json
 import logging
 
 from starlette.applications import Starlette

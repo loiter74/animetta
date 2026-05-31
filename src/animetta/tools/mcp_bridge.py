@@ -8,14 +8,14 @@ Supports three transport modes:
 """
 
 from contextlib import AsyncExitStack
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from loguru import logger
 
 try:
     from mcp import ClientSession, StdioServerParameters
-    from mcp.client.stdio import stdio_client
     from mcp.client.sse import sse_client
+    from mcp.client.stdio import stdio_client
     from mcp.client.streamable_http import streamable_http_client
 
     MCP_AVAILABLE = True
@@ -30,8 +30,8 @@ class MCPClient:
         self.name = name
         self.transport = transport
         self._config = kwargs
-        self._exit_stack: Optional[AsyncExitStack] = None
-        self.session: Optional[ClientSession] = None
+        self._exit_stack: AsyncExitStack | None = None
+        self.session: ClientSession | None = None
 
     async def connect(self) -> bool:
         """Connect to MCP server"""
@@ -96,7 +96,7 @@ class MCPClient:
             self.session = None
             logger.info(f"[MCP:{self.name}] Disconnected")
 
-    async def list_tools(self) -> List[Any]:
+    async def list_tools(self) -> list[Any]:
         """Get list of tools provided by the server"""
         if not self.session:
             return []
@@ -108,7 +108,7 @@ class MCPClient:
             logger.error(f"[MCP:{self.name}] Failed to get tool list: {e}")
             return []
 
-    async def call_tool(self, name: str, arguments: Dict[str, Any]) -> Any:
+    async def call_tool(self, name: str, arguments: dict[str, Any]) -> Any:
         """Call a tool"""
         if not self.session:
             return None
@@ -166,11 +166,11 @@ class MCPManager:
     """Manage multiple MCP server connections and tools"""
 
     def __init__(self):
-        self.clients: List[MCPClient] = []
-        self.tools: List[Any] = []
+        self.clients: list[MCPClient] = []
+        self.tools: list[Any] = []
 
     def _build_docker_command(
-        self, sandbox: Dict[str, Any], args: List[str]
+        self, sandbox: dict[str, Any], args: list[str]
     ) -> tuple:
         """
         Build Docker sandbox startup command
@@ -246,7 +246,7 @@ class MCPManager:
 
         return "docker", docker_args
 
-    async def load(self, server_configs: List[Dict[str, Any]]) -> List[Any]:
+    async def load(self, server_configs: list[dict[str, Any]]) -> list[Any]:
         """Connect to all servers and load tools"""
         if not MCP_AVAILABLE:
             logger.warning("[MCP] mcp package not installed, skipping MCP tool loading")

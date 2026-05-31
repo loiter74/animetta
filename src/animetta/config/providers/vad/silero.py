@@ -1,7 +1,9 @@
 """Silero VAD configuration"""
 
 from typing import Literal
+
 from pydantic import Field
+
 from ...core.registry import ProviderRegistry
 from .base import VADBaseConfig
 

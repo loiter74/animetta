@@ -1,10 +1,10 @@
 from __future__ import annotations
+
 """
 Voice Conversion (VC) interface definition
 """
 
 from abc import ABC, abstractmethod
-from typing import Union, Optional
 from pathlib import Path
 
 
@@ -21,9 +21,9 @@ class VCInterface(ABC):
     async def convert(
         self,
         audio: bytes,
-        output_path: Optional[Union[str, Path]] = None,
+        output_path: str | Path | None = None,
         **kwargs
-    ) -> Union[bytes, str]:
+    ) -> bytes | str:
         """
         Convert voice timbre of input audio.
 

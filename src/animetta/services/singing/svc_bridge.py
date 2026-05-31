@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """GPT-SoVITS SVC API bridge — converts vocals to target voice.
 
 Supports two backends:
@@ -8,11 +9,9 @@ Supports two backends:
 """
 
 from pathlib import Path
-from typing import Optional
 
 import httpx
 from loguru import logger
-
 
 
 class SVCBridge:
@@ -20,7 +19,7 @@ class SVCBridge:
 
     def __init__(self, config: GPTSoVITSConfig):
         self.config = config
-        self._client: Optional[httpx.AsyncClient] = None
+        self._client: httpx.AsyncClient | None = None
         self._has_svc = False
         self._has_tts = False
 
@@ -59,7 +58,7 @@ class SVCBridge:
         Tries these strategies in order:
         1. Configured SVC endpoint (e.g. /svc) with audio upload
         2. GPT-SoVITS /tts endpoint (TTS-based, loses original melody)
-        
+
         Returns:
             Path to converted audio file.
 
@@ -100,7 +99,7 @@ class SVCBridge:
 
         # Strategy 2: GPT-SoVITS TTS endpoint
         if endpoints.get("/tts", False) and self.config.ref_audio_path:
-            logger.info(f"Attempting voice conversion via /tts (TTS-based)")
+            logger.info("Attempting voice conversion via /tts (TTS-based)")
             try:
                 resp = await self._client.post(
                     "/tts",

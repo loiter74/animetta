@@ -4,11 +4,11 @@ One-click environment detection, config generation, dependency installation
 """
 
 import os
-import sys
 import platform
 import subprocess
+import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+
 from loguru import logger
 
 
@@ -65,7 +65,7 @@ class AutoConfig:
         except ImportError:
             return False
 
-    def _get_cuda_version(self) -> Optional[str]:
+    def _get_cuda_version(self) -> str | None:
         """Get CUDA version"""
         try:
             import torch
@@ -102,7 +102,7 @@ class AutoConfig:
         else:  # linux, macos
             return Path.home() / "animetta_data"
 
-    def check_dependencies(self) -> Tuple[bool, List[str]]:
+    def check_dependencies(self) -> tuple[bool, list[str]]:
         """Check if dependencies are installed"""
         missing = []
         required_packages = [
@@ -320,9 +320,8 @@ llm_config:
             success = False
 
         # 4. Install dependencies
-        if auto_fix:
-            if not self.auto_install_dependencies():
-                success = False
+        if auto_fix and not self.auto_install_dependencies():
+            success = False
 
         return success
 

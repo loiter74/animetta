@@ -4,14 +4,17 @@ Mock LLM implementation - for testing and development
 
 from __future__ import annotations
 
-from typing import AsyncIterator, List, Dict, Any
 import time
 import uuid
+from collections.abc import AsyncIterator
+from typing import Any
+
 from loguru import logger
 
-from .interface import LLMInterface
 from animetta.config.core.registry import ProviderRegistry
 from animetta.config.providers.llm import MockLLMConfig
+
+from .interface import LLMInterface
 
 
 @ProviderRegistry.register_service("llm", "mock")
@@ -30,12 +33,12 @@ class MockLLM(LLMInterface):
 
     def __init__(self, system_prompt: str = ""):
         self.system_prompt = system_prompt
-        self.history: List[Dict[str, Any]] = []
+        self.history: list[dict[str, Any]] = []
         self.call_count = 0
         self.instance_id = str(uuid.uuid4())[:8]
 
     @classmethod
-    def from_config(cls, config: "LLMBaseConfig", system_prompt: str = "", **kwargs) -> "MockLLM":
+    def from_config(cls, config: LLMBaseConfig, system_prompt: str = "", **kwargs) -> MockLLM:
         """
         Create an instance from a configuration object
 
@@ -139,7 +142,7 @@ class MockLLM(LLMInterface):
         """Set the system prompt"""
         self.system_prompt = prompt
 
-    def get_history(self) -> List[Dict[str, Any]]:
+    def get_history(self) -> list[dict[str, Any]]:
         """Get conversation history"""
         return self.history.copy()
 
@@ -151,11 +154,11 @@ class MockLLM(LLMInterface):
     async def close(self) -> None:
         """No resources to clean up"""
         pass
-    
+
     def handle_interrupt(self, heard_response: str = "") -> None:
         """
         Handle user interruption
-        
+
         Args:
             heard_response: Partial response heard by the user
         """
@@ -170,15 +173,15 @@ class MockLLM(LLMInterface):
                     "role": "system",
                     "content": "[用户打断了对话]"
                 })
-    
+
     def set_memory_from_history(
-        self, 
-        conf_uid: str, 
+        self,
+        conf_uid: str,
         history_uid: str
     ) -> None:
         """
         Restore conversation memory from history records
-        
+
         Args:
             conf_uid: Config UID
             history_uid: History UID

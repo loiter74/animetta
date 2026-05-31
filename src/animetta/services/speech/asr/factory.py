@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """
 ASR Factory - creates ASR instances based on configuration
 
@@ -9,10 +10,10 @@ To add a new ASR provider, simply:
    and a from_config() classmethod
 """
 
-from typing import List
-from animetta.config.core.registry import ProviderRegistry
 
 from loguru import logger
+
+from animetta.config.core.registry import ProviderRegistry
 
 from .interface import ASRInterface
 from .mock_asr import MockASR
@@ -28,14 +29,14 @@ class ASRFactory:
     def create(provider: str, **kwargs) -> ASRInterface:
         """
         Creates ASR instance by provider via ProviderRegistry.
-        
+
         Args:
             provider: Provider name (e.g. "faster_whisper", "glm", "funasr", "mock")
             **kwargs: Parameters passed to build the config object
-            
+
         Returns:
             ASRInterface: ASR instance
-            
+
         Falls back to MockASR on failure.
         """
         # Build a config object matching the provider type
@@ -101,6 +102,6 @@ class ASRFactory:
             return None
 
     @staticmethod
-    def get_available_providers() -> List[str]:
+    def get_available_providers() -> list[str]:
         """Get list of all available providers"""
         return list(ProviderRegistry.list_services("asr"))

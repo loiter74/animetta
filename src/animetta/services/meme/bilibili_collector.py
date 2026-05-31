@@ -9,11 +9,10 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-import math
 import re
 from collections import Counter
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +25,7 @@ _STOPWORDS = frozenset({
 })
 
 # Chinese punctuation for title splitting
-_TITLE_SEPARATORS = re.compile(r"[,，、。！？：；""''（）!?:\;\"'\(\)\s]|·|●|◆|【|】|《|》|—+")
+_TITLE_SEPARATORS = re.compile(r"[,，、。！？：；""''（）!?:\\;\"'\\(\\)\\s]|·|●|◆|【|】|《|》|—+")
 
 
 @dataclass
@@ -35,7 +34,7 @@ class CollectedVideo:
     bvid: str
     title: str
     description: str = ""
-    tags: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
     view_count: int = 0
     danmaku_count: int = 0
     reply_count: int = 0
@@ -75,8 +74,8 @@ class MemeCandidateRaw:
     text: str
     context_hint: str = ""
     frequency: int = 1
-    source_videos: List[str] = field(default_factory=list)
-    tags: List[str] = field(default_factory=list)
+    source_videos: list[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return {
@@ -137,9 +136,9 @@ class BilibiliMemeCollector:
 
     def __init__(
         self,
-        llm_client: Optional[Any] = None,
-        config: Optional[Dict[str, Any]] = None,
-        danmaku_buffer: Optional[Any] = None,
+        llm_client: Any | None = None,
+        config: dict[str, Any] | None = None,
+        danmaku_buffer: Any | None = None,
     ):
         """
         Args:
@@ -171,7 +170,7 @@ class BilibiliMemeCollector:
 
     # ── Public API ──────────────────────────────────────────────────────
 
-    async def collect(self) -> List[MemeCandidateRaw]:
+    async def collect(self) -> list[MemeCandidateRaw]:
         """Run the full collection pipeline: videos → comments → meme identification.
 
         Returns:
@@ -190,7 +189,7 @@ class BilibiliMemeCollector:
                 self._collect_impl(),
                 timeout=self._request_timeout,
             )
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning(
                 "[BilibiliMemeCollector] Collection timed out after %ds — "
                 "returning partial results",
@@ -201,7 +200,7 @@ class BilibiliMemeCollector:
             logger.error("[BilibiliMemeCollector] Collection failed: %s", e, exc_info=True)
             return []
 
-    async def _collect_impl(self) -> List[MemeCandidateRaw]:
+    async def _collect_impl(self) -> list[MemeCandidateRaw]:
         """Internal collection implementation (wrapped with timeout by collect())."""
         try:
             # Phase 1: Fetch trending videos (existing path)
@@ -233,10 +232,10 @@ class BilibiliMemeCollector:
                 )
 
             # Phase 3: Collect comments in parallel with semaphore control
-            all_comments: Dict[str, List[CollectedComment]] = {}
+            all_comments: dict[str, list[CollectedComment]] = {}
             semaphore = asyncio.Semaphore(self._concurrency)
 
-            async def fetch_one(video: CollectedVideo) -> tuple[str, List[CollectedComment]]:
+            async def fetch_one(video: CollectedVideo) -> tuple[str, list[CollectedComment]]:
                 async with semaphore:
                     await asyncio.sleep(self._request_delay)
                     comments = await self._fetch_comments(video.bvid)
@@ -276,7 +275,7 @@ class BilibiliMemeCollector:
 
     # ── Video collection ────────────────────────────────────────────────
 
-    async def _fetch_trending_videos(self) -> List[CollectedVideo]:
+    async def _fetch_trending_videos(self) -> list[CollectedVideo]:
         """Fetch trending videos from B站 using hot/ranking APIs."""
         try:
             from bilibili_api import hot, sync
@@ -287,7 +286,7 @@ class BilibiliMemeCollector:
             )
             return []
 
-        videos: List[CollectedVideo] = []
+        videos: list[CollectedVideo] = []
 
         try:
             loop = asyncio.get_event_loop()
@@ -399,7 +398,7 @@ class BilibiliMemeCollector:
         return videos
 
     @staticmethod
-    def _parse_tags(tag_str: str) -> List[str]:
+    def _parse_tags(tag_str: str) -> list[str]:
         """Parse comma-separated tag string into list."""
         if not tag_str:
             return []
@@ -407,7 +406,7 @@ class BilibiliMemeCollector:
 
     # ── Comment collection ──────────────────────────────────────────────
 
-    async def _fetch_comments(self, bvid: str) -> List[CollectedComment]:
+    async def _fetch_comments(self, bvid: str) -> list[CollectedComment]:
         """Fetch top comments for a video."""
         try:
             from bilibili_api import comment, sync
@@ -432,7 +431,7 @@ class BilibiliMemeCollector:
             if not result or "replies" not in result:
                 return []
 
-            comments: List[CollectedComment] = []
+            comments: list[CollectedComment] = []
             for reply in result.get("replies", [])[:self._max_comments_per_video]:
                 try:
                     content = reply.get("content", {})
@@ -452,7 +451,7 @@ class BilibiliMemeCollector:
 
             return comments
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning(
                 "[BilibiliMemeCollector] Comment fetch timed out for %s (%ds)",
                 bvid, self._comment_timeout,
@@ -464,7 +463,7 @@ class BilibiliMemeCollector:
 
     # ── Danmaku collection (new) ─────────────────────────────────────────
 
-    async def _fetch_danmaku_phrases(self) -> List[str]:
+    async def _fetch_danmaku_phrases(self) -> list[str]:
         """Collect hot danmaku phrases from DanmakuBuffer and historical API.
 
         Two sources:
@@ -474,7 +473,7 @@ class BilibiliMemeCollector:
         Returns:
             List of hot danmaku phrase texts, deduplicated.
         """
-        phrases: List[str] = []
+        phrases: list[str] = []
         seen: set = set()
 
         # Source 1: Real-time buffer
@@ -518,7 +517,7 @@ class BilibiliMemeCollector:
 
         return phrases
 
-    async def _fetch_historical_danmaku(self, room_id: int) -> List[str]:
+    async def _fetch_historical_danmaku(self, room_id: int) -> list[str]:
         """Fetch historical danmaku from a Bilibili live room via API.
 
         Args:
@@ -549,7 +548,7 @@ class BilibiliMemeCollector:
                 timeout=self._comment_timeout,
             )
 
-            texts: List[str] = []
+            texts: list[str] = []
             if result and "data" in result:
                 data = result.get("data", {})
                 danmaku_list = data.get("list", data.get("danmaku", []))
@@ -564,7 +563,7 @@ class BilibiliMemeCollector:
 
             return texts
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning(
                 "[BilibiliMemeCollector] Historical danmaku timed out for room %d",
                 room_id,
@@ -580,10 +579,10 @@ class BilibiliMemeCollector:
 
     async def _identify_meme_candidates(
         self,
-        videos: List[CollectedVideo],
-        comments: Dict[str, List[CollectedComment]],
-        danmaku_phrases: Optional[List[str]] = None,
-    ) -> List[MemeCandidateRaw]:
+        videos: list[CollectedVideo],
+        comments: dict[str, list[CollectedComment]],
+        danmaku_phrases: list[str] | None = None,
+    ) -> list[MemeCandidateRaw]:
         """Use LLM to identify meme patterns from collected data.
 
         Args:
@@ -599,7 +598,7 @@ class BilibiliMemeCollector:
             return self._heuristic_identify(videos, comments, danmaku_phrases)
 
         # Build context for LLM
-        video_lines: List[str] = []
+        video_lines: list[str] = []
         for v in videos:
             video_lines.append(
                 f"视频: {v.title}\n"
@@ -607,7 +606,7 @@ class BilibiliMemeCollector:
                 f"播放: {v.view_count}, 弹幕: {v.danmaku_count}"
             )
 
-        comment_lines: List[str] = []
+        comment_lines: list[str] = []
         for bvid, clist in comments.items():
             for c in clist[:10]:  # Limit comments to avoid token overflow
                 comment_lines.append(f"[{bvid}] 👍{c.likes}: {c.content}")
@@ -671,10 +670,10 @@ class BilibiliMemeCollector:
 
     def _heuristic_identify(
         self,
-        videos: List[CollectedVideo],
-        comments: Dict[str, List[CollectedComment]],
-        danmaku_phrases: Optional[List[str]] = None,
-    ) -> List[MemeCandidateRaw]:
+        videos: list[CollectedVideo],
+        comments: dict[str, list[CollectedComment]],
+        danmaku_phrases: list[str] | None = None,
+    ) -> list[MemeCandidateRaw]:
         """Fallback: identify meme candidates from high-frequency phrases.
 
         Four strategies combined:
@@ -683,11 +682,11 @@ class BilibiliMemeCollector:
         3. High-frequency n-grams from top comments
         4. Hot danmaku phrases (new)
         """
-        candidates: List[MemeCandidateRaw] = []
+        candidates: list[MemeCandidateRaw] = []
         seen_texts: set = set()
 
         # ── Strategy 1: Repeated tags ──
-        tag_counts: Dict[str, int] = {}
+        tag_counts: dict[str, int] = {}
         for v in videos:
             for tag in v.tags:
                 t = tag.strip()
@@ -720,7 +719,7 @@ class BilibiliMemeCollector:
                 ))
 
         # ── Strategy 3: Extract n-grams from top comments ──
-        all_comments_text: List[str] = []
+        all_comments_text: list[str] = []
         for clist in comments.values():
             for c in clist[:5]:
                 all_comments_text.append(c.content)
@@ -775,10 +774,10 @@ class BilibiliMemeCollector:
 
     def _heuristic_danmaku_only(
         self,
-        danmaku_phrases: List[str],
-    ) -> List[MemeCandidateRaw]:
+        danmaku_phrases: list[str],
+    ) -> list[MemeCandidateRaw]:
         """Fallback when only danmaku data is available (no videos)."""
-        candidates: List[MemeCandidateRaw] = []
+        candidates: list[MemeCandidateRaw] = []
         seen: set = set()
 
         try:
@@ -810,9 +809,9 @@ class BilibiliMemeCollector:
 
     @staticmethod
     def _extract_semantic_phrases(
-        texts: List[str],
+        texts: list[str],
         top_k: int = 20,
-    ) -> List[tuple[str, int]]:
+    ) -> list[tuple[str, int]]:
         """Extract meaningful phrases using jieba segmentation + TF-IDF filtering.
 
         Uses jieba for Chinese word segmentation, extracts 2-4 word n-grams,
@@ -884,13 +883,13 @@ class BilibiliMemeCollector:
         scored.sort(key=lambda x: x[1], reverse=True)
         return scored[:top_k]
 
-    def _extract_title_phrases(self, title: str) -> List[str]:
+    def _extract_title_phrases(self, title: str) -> list[str]:
         """Split title into candidate phrases using punctuation and common patterns."""
         if not title:
             return []
         # Split by punctuation
         parts = _TITLE_SEPARATORS.split(title)
-        phrases: List[str] = []
+        phrases: list[str] = []
         for part in parts:
             part = part.strip()
             # Keep 2-15 char segments that aren't pure numbers
@@ -905,7 +904,7 @@ class BilibiliMemeCollector:
         return phrases
 
     @staticmethod
-    def _extract_comment_ngrams(comments: List[str]) -> Counter:
+    def _extract_comment_ngrams(comments: list[str]) -> Counter:
         """Extract meaningful bigrams and trigrams from comment text."""
         ngram_counts: Counter = Counter()
         for text in comments:
@@ -921,7 +920,7 @@ class BilibiliMemeCollector:
         return ngram_counts
 
     @staticmethod
-    def _parse_llm_json(raw: str) -> List[Dict[str, Any]]:
+    def _parse_llm_json(raw: str) -> list[dict[str, Any]]:
         """Parse LLM JSON response into list of dicts."""
         text = raw.strip()
         if text.startswith("```json"):
@@ -948,11 +947,11 @@ class BilibiliMemeCollector:
 
     @staticmethod
     def _build_candidates(
-        parsed: List[Dict[str, Any]],
-        videos: List[CollectedVideo],
-    ) -> List[MemeCandidateRaw]:
+        parsed: list[dict[str, Any]],
+        videos: list[CollectedVideo],
+    ) -> list[MemeCandidateRaw]:
         """Build MemeCandidateRaw from parsed LLM output."""
-        candidates: List[MemeCandidateRaw] = []
+        candidates: list[MemeCandidateRaw] = []
         source_bvids = [v.bvid for v in videos[:3]] if videos else []
 
         for item in parsed:

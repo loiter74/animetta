@@ -1,11 +1,12 @@
 from __future__ import annotations
+
 """
 VAD (Voice Activity Detection) interface definition
 """
 
 from abc import ABC, abstractmethod
-from typing import AsyncGenerator, Union
 from enum import Enum
+
 import numpy as np
 
 
@@ -18,7 +19,7 @@ class VADState(Enum):
 
 class VADResult:
     """VAD detection result"""
-    
+
     def __init__(
         self,
         audio_data: bytes = b"",
@@ -30,12 +31,12 @@ class VADResult:
         self.is_speech_start = is_speech_start
         self.is_speech_end = is_speech_end
         self.state = state
-    
+
     @property
     def is_special_signal(self) -> bool:
         """Whether it is a special signal (start/end marker)"""
         return self.is_speech_start or self.is_speech_end
-    
+
     def __repr__(self):
         if self.is_speech_start:
             return "<VADResult: SPEECH_START>"
@@ -50,30 +51,30 @@ class VADInterface(ABC):
     Abstract base class for Voice Activity Detection interface
     All VAD implementations must inherit from this class and implement its abstract methods
     """
-    
+
     @abstractmethod
-    def detect_speech(self, audio_data: Union[list, np.ndarray]) -> VADResult:
+    def detect_speech(self, audio_data: list | np.ndarray) -> VADResult:
         """
         Detect voice activity in audio data
-        
+
         Args:
             audio_data: Audio data (float32 list or numpy array)
-            
+
         Returns:
             VADResult: Detection result
         """
         pass
-    
+
     @abstractmethod
     def reset(self) -> None:
         """Reset VAD state machine"""
         pass
-    
+
     @abstractmethod
     def get_current_state(self) -> VADState:
         """Get current state"""
         pass
-    
+
     @abstractmethod
     async def close(self) -> None:
         """Clean up resources"""

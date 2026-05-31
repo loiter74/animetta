@@ -3,7 +3,7 @@ Desktop client support
 Manages Electron desktop client registration and broadcasting
 """
 
-from typing import Dict, Set
+
 from loguru import logger
 
 # Desktop client types
@@ -23,7 +23,7 @@ class DesktopClientManager:
     def __init__(self):
         # Store desktop client info
         # Key: session_id, Value: {client_type: str, connected: bool}
-        self.clients: Dict[str, dict] = {}
+        self.clients: dict[str, dict] = {}
 
     def register(
         self,
@@ -81,7 +81,7 @@ class DesktopClientManager:
         if sid in self.clients:
             self.clients[sid]['connected'] = connected
 
-    def get_clients_by_type(self, client_type: str) -> Set[str]:
+    def get_clients_by_type(self, client_type: str) -> set[str]:
         """
         Get all clients of a specified type
 

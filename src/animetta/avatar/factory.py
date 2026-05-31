@@ -5,16 +5,17 @@ Provides factory methods for emotion analyzers and timeline strategies.
 Supports dynamic registration and creation of components.
 """
 
-from typing import Dict, Type, Optional, Any
+from typing import Any
+
 from loguru import logger
 
 from .analyzers.base import IEmotionAnalyzer
-from .analyzers.llm_tag import StandaloneLLMTagAnalyzer
 from .analyzers.keyword import KeywordAnalyzer
-from .strategies.base import ITimelineStrategy, TimelineConfig
-from .strategies.position import PositionBasedStrategy
+from .analyzers.llm_tag import StandaloneLLMTagAnalyzer
+from .strategies.base import ITimelineStrategy
 from .strategies.duration import DurationBasedStrategy
 from .strategies.intensity import IntensityBasedStrategy
+from .strategies.position import PositionBasedStrategy
 
 
 class EmotionAnalyzerFactory:
@@ -43,13 +44,13 @@ class EmotionAnalyzerFactory:
     """
 
     # Built-in analyzer registry
-    _analyzers: Dict[str, Type[IEmotionAnalyzer]] = {
+    _analyzers: dict[str, type[IEmotionAnalyzer]] = {
         "llm_tag_analyzer": StandaloneLLMTagAnalyzer,  # Uses standalone implementation
         "keyword_analyzer": KeywordAnalyzer,
     }
 
     @classmethod
-    def register(cls, name: str, analyzer_class: Type[IEmotionAnalyzer]) -> None:
+    def register(cls, name: str, analyzer_class: type[IEmotionAnalyzer]) -> None:
         """
         Register a custom analyzer
 
@@ -80,7 +81,7 @@ class EmotionAnalyzerFactory:
         logger.info(f"[EmotionAnalyzerFactory] Registered analyzer: {name} ({analyzer_class.__name__})")
 
     @classmethod
-    def create(cls, name: str, config: Optional[Dict[str, Any]] = None) -> IEmotionAnalyzer:
+    def create(cls, name: str, config: dict[str, Any] | None = None) -> IEmotionAnalyzer:
         """
         Create an analyzer instance
 
@@ -166,14 +167,14 @@ class TimelineStrategyFactory:
     """
 
     # Built-in strategy registry
-    _strategies: Dict[str, Type[ITimelineStrategy]] = {
+    _strategies: dict[str, type[ITimelineStrategy]] = {
         "position_based": PositionBasedStrategy,
         "duration_based": DurationBasedStrategy,
         "intensity_based": IntensityBasedStrategy,
     }
 
     @classmethod
-    def register(cls, name: str, strategy_class: Type[ITimelineStrategy]) -> None:
+    def register(cls, name: str, strategy_class: type[ITimelineStrategy]) -> None:
         """
         Register a custom strategy
 
@@ -205,7 +206,7 @@ class TimelineStrategyFactory:
         logger.info(f"[TimelineStrategyFactory] Registered strategy: {name} ({strategy_class.__name__})")
 
     @classmethod
-    def create(cls, name: str, config: Optional[Dict[str, Any]] = None) -> ITimelineStrategy:
+    def create(cls, name: str, config: dict[str, Any] | None = None) -> ITimelineStrategy:
         """
         Create a strategy instance
 
@@ -271,7 +272,7 @@ class TimelineStrategyFactory:
 # Convenience functions
 def create_emotion_analyzer(
     name: str,
-    config: Optional[Dict[str, Any]] = None
+    config: dict[str, Any] | None = None
 ) -> IEmotionAnalyzer:
     """
     Convenience function to create an emotion analyzer
@@ -288,7 +289,7 @@ def create_emotion_analyzer(
 
 def create_timeline_strategy(
     name: str,
-    config: Optional[Dict[str, Any]] = None
+    config: dict[str, Any] | None = None
 ) -> ITimelineStrategy:
     """
     Convenience function to create a timeline strategy

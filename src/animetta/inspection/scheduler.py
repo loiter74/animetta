@@ -53,7 +53,7 @@ class InspectionScheduler:
         self._stop_event.set()
         try:
             await asyncio.wait_for(self._task, timeout=30.0)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning(
                 "[inspection:scheduler] Task did not stop within 30s, cancelling"
             )

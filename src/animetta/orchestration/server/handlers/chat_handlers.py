@@ -5,12 +5,13 @@ Handles user text/audio input, VAD processing, interrupt signals,
 and conversation history operations.
 """
 
-from typing import Dict, Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from loguru import logger
 
 if TYPE_CHECKING:
     from socketio import AsyncServer
+
     from ..session import SessionManager
     from .base_handler import BaseSocketHandler
 

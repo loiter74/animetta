@@ -1,9 +1,10 @@
 from __future__ import annotations
+
 """
 VC Factory - creates VC instances based on configuration
 """
 
-from typing import List
+
 from loguru import logger
 
 from .interface import VCInterface
@@ -67,6 +68,6 @@ class VCFactory:
             return None
 
     @staticmethod
-    def get_available_providers() -> List[str]:
+    def get_available_providers() -> list[str]:
         """Get list of all available providers"""
         return list(ProviderRegistry.list_services("vc"))

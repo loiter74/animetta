@@ -1,6 +1,7 @@
 """Ollama LLM provider configuration"""
 
 from typing import Literal
+
 from pydantic import Field
 
 from ...core.registry import ProviderRegistry

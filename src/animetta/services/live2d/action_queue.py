@@ -1,14 +1,17 @@
 from __future__ import annotations
+
 """
 Live2D Action Queue
 Manages the action queue for Live2D models, based on open-yachiyo implementation
 """
 
 import asyncio
+import contextlib
 import time
-from dataclasses import dataclass, field
-from typing import List, Optional, Literal, Dict, Any
+from dataclasses import dataclass
 from enum import Enum
+from typing import Any
+
 from loguru import logger
 
 
@@ -90,28 +93,28 @@ class Live2DActionQueue:
         self,
         max_size: int = 120,
         overflow_policy: OverflowPolicy = OverflowPolicy.DROP_OLDEST,
-        mutex: Optional[Live2DActionMutex] = None
+        mutex: Live2DActionMutex | None = None
     ):
         self.max_size = max_size
         self.overflow_policy = overflow_policy
-        self.queue: List[ActionMessage] = []
+        self.queue: list[ActionMessage] = []
         self.mutex = mutex or Live2DActionMutex()
 
         # Execution state
         self._is_processing = False
-        self._current_action: Optional[ActionMessage] = None
+        self._current_action: ActionMessage | None = None
 
         # Action execution callback
-        self._execute_callback: Optional[callable] = None
+        self._execute_callback: callable | None = None
 
         # Task tracking (for cleanup)
-        self._process_task: Optional[asyncio.Task] = None
+        self._process_task: asyncio.Task | None = None
 
     def set_execute_callback(self, callback: callable):
         """Set action execution callback"""
         self._execute_callback = callback
 
-    async def enqueue(self, action: ActionMessage) -> Dict[str, Any]:
+    async def enqueue(self, action: ActionMessage) -> dict[str, Any]:
         """
         Enqueue action
 
@@ -228,10 +231,8 @@ class Live2DActionQueue:
         # Cancel the running task
         if self._process_task and not self._process_task.done():
             self._process_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self._process_task
-            except asyncio.CancelledError:
-                pass
 
         # Clear the queue
         self.queue.clear()
@@ -255,7 +256,7 @@ class Live2DActionQueue:
         return self._is_processing
 
     @property
-    def current_action(self) -> Optional[ActionMessage]:
+    def current_action(self) -> ActionMessage | None:
         """Get the current executing action"""
         return self._current_action
 
@@ -309,7 +310,7 @@ class ActionFactory:
         )
 
     @staticmethod
-    def sequence(actions: List[dict], total_duration: float) -> ActionMessage:
+    def sequence(actions: list[dict], total_duration: float) -> ActionMessage:
         """Create a sequence action"""
         return ActionMessage(
             action_id=f"seq_{time.time()}",

@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """
 TTS Factory - creates TTS instances based on configuration
 
@@ -9,10 +10,10 @@ To add a new TTS provider, simply:
    and a from_config() classmethod
 """
 
-from animetta.config.core.registry import ProviderRegistry
 
-from typing import List
 from loguru import logger
+
+from animetta.config.core.registry import ProviderRegistry
 
 from .interface import TTSInterface
 from .mock_tts import MockTTS
@@ -25,14 +26,14 @@ class TTSFactory:
     def create(provider: str, **kwargs) -> TTSInterface:
         """
         Creates TTS instance by provider via ProviderRegistry.
-        
+
         Args:
             provider: Provider name
             **kwargs: Parameters passed to build the config object
-            
+
         Returns:
             TTSInterface: TTS instance
-            
+
         Falls back to MockTTS on failure.
         """
         config = TTSFactory._build_config(provider, kwargs)
@@ -151,6 +152,6 @@ class TTSFactory:
             return None
 
     @staticmethod
-    def get_available_providers() -> List[str]:
+    def get_available_providers() -> list[str]:
         """Get list of all available providers"""
         return list(ProviderRegistry.list_services("tts"))

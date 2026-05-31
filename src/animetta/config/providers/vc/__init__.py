@@ -1,6 +1,7 @@
 """VC (Voice Conversion) provider configuration module"""
 
 from typing import Annotated, Union
+
 from pydantic import Field
 
 from .base import VCBaseConfig
@@ -16,9 +17,6 @@ __all__ = [
 
 # Discriminated Union type
 VCConfig = Annotated[
-    Union[
-        MockVCConfig,
-        RVCConfig,
-    ],
+    MockVCConfig | RVCConfig,
     Field(discriminator="type")
 ]

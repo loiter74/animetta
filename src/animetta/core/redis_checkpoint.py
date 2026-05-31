@@ -5,17 +5,18 @@ Falls back to MemorySaver if Redis is unavailable.
 """
 
 import json
-from typing import Optional, Any, AsyncIterator
-from loguru import logger
+from collections.abc import AsyncIterator
+from typing import Any
 
+from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.base import (
     BaseCheckpointSaver,
+    ChannelVersions,
     Checkpoint,
     CheckpointMetadata,
     CheckpointTuple,
-    ChannelVersions,
 )
-from langchain_core.runnables import RunnableConfig
+from loguru import logger
 
 
 class AsyncRedisSaver(BaseCheckpointSaver):
@@ -59,7 +60,7 @@ class AsyncRedisSaver(BaseCheckpointSaver):
 
     # ── async checkpoint protocol ────────────────────────────────
 
-    async def aget_tuple(self, config: RunnableConfig) -> Optional[CheckpointTuple]:
+    async def aget_tuple(self, config: RunnableConfig) -> CheckpointTuple | None:
         thread_id: str = config["configurable"]["thread_id"]
         key = self._make_key(thread_id)
         try:
@@ -136,11 +137,11 @@ class AsyncRedisSaver(BaseCheckpointSaver):
 
     async def alist(
         self,
-        config: Optional[RunnableConfig],
+        config: RunnableConfig | None,
         *,
-        filter: Optional[dict] = None,
-        before: Optional[RunnableConfig] = None,
-        limit: Optional[int] = None,
+        filter: dict | None = None,
+        before: RunnableConfig | None = None,
+        limit: int | None = None,
     ) -> AsyncIterator[CheckpointTuple]:
         """Return matching checkpoints (minimal implementation)."""
         if config:

@@ -8,7 +8,7 @@ with a single salience-driven metabolism model based on synaptic homeostasis
 from __future__ import annotations
 
 import math
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from animetta.memory.v2.atom import MemoryAtom
 from animetta.memory.v2.emotion_field import EmotionalField, VADVector
@@ -34,7 +34,7 @@ class MetabolismScheduler:
           retrieval_boost = 1.0 + 0.15 × retrieval_count
           emotion_protection = 1.0 + 0.3 × |valence| × arousal
         """
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         elapsed_hours = (now - atom.rewritten_at).total_seconds() / 3600.0
 
         # Exponential decay

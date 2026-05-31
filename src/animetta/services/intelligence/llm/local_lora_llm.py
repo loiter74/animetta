@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """
 Local LoRA fine-tuned model service
 Local Lora LLM Service
@@ -7,13 +8,13 @@ Local Lora LLM Service
 Uses locally fine-tuned models for inference
 """
 
-from animetta.config.core.registry import ProviderRegistry
-from animetta.config.core.registry import ProviderRegistry
-
 import asyncio
-from typing import AsyncIterator, Dict, Optional
+from collections.abc import AsyncIterator
+
 import torch
 from loguru import logger
+
+from animetta.config.core.registry import ProviderRegistry
 
 from .interface import LLMInterface
 
@@ -56,7 +57,7 @@ class LocalLoraLLM(LLMInterface):
         # Conversation history
         self.history: list = []
 
-        logger.info(f"[LocalLoraLLM] Initializing")
+        logger.info("[LocalLoraLLM] Initializing")
         logger.info(f"[LocalLoraLLM] Base model: {base_model_name}")
         logger.info(f"[LocalLoraLLM] LoRA path: {lora_path}")
         logger.info(f"[LocalLoraLLM] Requested device: {device}")
@@ -64,12 +65,12 @@ class LocalLoraLLM(LLMInterface):
 
         if self.device != self.requested_device:
             logger.warning(f"[LocalLoraLLM] ⚠️ Device auto-downgraded: {self.requested_device} → {self.device}")
-            logger.warning(f"[LocalLoraLLM] ⚠️ Performance will be affected, please check CUDA installation")
+            logger.warning("[LocalLoraLLM] ⚠️ Performance will be affected, please check CUDA installation")
 
         # Preload model (avoid timeout on first call)
-        logger.info(f"[LocalLoraLLM] 🔄 Starting model preload...")
+        logger.info("[LocalLoraLLM] 🔄 Starting model preload...")
         self.load_model()
-        logger.info(f"[LocalLoraLLM] ✅ Model preload complete")
+        logger.info("[LocalLoraLLM] ✅ Model preload complete")
 
     def _resolve_device(self, requested_device: str) -> str:
         """
@@ -92,7 +93,7 @@ class LocalLoraLLM(LLMInterface):
             logger.debug("[LocalLoraLLM] Failed to check CUDA availability")
 
         # CUDA not available, downgrade to CPU
-        logger.warning(f"[LocalLoraLLM] CUDA not available, will use CPU")
+        logger.warning("[LocalLoraLLM] CUDA not available, will use CPU")
         return "cpu"
 
     @classmethod
@@ -121,9 +122,10 @@ class LocalLoraLLM(LLMInterface):
             return
 
         try:
-            from transformers import AutoModelForCausalLM, AutoTokenizer
-            from peft import PeftModel
             import os
+
+            from peft import PeftModel
+            from transformers import AutoModelForCausalLM, AutoTokenizer
 
             logger.info(f"[LocalLoraLLM] Loading base model: {self.base_model_name}")
 
@@ -175,19 +177,19 @@ class LocalLoraLLM(LLMInterface):
             self.model.eval()
             self._loaded = True
 
-            logger.info(f"[LocalLoraLLM] ✅ Model loaded successfully")
+            logger.info("[LocalLoraLLM] ✅ Model loaded successfully")
 
             # Performance tips
             if self.device == "cpu":
-                logger.warning(f"[LocalLoraLLM] ⚠️ Using CPU for inference, performance will be slower")
-                logger.warning(f"[LocalLoraLLM] 💡 Consider installing CUDA-enabled PyTorch for better performance")
+                logger.warning("[LocalLoraLLM] ⚠️ Using CPU for inference, performance will be slower")
+                logger.warning("[LocalLoraLLM] 💡 Consider installing CUDA-enabled PyTorch for better performance")
 
         except Exception as e:
             logger.error(f"[LocalLoraLLM] ❌ Model loading failed: {e}")
-            logger.error(f"[LocalLoraLLM] 💡 Please check:")
+            logger.error("[LocalLoraLLM] 💡 Please check:")
             logger.error(f"[LocalLoraLLM]    1. Is the model path correct: {self.base_model_name}")
             logger.error(f"[LocalLoraLLM]    2. Is the LoRA path correct: {self.lora_path}")
-            logger.error(f"[LocalLoraLLM]    3. Are transformers and peft installed")
+            logger.error("[LocalLoraLLM]    3. Are transformers and peft installed")
             raise
 
     async def chat_stream(self, text: str) -> AsyncIterator[str]:
@@ -299,11 +301,10 @@ class LocalLoraLLM(LLMInterface):
         # Build prompt
         prompt = self._format_prompt(text)
 
-        logger.info(f"[LocalLoraLLM] Starting response generation...")
+        logger.info("[LocalLoraLLM] Starting response generation...")
         logger.debug(f"[LocalLoraLLM] Input prompt length: {len(prompt)} chars")
 
         # Use thread pool to execute blocking model generation
-        import asyncio
 
         def generate_sync():
             # Tokenize
@@ -337,7 +338,7 @@ class LocalLoraLLM(LLMInterface):
         # Execute blocking call in thread pool
         response = await asyncio.to_thread(generate_sync)
 
-        logger.info(f"[LocalLoraLLM] ✅ Generation complete")
+        logger.info("[LocalLoraLLM] ✅ Generation complete")
         logger.debug(f"[LocalLoraLLM] Output length: {len(response)} chars")
 
         return response
@@ -345,7 +346,7 @@ class LocalLoraLLM(LLMInterface):
     def set_system_prompt(self, prompt: str) -> None:
         """Set the system prompt"""
         self.system_prompt = prompt
-        logger.debug(f"[LocalLoraLLM] System prompt updated")
+        logger.debug("[LocalLoraLLM] System prompt updated")
 
     def get_history(self) -> list:
         """Get conversation history"""
@@ -354,7 +355,7 @@ class LocalLoraLLM(LLMInterface):
     def clear_history(self) -> None:
         """Clear conversation history"""
         self.history.clear()
-        logger.debug(f"[LocalLoraLLM] Conversation history cleared")
+        logger.debug("[LocalLoraLLM] Conversation history cleared")
 
     def handle_interrupt(self, heard_response: str = "") -> None:
         """Handle user interruption"""
@@ -379,4 +380,4 @@ class LocalLoraLLM(LLMInterface):
 
         self._loaded = False
 
-        logger.info(f"[LocalLoraLLM] Model unloaded")
+        logger.info("[LocalLoraLLM] Model unloaded")

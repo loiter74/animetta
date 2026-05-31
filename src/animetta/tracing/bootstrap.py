@@ -7,13 +7,11 @@ Reads config/observability.yaml and sets up:
 - Or NoOpTracerProvider when disabled
 """
 
-import os
-import signal
-from typing import Any, Optional
 from pathlib import Path
-from loguru import logger
+from typing import Any
 
 import yaml
+from loguru import logger
 
 
 def _load_full_config() -> dict[str, Any]:
@@ -23,7 +21,7 @@ def _load_full_config() -> dict[str, Any]:
         logger.info("[Tracing] No observability.yaml found — using defaults")
         return {}
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             return yaml.safe_load(f) or {}
     except Exception as e:
         logger.warning(f"[Tracing] Failed to load config: {e}")
@@ -31,8 +29,8 @@ def _load_full_config() -> dict[str, Any]:
 
 
 def init_tracing(
-    service_name: Optional[str] = None,
-    enabled: Optional[bool] = None,
+    service_name: str | None = None,
+    enabled: bool | None = None,
     max_export_batch_size: int = 512,
     schedule_delay_millis: int = 5000,
 ):
@@ -70,7 +68,7 @@ def init_tracing(
     from opentelemetry import trace
     from opentelemetry.sdk.resources import Resource
     from opentelemetry.sdk.trace import TracerProvider
-    from opentelemetry.sdk.trace.export import BatchSpanProcessor, SimpleSpanProcessor
+    from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 
     from .exporter import StatsSpanExporter
 

@@ -5,10 +5,10 @@ This module defines the interface for emotion timeline calculation strategies.
 All strategies must implement the ITimelineStrategy interface.
 """
 
-from .base import ITimelineStrategy, TimelineSegment, TimelineConfig
-from .position import PositionBasedStrategy
+from .base import ITimelineStrategy, TimelineConfig, TimelineSegment
 from .duration import DurationBasedStrategy
 from .intensity import IntensityBasedStrategy
+from .position import PositionBasedStrategy
 
 __all__ = [
     "ITimelineStrategy",

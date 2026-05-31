@@ -2,15 +2,17 @@
 Anima tool base classes and tool registry
 """
 
-from typing import Dict, List, Any, Optional
-from loguru import logger
+from typing import Any
+
 from langchain_core.tools import tool
+from loguru import logger
 
 
 @tool
 async def web_search(query: str, num_results: int = 5) -> str:
     """Search the Internet for real-time information"""
     import os
+
     import httpx
 
     tavily_api_key = os.getenv("TAVILY_API_KEY")
@@ -37,7 +39,7 @@ async def web_search(query: str, num_results: int = 5) -> str:
                             url = r.get("url", "")
                             snippet = r.get("content", "")[:150]
                             formatted += f"{i}. {title}\n{snippet}...\nURL: {url}\n\n"
-                        logger.info(f"[web_search] Tavily success")
+                        logger.info("[web_search] Tavily success")
                         return formatted
         except Exception as e:
             logger.warning(f"[web_search] Tavily failed: {e}")
@@ -60,6 +62,7 @@ async def web_search(query: str, num_results: int = 5) -> str:
 async def get_weather(city: str) -> str:
     """Get current weather for a specified city"""
     import os
+
     import httpx
 
     amap_api_key = os.getenv("AMAP_API_KEY")
@@ -125,17 +128,17 @@ async def calculator(expression: str) -> str:
 _BUILTIN_TOOLS = [web_search, get_weather, get_current_time, calculator]
 
 
-def get_builtin_tools() -> List[Any]:
+def get_builtin_tools() -> list[Any]:
     return _BUILTIN_TOOLS.copy()
 
 
-def get_tools_map(tools: Optional[List[Any]] = None) -> Dict[str, Any]:
+def get_tools_map(tools: list[Any] | None = None) -> dict[str, Any]:
     if tools is None:
         tools = _BUILTIN_TOOLS
     return {tool.name: tool for tool in tools}
 
 
-def create_tool_registry(builtin_enabled: Optional[List[str]] = None, extra_tools: Optional[List[Any]] = None) -> tuple:
+def create_tool_registry(builtin_enabled: list[str] | None = None, extra_tools: list[Any] | None = None) -> tuple:
     tools = []
     if builtin_enabled is None:
         tools.extend(_BUILTIN_TOOLS)
@@ -151,7 +154,7 @@ def create_tool_registry(builtin_enabled: Optional[List[str]] = None, extra_tool
     return tools, tools_map
 
 
-def load_tools_from_config(config: Dict[str, Any]) -> tuple:
+def load_tools_from_config(config: dict[str, Any]) -> tuple:
     builtin_enabled = config.get("builtin_tools")
     extra_tools = []
 

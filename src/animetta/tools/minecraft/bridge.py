@@ -14,10 +14,12 @@ Protocol:
 """
 
 import asyncio
+import contextlib
 import json
 import os
-from typing import Optional, Any, Dict
+
 from loguru import logger
+
 from .config import MinecraftConfig
 
 
@@ -26,12 +28,12 @@ class MinecraftBridge:
 
     def __init__(self, config: MinecraftConfig, autonomous: bool = False):
         self.config = config
-        self._process: Optional[asyncio.subprocess.Process] = None
-        self._pending: Dict[int, asyncio.Future] = {}
+        self._process: asyncio.subprocess.Process | None = None
+        self._pending: dict[int, asyncio.Future] = {}
         self._next_id = 1
         self._lock = asyncio.Lock()
         self._running = False
-        self._reader_task: Optional[asyncio.Task] = None
+        self._reader_task: asyncio.Task | None = None
         self._bot_ready = asyncio.Event()
 
         # Autonomous behavior loop (lazy init)
@@ -81,7 +83,7 @@ class MinecraftBridge:
             try:
                 await asyncio.wait_for(self._bot_ready.wait(), timeout=15.0)
                 logger.info("[MinecraftBridge] Bot logged in successfully")
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 logger.warning("[MinecraftBridge] Bot login timeout, continuing anyway")
 
             # Start autonomous loop if enabled
@@ -95,8 +97,8 @@ class MinecraftBridge:
             return False
 
     async def send_command(
-        self, action: str, params: Optional[Dict] = None, timeout: float = 60.0
-    ) -> Dict:
+        self, action: str, params: dict | None = None, timeout: float = 60.0
+    ) -> dict:
         """Send a command to the bot and wait for response
 
         Args:
@@ -130,7 +132,7 @@ class MinecraftBridge:
             result = await asyncio.wait_for(future, timeout=timeout)
             return result
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning(f"[MinecraftBridge] Command '{action}' timeout after {timeout}s")
             return {"status": "error", "result": f"Command timed out after {timeout}s"}
         except Exception as e:
@@ -258,10 +260,8 @@ class MinecraftBridge:
 
         if self._reader_task:
             self._reader_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self._reader_task
-            except asyncio.CancelledError:
-                pass
             self._reader_task = None
 
         if self._process:
@@ -269,7 +269,7 @@ class MinecraftBridge:
                 self._process.terminate()
                 await asyncio.wait_for(self._process.wait(), timeout=5.0)
                 logger.info("[MinecraftBridge] Bot process terminated")
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 try:
                     self._process.kill()
                     await self._process.wait()
@@ -293,9 +293,9 @@ class MinecraftBridge:
 
 
 # Module-level singleton
-_bridge: Optional[MinecraftBridge] = None
+_bridge: MinecraftBridge | None = None
 
 
-def get_bridge() -> Optional[MinecraftBridge]:
+def get_bridge() -> MinecraftBridge | None:
     """Get the global bridge instance"""
     return _bridge

@@ -1,11 +1,12 @@
 """Audio Source Separation provider configuration module"""
 
 from typing import Annotated, Union
+
 from pydantic import Field
 
 from .base import SeparationBaseConfig
-from .mock import MockSeparationConfig
 from .demucs import DemucsSeparationConfig
+from .mock import MockSeparationConfig
 
 __all__ = [
     "SeparationBaseConfig",
@@ -16,9 +17,6 @@ __all__ = [
 
 # Discriminated Union type
 SeparationConfig = Annotated[
-    Union[
-        MockSeparationConfig,
-        DemucsSeparationConfig,
-    ],
+    MockSeparationConfig | DemucsSeparationConfig,
     Field(discriminator="type")
 ]

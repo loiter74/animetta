@@ -4,7 +4,8 @@ LangChain built-in tool integration
 Provides integration and loading of LangChain's built-in tools.
 """
 
-from typing import List, Any, Optional
+from typing import Any
+
 from loguru import logger
 
 
@@ -61,7 +62,7 @@ _LANGCHAIN_TOOL_GETTERS = {
 }
 
 
-def load_langchain_tools(enabled_tools: Optional[List[str]] = None) -> List[Any]:
+def load_langchain_tools(enabled_tools: list[str] | None = None) -> list[Any]:
     """
     Load LangChain tools
 
@@ -91,7 +92,7 @@ def load_langchain_tools(enabled_tools: Optional[List[str]] = None) -> List[Any]
     return tools
 
 
-def get_available_langchain_tools() -> List[str]:
+def get_available_langchain_tools() -> list[str]:
     """
     Get list of available LangChain tool names
 

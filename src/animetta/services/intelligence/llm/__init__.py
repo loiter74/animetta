@@ -6,13 +6,13 @@ Decorators execute registration at module import time.
 
 from __future__ import annotations
 
-from .interface import LLMInterface
 from .factory import LLMFactory
-from .stream_handler import OpenAIStreamHandler
-from .tool_handler import OpenAIToolHandler
+from .interface import LLMInterface
 
 # MockLLM has no external dependencies
 from .mock_llm import MockLLM
+from .stream_handler import OpenAIStreamHandler
+from .tool_handler import OpenAIToolHandler
 
 # GLMLLM uses zai-sdk (optional dependency)
 try:
@@ -55,9 +55,7 @@ def get_llm_class(provider: str):
         return GLMLLM
     elif provider == "ollama":
         return OllamaLLM
-    elif provider == "openai":
-        return OpenAILLM
-    elif provider == "deepseek":
+    elif provider == "openai" or provider == "deepseek":
         return OpenAILLM
     elif provider == "local_lora":
         return LocalLoraLLM

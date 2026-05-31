@@ -1,6 +1,7 @@
 """ChatTTS provider configuration"""
 
-from typing import Literal, Optional
+from typing import Literal
+
 from pydantic import Field
 
 from ...core.registry import ProviderRegistry
@@ -23,7 +24,7 @@ class ChatTTSConfig(TTSBaseConfig):
         default=False,
         description="Whether to enable torch.compile (recommended to disable on Windows)"
     )
-    speaker_seed: Optional[int] = Field(
+    speaker_seed: int | None = Field(
         default=42,
         description="Speaker timbre seed, fixed for consistent voice generation; set to None for random"
     )

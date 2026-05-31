@@ -1,17 +1,17 @@
 """LLM inference node - supports tool calls and streaming output"""
 
 import asyncio
-from typing import Dict, Any, List, Optional
-from loguru import logger
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, ToolMessage
-from langgraph.types import RunnableConfig
-
 import time as time_module
+from typing import Any
 
-from .state import AgentState, log_timing
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
+from langgraph.types import RunnableConfig
+from loguru import logger
+
 from .interrupt_handler import get_interrupt_handler
 from .memory_middleware import MemoryMiddleware
 from .node_error import log_node_error
+from .state import AgentState, log_timing
 
 # Configurable timeout for LLM provider calls (default: 30 seconds)
 TIMEOUT_SECONDS = 30
@@ -21,7 +21,7 @@ FALLBACK_RESPONSE = "I need a moment to think about that."
 # RAG memory retrieval helper functions
 # ========================================
 
-def _get_memory_system(config: Optional[RunnableConfig]) -> Optional[Any]:
+def _get_memory_system(config: RunnableConfig | None) -> Any | None:
     """Get memory_system from LangGraph config"""
     if config:
         service_context = config.get("configurable", {}).get("service_context")
@@ -30,7 +30,7 @@ def _get_memory_system(config: Optional[RunnableConfig]) -> Optional[Any]:
     return None
 
 
-def _get_memory_middleware(config: Optional[RunnableConfig]) -> Optional[MemoryMiddleware]:
+def _get_memory_middleware(config: RunnableConfig | None) -> MemoryMiddleware | None:
     """Get or create MemoryMiddleware from LangGraph config"""
     if config:
         configurable = config.get("configurable", {})
@@ -47,7 +47,7 @@ def _get_memory_middleware(config: Optional[RunnableConfig]) -> Optional[MemoryM
 async def _retrieve_memory_context(
     session_id: str,
     query: str,
-    config: Optional[RunnableConfig],
+    config: RunnableConfig | None,
     max_turns: int = 5,
     current_emotion: Any = None,
 ) -> str:
@@ -84,7 +84,7 @@ async def _retrieve_memory_context(
 
 
 def _enrich_system_prompt(
-    base_prompt: Optional[str],
+    base_prompt: str | None,
     memory_context: str,
 ) -> str:
     """
@@ -109,14 +109,14 @@ def _enrich_system_prompt(
     return "\n\n---\n\n".join(parts)
 
 
-def _get_service_context(config: Optional[RunnableConfig]) -> Optional[Any]:
+def _get_service_context(config: RunnableConfig | None) -> Any | None:
     """Get service_context from LangGraph config"""
     if config:
         return config.get("configurable", {}).get("service_context")
     return None
 
 
-def _get_config_value(config: Optional[RunnableConfig], key: str, default: Any = None) -> Any:
+def _get_config_value(config: RunnableConfig | None, key: str, default: Any = None) -> Any:
     """Get config value from LangGraph config"""
     if config:
         return config.get("configurable", {}).get(key, default)
@@ -127,7 +127,7 @@ def _notify_middleware_after(
     session_id: str,
     user_input: str,
     response: str,
-    config: Optional[RunnableConfig],
+    config: RunnableConfig | None,
 ) -> None:
     """Non-blocking notification to middleware that LLM call is complete."""
     try:
@@ -147,8 +147,8 @@ def _notify_middleware_after(
 
 async def llm_node(
     state: AgentState,
-    config: Optional[RunnableConfig] = None,
-) -> Dict[str, Any]:
+    config: RunnableConfig | None = None,
+) -> dict[str, Any]:
     """
     LLM inference node
 
@@ -157,7 +157,7 @@ async def llm_node(
     """
     session_id = state.get("session_id", "unknown")
     user_text = state.get("user_text", "")
-    messages = list(state.get("messages", []))
+    list(state.get("messages", []))
 
     logger.info(f"[{session_id}] [LLMNode] Processing...")
 
@@ -227,9 +227,9 @@ async def _llm_with_tools(
     state: AgentState,
     service_context: Any,
     chat_model: Any,
-    config: Optional[RunnableConfig] = None,
+    config: RunnableConfig | None = None,
     memory_context: str = "",
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Use tool calling mode"""
     user_text = state.get("user_text", "")
     messages = list(state.get("messages", []))
@@ -302,9 +302,9 @@ async def _llm_without_tools(
     session_id: str,
     state: AgentState,
     service_context: Any,
-    config: Optional[RunnableConfig] = None,
+    config: RunnableConfig | None = None,
     memory_context: str = "",
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Use streaming mode (no tools)"""
     user_text = state.get("user_text", "")
     llm_engine = service_context.llm_engine
@@ -317,9 +317,8 @@ async def _llm_without_tools(
     # Inject memory into system_prompt
     enriched_prompt = _enrich_system_prompt(system_prompt, memory_context)
 
-    if not messages or not isinstance(messages[0], SystemMessage):
-        if enriched_prompt:
-            messages.insert(0, SystemMessage(content=enriched_prompt))
+    if (not messages or not isinstance(messages[0], SystemMessage)) and enriched_prompt:
+        messages.insert(0, SystemMessage(content=enriched_prompt))
 
     user_id = state.get("user_id")
     user_name = state.get("user_name")
@@ -347,7 +346,7 @@ async def _llm_without_tools(
                 full_response += chunk
                 if len(chunks) % 10 == 0:
                     logger.debug(f"[{session_id}] [LLMNode] Received {len(chunks)} chunks...")
-    except asyncio.TimeoutError:
+    except TimeoutError:
         llm_duration = (time_module.perf_counter() - t_llm) * 1000
         logger.warning(f"[{session_id}] [LLMNode] LLM timeout after {timeout_seconds}s, using fallback")
         await log_node_error(session_id, "llm_node", "timeout", duration_ms=llm_duration)

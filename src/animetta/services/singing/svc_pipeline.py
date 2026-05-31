@@ -1,27 +1,30 @@
 from __future__ import annotations
+
 """SVC pipeline orchestrator — coordinates all stages."""
 
 import asyncio
 import hashlib
-import os
 import re
 import shutil
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Callable
 
 from loguru import logger
 
-from .interface import (
-    SingingService, PipelineStage, PipelineProgress,
-    LyricLine, SongResult,
-)
 from .bilibili import BilibiliDownloader
-from .separator import create_separator
+from .interface import (
+    LyricLine,
+    PipelineProgress,
+    PipelineStage,
+    SingingService,
+    SongResult,
+)
 from .lyrics import LyricsGenerator
-from .svc_bridge import SVCBridge
-from .rvc_bridge import RVCBridge
 from .mixer import AudioMixer
+from .rvc_bridge import RVCBridge
+from .separator import create_separator
+from .svc_bridge import SVCBridge
 
 
 class SVCPipeline(SingingService):
@@ -34,10 +37,10 @@ class SVCPipeline(SingingService):
         self._message = ""
         self._cancelled = False
         self._auto_confirm = False
-        self._lyrics_ready: Optional[asyncio.Event] = None
-        self._confirmed_ass: Optional[str] = None
-        self._on_progress: Optional[Callable[[PipelineProgress], None]] = None
-        self._session_dir: Optional[Path] = None
+        self._lyrics_ready: asyncio.Event | None = None
+        self._confirmed_ass: str | None = None
+        self._on_progress: Callable[[PipelineProgress], None] | None = None
+        self._session_dir: Path | None = None
         self._source_url: str = ""
 
         self._downloader = BilibiliDownloader(config.bilibili.output_dir)
@@ -86,7 +89,7 @@ class SVCPipeline(SingingService):
 
     async def process(self, url: str, auto_confirm_lyrics: bool = False) -> SongResult:
         """Execute full pipeline from Bilibili URL.
-        
+
         Args:
             url: Bilibili video URL.
             auto_confirm_lyrics: If True, skip lyrics review and use ASR output directly.
@@ -100,7 +103,7 @@ class SVCPipeline(SingingService):
             audio_path, video_title, bv_id = await self._downloader.download(url)
             self._check_cancelled()
             self._update_progress(PipelineStage.DOWNLOADING, 100, "Download complete")
-            
+
             # Save a copy of the original audio as output (root outputs dir for API serving)
             safe_name = self._downloader._sanitize_filename(
                 video_title or bv_id or Path(audio_path).stem
@@ -108,7 +111,7 @@ class SVCPipeline(SingingService):
             self._init_session(safe_name)
             original_output = Path(self.config.output_dir) / f"{safe_name}_original.wav"
             shutil.copy2(audio_path, str(original_output))
-            
+
             return await self._run_stages(audio_path, video_title=video_title, original_path=str(original_output))
 
         except asyncio.CancelledError:
@@ -120,7 +123,7 @@ class SVCPipeline(SingingService):
         self, local_path: str, auto_confirm_lyrics: bool = False
     ) -> SongResult:
         """Execute pipeline from local audio file (skip download).
-        
+
         Args:
             local_path: Path to local audio file.
             auto_confirm_lyrics: If True, skip lyrics review and use ASR output directly.
@@ -225,13 +228,11 @@ class SVCPipeline(SingingService):
                 await self._rvc.convert(vocals_path, str(converted_path))
             else:
                 await self._svc.convert(vocals_path, str(converted_path))
-            svc_used = True
             self._check_cancelled()
             self._update_progress(PipelineStage.CONVERTING, 100, "Conversion complete")
         except (ConnectionError, RuntimeError) as e:
             logger.warning(f"Voice conversion skipped: {e}")
             shutil.copy2(vocals_path, str(converted_path))
-            svc_used = False
             self._update_progress(PipelineStage.CONVERTING, 100, "Voice conversion skipped — using original vocals")
 
         # Copy converted vocals to outputs for API serving (used for lip sync)
@@ -290,10 +291,10 @@ class SVCPipeline(SingingService):
         lyric_lines: list[LyricLine], session_id: str,
     ) -> str:
         """Generate TTS-processed vocals using project's GPT-SoVITS voice.
-        
+
         Loads the Evil voice config from services.yaml and calls GPT-SoVITS /tts
         endpoint to generate vocals, then mixes with backing track.
-        
+
         Returns:
             Path to TTS vocal mix file, or empty string on failure.
         """
@@ -301,7 +302,7 @@ class SVCPipeline(SingingService):
         try:
             import yaml
             services_yaml = Path(__file__).parent.parent.parent.parent.parent / "config" / "services.yaml"
-            with open(services_yaml, "r", encoding="utf-8") as f:
+            with open(services_yaml, encoding="utf-8") as f:
                 svc_cfg = yaml.safe_load(f)
             tts_cfg = (svc_cfg or {}).get("tts", {}).get("gpt_sovits_evil", {})
             if not tts_cfg or not tts_cfg.get("ref_audio_path"):
@@ -343,7 +344,7 @@ class SVCPipeline(SingingService):
                 aux_refs = tts_cfg.get("aux_ref_audio_paths")
                 if aux_refs:
                     payload["aux_ref_audio_paths"] = aux_refs
-                
+
                 resp = await client.post("/tts", json=payload)
                 if resp.status_code != 200:
                     logger.warning(f"TTS generation failed (HTTP {resp.status_code}): {resp.text[:200]}")

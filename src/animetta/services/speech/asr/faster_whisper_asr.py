@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """
 Faster-Whisper ASR implementation - open-source free speech recognition
 Based on faster-whisper project: https://github.com/guillaumekln/faster-whisper
@@ -16,15 +17,15 @@ Supports Chinese models:
 - distil-medium.en: English only
 """
 
-from typing import Union, Optional
 from pathlib import Path
+
 import numpy as np
 from loguru import logger
 
+from animetta.config.core.registry import ProviderRegistry
+
 from .interface import ASRInterface
 
-
-from animetta.config.core.registry import ProviderRegistry
 
 @ProviderRegistry.register_service("asr", "faster_whisper")
 class FasterWhisperASR(ASRInterface):
@@ -53,7 +54,7 @@ class FasterWhisperASR(ASRInterface):
         language: str = "zh",  # Default Chinese
         device: str = "auto",  # auto, cpu, cuda
         compute_type: str = "default",  # default, int8, float16, float32
-        download_root: Optional[str] = None,
+        download_root: str | None = None,
         beam_size: int = 5,
         vad_filter: bool = True,
         vad_parameters: dict = None,
@@ -81,7 +82,7 @@ class FasterWhisperASR(ASRInterface):
         self.vad_parameters = vad_parameters or {}
         self._model = None
 
-        logger.info(f"Faster-Whisper ASR initialization config:")
+        logger.info("Faster-Whisper ASR initialization config:")
         logger.info(f"  Model: {model}")
         logger.info(f"  Language: {language}")
         logger.info(f"  Device: {device}")
@@ -102,7 +103,7 @@ class FasterWhisperASR(ASRInterface):
                     compute_type=self.compute_type,
                     download_root=self.download_root,
                 )
-                logger.info(f"Faster-Whisper model loaded successfully")
+                logger.info("Faster-Whisper model loaded successfully")
 
             except ImportError:
                 logger.error("faster-whisper not installed, please run: pip install faster-whisper")
@@ -118,7 +119,7 @@ class FasterWhisperASR(ASRInterface):
     async def preload(self) -> None:
         """Preload the model (idempotent - safe to call multiple times)"""
         if self._model is not None:
-            logger.debug(f"Faster-Whisper model already loaded, skipping preload")
+            logger.debug("Faster-Whisper model already loaded, skipping preload")
             return
 
         logger.info(f"Preloading Faster-Whisper model: {self.model_name}...")
@@ -128,11 +129,11 @@ class FasterWhisperASR(ASRInterface):
         loop = asyncio.get_event_loop()
         await loop.run_in_executor(None, self._get_model)
 
-        logger.info(f"Faster-Whisper model preloaded successfully")
+        logger.info("Faster-Whisper model preloaded successfully")
 
     async def transcribe(
         self,
-        audio_data: Union[bytes, str, Path, list, np.ndarray],
+        audio_data: bytes | str | Path | list | np.ndarray,
         **kwargs
     ) -> str:
         """
@@ -148,11 +149,8 @@ class FasterWhisperASR(ASRInterface):
             str: Recognized text
         """
         import asyncio
-        import wave
-        import io
-        import tempfile
 
-        model = self._get_model()
+        self._get_model()
 
         # Process input data, convert to numpy array
         if isinstance(audio_data, np.ndarray):
@@ -258,9 +256,10 @@ class FasterWhisperASR(ASRInterface):
 
             # Resample to 16kHz (if needed)
             if audio_segment.frame_rate != 16000:
-                from pydub.utils import make_chunks
                 # Simple resampling method (can use librosa or resampy for better results)
                 import fractions
+
+                from pydub.utils import make_chunks
                 ratio = 16000 / audio_segment.frame_rate
                 target_length = int(len(samples) * ratio)
                 samples = np.interp(
@@ -305,7 +304,7 @@ class FasterWhisperASR(ASRInterface):
 
     async def transcribe_stream(
         self,
-        audio_data: Union[bytes, str, Path, list, np.ndarray],
+        audio_data: bytes | str | Path | list | np.ndarray,
         **kwargs
     ):
         """

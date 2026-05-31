@@ -5,7 +5,6 @@ the current translation settings. This avoids circular imports and
 allows real-time updates via socket events.
 """
 
-from typing import Optional
 
 
 class TranslationState:

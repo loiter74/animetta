@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from loguru import logger
-
 
 
 async def run_full_inspection() -> InspectionReport:
@@ -27,7 +26,7 @@ async def run_full_inspection() -> InspectionReport:
     Returns:
         InspectionReport with all check results and aggregated pass/fail.
     """
-    started_at = datetime.now(timezone.utc).timestamp()
+    started_at = datetime.now(UTC).timestamp()
     checks: dict[str, CheckResult] = {}
     t0 = time.perf_counter()
 
@@ -82,7 +81,7 @@ async def run_full_inspection() -> InspectionReport:
         )
 
     # ── Build frozen report ─────────────────────────────────────
-    finished_at = datetime.now(timezone.utc).timestamp()
+    finished_at = datetime.now(UTC).timestamp()
     duration_sec = time.perf_counter() - t0
 
     report = InspectionReport(

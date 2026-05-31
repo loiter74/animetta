@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """
 Kokoro TTS implementation - open-weight multilingual TTS model.
 
@@ -8,23 +9,21 @@ Chinese (Mandarin) and English with high-quality output.
 https://github.com/hexgrad/kokoro
 """
 
-from animetta.config.core.registry import ProviderRegistry
-
 # Status: maintained
 # Last verified: 2026-05-23
-
 import io
-import os
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 import numpy as np
 import torch
 from loguru import logger
 
-from .glados_effect import GladosEffectProcessor, KOKORO_SAMPLE_RATE
+from animetta.config.core.registry import ProviderRegistry
+
 from ..interface import TTSInterface
+from .glados_effect import KOKORO_SAMPLE_RATE, GladosEffectProcessor
 
 
 @ProviderRegistry.register_service("tts", "kokoro")
@@ -44,11 +43,11 @@ class KokoroTTS(TTSInterface):
         self,
         voice: str = "zf_xiaobei",
         model_repo_id: str = "hexgrad/Kokoro-82M",
-        model_path: Optional[str] = None,
-        device: Optional[str] = None,
+        model_path: str | None = None,
+        device: str | None = None,
         lang_code: str = "z",
         speed: float = 1.0,
-        glados_effect: Optional[Dict[str, Any]] = None,
+        glados_effect: dict[str, Any] | None = None,
     ):
         """
         Initialize Kokoro TTS.
@@ -85,7 +84,7 @@ class KokoroTTS(TTSInterface):
         )
 
     @classmethod
-    def from_config(cls, config, **kwargs) -> "KokoroTTS":
+    def from_config(cls, config, **kwargs) -> KokoroTTS:
         """Create instance from KokoroTTSConfig."""
         return cls(
             voice=getattr(config, "voice", "zf_xiaobei"),
@@ -127,8 +126,8 @@ class KokoroTTS(TTSInterface):
 
         except ImportError as e:
             logger.error(
-                f"[KokoroTTS] Failed to import kokoro. "
-                f"Install with: pip install kokoro misaki[zh]"
+                "[KokoroTTS] Failed to import kokoro. "
+                "Install with: pip install kokoro misaki[zh]"
             )
             raise ImportError(
                 "kokoro package not installed. "
@@ -142,11 +141,11 @@ class KokoroTTS(TTSInterface):
     async def synthesize(
         self,
         text: str,
-        output_path: Optional[Union[str, Path]] = None,
-        voice: Optional[str] = None,
-        speed: Optional[float] = None,
+        output_path: str | Path | None = None,
+        voice: str | None = None,
+        speed: float | None = None,
         **kwargs,
-    ) -> Union[bytes, str]:
+    ) -> bytes | str:
         """
         Synthesize text to speech using Kokoro.
 

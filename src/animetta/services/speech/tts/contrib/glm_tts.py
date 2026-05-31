@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """
 GLM TTS implementation - uses Zhipu AI GLM TTS API
 """
@@ -6,17 +7,14 @@ GLM TTS implementation - uses Zhipu AI GLM TTS API
 # Status: maintained
 # Last verified: 2026-05-23
 
-from typing import Union, Optional
 from pathlib import Path
-import tempfile
-import os
 
 from loguru import logger
 
+from animetta.config.core.registry import ProviderRegistry
+
 from ..interface import TTSInterface
 
-
-from animetta.config.core.registry import ProviderRegistry
 
 @ProviderRegistry.register_service("tts", "glm")
 class GLMTTS(TTSInterface):
@@ -82,14 +80,14 @@ class GLMTTS(TTSInterface):
     async def synthesize(
         self,
         text: str,
-        output_path: Optional[Union[str, Path]] = None,
-        voice: Optional[str] = None,
-        speed: Optional[float] = None,
-        volume: Optional[float] = None,
-        response_format: Optional[str] = None,
+        output_path: str | Path | None = None,
+        voice: str | None = None,
+        speed: float | None = None,
+        volume: float | None = None,
+        response_format: str | None = None,
         stream: bool = False,
         **kwargs
-    ) -> Union[bytes, str]:
+    ) -> bytes | str:
         """
         Synthesize text to speech
 
@@ -108,7 +106,7 @@ class GLMTTS(TTSInterface):
                                Otherwise returns audio byte data
         """
         client = self._get_client()
-        
+
         # Use passed parameters or defaults
         actual_voice = voice or self.voice
         actual_speed = speed if speed is not None else self.speed
@@ -136,18 +134,18 @@ class GLMTTS(TTSInterface):
         self,
         client,
         text: str,
-        output_path: Optional[Union[str, Path]],
+        output_path: str | Path | None,
         voice: str,
         response_format: str,
         speed: float,
         volume: float
-    ) -> Union[bytes, str]:
+    ) -> bytes | str:
         """Non-streaming synthesis"""
         import asyncio
-        
+
         # Execute synchronous call in thread pool
         loop = asyncio.get_event_loop()
-        
+
         def _call_api():
             response = client.audio.speech(
                 model=self.model,
@@ -182,19 +180,18 @@ class GLMTTS(TTSInterface):
         self,
         client,
         text: str,
-        output_path: Optional[Union[str, Path]],
+        output_path: str | Path | None,
         voice: str,
         response_format: str,
         speed: float,
         volume: float
-    ) -> Union[bytes, str]:
+    ) -> bytes | str:
         """Streaming synthesis"""
         import asyncio
         import base64
-        import io
-        
+
         loop = asyncio.get_event_loop()
-        
+
         def _call_api():
             response = client.audio.speech(
                 model=self.model,
@@ -212,7 +209,7 @@ class GLMTTS(TTSInterface):
 
         # Collect all audio data
         audio_chunks = []
-        
+
         for chunk in response:
             for choice in chunk.choices:
                 is_finished = choice.finish_reason
@@ -226,7 +223,7 @@ class GLMTTS(TTSInterface):
 
         # Merge all audio data
         all_audio = b''.join(audio_chunks)
-        
+
         if output_path:
             # Save to file
             output_path = Path(output_path)
@@ -242,9 +239,9 @@ class GLMTTS(TTSInterface):
     async def synthesize_stream(
         self,
         text: str,
-        voice: Optional[str] = None,
-        speed: Optional[float] = None,
-        volume: Optional[float] = None,
+        voice: str | None = None,
+        speed: float | None = None,
+        volume: float | None = None,
         **kwargs
     ):
         """
@@ -259,17 +256,17 @@ class GLMTTS(TTSInterface):
         Yields:
             bytes: Audio data chunks
         """
-        import base64
         import asyncio
-        
+        import base64
+
         client = self._get_client()
-        
+
         actual_voice = voice or self.voice
         actual_speed = speed if speed is not None else self.speed
         actual_volume = volume if volume is not None else self.volume
 
         loop = asyncio.get_event_loop()
-        
+
         def _call_api():
             response = client.audio.speech(
                 model=self.model,

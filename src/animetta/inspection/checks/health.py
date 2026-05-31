@@ -14,12 +14,11 @@ from __future__ import annotations
 
 import asyncio
 import time
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Awaitable, Callable
 
 from loguru import logger
-
 
 # ── Timeout constants (seconds) ─────────────────────────────
 
@@ -184,7 +183,7 @@ async def _probe_metrics_endpoint() -> bool:
     except aiohttp.ClientConnectorError:
         logger.debug("[health/metrics] metrics endpoint not reachable — not configured")
         return True
-    except asyncio.TimeoutError:
+    except TimeoutError:
         logger.warning("[health/metrics] metrics endpoint timed out")
         return False
     except Exception as e:
@@ -262,7 +261,7 @@ async def _run_single_probe(check: ComponentCheck) -> CheckResult:
             return CheckResult.failed(
                 check.name, duration_ms=duration_ms, error="probe returned False"
             )
-    except asyncio.TimeoutError:
+    except TimeoutError:
         duration_ms = (time.perf_counter() - t0) * 1000
         logger.warning(f"[health/{check.name}] timed out after {check.timeout}s")
         return CheckResult.failed(

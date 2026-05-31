@@ -1,7 +1,6 @@
 """Base configuration module"""
 
-from typing import ClassVar
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class BaseConfig(BaseModel):

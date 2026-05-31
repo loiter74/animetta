@@ -6,7 +6,6 @@ Implements Rule-based decision: priority-driven action selection with safety ove
 """
 import os
 import random
-from typing import Optional, Any
 from dataclasses import dataclass, field
 
 import yaml
@@ -18,8 +17,8 @@ class BuildPlanStep:
     action: str
     block: str
     description: str = ""
-    area: Optional[str] = None
-    height: Optional[int] = None
+    area: str | None = None
+    height: int | None = None
 
 
 @dataclass
@@ -28,7 +27,7 @@ class BuildTarget:
     blueprint: str
     required_materials: dict[str, int]
     build_plan: list[BuildPlanStep]
-    build_site: Optional[dict] = None  # {"x": int, "y": int, "z": int}
+    build_site: dict | None = None  # {"x": int, "y": int, "z": int}
     current_step: int = 0
 
 
@@ -45,7 +44,7 @@ class BehaviorRules:
     priorities: list[str] = field(default_factory=lambda: [
         "survival", "maintenance", "building", "gathering", "social", "exploration"
     ])
-    building: Optional[BuildTarget] = None
+    building: BuildTarget | None = None
     safety: dict = field(default_factory=lambda: {
         "return_to_base_at_night": True,
         "auto_heal_threshold": 10,
@@ -57,7 +56,7 @@ class BehaviorRules:
         "cooldown_seconds": 30,
         "topics": [],
     })
-    base_position: Optional[dict] = None  # {"x": int, "y": int, "z": int}
+    base_position: dict | None = None  # {"x": int, "y": int, "z": int}
 
 
 class RulesEngine:
@@ -70,7 +69,7 @@ class RulesEngine:
         "min_health_to_fight": 6,
     }
 
-    def __init__(self, rules_path: Optional[str] = None, safety_config: Optional[dict] = None):
+    def __init__(self, rules_path: str | None = None, safety_config: dict | None = None):
         self._rules_path = rules_path or os.path.join(os.path.dirname(__file__), "rules.md")
         self._safety_config = safety_config or {}
         self.rules: BehaviorRules = BehaviorRules()
@@ -79,7 +78,7 @@ class RulesEngine:
     def _load(self) -> None:
         """Load and parse rules.md"""
         try:
-            with open(self._rules_path, "r", encoding="utf-8") as f:
+            with open(self._rules_path, encoding="utf-8") as f:
                 raw = yaml.safe_load(f)
 
             if not raw or not isinstance(raw, dict):
@@ -185,7 +184,7 @@ class RulesEngine:
         except ValueError:
             return len(self.rules.priorities)  # Unknown → lowest priority
 
-    def get_chat_message(self, trigger: str) -> Optional[str]:
+    def get_chat_message(self, trigger: str) -> str | None:
         """Get a random chat message for the given trigger"""
         topics: list[ChatTopic] = self.rules.chat.get("topics", [])
         for topic in topics:

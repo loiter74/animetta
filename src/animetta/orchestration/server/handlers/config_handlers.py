@@ -2,7 +2,6 @@
 Configuration event handlers — config switching, log level, heartbeat, translation.
 """
 
-import asyncio
 import os
 from typing import TYPE_CHECKING
 
@@ -12,9 +11,10 @@ from .base_handler import BaseSocketHandler
 
 if TYPE_CHECKING:
     from socketio import AsyncServer
-    from ..session import SessionManager
+
     from ..desktop import DesktopClientManager
     from ..live2d import Live2DManager
+    from ..session import SessionManager
 
 
 class ConfigHandlers(BaseSocketHandler):

@@ -1,10 +1,10 @@
 from __future__ import annotations
+
 """
 ASR (Automatic Speech Recognition) interface definition
 """
 
 from abc import ABC, abstractmethod
-from typing import Union
 from pathlib import Path
 
 
@@ -16,8 +16,8 @@ class ASRInterface(ABC):
 
     @abstractmethod
     async def transcribe(
-        self, 
-        audio_data: Union[bytes, str, Path],
+        self,
+        audio_data: bytes | str | Path,
         **kwargs
     ) -> str:
         """

@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """
 Silero VAD detector — handles model loading and speech probability detection.
 
@@ -6,12 +7,10 @@ Extracted from silero_vad.py to separate model/detection concerns from
 audio processing + state machine logic.
 """
 
-from collections import deque
-from typing import Union
 import numpy as np
 from loguru import logger
 
-from .interface import VADState, VADResult
+from .interface import VADResult, VADState
 
 
 class SileroDetector:
@@ -71,7 +70,7 @@ class SileroDetector:
         with torch.no_grad():
             return self.model(chunk_tensor, self.sample_rate).item()
 
-    def detect(self, audio_data: Union[list, np.ndarray], vad_instance) -> VADResult:
+    def detect(self, audio_data: list | np.ndarray, vad_instance) -> VADResult:
         """
         Detect voice activity in audio data.
 
@@ -93,26 +92,24 @@ class SileroDetector:
         # Diagnostic: record original audio data range (only first chunk, avoid flooding)
         if not self._vad_logged:
             if len(audio_np) > 0:
-                orig_min = float(np.min(audio_np))
-                orig_max = float(np.max(audio_np))
-                orig_abs_max = float(np.max(np.abs(audio_np)))
+                float(np.min(audio_np))
+                float(np.max(audio_np))
+                float(np.max(np.abs(audio_np)))
             self._vad_logged = True
         elif len(audio_np) > 0:
-            orig_min = float(np.min(audio_np))
-            orig_max = float(np.max(audio_np))
-            orig_abs_max = float(np.max(np.abs(audio_np)))
+            float(np.min(audio_np))
+            float(np.max(audio_np))
+            float(np.max(np.abs(audio_np)))
         else:
-            orig_min = orig_max = orig_abs_max = 0.0
+            pass
 
         # Check if int16 PCM data (value range exceeds [-1.0, 1.0])
-        is_int16 = False
         if len(audio_np) > 0 and np.max(np.abs(audio_np)) > 1.0:
             # int16 PCM data, normalize to [-1.0, 1.0]
             if not self._vad_int16_logged:
-                logger.info(f"[VAD] ✅ Detected int16 PCM data format, will auto-normalize")
+                logger.info("[VAD] ✅ Detected int16 PCM data format, will auto-normalize")
                 self._vad_int16_logged = True
             audio_np = audio_np / 32767.0
-            is_int16 = True
 
         # Print normalized signal amplitude (only once)
         if not self._vad_normalized_logged:

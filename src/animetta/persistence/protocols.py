@@ -17,10 +17,9 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from loguru import logger
-
 
 # ── Shared data models ──────────────────────────────────────────────────────
 
@@ -41,18 +40,18 @@ class WikiPage:
     page_type: PageType
     path: str  # relative to wiki/, e.g. "entities/user.md"
     content: str  # Markdown body (without frontmatter)
-    tags: List[str] = field(default_factory=list)
-    links: List[str] = field(default_factory=list)  # [[wikilink]] targets
+    tags: list[str] = field(default_factory=list)
+    links: list[str] = field(default_factory=list)  # [[wikilink]] targets
     created_at: datetime = field(default_factory=datetime.now)
     updated_at: datetime = field(default_factory=datetime.now)
-    raw_source: Optional[str] = None  # link to raw/ source file
-    metadata: Dict = field(default_factory=dict)
+    raw_source: str | None = None  # link to raw/ source file
+    metadata: dict = field(default_factory=dict)
 
     def to_markdown(self) -> str:
         """Render full Markdown with YAML frontmatter."""
         import yaml
 
-        fm: Dict = {
+        fm: dict = {
             "type": self.page_type.value,
             "created": self.created_at.isoformat(),
             "updated": self.updated_at.isoformat(),
@@ -71,10 +70,10 @@ class WikiPage:
         return f"---\n{yml}---\n\n{self.content}\n"
 
     @classmethod
-    def from_markdown(cls, path: str, text: str) -> "WikiPage":
+    def from_markdown(cls, path: str, text: str) -> WikiPage:
         """Parse a Markdown file with optional YAML frontmatter."""
         content = text
-        fm: Dict = {}
+        fm: dict = {}
 
         if text.startswith("---"):
             parts = text.split("---", 2)
@@ -186,21 +185,21 @@ class StatsStoreProtocol(ABC):
 
     # ── Query / report methods (optional for implementations) ────────────
 
-    async def get_overview(self) -> Dict[str, Any]:
+    async def get_overview(self) -> dict[str, Any]:
         """Return aggregate overview stats."""
         raise NotImplementedError
 
-    async def get_node_stats(self) -> List[Dict[str, Any]]:
+    async def get_node_stats(self) -> list[dict[str, Any]]:
         """Return per-node execution statistics."""
         raise NotImplementedError
 
     async def get_recent_traces(
         self, limit: int = 50, offset: int = 0
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Return the most recent traces."""
         raise NotImplementedError
 
-    async def get_trace_detail(self, trace_id: str) -> Optional[Dict[str, Any]]:
+    async def get_trace_detail(self, trace_id: str) -> dict[str, Any] | None:
         """Return detailed information for a single trace."""
         raise NotImplementedError
 

@@ -1,6 +1,7 @@
 """Qwen3-TTS provider configuration (通义千问 Qwen3-TTS)"""
 
-from typing import Literal, Optional
+from typing import Literal
+
 from pydantic import Field
 
 from ...core.registry import ProviderRegistry
@@ -81,11 +82,11 @@ class Qwen3TTSConfig(TTSBaseConfig):
     )
 
     # === Voice Clone ===
-    ref_audio_path: Optional[str] = Field(
+    ref_audio_path: str | None = Field(
         default=None,
         description="Path to reference audio WAV for voice clone mode. When set, synthesize() uses generate_voice_clone() instead of generate_custom_voice().",
     )
-    ref_text: Optional[str] = Field(
+    ref_text: str | None = Field(
         default=None,
         description="Reference transcript for ICL mode (required when x_vector_only=False). Optional when x_vector_only=True.",
     )

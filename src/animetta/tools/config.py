@@ -4,13 +4,14 @@ Tool configuration loader
 Loads tool configuration from config/tools.yaml.
 """
 
-import yaml
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Any
+
+import yaml
 from loguru import logger
 
 
-def load_tools_config(config_path: Optional[str] = None) -> Dict[str, Any]:
+def load_tools_config(config_path: str | None = None) -> dict[str, Any]:
     """
     Load tool configuration
 
@@ -31,7 +32,7 @@ def load_tools_config(config_path: Optional[str] = None) -> Dict[str, Any]:
         return _get_default_config()
 
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             config = yaml.safe_load(f)
 
         logger.info(f"[Tool Config] Loaded config: {config_path}")
@@ -42,7 +43,7 @@ def load_tools_config(config_path: Optional[str] = None) -> Dict[str, Any]:
         return _get_default_config()
 
 
-def _get_default_config() -> Dict[str, Any]:
+def _get_default_config() -> dict[str, Any]:
     """
     Get default tool configuration
 
@@ -67,7 +68,7 @@ def _get_default_config() -> Dict[str, Any]:
     }
 
 
-def validate_tools_config(config: Dict[str, Any]) -> bool:
+def validate_tools_config(config: dict[str, Any]) -> bool:
     """
     Validate tool configuration
 

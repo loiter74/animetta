@@ -5,10 +5,11 @@ Infers emotions from text through keyword matching.
 Implements the new IEmotionAnalyzer interface with enhanced error handling and validation logic.
 """
 
-from typing import List, Optional, Dict, Any
+from typing import Any
+
 from loguru import logger
 
-from .base import IEmotionAnalyzer, EmotionData
+from .base import EmotionData, IEmotionAnalyzer
 
 
 class KeywordAnalyzer(IEmotionAnalyzer):
@@ -104,9 +105,9 @@ class KeywordAnalyzer(IEmotionAnalyzer):
 
     def __init__(
         self,
-        keywords: Optional[Dict[str, List[str]]] = None,
+        keywords: dict[str, list[str]] | None = None,
         confidence_mode: str = "weighted",
-        valid_emotions: Optional[List[str]] = None,
+        valid_emotions: list[str] | None = None,
     ):
         """
         Initialize the analyzer
@@ -131,7 +132,7 @@ class KeywordAnalyzer(IEmotionAnalyzer):
                 f"Valid values: 'count', 'weighted', 'normalized', 'binary'"
             )
 
-    def extract(self, text: str, context: Optional[Dict[str, Any]] = None) -> EmotionData:
+    def extract(self, text: str, context: dict[str, Any] | None = None) -> EmotionData:
         """
         Extract emotions from text
 
@@ -189,7 +190,7 @@ class KeywordAnalyzer(IEmotionAnalyzer):
 
     def _calculate_confidence(
         self,
-        scores: Dict[str, int],
+        scores: dict[str, int],
         text: str
     ) -> float:
         """
@@ -227,7 +228,7 @@ class KeywordAnalyzer(IEmotionAnalyzer):
         else:
             return 0.5
 
-    def _extract_primary(self, scores: Dict[str, int]) -> str:
+    def _extract_primary(self, scores: dict[str, int]) -> str:
         """
         Extract primary emotion
 
@@ -273,7 +274,7 @@ class KeywordAnalyzer(IEmotionAnalyzer):
         """Priority (lower than LLM tag)"""
         return 10
 
-    def get_supported_emotions(self) -> List[str]:
+    def get_supported_emotions(self) -> list[str]:
         """Get supported emotions list"""
         return list(self.keywords.keys())
 
@@ -289,7 +290,7 @@ class KeywordAnalyzer(IEmotionAnalyzer):
         """
         return isinstance(text, str) and len(text.strip()) > 0
 
-    def extract_emotion_tags(self, text: str) -> List[str]:
+    def extract_emotion_tags(self, text: str) -> list[str]:
         """
         Convenience method: extract list of matched emotion tags
 
@@ -303,7 +304,7 @@ class KeywordAnalyzer(IEmotionAnalyzer):
         matched_emotions = result.metadata.get("scores", {})
         return list(matched_emotions.keys())
 
-    def get_emotion_summary(self, text: str) -> Dict[str, Any]:
+    def get_emotion_summary(self, text: str) -> dict[str, Any]:
         """
         Get emotion summary information
 
@@ -324,7 +325,7 @@ class KeywordAnalyzer(IEmotionAnalyzer):
             "has_emotions": result.confidence > 0
         }
 
-    def add_keywords(self, emotion: str, keywords: List[str]) -> None:
+    def add_keywords(self, emotion: str, keywords: list[str]) -> None:
         """
         Dynamically add keywords
 
@@ -337,7 +338,7 @@ class KeywordAnalyzer(IEmotionAnalyzer):
 
         self.keywords[emotion].extend(keywords)
 
-    def remove_keywords(self, emotion: str, keywords: List[str]) -> None:
+    def remove_keywords(self, emotion: str, keywords: list[str]) -> None:
         """
         Remove keywords
 

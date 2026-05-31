@@ -3,8 +3,9 @@ Local LoRA LLM configuration
 Local Lora LLM Configuration
 """
 
-from typing import Optional, Literal
-from pydantic import Field, ConfigDict
+from typing import Literal
+
+from pydantic import ConfigDict, Field
 
 from .base import LLMBaseConfig
 

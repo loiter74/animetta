@@ -7,8 +7,9 @@ reporting.
 """
 
 import asyncio
+from collections.abc import Callable
 from enum import Enum
-from typing import Any, Awaitable, Callable, Dict, Optional
+from typing import Any
 
 from loguru import logger
 
@@ -33,8 +34,8 @@ class ModelSlot:
     def __init__(self, name: str) -> None:
         self.name = name
         self.state = ModelLoadState.UNLOADED
-        self.instance: Optional[Any] = None
-        self.error: Optional[Exception] = None
+        self.instance: Any | None = None
+        self.error: Exception | None = None
         self._event = asyncio.Event()
 
     def set_loaded(self, instance: Any) -> None:
@@ -72,9 +73,9 @@ class ModelLoadingManager:
     """
 
     def __init__(self, socketio: Any = None) -> None:
-        self._slots: Dict[str, ModelSlot] = {}
-        self._loaders: Dict[str, Callable[[], Any]] = {}
-        self._service_names: Dict[str, str] = {}
+        self._slots: dict[str, ModelSlot] = {}
+        self._loaders: dict[str, Callable[[], Any]] = {}
+        self._service_names: dict[str, str] = {}
         self._socketio = socketio
 
     # ------------------------------------------------------------------
@@ -86,7 +87,7 @@ class ModelLoadingManager:
         name: str,
         loader_fn: Callable[[], Any],
         service_name: str = "",
-    ) -> Optional[Any]:
+    ) -> Any | None:
         """Register a model and optionally load it immediately if synchronous.
 
         Parameters
@@ -223,7 +224,7 @@ class ModelLoadingManager:
 
         return await slot.wait(timeout=timeout)
 
-    def get_status(self) -> Dict[str, str]:
+    def get_status(self) -> dict[str, str]:
         """Return a snapshot of every registered model and its state.
 
         Returns
@@ -250,7 +251,7 @@ class ModelLoadingManager:
                 if slot.state == ModelLoadState.LOADED:
                     continue
                 await asyncio.wait_for(slot._event.wait(), timeout=timeout)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning("wait_all timed out")
             return False
 
@@ -267,14 +268,14 @@ class ModelLoadingManager:
         self,
         name: str,
         status: str,
-        error: Optional[str] = None,
+        error: str | None = None,
     ) -> None:
         """Emit a model-loading status event via Socket.IO if available."""
         if self._socketio is None:
             return
 
         service_name = self._service_names.get(name, name)
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "service": service_name,
             "name": name,
             "status": status,

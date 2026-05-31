@@ -12,52 +12,58 @@ Architecture:
 """
 
 # Core
+# Composite configs
+from .agent import AgentConfig
+from .app import AppConfig
 from .core.base import BaseConfig
 from .core.registry import ProviderRegistry
-
-# Providers - LLM
-from .providers.llm import (
-    LLMConfig,
-    LLMBaseConfig,
-    MockLLMConfig,
-    OpenAILLMConfig,
-    GLMLLMConfig,
-    OllamaLLMConfig,
-    DeepSeekLLMConfig,
+from .persona import (
+    BehaviorRules,
+    MBTIDimensionDelta,
+    MBTIDimensions,
+    MBTIProfile,
+    PersonaConfig,
+    PersonalityTraits,
 )
 
 # Providers - ASR
 from .providers.asr import (
-    ASRConfig,
     ASRBaseConfig,
+    ASRConfig,
+    GLMASRConfig,
     MockASRConfig,
     OpenAIASRConfig,
-    GLMASRConfig,
+)
+
+# Providers - LLM
+from .providers.llm import (
+    DeepSeekLLMConfig,
+    GLMLLMConfig,
+    LLMBaseConfig,
+    LLMConfig,
+    MockLLMConfig,
+    OllamaLLMConfig,
+    OpenAILLMConfig,
 )
 
 # Providers - TTS
 from .providers.tts import (
-    TTSConfig,
-    TTSBaseConfig,
-    MockTTSConfig,
-    OpenAITTSConfig,
     EdgeTTSConfig,
     GLMTTSConfig,
+    MockTTSConfig,
+    OpenAITTSConfig,
+    TTSBaseConfig,
+    TTSConfig,
 )
 
 # Providers - VAD
 from .providers.vad import (
-    VADConfig,
-    VADBaseConfig,
     MockVADConfig,
     SileroVADConfig,
+    VADBaseConfig,
+    VADConfig,
 )
-
-# Composite configs
-from .agent import AgentConfig
 from .system import SystemConfig
-from .persona import PersonaConfig, PersonalityTraits, BehaviorRules, MBTIProfile, MBTIDimensions, MBTIDimensionDelta
-from .app import AppConfig
 
 __all__ = [
     # Core

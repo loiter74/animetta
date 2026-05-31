@@ -5,36 +5,36 @@ Service context - core service container
 from __future__ import annotations
 
 import asyncio
-from typing import Callable, Optional
+from collections.abc import Callable
+
 from loguru import logger
-from pathlib import Path
-import yaml
+
 
 class ServiceContext:
     """Service context class"""
 
-    def __init__(self, model_manager: Optional[ModelLoadingManager] = None):
-        self.config: Optional[AppConfig] = None
+    def __init__(self, model_manager: ModelLoadingManager | None = None):
+        self.config: AppConfig | None = None
         self.model_manager = model_manager
 
         # Service instances
-        self.asr_engine: Optional[ASRInterface] = None
-        self.tts_engine: Optional[TTSInterface] = None
-        self.llm_engine: Optional[LLMInterface] = None
-        self.local_llm_engine: Optional[LLMInterface] = None
-        self.vad_engine: Optional[VADInterface] = None
+        self.asr_engine: ASRInterface | None = None
+        self.tts_engine: TTSInterface | None = None
+        self.llm_engine: LLMInterface | None = None
+        self.local_llm_engine: LLMInterface | None = None
+        self.vad_engine: VADInterface | None = None
 
         # Memory system
-        self.audio_processor: Optional[AudioProcessorInterface] = None
-        self.memory_system: Optional[MemorySystem] = None
+        self.audio_processor: AudioProcessorInterface | None = None
+        self.memory_system: MemorySystem | None = None
 
         # Session state
-        self.session_id: Optional[str] = None
+        self.session_id: str | None = None
         self.is_speaking: bool = False
         self.is_processing: bool = False
 
         # Callback functions
-        self.send_text: Optional[Callable] = None
+        self.send_text: Callable | None = None
 
         # Emotion analyzer
         self.emotion_analyzer = None
@@ -78,10 +78,10 @@ class ServiceContext:
     async def load_cache(
         self,
         config: AppConfig,
-        asr_engine: Optional[ASRInterface] = None,
-        tts_engine: Optional[TTSInterface] = None,
-        llm_engine: Optional[LLMInterface] = None,
-        send_text: Optional[Callable] = None,
+        asr_engine: ASRInterface | None = None,
+        tts_engine: TTSInterface | None = None,
+        llm_engine: LLMInterface | None = None,
+        send_text: Callable | None = None,
     ) -> None:
         """Load services from cache (reuse existing instances)"""
         self.config = config
@@ -129,8 +129,9 @@ class ServiceContext:
     async def _preload_tokenizers(self) -> None:
         """Preload conversation tokenizer (tiktoken, etc.) to avoid download/load delay on first use"""
         try:
-            import tiktoken
             import asyncio
+
+            import tiktoken
             loop = asyncio.get_event_loop()
             await loop.run_in_executor(None, lambda: tiktoken.get_encoding("cl100k_base"))
             logger.info(f"[{self.session_id}] tiktoken tokenizer preloaded")
@@ -209,7 +210,7 @@ class ServiceContext:
         self.local_llm_engine = LLMFactory.create_from_config(config=llm_config, system_prompt="")
         logger.info(f"[{self.session_id}] Local LLM created: {type(self.local_llm_engine).__name__}")
 
-    def _get_live2d_prompt(self) -> Optional[str]:
+    def _get_live2d_prompt(self) -> str | None:
         """Get Live2D emotion prompt"""
         try:
             live2d_config = get_live2d_config()

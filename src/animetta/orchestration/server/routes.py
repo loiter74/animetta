@@ -4,14 +4,11 @@ All handler logic is extracted into server/handlers/ modules.
 RouteHandlers acts as a facade that delegates to domain-specific handlers.
 """
 
-import json
-import asyncio
-from typing import Dict, Any, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from loguru import logger
 
 from .desktop import DesktopClientManager
-from .live2d import Live2DManager
 from .handlers.base_handler import BaseSocketHandler
 from .handlers.bilibili_handlers import BilibiliHandlers
 from .handlers.chat_handlers import ChatHandlers
@@ -23,10 +20,12 @@ from .handlers.memory_handlers import MemoryHandlers
 from .handlers.minecraft_handlers import MinecraftHandlers
 from .handlers.persona_handlers import PersonaHandlers
 from .handlers.singing_handlers import SingingHandlers
+from .live2d import Live2DManager
 
 if TYPE_CHECKING:
-    from .session import SessionManager
     from socketio import AsyncServer
+
+    from .session import SessionManager
 
 
 class RouteHandlers:
@@ -40,8 +39,8 @@ class RouteHandlers:
         self,
         sio: "AsyncServer",
         session_manager: "SessionManager",
-        desktop_manager: Optional[DesktopClientManager] = None,
-        live2d_manager: Optional[Live2DManager] = None,
+        desktop_manager: DesktopClientManager | None = None,
+        live2d_manager: Live2DManager | None = None,
     ):
         # Infrastructure
         self.sio = sio
@@ -289,9 +288,9 @@ class RouteHandlers:
 def register_routes(
     sio: "AsyncServer",
     session_manager: "SessionManager",
-    desktop_manager: Optional[DesktopClientManager] = None,
-    live2d_manager: Optional[Live2DManager] = None,
-    bilibili_config: Optional[Dict[str, Any]] = None,
+    desktop_manager: DesktopClientManager | None = None,
+    live2d_manager: Live2DManager | None = None,
+    bilibili_config: dict[str, Any] | None = None,
 ) -> RouteHandlers:
     """Register all routes to the Socket.IO server."""
     handlers = RouteHandlers(

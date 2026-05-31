@@ -16,9 +16,8 @@ from __future__ import annotations
 
 import logging
 import time
-from collections import Counter, defaultdict
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+from collections import Counter
+from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
@@ -62,11 +61,11 @@ class DanmakuBuffer:
             max_size: Maximum number of danmaku entries in the ring buffer.
         """
         self._max_size = max_size
-        self._buffer: List[str] = []  # ring buffer (list used as circular with trim)
-        self._timestamps: List[float] = []  # parallel timestamp list
+        self._buffer: list[str] = []  # ring buffer (list used as circular with trim)
+        self._timestamps: list[float] = []  # parallel timestamp list
         self._phrase_counter: Counter = Counter()  # phrase -> total count
-        self._phrase_first_seen: Dict[str, float] = {}  # phrase -> first timestamp
-        self._phrase_last_seen: Dict[str, float] = {}  # phrase -> last timestamp
+        self._phrase_first_seen: dict[str, float] = {}  # phrase -> first timestamp
+        self._phrase_last_seen: dict[str, float] = {}  # phrase -> last timestamp
         self._room_id: int = 0
 
     # ── Public API ──────────────────────────────────────────────────────
@@ -93,7 +92,7 @@ class DanmakuBuffer:
         # Ring buffer: trim oldest when full
         if len(self._buffer) >= self._max_size:
             oldest = self._buffer.pop(0)
-            oldest_ts = self._timestamps.pop(0)
+            self._timestamps.pop(0)
             self._decrement_phrase(oldest)
 
         self._buffer.append(cleaned)
@@ -106,7 +105,7 @@ class DanmakuBuffer:
         self,
         min_freq: int = 3,
         window_minutes: int = 30,
-    ) -> List[DanmakuPhrase]:
+    ) -> list[DanmakuPhrase]:
         """Return phrases that meet frequency and time-window criteria.
 
         Only phrases whose last_seen falls within the time window are included.
@@ -122,7 +121,7 @@ class DanmakuBuffer:
         now = time.time()
         cutoff = now - window_minutes * 60
 
-        result: List[DanmakuPhrase] = []
+        result: list[DanmakuPhrase] = []
         for phrase, count in self._phrase_counter.items():
             last = self._phrase_last_seen.get(phrase, 0)
             if last < cutoff:
@@ -143,7 +142,7 @@ class DanmakuBuffer:
         result.sort(key=lambda p: p.frequency, reverse=True)
         return result
 
-    def get_recent_danmaku(self, limit: int = 100) -> List[str]:
+    def get_recent_danmaku(self, limit: int = 100) -> list[str]:
         """Return the most recent danmaku texts.
 
         Args:

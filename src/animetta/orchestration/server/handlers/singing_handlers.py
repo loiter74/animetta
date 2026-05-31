@@ -4,7 +4,7 @@ import asyncio
 import base64
 import os
 from pathlib import Path
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import yaml
 from loguru import logger
@@ -13,9 +13,10 @@ from .base_handler import BaseSocketHandler
 
 if TYPE_CHECKING:
     from socketio import AsyncServer
-    from ..session import SessionManager
+
     from ..desktop import DesktopClientManager
     from ..live2d import Live2DManager
+    from ..session import SessionManager
 
 
 class SingingHandlers(BaseSocketHandler):
@@ -33,7 +34,7 @@ class SingingHandlers(BaseSocketHandler):
 
     async def on_sing_process(self, sid: str, data: dict) -> None:
         """Start singing pipeline.
-        
+
         Accepts:
         - { url: "bilibili_url" } for Bilibili download
         - { url: "bilibili_url", auto_confirm: true } to skip lyrics review
@@ -63,7 +64,7 @@ class SingingHandlers(BaseSocketHandler):
             config_path = os.path.join(
                 os.path.dirname(__file__), "../../../../../config/singing.yaml"
             )
-            with open(config_path, "r", encoding="utf-8") as f:
+            with open(config_path, encoding="utf-8") as f:
                 raw = yaml.safe_load(f)
             config = SingingConfig(**raw.get("singing", {}))
 
@@ -187,7 +188,7 @@ class SingingHandlers(BaseSocketHandler):
 
     async def on_sing_subtitle_sync(self, sid: str, data: dict) -> None:
         """Forward subtitle line to all clients.
-        
+
         Receives: { text: str, translation: str }
         Emits: sing:subtitle_line { text, translation, lang, target_lang }
         """

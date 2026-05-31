@@ -9,7 +9,7 @@ Usage:
     cost = calculate_cost("openai", "gpt-4o-mini", input_tokens=1500, output_tokens=800)
 """
 
-from typing import Optional
+
 from loguru import logger
 
 # TODO: Update pricing as of 2026-05-13
@@ -75,10 +75,10 @@ def calculate_cost(
         return 0.0
 
     # Try exact model match first, then fallback to partial match
-    prices: Optional[tuple[float, float]] = provider_prices.get(model)
+    prices: tuple[float, float] | None = provider_prices.get(model)
     if prices is None:
         # Partial match: find the longest known prefix that matches the model
-        best_match: Optional[tuple[float, float]] = None
+        best_match: tuple[float, float] | None = None
         best_len = 0
         for known_model, known_prices in provider_prices.items():
             if model.startswith(known_model) and len(known_model) > best_len:

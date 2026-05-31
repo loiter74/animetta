@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """
 VAD audio processor implementation
 
@@ -6,12 +7,13 @@ VAD-based voice activity detection and audio accumulation
 """
 
 import time
-import numpy as np
-from typing import List, Optional, Any, Callable, Dict
+from collections.abc import Callable
+from typing import Any
+
 from loguru import logger
 
-from .processor import AudioProcessorInterface
 from ..intelligence.vad import VADInterface, VADState
+from .processor import AudioProcessorInterface
 
 
 class VADAudioProcessor(AudioProcessorInterface):
@@ -29,8 +31,8 @@ class VADAudioProcessor(AudioProcessorInterface):
         self,
         session_id: str,
         vad_engine: VADInterface,
-        on_speech_start: Optional[Callable] = None,
-        on_speech_end: Optional[Callable[[List[float]], Any]] = None,
+        on_speech_start: Callable | None = None,
+        on_speech_end: Callable[[list[float]], Any] | None = None,
         sample_rate: int = 16000,
         vad_timeout_seconds: float = 30.0,
     ):
@@ -53,23 +55,23 @@ class VADAudioProcessor(AudioProcessorInterface):
         self.vad_timeout_seconds = vad_timeout_seconds
 
         # Audio buffer
-        self._audio_buffer: List[float] = []
+        self._audio_buffer: list[float] = []
 
         # VAD state tracking
-        self._vad_active_start_time: Optional[float] = None
+        self._vad_active_start_time: float | None = None
         self._vad_chunk_count = 0
         self._is_speaking = False
-        self._last_speech_time: Optional[float] = None
+        self._last_speech_time: float | None = None
 
         # Statistics
         self._total_chunks = 0
         self._speech_chunks = 0
-        
+
         # Force timeout mechanism
-        self._first_audio_time: Optional[float] = None
+        self._first_audio_time: float | None = None
         self._max_audio_duration = 30.0  # Maximum audio duration (seconds)
 
-    async def process_chunk(self, audio_data: List[float]) -> None:
+    async def process_chunk(self, audio_data: list[float]) -> None:
         """
         Process audio data chunk
 
@@ -84,7 +86,7 @@ class VADAudioProcessor(AudioProcessorInterface):
         # Debug log: output every 500 chunks
         if self._total_chunks % 500 == 0:
             logger.info(f"[{self.session_id}] [AudioProcessor] Audio chunks: {self._total_chunks}")
-        
+
         # Audio duration progress log: output every 10 seconds
         if self._is_speaking and self._first_audio_time and self._total_chunks % 333 == 0:  # approx 10 seconds
             audio_duration = time.time() - self._first_audio_time
@@ -114,7 +116,7 @@ class VADAudioProcessor(AudioProcessorInterface):
 
             if result.is_speech_end and len(self._audio_buffer) > 1024:
                 await self._handle_speech_end()
-            
+
             # Force timeout check: regardless of VAD state, end if exceeds max duration
             if self._is_speaking and self._first_audio_time:
                 audio_duration = time.time() - self._first_audio_time
@@ -154,12 +156,12 @@ class VADAudioProcessor(AudioProcessorInterface):
     # Internal methods
     # ========================================
 
-    def _handle_vad_active(self, current_time: float, audio_data: List[float]) -> None:
+    def _handle_vad_active(self, current_time: float, audio_data: list[float]) -> None:
         """Handle VAD active state"""
         if self._vad_active_start_time is None:
             self._vad_active_start_time = current_time
             self._vad_chunk_count = 0
-        
+
         # Record first audio time
         if self._first_audio_time is None:
             self._first_audio_time = current_time
@@ -213,7 +215,7 @@ class VADAudioProcessor(AudioProcessorInterface):
             except Exception as e:
                 logger.error(f"[{self.session_id}] Error in speech_start callback: {e}")
 
-    async def _handle_speech_end(self, audio_data: Optional[List[float]] = None) -> None:
+    async def _handle_speech_end(self, audio_data: list[float] | None = None) -> None:
         """Handle speech end"""
         if not self._is_speaking:
             return
@@ -243,7 +245,7 @@ class VADAudioProcessor(AudioProcessorInterface):
             except Exception as e:
                 logger.error(f"[{self.session_id}] Error in speech_end callback: {e}")
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get statistics"""
         return {
             "total_chunks": self._total_chunks,

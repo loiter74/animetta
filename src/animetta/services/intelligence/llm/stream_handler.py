@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """
 OpenAI LLM stream handler — handles streaming chat logic.
 
@@ -7,7 +8,9 @@ core LLM implementation.
 """
 
 import time as time_module
-from typing import AsyncIterator, TYPE_CHECKING
+from collections.abc import AsyncIterator
+from typing import TYPE_CHECKING
+
 from loguru import logger
 
 if TYPE_CHECKING:
@@ -23,7 +26,7 @@ class OpenAIStreamHandler:
     and updating conversation history.
     """
 
-    def __init__(self, llm_instance: "OpenAILLM"):
+    def __init__(self, llm_instance: OpenAILLM):
         """
         Args:
             llm_instance: The OpenAILLM instance that owns this handler.

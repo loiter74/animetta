@@ -7,7 +7,7 @@ InspectionReport: Aggregated results from a full inspection run.
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -65,7 +65,7 @@ class InspectionReport(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     run_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    started_at: float = Field(default_factory=lambda: datetime.now(timezone.utc).timestamp())
+    started_at: float = Field(default_factory=lambda: datetime.now(UTC).timestamp())
     finished_at: float = 0.0
     checks: dict[str, CheckResult] = Field(default_factory=dict)
 

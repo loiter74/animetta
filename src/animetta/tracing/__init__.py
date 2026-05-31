@@ -9,10 +9,10 @@ Provides:
 - attach_trace_context(): links OTel context to StatsHandler's trace_id
 """
 
-from .exporter import StatsSpanExporter
-from .proxy import TracingProxy
 from .bootstrap import init_tracing
 from .context import attach_trace_context, detach_trace_context
+from .exporter import StatsSpanExporter
+from .proxy import TracingProxy
 
 __all__ = [
     "StatsSpanExporter",

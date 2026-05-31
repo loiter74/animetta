@@ -3,9 +3,9 @@ Live2D configuration class
 Defines Live2D model configuration and expression mapping
 """
 
-from typing import Dict, List, Optional
-from pydantic import Field, BaseModel
 from pathlib import Path
+
+from pydantic import BaseModel, Field
 
 from .core.base import BaseConfig
 
@@ -14,7 +14,7 @@ class Live2DModelConfig(BaseModel):
     """Live2D model configuration"""
     path: str = Field(default="/live2d/haru/haru_greeter_t03.model3.json", description="Model file path")
     scale: float = Field(default=0.5, description="Model scale ratio")
-    position: Dict[str, float] = Field(default_factory=lambda: {"x": 0, "y": 0}, description="Model position (x, y)")
+    position: dict[str, float] = Field(default_factory=lambda: {"x": 0, "y": 0}, description="Model position (x, y)")
 
 
 class Live2DLipSyncConfig(BaseModel):
@@ -38,7 +38,7 @@ class Live2DConfig(BaseConfig):
 
     # Emotion mapping: emotion name → Live2D motion index
     # Example: {"happy": 3, "sad": 1, "angry": 2}
-    emotion_map: Dict[str, int] = Field(
+    emotion_map: dict[str, int] = Field(
         default_factory=lambda: {
             "happy": 3,
             "sad": 1,
@@ -51,7 +51,7 @@ class Live2DConfig(BaseConfig):
     )
 
     # Valid emotion list (for prompts)
-    valid_emotions: List[str] = Field(
+    valid_emotions: list[str] = Field(
         default_factory=lambda: ["happy", "sad", "angry", "surprised", "neutral", "thinking"],
         description="List of valid emotions"
     )
@@ -82,16 +82,16 @@ class Live2DConfig(BaseConfig):
             logger.warning(f"Live2D config file not found: {path}, using default config")
             return cls()
 
-        with open(path, 'r', encoding='utf-8') as f:
+        with open(path, encoding='utf-8') as f:
             data = yaml.safe_load(f) or {}
 
         return cls(**data)
 
-    def get_emotion_names(self) -> List[str]:
+    def get_emotion_names(self) -> list[str]:
         """Get list of all emotion names"""
         return list(self.emotion_map.keys())
 
-    def get_motion_index(self, emotion: str) -> Optional[int]:
+    def get_motion_index(self, emotion: str) -> int | None:
         """
         Get the Live2D motion index for an emotion
 
@@ -117,7 +117,7 @@ class Live2DConfig(BaseConfig):
 
 
 # Global Live2D config instance (lazy loaded)
-_live2d_config: Optional[Live2DConfig] = None
+_live2d_config: Live2DConfig | None = None
 
 
 def get_live2d_config() -> Live2DConfig:

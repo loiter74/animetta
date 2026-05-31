@@ -5,8 +5,8 @@ Receives Alertmanager webhook payload, parses to Alert objects,
 and fans out to all enabled notifier plugins concurrently.
 """
 
-import os
 import logging
+import os
 from dataclasses import dataclass, field
 from typing import Any
 

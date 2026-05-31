@@ -1,6 +1,7 @@
 """FunASR Paraformer ASR provider configuration"""
 
-from typing import Literal, Optional, List
+from typing import Literal
+
 from pydantic import Field
 
 from ...core.registry import ProviderRegistry
@@ -30,17 +31,17 @@ class FunASRConfig(ASRBaseConfig):
     )
 
     # Optional auxiliary models
-    vad_model: Optional[str] = Field(
+    vad_model: str | None = Field(
         default="fsmn-vad",
         description="VAD model (fsmn-vad), set to null to disable"
     )
 
-    punc_model: Optional[str] = Field(
+    punc_model: str | None = Field(
         default="ct-punc",
         description="Punctuation restoration model (ct-punc), set to null to disable"
     )
 
-    spk_model: Optional[str] = Field(
+    spk_model: str | None = Field(
         default=None,
         description="Speaker diarization model (cam++), set to null to disable"
     )
@@ -58,13 +59,13 @@ class FunASRConfig(ASRBaseConfig):
     )
 
     # Streaming recognition parameters
-    chunk_size: List[int] = Field(
+    chunk_size: list[int] = Field(
         default_factory=lambda: [0, 10, 5],
         description="Streaming chunk size [0, 10, 5] means first chunk 0s, subsequent chunks 10s with 5s overlap"
     )
 
     # Hotword feature
-    hotword: Optional[str] = Field(
+    hotword: str | None = Field(
         default=None,
         description="Hotword file path or hotword string"
     )

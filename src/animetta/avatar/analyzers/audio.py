@@ -3,9 +3,8 @@ Audio Analyzer
 Calculates audio volume envelope for lip sync
 """
 
-import math
-from typing import List, Optional
 from pathlib import Path
+
 from loguru import logger
 
 try:
@@ -50,7 +49,7 @@ class AudioAnalyzer:
         normalize: bool = True,
         gain: float = 1.8,
         use_peak: bool = False,
-    ) -> List[float]:
+    ) -> list[float]:
         """
         Calculate the volume envelope of audio
 
@@ -154,7 +153,7 @@ class AudioAnalyzer:
 
 
 # Convenience function
-def compute_volume_envelope(audio_path: str, sample_rate: int = 50, gain: float = 1.8) -> List[float]:
+def compute_volume_envelope(audio_path: str, sample_rate: int = 50, gain: float = 1.8) -> list[float]:
     """
     Convenience function: calculate audio volume envelope
 

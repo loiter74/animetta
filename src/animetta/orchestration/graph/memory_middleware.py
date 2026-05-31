@@ -8,7 +8,7 @@ replaces FuzzyLayer + UserProfile + MemePool with a single call.
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -16,16 +16,16 @@ logger = logging.getLogger(__name__)
 class MemoryMiddleware:
     """Automatic memory injection middleware — V2 unified recall()."""
 
-    def __init__(self, memory_system: Optional[Any] = None):
+    def __init__(self, memory_system: Any | None = None):
         self._memory_system = memory_system
 
     async def before_llm_call(
         self,
         session_id: str,
         user_input: str,
-        base_prompt: Optional[str] = None,
+        base_prompt: str | None = None,
         current_emotion: Any = None,
-    ) -> Tuple[str, Optional[Dict]]:
+    ) -> tuple[str, dict | None]:
         """Before LLM call: retrieve memory via LivingMemorySystem.recall().
 
         Returns (enriched_prompt, metadata_dict).
@@ -34,8 +34,8 @@ class MemoryMiddleware:
             logger.debug("[MemoryMiddleware] MemorySystem not configured, skipping")
             return base_prompt or "", None
 
-        metadata: Dict[str, Any] = {}
-        injection_parts: List[str] = []
+        metadata: dict[str, Any] = {}
+        injection_parts: list[str] = []
 
         try:
             result = await self._memory_system.recall(

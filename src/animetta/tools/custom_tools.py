@@ -4,8 +4,8 @@ Custom tool collection
 Provides additional utility tools.
 """
 
-from loguru import logger
 from langchain_core.tools import tool
+from loguru import logger
 
 
 @tool
@@ -18,8 +18,9 @@ async def url_preview(url: str) -> str:
     Returns:
         str: URL preview information
     """
-    import httpx
     from urllib.parse import urlparse
+
+    import httpx
 
     try:
         # Validate URL format
@@ -121,6 +122,7 @@ async def image_gen(prompt: str, size: str = "1024x1024") -> str:
         str: Image URL or generation result
     """
     import os
+
     import httpx
 
     # OpenAI DALL-E
@@ -146,7 +148,7 @@ async def image_gen(prompt: str, size: str = "1024x1024") -> str:
                 if response.status_code == 200:
                     data = response.json()
                     image_url = data["data"][0]["url"]
-                    logger.info(f"[image_gen] DALL-E success")
+                    logger.info("[image_gen] DALL-E success")
                     return f"Image generated!\nPrompt: {prompt}\nURL: {image_url}\n\nNote: URL expires in 1 hour."
                 else:
                     logger.warning(f"[image_gen] DALL-E error: {response.status_code}")

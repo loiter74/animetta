@@ -3,11 +3,13 @@ Server lifecycle management
 Graceful shutdown and resource cleanup
 """
 
+import asyncio
+import contextlib
 import signal
 import sys
-import asyncio
+from collections.abc import Callable
+
 from loguru import logger
-from typing import Callable, Optional
 
 
 class LifecycleManager:
@@ -21,7 +23,7 @@ class LifecycleManager:
     """
 
     def __init__(self):
-        self._shutdown_event: Optional[asyncio.Event] = None
+        self._shutdown_event: asyncio.Event | None = None
         self._cleanup_callbacks: list = []
         self._signal_handlers_set = False
         self._shutting_down = False
@@ -41,16 +43,12 @@ class LifecycleManager:
 
         # Windows-specific signals
         if hasattr(signal, 'CTRL_BREAK_EVENT'):
-            try:
+            with contextlib.suppress(ValueError, OSError):
                 signal.signal(signal.CTRL_BREAK_EVENT, self._signal_handler)
-            except (ValueError, OSError):
-                pass
 
         if hasattr(signal, 'CTRL_C_EVENT'):
-            try:
+            with contextlib.suppress(ValueError, OSError):
                 signal.signal(signal.CTRL_C_EVENT, self._signal_handler)
-            except (ValueError, OSError):
-                pass
 
         self._signal_handlers_set = True
         logger.debug("Signal handlers set up")

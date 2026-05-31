@@ -1,6 +1,7 @@
 """VAD provider configuration module"""
 
 from typing import Annotated, Union
+
 from pydantic import Field
 
 from .base import VADBaseConfig
@@ -16,6 +17,6 @@ __all__ = [
 
 # Discriminated Union type
 VADConfig = Annotated[
-    Union[MockVADConfig, SileroVADConfig],
+    MockVADConfig | SileroVADConfig,
     Field(discriminator="type")
 ]

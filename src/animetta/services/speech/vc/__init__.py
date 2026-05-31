@@ -1,8 +1,7 @@
 """VC (Voice Conversion) service implementation module"""
 
-from .interface import VCInterface
 from .factory import VCFactory
-
+from .interface import VCInterface
 from .mock_vc import MockVC
 from .rvc_vc import RVCVC
 

@@ -5,23 +5,22 @@ Structure:
 - Contrib implementations (maintained/experimental): see contrib/ subpackage
 """
 
-from .interface import TTSInterface
-from .factory import TTSFactory
-
-# Core implementations
-from .mock_tts import MockTTS
-from .edge_tts import EdgeTTS
-from .gpt_sovits_tts import GPTSoVITSTTS
-from .qwen3_tts import Qwen3TTSTTS
-
 # Contrib implementations (maintained separately)
 from .contrib import (
     GLMTTS,
     ChatTTSTTS,
-    VibeVoiceTTS,
-    KokoroTTS,
     GladosEffectProcessor,
+    KokoroTTS,
+    VibeVoiceTTS,
 )
+from .edge_tts import EdgeTTS
+from .factory import TTSFactory
+from .gpt_sovits_tts import GPTSoVITSTTS
+from .interface import TTSInterface
+
+# Core implementations
+from .mock_tts import MockTTS
+from .qwen3_tts import Qwen3TTSTTS
 
 __all__ = [
     "TTSInterface",

@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """
 GPT-SoVITS TTS implementation - few-shot voice cloning via REST API
 
@@ -6,16 +7,13 @@ Connects to a locally running GPT-SoVITS api_v2.py server.
 Supports reference audio based voice cloning with configurable inference parameters.
 """
 
-from animetta.config.core.registry import ProviderRegistry
+from pathlib import Path
 
 # Status: active
 # Last verified: 2026-05-23
-
-from typing import Union, Optional
-from pathlib import Path
-import tempfile
-
 from loguru import logger
+
+from animetta.config.core.registry import ProviderRegistry
 
 from .interface import TTSInterface
 
@@ -108,10 +106,10 @@ class GPTSoVITSTTS(TTSInterface):
     async def _call_api(
         self,
         text: str,
-        ref_audio_path: Optional[str] = None,
-        prompt_text: Optional[str] = None,
-        prompt_lang: Optional[str] = None,
-        text_lang: Optional[str] = None,
+        ref_audio_path: str | None = None,
+        prompt_text: str | None = None,
+        prompt_lang: str | None = None,
+        text_lang: str | None = None,
         **kwargs
     ) -> bytes:
         """
@@ -198,9 +196,9 @@ class GPTSoVITSTTS(TTSInterface):
     async def synthesize(
         self,
         text: str,
-        output_path: Optional[Union[str, Path]] = None,
+        output_path: str | Path | None = None,
         **kwargs
-    ) -> Union[bytes, str]:
+    ) -> bytes | str:
         """
         Synthesize text to speech using GPT-SoVITS.
 
@@ -217,8 +215,9 @@ class GPTSoVITSTTS(TTSInterface):
         """
         if not text:
             logger.warning("GPT-SoVITS: empty text, returning silence")
-            import numpy as np
             import struct
+
+            import numpy as np
             silence = np.zeros(24000, dtype=np.int16)
             header = struct.pack(
                 '<4sI4s4sIHHIIHH4sI',
@@ -257,7 +256,7 @@ class GPTSoVITSTTS(TTSInterface):
             logger.debug("GPT-SoVITS HTTP client closed")
 
     @classmethod
-    def from_config(cls, config: GPTSoVITSConfig) -> "GPTSoVITSTTS":
+    def from_config(cls, config: GPTSoVITSConfig) -> GPTSoVITSTTS:
         """Create instance from configuration."""
         return cls(
             base_url=config.base_url,

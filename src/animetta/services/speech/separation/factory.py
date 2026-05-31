@@ -1,9 +1,10 @@
 from __future__ import annotations
+
 """
 Separation Factory - creates Separation instances based on configuration
 """
 
-from typing import List
+
 from loguru import logger
 
 from .interface import SeparationInterface
@@ -65,6 +66,6 @@ class SeparationFactory:
             return None
 
     @staticmethod
-    def get_available_providers() -> List[str]:
+    def get_available_providers() -> list[str]:
         """Get list of all available providers"""
         return list(ProviderRegistry.list_services("separation"))

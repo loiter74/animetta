@@ -1,22 +1,20 @@
 """WebSocket server - Socket.IO server initialization and configuration"""
 
-import os
-import sys
-from pathlib import Path
-from typing import Optional, Dict, Any, List
-
 import datetime
+from pathlib import Path
+from typing import Any
+
 import socketio
 from loguru import logger
 from starlette.applications import Starlette
-from starlette.responses import Response, FileResponse, JSONResponse
+from starlette.responses import FileResponse, JSONResponse, Response
 from starlette.routing import Mount, Route
 
-from .session import SessionManager
-from .routes import register_routes, RouteHandlers
-from .lifecycle import LifecycleManager
 from .desktop import DesktopClientManager
+from .lifecycle import LifecycleManager
 from .live2d import Live2DManager
+from .routes import RouteHandlers, register_routes
+from .session import SessionManager
 from .stats_api import get_stats_routes
 
 
@@ -115,10 +113,10 @@ class WebSocketServer:
         self.desktop_manager = DesktopClientManager()
         self.live2d_manager = Live2DManager()
         self.lifecycle = LifecycleManager()
-        self.route_handlers: Optional[RouteHandlers] = None
+        self.route_handlers: RouteHandlers | None = None
 
-        logger.info(f"[Socket.IO] Server created with async_mode='asgi'")
-        logger.info(f"[Socket.IO] CORS enabled: origins=*")
+        logger.info("[Socket.IO] Server created with async_mode='asgi'")
+        logger.info("[Socket.IO] CORS enabled: origins=*")
 
     def set_config(self, config) -> None:
         """Set application config"""
@@ -148,14 +146,15 @@ class WebSocketServer:
 
         await ServicePool.init(self.config, model_manager=self.model_manager)
 
-    def _load_bilibili_config(self) -> Optional[Dict[str, Any]]:
+    def _load_bilibili_config(self) -> dict[str, Any] | None:
         """Load Bilibili configuration from config.yaml (top-level 'bilibili' key)."""
         try:
-            import yaml
             from pathlib import Path
+
+            import yaml
             config_path = Path(__file__).parent.parent.parent.parent.parent / "config" / "config.yaml"
             if config_path.exists():
-                with open(config_path, 'r', encoding='utf-8') as f:
+                with open(config_path, encoding='utf-8') as f:
                     data = yaml.safe_load(f)
                 return data.get("bilibili")
         except Exception as e:

@@ -3,9 +3,10 @@ Loguru logger manager
 Supports dynamic level switching
 """
 
-from loguru import logger
 import sys
 from typing import Optional
+
+from loguru import logger
 
 
 class LoggerManager:

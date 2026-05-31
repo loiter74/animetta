@@ -1,13 +1,13 @@
 from __future__ import annotations
+
 """Singing service interface and type definitions."""
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from enum import Enum
-from typing import Optional
+from enum import StrEnum
 
 
-class PipelineStage(str, Enum):
+class PipelineStage(StrEnum):
     IDLE = "idle"
     DOWNLOADING = "downloading"
     SEPARATING = "separating"

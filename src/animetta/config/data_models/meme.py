@@ -5,11 +5,10 @@ from __future__ import annotations
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum
-from typing import List, Optional
+from enum import StrEnum
 
 
-class MemeSource(str, Enum):
+class MemeSource(StrEnum):
     AI = "ai"          # AI-discovered via PeriodicLearner
     USER = "user"      # User-configured via frontend
 
@@ -38,7 +37,7 @@ class CognitiveAnalysis:
         }
 
     @classmethod
-    def from_dict(cls, data: dict | None) -> Optional[CognitiveAnalysis]:
+    def from_dict(cls, data: dict | None) -> CognitiveAnalysis | None:
         if data is None:
             return None
         return cls(
@@ -60,15 +59,15 @@ class Meme:
     text: str = ""                        # 梗文本
     context_hint: str = ""                # 适合使用的上下文描述
     source: MemeSource = MemeSource.AI
-    tags: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
     base_score: float = 0.7               # 基础分（不衰减）
     current_score: float = 0.7            # 当前分（随时间衰减）
     use_count: int = 0
-    last_used_at: Optional[datetime] = None
-    created_at: Optional[datetime] = None
+    last_used_at: datetime | None = None
+    created_at: datetime | None = None
     is_active: bool = True                # True = 在活跃池中
     resurrection_count: int = 0           # 复活次数
-    cognitive_analysis: Optional[CognitiveAnalysis] = None  # LLM 认知分析结果
+    cognitive_analysis: CognitiveAnalysis | None = None  # LLM 认知分析结果
     source_platform: str = "internal"     # "internal" | "bilibili" | "user"
     review_status: str = "pending"        # "pending" | "good" | "bad"
 
