@@ -1,7 +1,7 @@
 # TOOLS — TOOL CALLING + MCP + MINECRAFT
 
-**Generated:** 2026-05-23
-**Commit:** 8930c5f
+**Generated:** 2026-05-31
+**Commit:** cdd4a87
 
 > Parent: [../AGENTS.md](../AGENTS.md) — backend-wide conventions.
 

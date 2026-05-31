@@ -1,34 +1,36 @@
 # ANIMA BACKEND — PYTHON PACKAGE
 
-**Generated:** 2026-05-23
-**Commit:** 8930c5f
+**Generated:** 2026-05-31
+**Commit:** cdd4a5f
 
 > Parent: [../AGENTS.md](../AGENTS.md) — root project conventions and anti-patterns.
 
 ## OVERVIEW
-Python backend for Anima VTuber — FastAPI + LangGraph + Socket.IO orchestration with plugin-based provider architecture. ~240 files, 30K+ lines, max depth 3.
+Python backend for Anima VTuber — FastAPI + LangGraph + Socket.IO orchestration with plugin-based provider architecture. ~423 files, 30K+ lines, max depth 3.
 
 ## STRUCTURE
 ```
-src/anima/
+src/animetta/
 ├── core/                    # Entry point + service container (6 files)
 ├── orchestration/           # → see orchestration/AGENTS.md
 │   ├── graph/               # LangGraph nodes + orchestrator
 │   └── server/              # WebSocket routes + sessions
-├── services/                # → see services/AGENTS.md
-│   ├── speech/{asr,tts}/    # Speech recognition + synthesis
-│   ├── intelligence/{llm,vad}/  # Language models + voice activity
+├── services/                # → see services/AGENTS.md (FLAT — no speech/ or intelligence/)
+│   ├── llm/                 # Language models (deepseek, openai, glm, ollama, local_lora)
+│   ├── asr/                 # Speech recognition (funasr, faster_whisper, glm, mock)
+│   ├── tts/                 # Text-to-speech (core/contrib layered, 9 providers)
+│   ├── vad/                 # Voice activity detection (silero, mock)
+│   ├── vc/                  # Voice conversion (RVC, mock)
+│   ├── separation/          # Audio source separation (Demucs, mock)
 │   ├── audio/               # Audio processing pipeline
+│   ├── live2d/              # Live2D action queue + viseme sync
 │   ├── singing/             # RVC/SVC singing pipeline
-│   └── live/                # Bilibili danmaku livestream
-├── memory/                  # → see memory/AGENTS.md
-│   ├── wiki/                # Markdown-based knowledge storage
-│   ├── search/              # Hybrid search (70% vector + 30% BM25)
-│   ├── storage/             # Chroma + SQLite stores
-│   ├── learner/             # Pattern extraction + learning
-│   └── meme/                # Meme system
+│   ├── live/                # Bilibili danmaku livestream
+│   └── meme/                # Meme pattern detection
+├── memory/                  # → see memory/AGENTS.md (V2 atom-based)
+│   └── v2/                  # AtomStore + CompileEngine + Metabolism
 ├── config/                  # Pydantic configs (YAML-driven)
-│   ├── providers/{llm,asr,tts,vad}/  # Provider config classes
+│   ├── providers/{llm,asr,tts,vad,vc,separation}/  # Provider config classes
 │   ├── persona/             # Character personality configs
 │   └── core/registry.py     # @ProviderRegistry decorator
 ├── avatar/                  # Live2D emotion/expression analysis
@@ -39,7 +41,6 @@ src/anima/
 │   └── minecraft/           # ⚠️ Node.js bot (Mineflayer) inside Python tree
 ├── notifier/                # Alert channels (Discord, Feishu, Email)
 ├── inspection/              # Health/telemetry background checks
-├── persistence/             # Thin, protocols.py only
 ├── tracing/                 # OpenTelemetry observability
 └── utils/                   # Helpers
 ```
@@ -67,9 +68,10 @@ src/anima/
 - **ConfigStore**: Workaround for LangGraph config limitation — use `state.get("_config", {})`
 
 ## NOTES
-- ~240 Python files, 30K+ lines, max depth 3
-- `orchestration/server/routes.py` at 383 lines is the critical hotspot
-- All provider configs at `config/providers/{type}/` mirror `services/{speech,intelligence}/{type}/`
+- ~423 Python files, 30K+ lines, max depth 3
+- `orchestration/server/routes.py` at 386 lines is the critical hotspot
+- Services are FLAT (no `speech/` or `intelligence/` nesting)
+- Provider configs at `config/providers/{type}/` mirror `services/{type}/`
 - `tools/minecraft/bot/` is a Node.js package embedded in Python tree — cross-language hybrid
-- Two runtime data dirs: `data/` (chroma_db, stats) + `memory_db/` (wiki, chroma, sqlite)
-- Legacy compat sections exist in `memory/` (tagged `# ── legacy compat ──`)
+- Two runtime data dirs: `data/` (chroma_db, stats) + `memory_db/` (chroma_v2, living_memory.sqlite)
+- `persistence/` directory deleted — use memory/v2/ directly

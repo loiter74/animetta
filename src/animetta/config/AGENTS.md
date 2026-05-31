@@ -1,7 +1,7 @@
 # CONFIG — PYDANTIC CONFIGURATION MODELS
 
-**Generated:** 2026-05-23
-**Commit:** 8930c5f
+**Generated:** 2026-05-31
+**Commit:** cdd4a87
 
 > Parent: [../AGENTS.md](../AGENTS.md) — backend-wide conventions.
 
@@ -25,9 +25,9 @@ config/
 ├── app.py                    # AppConfig — main configuration (433 lines)
 ├── system.py                 # SystemConfig
 ├── agent.py                  # AgentConfig
-├── user_settings.py          # UserSettings
+├── user.py                   # UserSettings (renamed from user_settings.py)
 ├── live2d.py                 # Live2D config
-├── singing_config.py         # Singing module config
+├── singing.py                # Singing module config (renamed from singing_config.py)
 └── prompts.py                # LLM prompt templates
 ```
 
@@ -42,7 +42,7 @@ config/
 
 ## KEY PATTERNS
 - **@ProviderRegistry.register_config**: Decorator-based registration — no if/elif chains
-- **Config ↔ Service pairing**: Every provider config at `config/providers/{type}/` mirrors an implementation at `services/{speech,intelligence}/{type}/`
+- **Config ↔ Service pairing**: Every provider config at `config/providers/{type}/` mirrors an implementation at `services/{type}/` (flat, no speech/intelligence nesting)
 - **YAML-driven**: `config/config.yaml` → `config/services.yaml` → Pydantic validation → runtime objects
 - **Pydantic V2 only**: `model_config = ConfigDict(...)` — `class Config:` is forbidden
 
@@ -53,5 +53,5 @@ config/
 
 ## NOTES
 - `app.py` (433 lines) is the main config schema — changes cascade to all subsystems
-- Provider config structure exactly mirrors the service layout under `services/speech/` and `services/intelligence/`
+- Provider config structure mirrors the flat services layout (no speech/ or intelligence/ nesting)
 - YAML files at project root `config/` are validated against models here

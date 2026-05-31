@@ -1,7 +1,7 @@
 # ANIMETTA PROJECT KNOWLEDGE BASE
 
-**Generated:** 2026-05-23
-**Commit:** 8930c5f
+**Generated:** 2026-05-31
+**Commit:** cdd4a87
 **Branch:** main
 
 > Primary knowledge base: [CLAUDE.md](CLAUDE.md). This AGENTS.md is the quick-reference map.
@@ -15,11 +15,11 @@ AI virtual companion / VTuber framework. Python backend (FastAPI + LangGraph + S
 
 ```
 ./
-├── src/animetta/              # Python backend (~240 files, 30K+ lines)
+├── src/animetta/              # Python backend (~423 files, 30K+ lines)
 │   ├── core/               # Entry point + service container (6 files)
 │   ├── orchestration/      # LangGraph state graph + WebSocket server
 │   ├── services/           # LLM / ASR / TTS / VAD / Singing / Meme implementations
-│   ├── memory/             # Wiki-architecture memory (Chroma + SQLite FTS5)
+│   ├── memory/             # V2 atom-based memory (Chroma + SQLite FTS5)
 │   ├── config/             # Pydantic configs + @ProviderRegistry
 │   ├── avatar/             # Live2D emotion/expression analysis
 │   ├── tools/              # Tool calling + MCP bridge + Minecraft bot (⚠️ Node.js hybrid)
@@ -29,7 +29,7 @@ AI virtual companion / VTuber framework. Python backend (FastAPI + LangGraph + S
 │   └── utils/              # Helpers
 ├── frontend/               # Vue 3 + TypeScript + Vite (UnoCSS, Pinia, pixi.js)
 ├── config/                 # YAML config files (personas, services, tools, singing)
-├── tests/                  # pytest suite (138 files, ~2700 tests)
+├── tests/                  # pytest suite (120 files)
 ├── docs/                   # ADRs, plans, benchmarks
 ├── scripts/                # start.py, stop.py, benchmarks, model downloads (29 files)
 ├── design-system/          # Visual design spec (HTML spec sheets from uno.config.ts)
@@ -43,13 +43,13 @@ AI virtual companion / VTuber framework. Python backend (FastAPI + LangGraph + S
 
 | Task | Location | Notes |
 |------|----------|-------|
-| Add LLM provider | `src/animetta/services/intelligence/llm/` | Create class, register via `@ProviderRegistry` |
-| Add ASR/TTS provider | `src/animetta/services/speech/{asr,tts}/` | Same pattern as LLM |
+| Add LLM provider | `src/animetta/services/llm/` | Create class, register via `@ProviderRegistry` |
+| Add ASR/TTS provider | `src/animetta/services/{asr,tts}/` | Same pattern as LLM |
 | Add graph node | `src/animetta/orchestration/graph/` | Follow node pattern in `__init__.py` |
 | Add tool | `src/animetta/tools/base.py` or `custom_tools.py` | Use `@tool` decorator |
 | Add persona | `config/personas/` + `src/animetta/config/persona/` | YAML + Pydantic |
 | Fix WebSocket route | `src/animetta/orchestration/server/routes.py` | **1377 lines - largest file** |
-| Change memory behavior | `src/animetta/memory/` | Wiki architecture, see ADR-005 |
+| Change memory behavior | `src/animetta/memory/v2/` | Atom-based V2 architecture, see ADR-005 |
 | Fix Live2D expression | `src/animetta/avatar/` + `frontend/src/components/live2d/` | |
 | Add singing feature | `src/animetta/services/singing/` | RVC/SVC pipeline + mixer |
 | Minecraft bot | `src/animetta/tools/minecraft/` | ⚠️ Node.js bot inside Python tree |
@@ -81,8 +81,6 @@ AI virtual companion / VTuber framework. Python backend (FastAPI + LangGraph + S
 |------|----------|-------------|
 | `--mode` flag | `scripts/start.py` | No effect, prints warning |
 | `--no-app` flag | `scripts/start.py` | Use `--no-frontend` |
-| `memory_layer.py` | `orchestration/graph/` | Logic in FuzzyLayer |
-| `manager.py:192` legacy wrapper | `memory/` | Do not remove without migration |
 
 ## COMMANDS
 
@@ -148,7 +146,7 @@ When delegating an implementation task (always use `deep` or `unspecified-high`)
 
 ## NOTES
 
-- `orchestration/server/routes.py` at 1377 lines is a known hotspot — thin dispatch preferred
+- `orchestration/server/routes.py` at 386 lines is a known hotspot — thin dispatch preferred
 - Backend coverage at ~70%, targeting 70%. Frontend test coverage: 0% (being set up).
 - 5 ADRs in `docs/adrs/`: LangGraph, Hybrid Search, Plugin Architecture, Streaming, Wiki Memory
 - Two runtime data directories: `data/` (chroma_db, stats) + `memory_db/` (wiki, chroma, sqlite, raw) — designed split

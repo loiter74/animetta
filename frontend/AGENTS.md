@@ -1,6 +1,7 @@
 # FRONTEND — VUE 3 + ELECTRON + LIVE2D
 
-**Generated:** 2026-05-23
+**Generated:** 2026-05-31
+**Commit:** cdd4a87
 
 > Parent: [../AGENTS.md](../AGENTS.md) — root project conventions.
 

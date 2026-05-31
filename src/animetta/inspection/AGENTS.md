@@ -1,6 +1,7 @@
 # INSPECTION — DAILY SYSTEM VERIFICATION
 
-**Generated:** 2026-05-17
+**Generated:** 2026-05-31
+**Commit:** cdd4a87
 
 > Parent: [../AGENTS.md](../AGENTS.md) — backend-wide conventions.
 

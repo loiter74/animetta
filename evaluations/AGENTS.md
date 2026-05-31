@@ -1,7 +1,7 @@
 # EVALUATIONS — STANDALONE RAG EVALUATION FRAMEWORK
 
-**Generated:** 2026-05-23
-**Commit:** 8930c5f
+**Generated:** 2026-05-31
+**Commit:** cdd4a87
 
 > Parent: [../AGENTS.md](../AGENTS.md) — root project conventions. ⚠️ This is a SEPARATE Python tree, not part of src/animetta/.
 

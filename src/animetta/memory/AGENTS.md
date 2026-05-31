@@ -1,77 +1,63 @@
-# MEMORY — WIKI-ARCHITECTURE MEMORY SYSTEM
+# MEMORY — V2 ATOM-BASED MEMORY SYSTEM
 
-**Generated:** 2026-05-23
-**Commit:** 8930c5f
+**Generated:** 2026-05-31
+**Commit:** cdd4a87
 
 > Parent: [../AGENTS.md](../AGENTS.md) — backend-wide conventions.
 
 ## OVERVIEW
 
-Hybrid memory system combining Chroma vector DB, SQLite FTS5 keyword search, and Markdown-based wiki storage. Second most complex domain after orchestration.
+V2 atom-based memory system replacing the old wiki-architecture. Uses MemoryAtom as the fundamental unit with a lifecycle from RAW → EPISODIC → SEMANTIC → EMERGENT through CompileEngine. Hybrid search via Chroma vector DB + SQLite FTS5. LLM-driven reconsolidation for memory rewriting.
 
 ## STRUCTURE
 
 ```
 memory/
-├── system.py               # MemorySystem entry point — 373 lines
-├── config.py               # Memory configuration
-├── fact_extractor.py       # Fact extraction from conversations — 384 lines
-├── prompts.py              # LLM prompts for memory ops
-├── user_profile.py         # User profile model + builder
-├── manager.py              # Legacy compat wrapper (`# ── legacy compat ──`)
-├── tools.py                # Memory tools for LLM
-├── search/                 # Hybrid search engine
-│   ├── hybrid.py           # 70% vector + 30% BM25 fusion
-│   └── scorer.py           # Relevance scoring
-├── storage/                # Persistence layer
-│   ├── chroma.py           # Chroma vector store
-│   ├── sqlite.py           # SQLite FTS5 keyword index
-│   └── memory_entry_store.py  # Memory entry CRUD + version chain
-├── wiki/                   # Markdown knowledge base
-│   ├── manager.py          # Wiki manager entry point
-│   ├── organizer.py        # Wiki organization — 442 lines (HOT)
-│   ├── ingestor.py         # Conversation → markdown ingestion
-│   ├── parser.py           # Markdown parsing
-│   └── sources/            # Source integration
-├── learner/                # Pattern extraction + learning
-│   ├── engine.py           # Learning engine — 408 lines
-│   └── pattern_extractor.py  # Pattern extraction — 414 lines
-├── meme/                   # Meme system
-├── fuzzy/                  # Fuzzy memory layer
-├── models/                 # Pydantic data models
-│   └── base.py             # MemoryEntry, MemoryFragment, etc.
-└── stores/                 # Additional stores
+├── __init__.py              # Re-exports LivingMemorySystem
+└── v2/                      # V2 atom-based architecture
+    ├── system.py            # LivingMemorySystem — entry point
+    ├── atom.py              # MemoryAtom data model
+    ├── store.py             # AtomStore — Chroma + SQLite FTS5 hybrid
+    ├── search.py            # Hybrid search (Chroma vector + FTS5 keyword)
+    ├── compile.py           # CompileEngine — RAW→EPISODIC→SEMANTIC→EMERGENT
+    ├── metabolism.py        # MetabolismScheduler — periodic lifecycle ticks
+    ├── reconsolidation.py   # ReconsolidationClient — LLM-driven memory rewrite
+    └── emotion_field.py     # Emotion valence/arousal vectors
 ```
 
 ## WHERE TO LOOK
 
 | Task | Location | Notes |
 |------|----------|-------|
-| Entry point | `system.py` | `MemorySystem` class — all subsystems wired here |
-| Add memory type | `models/base.py` | Define new Pydantic model |
-| Change search ranking | `search/hybrid.py` | 70/30 vector/BM25 blend |
-| Change wiki behavior | `wiki/organizer.py` | 442 lines — largest memory file |
-| Add learning pattern | `learner/pattern_extractor.py` | 414 lines |
-| Fact extraction | `fact_extractor.py` | LLM-driven fact extraction |
-| Vector store ops | `storage/chroma.py` | ChromaDB client |
+| Entry point | `v2/system.py` | `LivingMemorySystem` — all subsystems wired here |
+| Add memory type | `v2/atom.py` | `MemoryAtom` model — layer, confidence, salience |
+| Change search ranking | `v2/search.py` | Chroma vector + FTS5 hybrid with CJK LIKE fallback |
+| Memory lifecycle | `v2/compile.py` | CompileEngine — stage-gated atom progression |
+| Periodic maintenance | `v2/metabolism.py` | MetabolismScheduler — background reconsolidation ticks |
+| LLM-driven rewrite | `v2/reconsolidation.py` | ReconsolidationClient — bypasses service chain (uses openai directly) |
+| Vector store ops | `v2/store.py` | AtomStore — ChromaDB + SQLite FTS5, dual write |
+| Emotion vectors | `v2/emotion_field.py` | Valence/arousal per atom for emotional retrieval |
 
 ## KEY PATTERNS
 
-- **Wiki architecture** (ADR-005): Markdown files are source of truth, Chroma + SQLite for search
-- **Hybrid search**: 70% vector similarity + 30% BM25 keyword (ADR-002)
-- **Version chain**: `MemoryEntryStore` maintains entry version history
-- **Legacy compat**: `manager.py:192` has a `# ── legacy compat ──` wrapper — do not remove without migration
+- **Atom lifecycle**: RAW (captured) → EPISODIC (grouped) → SEMANTIC (abstracted) → EMERGENT (insight)
+- **Hybrid search**: Chroma vector + SQLite FTS5 with CJK `%query%` LIKE fallback
+- **Reconsolidation**: LLM rewrites atoms during metabolism ticks, bypassing animetta service chain
+- **Dual storage**: ChromaDB for vector similarity + SQLite FTS5 for keyword matching
+- **Confidence + salience**: Each atom has scoring for retrieval ranking and lifecycle decisions
 
 ## ANTI-PATTERNS
 
 - ❌ Never use pure vector or pure keyword search — always hybrid
-- ❌ Never bypass Markdown as source of truth
+- ❌ Never bypass CompileEngine for atom lifecycle — use `LivingMemorySystem.encode()`
 - ❌ Do not add Pinecone/Weaviate/Qdrant — Chroma is locked in (ADR-002)
+- ❌ Wiki / storage / learner / meme subdirectories are DELETED — do not recreate
 
 ## NOTES
 
-- `wiki/organizer.py` (442 lines) + `wiki/ingestor.py` are the wiki hotspots — consider splitting query from mutation logic.
-- `learner/pattern_extractor.py` (414) + `engine.py` (408) form a major sub-system.
-- `self.fuzzy` in `system.py:67` is a backward compat alias — do not break it.
-- Legacy compat exists in `manager.py:192` — deprecation planned but not yet executed.
-- Two runtime data dirs: `data/` (chroma_db, stats) and `memory_db/` (wiki, chroma, sqlite, raw) — designed split, do not merge.
+- Old wiki architecture (`memory/wiki/`, `memory/storage/`, `memory/learner/`, `memory/meme/`) fully removed
+- `ReconsolidationClient` uses `openai` directly, not `animetta.services.llm` — intentional bypass
+- CJK FTS5 uses `%query%` LIKE fallback due to jieba tokenization limitations
+- Memory integration test: `tests/integration/test_memory.py` — encode + recall through real pipeline
+- Unit tests: `tests/memory_v2/` — 91 tests covering all components
+- Runtime data at `memory_db/` (chroma_v2, living_memory.sqlite)
