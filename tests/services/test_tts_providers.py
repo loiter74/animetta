@@ -1,3 +1,10 @@
+from __future__ import annotations
+from animetta.services.tts import EdgeTTS
+from animetta.services.tts import GLMTTS
+from animetta.services.tts import KokoroTTS
+from animetta.services.tts import MockTTS
+from animetta.services.tts import TTSFactory
+from animetta.services.tts import TTSInterface
 """Tests for TTS service providers.
 
 Covers every provider under src/anima/services/speech/tts/:
@@ -94,14 +101,14 @@ class TestInterfaceContract:
     @pytest.mark.parametrize(
         "provider_cls",
         [
-            pytest.importorskip("anima.services.speech.tts.mock_tts").MockTTS,
-            pytest.importorskip("anima.services.speech.tts.edge_tts").EdgeTTS,
-            pytest.importorskip("anima.services.speech.tts.glm_tts").GLMTTS,
-            pytest.importorskip("anima.services.speech.tts.chattts_tts").ChatTTSTTS,
-            pytest.importorskip("anima.services.speech.tts.gpt_sovits_tts").GPTSoVITSTTS,
-            pytest.importorskip("anima.services.speech.tts.kokoro_tts").KokoroTTS,
-            pytest.importorskip("anima.services.speech.tts.vibe_voice_tts").VibeVoiceTTS,
-            pytest.importorskip("anima.services.speech.tts.qwen3_tts").Qwen3TTSTTS,
+            pytest.importorskip("animetta.services.speech.tts.mock_tts").MockTTS,
+            pytest.importorskip("animetta.services.speech.tts.edge_tts").EdgeTTS,
+            pytest.importorskip("animetta.services.speech.tts.glm_tts").GLMTTS,
+            pytest.importorskip("animetta.services.speech.tts.chattts_tts").ChatTTSTTS,
+            pytest.importorskip("animetta.services.speech.tts.gpt_sovits_tts").GPTSoVITSTTS,
+            pytest.importorskip("animetta.services.speech.tts.kokoro_tts").KokoroTTS,
+            pytest.importorskip("animetta.services.speech.tts.vibe_voice_tts").VibeVoiceTTS,
+            pytest.importorskip("animetta.services.speech.tts.qwen3_tts").Qwen3TTSTTS,
         ],
     )
     def test_implements_tts_interface(self, provider_cls):
@@ -110,14 +117,14 @@ class TestInterfaceContract:
     @pytest.mark.parametrize(
         "provider_cls",
         [
-            pytest.importorskip("anima.services.speech.tts.mock_tts").MockTTS,
-            pytest.importorskip("anima.services.speech.tts.edge_tts").EdgeTTS,
-            pytest.importorskip("anima.services.speech.tts.glm_tts").GLMTTS,
-            pytest.importorskip("anima.services.speech.tts.chattts_tts").ChatTTSTTS,
-            pytest.importorskip("anima.services.speech.tts.gpt_sovits_tts").GPTSoVITSTTS,
-            pytest.importorskip("anima.services.speech.tts.kokoro_tts").KokoroTTS,
-            pytest.importorskip("anima.services.speech.tts.vibe_voice_tts").VibeVoiceTTS,
-            pytest.importorskip("anima.services.speech.tts.qwen3_tts").Qwen3TTSTTS,
+            pytest.importorskip("animetta.services.speech.tts.mock_tts").MockTTS,
+            pytest.importorskip("animetta.services.speech.tts.edge_tts").EdgeTTS,
+            pytest.importorskip("animetta.services.speech.tts.glm_tts").GLMTTS,
+            pytest.importorskip("animetta.services.speech.tts.chattts_tts").ChatTTSTTS,
+            pytest.importorskip("animetta.services.speech.tts.gpt_sovits_tts").GPTSoVITSTTS,
+            pytest.importorskip("animetta.services.speech.tts.kokoro_tts").KokoroTTS,
+            pytest.importorskip("animetta.services.speech.tts.vibe_voice_tts").VibeVoiceTTS,
+            pytest.importorskip("animetta.services.speech.tts.qwen3_tts").Qwen3TTSTTS,
         ],
     )
     def test_has_from_config_classmethod(self, provider_cls):
@@ -689,8 +696,8 @@ class TestTTSFactory:
     """TTSFactory — provider-based TTS instance creation."""
 
     @pytest.mark.asyncio
-    @patch("anima.services.speech.tts.factory.TracingProxy")
-    @patch("anima.services.speech.tts.factory.ProviderRegistry")
+    @patch("animetta.services.speech.tts.factory.TracingProxy")
+    @patch("animetta.services.speech.tts.factory.ProviderRegistry")
     async def test_create_mock_provider(self, MockRegistry, MockProxy):
 
         mock_tts = AsyncMock()
@@ -700,8 +707,8 @@ class TestTTSFactory:
         MockProxy.assert_called_once()
 
     @pytest.mark.asyncio
-    @patch("anima.services.speech.tts.factory.TracingProxy")
-    @patch("anima.services.speech.tts.factory.ProviderRegistry")
+    @patch("animetta.services.speech.tts.factory.TracingProxy")
+    @patch("animetta.services.speech.tts.factory.ProviderRegistry")
     async def test_create_edge_provider(self, MockRegistry, MockProxy):
 
         mock_tts = AsyncMock()
@@ -711,8 +718,8 @@ class TestTTSFactory:
         MockProxy.assert_called_once()
 
     @pytest.mark.asyncio
-    @patch("anima.services.speech.tts.factory.TracingProxy")
-    @patch("anima.services.speech.tts.factory.ProviderRegistry")
+    @patch("animetta.services.speech.tts.factory.TracingProxy")
+    @patch("animetta.services.speech.tts.factory.ProviderRegistry")
     async def test_create_glm_provider(self, MockRegistry, MockProxy):
 
         mock_tts = AsyncMock()
@@ -722,23 +729,23 @@ class TestTTSFactory:
         MockProxy.assert_called_once()
 
     @pytest.mark.asyncio
-    @patch("anima.services.speech.tts.factory.TracingProxy")
-    @patch("anima.services.speech.tts.factory.ProviderRegistry", side_effect=Exception("fail"))
+    @patch("animetta.services.speech.tts.factory.TracingProxy")
+    @patch("animetta.services.speech.tts.factory.ProviderRegistry", side_effect=Exception("fail"))
     async def test_fallback_to_mock_on_error(self, MockRegistry, MockProxy):
 
         # When ProviderRegistry.create_service raises, factory falls back to MockTTS
         MockRegistry.create_service.side_effect = Exception("service unavailable")
         # Also need to patch the internal _build_config -> provider registry integration
-        with patch("anima.services.speech.tts.factory.MockTTS") as MockMockTTS:
+        with patch("animetta.services.speech.tts.factory.MockTTS") as MockMockTTS:
             mock_instance = AsyncMock()
             MockMockTTS.return_value = mock_instance
 
             # We need to bypass TracingProxy for fallback
-            with patch("anima.services.speech.tts.factory.TracingProxy", side_effect=lambda x, **kw: x):
+            with patch("animetta.services.speech.tts.factory.TracingProxy", side_effect=lambda x, **kw: x):
                 result = TTSFactory.create("edge")
                 assert isinstance(result, AsyncMock) or True  # fallback happened
 
-    @patch("anima.services.speech.tts.factory.ProviderRegistry")
+    @patch("animetta.services.speech.tts.factory.ProviderRegistry")
     def test_get_available_providers(self, MockRegistry):
 
         MockRegistry.list_services.return_value = {"mock", "edge", "glm"}
@@ -750,7 +757,7 @@ class TestTTSFactory:
 
         # When _build_config returns None, MockTTS is returned directly
         with patch.object(TTSFactory, "_build_config", return_value=None):
-            with patch("anima.services.speech.tts.factory.MockTTS") as MockMockTTS:
+            with patch("animetta.services.speech.tts.factory.MockTTS") as MockMockTTS:
                 mock_instance = AsyncMock()
                 MockMockTTS.return_value = mock_instance
 

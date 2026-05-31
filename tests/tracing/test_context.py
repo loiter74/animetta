@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for context.py — attach/detach_trace_context with OTel."""
 
 from unittest.mock import MagicMock, patch

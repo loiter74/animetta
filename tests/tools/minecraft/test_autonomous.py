@@ -1,3 +1,8 @@
+from __future__ import annotations
+from animetta.tools.minecraft.autonomous import AutonomousLoop
+from animetta.tools.minecraft.autonomous import CooldownTracker
+from animetta.tools.minecraft.bridge import MinecraftBridge
+from animetta.tools.minecraft.world_state import WorldState
 """Tests for AutonomousLoop — perception→decision→execution cycle."""
 
 import asyncio

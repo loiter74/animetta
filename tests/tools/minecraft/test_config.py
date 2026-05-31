@@ -1,3 +1,5 @@
+from __future__ import annotations
+from animetta.tools.minecraft.config import MinecraftConfig
 """Tests for Minecraft configuration models."""
 
 import pytest

@@ -1,3 +1,5 @@
+from __future__ import annotations
+from animetta.config.user import UserSettings
 """Tests for UserSettings (config/user_settings.py)"""
 
 import sys
@@ -21,7 +23,7 @@ if _src_path not in sys.path:
 class TestUserSettingsInit:
     """Tests for UserSettings.__init__"""
 
-    @patch("anima.config.user_settings.UserSettings._load")
+    @patch("animetta.config.user_settings.UserSettings._load")
     def test_creates_config_file_from_root_dir(self, mock_load):
         """__init__ stores config_file as root_dir/.user_settings.yaml"""
         mock_load.return_value = {"log_level": "INFO"}
@@ -31,7 +33,7 @@ class TestUserSettingsInit:
         expected_path = root / ".user_settings.yaml"
         assert settings.config_file == expected_path
 
-    @patch("anima.config.user_settings.UserSettings._load")
+    @patch("animetta.config.user_settings.UserSettings._load")
     def test_calls_load_on_init(self, mock_load):
         """__init__ calls _load to populate settings"""
         mock_load.return_value = {"log_level": "DEBUG"}
@@ -153,7 +155,7 @@ class TestUserSettingsSave:
 class TestUserSettingsGetLogLevel:
     """Tests for UserSettings.get_log_level"""
 
-    @patch("anima.config.user_settings.UserSettings._load")
+    @patch("animetta.config.user_settings.UserSettings._load")
     def test_returns_from_settings(self, mock_load):
         """get_log_level returns the currently configured log level"""
         mock_load.return_value = {"log_level": "DEBUG"}
@@ -161,7 +163,7 @@ class TestUserSettingsGetLogLevel:
 
         assert settings.get_log_level() == "DEBUG"
 
-    @patch("anima.config.user_settings.UserSettings._load")
+    @patch("animetta.config.user_settings.UserSettings._load")
     def test_returns_default_when_not_set(self, mock_load):
         """get_log_level returns 'INFO' when level not in settings"""
         mock_load.return_value = {}
@@ -184,7 +186,7 @@ class TestUserSettingsGetLogLevel:
 class TestUserSettingsSetLogLevel:
     """Tests for UserSettings.set_log_level"""
 
-    @patch("anima.config.user_settings.UserSettings.save")
+    @patch("animetta.config.user_settings.UserSettings.save")
     def test_updates_setting_and_calls_save(self, mock_save):
         """set_log_level updates the setting and calls save"""
         settings = UserSettings.__new__(UserSettings)
@@ -195,7 +197,7 @@ class TestUserSettingsSetLogLevel:
         assert settings.settings["log_level"] == "ERROR"
         mock_save.assert_called_once()
 
-    @patch("anima.config.user_settings.UserSettings.save")
+    @patch("animetta.config.user_settings.UserSettings.save")
     def test_save_called_after_update(self, mock_save):
         """save is called exactly once after setting log level"""
         settings = UserSettings.__new__(UserSettings)
@@ -205,7 +207,7 @@ class TestUserSettingsSetLogLevel:
 
         assert mock_save.call_count == 1
 
-    @patch("anima.config.user_settings.UserSettings.save")
+    @patch("animetta.config.user_settings.UserSettings.save")
     def test_round_trip(self, mock_save):
         """set_log_level then get_log_level returns the new value"""
         settings = UserSettings.__new__(UserSettings)

@@ -1,3 +1,5 @@
+from __future__ import annotations
+from animetta.config.persona import PersonaConfig
 """Tests for MBTI Pydantic models (config/persona/base.py)"""
 
 import sys

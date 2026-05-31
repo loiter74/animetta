@@ -1,3 +1,9 @@
+from __future__ import annotations
+from animetta.services.asr import ASRFactory
+from animetta.services.asr import ASRInterface
+from animetta.services.asr import FasterWhisperASR
+from animetta.services.asr import FunASRASR
+from animetta.services.asr import GLMASR
 """
 Tests for ASR provider implementations.
 
@@ -16,6 +22,7 @@ from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
+from animetta.services.asr import MockASR, ASRFactory, ASRInterface, FasterWhisperASR, FunASRASR, GLMASR
 
 # ── Module-level sys.modules injection ──────────────────────────────
 # External packages imported INSIDE methods (lazy imports). We inject
@@ -428,8 +435,8 @@ class TestASRFactory:
         result = ASRFactory.create("nonexistent", model="test", language="en")
         assert isinstance(result, MockASR)
 
-    @patch("anima.services.speech.asr.factory.ASRFactory._build_config")
-    @patch("anima.services.speech.asr.factory.ProviderRegistry.create_service")
+    @patch("animetta.services.speech.asr.factory.ASRFactory._build_config")
+    @patch("animetta.services.speech.asr.factory.ProviderRegistry.create_service")
     def test_create_calls_registry(self, mock_create_service, mock_build_config):
         """create() should build config and delegate to ProviderRegistry."""
         mock_config = MagicMock()
@@ -446,14 +453,14 @@ class TestASRFactory:
         mock_create_service.assert_called_once_with("asr", mock_config)
         assert result is not None
 
-    @patch("anima.services.speech.asr.factory.ProviderRegistry.create_service")
+    @patch("animetta.services.speech.asr.factory.ProviderRegistry.create_service")
     def test_create_fallback_on_exception(self, mock_create_service):
         """create() should fall back to MockASR when ProviderRegistry raises."""
         mock_create_service.side_effect = ValueError("Service creation failed")
         result = ASRFactory.create("faster_whisper")
         assert isinstance(result, MockASR)
 
-    @patch("anima.services.speech.asr.factory.logger")
+    @patch("animetta.services.speech.asr.factory.logger")
     def test_create_unknown_logs_warning(self, mock_logger):
         """create() with unknown provider should log a warning."""
         ASRFactory.create("bogus_provider")

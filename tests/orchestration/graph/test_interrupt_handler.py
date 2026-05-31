@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for interrupt signal handler — session-level interrupt management."""
 
 import pytest

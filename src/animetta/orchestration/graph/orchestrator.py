@@ -1,11 +1,9 @@
 """
 LangGraph Orchestrator
 
-Responsibilities:
-1. Manage the lifecycle of the LangGraph state graph
-2. Provide interfaces compatible with the existing system
-3. Handle state graph execution and result return
 """
+
+from __future__ import annotations
 
 from typing import Any
 

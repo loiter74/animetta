@@ -9,7 +9,7 @@ from collections.abc import Callable
 import numpy as np
 from loguru import logger
 
-from ..intelligence.vad import VADInterface
+from ..vad import VADInterface
 
 
 class SimpleVADProcessor:

@@ -1,11 +1,33 @@
 """Pipeline stats data storage - SQLite"""
 
 import asyncio
+from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any
 
 import aiosqlite
 from loguru import logger
+
+
+class StatsStoreProtocol(ABC):
+    """Protocol interface for stats storage backends."""
+
+    @abstractmethod
+    async def create_trace(self, *args, **kwargs): ...
+    @abstractmethod
+    async def finish_trace(self, *args, **kwargs): ...
+    @abstractmethod
+    async def create_span(self, *args, **kwargs): ...
+    @abstractmethod
+    async def finish_span(self, *args, **kwargs): ...
+    @abstractmethod
+    async def get_overview(self) -> dict[str, Any]: ...
+    @abstractmethod
+    async def get_node_stats(self) -> list[dict[str, Any]]: ...
+    @abstractmethod
+    async def get_recent_traces(self, *args, **kwargs): ...
+    @abstractmethod
+    async def get_trace_detail(self, trace_id: str) -> dict[str, Any] | None: ...
 
 
 def _retry_on_locked(max_retries: int = 3, delay: float = 0.5):

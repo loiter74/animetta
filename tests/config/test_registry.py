@@ -1,3 +1,5 @@
+from __future__ import annotations
+from animetta.config.core.registry import ProviderRegistry
 """Tests for ProviderRegistry (config/core/registry.py)"""
 
 import sys
@@ -6,6 +8,7 @@ from typing import Literal, Optional, Type
 from unittest.mock import MagicMock, patch
 
 import pytest
+from animetta.config.core.base import ProviderConfig
 from pydantic import Field
 
 # Ensure src/ is on the Python path

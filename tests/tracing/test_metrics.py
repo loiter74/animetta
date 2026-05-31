@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for metrics.py — OTel MeterProvider initialization and instruments."""
 
 import pytest

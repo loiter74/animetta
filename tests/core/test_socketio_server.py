@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Tests for socketio_server module — server entry point.
 
@@ -49,17 +50,17 @@ def mod():
     sys.argv = ["test_prog"]
 
     # Ensure a fresh import
-    if "anima.core.socketio_server" in sys.modules:
-        del sys.modules["anima.core.socketio_server"]
+    if "animetta.core.socketio_server" in sys.modules:
+        del sys.modules["animetta.core.socketio_server"]
 
     with (
         patch("dotenv.load_dotenv"),
         patch(
-            "anima.config.user_settings.UserSettings._load",
+            "animetta.config.user_settings.UserSettings._load",
             return_value={"log_level": "INFO"},
         ),
     ):
-        import anima.core.socketio_server as m
+        import animetta.core.socketio_server as m
 
     sys.argv = original_argv
     return m
@@ -97,7 +98,7 @@ class TestInitConfig:
         mock_config.system.port = 12394
 
         mod.global_config = None
-        with patch("anima.core.socketio_server.AppConfig.load", return_value=mock_config):
+        with patch("animetta.core.socketio_server.AppConfig.load", return_value=mock_config):
             mod.init_config()
 
         assert mod.global_config is mock_config
@@ -110,7 +111,7 @@ class TestInitConfig:
 
         mod.global_config = None
         with patch(
-            "anima.core.socketio_server.AppConfig.from_yaml", return_value=mock_config
+            "animetta.core.socketio_server.AppConfig.from_yaml", return_value=mock_config
         ) as mock_from_yaml:
             mod.init_config(config_path="/custom/path/config.yaml")
 
@@ -142,10 +143,10 @@ class TestSetupCheckpointer:
         mock_checkpointer = MagicMock()
         with (
             patch(
-                "anima.orchestration.graph.builder.set_external_checkpointer"
+                "animetta.orchestration.graph.builder.set_external_checkpointer"
             ) as mock_set,
             patch(
-                "anima.core.redis_checkpoint.AsyncRedisSaver",
+                "animetta.core.redis_checkpoint.AsyncRedisSaver",
                 return_value=mock_checkpointer,
             ),
         ):
@@ -159,7 +160,7 @@ class TestSetupCheckpointer:
         """When --redis-url is None, no external checkpointer is registered."""
         # _server_args.redis_url is None from import-time default
         with patch(
-            "anima.orchestration.graph.builder.set_external_checkpointer"
+            "animetta.orchestration.graph.builder.set_external_checkpointer"
         ) as mock_set:
             mod._setup_checkpointer()
 
@@ -171,10 +172,10 @@ class TestSetupCheckpointer:
 
         with (
             patch(
-                "anima.orchestration.graph.builder.set_external_checkpointer"
+                "animetta.orchestration.graph.builder.set_external_checkpointer"
             ) as mock_set,
             patch(
-                "anima.core.redis_checkpoint.AsyncRedisSaver",
+                "animetta.core.redis_checkpoint.AsyncRedisSaver",
                 side_effect=ConnectionError("redis not available"),
             ),
         ):
@@ -217,8 +218,8 @@ class TestGetAsgiApp:
         mock_server.prewarm_services = MagicMock(return_value=_noop_coro())
 
         with (
-            patch("anima.core.socketio_server._setup_checkpointer") as mock_check,
-            patch("anima.core.socketio_server.create_server", return_value=mock_server),
+            patch("animetta.core.socketio_server._setup_checkpointer") as mock_check,
+            patch("animetta.core.socketio_server.create_server", return_value=mock_server),
         ):
             result = mod.get_asgi_app()
 
@@ -240,8 +241,8 @@ class TestGetAsgiApp:
         mock_server.prewarm_services = MagicMock(return_value=_noop_coro())
 
         with (
-            patch("anima.core.socketio_server._setup_checkpointer"),
-            patch("anima.core.socketio_server.create_server", return_value=mock_server),
+            patch("animetta.core.socketio_server._setup_checkpointer"),
+            patch("animetta.core.socketio_server.create_server", return_value=mock_server),
         ):
             result1 = mod.get_asgi_app()
             result2 = mod.get_asgi_app()
@@ -261,9 +262,9 @@ class TestGetAsgiApp:
         mock_server.prewarm_services = MagicMock(return_value=_noop_coro())
 
         with (
-            patch("anima.core.socketio_server.init_config") as mock_init,
-            patch("anima.core.socketio_server._setup_checkpointer"),
-            patch("anima.core.socketio_server.create_server", return_value=mock_server),
+            patch("animetta.core.socketio_server.init_config") as mock_init,
+            patch("animetta.core.socketio_server._setup_checkpointer"),
+            patch("animetta.core.socketio_server.create_server", return_value=mock_server),
         ):
             mod.get_asgi_app()
 
@@ -281,9 +282,9 @@ class TestGetAsgiApp:
         mock_server.prewarm_services = MagicMock(return_value=_noop_coro())
 
         with (
-            patch("anima.core.socketio_server.init_config") as mock_init,
-            patch("anima.core.socketio_server._setup_checkpointer"),
-            patch("anima.core.socketio_server.create_server", return_value=mock_server),
+            patch("animetta.core.socketio_server.init_config") as mock_init,
+            patch("animetta.core.socketio_server._setup_checkpointer"),
+            patch("animetta.core.socketio_server.create_server", return_value=mock_server),
         ):
             mod.get_asgi_app()
 

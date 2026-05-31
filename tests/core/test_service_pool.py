@@ -1,3 +1,5 @@
+from __future__ import annotations
+from animetta.core.service_pool import ServicePool
 """Tests for ServicePool — globally shared LLM/TTS/ASR engine pool.
 
 ServicePool is a class-level singleton that holds one instance each of
@@ -73,7 +75,7 @@ class TestInit:
     # ── Happy path ──────────────────────────────────────────────
 
     @pytest.mark.asyncio
-    @patch("anima.core.service_context.ServiceContext")
+    @patch("animetta.core.service_context.ServiceContext")
     async def test_creates_service_context(
         self, MockServiceContext, mock_llm, mock_tts, mock_asr
     ):
@@ -87,7 +89,7 @@ class TestInit:
         mock_ctx.load_from_config.assert_awaited_once()
 
     @pytest.mark.asyncio
-    @patch("anima.core.service_context.ServiceContext")
+    @patch("animetta.core.service_context.ServiceContext")
     async def test_extracts_shared_engines(
         self, MockServiceContext, mock_llm, mock_tts, mock_asr
     ):
@@ -102,7 +104,7 @@ class TestInit:
         assert ServicePool._asr is mock_asr
 
     @pytest.mark.asyncio
-    @patch("anima.core.service_context.ServiceContext")
+    @patch("animetta.core.service_context.ServiceContext")
     async def test_sets_ready_flag(
         self, MockServiceContext, mock_llm, mock_tts, mock_asr
     ):
@@ -115,7 +117,7 @@ class TestInit:
         assert ServicePool._ready is True
 
     @pytest.mark.asyncio
-    @patch("anima.core.service_context.ServiceContext")
+    @patch("animetta.core.service_context.ServiceContext")
     async def test_sets_session_id(
         self, MockServiceContext, mock_llm, mock_tts, mock_asr
     ):
@@ -128,7 +130,7 @@ class TestInit:
         assert mock_ctx.session_id == "__pool__"
 
     @pytest.mark.asyncio
-    @patch("anima.core.service_context.ServiceContext")
+    @patch("animetta.core.service_context.ServiceContext")
     async def test_forwards_model_manager(
         self, MockServiceContext, mock_llm, mock_tts, mock_asr
     ):
@@ -142,7 +144,7 @@ class TestInit:
         MockServiceContext.assert_called_once_with(model_manager=manager)
 
     @pytest.mark.asyncio
-    @patch("anima.core.service_context.ServiceContext")
+    @patch("animetta.core.service_context.ServiceContext")
     async def test_keeps_ctx_alive(
         self, MockServiceContext, mock_llm, mock_tts, mock_asr
     ):
@@ -161,13 +163,13 @@ class TestInit:
         """When _ready is True, init() returns immediately without creating ServiceContext."""
         ServicePool._ready = True
 
-        with patch("anima.core.service_context.ServiceContext") as MockServiceContext:
+        with patch("animetta.core.service_context.ServiceContext") as MockServiceContext:
             await ServicePool.init(MagicMock())
 
         MockServiceContext.assert_not_called()
 
     @pytest.mark.asyncio
-    @patch("anima.core.service_context.ServiceContext")
+    @patch("animetta.core.service_context.ServiceContext")
     async def test_idempotent_second_call_does_not_create_new_context(
         self, MockServiceContext, mock_llm, mock_tts, mock_asr
     ):
@@ -186,7 +188,7 @@ class TestInit:
         assert ServicePool._ctx is first_ctx
 
     @pytest.mark.asyncio
-    @patch("anima.core.service_context.ServiceContext")
+    @patch("animetta.core.service_context.ServiceContext")
     async def test_idempotent_engines_preserved(
         self, MockServiceContext, mock_llm, mock_tts, mock_asr
     ):
@@ -208,7 +210,7 @@ class TestInit:
     # ── Error handling ──────────────────────────────────────────
 
     @pytest.mark.asyncio
-    @patch("anima.core.service_context.ServiceContext")
+    @patch("animetta.core.service_context.ServiceContext")
     async def test_error_closes_context(self, MockServiceContext):
         """When load_from_config raises, init() calls ctx.close() and re-raises."""
         mock_ctx = MagicMock()
@@ -222,7 +224,7 @@ class TestInit:
         mock_ctx.close.assert_awaited_once()
 
     @pytest.mark.asyncio
-    @patch("anima.core.service_context.ServiceContext")
+    @patch("animetta.core.service_context.ServiceContext")
     async def test_error_does_not_set_ready(self, MockServiceContext):
         """When load_from_config fails, _ready stays False."""
         mock_ctx = MagicMock()
@@ -236,7 +238,7 @@ class TestInit:
         assert ServicePool._ready is False
 
     @pytest.mark.asyncio
-    @patch("anima.core.service_context.ServiceContext")
+    @patch("animetta.core.service_context.ServiceContext")
     async def test_error_does_not_set_engines(self, MockServiceContext):
         """After a failed init, _llm / _tts / _asr remain None."""
         mock_ctx = MagicMock()
@@ -254,7 +256,7 @@ class TestInit:
     # ── Per-session service cleanup ─────────────────────────────
 
     @pytest.mark.asyncio
-    @patch("anima.core.service_context.ServiceContext")
+    @patch("animetta.core.service_context.ServiceContext")
     async def test_closes_vad_engine(
         self, MockServiceContext, mock_llm, mock_tts, mock_asr
     ):
@@ -271,7 +273,7 @@ class TestInit:
         mock_vad.close.assert_awaited_once()
 
     @pytest.mark.asyncio
-    @patch("anima.core.service_context.ServiceContext")
+    @patch("animetta.core.service_context.ServiceContext")
     async def test_closes_memory_system(
         self, MockServiceContext, mock_llm, mock_tts, mock_asr
     ):
@@ -290,7 +292,7 @@ class TestInit:
         mock_memory.close.assert_called_once()
 
     @pytest.mark.asyncio
-    @patch("anima.core.service_context.ServiceContext")
+    @patch("animetta.core.service_context.ServiceContext")
     async def test_clears_emotion_analyzer(
         self, MockServiceContext, mock_llm, mock_tts, mock_asr
     ):
@@ -305,7 +307,7 @@ class TestInit:
         assert mock_ctx.emotion_analyzer is None
 
     @pytest.mark.asyncio
-    @patch("anima.core.service_context.ServiceContext")
+    @patch("animetta.core.service_context.ServiceContext")
     async def test_clears_audio_processor(
         self, MockServiceContext, mock_llm, mock_tts, mock_asr
     ):
@@ -320,7 +322,7 @@ class TestInit:
         assert mock_ctx.audio_processor is None
 
     @pytest.mark.asyncio
-    @patch("anima.core.service_context.ServiceContext")
+    @patch("animetta.core.service_context.ServiceContext")
     async def test_skips_vad_close_when_none(
         self, MockServiceContext, mock_llm, mock_tts, mock_asr
     ):
@@ -333,7 +335,7 @@ class TestInit:
         assert ServicePool._ready is True
 
     @pytest.mark.asyncio
-    @patch("anima.core.service_context.ServiceContext")
+    @patch("animetta.core.service_context.ServiceContext")
     async def test_skips_memory_close_when_none(
         self, MockServiceContext, mock_llm, mock_tts, mock_asr
     ):

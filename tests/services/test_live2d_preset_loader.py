@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for PresetLoader YAML loading and action creation."""
 
 import pytest

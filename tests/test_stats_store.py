@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Pipeline Stats 自动化测试
 
 覆盖：StatsStore CRUD、StatsCallbackHandler 采集、Stats API 端到端

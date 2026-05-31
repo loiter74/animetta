@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for AsyncRedisSaver — Redis-backed LangGraph checkpoint persistence."""
 
 import json

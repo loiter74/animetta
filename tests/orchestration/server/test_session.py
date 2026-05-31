@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for SessionManager — context, orchestrator, audio processor lifecycle."""
 
 import pytest
@@ -72,11 +73,11 @@ class TestGetOrCreateContext:
         mock_ctx.init_emotion_analyzer = AsyncMock()
 
         with patch(
-            "anima.orchestration.server.session.ServiceContext",
+            "animetta.orchestration.server.session.ServiceContext",
             return_value=mock_ctx,
         ):
             monkeypatch.setattr(
-                "anima.core.service_pool.ServicePool.get_context",
+                "animetta.core.service_pool.ServicePool.get_context",
                 lambda: mock_service_pool,
             )
 
@@ -100,11 +101,11 @@ class TestGetOrCreateContext:
         mock_ctx.load_from_config = AsyncMock()
 
         with patch(
-            "anima.orchestration.server.session.ServiceContext",
+            "animetta.orchestration.server.session.ServiceContext",
             return_value=mock_ctx,
         ):
             monkeypatch.setattr(
-                "anima.core.service_pool.ServicePool.get_context",
+                "animetta.core.service_pool.ServicePool.get_context",
                 lambda: None,
             )
 
@@ -149,11 +150,11 @@ class TestGetOrCreateContext:
             return mock_ctx_a if ctx_counter[0] == 1 else mock_ctx_b
 
         with patch(
-            "anima.orchestration.server.session.ServiceContext",
+            "animetta.orchestration.server.session.ServiceContext",
             side_effect=_make_ctx,
         ):
             monkeypatch.setattr(
-                "anima.core.service_pool.ServicePool.get_context",
+                "animetta.core.service_pool.ServicePool.get_context",
                 lambda: mock_service_pool,
             )
 
@@ -184,11 +185,11 @@ class TestGetOrCreateOrchestrator:
         mock_factory.create = AsyncMock(return_value=mock_orch)
 
         monkeypatch.setattr(
-            "anima.orchestration.graph.orchestrator.LangGraphOrchestratorFactory",
+            "animetta.orchestration.graph.orchestrator.LangGraphOrchestratorFactory",
             mock_factory,
         )
         monkeypatch.setattr(
-            "anima.orchestration.server.session.SessionManager._load_tools_config",
+            "animetta.orchestration.server.session.SessionManager._load_tools_config",
             AsyncMock(return_value={"enable_tools": False, "config": {}}),
         )
 
@@ -221,11 +222,11 @@ class TestGetOrCreateOrchestrator:
         mock_factory.create = AsyncMock(return_value=mock_orch)
 
         monkeypatch.setattr(
-            "anima.orchestration.graph.orchestrator.LangGraphOrchestratorFactory",
+            "animetta.orchestration.graph.orchestrator.LangGraphOrchestratorFactory",
             mock_factory,
         )
         monkeypatch.setattr(
-            "anima.orchestration.server.session.SessionManager._load_tools_config",
+            "animetta.orchestration.server.session.SessionManager._load_tools_config",
             AsyncMock(return_value={"enable_tools": False, "config": {}}),
         )
 
@@ -340,7 +341,7 @@ class TestAudioProcessor:
         mock_cls = MagicMock(return_value=mock_processor)
 
         monkeypatch.setattr(
-            "anima.services.audio.simple_vad_processor.SimpleVADProcessor",
+            "animetta.services.audio.simple_vad_processor.SimpleVADProcessor",
             mock_cls,
         )
 

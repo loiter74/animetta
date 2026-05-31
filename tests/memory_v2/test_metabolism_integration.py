@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for MetabolismScheduler integration with LivingMemorySystem."""
 
 import pytest

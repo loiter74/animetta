@@ -1,3 +1,5 @@
+from __future__ import annotations
+from animetta.services.meme.danmaku_buffer import DanmakuBuffer
 """Tests for DanmakuBuffer — real-time danmaku accumulation and hot phrase extraction."""
 
 import time

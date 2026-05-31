@@ -12,7 +12,7 @@ from typing import Any
 
 from loguru import logger
 
-from ..intelligence.vad import VADInterface, VADState
+from ..vad import VADInterface, VADState
 from .processor import AudioProcessorInterface
 
 

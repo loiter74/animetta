@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Global test fixtures and configuration for Anima tests."""
 
 import sys

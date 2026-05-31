@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for heuristic semantic phrase extraction with jieba + TF-IDF."""
 
 from unittest.mock import patch

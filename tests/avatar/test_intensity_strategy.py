@@ -1,3 +1,5 @@
+from __future__ import annotations
+from animetta.avatar.strategies.intensity import IntensityBasedStrategy
 """
 Tests for IntensityBasedStrategy — intensity-based time allocation.
 """

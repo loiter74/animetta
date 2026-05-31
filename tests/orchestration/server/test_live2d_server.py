@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for Live2DManager — action enqueue lifecycle, callback propagation, stop/resume cycle."""
 
 import asyncio

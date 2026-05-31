@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for AudioProcessorInterface — abstract contract enforcement and subclass compliance."""
 
 import pytest

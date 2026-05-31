@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for WebSocketServer — server init, routes, lifecycle, and prewarm."""
 
 import pytest
@@ -14,7 +15,7 @@ def websocket_server():
     with patch("socketio.AsyncServer") as mock_sio_cls, \
          patch("socketio.ASGIApp") as mock_asgi, \
          patch("starlette.applications.Starlette") as mock_starlette, \
-         patch("anima.orchestration.server.websocket.ModelLoadingManager") as mock_mlm:
+         patch("animetta.orchestration.server.websocket.ModelLoadingManager") as mock_mlm:
         mock_sio_cls.return_value = MagicMock()
         mock_asgi.return_value = MagicMock()
         mock_starlette.return_value = MagicMock()
@@ -34,7 +35,7 @@ class TestWebSocketServerInit:
         with patch("socketio.AsyncServer") as mock_sio_cls, \
              patch("socketio.ASGIApp") as mock_asgi, \
              patch("starlette.applications.Starlette") as mock_starlette, \
-             patch("anima.orchestration.server.websocket.ModelLoadingManager") as mock_mlm:
+             patch("animetta.orchestration.server.websocket.ModelLoadingManager") as mock_mlm:
             mock_sio_cls.return_value = MagicMock()
             mock_asgi.return_value = MagicMock()
             mock_starlette.return_value = MagicMock()
@@ -68,7 +69,7 @@ class TestWebSocketServerInit:
         with patch("socketio.AsyncServer") as mock_sio_cls, \
              patch("socketio.ASGIApp") as mock_asgi, \
              patch("starlette.applications.Starlette") as mock_starlette, \
-             patch("anima.orchestration.server.websocket.ModelLoadingManager"):
+             patch("animetta.orchestration.server.websocket.ModelLoadingManager"):
             mock_sio_cls.return_value = MagicMock()
             mock_asgi.return_value = MagicMock()
             mock_starlette.return_value = MagicMock()
@@ -115,7 +116,7 @@ class TestSetupRoutes:
 
     def test_setup_routes_creates_handlers(self, websocket_server):
         """setup_routes creates route_handlers via register_routes."""
-        with patch("anima.orchestration.server.websocket.register_routes") as mock_reg:
+        with patch("animetta.orchestration.server.websocket.register_routes") as mock_reg:
             mock_reg.return_value = MagicMock()
 
             websocket_server.setup_routes()
@@ -131,7 +132,7 @@ class TestSetupRoutes:
 
     def test_setup_routes_wires_socketio_to_model_manager(self, websocket_server):
         """model_manager._socketio is wired after setup_routes."""
-        with patch("anima.orchestration.server.websocket.register_routes") as mock_reg:
+        with patch("animetta.orchestration.server.websocket.register_routes") as mock_reg:
             mock_reg.return_value = MagicMock()
 
             websocket_server.setup_routes()
@@ -171,7 +172,7 @@ class TestPrewarmServices:
     @pytest.mark.asyncio
     async def test_prewarm_services_with_config(self, websocket_server):
         """prewarm_services initializes ServicePool when config is set."""
-        with patch("anima.core.service_pool.ServicePool") as mock_pool:
+        with patch("animetta.core.service_pool.ServicePool") as mock_pool:
             mock_pool.init = AsyncMock()
 
             await websocket_server.prewarm_services()
@@ -187,14 +188,14 @@ class TestPrewarmServices:
         with patch("socketio.AsyncServer") as mock_sio_cls, \
              patch("socketio.ASGIApp") as mock_asgi, \
              patch("starlette.applications.Starlette") as mock_starlette, \
-             patch("anima.orchestration.server.websocket.ModelLoadingManager"):
+             patch("animetta.orchestration.server.websocket.ModelLoadingManager"):
             mock_sio_cls.return_value = MagicMock()
             mock_asgi.return_value = MagicMock()
             mock_starlette.return_value = MagicMock()
 
             server = WebSocketServer(config=None)
 
-            with patch("anima.core.service_pool.ServicePool") as mock_pool:
+            with patch("animetta.core.service_pool.ServicePool") as mock_pool:
                 await server.prewarm_services()
                 mock_pool.init.assert_not_called()
 
@@ -256,8 +257,8 @@ class TestCreateServer:
         with patch("socketio.AsyncServer") as mock_sio_cls, \
              patch("socketio.ASGIApp") as mock_asgi, \
              patch("starlette.applications.Starlette") as mock_starlette, \
-             patch("anima.orchestration.server.websocket.ModelLoadingManager"), \
-             patch("anima.orchestration.server.websocket.init_tracing") as mock_tracing:
+             patch("animetta.orchestration.server.websocket.ModelLoadingManager"), \
+             patch("animetta.orchestration.server.websocket.init_tracing") as mock_tracing:
             mock_sio_cls.return_value = MagicMock()
             mock_asgi.return_value = MagicMock()
             mock_starlette.return_value = MagicMock()

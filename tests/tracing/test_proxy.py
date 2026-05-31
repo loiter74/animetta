@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for TracingProxy — dynamic OTel span creation around service calls."""
 
 import pytest

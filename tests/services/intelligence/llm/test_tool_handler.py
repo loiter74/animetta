@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for OpenAIToolHandler — tool call parsing, tool result formatting."""
 
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -135,7 +136,7 @@ class TestOpenAIToolHandler:
         assert result[1]["content"] == "result data"
         assert result[2]["role"] == "user"
 
-    @patch("anima.services.intelligence.llm.tool_handler.logger")
+    @patch("animetta.services.intelligence.llm.tool_handler.logger")
     async def test_chat_with_tools_success(self, mock_logger, handler, mock_openai_llm):
         """chat_with_tools should return content for a non-tool response."""
         mock_choice = MagicMock()
@@ -159,7 +160,7 @@ class TestOpenAIToolHandler:
         assert result["tool_calls"] is None
         mock_openai_llm._record_usage.assert_called_once()
 
-    @patch("anima.services.intelligence.llm.tool_handler.logger")
+    @patch("animetta.services.intelligence.llm.tool_handler.logger")
     async def test_chat_with_tools_with_tool_calls(self, mock_logger, handler, mock_openai_llm):
         """chat_with_tools should return tool_calls when the model requests them."""
         mock_tool_call = MagicMock()
@@ -189,7 +190,7 @@ class TestOpenAIToolHandler:
         assert result["tool_calls"][0]["name"] == "fake_weather"
         assert result["tool_calls"][0]["args"] == {"city": "Paris"}
 
-    @patch("anima.services.intelligence.llm.tool_handler.logger")
+    @patch("animetta.services.intelligence.llm.tool_handler.logger")
     async def test_chat_with_tools_error(self, mock_logger, handler, mock_openai_llm):
         """chat_with_tools should raise on API error after recording it."""
         mock_openai_llm.client.chat.completions.create = AsyncMock(

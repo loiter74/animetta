@@ -1,9 +1,12 @@
+from __future__ import annotations
+from animetta.services.vad import VADInterface
 """Tests for VADAudioProcessor — chunk buffering, callbacks, timeout."""
 
 import time
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from animetta.services.vad import VADState, VADFactory
 
 
 

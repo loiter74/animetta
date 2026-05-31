@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for LifecycleManager — signal handlers, cleanup callbacks, shutdown flag."""
 
 import signal

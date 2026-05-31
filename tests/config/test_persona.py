@@ -1,3 +1,5 @@
+from __future__ import annotations
+from animetta.config.persona import PersonaConfig
 """Tests for PersonaConfig (config/persona/base.py)"""
 
 import sys
@@ -422,7 +424,7 @@ class TestFromYaml:
 class TestLoad:
     """Tests for PersonaConfig.load"""
 
-    @patch("anima.config.persona.base.PersonaConfig.from_yaml")
+    @patch("animetta.config.persona.base.PersonaConfig.from_yaml")
     @patch("pathlib.Path.exists", return_value=True)
     def test_load_by_name(self, mock_exists, mock_from_yaml):
         """load(name) reads YAML and calls from_yaml with correct path"""
@@ -447,7 +449,7 @@ class TestLoad:
         with pytest.raises(FileNotFoundError, match="Persona configuration not found"):
             PersonaConfig.load(name="default")
 
-    @patch("anima.config.persona.base.PersonaConfig.from_yaml")
+    @patch("animetta.config.persona.base.PersonaConfig.from_yaml")
     @patch("pathlib.Path.exists", return_value=True)
     def test_load_with_custom_dir(self, mock_exists, mock_from_yaml):
         """load uses custom personas_dir when provided"""
@@ -458,7 +460,7 @@ class TestLoad:
         call_path = mock_from_yaml.call_args[0][0]
         assert "/custom/personas" in call_path or "custom\\personas" in call_path
 
-    @patch("anima.config.persona.base.PersonaConfig.from_yaml")
+    @patch("animetta.config.persona.base.PersonaConfig.from_yaml")
     @patch("pathlib.Path.exists", return_value=True)
     def test_load_default_path_when_no_dir_provided(self, mock_exists, mock_from_yaml):
         """load uses project-relative default path when personas_dir is None"""

@@ -1,3 +1,5 @@
+from __future__ import annotations
+from animetta.avatar.prompts import EmotionPromptBuilder
 """
 Tests for EmotionPromptBuilder — emotion tag usage guide generation.
 """

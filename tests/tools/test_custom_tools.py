@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for custom_tools module (url_preview, send_email, image_gen)."""
 
 import pytest

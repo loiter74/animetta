@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for tool execution node."""
 
 import pytest

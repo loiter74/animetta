@@ -1,3 +1,5 @@
+from __future__ import annotations
+from animetta.notifier.manager import NotifierManager
 """Tests for Notifier — Alert webhook relay (Discord / Feishu / Email)."""
 
 import os

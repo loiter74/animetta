@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for StatsSpanExporter — OTel span → StatsStore mapping."""
 
 import pytest

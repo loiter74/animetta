@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for DesktopClientManager — client registration, type queries, connection tracking."""
 
 import pytest

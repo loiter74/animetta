@@ -1,3 +1,13 @@
+from __future__ import annotations
+from animetta.avatar.analyzers.base import EmotionData
+from animetta.avatar.analyzers.base import IEmotionAnalyzer
+from animetta.avatar.analyzers.keyword import KeywordAnalyzer
+from animetta.avatar.analyzers.llm_tag import StandaloneLLMTagAnalyzer
+from animetta.avatar.factory import EmotionAnalyzerFactory
+from animetta.avatar.factory import TimelineStrategyFactory
+from animetta.avatar.strategies.duration import DurationBasedStrategy
+from animetta.avatar.strategies.intensity import IntensityBasedStrategy
+from animetta.avatar.strategies.position import PositionBasedStrategy
 """
 Tests for EmotionAnalyzerFactory and TimelineStrategyFactory.
 """

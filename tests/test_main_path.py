@@ -1,3 +1,9 @@
+from __future__ import annotations
+from animetta.config.core.registry import ProviderRegistry
+from animetta.services.llm import LLMFactory
+from animetta.services.llm import MockLLM
+from animetta.services.vad import MockVAD
+from animetta.services.vad import VADFactory
 """
 主链路 Bug 修复自动化测试
 
@@ -24,7 +30,7 @@ class TestVADServicesRegistered:
         """导入 VAD 模块后 silero 和 mock 都应在 Registry 中"""
 
         # 触发导入
-        import anima.services.intelligence.vad  # noqa: F401
+        import animetta.services.intelligence.vad  # noqa: F401
 
         services = ProviderRegistry.list_services("vad")
         assert "silero" in services, f"silero 未注册, 当前: {services}"
@@ -140,7 +146,7 @@ class TestOutputNodeVolumes:
 
         # mock AudioAnalyzer 因为假文件不是真正的 mp3
         with patch(
-            "anima.orchestration.graph.output_node._compute_volumes",
+            "animetta.orchestration.graph.output_node._compute_volumes",
             return_value=[0.1, 0.5, 0.3]
         ):
             await output_node(state, config)

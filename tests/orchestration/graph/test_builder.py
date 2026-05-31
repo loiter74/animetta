@@ -1,3 +1,5 @@
+from __future__ import annotations
+from animetta.orchestration.graph.state import AgentState
 """Tests for LangGraph state graph builder — node registration, routing, and compilation."""
 
 from typing import Any
@@ -6,7 +8,7 @@ from unittest.mock import ANY, MagicMock, call, patch
 import pytest
 from langgraph.graph import StateGraph as RealStateGraph
 
-import anima.orchestration.graph.builder as builder_mod
+import animetta.orchestration.graph.builder as builder_mod
 
 
 # ── Fixtures ────────────────────────────────────────────────
@@ -135,7 +137,7 @@ class TestBuildGraph:
     def test_build_graph_creates_state_graph(self, mock_state_graph):
         """StateGraph is instantiated with AgentState."""
         graph, compiled = mock_state_graph
-        with patch("anima.orchestration.graph.builder.StateGraph", return_value=graph) as mock_sg:
+        with patch("animetta.orchestration.graph.builder.StateGraph", return_value=graph) as mock_sg:
             result = build_graph()
 
         assert result is compiled
@@ -146,7 +148,7 @@ class TestBuildGraph:
     def test_build_graph_registers_core_nodes(self, mock_state_graph):
         """All 6 core nodes are registered (tools disabled)."""
         graph, compiled = mock_state_graph
-        with patch("anima.orchestration.graph.builder.StateGraph", return_value=graph):
+        with patch("animetta.orchestration.graph.builder.StateGraph", return_value=graph):
             build_graph()
 
         node_names = [c.args[0] for c in graph.add_node.call_args_list]
@@ -155,7 +157,7 @@ class TestBuildGraph:
     def test_build_graph_registers_tool_node(self, mock_state_graph, mock_tools):
         """When enable_tools=True, the 'tools' node is also registered."""
         graph, compiled = mock_state_graph
-        with patch("anima.orchestration.graph.builder.StateGraph", return_value=graph):
+        with patch("animetta.orchestration.graph.builder.StateGraph", return_value=graph):
             build_graph(enable_tools=True, tools=mock_tools)
 
         node_names = [c.args[0] for c in graph.add_node.call_args_list]
@@ -165,7 +167,7 @@ class TestBuildGraph:
     def test_build_graph_sets_conditional_entry_point(self, mock_state_graph):
         """Entry point is set with route_input and asr/llm mapping."""
         graph, compiled = mock_state_graph
-        with patch("anima.orchestration.graph.builder.StateGraph", return_value=graph):
+        with patch("animetta.orchestration.graph.builder.StateGraph", return_value=graph):
             build_graph()
 
         graph.set_conditional_entry_point.assert_called_once_with(
@@ -175,7 +177,7 @@ class TestBuildGraph:
     def test_build_graph_edges_without_tools(self, mock_state_graph):
         """Without tools: llm -> tts edge is direct."""
         graph, compiled = mock_state_graph
-        with patch("anima.orchestration.graph.builder.StateGraph", return_value=graph):
+        with patch("animetta.orchestration.graph.builder.StateGraph", return_value=graph):
             build_graph()
 
         # Check the key edge: llm -> tts (no conditional)
@@ -192,7 +194,7 @@ class TestBuildGraph:
     def test_build_graph_edges_with_tools(self, mock_state_graph, mock_tools):
         """With tools: conditional edges replace llm->tts, plus tools->llm loop."""
         graph, compiled = mock_state_graph
-        with patch("anima.orchestration.graph.builder.StateGraph", return_value=graph):
+        with patch("animetta.orchestration.graph.builder.StateGraph", return_value=graph):
             build_graph(enable_tools=True, tools=mock_tools)
 
         # llm -> tts should NOT be a direct edge
@@ -208,7 +210,7 @@ class TestBuildGraph:
         """Compile receives the supplied checkpointer."""
         graph, compiled = mock_state_graph
         cp = MagicMock()
-        with patch("anima.orchestration.graph.builder.StateGraph", return_value=graph):
+        with patch("animetta.orchestration.graph.builder.StateGraph", return_value=graph):
             build_graph(checkpointer=cp)
 
         graph.compile.assert_called_once_with(checkpointer=cp)
@@ -216,7 +218,7 @@ class TestBuildGraph:
     def test_build_graph_no_checkpointer(self, mock_state_graph):
         """Compile receives None when no checkpointer given."""
         graph, compiled = mock_state_graph
-        with patch("anima.orchestration.graph.builder.StateGraph", return_value=graph):
+        with patch("animetta.orchestration.graph.builder.StateGraph", return_value=graph):
             build_graph()
 
         graph.compile.assert_called_once_with(checkpointer=None)
@@ -232,8 +234,8 @@ class TestCreateDefaultGraph:
         """enable_memory=False and no external cp → checkpointer=None."""
         graph, compiled = mock_state_graph
         with (
-            patch("anima.orchestration.graph.builder.StateGraph", return_value=graph),
-            patch("anima.orchestration.graph.builder._external_checkpointer", None),
+            patch("animetta.orchestration.graph.builder.StateGraph", return_value=graph),
+            patch("animetta.orchestration.graph.builder._external_checkpointer", None),
         ):
             create_default_graph(enable_memory=False)
 
@@ -244,9 +246,9 @@ class TestCreateDefaultGraph:
         graph, compiled = mock_state_graph
         mock_memory = MagicMock()
         with (
-            patch("anima.orchestration.graph.builder.StateGraph", return_value=graph),
-            patch("anima.orchestration.graph.builder._external_checkpointer", None),
-            patch("anima.orchestration.graph.builder.MemorySaver", return_value=mock_memory),
+            patch("animetta.orchestration.graph.builder.StateGraph", return_value=graph),
+            patch("animetta.orchestration.graph.builder._external_checkpointer", None),
+            patch("animetta.orchestration.graph.builder.MemorySaver", return_value=mock_memory),
         ):
             create_default_graph(enable_memory=True)
 
@@ -257,8 +259,8 @@ class TestCreateDefaultGraph:
         graph, compiled = mock_state_graph
         external_cp = MagicMock()
         with (
-            patch("anima.orchestration.graph.builder.StateGraph", return_value=graph),
-            patch("anima.orchestration.graph.builder._external_checkpointer", external_cp),
+            patch("animetta.orchestration.graph.builder.StateGraph", return_value=graph),
+            patch("animetta.orchestration.graph.builder._external_checkpointer", external_cp),
         ):
             create_default_graph(enable_memory=True)
 
@@ -269,8 +271,8 @@ class TestCreateDefaultGraph:
         graph, compiled = mock_state_graph
         external_cp = MagicMock()
         with (
-            patch("anima.orchestration.graph.builder.StateGraph", return_value=graph),
-            patch("anima.orchestration.graph.builder._external_checkpointer", external_cp),
+            patch("animetta.orchestration.graph.builder.StateGraph", return_value=graph),
+            patch("animetta.orchestration.graph.builder._external_checkpointer", external_cp),
         ):
             create_default_graph(enable_memory=False)
 
@@ -280,8 +282,8 @@ class TestCreateDefaultGraph:
         """enable_tools=True without tools list logs a warning."""
         graph, compiled = mock_state_graph
         with (
-            patch("anima.orchestration.graph.builder.StateGraph", return_value=graph),
-            patch("anima.orchestration.graph.builder.logger") as mock_logger,
+            patch("animetta.orchestration.graph.builder.StateGraph", return_value=graph),
+            patch("animetta.orchestration.graph.builder.logger") as mock_logger,
         ):
             create_default_graph(enable_memory=False, enable_tools=True)
 
@@ -301,7 +303,7 @@ class TestVisualizeGraph:
         mock_graph = MagicMock()
         mock_graph.get_graph.return_value.draw_mermaid_png.side_effect = ImportError("no graphviz")
 
-        with patch("anima.orchestration.graph.builder.logger") as mock_logger:
+        with patch("animetta.orchestration.graph.builder.logger") as mock_logger:
             visualize_graph(mock_graph, output_path="/dev/null/test.png")
 
         mock_logger.warning.assert_called()
@@ -331,7 +333,7 @@ class TestPrintGraphStructure:
         mock_graph = MagicMock()
         mock_graph.get_graph.return_value.print_ascii.return_value = "mock ascii art"
 
-        with patch("anima.orchestration.graph.builder.logger") as mock_logger:
+        with patch("animetta.orchestration.graph.builder.logger") as mock_logger:
             print_graph_structure(mock_graph)
 
         mock_graph.get_graph.assert_called_once()

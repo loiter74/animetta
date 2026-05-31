@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for LoggerManager configuration and singleton behavior."""
 
 import pytest

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for BilibiliDanmakuService — connect/disconnect/reconnect lifecycle.
 
 Uses @patch + sys.modules manipulation to mock bilibili_api at module level.

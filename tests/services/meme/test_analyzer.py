@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for MemeCognitiveAnalyzer — LLM-driven humor mechanism analysis."""
 
 from unittest.mock import AsyncMock, MagicMock, patch

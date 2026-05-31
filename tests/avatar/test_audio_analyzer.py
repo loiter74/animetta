@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Tests for AudioAnalyzer — volume envelope computation for lip sync.
 """

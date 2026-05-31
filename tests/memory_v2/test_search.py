@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for MemorySearch emotion-biased ranking."""
 
 from datetime import datetime, timezone

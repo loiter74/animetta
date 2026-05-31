@@ -1,3 +1,8 @@
+from __future__ import annotations
+from animetta.services.vad import MockVAD
+from animetta.services.vad import VADFactory
+from animetta.services.vad import VADInterface
+from animetta.services.vad import VADState
 """
 Tests for VAD provider implementations.
 
@@ -15,6 +20,7 @@ from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
+from animetta.services.vad import SileroVAD, MockVAD, VADFactory, VADInterface
 
 # ── Module-level sys.modules injection ──────────────────────────────
 # SileroVAD._load_vad_model() imports `from silero_vad import load_silero_vad`
@@ -404,7 +410,7 @@ class TestSileroVAD:
 class TestVADFactory:
     """Tests for the VADFactory."""
 
-    @patch("anima.services.intelligence.vad.factory.ProviderRegistry.create_service")
+    @patch("animetta.services.intelligence.vad.factory.ProviderRegistry.create_service")
     def test_create_from_config_uses_registry(self, mock_create_service):
         """create_from_config should delegate to ProviderRegistry."""
 
@@ -416,7 +422,7 @@ class TestVADFactory:
         mock_create_service.assert_called_once_with("vad", config)
         assert result is not None
 
-    @patch("anima.services.intelligence.vad.factory.ProviderRegistry.create_service")
+    @patch("animetta.services.intelligence.vad.factory.ProviderRegistry.create_service")
     def test_create_from_config_fallback_to_mock(self, mock_create_service):
         """create_from_config should fall back to MockVAD on error."""
 
@@ -451,7 +457,7 @@ class TestVADFactory:
         """create('silero') should return a SileroVAD instance."""
         mock_instance = MagicMock()
         with patch(
-            "anima.services.intelligence.vad.silero_vad.SileroVAD",
+            "animetta.services.intelligence.vad.silero_vad.SileroVAD",
             return_value=mock_instance,
         ):
             result = VADFactory.create("silero", sample_rate=16000)
@@ -460,7 +466,7 @@ class TestVADFactory:
     def test_create_silero_with_params(self):
         """create('silero') should forward keyword arguments."""
         with patch(
-            "anima.services.intelligence.vad.silero_vad.SileroVAD",
+            "animetta.services.intelligence.vad.silero_vad.SileroVAD",
             return_value=MagicMock(),
         ) as mock_cls:
             VADFactory.create(
@@ -481,7 +487,7 @@ class TestVADFactory:
     def test_create_silero_fallback_on_importerror(self):
         """create('silero') should fall back to MockVAD on ImportError."""
         with patch(
-            "anima.services.intelligence.vad.silero_vad.SileroVAD",
+            "animetta.services.intelligence.vad.silero_vad.SileroVAD",
             side_effect=ImportError("Not installed"),
         ):
             result = VADFactory.create("silero")

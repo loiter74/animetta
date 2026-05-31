@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for stats API endpoints — health check, overview, nodes, traces."""
 
 import pytest
@@ -52,7 +53,7 @@ def mock_store():
 @pytest.fixture
 def client(mock_store):
     """TestClient with mocked stats store."""
-    with patch("anima.orchestration.server.stats_api.get_stats_store",
+    with patch("animetta.orchestration.server.stats_api.get_stats_store",
                AsyncMock(return_value=mock_store)):
         app = _build_test_app()
         with TestClient(app) as c:
@@ -106,7 +107,7 @@ class TestStatsOverview:
         failing_store = MagicMock()
         failing_store.get_overview = AsyncMock(side_effect=RuntimeError("db fail"))
 
-        with patch("anima.orchestration.server.stats_api.get_stats_store",
+        with patch("animetta.orchestration.server.stats_api.get_stats_store",
                    AsyncMock(return_value=failing_store)):
             app = _build_test_app()
             with TestClient(app) as c:
@@ -165,7 +166,7 @@ class TestStatsTraces:
         failing_store = MagicMock()
         failing_store.get_recent_traces = AsyncMock(side_effect=RuntimeError("db fail"))
 
-        with patch("anima.orchestration.server.stats_api.get_stats_store",
+        with patch("animetta.orchestration.server.stats_api.get_stats_store",
                    AsyncMock(return_value=failing_store)):
             app = _build_test_app()
             with TestClient(app) as c:
@@ -193,7 +194,7 @@ class TestStatsTraceDetail:
         store = MagicMock()
         store.get_trace_detail = AsyncMock(return_value=None)
 
-        with patch("anima.orchestration.server.stats_api.get_stats_store",
+        with patch("animetta.orchestration.server.stats_api.get_stats_store",
                    AsyncMock(return_value=store)):
             app = _build_test_app()
             with TestClient(app) as c:
@@ -225,7 +226,7 @@ class TestStatsTraceTree:
         store = MagicMock()
         store.get_trace_detail = AsyncMock(return_value=None)
 
-        with patch("anima.orchestration.server.stats_api.get_stats_store",
+        with patch("animetta.orchestration.server.stats_api.get_stats_store",
                    AsyncMock(return_value=store)):
             app = _build_test_app()
             with TestClient(app) as c:

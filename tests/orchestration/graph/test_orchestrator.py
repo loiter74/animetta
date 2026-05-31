@@ -1,3 +1,5 @@
+from __future__ import annotations
+from animetta.orchestration.graph.orchestrator import LangGraphOrchestrator
 """Tests for LangGraph orchestrator — initialization and input processing."""
 
 import pytest
@@ -21,15 +23,15 @@ def mock_graph():
 def orchestrator(mock_service_context, mock_socketio, mock_graph, monkeypatch):
     """Create an orchestrator with mocked dependencies."""
     monkeypatch.setattr(
-        "anima.orchestration.graph.orchestrator.create_default_graph",
+        "animetta.orchestration.graph.orchestrator.create_default_graph",
         lambda *a, **kw: mock_graph,
     )
     monkeypatch.setattr(
-        "anima.orchestration.graph.orchestrator.ToolManager",
+        "animetta.orchestration.graph.orchestrator.ToolManager",
         lambda *a, **kw: MagicMock(load_tools=AsyncMock()),
     )
     monkeypatch.setattr(
-        "anima.orchestration.graph.orchestrator.get_observability",
+        "animetta.orchestration.graph.orchestrator.get_observability",
         lambda: MagicMock(),
     )
 

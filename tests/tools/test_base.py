@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for built-in tools (calculator, get_current_time, load_tools_from_config)."""
 
 import pytest
@@ -102,7 +103,7 @@ class TestLoadToolsFromConfig:
         assert len(tools) == 0
         assert tools_map == {}
 
-    @patch("anima.tools.base.load_tools_from_config")
+    @patch("animetta.tools.base.load_tools_from_config")
     def test_get_builtin_tools(self, mock_load):
         tools = get_builtin_tools()
         assert len(tools) == 4

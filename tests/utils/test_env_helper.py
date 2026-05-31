@@ -1,3 +1,5 @@
+from __future__ import annotations
+from animetta.utils.env_helper import EnvHelper
 """Tests for EnvHelper platform detection and path conversion."""
 
 import pytest

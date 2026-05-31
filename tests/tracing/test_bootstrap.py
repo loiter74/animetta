@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for tracing bootstrap — init_tracing with and without OTLP.
 
 Note: TracerProvider, Resource, SimpleSpanProcessor are imported inside

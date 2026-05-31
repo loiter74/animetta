@@ -1,3 +1,5 @@
+from __future__ import annotations
+from animetta.config.core.registry import ProviderRegistry
 """Unit tests for Qwen3-TTS provider (config + registry + from_config)"""
 
 import pytest

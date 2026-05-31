@@ -1,3 +1,6 @@
+from __future__ import annotations
+from animetta.orchestration.graph.tool_manager import ToolManager
+from animetta.tools import MCPManager
 """Tests for ToolManager — tool loading, config, lifecycle."""
 
 import pytest
@@ -27,7 +30,7 @@ class TestToolManager:
         mock_chat_model.bind_tools = MagicMock(return_value="bound_model")
 
         with (
-            patch("anima.tools.base.load_tools_from_config") as mock_load,
+            patch("animetta.tools.base.load_tools_from_config") as mock_load,
             patch.object(tool_manager, "_create_chat_model", AsyncMock(return_value=mock_chat_model)),
         ):
             mock_load.return_value = (mock_tools, mock_tools_map)
@@ -53,9 +56,9 @@ class TestToolManager:
         mock_mcp_tool.name = "mcp_tool"
 
         with (
-            patch("anima.tools.base.load_tools_from_config") as mock_load,
+            patch("animetta.tools.base.load_tools_from_config") as mock_load,
             patch.object(tool_manager, "_create_chat_model", AsyncMock(return_value=mock_chat_model)),
-            patch("anima.tools.mcp_bridge.MCPManager") as mock_mcp_cls,
+            patch("animetta.tools.mcp_bridge.MCPManager") as mock_mcp_cls,
         ):
             mock_load.return_value = (mock_tools, mock_tools_map)
             mock_mcp_instance = MagicMock(spec=MCPManager)
@@ -79,7 +82,7 @@ class TestToolManager:
         mock_chat_model = MagicMock()
 
         with (
-            patch("anima.tools.base.load_tools_from_config") as mock_load,
+            patch("animetta.tools.base.load_tools_from_config") as mock_load,
             patch.object(tool_manager, "_create_chat_model", AsyncMock(return_value=mock_chat_model)),
         ):
             mock_load.return_value = ([], {})
@@ -94,7 +97,7 @@ class TestToolManager:
     async def test_load_tools_creation_failure(self, tool_manager):
         """When _create_chat_model fails, load_tools still returns True but chat_model is None."""
         with (
-            patch("anima.tools.base.load_tools_from_config") as mock_load,
+            patch("animetta.tools.base.load_tools_from_config") as mock_load,
             patch.object(tool_manager, "_create_chat_model", AsyncMock(return_value=None)),
         ):
             mock_load.return_value = ([MagicMock(name="t")], {"t": MagicMock()})
@@ -107,7 +110,7 @@ class TestToolManager:
     @pytest.mark.asyncio
     async def test_load_tools_exception_returns_false(self, tool_manager):
         """When load_tools raises, return False."""
-        with patch("anima.tools.base.load_tools_from_config") as mock_load:
+        with patch("animetta.tools.base.load_tools_from_config") as mock_load:
             mock_load.side_effect = RuntimeError("oops")
 
             result = await tool_manager.load_tools({"builtin": "tools"})
@@ -122,7 +125,7 @@ class TestToolManager:
         mock_chat_model = MagicMock()
 
         with patch(
-            "anima.services.intelligence.llm.langchain_adapter.create_chat_model_from_service",
+            "animetta.services.intelligence.llm.langchain_adapter.create_chat_model_from_service",
         ) as mock_create:
             mock_create.return_value = mock_chat_model
 
@@ -138,7 +141,7 @@ class TestToolManager:
     async def test_create_chat_model_failure_returns_none(self, tool_manager):
         """When create_chat_model_from_service raises, return None."""
         with patch(
-            "anima.services.intelligence.llm.langchain_adapter.create_chat_model_from_service",
+            "animetta.services.intelligence.llm.langchain_adapter.create_chat_model_from_service",
         ) as mock_create:
             mock_create.side_effect = ImportError("missing dependency")
 
@@ -194,7 +197,7 @@ class TestToolManager:
         mock_mcp.close_all = AsyncMock()
         tool_manager._mcp_manager = mock_mcp
 
-        with patch("anima.tools.minecraft.bridge.get_bridge") as mock_get_bridge:
+        with patch("animetta.tools.minecraft.bridge.get_bridge") as mock_get_bridge:
             mock_bridge = MagicMock()
             mock_bridge.is_running = False
             mock_get_bridge.return_value = mock_bridge
@@ -207,7 +210,7 @@ class TestToolManager:
     @pytest.mark.asyncio
     async def test_cleanup_without_mcp_manager(self, tool_manager):
         """cleanup works when no MCP manager was created."""
-        with patch("anima.tools.minecraft.bridge.get_bridge") as mock_get_bridge:
+        with patch("animetta.tools.minecraft.bridge.get_bridge") as mock_get_bridge:
             mock_bridge = MagicMock()
             mock_bridge.is_running = False
             mock_get_bridge.return_value = mock_bridge
@@ -220,7 +223,7 @@ class TestToolManager:
     @pytest.mark.asyncio
     async def test_cleanup_stops_minecraft_bridge(self, tool_manager):
         """cleanup stops the Minecraft bridge if it is running."""
-        with patch("anima.tools.minecraft.bridge.get_bridge") as mock_get_bridge:
+        with patch("animetta.tools.minecraft.bridge.get_bridge") as mock_get_bridge:
             mock_bridge = MagicMock()
             mock_bridge.is_running = True
             mock_bridge.stop = AsyncMock()
@@ -233,7 +236,7 @@ class TestToolManager:
     @pytest.mark.asyncio
     async def test_cleanup_handles_minecraft_import_error(self, tool_manager):
         """cleanup handles ImportError when Minecraft tools not installed."""
-        with patch("anima.tools.minecraft.bridge.get_bridge") as mock_get_bridge:
+        with patch("animetta.tools.minecraft.bridge.get_bridge") as mock_get_bridge:
             mock_get_bridge.side_effect = ImportError("not installed")
 
             await tool_manager.cleanup()  # should not raise
@@ -243,7 +246,7 @@ class TestToolManager:
     @pytest.mark.asyncio
     async def test_cleanup_handles_minecraft_stop_exception(self, tool_manager):
         """cleanup warns but does not crash when Minecraft bridge.stop raises."""
-        with patch("anima.tools.minecraft.bridge.get_bridge") as mock_get_bridge:
+        with patch("animetta.tools.minecraft.bridge.get_bridge") as mock_get_bridge:
             mock_bridge = MagicMock()
             mock_bridge.is_running = True
             mock_bridge.stop = AsyncMock(side_effect=RuntimeError("stop failed"))

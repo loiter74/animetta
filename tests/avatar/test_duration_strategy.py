@@ -1,3 +1,5 @@
+from __future__ import annotations
+from animetta.avatar.strategies.duration import DurationBasedStrategy
 """
 Tests for DurationBasedStrategy — emotion-weight based time allocation.
 """

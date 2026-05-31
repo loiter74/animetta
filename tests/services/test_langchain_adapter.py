@@ -1,3 +1,5 @@
+from __future__ import annotations
+from animetta.services.llm import LLMInterface
 """Tests for LangChain ChatModel adapter.
 
 Covers ``create_chat_model_from_service`` and ``LLMChatModelAdapter``

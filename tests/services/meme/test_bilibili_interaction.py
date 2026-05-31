@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for BilibiliInteractionLearner — danmaku processing, pattern analysis."""
 
 import asyncio

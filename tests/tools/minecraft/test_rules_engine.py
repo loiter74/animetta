@@ -1,3 +1,5 @@
+from __future__ import annotations
+from animetta.tools.minecraft.rules_engine import RulesEngine
 """Tests for RulesEngine action validation and rule querying.
 
 Note: Integration-style tests (file I/O) already exist in test_minecraft_autonomous.py.

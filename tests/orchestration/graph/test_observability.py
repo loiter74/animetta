@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for observability manager — singleton, config loading, LangSmith/LangFuse init."""
 
 import os
@@ -112,8 +113,8 @@ class TestConfigLoading:
     def test_load_config_uses_default_path(self, manager):
         """Default config path points to config/observability.yaml."""
         with patch.object(Path, "exists", return_value=True), \
-             patch("anima.orchestration.graph.observability.open", MagicMock()), \
-             patch("anima.orchestration.graph.observability.yaml.safe_load", return_value={}):
+             patch("animetta.orchestration.graph.observability.open", MagicMock()), \
+             patch("animetta.orchestration.graph.observability.yaml.safe_load", return_value={}):
             config = manager._load_config()
         assert isinstance(config, dict)
 
@@ -126,16 +127,16 @@ class TestConfigLoading:
     def test_load_config_yaml_load_error_returns_defaults(self, manager):
         """A yaml parse error falls back to safe defaults."""
         with patch.object(Path, "exists", return_value=True), \
-             patch("anima.orchestration.graph.observability.open", MagicMock()), \
-             patch("anima.orchestration.graph.observability.yaml.safe_load", side_effect=yaml.YAMLError("bad")):
+             patch("animetta.orchestration.graph.observability.open", MagicMock()), \
+             patch("animetta.orchestration.graph.observability.yaml.safe_load", side_effect=yaml.YAMLError("bad")):
             config = manager._load_config("/some/path.yaml")
         assert config == {"langsmith": {"enabled": False}, "langfuse": {"enabled": False}}
 
     def test_load_config_returns_parsed_content(self, manager, mock_yaml_config):
         """Valid YAML returns the parsed config as-is."""
         with patch.object(Path, "exists", return_value=True), \
-             patch("anima.orchestration.graph.observability.open", MagicMock()), \
-             patch("anima.orchestration.graph.observability.yaml.safe_load", return_value=mock_yaml_config):
+             patch("animetta.orchestration.graph.observability.open", MagicMock()), \
+             patch("animetta.orchestration.graph.observability.yaml.safe_load", return_value=mock_yaml_config):
             config = manager._load_config("/valid/path.yaml")
         assert config["langsmith"]["project"] == "anima"
         assert not config["langfuse"]["enabled"]
@@ -216,7 +217,7 @@ class TestLangFuseInit:
         with (
             patch.dict(os.environ, {}, clear=True),
             patch(
-                "anima.orchestration.graph.observability.logger"
+                "animetta.orchestration.graph.observability.logger"
             ) as mock_logger,
         ):
             # We patch the import to raise ImportError
@@ -312,7 +313,7 @@ class TestLangFuseInit:
         with (
             patch.dict(os.environ, {}, clear=True),
             patch("langfuse.Langfuse", side_effect=Exception("API error")),
-            patch("anima.orchestration.graph.observability.logger") as mock_logger,
+            patch("animetta.orchestration.graph.observability.logger") as mock_logger,
         ):
             manager._init_langfuse()
 
@@ -356,8 +357,8 @@ class TestInitialize:
         """With all providers disabled, initialization runs cleanly."""
         with (
             patch.object(Path, "exists", return_value=True),
-            patch("anima.orchestration.graph.observability.open", MagicMock()),
-            patch("anima.orchestration.graph.observability.yaml.safe_load", return_value=mock_yaml_config),
+            patch("animetta.orchestration.graph.observability.open", MagicMock()),
+            patch("animetta.orchestration.graph.observability.yaml.safe_load", return_value=mock_yaml_config),
         ):
             manager.initialize("/fake/config/path.yaml")
 
@@ -371,8 +372,8 @@ class TestInitialize:
         config = {"langsmith": {"enabled": True, "project": "test"}}
         with (
             patch.object(Path, "exists", return_value=True),
-            patch("anima.orchestration.graph.observability.open", MagicMock()),
-            patch("anima.orchestration.graph.observability.yaml.safe_load", return_value=config),
+            patch("animetta.orchestration.graph.observability.open", MagicMock()),
+            patch("animetta.orchestration.graph.observability.yaml.safe_load", return_value=config),
             patch.dict(os.environ, {}, clear=True),
         ):
             manager.initialize("/fake/path.yaml")
@@ -392,8 +393,8 @@ class TestInitialize:
         }
         with (
             patch.object(Path, "exists", return_value=True),
-            patch("anima.orchestration.graph.observability.open", MagicMock()),
-            patch("anima.orchestration.graph.observability.yaml.safe_load", return_value=config),
+            patch("animetta.orchestration.graph.observability.open", MagicMock()),
+            patch("animetta.orchestration.graph.observability.yaml.safe_load", return_value=config),
             patch("langfuse.langchain.CallbackHandler"),
             patch("langfuse.Langfuse") as mock_client,
             patch.dict(os.environ, {}, clear=True),
@@ -430,8 +431,8 @@ class TestInitialize:
         }
         with (
             patch.object(Path, "exists", return_value=True),
-            patch("anima.orchestration.graph.observability.open", MagicMock()),
-            patch("anima.orchestration.graph.observability.yaml.safe_load", return_value=config),
+            patch("animetta.orchestration.graph.observability.open", MagicMock()),
+            patch("animetta.orchestration.graph.observability.yaml.safe_load", return_value=config),
             patch("langfuse.langchain.CallbackHandler"),
             patch("langfuse.Langfuse"),
             patch.dict(os.environ, {}, clear=True),

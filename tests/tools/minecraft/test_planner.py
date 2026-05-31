@@ -1,3 +1,5 @@
+from __future__ import annotations
+from animetta.tools.minecraft.planner import MinecraftPlanner
 """Tests for MinecraftPlanner — task decomposition and plan step generation."""
 
 import json

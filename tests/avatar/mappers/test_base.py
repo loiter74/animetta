@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Tests for mapper base — ParameterState, ExpressionFrame, IEmotionParamMapper.
 """

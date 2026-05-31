@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for GLM message format converter.
 
 Covers conversion between LangChain message types and the GLM API

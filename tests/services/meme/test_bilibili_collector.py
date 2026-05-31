@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for BilibiliMemeCollector — scraped data parsing, LLM identification."""
 
 from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch

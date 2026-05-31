@@ -1,3 +1,6 @@
+from __future__ import annotations
+from animetta.tools import MCPManager
+from animetta.tools.mcp_bridge import MCPClient
 """Tests for MCP bridge graceful degradation when Docker is unavailable."""
 
 import pytest

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for Redis-backed LangGraph checkpoint saver.
 
 Requires a running Redis instance on localhost:6379 for the persistence test.

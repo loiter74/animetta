@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for Live2DActionQueue enqueue/dequeue and all overflow/replace policies."""
 
 import pytest

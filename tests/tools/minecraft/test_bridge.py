@@ -1,3 +1,5 @@
+from __future__ import annotations
+from animetta.tools.minecraft.bridge import MinecraftBridge
 """Tests for MinecraftBridge — subprocess lifecycle and JSON-RPC communication."""
 
 import json
@@ -131,7 +133,7 @@ class TestMinecraftBridgeStart:
         with patch("os.path.exists", return_value=True), \
              patch("asyncio.create_subprocess_exec", new=AsyncMock(return_value=mock_process)), \
              patch("asyncio.wait_for", new=AsyncMock(return_value=None)), \
-             patch("anima.tools.minecraft.autonomous.AutonomousLoop", return_value=mock_loop):
+             patch("animetta.tools.minecraft.autonomous.AutonomousLoop", return_value=mock_loop):
             result = await bridge.start()
 
         assert result is True

@@ -1,3 +1,5 @@
+from __future__ import annotations
+from animetta.core.service_context import ServiceContext
 """Tests for ServiceContext — core service container.
 
 Tests cover:
@@ -352,7 +354,7 @@ class TestServiceContextInitASR:
 
     @pytest.mark.asyncio
     async def test_calls_asr_factory(self, ctx, mock_asr_config, engine_without_preload):
-        with patch("anima.core.service_context.ASRFactory.create",
+        with patch("animetta.core.service_context.ASRFactory.create",
                    return_value=engine_without_preload) as mock_create:
             await ctx.init_asr(mock_asr_config)
 
@@ -368,7 +370,7 @@ class TestServiceContextInitASR:
         existing.close = AsyncMock()
         ctx.asr_engine = existing
 
-        with patch("anima.core.service_context.ASRFactory.create") as mock_create:
+        with patch("animetta.core.service_context.ASRFactory.create") as mock_create:
             await ctx.init_asr(MagicMock())
 
         mock_create.assert_not_called()
@@ -380,7 +382,7 @@ class TestServiceContextInitASR:
         mock_mgr = MagicMock()
         ctx.model_manager = mock_mgr
 
-        with patch("anima.core.service_context.ASRFactory.create",
+        with patch("animetta.core.service_context.ASRFactory.create",
                    return_value=engine_with_preload):
             await ctx.init_asr(mock_asr_config)
 
@@ -394,7 +396,7 @@ class TestServiceContextInitASR:
         # Ensure model_manager is None
         ctx.model_manager = None
 
-        with patch("anima.core.service_context.ASRFactory.create") as mock_create:
+        with patch("animetta.core.service_context.ASRFactory.create") as mock_create:
             mock_engine = MagicMock()
             mock_engine.close = AsyncMock()
             mock_create.return_value = mock_engine
@@ -413,7 +415,7 @@ class TestServiceContextInitTTS:
 
     @pytest.mark.asyncio
     async def test_calls_tts_factory(self, ctx, mock_tts_config, engine_without_preload):
-        with patch("anima.core.service_context.TTSFactory.create",
+        with patch("animetta.core.service_context.TTSFactory.create",
                    return_value=engine_without_preload) as mock_create:
             await ctx.init_tts(mock_tts_config)
 
@@ -428,7 +430,7 @@ class TestServiceContextInitTTS:
         existing.close = AsyncMock()
         ctx.tts_engine = existing
 
-        with patch("anima.core.service_context.TTSFactory.create") as mock_create:
+        with patch("animetta.core.service_context.TTSFactory.create") as mock_create:
             await ctx.init_tts(MagicMock())
 
         mock_create.assert_not_called()
@@ -437,7 +439,7 @@ class TestServiceContextInitTTS:
     @pytest.mark.asyncio
     async def test_calls_model_dump(self, ctx, mock_tts_config, engine_without_preload):
         """Uses model_dump() when available (Pydantic v2 path)."""
-        with patch("anima.core.service_context.TTSFactory.create",
+        with patch("animetta.core.service_context.TTSFactory.create",
                    return_value=engine_without_preload) as mock_create:
             await ctx.init_tts(mock_tts_config)
 
@@ -455,7 +457,7 @@ class TestServiceContextInitTTS:
         cfg.model = "my-model"
         cfg.voice = "my-voice"
 
-        with patch("anima.core.service_context.TTSFactory.create",
+        with patch("animetta.core.service_context.TTSFactory.create",
                    return_value=engine_without_preload) as mock_create:
             await ctx.init_tts(cfg)
 
@@ -470,7 +472,7 @@ class TestServiceContextInitTTS:
         mock_mgr = MagicMock()
         ctx.model_manager = mock_mgr
 
-        with patch("anima.core.service_context.TTSFactory.create",
+        with patch("animetta.core.service_context.TTSFactory.create",
                    return_value=engine_with_preload):
             await ctx.init_tts(mock_tts_config)
 
@@ -492,7 +494,7 @@ class TestServiceContextInitLLM:
         engine = MagicMock()
         engine.close = AsyncMock()
 
-        with patch("anima.core.service_context.LLMFactory.create_from_config",
+        with patch("animetta.core.service_context.LLMFactory.create_from_config",
                    return_value=engine) as mock_create:
             await ctx.init_llm(mock_agent_config, mock_persona_config)
 
@@ -508,7 +510,7 @@ class TestServiceContextInitLLM:
         existing.close = AsyncMock()
         ctx.llm_engine = existing
 
-        with patch("anima.core.service_context.LLMFactory.create_from_config") as mock_create:
+        with patch("animetta.core.service_context.LLMFactory.create_from_config") as mock_create:
             await ctx.init_llm(MagicMock(), MagicMock())
 
         mock_create.assert_not_called()
@@ -520,7 +522,7 @@ class TestServiceContextInitLLM:
         engine = MagicMock()
         engine.close = AsyncMock()
 
-        with patch("anima.core.service_context.LLMFactory.create_from_config",
+        with patch("animetta.core.service_context.LLMFactory.create_from_config",
                    return_value=engine):
             await ctx.init_llm(mock_agent_config, app_config.get_persona(), app_config=app_config)
 
@@ -534,7 +536,7 @@ class TestServiceContextInitLLM:
         engine = MagicMock()
         engine.close = AsyncMock()
 
-        with patch("anima.core.service_context.LLMFactory.create_from_config",
+        with patch("animetta.core.service_context.LLMFactory.create_from_config",
                    return_value=engine) as mock_create:
             await ctx.init_llm(mock_agent_config, mock_persona_config)
 
@@ -550,7 +552,7 @@ class TestServiceContextInitLLM:
         mock_mgr = MagicMock()
         ctx.model_manager = mock_mgr
 
-        with patch("anima.core.service_context.LLMFactory.create_from_config",
+        with patch("animetta.core.service_context.LLMFactory.create_from_config",
                    return_value=engine):
             await ctx.init_llm(mock_agent_config, mock_persona_config)
 
@@ -569,7 +571,7 @@ class TestServiceContextInitLocalLLM:
 
     @pytest.mark.asyncio
     async def test_skips_when_config_is_none(self, ctx):
-        with patch("anima.core.service_context.LLMFactory.create_from_config") as mock_create:
+        with patch("animetta.core.service_context.LLMFactory.create_from_config") as mock_create:
             await ctx.init_local_llm(None)
 
         mock_create.assert_not_called()
@@ -584,7 +586,7 @@ class TestServiceContextInitLocalLLM:
         engine = MagicMock()
         engine.close = AsyncMock()
 
-        with patch("anima.core.service_context.LLMFactory.create_from_config",
+        with patch("animetta.core.service_context.LLMFactory.create_from_config",
                    return_value=engine) as mock_create:
             await ctx.init_local_llm(llm_config)
 
@@ -600,7 +602,7 @@ class TestServiceContextInitLocalLLM:
         existing.close = AsyncMock()
         ctx.local_llm_engine = existing
 
-        with patch("anima.core.service_context.LLMFactory.create_from_config") as mock_create:
+        with patch("animetta.core.service_context.LLMFactory.create_from_config") as mock_create:
             await ctx.init_local_llm(MagicMock())
 
         mock_create.assert_not_called()
@@ -623,7 +625,7 @@ class TestServiceContextInitVAD:
         engine = MagicMock()
         engine.close = AsyncMock()
 
-        with patch("anima.core.service_context.VADFactory.create_from_config",
+        with patch("animetta.core.service_context.VADFactory.create_from_config",
                    return_value=engine) as mock_create:
             await ctx.init_vad(vad_config)
 
@@ -636,7 +638,7 @@ class TestServiceContextInitVAD:
         existing.close = AsyncMock()
         ctx.vad_engine = existing
 
-        with patch("anima.core.service_context.VADFactory.create_from_config") as mock_create:
+        with patch("animetta.core.service_context.VADFactory.create_from_config") as mock_create:
             await ctx.init_vad(MagicMock())
 
         mock_create.assert_not_called()
@@ -645,7 +647,7 @@ class TestServiceContextInitVAD:
     @pytest.mark.asyncio
     async def test_failure_graceful(self, ctx):
         """When VAD factory raises, engine is set to None (not crash)."""
-        with patch("anima.core.service_context.VADFactory.create_from_config",
+        with patch("animetta.core.service_context.VADFactory.create_from_config",
                    side_effect=ValueError("no VAD for you")):
             await ctx.init_vad(MagicMock())
 
@@ -663,7 +665,7 @@ class TestServiceContextInitVAD:
         mock_mgr = MagicMock()
         ctx.model_manager = mock_mgr
 
-        with patch("anima.core.service_context.VADFactory.create_from_config",
+        with patch("animetta.core.service_context.VADFactory.create_from_config",
                    return_value=engine):
             await ctx.init_vad(vad_config)
 
@@ -733,7 +735,7 @@ class TestServiceContextInitMemory:
 
         with patch("pathlib.Path.exists", return_value=True), \
              patch("builtins.open", mock_open(read_data="dummy")), \
-             patch("anima.core.service_context.yaml.safe_load",
+             patch("animetta.core.service_context.yaml.safe_load",
                    return_value=mock_yaml_data):
             await ctx.init_memory()
 
@@ -759,9 +761,9 @@ class TestServiceContextInitMemory:
 
         with patch("pathlib.Path.exists", return_value=True), \
              patch("builtins.open", mock_open(read_data="dummy")), \
-             patch("anima.core.service_context.yaml.safe_load",
+             patch("animetta.core.service_context.yaml.safe_load",
                    return_value=mock_yaml_data), \
-             patch("anima.core.service_context.MemorySystem",
+             patch("animetta.core.service_context.MemorySystem",
                    return_value=mock_memory_system):
             await ctx.init_memory()
 
@@ -774,7 +776,7 @@ class TestServiceContextInitMemory:
         """When MemorySystem creation raises, engine is set to None."""
         with patch("pathlib.Path.exists", return_value=True), \
              patch("builtins.open", mock_open(read_data="dummy")), \
-             patch("anima.core.service_context.yaml.safe_load",
+             patch("animetta.core.service_context.yaml.safe_load",
                    side_effect=RuntimeError("corrupt yaml")):
             await ctx.init_memory()
 
@@ -795,9 +797,9 @@ class TestServiceContextInitEmotionAnalyzer:
         mock_live2d_config = MagicMock()
         mock_live2d_config.enabled = False
 
-        with patch("anima.config.live2d.get_live2d_config",
+        with patch("animetta.config.live2d.get_live2d_config",
                    return_value=mock_live2d_config), \
-             patch("anima.avatar.factory.EmotionAnalyzerFactory") as mock_factory:
+             patch("animetta.avatar.factory.EmotionAnalyzerFactory") as mock_factory:
             await ctx.init_emotion_analyzer(MagicMock())
 
         mock_factory.create.assert_not_called()
@@ -812,9 +814,9 @@ class TestServiceContextInitEmotionAnalyzer:
 
         mock_analyzer = MagicMock()
 
-        with patch("anima.config.live2d.get_live2d_config",
+        with patch("animetta.config.live2d.get_live2d_config",
                    return_value=mock_live2d_config), \
-             patch("anima.avatar.factory.EmotionAnalyzerFactory") as mock_factory:
+             patch("animetta.avatar.factory.EmotionAnalyzerFactory") as mock_factory:
             mock_factory.create.return_value = mock_analyzer
             await ctx.init_emotion_analyzer(MagicMock())
 
@@ -827,7 +829,7 @@ class TestServiceContextInitEmotionAnalyzer:
     @pytest.mark.asyncio
     async def test_exception_graceful(self, ctx):
         """When get_live2d_config raises, engine is set to None."""
-        with patch("anima.config.live2d.get_live2d_config",
+        with patch("animetta.config.live2d.get_live2d_config",
                    side_effect=FileNotFoundError("no config")):
             await ctx.init_emotion_analyzer(MagicMock())
 
@@ -846,7 +848,7 @@ class TestServiceContextGetLive2dPrompt:
         mock_live2d_config = MagicMock()
         mock_live2d_config.enabled = False
 
-        with patch("anima.config.live2d.get_live2d_config",
+        with patch("animetta.config.live2d.get_live2d_config",
                    return_value=mock_live2d_config):
             result = ctx._get_live2d_prompt()
 
@@ -860,16 +862,16 @@ class TestServiceContextGetLive2dPrompt:
         mock_builder = MagicMock()
         mock_builder.build_prompt.return_value = "emotion prompt"
 
-        with patch("anima.config.live2d.get_live2d_config",
+        with patch("animetta.config.live2d.get_live2d_config",
                    return_value=mock_live2d_config), \
-             patch("anima.avatar.prompts.EmotionPromptBuilder") as mock_builder_cls:
+             patch("animetta.avatar.prompts.EmotionPromptBuilder") as mock_builder_cls:
             mock_builder_cls.from_config.return_value = mock_builder
             result = ctx._get_live2d_prompt()
 
         assert result == "emotion prompt"
 
     def test_exception_returns_none(self, ctx):
-        with patch("anima.config.live2d.get_live2d_config",
+        with patch("animetta.config.live2d.get_live2d_config",
                    side_effect=Exception("oops")):
             result = ctx._get_live2d_prompt()
 
@@ -1136,7 +1138,7 @@ class TestServiceContextFactoryParameters:
         engine = MagicMock()
         engine.close = AsyncMock()
 
-        with patch("anima.core.service_context.ASRFactory.create",
+        with patch("animetta.core.service_context.ASRFactory.create",
                    return_value=engine) as mock_create:
             await ctx.init_asr(cfg)
 
@@ -1172,7 +1174,7 @@ class TestServiceContextFactoryParameters:
         engine = MagicMock()
         engine.close = AsyncMock()
 
-        with patch("anima.core.service_context.TTSFactory.create",
+        with patch("animetta.core.service_context.TTSFactory.create",
                    return_value=engine) as mock_create:
             await ctx.init_tts(cfg)
 
@@ -1190,7 +1192,7 @@ class TestServiceContextFactoryParameters:
         engine = MagicMock()
         engine.close = AsyncMock()
 
-        with patch("anima.core.service_context.VADFactory.create_from_config",
+        with patch("animetta.core.service_context.VADFactory.create_from_config",
                    return_value=engine) as mock_create:
             await ctx.init_vad(cfg)
 

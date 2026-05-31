@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for LLM reasoning node — tool-calling and streaming paths."""
 
 import asyncio

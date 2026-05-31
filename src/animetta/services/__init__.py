@@ -1,41 +1,21 @@
 """
-服务模块
-
-重组后的结构：
-- speech/asr: 语音识别服务
-- speech/tts: 语音合成服务
-- intelligence/llm: 大语言模型
-- intelligence/vad: 语音活动检测
-- audio: 音频处理服务
-- live2d: Live2D 控制
-- singing: AI歌声转换服务
+服务模块 — 扁平化后的结构：
+  llm/  asr/  tts/  vad/  vc/  separation/  audio/  singing/  live2d/  live/  meme/
 """
 
+from .asr import ASRFactory, ASRInterface
 from .audio import AudioProcessorInterface
 from .audio.vad_audio_processor import VADAudioProcessor
-from .intelligence.llm import LLMFactory, LLMInterface
-from .intelligence.vad import VADFactory, VADInterface
+from .llm import LLMFactory, LLMInterface
 from .singing import SingingService, SVCPipeline
-from .speech.asr import ASRFactory, ASRInterface
-from .speech.tts import TTSFactory, TTSInterface
+from .tts import TTSFactory, TTSInterface
+from .vad import VADFactory, VADInterface
 
 __all__ = [
-    # LLM
-    "LLMInterface",
-    "LLMFactory",
-    # ASR
-    "ASRInterface",
-    "ASRFactory",
-    # TTS
-    "TTSInterface",
-    "TTSFactory",
-    # VAD
-    "VADInterface",
-    "VADFactory",
-    # Audio
-    "AudioProcessorInterface",
-    "VADAudioProcessor",
-    # Singing
-    "SingingService",
-    "SVCPipeline",
+    "LLMInterface", "LLMFactory",
+    "ASRInterface", "ASRFactory",
+    "TTSInterface", "TTSFactory",
+    "VADInterface", "VADFactory",
+    "AudioProcessorInterface", "VADAudioProcessor",
+    "SingingService", "SVCPipeline",
 ]

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for output distribution node — Socket.IO + memory storage."""
 
 import pytest

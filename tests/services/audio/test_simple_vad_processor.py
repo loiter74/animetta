@@ -1,3 +1,5 @@
+from __future__ import annotations
+from animetta.services.vad import VADInterface
 """Tests for SimpleVADProcessor — threshold logic, callbacks, state."""
 
 from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for emotion analysis node."""
 
 import pytest

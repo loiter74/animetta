@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for VisemeLipSync — FFT analysis, viseme→mouth mapping, SimpleLipSync fallback, factory."""
 
 import numpy as np

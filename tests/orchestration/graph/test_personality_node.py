@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for personality node — mode/mood detection and overlay prompt."""
 
 import pytest

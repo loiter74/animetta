@@ -161,7 +161,7 @@ class TestProbeStatsStore:
         mock_store._db.execute = AsyncMock(return_value=mock_cursor)
 
         with patch(
-            "anima.orchestration.graph.stats_store.get_stats_store",
+            "animetta.orchestration.graph.stats_store.get_stats_store",
             AsyncMock(return_value=mock_store),
         ):
             result = await _probe_stats_store()
@@ -170,7 +170,7 @@ class TestProbeStatsStore:
     @pytest.mark.asyncio(loop_scope="function")
     async def test_failure_on_exception(self):
         with patch(
-            "anima.orchestration.graph.stats_store.get_stats_store",
+            "animetta.orchestration.graph.stats_store.get_stats_store",
             AsyncMock(side_effect=RuntimeError("db down")),
         ):
             result = await _probe_stats_store()
@@ -224,22 +224,22 @@ class TestProbeLlmAvailable:
 
     @pytest.mark.asyncio(loop_scope="function")
     async def test_llm_available(self):
-        with patch("anima.core.service_pool.ServicePool._ready", True), \
-             patch("anima.core.service_pool.ServicePool._llm", MagicMock()):
+        with patch("animetta.core.service_pool.ServicePool._ready", True), \
+             patch("animetta.core.service_pool.ServicePool._llm", MagicMock()):
             result = await _probe_llm_available()
             assert result is True
 
     @pytest.mark.asyncio(loop_scope="function")
     async def test_llm_not_available(self):
-        with patch("anima.core.service_pool.ServicePool._ready", True), \
-             patch("anima.core.service_pool.ServicePool._llm", None):
+        with patch("animetta.core.service_pool.ServicePool._ready", True), \
+             patch("animetta.core.service_pool.ServicePool._llm", None):
             result = await _probe_llm_available()
             assert result is False
 
     @pytest.mark.asyncio(loop_scope="function")
     async def test_not_configured_returns_true(self):
-        with patch("anima.core.service_pool.ServicePool._ready", False), \
-             patch("anima.core.service_pool.ServicePool._llm", None):
+        with patch("animetta.core.service_pool.ServicePool._ready", False), \
+             patch("animetta.core.service_pool.ServicePool._llm", None):
             result = await _probe_llm_available()
             assert result is True
 
@@ -252,22 +252,22 @@ class TestProbeTtsAvailable:
 
     @pytest.mark.asyncio(loop_scope="function")
     async def test_tts_available(self):
-        with patch("anima.core.service_pool.ServicePool._ready", True), \
-             patch("anima.core.service_pool.ServicePool._tts", MagicMock()):
+        with patch("animetta.core.service_pool.ServicePool._ready", True), \
+             patch("animetta.core.service_pool.ServicePool._tts", MagicMock()):
             result = await _probe_tts_available()
             assert result is True
 
     @pytest.mark.asyncio(loop_scope="function")
     async def test_tts_not_available(self):
-        with patch("anima.core.service_pool.ServicePool._ready", True), \
-             patch("anima.core.service_pool.ServicePool._tts", None):
+        with patch("animetta.core.service_pool.ServicePool._ready", True), \
+             patch("animetta.core.service_pool.ServicePool._tts", None):
             result = await _probe_tts_available()
             assert result is False
 
     @pytest.mark.asyncio(loop_scope="function")
     async def test_not_configured_returns_true(self):
-        with patch("anima.core.service_pool.ServicePool._ready", False), \
-             patch("anima.core.service_pool.ServicePool._tts", None):
+        with patch("animetta.core.service_pool.ServicePool._ready", False), \
+             patch("animetta.core.service_pool.ServicePool._tts", None):
             result = await _probe_tts_available()
             assert result is True
 
@@ -280,22 +280,22 @@ class TestProbeAsrAvailable:
 
     @pytest.mark.asyncio(loop_scope="function")
     async def test_asr_available(self):
-        with patch("anima.core.service_pool.ServicePool._ready", True), \
-             patch("anima.core.service_pool.ServicePool._asr", MagicMock()):
+        with patch("animetta.core.service_pool.ServicePool._ready", True), \
+             patch("animetta.core.service_pool.ServicePool._asr", MagicMock()):
             result = await _probe_asr_available()
             assert result is True
 
     @pytest.mark.asyncio(loop_scope="function")
     async def test_asr_not_available(self):
-        with patch("anima.core.service_pool.ServicePool._ready", True), \
-             patch("anima.core.service_pool.ServicePool._asr", None):
+        with patch("animetta.core.service_pool.ServicePool._ready", True), \
+             patch("animetta.core.service_pool.ServicePool._asr", None):
             result = await _probe_asr_available()
             assert result is False
 
     @pytest.mark.asyncio(loop_scope="function")
     async def test_not_configured_returns_true(self):
-        with patch("anima.core.service_pool.ServicePool._ready", False), \
-             patch("anima.core.service_pool.ServicePool._asr", None):
+        with patch("animetta.core.service_pool.ServicePool._ready", False), \
+             patch("animetta.core.service_pool.ServicePool._asr", None):
             result = await _probe_asr_available()
             assert result is True
 
@@ -522,10 +522,10 @@ class TestCheckAllComponents:
 
         with (
             patch(
-                "anima.orchestration.graph.stats_store.get_stats_store",
+                "animetta.orchestration.graph.stats_store.get_stats_store",
                 AsyncMock(return_value=mock_store),
             ),
-            patch("anima.core.service_pool.ServicePool._ready", False),
+            patch("animetta.core.service_pool.ServicePool._ready", False),
             patch.dict(sys.modules, {"chromadb": mock_chromadb}),
             patch.dict(sys.modules, {"aiohttp": mock_aiohttp}),
         ):
@@ -570,13 +570,13 @@ class TestCheckAllComponents:
 
         with (
             patch(
-                "anima.orchestration.graph.stats_store.get_stats_store",
+                "animetta.orchestration.graph.stats_store.get_stats_store",
                 AsyncMock(return_value=mock_store),
             ),
-            patch("anima.core.service_pool.ServicePool._ready", True),
-            patch("anima.core.service_pool.ServicePool._llm", MagicMock()),
-            patch("anima.core.service_pool.ServicePool._tts", None),  # <-- TTS unavailable
-            patch("anima.core.service_pool.ServicePool._asr", MagicMock()),
+            patch("animetta.core.service_pool.ServicePool._ready", True),
+            patch("animetta.core.service_pool.ServicePool._llm", MagicMock()),
+            patch("animetta.core.service_pool.ServicePool._tts", None),  # <-- TTS unavailable
+            patch("animetta.core.service_pool.ServicePool._asr", MagicMock()),
             patch.dict(sys.modules, {"chromadb": mock_chromadb}),
             patch.dict(sys.modules, {"aiohttp": mock_aiohttp}),
         ):

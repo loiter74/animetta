@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for node_error shared error logging utility."""
 
 import json

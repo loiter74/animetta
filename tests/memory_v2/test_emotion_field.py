@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for EmotionalField VAD vector model."""
 
 import math

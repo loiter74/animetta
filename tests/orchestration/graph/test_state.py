@@ -1,3 +1,5 @@
+from __future__ import annotations
+from animetta.orchestration.graph.state import AgentState
 """Tests for LangGraph state definition and helpers."""
 
 from typing import Annotated

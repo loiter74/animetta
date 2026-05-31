@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for WebSocket route handlers — event dispatch and registration."""
 
 import pytest
@@ -85,8 +86,8 @@ class TestRouteHandlersDispatch:
         mock_orch.process_text = AsyncMock()
         mock_session_manager.get_or_create_orchestrator = AsyncMock(return_value=mock_orch)
 
-        monkeypatch.setattr("anima.config.AppConfig.load", MagicMock)
-        monkeypatch.setattr("anima.config.live2d.get_live2d_config", lambda: MagicMock())
+        monkeypatch.setattr("animetta.config.AppConfig.load", MagicMock)
+        monkeypatch.setattr("animetta.config.live2d.get_live2d_config", lambda: MagicMock())
 
         handlers = RouteHandlers(mock_socketio, mock_session_manager)
         handlers.global_config = MagicMock()
@@ -139,8 +140,8 @@ class TestRouteHandlersDispatch:
         mock_processor.process_chunk = AsyncMock()
         mock_session_manager.get_audio_processor.return_value = mock_processor
 
-        monkeypatch.setattr("anima.config.AppConfig.load", MagicMock)
-        monkeypatch.setattr("anima.config.live2d.get_live2d_config", lambda: MagicMock())
+        monkeypatch.setattr("animetta.config.AppConfig.load", MagicMock)
+        monkeypatch.setattr("animetta.config.live2d.get_live2d_config", lambda: MagicMock())
 
         handlers = RouteHandlers(mock_socketio, mock_session_manager)
         handlers.global_config = MagicMock()
@@ -195,7 +196,7 @@ class TestRouteHandlersDispatch:
         mock_interrupt = MagicMock()
         mock_interrupt_handler = MagicMock(return_value=mock_interrupt)
         monkeypatch.setattr(
-            "anima.orchestration.graph.interrupt_handler.get_interrupt_handler",
+            "animetta.orchestration.graph.interrupt_handler.get_interrupt_handler",
             mock_interrupt_handler,
         )
 

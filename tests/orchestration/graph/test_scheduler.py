@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for AsyncScheduler — periodic task execution, lifecycle, metrics, timeout."""
 
 import asyncio
@@ -121,7 +122,7 @@ class TestTaskRegistration:
         async def dummy():
             pass
 
-        with patch("anima.orchestration.graph.scheduler.logger") as mock_logger:
+        with patch("animetta.orchestration.graph.scheduler.logger") as mock_logger:
             scheduler.add_task("dup", dummy, interval=10.0)
             scheduler.add_task("dup", dummy, interval=20.0)
             mock_logger.warning.assert_called()
@@ -138,7 +139,7 @@ class TestTaskRegistration:
 
     def test_remove_task_warns_on_missing(self, scheduler):
         """Removing a non-existent task logs a warning."""
-        with patch("anima.orchestration.graph.scheduler.logger") as mock_logger:
+        with patch("animetta.orchestration.graph.scheduler.logger") as mock_logger:
             scheduler.remove_task("nope")
             mock_logger.warning.assert_called()
             assert "not found" in str(mock_logger.warning.call_args)
@@ -190,7 +191,7 @@ class TestLifecycle:
     @pytest.mark.asyncio
     async def test_start_twice_is_idempotent(self, scheduler):
         """Starting an already-running scheduler logs a warning."""
-        with patch("anima.orchestration.graph.scheduler.logger") as mock_logger:
+        with patch("animetta.orchestration.graph.scheduler.logger") as mock_logger:
             await scheduler.start()
             await scheduler.start()
             mock_logger.warning.assert_called()
@@ -275,7 +276,7 @@ class TestTaskExecution:
 
         scheduler.add_task("flaky", flaky, interval=0.05, timeout=5)
 
-        with patch("anima.orchestration.graph.scheduler.logger") as mock_logger:
+        with patch("animetta.orchestration.graph.scheduler.logger") as mock_logger:
             await scheduler.start()
             await asyncio.sleep(0.4)
             await scheduler.stop()

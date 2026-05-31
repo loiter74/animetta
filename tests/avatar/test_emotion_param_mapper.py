@@ -1,3 +1,5 @@
+from __future__ import annotations
+from animetta.avatar.mappers.emotion_param_mapper import EmotionParamMapper
 """
 Tests for EmotionParamMapper — emotion to Live2D parameter mapping.
 """

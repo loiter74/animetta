@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for ReconsolidationClient and LLM-driven reconsolidation."""
 
 import pytest

@@ -3,9 +3,8 @@ Socket.IO server entry point
 Uses server/ module components to build the server
 """
 
-import os
-import sys
 import argparse
+import sys
 from pathlib import Path
 
 # Fix module import path: add src directory to Python path
@@ -17,7 +16,7 @@ if str(src_dir) not in sys.path:
 from loguru import logger
 
 from animetta.config.app import AppConfig
-from animetta.config.user_settings import UserSettings
+from animetta.config.user import UserSettings
 
 # Load environment variables from .env file (must be before other imports)
 try:
@@ -31,11 +30,10 @@ try:
 except ImportError:
     logger.info("python-dotenv not installed, using system environment variables")
 
+import asyncio
 import threading
 
 import uvicorn
-import asyncio
-
 
 
 def parse_server_args() -> argparse.Namespace:
@@ -110,7 +108,7 @@ def run_server():
     logger.info("Starting Socket.IO server...")
     logger.info(f"Host: {global_config.system.host}")
     logger.info(f"Port: {global_config.system.port}")
-    logger.info(f"Socket.IO async_mode: asgi (uvicorn)")
+    logger.info("Socket.IO async_mode: asgi (uvicorn)")
     logger.info("=" * 50)
     logger.info(f"Visit http://{global_config.system.host}:{global_config.system.port} to test")
     logger.info(f"WebSocket URL: ws://{global_config.system.host}:{global_config.system.port}/socket.io/")
@@ -216,7 +214,6 @@ def _setup_checkpointer() -> None:
     If --redis-url is given, tries to create an AsyncRedisSaver.
     On failure, or if --redis-url is absent, falls back to MemorySaver.
     """
-    from langgraph.checkpoint.memory import MemorySaver
 
     redis_url = _server_args.redis_url
 

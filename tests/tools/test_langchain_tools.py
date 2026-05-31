@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for LangChain tool adapter creation."""
 
 import pytest
@@ -38,14 +39,14 @@ class TestLoadLangChainTools:
         mock_tool.name = "python_repl"
 
         # Patch the getter dict directly since _LANGCHAIN_TOOL_GETTERS holds a reference
-        with patch.dict("anima.tools.langchain_tools._LANGCHAIN_TOOL_GETTERS", {"python_repl": lambda: mock_tool}):
+        with patch.dict("animetta.tools.langchain_tools._LANGCHAIN_TOOL_GETTERS", {"python_repl": lambda: mock_tool}):
             tools = load_langchain_tools(enabled_tools=["python_repl"])
             assert len(tools) == 1
             assert tools[0].name == "python_repl"
 
     def test_load_python_repl_not_available(self):
 
-        with patch("anima.tools.langchain_tools.get_python_repl_tool", return_value=None):
+        with patch("animetta.tools.langchain_tools.get_python_repl_tool", return_value=None):
             tools = load_langchain_tools(enabled_tools=["python_repl"])
             assert tools == []
 
@@ -66,7 +67,7 @@ class TestGetPythonReplTool:
         """Test that ImportError is handled gracefully."""
 
         # Simulate ImportError by patching inside the function boundary
-        import anima.tools.langchain_tools as lt
+        import animetta.tools.langchain_tools as lt
         orig_getter = lt._LANGCHAIN_TOOL_GETTERS["python_repl"]
 
         try:

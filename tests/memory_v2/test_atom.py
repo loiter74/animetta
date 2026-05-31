@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Tests for MemoryAtom unified model."""
 
 from datetime import datetime, timezone
