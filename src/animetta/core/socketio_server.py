@@ -18,6 +18,10 @@ from loguru import logger
 from animetta.config.app import AppConfig
 from animetta.config.user import UserSettings
 from animetta.utils.logger_manager import logger_manager
+from animetta.orchestration.server.websocket import WebSocketServer, create_server
+from animetta.core.redis_checkpoint import AsyncRedisSaver
+from animetta.inspection.scheduler import InspectionScheduler
+from animetta.orchestration.graph.builder import set_external_checkpointer
 
 # Load environment variables from .env file (must be before other imports)
 try:
