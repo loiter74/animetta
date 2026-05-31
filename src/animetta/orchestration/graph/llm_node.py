@@ -14,6 +14,7 @@ from .state import AgentState, log_timing
 from .interrupt_handler import get_interrupt_handler
 from .memory_middleware import MemoryMiddleware
 from .node_error import log_node_error
+from animetta.tracing.metrics import get_rag_duration, get_rag_chunks
 
 # Configurable timeout for LLM provider calls (default: 30 seconds)
 TIMEOUT_SECONDS = 30

@@ -13,7 +13,7 @@ SERVER_URL = f"http://localhost:{SERVER_PORT}"
 
 class TestConversationFlow:
 
-    @pytest.fixture(scope="class")
+    @pytest.fixture(scope="session")
     def server_process(self):
         proc = subprocess.Popen(
             [sys.executable, "-m", "animetta.core.socketio_server"],

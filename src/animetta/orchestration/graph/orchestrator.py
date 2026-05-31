@@ -14,6 +14,7 @@ from .interrupt_handler import get_interrupt_handler
 from .observability import get_observability
 from .state import AgentState, create_initial_state
 from animetta.tracing.context import attach_trace_context
+from animetta.tracing.context import detach_trace_context
 from .stats_handler import StatsCallbackHandler
 from .tool_manager import ToolManager
 
