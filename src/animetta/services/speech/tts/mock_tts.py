@@ -1,13 +1,14 @@
+from __future__ import annotations
 """
 Mock TTS implementation - for testing and development
 """
+
+from animetta.config.core.registry import ProviderRegistry
 
 from typing import Union, Optional
 from pathlib import Path
 
 from .interface import TTSInterface
-from animetta import $$$
-from animetta import $$$
 
 
 @ProviderRegistry.register_service("tts", "mock")

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 OpenAI LLM stream handler — handles streaming chat logic.
 

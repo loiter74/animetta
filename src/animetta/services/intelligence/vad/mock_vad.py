@@ -1,14 +1,15 @@
+from __future__ import annotations
 """
 Mock VAD implementation (for testing)
 """
+
+from animetta.config.core.registry import ProviderRegistry
 
 from typing import Union
 import numpy as np
 from loguru import logger
 
 from .interface import VADInterface, VADState, VADResult
-from animetta import $$$
-from animetta import $$$
 
 
 @ProviderRegistry.register_service("vad", "mock")

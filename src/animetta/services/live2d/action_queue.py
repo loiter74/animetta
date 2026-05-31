@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Live2D Action Queue
 Manages the action queue for Live2D models, based on open-yachiyo implementation

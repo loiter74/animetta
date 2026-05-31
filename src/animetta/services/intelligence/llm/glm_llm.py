@@ -1,7 +1,12 @@
+from __future__ import annotations
 """
 GLM (ZhipuAI) LLM implementation
 Uses the zhipuai SDK to call Zhipu AI's GLM models
+
 """
+
+from animetta.config.core.registry import ProviderRegistry
+from animetta.config.core.registry import ProviderRegistry
 
 from typing import AsyncIterator, List, Dict, Any, Optional, TYPE_CHECKING
 from loguru import logger
@@ -9,12 +14,7 @@ from zhipuai import ZhipuAI
 import asyncio
 
 from .interface import LLMInterface
-from animetta import $$$
-from animetta import $$$
 from .glm_message_converter import GLMMessageConverter, GLMToolConverter
-
-if TYPE_CHECKING:
-    from animetta import $$$
 
 
 @ProviderRegistry.register_service("llm", "glm")
@@ -172,8 +172,6 @@ class GLMLLM(LLMInterface):
 
                 # OTel metrics: record token usage + cost
                 try:
-                    from animetta import $$$
-                    from animetta import $$$
 
                     tok = get_llm_tokens()
                     if tok is not None:

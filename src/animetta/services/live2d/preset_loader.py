@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Preset Loader
 Loads Live2D action preset configuration (YAML format)

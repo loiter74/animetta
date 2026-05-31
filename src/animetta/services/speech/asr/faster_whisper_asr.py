@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Faster-Whisper ASR implementation - open-source free speech recognition
 Based on faster-whisper project: https://github.com/guillaumekln/faster-whisper
@@ -21,8 +22,9 @@ import numpy as np
 from loguru import logger
 
 from .interface import ASRInterface
-from animetta import $$$
 
+
+from animetta.config.core.registry import ProviderRegistry
 
 @ProviderRegistry.register_service("asr", "faster_whisper")
 class FasterWhisperASR(ASRInterface):

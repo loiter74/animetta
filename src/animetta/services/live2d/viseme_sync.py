@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Viseme Lip Sync Engine
 Viseme-based lip sync engine, ported from open-yachiyo

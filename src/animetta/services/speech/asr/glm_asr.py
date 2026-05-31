@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 GLM ASR implementation - uses Zhipu AI GLM ASR API
 """
@@ -10,9 +11,9 @@ import io
 from loguru import logger
 
 from .interface import ASRInterface
-from animetta import $$$
-from animetta import $$$
 
+
+from animetta.config.core.registry import ProviderRegistry
 
 @ProviderRegistry.register_service("asr", "glm")
 class GLMASR(ASRInterface):

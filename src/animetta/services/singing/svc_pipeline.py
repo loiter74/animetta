@@ -1,3 +1,4 @@
+from __future__ import annotations
 """SVC pipeline orchestrator — coordinates all stages."""
 
 import asyncio
@@ -21,7 +22,6 @@ from .lyrics import LyricsGenerator
 from .svc_bridge import SVCBridge
 from .rvc_bridge import RVCBridge
 from .mixer import AudioMixer
-from animetta import $$$
 
 
 class SVCPipeline(SingingService):
@@ -265,7 +265,6 @@ class SVCPipeline(SingingService):
         # Compute lip sync volume envelope from vocals track
         volumes: list[float] = []
         try:
-            from animetta import $$$
             analyzer = AudioAnalyzer()
             volumes = analyzer.compute_volume_envelope(
                 str(vocals_output), normalize=True, gain=3.5, use_peak=True

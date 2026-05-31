@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Singing service interface and type definitions."""
 
 from abc import ABC, abstractmethod

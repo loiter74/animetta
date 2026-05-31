@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Bilibili audio downloader — yt-dlp wrapper. Extracts video title for naming."""
 
 import asyncio

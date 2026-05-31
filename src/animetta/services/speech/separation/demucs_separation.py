@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Demucs / MDX-based audio source separation via Music-Source-Separation-Training (MSST)
 
@@ -17,13 +18,13 @@ from typing import Any, Dict, Optional, Union
 import numpy as np
 from loguru import logger
 
-from animetta import $$$
-from animetta import $$$
 
 from .interface import SeparationInterface
 
 MSST_ROOT = "C:/Users/30262/Music-Source-Separation-Training"
 
+
+from animetta.config.core.registry import ProviderRegistry
 
 @ProviderRegistry.register_service("separation", "demucs")
 class DemucsSeparation(SeparationInterface):

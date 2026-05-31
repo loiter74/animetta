@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Lyrics recognition — ASR + .ass generation."""
 
 import asyncio

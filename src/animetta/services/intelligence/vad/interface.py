@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 VAD (Voice Activity Detection) interface definition
 """

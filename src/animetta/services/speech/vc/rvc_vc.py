@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 RVC (Retrieval-based Voice Conversion) service implementation.
 
@@ -23,11 +24,11 @@ import soundfile as sf
 from loguru import logger
 
 from .interface import VCInterface
-from animetta import $$$
-from animetta import $$$
 
 RVC_PROJECT_ROOT = "C:/Users/30262/RVC20240604Nvidia"
 
+
+from animetta.config.core.registry import ProviderRegistry
 
 @ProviderRegistry.register_service("vc", "rvc")
 class RVCVC(VCInterface):

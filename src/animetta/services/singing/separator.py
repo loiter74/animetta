@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Source separation — supports Demucs (default) and UVR."""
 
 import asyncio

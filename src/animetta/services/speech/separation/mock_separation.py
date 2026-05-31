@@ -1,13 +1,14 @@
+from __future__ import annotations
 """
 Mock Separation implementation - for testing and development
 """
+
+from animetta.config.core.registry import ProviderRegistry
 
 from typing import Dict, Union, Optional
 from pathlib import Path
 
 from .interface import SeparationInterface
-from animetta import $$$
-from animetta import $$$
 
 
 @ProviderRegistry.register_service("separation", "mock")

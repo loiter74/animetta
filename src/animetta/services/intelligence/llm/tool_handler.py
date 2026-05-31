@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 OpenAI LLM tool handler — handles tool calling logic.
 

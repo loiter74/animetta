@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Audio processor service interface
 

@@ -390,7 +390,6 @@ class BilibiliInteractionLearner:
 
             content = "\n".join(content_lines)
 
-            from animetta import $$$
             page = WikiPage(
                 title=f"直播优化策略 {datetime.now().strftime('%Y-%m-%d')}",
                 page_type=PageType.CONCEPT,

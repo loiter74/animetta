@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 ASR (Automatic Speech Recognition) interface definition
 """

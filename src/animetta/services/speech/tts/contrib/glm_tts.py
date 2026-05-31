@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 GLM TTS implementation - uses Zhipu AI GLM TTS API
 """
@@ -13,9 +14,9 @@ import os
 from loguru import logger
 
 from ..interface import TTSInterface
-from animetta import $$$
-from animetta import $$$
 
+
+from animetta.config.core.registry import ProviderRegistry
 
 @ProviderRegistry.register_service("tts", "glm")
 class GLMTTS(TTSInterface):

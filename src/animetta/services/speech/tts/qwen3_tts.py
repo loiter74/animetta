@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Qwen3-TTS implementation - 通义千问 open-source TTS (CustomVoice model)
 
@@ -25,9 +26,9 @@ import threading
 from loguru import logger
 
 from .interface import TTSInterface
-from animetta import $$$
-from animetta import $$$
 
+
+from animetta.config.core.registry import ProviderRegistry
 
 @ProviderRegistry.register_service("tts", "qwen3")
 class Qwen3TTSTTS(TTSInterface):

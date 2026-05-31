@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Separation Factory - creates Separation instances based on configuration
 """
@@ -7,8 +8,6 @@ from loguru import logger
 
 from .interface import SeparationInterface
 from .mock_separation import MockSeparation
-from animetta import $$$
-from animetta import $$$
 
 
 class SeparationFactory:
@@ -43,7 +42,6 @@ class SeparationFactory:
         """Build a config Pydantic object from kwargs, or None if unknown."""
         try:
             if provider == "demucs":
-                from animetta import $$$
                 return DemucsSeparationConfig(
                     model_type=kwargs.get("model_type", "mel_band_roformer"),
                     config_path=kwargs.get("config_path", ""),
@@ -59,7 +57,6 @@ class SeparationFactory:
                     primary_stem=kwargs.get("primary_stem"),
                 )
             elif provider == "mock":
-                from animetta import $$$
                 return MockSeparationConfig()
             else:
                 return None

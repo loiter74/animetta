@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Kokoro TTS implementation - open-weight multilingual TTS model.
 
@@ -6,6 +7,8 @@ Chinese (Mandarin) and English with high-quality output.
 
 https://github.com/hexgrad/kokoro
 """
+
+from animetta.config.core.registry import ProviderRegistry
 
 # Status: maintained
 # Last verified: 2026-05-23
@@ -22,7 +25,6 @@ from loguru import logger
 
 from .glados_effect import GladosEffectProcessor, KOKORO_SAMPLE_RATE
 from ..interface import TTSInterface
-from animetta import $$$
 
 
 @ProviderRegistry.register_service("tts", "kokoro")

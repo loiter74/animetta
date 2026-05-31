@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 GLaDOS-style audio effect processor using SoX effects.
 

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Audio Source Separation interface definition
 """

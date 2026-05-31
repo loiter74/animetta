@@ -2,12 +2,11 @@
 LLM service factory - automatically creates LLM service instances based on configuration
 """
 
+from __future__ import annotations
+
 from loguru import logger
 
 from .interface import LLMInterface
-from animetta import $$$
-from animetta import $$$
-from animetta import $$$
 
 
 class LLMFactory:
@@ -66,7 +65,6 @@ class LLMFactory:
         Returns:
             LLMInterface: LLM service instance
         """
-        from animetta import $$$
         
         # Build config object based on provider name
         config_map = {

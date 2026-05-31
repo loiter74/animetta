@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Audio mixer — blend converted vocals with backing track."""
 
 import asyncio

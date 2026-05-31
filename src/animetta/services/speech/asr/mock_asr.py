@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Mock ASR implementation - for testing and development
 """
@@ -6,9 +7,9 @@ from typing import Union
 from pathlib import Path
 
 from .interface import ASRInterface
-from animetta import $$$
-from animetta import $$$
 
+
+from animetta.config.core.registry import ProviderRegistry
 
 @ProviderRegistry.register_service("asr", "mock")
 class MockASR(ASRInterface):

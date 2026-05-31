@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Bilibili Live Danmaku Service
 
@@ -20,9 +21,6 @@ import time
 from dataclasses import dataclass, field, asdict
 from typing import Callable, Optional, Dict, Any, List, TYPE_CHECKING
 from loguru import logger
-
-if TYPE_CHECKING:
-    from animetta import $$$
 
 
 @dataclass

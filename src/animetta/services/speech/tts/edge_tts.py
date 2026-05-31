@@ -7,6 +7,10 @@ Supports voice effects via SSML prosody adjustments:
 - preset: "neurosama" for Neuro-sama style electronic cute voice
 """
 
+from __future__ import annotations
+
+from animetta.config.core.registry import ProviderRegistry
+
 # Status: active
 # Last verified: 2026-05-23
 
@@ -17,7 +21,6 @@ import tempfile
 from loguru import logger
 
 from .interface import TTSInterface
-from animetta import $$$
 
 
 def _wrap_ssml(text: str, voice: str, rate: str | None = None, pitch: str | None = None) -> str:

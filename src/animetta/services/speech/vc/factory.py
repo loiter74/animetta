@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 VC Factory - creates VC instances based on configuration
 """
@@ -7,8 +8,6 @@ from loguru import logger
 
 from .interface import VCInterface
 from .mock_vc import MockVC
-from animetta import $$$
-from animetta import $$$
 
 
 class VCFactory:
@@ -43,7 +42,6 @@ class VCFactory:
         """Build a config Pydantic object from kwargs, or None if unknown."""
         try:
             if provider == "rvc":
-                from animetta import $$$
                 return RVCConfig(
                     model_path=kwargs.get("model_path", ""),
                     index_path=kwargs.get("index_path", ""),
@@ -61,7 +59,6 @@ class VCFactory:
                     sample_rate=kwargs.get("sample_rate", 40000),
                 )
             elif provider == "mock":
-                from animetta import $$$
                 return MockVCConfig()
             else:
                 return None

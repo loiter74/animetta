@@ -1,3 +1,4 @@
+from __future__ import annotations
 """GPT-SoVITS SVC API bridge — converts vocals to target voice.
 
 Supports two backends:
@@ -12,7 +13,6 @@ from typing import Optional
 import httpx
 from loguru import logger
 
-from animetta import $$$
 
 
 class SVCBridge:

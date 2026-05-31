@@ -14,8 +14,6 @@ from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
-from animetta import $$$
-from animetta import $$$
 
 
 # ── LLM Prompt for cognitive analysis ─────────────────────────────────

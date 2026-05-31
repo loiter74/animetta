@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 TTS Factory - creates TTS instances based on configuration
 
@@ -8,13 +9,13 @@ To add a new TTS provider, simply:
    and a from_config() classmethod
 """
 
+from animetta.config.core.registry import ProviderRegistry
+
 from typing import List
 from loguru import logger
 
 from .interface import TTSInterface
 from .mock_tts import MockTTS
-from animetta import $$$
-from animetta import $$$
 
 
 class TTSFactory:
@@ -51,7 +52,6 @@ class TTSFactory:
         """Build a config Pydantic object from kwargs, or None if unknown."""
         try:
             if provider == "openai":
-                from animetta import $$$
                 return OpenAITTSConfig(
                     api_key=kwargs.get("api_key"),
                     model=kwargs.get("model", "tts-1"),
@@ -59,7 +59,6 @@ class TTSFactory:
                     base_url=kwargs.get("base_url"),
                 )
             elif provider in ("edge", "edge_tts"):
-                from animetta import $$$
                 return EdgeTTSConfig(
                     voice=kwargs.get("voice", "zh-CN-XiaoxiaoNeural"),
                     rate=kwargs.get("rate"),
@@ -67,7 +66,6 @@ class TTSFactory:
                     preset=kwargs.get("preset"),
                 )
             elif provider == "glm":
-                from animetta import $$$
                 return GLMTTSConfig(
                     api_key=kwargs.get("api_key"),
                     model=kwargs.get("model", "glm-tts"),
@@ -77,7 +75,6 @@ class TTSFactory:
                     volume=kwargs.get("volume", 1.0),
                 )
             elif provider == "chattts":
-                from animetta import $$$
                 return ChatTTSConfig(
                     model_path=kwargs.get("model_path", "E:/anima_data/models/ChatTTS"),
                     device=kwargs.get("device", "cpu"),
@@ -88,7 +85,6 @@ class TTSFactory:
                     top_k=kwargs.get("top_k", 20),
                 )
             elif provider == "kokoro":
-                from animetta import $$$
                 return KokoroTTSConfig(
                     voice=kwargs.get("voice", "zf_xiaobei"),
                     model_repo_id=kwargs.get("model_repo_id", "hexgrad/Kokoro-82M"),
@@ -99,7 +95,6 @@ class TTSFactory:
                     glados_effect=kwargs.get("glados_effect"),
                 )
             elif provider == "vibe_voice":
-                from animetta import $$$
                 return VibeVoiceTTSConfig(
                     api_key=kwargs.get("api_key"),
                     model=kwargs.get("model", "vibe-voice-1.5b"),
@@ -113,7 +108,6 @@ class TTSFactory:
                     language=kwargs.get("language", "zh"),
                 )
             elif provider == "gpt_sovits":
-                from animetta import $$$
                 return GPTSoVITSConfig(
                     base_url=kwargs.get("base_url", "http://127.0.0.1:9880"),
                     ref_audio_path=kwargs.get("ref_audio_path", ""),
@@ -132,10 +126,8 @@ class TTSFactory:
                     aux_ref_audio_paths=kwargs.get("aux_ref_audio_paths", []),
                 )
             elif provider == "mock":
-                from animetta import $$$
                 return MockTTSConfig()
             elif provider == "qwen3":
-                from animetta import $$$
                 return Qwen3TTSConfig(
                     model=kwargs.get("model", "Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice"),
                     speaker=kwargs.get("speaker", "Vivian"),

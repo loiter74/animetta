@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 VAD Factory - Create VAD instances based on configuration
 """
@@ -7,8 +8,6 @@ from loguru import logger
 
 from .interface import VADInterface
 from .mock_vad import MockVAD
-from animetta import $$$
-from animetta import $$$
 
 
 class VADFactory:

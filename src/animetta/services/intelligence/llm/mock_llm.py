@@ -2,17 +2,16 @@
 Mock LLM implementation - for testing and development
 """
 
-from typing import AsyncIterator, List, Dict, Any, TYPE_CHECKING
+from __future__ import annotations
+
+from typing import AsyncIterator, List, Dict, Any
 import time
 import uuid
 from loguru import logger
 
 from .interface import LLMInterface
-from animetta import $$$
-from animetta import $$$
-
-if TYPE_CHECKING:
-    from animetta import $$$
+from animetta.config.core.registry import ProviderRegistry
+from animetta.config.providers.llm import MockLLMConfig
 
 
 @ProviderRegistry.register_service("llm", "mock")

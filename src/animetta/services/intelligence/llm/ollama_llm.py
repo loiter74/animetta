@@ -1,18 +1,18 @@
+from __future__ import annotations
 """
 Ollama LLM implementation
 Uses the ollama SDK to call local Ollama models
+
 """
+
+from animetta.config.core.registry import ProviderRegistry
+from animetta.config.core.registry import ProviderRegistry
 
 from typing import AsyncIterator, List, Dict, Any, Optional, TYPE_CHECKING
 from loguru import logger
 import ollama
 
 from .interface import LLMInterface
-from animetta import $$$
-from animetta import $$$
-
-if TYPE_CHECKING:
-    from animetta import $$$
 
 
 @ProviderRegistry.register_service("llm", "ollama")

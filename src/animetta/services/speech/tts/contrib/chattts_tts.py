@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 ChatTTS implementation - open-source conversational speech synthesis
 Model stored on local disk, loaded to GPU memory at startup
@@ -15,9 +16,9 @@ import numpy as np
 from loguru import logger
 
 from ..interface import TTSInterface
-from animetta import $$$
-from animetta import $$$
 
+
+from animetta.config.core.registry import ProviderRegistry
 
 @ProviderRegistry.register_service("tts", "chattts")
 class ChatTTSTTS(TTSInterface):

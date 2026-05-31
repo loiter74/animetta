@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Silero VAD detector — handles model loading and speech probability detection.
 

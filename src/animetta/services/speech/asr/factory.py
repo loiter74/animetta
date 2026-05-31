@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 ASR Factory - creates ASR instances based on configuration
 
@@ -9,12 +10,12 @@ To add a new ASR provider, simply:
 """
 
 from typing import List
+from animetta.config.core.registry import ProviderRegistry
+
 from loguru import logger
 
 from .interface import ASRInterface
 from .mock_asr import MockASR
-from animetta import $$$
-from animetta import $$$
 
 
 class ASRFactory:
@@ -55,7 +56,6 @@ class ASRFactory:
         """Build a config Pydantic object from kwargs, or None if unknown."""
         try:
             if provider == "openai":
-                from animetta import $$$
                 return OpenAIASRConfig(
                     api_key=kwargs.get("api_key"),
                     model=kwargs.get("model", "whisper-1"),
@@ -63,7 +63,6 @@ class ASRFactory:
                     base_url=kwargs.get("base_url"),
                 )
             elif provider == "funasr":
-                from animetta import $$$
                 return FunASRConfig(
                     model=kwargs.get("model", "paraformer-zh"),
                     language=kwargs.get("language", "zh"),
@@ -77,14 +76,12 @@ class ASRFactory:
                     disable_update=kwargs.get("disable_update", True),
                 )
             elif provider == "glm":
-                from animetta import $$$
                 return GLMASRConfig(
                     api_key=kwargs.get("api_key"),
                     model=kwargs.get("model", "glm-asr"),
                     stream=kwargs.get("stream", False),
                 )
             elif provider == "faster_whisper":
-                from animetta import $$$
                 return FasterWhisperASRConfig(
                     model=kwargs.get("model", "distil-large-v3"),
                     language=kwargs.get("language", "zh"),
@@ -96,7 +93,6 @@ class ASRFactory:
                     vad_parameters=kwargs.get("vad_parameters", {}),
                 )
             elif provider == "mock":
-                from animetta import $$$
                 return MockASRConfig()
             else:
                 return None

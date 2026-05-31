@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 GLM message format converter
 Handles conversion between LangChain messages and GLM API format

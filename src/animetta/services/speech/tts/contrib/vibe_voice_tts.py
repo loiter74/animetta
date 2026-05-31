@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 VibeVoice TTS implementation - Microsoft open-source long-text multi-speaker speech synthesis
 
@@ -21,9 +22,9 @@ from io import BytesIO
 from loguru import logger
 
 from ..interface import TTSInterface
-from animetta import $$$
-from animetta import $$$
 
+
+from animetta.config.core.registry import ProviderRegistry
 
 @ProviderRegistry.register_service("tts", "vibe_voice")
 class VibeVoiceTTS(TTSInterface):

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Simplified VAD processor - directly uses probability values
 """

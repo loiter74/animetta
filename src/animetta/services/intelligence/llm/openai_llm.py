@@ -1,7 +1,10 @@
+from __future__ import annotations
 """
 OpenAI LLM implementation
 Uses the openai SDK to call OpenAI GPT models
 """
+
+from animetta.config.core.registry import ProviderRegistry
 
 import json
 import time as time_module
@@ -13,11 +16,6 @@ from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, Tool
 from .interface import LLMInterface
 from .stream_handler import OpenAIStreamHandler
 from .tool_handler import OpenAIToolHandler
-from animetta import $$$
-from animetta import $$$
-
-if TYPE_CHECKING:
-    from animetta import $$$
 
 
 @ProviderRegistry.register_service("llm", "openai")
@@ -275,8 +273,6 @@ class OpenAILLM(LLMInterface):
             provider = self._get_provider_name()
             model = self.model
 
-            from animetta import $$$
-            from animetta import $$$
 
             # Duration
             dur = get_llm_request_duration()
@@ -305,7 +301,6 @@ class OpenAILLM(LLMInterface):
         """Record LLM error metrics."""
         try:
             provider = self._get_provider_name()
-            from animetta import $$$
             err = get_llm_errors()
             if err is not None:
                 err.add(1, {"provider": provider, "model": self.model})

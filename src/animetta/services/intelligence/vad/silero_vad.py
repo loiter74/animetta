@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Silero VAD implementation
 Based on Open-LLM-VTuber's VADEngine and StateMachine implementation
@@ -10,8 +11,9 @@ from loguru import logger
 
 from .interface import VADInterface, VADState, VADResult
 from .detector import SileroDetector
-from animetta import $$$
 
+
+from animetta.config.core.registry import ProviderRegistry
 
 @ProviderRegistry.register_service("vad", "silero")
 class SileroVAD(VADInterface):

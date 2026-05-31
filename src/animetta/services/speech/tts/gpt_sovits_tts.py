@@ -1,9 +1,12 @@
+from __future__ import annotations
 """
 GPT-SoVITS TTS implementation - few-shot voice cloning via REST API
 
 Connects to a locally running GPT-SoVITS api_v2.py server.
 Supports reference audio based voice cloning with configurable inference parameters.
 """
+
+from animetta.config.core.registry import ProviderRegistry
 
 # Status: active
 # Last verified: 2026-05-23
@@ -15,8 +18,6 @@ import tempfile
 from loguru import logger
 
 from .interface import TTSInterface
-from animetta import $$$
-from animetta import $$$
 
 
 @ProviderRegistry.register_service("tts", "gpt_sovits")

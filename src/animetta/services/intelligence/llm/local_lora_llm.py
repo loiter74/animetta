@@ -1,9 +1,14 @@
+from __future__ import annotations
 """
 Local LoRA fine-tuned model service
 Local Lora LLM Service
 
+
 Uses locally fine-tuned models for inference
 """
+
+from animetta.config.core.registry import ProviderRegistry
+from animetta.config.core.registry import ProviderRegistry
 
 import asyncio
 from typing import AsyncIterator, Dict, Optional
@@ -11,7 +16,6 @@ import torch
 from loguru import logger
 
 from .interface import LLMInterface
-from animetta import $$$
 
 
 @ProviderRegistry.register_service("llm", "local_lora")

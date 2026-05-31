@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 LLM (Large Language Model) service interface definition
 """

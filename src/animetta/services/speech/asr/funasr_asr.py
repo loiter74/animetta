@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 FunASR Paraformer ASR implementation - Alibaba open-source speech recognition
 GitHub: https://github.com/modelscope/FunASR
@@ -20,8 +21,9 @@ import numpy as np
 from loguru import logger
 
 from .interface import ASRInterface
-from animetta import $$$
 
+
+from animetta.config.core.registry import ProviderRegistry
 
 @ProviderRegistry.register_service("asr", "funasr")
 class FunASRASR(ASRInterface):

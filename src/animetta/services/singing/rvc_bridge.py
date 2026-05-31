@@ -1,3 +1,4 @@
+from __future__ import annotations
 """RVC bridge via direct Python subprocess wrapper."""
 import asyncio, os
 from pathlib import Path
