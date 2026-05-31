@@ -221,8 +221,8 @@ class LivingMemorySystem:
         if current_emotion is None:
             current_emotion = VADVector(0.0, 0.0, 0.0)
 
-        # Get all active atoms (simplified — future: integrate Chroma vector search)
-        all_active = await self.store.get_all_active(limit * 3)
+        # Get matching atoms via hybrid search (Chroma vector + FTS5 keyword)
+        all_active = await self.store.hybrid_search(query, limit * 3)
 
         # Filter by session if specified
         if session_id != "default":

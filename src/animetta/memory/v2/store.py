@@ -1,17 +1,30 @@
 """AtomStore — unified persistence layer for MemoryAtoms.
 
 SQLite for structured data + FTS5 for full-text search.
-Chroma integration for vector search (future).
+Chroma for vector semantic search.
 Wiki export layer for human-readable backups.
 """
 
 from __future__ import annotations
 
 import json
+import logging
 import sqlite3
 from datetime import datetime, timezone
+from typing import Any
 
 from animetta.memory.v2.atom import MemoryAtom, Layer, Relation
+
+logger = logging.getLogger(__name__)
+
+# Optional Chroma support
+try:
+    import chromadb
+    from chromadb.config import Settings
+    _HAS_CHROMA = True
+except ImportError:
+    _HAS_CHROMA = False
+    chromadb = None  # type: ignore[assignment]
 
 
 class AtomStore:
@@ -24,12 +37,74 @@ class AtomStore:
     def __init__(self, db_path: str = "memory_db/living_memory.sqlite"):
         self.db_path = db_path
         self._conn: sqlite3.Connection | None = None
+        self._chroma_client: Any = None
+        self._chroma_collection: Any = None
 
     async def initialize(self) -> None:
         self._conn = sqlite3.connect(self.db_path)
         self._conn.row_factory = sqlite3.Row
         self._conn.execute("PRAGMA journal_mode=WAL")
         self._create_tables()
+        self._init_chroma()
+
+    def _init_chroma(self) -> None:
+        """Initialize Chroma vector store if available."""
+        if not _HAS_CHROMA:
+            return
+        try:
+            self._chroma_client = chromadb.Client(Settings(
+                is_persistent=True,
+                persist_directory="memory_db/chroma_v2",
+                anonymized_telemetry=False,
+            ))
+            self._chroma_collection = self._chroma_client.get_or_create_collection(
+                name="memory_atoms_v2",
+                metadata={"hnsw:space": "cosine"},
+            )
+        except Exception as e:
+            logger.warning(f"Chroma init failed, vector search disabled: {e}")
+            self._chroma_client = None
+
+    async def _vector_search(
+        self, query_text: str, limit: int = 50
+    ) -> list[tuple[str, float]]:
+        """Vector similarity search via Chroma. Returns [(atom_id, score), ...]."""
+        if not self._chroma_collection:
+            return []
+        try:
+            results = self._chroma_collection.query(
+                query_texts=[query_text],
+                n_results=limit,
+                include=["distances"],
+            )
+            ids = results.get("ids", [[]])[0]
+            distances = results.get("distances", [[]])[0]
+            # Convert cosine distance to similarity score (1 - distance)
+            return [
+                (id_, 1.0 - float(dist))
+                for id_, dist in zip(ids, distances)
+            ]
+        except Exception as e:
+            logger.warning(f"Vector search failed: {e}")
+            return []
+
+    async def _upsert_chroma(self, atom: MemoryAtom) -> None:
+        """Add or update atom embedding in Chroma."""
+        if not self._chroma_collection:
+            return
+        try:
+            text = atom.summary or atom.content
+            self._chroma_collection.upsert(
+                ids=[atom.id],
+                documents=[text],
+                metadatas=[{
+                    "layer": atom.layer.value,
+                    "confidence": atom.confidence,
+                    "salience": atom.salience,
+                }],
+            )
+        except Exception as e:
+            logger.debug(f"Chroma upsert failed (non-fatal): {e}")
 
     async def close(self) -> None:
         if self._conn:
@@ -112,6 +187,7 @@ class AtomStore:
             1 if atom.is_archived else 0,
         ))
         self._conn.commit()
+        await self._upsert_chroma(atom)
         return atom.id
 
     async def get(self, atom_id: str) -> MemoryAtom | None:
@@ -144,6 +220,7 @@ class AtomStore:
             atom.id,
         ))
         self._conn.commit()
+        await self._upsert_chroma(atom)
 
     async def create_version(
         self, atom_id: str, new_summary: str,
@@ -220,6 +297,37 @@ class AtomStore:
             (query, limit),
         ).fetchall()
         return [self._row_to_atom(r) for r in rows]
+
+    async def hybrid_search(
+        self, query: str, limit: int = 50
+    ) -> list[MemoryAtom]:
+        """Hybrid search: vector (Chroma) + keyword (FTS5)."""
+        results: dict[str, MemoryAtom] = {}
+        scores: dict[str, float] = {}
+
+        # Vector search
+        vector_results = await self._vector_search(query, limit)
+        for atom_id, score in vector_results:
+            scores[atom_id] = scores.get(atom_id, 0) + 0.55 * score
+
+        # Keyword search (FTS5)
+        keyword_results = await self.search_fts(query, limit)
+        for i, atom in enumerate(keyword_results):
+            # BM25-like: higher rank = higher score
+            kw_score = 1.0 / (1.0 + i)
+            scores[atom.id] = scores.get(atom.id, 0) + 0.25 * kw_score
+            results[atom.id] = atom
+
+        # Fetch atoms not yet loaded (from vector search only)
+        for atom_id in scores:
+            if atom_id not in results:
+                atom = await self.get(atom_id)
+                if atom and not atom.is_archived:
+                    results[atom_id] = atom
+
+        # Sort by combined score
+        ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+        return [results[aid] for aid, _ in ranked if aid in results][:limit]
 
     # ── Serialization ──
 
