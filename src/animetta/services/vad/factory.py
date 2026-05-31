@@ -15,6 +15,7 @@ from animetta.config.providers.vad import MockVADConfig, SileroVADConfig
 from animetta.config.core.registry import ProviderRegistry
 from .mock_vad import MockVAD
 from animetta.config.core.registry import ProviderRegistry
+from animetta.tracing.proxy import TracingProxy
 
 
 class VADFactory:
