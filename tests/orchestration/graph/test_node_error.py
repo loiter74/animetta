@@ -4,6 +4,9 @@ from __future__ import annotations
 import json
 import uuid
 import pytest_asyncio
+from animetta.orchestration.graph import tts_node
+from animetta.orchestration.graph import asr_node
+from animetta.orchestration.graph import llm_node
 from animetta.orchestration.graph.stats_store import StatsStore
 from animetta.orchestration.graph.node_error import log_node_error
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 """Tests for TTS synthesis node."""
 
 import pytest
+from animetta.orchestration.graph import tts_node
 from animetta.orchestration.graph.state import create_initial_state
 from unittest.mock import AsyncMock
 from langgraph.types import RunnableConfig

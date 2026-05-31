@@ -2,6 +2,7 @@ from __future__ import annotations
 """Tests for ASR (speech recognition) node."""
 
 import pytest
+from animetta.orchestration.graph import asr_node
 from animetta.orchestration.graph.state import create_initial_state
 from langgraph.types import RunnableConfig
 

@@ -9,6 +9,7 @@ import sys
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from animetta.services.live.bilibili_danmaku import BilibiliDanmakuService
 
 pytestmark = pytest.mark.slow
 

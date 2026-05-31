@@ -2,6 +2,7 @@ from __future__ import annotations
 """Tests for tool execution node."""
 
 import pytest
+from animetta.orchestration.graph import tool_node
 from animetta.orchestration.graph.state import create_initial_state
 from langgraph.types import RunnableConfig
 from unittest.mock import MagicMock, AsyncMock

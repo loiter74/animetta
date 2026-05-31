@@ -2,6 +2,7 @@ from __future__ import annotations
 """Tests for output distribution node — Socket.IO + memory storage."""
 
 import pytest
+from animetta.orchestration.graph import output_node
 from animetta.orchestration.graph.state import create_initial_state
 from unittest.mock import AsyncMock, MagicMock, patch
 from langgraph.types import RunnableConfig

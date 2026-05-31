@@ -2,6 +2,7 @@ from __future__ import annotations
 """Tests for emotion analysis node."""
 
 import pytest
+from animetta.orchestration.graph import emotion_node
 from animetta.orchestration.graph.state import create_initial_state
 from unittest.mock import MagicMock
 from langgraph.types import RunnableConfig

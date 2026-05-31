@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import pytest
+from animetta.orchestration.graph import llm_node
 from animetta.orchestration.graph.state import create_initial_state
 from unittest.mock import AsyncMock, MagicMock
 from langgraph.types import RunnableConfig

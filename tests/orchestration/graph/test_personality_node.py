@@ -2,6 +2,7 @@ from __future__ import annotations
 """Tests for personality node — mode/mood detection and overlay prompt."""
 
 import pytest
+from animetta.orchestration.graph import personality_node
 from animetta.orchestration.graph.state import create_initial_state
 
 
