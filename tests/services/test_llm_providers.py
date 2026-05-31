@@ -18,7 +18,6 @@ from unittest.mock import patch, MagicMock, AsyncMock
 
 import pytest
 
-from animetta import $$$
 
 
 # ── Helpers ──────────────────────────────────────────────────────
@@ -48,14 +47,12 @@ _ensure_mock_module("silero_vad")
 @pytest.fixture
 def mock_llm_config():
     """Create a MockLLMConfig with default values."""
-    from animetta import $$$
     return MockLLMConfig()
 
 
 @pytest.fixture
 def openai_llm_config():
     """Create an OpenAILLMConfig with test values."""
-    from animetta import $$$
     return OpenAILLMConfig(
         api_key="test-openai-key",
         model="gpt-4o-mini",
@@ -67,7 +64,6 @@ def openai_llm_config():
 @pytest.fixture
 def glm_llm_config():
     """Create a GLMLLMConfig with test values."""
-    from animetta import $$$
     return GLMLLMConfig(
         api_key="test-glm-key",
         model="glm-4-flash",
@@ -79,7 +75,6 @@ def glm_llm_config():
 @pytest.fixture
 def ollama_llm_config():
     """Create an OllamaLLMConfig with test values."""
-    from animetta import $$$
     return OllamaLLMConfig(
         model="llama3",
         base_url="http://localhost:11434",
@@ -91,7 +86,6 @@ def ollama_llm_config():
 @pytest.fixture
 def local_lora_llm_config():
     """Create a LocalLoraLLMConfig with test values."""
-    from animetta import $$$
     return LocalLoraLLMConfig(
         base_model_name="Qwen/Qwen2.5-7B-Instruct",
         lora_path="models/lora/test-v1",
@@ -122,7 +116,6 @@ class TestLLMInterface:
         All LLM provider classes should be concrete subclasses of LLMInterface.
         Uses direct module imports to handle optional deps.
         """
-        from animetta import $$$
         providers = [MockLLM]
         # Try optional providers
         for mod_name, cls_name in [
@@ -147,7 +140,6 @@ class TestLLMInterface:
 
     def test_all_abstract_methods_implemented(self):
         """Each concrete provider must implement every abstract method."""
-        from animetta import $$$
         abstract_methods = self._get_abstract_methods()
 
         providers = [MockLLM]
@@ -185,21 +177,18 @@ class TestMockLLM:
 
     def test_from_config_returns_instance(self, mock_llm_config):
         """from_config should return a MockLLM instance."""
-        from animetta import $$$
         instance = MockLLM.from_config(mock_llm_config, system_prompt="Hello")
         assert isinstance(instance, MockLLM)
         assert instance.system_prompt == "Hello"
 
     def test_from_config_default_system_prompt(self, mock_llm_config):
         """from_config should default to empty system_prompt if not provided."""
-        from animetta import $$$
         instance = MockLLM.from_config(mock_llm_config)
         assert instance.system_prompt == ""
 
     @pytest.mark.asyncio
     async def test_chat_returns_string(self):
         """chat() should return a non-empty string."""
-        from animetta import $$$
         llm = MockLLM(system_prompt="test")
         response = await llm.chat("Hello")
         assert isinstance(response, str)
@@ -208,7 +197,6 @@ class TestMockLLM:
     @pytest.mark.asyncio
     async def test_chat_includes_user_input(self):
         """chat() response should contain the user input."""
-        from animetta import $$$
         llm = MockLLM()
         response = await llm.chat("Test input")
         assert "Test input" in response
@@ -216,7 +204,6 @@ class TestMockLLM:
     @pytest.mark.asyncio
     async def test_chat_updates_history(self):
         """chat() should add user and assistant messages to history."""
-        from animetta import $$$
         llm = MockLLM()
         assert len(llm.get_history()) == 0
         await llm.chat("Hello")
@@ -228,7 +215,6 @@ class TestMockLLM:
     @pytest.mark.asyncio
     async def test_chat_stream_yields_strings(self):
         """chat_stream() should yield character strings."""
-        from animetta import $$$
         llm = MockLLM()
         chunks = []
         async for chunk in llm.chat_stream("Hello"):
@@ -239,20 +225,17 @@ class TestMockLLM:
     @pytest.mark.asyncio
     async def test_close(self):
         """close() should not raise."""
-        from animetta import $$$
         llm = MockLLM()
         await llm.close()  # should not raise
 
     def test_set_system_prompt(self):
         """set_system_prompt should update the system prompt."""
-        from animetta import $$$
         llm = MockLLM()
         llm.set_system_prompt("New prompt")
         assert llm.system_prompt == "New prompt"
 
     def test_get_history_returns_copy(self):
         """get_history() should return a copy, not the internal list."""
-        from animetta import $$$
         llm = MockLLM()
         history = llm.get_history()
         history.append({"role": "user", "content": "injected"})
@@ -260,7 +243,6 @@ class TestMockLLM:
 
     def test_clear_history(self):
         """clear_history() should reset history and call_count."""
-        from animetta import $$$
         llm = MockLLM()
         llm.history.append({"role": "user", "content": "x"})
         llm.call_count = 5
@@ -270,7 +252,6 @@ class TestMockLLM:
 
     def test_handle_interrupt_with_response(self):
         """handle_interrupt() with partial response should add to history."""
-        from animetta import $$$
         llm = MockLLM()
         llm.history.append({"role": "user", "content": "hello"})
         llm.handle_interrupt("partial response")
@@ -280,7 +261,6 @@ class TestMockLLM:
 
     def test_handle_interrupt_empty(self):
         """handle_interrupt() with empty string should not modify history."""
-        from animetta import $$$
         llm = MockLLM()
         llm.history.append({"role": "user", "content": "hello"})
         llm.handle_interrupt("")
@@ -288,7 +268,6 @@ class TestMockLLM:
 
     def test_set_memory_from_history(self):
         """set_memory_from_history should not raise."""
-        from animetta import $$$
         llm = MockLLM()
         llm.set_memory_from_history("conf_uid", "history_uid")  # should not raise
 
@@ -305,7 +284,6 @@ class TestOpenAILLM:
 
     def test_from_config_returns_instance(self, openai_llm_config):
         """from_config should return an OpenAILLM instance with correct config."""
-        from animetta import $$$
 
         with patch("anima.services.intelligence.llm.openai_llm.AsyncOpenAI"):
             instance = OpenAILLM.from_config(openai_llm_config, system_prompt="test")
@@ -318,8 +296,6 @@ class TestOpenAILLM:
 
     def test_from_config_supports_deepseek(self):
         """from_config should also work with DeepSeekLLMConfig."""
-        from animetta import $$$
-        from animetta import $$$
 
         config = DeepSeekLLMConfig(
             api_key="test-ds-key",
@@ -334,7 +310,6 @@ class TestOpenAILLM:
 
     def test_constructor_creates_client(self):
         """Constructor should initialize AsyncOpenAI client."""
-        from animetta import $$$
 
         with patch("anima.services.intelligence.llm.openai_llm.AsyncOpenAI") as mock:
             instance = OpenAILLM(api_key="key", model="gpt-4")
@@ -343,7 +318,6 @@ class TestOpenAILLM:
 
     def test_constructor_with_base_url(self):
         """Constructor should pass base_url to AsyncOpenAI."""
-        from animetta import $$$
 
         with patch("anima.services.intelligence.llm.openai_llm.AsyncOpenAI") as mock:
             OpenAILLM(api_key="key", model="gpt-4", base_url="https://custom.example.com")
@@ -354,7 +328,6 @@ class TestOpenAILLM:
     @pytest.mark.asyncio
     async def test_chat_returns_string(self):
         """chat() should return a string from the mocked API."""
-        from animetta import $$$
 
         with patch("anima.services.intelligence.llm.openai_llm.AsyncOpenAI") as mock:
             mock_client = MagicMock()
@@ -372,7 +345,6 @@ class TestOpenAILLM:
     @pytest.mark.asyncio
     async def test_chat_updates_history(self):
         """chat() should record user/assistant in history."""
-        from animetta import $$$
 
         with patch("anima.services.intelligence.llm.openai_llm.AsyncOpenAI") as mock:
             mock_client = MagicMock()
@@ -393,7 +365,6 @@ class TestOpenAILLM:
     @pytest.mark.asyncio
     async def test_chat_stream_yields_strings(self):
         """chat_stream() should yield strings from the mocked streaming API."""
-        from animetta import $$$
 
         with patch("anima.services.intelligence.llm.openai_llm.AsyncOpenAI") as mock:
             async def mock_stream():
@@ -417,7 +388,6 @@ class TestOpenAILLM:
     @pytest.mark.asyncio
     async def test_close(self):
         """close() should call client.close()."""
-        from animetta import $$$
 
         with patch("anima.services.intelligence.llm.openai_llm.AsyncOpenAI") as mock:
             mock_client = MagicMock()
@@ -430,7 +400,6 @@ class TestOpenAILLM:
 
     def test_set_system_prompt(self):
         """set_system_prompt should update the system prompt."""
-        from animetta import $$$
 
         with patch("anima.services.intelligence.llm.openai_llm.AsyncOpenAI"):
             llm = OpenAILLM(api_key="key", model="gpt-4")
@@ -439,7 +408,6 @@ class TestOpenAILLM:
 
     def test_history_methods(self):
         """clear_history should reset history."""
-        from animetta import $$$
 
         with patch("anima.services.intelligence.llm.openai_llm.AsyncOpenAI"):
             llm = OpenAILLM(api_key="key", model="gpt-4")
@@ -460,7 +428,6 @@ class TestGLMLLM:
 
     def test_from_config_returns_instance(self, glm_llm_config):
         """from_config should return a GLMLLM instance with the config."""
-        from animetta import $$$
         instance = GLMLLM.from_config(glm_llm_config)
         assert isinstance(instance, GLMLLM)
         assert instance.config == glm_llm_config
@@ -470,8 +437,6 @@ class TestGLMLLM:
     @pytest.mark.asyncio
     async def test_chat_returns_string(self):
         """chat() should return a string via mocked ZhipuAI."""
-        from animetta import $$$
-        from animetta import $$$
 
         with patch("anima.services.intelligence.llm.glm_llm.ZhipuAI") as mock_zhipuai:
             mock_client = MagicMock()
@@ -494,8 +459,6 @@ class TestGLMLLM:
     @pytest.mark.asyncio
     async def test_chat_stream_yields_strings(self):
         """chat_stream() should yield strings via mocked ZhipuAI."""
-        from animetta import $$$
-        from animetta import $$$
 
         with patch("anima.services.intelligence.llm.glm_llm.ZhipuAI") as mock_zhipuai:
             mock_client = MagicMock()
@@ -516,8 +479,6 @@ class TestGLMLLM:
     @pytest.mark.asyncio
     async def test_close(self):
         """close() should set client to None."""
-        from animetta import $$$
-        from animetta import $$$
 
         config = GLMLLMConfig(api_key="test-key")
         with patch("anima.services.intelligence.llm.glm_llm.ZhipuAI"):
@@ -528,8 +489,6 @@ class TestGLMLLM:
     @pytest.mark.asyncio
     async def test_chat_updates_history(self):
         """chat() should track conversation history."""
-        from animetta import $$$
-        from animetta import $$$
 
         with patch("anima.services.intelligence.llm.glm_llm.ZhipuAI") as mock_zhipuai:
             mock_client = MagicMock()
@@ -563,7 +522,6 @@ class TestOllamaLLM:
 
     def test_from_config_returns_instance(self, ollama_llm_config):
         """from_config should return an OllamaLLM instance."""
-        from animetta import $$$
 
         with patch("anima.services.intelligence.llm.ollama_llm.ollama"):
             instance = OllamaLLM.from_config(ollama_llm_config, system_prompt="test")
@@ -575,14 +533,12 @@ class TestOllamaLLM:
 
     def test_from_config_raises_on_wrong_type(self, openai_llm_config):
         """from_config should raise TypeError for wrong config type."""
-        from animetta import $$$
         with pytest.raises(TypeError, match="OllamaLLMConfig"):
             OllamaLLM.from_config(openai_llm_config)
 
     @pytest.mark.asyncio
     async def test_chat_returns_string(self):
         """chat() should return a string."""
-        from animetta import $$$
 
         with patch("anima.services.intelligence.llm.ollama_llm.ollama") as mock_ollama:
             mock_ollama_client = MagicMock()
@@ -598,7 +554,6 @@ class TestOllamaLLM:
     @pytest.mark.asyncio
     async def test_chat_stream_yields_strings(self):
         """chat_stream() should yield strings."""
-        from animetta import $$$
 
         with patch("anima.services.intelligence.llm.ollama_llm.ollama") as mock_ollama:
             mock_ollama_client = MagicMock()
@@ -620,7 +575,6 @@ class TestOllamaLLM:
     @pytest.mark.asyncio
     async def test_close(self):
         """close() should not raise."""
-        from animetta import $$$
 
         with patch("anima.services.intelligence.llm.ollama_llm.ollama"):
             llm = OllamaLLM(model="llama3")
@@ -628,7 +582,6 @@ class TestOllamaLLM:
 
     def test_history_methods(self):
         """clear_history should reset, get_history should return copy."""
-        from animetta import $$$
 
         with patch("anima.services.intelligence.llm.ollama_llm.ollama"):
             llm = OllamaLLM(model="llama3")
@@ -651,7 +604,6 @@ class TestLocalLoraLLM:
 
     def test_from_config_returns_instance(self, local_lora_llm_config):
         """from_config should return a LocalLoraLLM instance."""
-        from animetta import $$$
 
         with (
             patch("torch.cuda.is_available", return_value=False),
@@ -673,7 +625,6 @@ class TestLocalLoraLLM:
 
     def test_constructor_loads_model(self):
         """Constructor should trigger model loading."""
-        from animetta import $$$
 
         with (
             patch("torch.cuda.is_available", return_value=False),
@@ -697,7 +648,6 @@ class TestLocalLoraLLM:
     @pytest.mark.asyncio
     async def test_chat_returns_string(self):
         """chat() should return a string."""
-        from animetta import $$$
 
         with (
             patch("torch.cuda.is_available", return_value=False),
@@ -732,7 +682,6 @@ class TestLocalLoraLLM:
     @pytest.mark.asyncio
     async def test_close(self):
         """close() should release resources."""
-        from animetta import $$$
 
         with (
             patch("torch.cuda.is_available", return_value=False),
@@ -753,7 +702,6 @@ class TestLocalLoraLLM:
 
     def test_history_methods(self):
         """history methods should work correctly."""
-        from animetta import $$$
 
         with (
             patch("torch.cuda.is_available", return_value=False),
@@ -785,7 +733,6 @@ class TestLLMFactory:
         self, mock_create_service, openai_llm_config
     ):
         """create_from_config should return the type returned by ProviderRegistry."""
-        from animetta import $$$
 
         mock_llm = MagicMock()
         mock_create_service.return_value = mock_llm
@@ -799,9 +746,6 @@ class TestLLMFactory:
     @patch("anima.services.intelligence.llm.factory.ProviderRegistry.create_service")
     def test_create_from_config_fallback_to_mock(self, mock_create_service):
         """create_from_config should fall back to MockLLM on error."""
-        from animetta import $$$
-        from animetta import $$$
-        from animetta import $$$
 
         mock_create_service.side_effect = ValueError("Unknown provider")
         config = MockLLMConfig()
@@ -812,8 +756,6 @@ class TestLLMFactory:
     @patch("anima.services.intelligence.llm.factory.LLMFactory.create_from_config")
     def test_create_uses_mock_for_unknown_provider(self, mock_create_from_config):
         """create() should use MockLLM for unknown provider names."""
-        from animetta import $$$
-        from animetta import $$$
 
         LLMFactory.create("unknown_provider", system_prompt="test")
         args, kwargs = mock_create_from_config.call_args
@@ -823,8 +765,6 @@ class TestLLMFactory:
     @patch("anima.services.intelligence.llm.factory.LLMFactory.create_from_config")
     def test_create_openai(self, mock_create_from_config):
         """create() with 'openai' should build OpenAILLMConfig."""
-        from animetta import $$$
-        from animetta import $$$
 
         LLMFactory.create("openai", api_key="key-123", model="gpt-4")
         config = mock_create_from_config.call_args[0][0]
@@ -835,8 +775,6 @@ class TestLLMFactory:
     @patch("anima.services.intelligence.llm.factory.LLMFactory.create_from_config")
     def test_create_glm(self, mock_create_from_config):
         """create() with 'glm' should build GLMLLMConfig."""
-        from animetta import $$$
-        from animetta import $$$
 
         LLMFactory.create("glm", api_key="key-456", model="glm-4")
         config = mock_create_from_config.call_args[0][0]
@@ -847,8 +785,6 @@ class TestLLMFactory:
     @patch("anima.services.intelligence.llm.factory.LLMFactory.create_from_config")
     def test_create_ollama(self, mock_create_from_config):
         """create() with 'ollama' should build OllamaLLMConfig."""
-        from animetta import $$$
-        from animetta import $$$
 
         LLMFactory.create("ollama", model="mistral")
         config = mock_create_from_config.call_args[0][0]
@@ -859,8 +795,6 @@ class TestLLMFactory:
     @patch("anima.services.intelligence.llm.factory.LLMFactory.create_from_config")
     def test_create_mock(self, mock_create_from_config):
         """create() with 'mock' should build MockLLMConfig."""
-        from animetta import $$$
-        from animetta import $$$
 
         LLMFactory.create("mock")
         config = mock_create_from_config.call_args[0][0]
@@ -869,7 +803,6 @@ class TestLLMFactory:
     @patch("anima.services.intelligence.llm.factory.ProviderRegistry.list_services")
     def test_get_available_providers(self, mock_list_services):
         """get_available_providers should return list from registry."""
-        from animetta import $$$
 
         mock_list_services.return_value = ["mock", "openai", "glm"]
         providers = LLMFactory.get_available_providers()

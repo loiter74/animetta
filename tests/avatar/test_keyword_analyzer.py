@@ -4,8 +4,6 @@ Tests for KeywordAnalyzer — emotion detection via Chinese keyword matching.
 
 import pytest
 
-from animetta import $$$
-from animetta import $$$
 
 
 # ============================================================

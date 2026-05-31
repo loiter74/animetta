@@ -13,7 +13,6 @@ class TestLoadToolsConfig:
 
     def test_load_default_config_when_file_missing(self):
         """When config file doesn't exist, should return default config."""
-        from animetta import $$$
 
         config = load_tools_config("/tmp/nonexistent_tools.yaml")
         assert "builtin_tools" in config
@@ -24,7 +23,6 @@ class TestLoadToolsConfig:
 
     def test_load_valid_yaml_config(self):
         """Loading a valid YAML config file should parse correctly."""
-        from animetta import $$$
 
         sample = {
             "builtin_tools": ["calculator", "web_search"],
@@ -60,7 +58,6 @@ class TestLoadToolsConfig:
     def test_load_empty_yaml_returns_empty_dict(self):
         """Empty YAML file should return an empty dict (falls to {}) which then
         load_tools_from_config will handle with defaults."""
-        from animetta import $$$
 
         with tempfile.NamedTemporaryFile(
             mode="w", suffix=".yaml", encoding="utf-8", delete=False
@@ -76,7 +73,6 @@ class TestLoadToolsConfig:
 
     def test_load_invalid_yaml_returns_default(self):
         """Invalid YAML content should trigger graceful fallback to defaults."""
-        from animetta import $$$
 
         with tempfile.NamedTemporaryFile(
             mode="w", suffix=".yaml", encoding="utf-8", delete=False
@@ -92,7 +88,6 @@ class TestLoadToolsConfig:
 
     def test_default_config_structure(self):
         """Default config must contain all expected keys."""
-        from animetta import $$$
 
         config = _get_default_config()
         assert "builtin_tools" in config
@@ -107,7 +102,6 @@ class TestValidateToolsConfig:
     """validate_tools_config function tests."""
 
     def test_valid_builtin_tools_only(self):
-        from animetta import $$$
 
         config = {
             "builtin_tools": ["calculator", "web_search", "get_current_time", "get_weather"],
@@ -116,7 +110,6 @@ class TestValidateToolsConfig:
         assert validate_tools_config(config) is True
 
     def test_valid_mcp_stdio_server(self):
-        from animetta import $$$
 
         config = {
             "builtin_tools": [],
@@ -132,7 +125,6 @@ class TestValidateToolsConfig:
         assert validate_tools_config(config) is True
 
     def test_valid_mcp_sse_server(self):
-        from animetta import $$$
 
         config = {
             "builtin_tools": [],
@@ -147,7 +139,6 @@ class TestValidateToolsConfig:
         assert validate_tools_config(config) is True
 
     def test_valid_mcp_streamable_http_server(self):
-        from animetta import $$$
 
         config = {
             "builtin_tools": [],
@@ -162,7 +153,6 @@ class TestValidateToolsConfig:
         assert validate_tools_config(config) is True
 
     def test_mcp_server_missing_name(self):
-        from animetta import $$$
 
         config = {
             "builtin_tools": [],
@@ -173,7 +163,6 @@ class TestValidateToolsConfig:
         assert validate_tools_config(config) is False
 
     def test_mcp_stdio_missing_command(self):
-        from animetta import $$$
 
         config = {
             "builtin_tools": [],
@@ -184,7 +173,6 @@ class TestValidateToolsConfig:
         assert validate_tools_config(config) is False
 
     def test_mcp_sse_missing_url(self):
-        from animetta import $$$
 
         config = {
             "builtin_tools": [],
@@ -195,7 +183,6 @@ class TestValidateToolsConfig:
         assert validate_tools_config(config) is False
 
     def test_unsupported_transport(self):
-        from animetta import $$$
 
         config = {
             "builtin_tools": [],

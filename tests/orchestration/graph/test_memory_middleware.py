@@ -10,7 +10,6 @@ class TestMemoryMiddleware:
     @pytest.mark.asyncio
     async def test_before_call_without_memory_system(self):
         """Without memory system, returns base prompt unchanged."""
-        from animetta import $$$
 
         mm = MemoryMiddleware(memory_system=None)
         enriched, metadata = await mm.before_llm_call(
@@ -24,7 +23,6 @@ class TestMemoryMiddleware:
     @pytest.mark.asyncio
     async def test_after_call_without_memory_system(self):
         """Without memory system, after_llm_call does nothing."""
-        from animetta import $$$
 
         mm = MemoryMiddleware(memory_system=None)
         await mm.after_llm_call(
@@ -37,7 +35,6 @@ class TestMemoryMiddleware:
     @pytest.mark.asyncio
     async def test_before_call_with_memory_system(self):
         """With memory system, enriches prompt with context."""
-        from animetta import $$$
 
         mock_memory = MagicMock()
         mock_memory.retrieve_context = AsyncMock(return_value=[
@@ -67,7 +64,6 @@ class TestMemoryMiddleware:
     @pytest.mark.asyncio
     async def test_after_call_does_not_crash(self):
         """after_llm_call should not raise with valid input."""
-        from animetta import $$$
 
         mm = MemoryMiddleware(memory_system=MagicMock())
         # after_llm_call is just a post-processing marker, doesn't store
@@ -81,7 +77,6 @@ class TestMemoryMiddleware:
     @pytest.mark.asyncio
     async def test_memory_error_does_not_crash(self):
         """Memory errors should not propagate — middleware degrades gracefully."""
-        from animetta import $$$
 
         mock_memory = MagicMock()
         mock_memory.retrieve_context = AsyncMock(side_effect=Exception("DB down"))

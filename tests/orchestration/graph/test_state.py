@@ -6,7 +6,6 @@ import pytest
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langgraph.graph.message import add_messages
 
-from animetta import $$$
 
 
 # ── AgentState TypedDict ────────────────────────────────────────────────

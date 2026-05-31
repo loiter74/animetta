@@ -6,7 +6,7 @@ from datetime import datetime, timezone, timedelta
 import pytest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from src.anima.memory.search.scorer import (
+from animetta.memory.search.scorer import (
     MemoryScorer,
     DECAY_BASE_RATE,
     DECAY_ARCHIVE_THRESHOLD,

@@ -9,12 +9,12 @@ from datetime import datetime, timezone
 
 class TestFormatFactsForWiki:
     def test_empty_facts_returns_empty(self):
-        from src.anima.memory.learner.fact_extractor import format_facts_for_wiki
+        from animetta.memory.learner.fact_extractor import format_facts_for_wiki
         result = format_facts_for_wiki([], "test-session")
         assert result == ""
 
     def test_single_fact_formatted(self):
-        from src.anima.memory.learner.fact_extractor import format_facts_for_wiki
+        from animetta.memory.learner.fact_extractor import format_facts_for_wiki
         facts = [{
             "id": "fact-1",
             "fact": "User likes TypeScript",
@@ -32,7 +32,7 @@ class TestFormatFactsForWiki:
         assert "0.9" in result or "90%" in result
 
     def test_multiple_facts_grouped_by_category(self):
-        from src.anima.memory.learner.fact_extractor import format_facts_for_wiki
+        from animetta.memory.learner.fact_extractor import format_facts_for_wiki
         facts = [
             {"id": "1", "fact": "Likes Python", "category": "preference", "confidence": 0.8, "is_static": True, "source": "auto", "source_turn_id": "t1", "source_timestamp": datetime.now(timezone.utc).isoformat()},
             {"id": "2", "fact": "Works at ACME", "category": "identity", "confidence": 0.9, "is_static": True, "source": "auto", "source_turn_id": "t2", "source_timestamp": datetime.now(timezone.utc).isoformat()},
@@ -48,7 +48,7 @@ class TestFormatFactsForWiki:
 
 class TestPersonaOptimizer:
     def test_summarize_persona_basic(self):
-        from src.anima.memory.learner.persona_optimizer import _summarize_persona
+        from animetta.memory.learner.persona_optimizer import _summarize_persona
         config = {
             "name": "TestBot",
             "identity": "A test bot for testing things.",
@@ -62,7 +62,7 @@ class TestPersonaOptimizer:
         assert "helpful" in result
 
     def test_format_suggestions_yaml(self):
-        from src.anima.memory.learner.persona_optimizer import format_suggestions_yaml
+        from animetta.memory.learner.persona_optimizer import format_suggestions_yaml
         analysis = {
             "summary": "All good",
             "strengths": [{"pattern": "Good at explaining", "evidence": "3 sessions", "confidence": 0.8}],
@@ -83,7 +83,7 @@ class TestPersonaOptimizer:
         assert "applied: false" in result
 
     def test_suggestions_yaml_respects_auto_apply_flag(self):
-        from src.anima.memory.learner.persona_optimizer import format_suggestions_yaml
+        from animetta.memory.learner.persona_optimizer import format_suggestions_yaml
         analysis = {"suggestions": [], "summary": "Nothing to suggest"}
         result = format_suggestions_yaml(analysis, "TestBot")
         assert "# Status: review" in result
@@ -92,9 +92,9 @@ class TestPersonaOptimizer:
 
 class TestCleanJson:
     def test_removes_markdown_fence(self):
-        from src.anima.memory.learner.persona_optimizer import _clean_json
+        from animetta.memory.learner.persona_optimizer import _clean_json
         assert _clean_json("```json\n{}\n```") == "{}"
 
     def test_passes_through_clean_json(self):
-        from src.anima.memory.learner.persona_optimizer import _clean_json
+        from animetta.memory.learner.persona_optimizer import _clean_json
         assert _clean_json('{"key": "value"}') == '{"key": "value"}'

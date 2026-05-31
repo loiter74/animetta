@@ -12,7 +12,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from animetta import $$$
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -135,7 +134,6 @@ class TestMockTTS:
 
     @pytest.mark.asyncio
     async def test_synthesize_returns_mock_path(self):
-        from animetta import $$$
 
         tts = MockTTS()
         result = await tts.synthesize("hello")
@@ -143,7 +141,6 @@ class TestMockTTS:
 
     @pytest.mark.asyncio
     async def test_synthesize_with_output_path(self):
-        from animetta import $$$
 
         tts = MockTTS()
         result = await tts.synthesize("hello", output_path="/tmp/out.wav")
@@ -151,13 +148,11 @@ class TestMockTTS:
 
     @pytest.mark.asyncio
     async def test_close_noop(self):
-        from animetta import $$$
 
         tts = MockTTS()
         await tts.close()  # must not raise
 
     def test_from_config_returns_instance(self):
-        from animetta import $$$
 
         config = _make_config_mock()
         instance = MockTTS.from_config(config)
@@ -174,7 +169,6 @@ class TestEdgeTTS:
 
     @pytest.mark.asyncio
     async def test_synthesize_returns_audio_bytes(self):
-        from animetta import $$$
 
         # Mock Communicate via the fake module
         fake_comm = MagicMock()
@@ -192,7 +186,6 @@ class TestEdgeTTS:
 
     @pytest.mark.asyncio
     async def test_synthesize_with_ssml_effects(self):
-        from animetta import $$$
 
         fake_comm = MagicMock()
         fake_comm.stream.return_value.__aiter__.return_value = [
@@ -209,7 +202,6 @@ class TestEdgeTTS:
         assert "<prosody" in call_args
 
     def test_from_config_default(self):
-        from animetta import $$$
 
         config = _make_config_mock(voice="zh-CN-XiaoxiaoNeural", rate=None, pitch=None, preset=None)
         tts = EdgeTTS.from_config(config)
@@ -218,7 +210,6 @@ class TestEdgeTTS:
         assert tts.pitch is None
 
     def test_from_config_with_preset_neurosama(self):
-        from animetta import $$$
 
         config = _make_config_mock(
             voice="zh-CN-XiaoxiaoNeural", rate=None, pitch=None, preset="neurosama"
@@ -229,7 +220,6 @@ class TestEdgeTTS:
 
     @pytest.mark.asyncio
     async def test_close_resets_communicate(self):
-        from animetta import $$$
 
         tts = EdgeTTS()
         tts._communicate = MagicMock()
@@ -247,7 +237,6 @@ class TestGLMTTS:
 
     @pytest.mark.asyncio
     async def test_synthesize_returns_audio_bytes(self):
-        from animetta import $$$
 
         # Mock ZhipuAiClient via fake module
         mock_client = MagicMock()
@@ -261,7 +250,6 @@ class TestGLMTTS:
             assert result == b"mock_audio"
 
     def test_from_config_creates_instance(self):
-        from animetta import $$$
 
         config = _make_config_mock(
             api_key="key-123",
@@ -277,7 +265,6 @@ class TestGLMTTS:
 
     @pytest.mark.asyncio
     async def test_close_resets_client(self):
-        from animetta import $$$
 
         tts = GLMTTS(api_key="key")
         tts._client = MagicMock()
@@ -295,7 +282,6 @@ class TestChatTTSTTS:
 
     @pytest.mark.asyncio
     async def test_synthesize_returns_path(self):
-        from animetta import $$$
 
         # Mock ChatTTS.Chat via fake module
         mock_chat = MagicMock()
@@ -310,7 +296,6 @@ class TestChatTTSTTS:
         assert result.endswith(".wav")
 
     def test_from_config_creates_instance(self):
-        from animetta import $$$
 
         config = _make_config_mock(
             model_path="/models/ChatTTS",
@@ -326,7 +311,6 @@ class TestChatTTSTTS:
         assert tts.device == "cpu"
 
     def test_clean_text_removes_unsupported_chars(self):
-        from animetta import $$$
 
         tts = ChatTTSTTS(model_path="/fake", device="cpu")
         cleaned = tts._clean_text("Hello! 你好吗？😊 Test。")
@@ -345,7 +329,6 @@ class TestGPTSoVITSTTS:
 
     @pytest.mark.asyncio
     async def test_synthesize_returns_audio_bytes(self):
-        from animetta import $$$
 
         tts = GPTSoVITSTTS(base_url="http://localhost:9880")
         # Mock the HTTP client
@@ -362,7 +345,6 @@ class TestGPTSoVITSTTS:
 
     @pytest.mark.asyncio
     async def test_synthesize_with_output_path(self):
-        from animetta import $$$
         import tempfile, os
 
         tts = GPTSoVITSTTS(base_url="http://localhost:9880")
@@ -386,7 +368,6 @@ class TestGPTSoVITSTTS:
 
     @pytest.mark.asyncio
     async def test_raises_on_connection_error(self):
-        from animetta import $$$
 
         tts = GPTSoVITSTTS(base_url="http://localhost:1")
         mock_client = AsyncMock()
@@ -397,7 +378,6 @@ class TestGPTSoVITSTTS:
             await tts.synthesize("hello")
 
     def test_from_config_creates_instance(self):
-        from animetta import $$$
 
         config = _make_config_mock(
             base_url="http://127.0.0.1:9880",
@@ -421,7 +401,6 @@ class TestGPTSoVITSTTS:
 
     @pytest.mark.asyncio
     async def test_close_aclient(self):
-        from animetta import $$$
 
         tts = GPTSoVITSTTS()
         mock_client = AsyncMock()
@@ -440,7 +419,6 @@ class TestKokoroTTS:
 
     @pytest.mark.asyncio
     async def test_synthesize_returns_audio(self):
-        from animetta import $$$
 
         # Mock KPipeline via fake module
         mock_pipeline = MagicMock()
@@ -461,7 +439,6 @@ class TestKokoroTTS:
         assert result.endswith(".wav")
 
     def test_from_config_with_glados_effect(self):
-        from animetta import $$$
 
         config = _make_config_mock(
             voice="zf_xiaobei",
@@ -477,7 +454,6 @@ class TestKokoroTTS:
         assert tts._effect_processor is not None
 
     def test_from_config_disables_glados_when_none(self):
-        from animetta import $$$
 
         config = _make_config_mock(
             voice="zf_xiaobei",
@@ -493,7 +469,6 @@ class TestKokoroTTS:
 
     @pytest.mark.asyncio
     async def test_close_releases_resources(self):
-        from animetta import $$$
 
         tts = KokoroTTS(voice="zf_xiaobei", device="cpu")
         tts._pipeline = MagicMock()
@@ -511,7 +486,6 @@ class TestVibeVoiceTTS:
 
     @pytest.mark.asyncio
     async def test_remote_synthesize_returns_audio_bytes(self):
-        from animetta import $$$
 
         tts = VibeVoiceTTS(mode="remote", base_url="http://localhost:8765")
         mock_client = AsyncMock()
@@ -525,7 +499,6 @@ class TestVibeVoiceTTS:
 
     @pytest.mark.asyncio
     async def test_remote_with_output_path(self):
-        from animetta import $$$
         import tempfile, os
 
         tts = VibeVoiceTTS(mode="remote", base_url="http://localhost:8765")
@@ -548,14 +521,12 @@ class TestVibeVoiceTTS:
 
     @pytest.mark.asyncio
     async def test_empty_text_returns_empty_bytes(self):
-        from animetta import $$$
 
         tts = VibeVoiceTTS(mode="remote")
         result = await tts.synthesize("")
         assert result == b""
 
     def test_from_config_creates_instance(self):
-        from animetta import $$$
 
         config = _make_config_mock(
             api_key=None,
@@ -575,7 +546,6 @@ class TestVibeVoiceTTS:
 
     @pytest.mark.asyncio
     async def test_close_aclient(self):
-        from animetta import $$$
 
         tts = VibeVoiceTTS(mode="remote")
         mock_client = AsyncMock()
@@ -594,7 +564,6 @@ class TestQwen3TTSTTS:
 
     @pytest.mark.asyncio
     async def test_synthesize_returns_audio_bytes(self):
-        from animetta import $$$
 
         import numpy as np
         mock_model = MagicMock()
@@ -609,14 +578,12 @@ class TestQwen3TTSTTS:
 
     @pytest.mark.asyncio
     async def test_synthesize_empty_text_returns_empty(self):
-        from animetta import $$$
 
         tts = Qwen3TTSTTS(device="cpu")
         result = await tts.synthesize("")
         assert result == b""
 
     def test_from_config_all_fields(self):
-        from animetta import $$$
 
         config = _make_config_mock(
             model="test/model",
@@ -637,7 +604,6 @@ class TestQwen3TTSTTS:
 
     @pytest.mark.asyncio
     async def test_preload_uses_executor(self):
-        from animetta import $$$
 
         mock_model = MagicMock()
         sys.modules["qwen_tts"].Qwen3TTSModel.from_pretrained.return_value = mock_model
@@ -648,14 +614,12 @@ class TestQwen3TTSTTS:
 
     @pytest.mark.asyncio
     async def test_close_without_model(self):
-        from animetta import $$$
 
         tts = Qwen3TTSTTS(device="cpu")
         await tts.close()  # Should not raise
 
     @pytest.mark.asyncio
     async def test_synthesize_stream_raises_not_implemented(self):
-        from animetta import $$$
 
         tts = Qwen3TTSTTS(device="cpu")
         with pytest.raises(NotImplementedError):
@@ -664,7 +628,6 @@ class TestQwen3TTSTTS:
     @pytest.mark.asyncio
     async def test_synthesize_voice_clone_mode(self):
         """When ref_audio_path is set, synthesize() uses generate_voice_clone()."""
-        from animetta import $$$
         import os
 
         import numpy as np
@@ -701,7 +664,6 @@ class TestQwen3TTSTTS:
     @pytest.mark.asyncio
     async def test_synthesize_falls_back_to_custom_voice_without_ref_audio(self):
         """Without ref_audio_path, uses existing custom voice path."""
-        from animetta import $$$
 
         import numpy as np
         mock_model = MagicMock()
@@ -730,7 +692,6 @@ class TestTTSFactory:
     @patch("anima.services.speech.tts.factory.TracingProxy")
     @patch("anima.services.speech.tts.factory.ProviderRegistry")
     async def test_create_mock_provider(self, MockRegistry, MockProxy):
-        from animetta import $$$
 
         mock_tts = AsyncMock()
         MockProxy.return_value = mock_tts
@@ -742,7 +703,6 @@ class TestTTSFactory:
     @patch("anima.services.speech.tts.factory.TracingProxy")
     @patch("anima.services.speech.tts.factory.ProviderRegistry")
     async def test_create_edge_provider(self, MockRegistry, MockProxy):
-        from animetta import $$$
 
         mock_tts = AsyncMock()
         MockProxy.return_value = mock_tts
@@ -754,7 +714,6 @@ class TestTTSFactory:
     @patch("anima.services.speech.tts.factory.TracingProxy")
     @patch("anima.services.speech.tts.factory.ProviderRegistry")
     async def test_create_glm_provider(self, MockRegistry, MockProxy):
-        from animetta import $$$
 
         mock_tts = AsyncMock()
         MockProxy.return_value = mock_tts
@@ -766,7 +725,6 @@ class TestTTSFactory:
     @patch("anima.services.speech.tts.factory.TracingProxy")
     @patch("anima.services.speech.tts.factory.ProviderRegistry", side_effect=Exception("fail"))
     async def test_fallback_to_mock_on_error(self, MockRegistry, MockProxy):
-        from animetta import $$$
 
         # When ProviderRegistry.create_service raises, factory falls back to MockTTS
         MockRegistry.create_service.side_effect = Exception("service unavailable")
@@ -782,7 +740,6 @@ class TestTTSFactory:
 
     @patch("anima.services.speech.tts.factory.ProviderRegistry")
     def test_get_available_providers(self, MockRegistry):
-        from animetta import $$$
 
         MockRegistry.list_services.return_value = {"mock", "edge", "glm"}
         providers = TTSFactory.get_available_providers()
@@ -790,7 +747,6 @@ class TestTTSFactory:
 
     def test_create_unknown_provider_returns_mock(self):
         """Factory falls back to MockTTS for unknown provider names."""
-        from animetta import $$$
 
         # When _build_config returns None, MockTTS is returned directly
         with patch.object(TTSFactory, "_build_config", return_value=None):

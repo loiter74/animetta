@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from src.anima.memory.config import (
+from animetta.memory.config import (
     ChunkConfig,
     EmbeddingConfig,
     MemoryConfig,

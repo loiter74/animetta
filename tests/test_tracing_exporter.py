@@ -18,7 +18,6 @@ def mock_store():
 
 @pytest.fixture
 def exporter(mock_store):
-    from animetta import $$$
     return StatsSpanExporter(stats_store=mock_store)
 
 

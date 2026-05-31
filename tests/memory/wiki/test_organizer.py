@@ -7,8 +7,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.anima.memory.wiki.models import PageType, WikiPage
-from src.anima.memory.wiki.organizer import WikiOrganizer
+from animetta.memory.wiki.models import PageType, WikiPage
+from animetta.memory.wiki.organizer import WikiOrganizer
 
 
 @pytest.fixture

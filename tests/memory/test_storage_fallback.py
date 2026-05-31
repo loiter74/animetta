@@ -15,8 +15,6 @@ class TestChromaUpsertFallback:
 
     def test_upsert_skips_when_no_embeddings(self):
         """upsert_chunks with embeddings=None should not call collection.upsert."""
-        from animetta import $$$
-        from animetta import $$$
 
         store = ChromaStore.__new__(ChromaStore)
         store.collection = MagicMock()
@@ -34,8 +32,6 @@ class TestChromaUpsertFallback:
 
     def test_upsert_calls_when_embeddings_provided(self):
         """upsert_chunks with embeddings should call collection.upsert."""
-        from animetta import $$$
-        from animetta import $$$
 
         store = ChromaStore.__new__(ChromaStore)
         store.collection = MagicMock()
@@ -58,8 +54,6 @@ class TestEmbeddingFallback:
 
     def test_manager_creates_without_embedding(self, tmp_path):
         """MemoryManager should initialize even when embedding is unavailable."""
-        from animetta import $$$
-        from animetta import $$$
 
         config = MemoryConfig(
             workspace_dir=str(tmp_path / "ws"),

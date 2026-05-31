@@ -1,7 +1,6 @@
 """Tests for cost_calculator.py — provider pricing and cost computation."""
 
 import pytest
-from animetta import $$$
 
 
 class TestCalculateCost:

@@ -6,7 +6,7 @@ from datetime import datetime
 
 import pytest
 
-from src.anima.memory.meme.models import CognitiveAnalysis, Meme, MemeSource
+from animetta.memory.meme.models import CognitiveAnalysis, Meme, MemeSource
 
 
 class TestMemeSource:

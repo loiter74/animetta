@@ -10,7 +10,6 @@ class TestExtractSemanticPhrases:
 
     def test_extract_from_multiple_texts(self):
         """Should extract meaningful 2-4 word n-grams from Chinese texts."""
-        from animetta import $$$
 
         texts = [
             "这个视频真的太搞笑了",
@@ -28,13 +27,11 @@ class TestExtractSemanticPhrases:
             assert len(phrase) >= 2
 
     def test_returns_empty_for_empty_input(self):
-        from animetta import $$$
 
         assert Collector._extract_semantic_phrases([], top_k=10) == []
 
     def test_filters_single_occurrence(self):
         """Phrases appearing only once should be penalized by TF-IDF."""
-        from animetta import $$$
 
         texts = [
             "这是一个唯一的短语AAAA",
@@ -52,7 +49,6 @@ class TestExtractSemanticPhrases:
             assert cross_doc[0][1] >= unique[0][1]
 
     def test_respects_top_k_limit(self):
-        from animetta import $$$
 
         texts = ["A" * 20, "B" * 20, "C" * 20]  # diverse content
         phrases = Collector._extract_semantic_phrases(texts, top_k=5)
@@ -60,7 +56,6 @@ class TestExtractSemanticPhrases:
 
     def test_fallback_when_jieba_not_installed(self):
         """When jieba is unavailable, should fall back to char n-grams."""
-        from animetta import $$$
 
         texts = ["测试文本", "测试文本"]
         # Patch to simulate missing jieba
@@ -83,7 +78,6 @@ class TestExtractSemanticPhrases:
 
     def test_heuristic_identify_calls_semantic_extraction(self):
         """_heuristic_identify should use semantic extraction for danmaku strategy."""
-        from animetta import $$$
 
         c = Collector(llm_client=None)
         videos = [CollectedVideo(bvid="BV1xx", title="测试")]
@@ -98,7 +92,6 @@ class TestExtractSemanticPhrases:
 
     def test_semantic_extraction_skips_stopwords(self):
         """Stopwords should be filtered out from results."""
-        from animetta import $$$
 
         texts = ["的的的的的的", "了的了的了"]
         phrases = Collector._extract_semantic_phrases(texts, top_k=10)

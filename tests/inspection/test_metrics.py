@@ -69,7 +69,6 @@ class TestCheckMetricsPipeline:
 
     @pytest.mark.asyncio
     async def test_all_pass(self):
-        from animetta import $$$
 
         _, transport = _make_metrics_app(body=_full_body())
         mock_response = httpx.Response(200, text=_full_body(), request=MagicMock())
@@ -91,7 +90,6 @@ class TestCheckMetricsPipeline:
 
     @pytest.mark.asyncio
     async def test_missing_expected_metric(self):
-        from animetta import $$$
 
         # Body only has one of two required metrics
         body = (
@@ -115,7 +113,6 @@ class TestCheckMetricsPipeline:
 
     @pytest.mark.asyncio
     async def test_endpoint_unreachable(self):
-        from animetta import $$$
 
         mock_get = AsyncMock(side_effect=httpx.ConnectError("Connection refused"))
         mock_client = MagicMock()
@@ -130,7 +127,6 @@ class TestCheckMetricsPipeline:
 
     @pytest.mark.asyncio
     async def test_endpoint_timeout(self):
-        from animetta import $$$
 
         mock_get = AsyncMock(side_effect=httpx.TimeoutException("timed out"))
         mock_client = MagicMock()
@@ -145,7 +141,6 @@ class TestCheckMetricsPipeline:
 
     @pytest.mark.asyncio
     async def test_non_200_status(self):
-        from animetta import $$$
 
         body = "Service Unavailable"
         mock_response = httpx.Response(503, text=body, request=MagicMock())
@@ -162,7 +157,6 @@ class TestCheckMetricsPipeline:
 
     @pytest.mark.asyncio
     async def test_generic_exception(self):
-        from animetta import $$$
 
         mock_get = AsyncMock(side_effect=RuntimeError("unexpected"))
         mock_client = MagicMock()
@@ -177,7 +171,6 @@ class TestCheckMetricsPipeline:
 
     @pytest.mark.asyncio
     async def test_duration_ms_positive(self):
-        from animetta import $$$
 
         mock_response = httpx.Response(200, text=_full_body(), request=MagicMock())
         mock_get = AsyncMock(return_value=mock_response)

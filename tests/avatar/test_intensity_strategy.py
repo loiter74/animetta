@@ -4,8 +4,6 @@ Tests for IntensityBasedStrategy — intensity-based time allocation.
 
 import pytest
 
-from animetta import $$$
-from animetta import $$$
 
 
 # ============================================================

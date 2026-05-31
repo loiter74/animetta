@@ -3,7 +3,6 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from animetta import $$$
 
 
 class TestToolManager:
@@ -14,7 +13,6 @@ class TestToolManager:
     @pytest.fixture
     def tool_manager(self, mock_service_context):
         """Create a ToolManager with mocked service context."""
-        from animetta import $$$
 
         return ToolManager(session_id="test_session", service_context=mock_service_context)
 
@@ -45,7 +43,6 @@ class TestToolManager:
     @pytest.mark.asyncio
     async def test_load_tools_with_mcp_servers(self, tool_manager):
         """When tools_config has mcp_servers, MCP tools are also loaded."""
-        from animetta import $$$
 
         mock_tools = [MagicMock(name="builtin_tool")]
         mock_tools_map = {"builtin_tool": mock_tools[0]}
@@ -258,7 +255,6 @@ class TestToolManager:
 
     def test_constructor_initializes_empty_state(self, mock_service_context):
         """ToolManager starts with empty tools, tools_map, chat_model, and no MCP manager."""
-        from animetta import $$$
 
         tm = ToolManager(session_id="sid", service_context=mock_service_context)
 

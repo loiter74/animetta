@@ -5,8 +5,6 @@ Tests for StandaloneLLMTagAnalyzer — emotion tag extraction from LLM text.
 import pytest
 from unittest.mock import patch
 
-from animetta import $$$
-from animetta import $$$
 
 
 class TestStandaloneLLMTagAnalyzerInit:

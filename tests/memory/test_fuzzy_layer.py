@@ -7,9 +7,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.anima.memory.fuzzy_layer import FuzzyLayer
-from src.anima.memory.models.turns import MemoryTurn
-from src.anima.memory.wiki.models import PageType, WikiPage
+from animetta.memory.fuzzy_layer import FuzzyLayer
+from animetta.memory.models.turns import MemoryTurn
+from animetta.memory.wiki.models import PageType, WikiPage
 
 
 def _make_turn(text: str, idx: int = 0) -> MemoryTurn:
@@ -182,7 +182,7 @@ class TestFuzzyCache:
         wiki.read_page.return_value = _make_wiki_page("synthesis/stale.md", "fresh")
 
         # The cache check happens inside _get_relevant_synthesis
-        with patch("src.anima.memory.fuzzy_layer.datetime") as mock_dt:
+        with patch("animetta.memory.fuzzy_layer.datetime") as mock_dt:
             mock_dt.now.return_value.timestamp.return_value = old_time + 301  # past TTL
             results = fuzzy._get_relevant_synthesis("q", 5)
 

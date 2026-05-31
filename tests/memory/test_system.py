@@ -8,27 +8,27 @@ from unittest.mock import ANY, AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.anima.memory.models.turns import MemoryTurn
-from src.anima.memory.system import MemorySystem
+from animetta.memory.models.turns import MemoryTurn
+from animetta.memory.system import MemorySystem
 
 
 @pytest.fixture
 def mock_deps():
     """Patch all heavy dependencies of MemorySystem."""
     patches = {
-        "MemoryManager": patch("src.anima.memory.system.MemoryManager"),
-        "WikiManager": patch("src.anima.memory.system.WikiManager"),
-        "WikiIngestor": patch("src.anima.memory.system.WikiIngestor"),
-        "WikiQuery": patch("src.anima.memory.system.WikiQuery"),
-        "WikiLint": patch("src.anima.memory.system.WikiLint"),
-        "ShortTermMemory": patch("src.anima.memory.system.ShortTermMemory"),
-        "MemoryScorer": patch("src.anima.memory.system.MemoryScorer"),
-        "FuzzyLayer": patch("src.anima.memory.system.FuzzyLayer"),
-        "MemePool": patch("src.anima.memory.system.MemePool"),
-        "PeriodicLearner": patch("src.anima.memory.system.PeriodicLearner"),
-        "FactExtractor": patch("src.anima.memory.system.FactExtractor"),
-        "UserProfileBuilder": patch("src.anima.memory.system.UserProfileBuilder"),
-        "AsyncScheduler": patch("src.anima.memory.system.AsyncScheduler"),
+        "MemoryManager": patch("animetta.memory.system.MemoryManager"),
+        "WikiManager": patch("animetta.memory.system.WikiManager"),
+        "WikiIngestor": patch("animetta.memory.system.WikiIngestor"),
+        "WikiQuery": patch("animetta.memory.system.WikiQuery"),
+        "WikiLint": patch("animetta.memory.system.WikiLint"),
+        "ShortTermMemory": patch("animetta.memory.system.ShortTermMemory"),
+        "MemoryScorer": patch("animetta.memory.system.MemoryScorer"),
+        "FuzzyLayer": patch("animetta.memory.system.FuzzyLayer"),
+        "MemePool": patch("animetta.memory.system.MemePool"),
+        "PeriodicLearner": patch("animetta.memory.system.PeriodicLearner"),
+        "FactExtractor": patch("animetta.memory.system.FactExtractor"),
+        "UserProfileBuilder": patch("animetta.memory.system.UserProfileBuilder"),
+        "AsyncScheduler": patch("animetta.memory.system.AsyncScheduler"),
     }
     mocks = {}
     for name, p in patches.items():
@@ -77,11 +77,11 @@ class TestMemorySystemInit:
     def test_init_search_config(self, mock_deps):
         system = MemorySystem({"search": {"vector_weight": 0.5, "keyword_weight": 0.5}})
         # Should pass search config to MemoryConfig
-        from src.anima.memory.config import SearchConfig
+        from animetta.memory.config import SearchConfig
 
     def test_init_graceful_degradation(self):
         """When WikiManager init fails, system should still be usable."""
-        with patch("src.anima.memory.system.MemoryManager", side_effect=Exception("fail")):
+        with patch("animetta.memory.system.MemoryManager", side_effect=Exception("fail")):
             system = MemorySystem({})
             # Should log warning but not crash
             assert system._wiki_manager is None

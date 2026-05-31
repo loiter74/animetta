@@ -22,7 +22,6 @@ def mock_llm():
 
 @pytest.fixture
 def mock_danmaku_buffer():
-    from animetta import $$$
 
     buf = DanmakuBuffer(max_size=100)
     for _ in range(5):
@@ -37,15 +36,12 @@ class TestCollectorWithDanmakuBuffer:
     """BilibiliMemeCollector integration with DanmakuBuffer."""
 
     def test_constructor_accepts_danmaku_buffer(self, mock_llm):
-        from animetta import $$$
-        from animetta import $$$
 
         buf = DanmakuBuffer()
         c = BilibiliMemeCollector(llm_client=mock_llm, danmaku_buffer=buf)
         assert c._danmaku_buffer is buf
 
     def test_fetch_danmaku_phrases_returns_hot_phrases(self, mock_llm, mock_danmaku_buffer):
-        from animetta import $$$
 
         c = BilibiliMemeCollector(
             llm_client=mock_llm,
@@ -62,7 +58,6 @@ class TestCollectorWithDanmakuBuffer:
         assert any("绝绝" in p or "绝子" in p for p in phrases)
 
     def test_fetch_danmaku_phrases_empty_when_no_buffer(self, mock_llm):
-        from animetta import $$$
 
         c = BilibiliMemeCollector(llm_client=mock_llm, danmaku_buffer=None)
         import asyncio
@@ -71,7 +66,6 @@ class TestCollectorWithDanmakuBuffer:
 
     def test_collect_passes_danmaku_to_llm_context(self, mock_llm, mock_danmaku_buffer):
         """Verify that danmaku phrases appear in the LLM prompt."""
-        from animetta import $$$
 
         c = BilibiliMemeCollector(
             llm_client=mock_llm,
@@ -80,7 +74,6 @@ class TestCollectorWithDanmakuBuffer:
         )
 
         # Patch _fetch_trending_videos to return controlled data
-        from animetta import $$$
 
         mock_videos = [
             CollectedVideo(
@@ -99,7 +92,6 @@ class TestCollectorWithDanmakuBuffer:
 
     def test_heuristic_identify_includes_danmaku_strategy(self, mock_llm):
         """Heuristic identification should use danmaku phrases as strategy 4."""
-        from animetta import $$$
 
         c = BilibiliMemeCollector(llm_client=None)  # No LLM → heuristic
 
@@ -117,7 +109,6 @@ class TestCollectorWithDanmakuBuffer:
 
     def test_heuristic_danmaku_only_returns_candidates(self, mock_llm):
         """When only danmaku data is available, should still return candidates."""
-        from animetta import $$$
 
         c = BilibiliMemeCollector(llm_client=None)
 
@@ -129,7 +120,6 @@ class TestCollectorWithDanmakuBuffer:
         assert all("danmaku" in (cc.tags or []) for cc in candidates)
 
     def test_heuristic_danmaku_only_empty_input(self, mock_llm):
-        from animetta import $$$
 
         c = BilibiliMemeCollector(llm_client=None)
         assert c._heuristic_danmaku_only([]) == []

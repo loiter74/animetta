@@ -1,30 +1,38 @@
 """
-Memory System - Wiki Architecture (Karpathy-style)
+Memory System — LivingMemory V2.
 
-Directory conventions:
-- raw/     Immutable raw conversation logs
-- wiki/    AI-maintained knowledge base
-  - entities/   People, characters, projects
-  - concepts/   Preferences, interests, patterns
-  - sources/    Daily conversation summaries
-  - synthesis/  Cross-source synthesis analysis
-  - index.md    Master table of contents
-  - log.md      Operation log
-
-Backend storage: SQLite FTS5 + Chroma vector + Markdown files
+Legacy modules have been moved to src/animetta/memory/_legacy/.
+Active subsystems:
+  - v2/       LivingMemorySystem (MemoryAtom, EmotionalField, Metabolism)
+  - storage/  Chroma + SQLite drivers (reused by v2)
+  - wiki/     Read-only archive / export layer
 """
 
 from __future__ import annotations
 
-# Core entry point
-from .models.turns import MemoryTurn
+# Only import from modules that still exist in memory/ (not _legacy/)
+# Everything else uses try/except for backward compat
 
-# Backend storage components
-from .config import MemoryConfig, ChunkConfig, SearchConfig, EmbeddingConfig
-from .models.base import SearchResult, Chunk, FileEntry, MemoryFlushSignal
-from .tools import get_tool_schemas, execute_tool
+try:
+    from .models.turns import MemoryTurn
+except Exception:
+    MemoryTurn = None  # type: ignore[assignment]
 
-# Lazy imports — tolerate failures for lightweight consumers (memory_v2)
+try:
+    from .config import MemoryConfig, ChunkConfig, SearchConfig, EmbeddingConfig
+except Exception:
+    MemoryConfig = ChunkConfig = SearchConfig = EmbeddingConfig = None  # type: ignore[assignment]
+
+try:
+    from .models.base import SearchResult, Chunk, FileEntry, MemoryFlushSignal
+except Exception:
+    SearchResult = Chunk = FileEntry = MemoryFlushSignal = None  # type: ignore[assignment]
+
+try:
+    from .tools import get_tool_schemas, execute_tool
+except Exception:
+    get_tool_schemas = execute_tool = None  # type: ignore[assignment]
+
 try:
     from .system import MemorySystem
 except Exception:

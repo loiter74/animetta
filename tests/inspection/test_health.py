@@ -8,8 +8,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from animetta import $$$
-from animetta import $$$
 
 
 # ── Helpers ─────────────────────────────────────────────────

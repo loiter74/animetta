@@ -7,8 +7,6 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from animetta import $$$
-from animetta import $$$
 
 
 @pytest.fixture

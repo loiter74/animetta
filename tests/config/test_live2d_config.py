@@ -12,7 +12,6 @@ _src_path = str(Path(__file__).resolve().parent.parent.parent / "src")
 if _src_path not in sys.path:
     sys.path.insert(0, _src_path)
 
-from animetta import $$$
 
 
 # ═══════════════════════════════════════════════════════════════

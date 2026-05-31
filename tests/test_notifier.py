@@ -5,10 +5,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from animetta import $$$
-from animetta import $$$
-from animetta import $$$
-from animetta import $$$
 
 
 # ── Sample Alertmanager payload ───────────────────────────────────
@@ -178,7 +174,6 @@ class TestDiscordNotifier:
 class TestFeishuNotifier:
     def test_card_structure(self):
         """Verify Feishu interactive card has header and elements."""
-        from animetta import $$$
 
         card = _build_card(
             {
@@ -196,20 +191,17 @@ class TestFeishuNotifier:
         assert "Error rate too high" in card["card"]["elements"][0]["text"]["content"]
 
     def test_resolved_template_is_green(self):
-        from animetta import $$$
 
         card = _build_card({"name": "X", "severity": "critical"}, "resolved")
         assert card["card"]["header"]["template"] == "green"
         assert "✅ [RESOLVED]" in card["card"]["header"]["title"]["content"]
 
     def test_warning_template_is_yellow(self):
-        from animetta import $$$
 
         card = _build_card({"name": "X", "severity": "warning"}, "firing")
         assert card["card"]["header"]["template"] == "yellow"
 
     def test_generate_signature(self):
-        from animetta import $$$
 
         ts, sig = _generate_sign("my_secret")
         assert ts.isdigit()
@@ -222,7 +214,6 @@ class TestFeishuNotifier:
 class TestEmailNotifier:
     def test_email_rendering(self):
         """Verify HTML template renders alert data."""
-        from animetta import $$$
 
         text, html = _render_email(
             [{"name": "TestAlert", "severity": "critical", "summary": "Test summary", "starts_at": ""}],

@@ -6,8 +6,8 @@ from datetime import datetime, timezone, timedelta
 
 import pytest
 
-from src.anima.memory.models.turns import MemoryTurn
-from src.anima.memory.search.scorer import (
+from animetta.memory.models.turns import MemoryTurn
+from animetta.memory.search.scorer import (
     MemoryScorer,
     EMOTION_INTENSITY,
     EMOTION_BOOST_FACTOR,

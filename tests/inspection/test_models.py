@@ -1,7 +1,6 @@
 """Tests for inspection data models."""
 
 import pytest
-from animetta import $$$
 
 
 class TestCheckResult:

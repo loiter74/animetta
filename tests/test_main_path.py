@@ -22,7 +22,6 @@ class TestVADServicesRegistered:
 
     def test_vad_services_registered(self):
         """导入 VAD 模块后 silero 和 mock 都应在 Registry 中"""
-        from animetta import $$$
 
         # 触发导入
         import anima.services.intelligence.vad  # noqa: F401
@@ -41,8 +40,6 @@ class TestVADFactoryFallback:
 
     def test_vad_factory_fallback_to_mock(self):
         """VAD 主创建失败时应降级到 MockVAD，不抛 ModuleNotFoundError"""
-        from animetta import $$$
-        from animetta import $$$
 
         # 用一个会触发 ProviderRegistry 创建失败的 config
         fake_config = MagicMock()
@@ -62,8 +59,6 @@ class TestLLMFactoryFallback:
 
     def test_llm_factory_fallback_to_mock(self):
         """LLM 主创建失败时应降级到 MockLLM，不抛 ModuleNotFoundError"""
-        from animetta import $$$
-        from animetta import $$$
 
         # 用一个会触发创建失败的 config
         fake_config = MagicMock()
@@ -83,7 +78,6 @@ class TestOutputNodeExpression:
     @pytest.mark.asyncio
     async def test_output_node_sends_expression(self):
         """当 state["emotion"] 有值时，应发送 expression 事件"""
-        from animetta import $$$
 
         mock_sio = AsyncMock()
         mock_sc = MagicMock(memory_system=None)
@@ -121,7 +115,6 @@ class TestOutputNodeVolumes:
     @pytest.mark.asyncio
     async def test_output_node_sends_volumes(self, tmp_path):
         """当 TTS 返回文件路径时，audio_with_expression 应包含 volumes"""
-        from animetta import $$$
 
         # 创建一个假的音频文件（足够短，不需要真实音频内容）
         audio_file = tmp_path / "test.mp3"
@@ -169,7 +162,6 @@ class TestOutputNodeControlSignals:
     @pytest.mark.asyncio
     async def test_output_node_sends_control_signals(self):
         """output_node 应在开头发 conversation-start，末尾发 conversation-end"""
-        from animetta import $$$
 
         mock_sio = AsyncMock()
         mock_sc = MagicMock(memory_system=None)

@@ -13,7 +13,6 @@ class TestTraceContext:
 
     def test_attach_with_valid_uuid(self):
         """A valid UUID string should produce a token."""
-        from animetta import $$$
 
         token = attach_trace_context("123e4567-e89b-12d3-a456-426614174000")
         assert token is not None
@@ -22,14 +21,12 @@ class TestTraceContext:
 
     def test_attach_with_empty_string(self):
         """Empty string should return None."""
-        from animetta import $$$
 
         assert attach_trace_context("") is None
         assert attach_trace_context(None) is None
 
     def test_attach_invalid_uuid(self):
         """Invalid UUID should return None gracefully."""
-        from animetta import $$$
 
         result = attach_trace_context("not-a-uuid")
         # Depending on implementation, this may return None if parsing fails
@@ -37,7 +34,6 @@ class TestTraceContext:
 
     def test_attach_sets_otel_context(self):
         """After attach, the current OTel span context should contain our trace_id."""
-        from animetta import $$$
 
         token = attach_trace_context("00000000-0000-0000-0000-000000000001")
         assert token is not None
@@ -51,13 +47,11 @@ class TestTraceContext:
 
     def test_detach_with_none(self):
         """detach with None should not raise."""
-        from animetta import $$$
 
         detach_trace_context(None)  # no-op, should not raise
 
     def test_detach_restores_previous_context(self):
         """After detach, the previous empty context should be restored."""
-        from animetta import $$$
 
         token = attach_trace_context("123e4567-e89b-12d3-a456-426614174000")
         assert token is not None
@@ -73,7 +67,6 @@ class TestTraceContext:
 
     def test_uuid_to_otel_trace_id(self):
         """UUID string converts correctly to a 128-bit int."""
-        from animetta import $$$
 
         # UUID "00000000-0000-0000-0000-000000000001" → int 1
         assert _uuid_to_otel_trace_id("00000000-0000-0000-0000-000000000001") == 1
@@ -88,7 +81,6 @@ class TestTraceContext:
 
     def test_make_otel_span_context(self):
         """Should produce a SpanContext with trace_id, non-recording."""
-        from animetta import $$$
 
         sc = _make_otel_span_context(42)
         assert sc.trace_id == 42
@@ -99,7 +91,6 @@ class TestTraceContext:
 
     def test_attach_detach_round_trip(self):
         """Full attach → verify → detach cycle should work cleanly."""
-        from animetta import $$$
 
         uuid_str = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
         expected_tid = int(uuid_str.replace("-", ""), 16)

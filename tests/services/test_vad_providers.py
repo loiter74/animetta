@@ -33,14 +33,10 @@ sys.modules["silero_vad"].load_silero_vad = MagicMock(return_value=_default_sile
 # at runtime (inside the method).  We also mock from_config as a safety
 # measure so that ProviderRegistry pathways don't accidentally call the
 # real from_config with test-incompatible configs.
-from animetta import $$$
 
 _ORIGINAL_SILERO_FROM_CONFIG = SileroVAD.from_config  # saved for test use
 SileroVAD.from_config = MagicMock(return_value=None)
 
-from animetta import $$$
-from animetta import $$$
-from animetta import $$$
 
 
 # ── VADState Enum Tests ─────────────────────────────────────────────
@@ -147,7 +143,6 @@ class TestVADInterface:
 
     def test_all_providers_implement_interface(self):
         """All VAD provider classes should be concrete subclasses of VADInterface."""
-        from animetta import $$$
 
         providers = [mv_mod.MockVAD]
         if hasattr(sv_mod, "SileroVAD"):
@@ -160,7 +155,6 @@ class TestVADInterface:
 
     def test_all_abstract_methods_implemented(self):
         """Each concrete provider must implement every abstract method."""
-        from animetta import $$$
 
         abstract_methods = self._get_abstract_methods()
         providers = [mv_mod.MockVAD]
@@ -413,7 +407,6 @@ class TestVADFactory:
     @patch("anima.services.intelligence.vad.factory.ProviderRegistry.create_service")
     def test_create_from_config_uses_registry(self, mock_create_service):
         """create_from_config should delegate to ProviderRegistry."""
-        from animetta import $$$
 
         mock_vad = MagicMock()
         mock_create_service.return_value = mock_vad
@@ -426,7 +419,6 @@ class TestVADFactory:
     @patch("anima.services.intelligence.vad.factory.ProviderRegistry.create_service")
     def test_create_from_config_fallback_to_mock(self, mock_create_service):
         """create_from_config should fall back to MockVAD on error."""
-        from animetta import $$$
 
         mock_create_service.side_effect = ValueError("Unknown provider")
 

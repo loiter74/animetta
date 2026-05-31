@@ -65,7 +65,6 @@ class TestAsyncScheduler:
 
     @pytest.mark.asyncio
     async def test_add_task(self):
-        from animetta import $$$
 
         scheduler = AsyncScheduler()
 
@@ -81,7 +80,6 @@ class TestAsyncScheduler:
 
     @pytest.mark.asyncio
     async def test_task_execution(self):
-        from animetta import $$$
 
         scheduler = AsyncScheduler()
         counter: list[int] = [0]
@@ -98,7 +96,6 @@ class TestAsyncScheduler:
 
     @pytest.mark.asyncio
     async def test_task_timeout(self):
-        from animetta import $$$
 
         scheduler = AsyncScheduler()
 
@@ -115,7 +112,6 @@ class TestAsyncScheduler:
 
     @pytest.mark.asyncio
     async def test_multiple_tasks(self):
-        from animetta import $$$
 
         scheduler = AsyncScheduler()
         counters: dict[str, list[int]] = {"a": [0], "b": [0], "c": [0]}
@@ -138,7 +134,6 @@ class TestAsyncScheduler:
 
     @pytest.mark.asyncio
     async def test_graceful_stop(self):
-        from animetta import $$$
 
         scheduler = AsyncScheduler()
 
@@ -162,7 +157,6 @@ class TestMemePool:
     """Tests for MemePool meme lifecycle engine."""
 
     def test_add_meme(self):
-        from animetta import $$$
 
         store = _FakeMemeStore()
         pool = MemePool(store, {"max_active": 10})
@@ -176,8 +170,6 @@ class TestMemePool:
         assert active[0].context_hint == "testing"
 
     def test_effective_score_recent(self):
-        from animetta import $$$
-        from animetta import $$$
 
         store = _FakeMemeStore()
         pool = MemePool(store)
@@ -190,8 +182,6 @@ class TestMemePool:
         assert score > 0.5
 
     def test_effective_score_old(self):
-        from animetta import $$$
-        from animetta import $$$
 
         store = _FakeMemeStore()
         pool = MemePool(store)
@@ -205,7 +195,6 @@ class TestMemePool:
         assert score < m.base_score
 
     def test_pool_max_active(self):
-        from animetta import $$$
 
         store = _FakeMemeStore()
         pool = MemePool(store, {"max_active": 10})
@@ -217,7 +206,6 @@ class TestMemePool:
         assert len(active) <= 10
 
     def test_context_match(self):
-        from animetta import $$$
 
         store = _FakeMemeStore()
         pool = MemePool(store)
@@ -229,7 +217,6 @@ class TestMemePool:
         assert pool._context_match("TypeScript type system", "typescript")
 
     def test_add_from_candidate_accepted(self):
-        from animetta import $$$
 
         store = _FakeMemeStore()
         pool = MemePool(store, {"max_active": 10})
@@ -240,7 +227,6 @@ class TestMemePool:
         assert m.base_score == pytest.approx(0.9)
 
     def test_add_from_candidate_rejected_low_confidence(self):
-        from animetta import $$$
 
         store = _FakeMemeStore()
         pool = MemePool(store, {"max_active": 1})
@@ -250,7 +236,6 @@ class TestMemePool:
         assert m is None
 
     def test_score_after_use(self):
-        from animetta import $$$
 
         store = _FakeMemeStore()
         pool = MemePool(store)
@@ -262,7 +247,6 @@ class TestMemePool:
         assert m.last_used_at is not None
 
     def test_maintain_pool_discards_excess(self):
-        from animetta import $$$
 
         store = _FakeMemeStore()
         pool = MemePool(store, {"max_active": 3})
@@ -275,7 +259,6 @@ class TestMemePool:
         assert len(active) <= 3
 
     def test_select_for_context_returns_meme(self):
-        from animetta import $$$
 
         store = _FakeMemeStore()
         pool = MemePool(store)
@@ -287,7 +270,6 @@ class TestMemePool:
         assert selected.text == "testing meme"
 
     def test_select_for_context_no_match(self):
-        from animetta import $$$
 
         store = _FakeMemeStore()
         pool = MemePool(store)
@@ -299,7 +281,6 @@ class TestMemePool:
         assert selected is None
 
     def test_get_stats(self):
-        from animetta import $$$
 
         store = _FakeMemeStore()
         pool = MemePool(store)

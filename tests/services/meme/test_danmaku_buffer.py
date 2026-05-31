@@ -9,7 +9,6 @@ class TestDanmakuPhrase:
     """DanmakuPhrase dataclass."""
 
     def test_creation(self):
-        from animetta import $$$
 
         p = DanmakuPhrase(
             text="绝绝子",
@@ -23,7 +22,6 @@ class TestDanmakuPhrase:
         assert p.source_room_id == 123
 
     def test_default_source_room_id(self):
-        from animetta import $$$
 
         p = DanmakuPhrase(text="哈哈哈", frequency=3, first_seen=0.0, last_seen=1.0)
         assert p.source_room_id == 0
@@ -35,14 +33,12 @@ class TestDanmakuBuffer:
     # ── Constructor ──────────────────────────────────────────────────
 
     def test_constructor_defaults(self):
-        from animetta import $$$
 
         b = DanmakuBuffer()
         assert b.total_count == 0
         assert b.get_stats()["max_size"] == 1000
 
     def test_constructor_custom_max_size(self):
-        from animetta import $$$
 
         b = DanmakuBuffer(max_size=50)
         assert b.get_stats()["max_size"] == 50
@@ -50,7 +46,6 @@ class TestDanmakuBuffer:
     # ── add ──────────────────────────────────────────────────────────
 
     def test_add_increases_count(self):
-        from animetta import $$$
 
         b = DanmakuBuffer()
         b.add("绝绝子")
@@ -58,7 +53,6 @@ class TestDanmakuBuffer:
         assert b.total_count == 2
 
     def test_add_empty_string_ignored(self):
-        from animetta import $$$
 
         b = DanmakuBuffer()
         b.add("")
@@ -66,28 +60,24 @@ class TestDanmakuBuffer:
         assert b.total_count == 0
 
     def test_add_digit_only_ignored(self):
-        from animetta import $$$
 
         b = DanmakuBuffer()
         b.add("12345")
         assert b.total_count == 0
 
     def test_add_short_text_ignored(self):
-        from animetta import $$$
 
         b = DanmakuBuffer()
         b.add("a")  # length < 2
         assert b.total_count == 0
 
     def test_add_accepts_chinese_two_chars(self):
-        from animetta import $$$
 
         b = DanmakuBuffer()
         b.add("哈哈")
         assert b.total_count == 1
 
     def test_add_accepts_room_id(self):
-        from animetta import $$$
 
         b = DanmakuBuffer()
         b.add("绝绝子", room_id=777)
@@ -95,7 +85,6 @@ class TestDanmakuBuffer:
         assert stats["room_id"] == 777
 
     def test_add_room_id_updates_lazy(self):
-        from animetta import $$$
 
         b = DanmakuBuffer()
         b.add("哈哈", room_id=111)
@@ -106,7 +95,6 @@ class TestDanmakuBuffer:
     # ── Ring buffer capacity ─────────────────────────────────────────
 
     def test_ring_buffer_evicts_oldest(self):
-        from animetta import $$$
 
         b = DanmakuBuffer(max_size=3)
         b.add("aa")
@@ -122,13 +110,11 @@ class TestDanmakuBuffer:
     # ── get_recent_danmaku ───────────────────────────────────────────
 
     def test_get_recent_danmaku_empty(self):
-        from animetta import $$$
 
         b = DanmakuBuffer()
         assert b.get_recent_danmaku() == []
 
     def test_get_recent_danmaku_returns_newest_first(self):
-        from animetta import $$$
 
         b = DanmakuBuffer()
         b.add("aa")
@@ -138,7 +124,6 @@ class TestDanmakuBuffer:
         assert recent == ["cc", "bb", "aa"]
 
     def test_get_recent_danmaku_respects_limit(self):
-        from animetta import $$$
 
         b = DanmakuBuffer()
         for i in range(10):
@@ -150,13 +135,11 @@ class TestDanmakuBuffer:
     # ── get_hot_phrases ──────────────────────────────────────────────
 
     def test_get_hot_phrases_empty_buffer(self):
-        from animetta import $$$
 
         b = DanmakuBuffer()
         assert b.get_hot_phrases() == []
 
     def test_get_hot_phrases_returns_frequent_phrases(self):
-        from animetta import $$$
 
         b = DanmakuBuffer()
         # Send same phrase multiple times
@@ -170,7 +153,6 @@ class TestDanmakuBuffer:
         assert found[0].frequency >= 3
 
     def test_get_hot_phrases_filters_by_min_freq(self):
-        from animetta import $$$
 
         b = DanmakuBuffer()
         b.add("unique")  # only once
@@ -179,7 +161,6 @@ class TestDanmakuBuffer:
         assert all(p.frequency >= 2 for p in hot)
 
     def test_get_hot_phrases_returns_empty_when_none_meet_threshold(self):
-        from animetta import $$$
 
         b = DanmakuBuffer()
         b.add("罕见")
@@ -188,7 +169,6 @@ class TestDanmakuBuffer:
     # ── clear ────────────────────────────────────────────────────────
 
     def test_clear_empties_buffer(self):
-        from animetta import $$$
 
         b = DanmakuBuffer()
         b.add("test")
@@ -200,7 +180,6 @@ class TestDanmakuBuffer:
     # ── get_stats ────────────────────────────────────────────────────
 
     def test_get_stats_includes_timestamps(self):
-        from animetta import $$$
 
         b = DanmakuBuffer()
         b.add("first", room_id=1)
@@ -215,7 +194,6 @@ class TestDanmakuBuffer:
     # ── Integration: eviction decrements phrase counts ────────────────
 
     def test_eviction_decrements_phrase_counter(self):
-        from animetta import $$$
 
         b = DanmakuBuffer(max_size=2)
         # Fill buffer

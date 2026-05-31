@@ -42,7 +42,6 @@ def service():
 
     We override _run_event_loop to avoid actually starting threads.
     """
-    from animetta import $$$
 
     svc = BilibiliDanmakuService(room_id=12345, sessdata="test_sessdata")
     return svc
@@ -52,7 +51,6 @@ class TestBilibiliDanmakuDataclasses:
     """Dataclass tests (no mocking needed)."""
 
     def test_danmaku_message_creation(self):
-        from animetta import $$$
 
         msg = DanmakuMessage(text="hello", user_name="user1", user_id=1001)
         assert msg.text == "hello"
@@ -61,7 +59,6 @@ class TestBilibiliDanmakuDataclasses:
         assert msg.timestamp > 0
 
     def test_danmaku_message_to_dict(self):
-        from animetta import $$$
 
         msg = DanmakuMessage(text="hello", user_name="user1", user_id=1001)
         d = msg.to_dict()
@@ -70,7 +67,6 @@ class TestBilibiliDanmakuDataclasses:
         assert d["user_id"] == 1001
 
     def test_danmaku_reply_creation(self):
-        from animetta import $$$
 
         reply = DanmakuReply(
             danmaku_text="hello", reply_text="hi there",
@@ -81,7 +77,6 @@ class TestBilibiliDanmakuDataclasses:
         assert reply.character_name == "AI"
 
     def test_danmaku_reply_to_dict(self):
-        from animetta import $$$
 
         reply = DanmakuReply(
             danmaku_text="hello", reply_text="hi",

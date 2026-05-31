@@ -19,12 +19,12 @@ import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from src.anima.memory.meme.models import (
+from animetta.memory.meme.models import (
     CognitiveAnalysis,
     Meme,
     MemeSource,
 )
-from src.anima.memory.meme.engine import MemePool
+from animetta.memory.meme.engine import MemePool
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -290,7 +290,7 @@ class TestMemePoolMatching:
 class TestMemeCognitiveAnalyzer:
     @pytest.fixture
     def analyzer(self):
-        from src.anima.services.meme.analyzer import MemeCognitiveAnalyzer
+        from animetta.services.meme.analyzer import MemeCognitiveAnalyzer
         return MemeCognitiveAnalyzer(llm_client=None, meme_pool=None)
 
     def test_parse_json_valid(self, analyzer):
@@ -358,7 +358,7 @@ class TestMemeCognitiveAnalyzer:
 class TestBilibiliMemeCollector:
     @pytest.fixture
     def collector(self):
-        from src.anima.services.meme.bilibili_collector import BilibiliMemeCollector
+        from animetta.services.meme.bilibili_collector import BilibiliMemeCollector
         return BilibiliMemeCollector(llm_client=None, config={"max_videos": 5})
 
     def test_parse_tags(self, collector):
@@ -388,7 +388,7 @@ class TestBilibiliMemeCollector:
         assert result == []
 
     def test_build_candidates(self, collector):
-        from src.anima.services.meme.bilibili_collector import CollectedVideo
+        from animetta.services.meme.bilibili_collector import CollectedVideo
 
         parsed = [
             {"text": "梗A", "context_hint": "场景A", "frequency": 3, "tags": ["幽默"]},
@@ -403,7 +403,7 @@ class TestBilibiliMemeCollector:
         assert result[0].source_videos == ["BV123"]
 
     def test_heuristic_identify(self, collector):
-        from src.anima.services.meme.bilibili_collector import CollectedVideo
+        from animetta.services.meme.bilibili_collector import CollectedVideo
 
         videos = [
             CollectedVideo(bvid="BV1", title="视频1", tags=["鬼畜", "搞笑"]),
@@ -425,7 +425,7 @@ class TestBilibiliMemeCollector:
 class TestBilibiliInteractionLearner:
     @pytest.fixture
     def learner(self):
-        from src.anima.services.meme.bilibili_interaction import BilibiliInteractionLearner
+        from animetta.services.meme.bilibili_interaction import BilibiliInteractionLearner
         return BilibiliInteractionLearner(
             llm_client=None,
             wiki_manager=None,
@@ -448,7 +448,7 @@ class TestBilibiliInteractionLearner:
         assert result == []
 
     def test_interaction_pattern_model(self):
-        from src.anima.services.meme.bilibili_interaction import InteractionPattern, LivestreamStrategy
+        from animetta.services.meme.bilibili_interaction import InteractionPattern, LivestreamStrategy
 
         pattern = InteractionPattern(
             name="高频互动",

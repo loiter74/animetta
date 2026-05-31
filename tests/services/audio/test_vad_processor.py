@@ -5,7 +5,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from animetta import $$$
 
 
 @pytest.fixture
@@ -26,7 +25,6 @@ def mock_callbacks():
 @pytest.fixture
 def processor(mock_vad, mock_callbacks):
     on_start, on_end = mock_callbacks
-    from animetta import $$$
 
     return VADAudioProcessor(
         session_id="test-session",
@@ -74,7 +72,6 @@ class TestVADAudioProcessor:
     @pytest.mark.asyncio
     async def test_no_vad_engine_buffers_directly(self):
         """Without VAD engine, chunks accumulate directly."""
-        from animetta import $$$
 
         p = VADAudioProcessor(session_id="no-vad", vad_engine=None)
         await p.process_chunk([0.5, 0.6])

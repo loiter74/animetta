@@ -9,13 +9,13 @@ import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from src.anima.memory.models.memory_entry import MemoryEntry
-from src.anima.memory.models.turns import MemoryTurn
-from src.anima.memory.storage.memory_entry_store import MemoryEntryStore
-from src.anima.memory.fact_extractor import FactExtractor, ExtractedFact
-from src.anima.memory.search.scorer import MemoryScorer, DECAY_ARCHIVE_THRESHOLD
-from src.anima.memory.learner.fact_extractor import format_facts_for_wiki
-from src.anima.memory.learner.persona_optimizer import (
+from animetta.memory.models.memory_entry import MemoryEntry
+from animetta.memory.models.turns import MemoryTurn
+from animetta.memory.storage.memory_entry_store import MemoryEntryStore
+from animetta.memory.fact_extractor import FactExtractor, ExtractedFact
+from animetta.memory.search.scorer import MemoryScorer, DECAY_ARCHIVE_THRESHOLD
+from animetta.memory.learner.fact_extractor import format_facts_for_wiki
+from animetta.memory.learner.persona_optimizer import (
     format_suggestions_yaml,
     _summarize_persona,
     _clean_json,

@@ -74,7 +74,6 @@ async def main():
         llm = None
 
     # 2. Create collector
-    from animetta import $$$
     collector = BilibiliMemeCollector(
         llm_client=llm,
         config={
@@ -105,7 +104,6 @@ async def main():
     # 4. Cognitive analysis (if LLM available)
     if llm:
         print(f"\n[2/3] Running cognitive analysis on {len(candidates)} candidates...")
-        from animetta import $$$
         analyzer = MemeCognitiveAnalyzer(llm_client=llm, meme_pool=None)
 
         analyses = []

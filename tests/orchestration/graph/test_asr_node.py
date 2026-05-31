@@ -3,7 +3,6 @@
 import pytest
 from langgraph.types import RunnableConfig
 
-from animetta import $$$
 
 
 class TestAsrNode:
@@ -12,7 +11,6 @@ class TestAsrNode:
     @pytest.mark.asyncio
     async def test_successful_transcription(self, mock_service_context):
         """Raw audio is transcribed to text and a HumanMessage is created."""
-        from animetta import $$$
 
         state = create_initial_state(
             session_id="test",
@@ -35,7 +33,6 @@ class TestAsrNode:
     @pytest.mark.asyncio
     async def test_missing_audio_returns_error(self):
         """When raw_audio is absent, return error and empty text."""
-        from animetta import $$$
 
         state = create_initial_state(session_id="test", raw_audio=None)
         result = await asr_node(state)
@@ -46,7 +43,6 @@ class TestAsrNode:
     @pytest.mark.asyncio
     async def test_missing_audio_skips_asr(self):
         """State without raw_audio key should also be handled."""
-        from animetta import $$$
 
         state = create_initial_state(session_id="test")
         # deliberately remove raw_audio
@@ -59,7 +55,6 @@ class TestAsrNode:
     @pytest.mark.asyncio
     async def test_no_service_context_returns_error(self):
         """Without service_context in config, return error."""
-        from animetta import $$$
 
         state = create_initial_state(
             session_id="test",
@@ -74,7 +69,6 @@ class TestAsrNode:
     @pytest.mark.asyncio
     async def test_no_asr_engine_returns_error(self, mock_service_context):
         """When service_context lacks an ASR engine, return error."""
-        from animetta import $$$
 
         mock_service_context.asr_engine = None
 
@@ -93,7 +87,6 @@ class TestAsrNode:
     @pytest.mark.asyncio
     async def test_transcription_failure_returns_error(self, mock_service_context):
         """When ASR engine raises, return error with the exception message."""
-        from animetta import $$$
 
         mock_service_context.asr_engine.transcribe = pytest.fail
         # use AsyncMock that raises
@@ -117,7 +110,6 @@ class TestAsrNode:
     @pytest.mark.asyncio
     async def test_with_user_name_prefixes_message(self, mock_service_context):
         """When user_name is in state, message content should include it."""
-        from animetta import $$$
 
         state = create_initial_state(
             session_id="test",
@@ -137,7 +129,6 @@ class TestAsrNode:
     @pytest.mark.asyncio
     async def test_socketio_emission_on_transcription(self, mock_service_context):
         """Transcript is emitted via socketio when present in config."""
-        from animetta import $$$
         from unittest.mock import AsyncMock
 
         mock_sio = AsyncMock()
@@ -164,7 +155,6 @@ class TestAsrNode:
     @pytest.mark.asyncio
     async def test_socketio_emission_silent_on_failure(self, mock_service_context):
         """SocketIO emission failure should not crash the node."""
-        from animetta import $$$
         from unittest.mock import AsyncMock
 
         mock_sio = AsyncMock()

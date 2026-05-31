@@ -16,7 +16,6 @@ import yaml
 
 
 def load_config():
-    from animetta import $$$
     config_path = Path(__file__).parent.parent / "config" / "singing.yaml"
     with open(config_path, "r", encoding="utf-8") as f:
         raw = yaml.safe_load(f)
@@ -39,8 +38,6 @@ async def main():
     logger.info(f"ASR: {config.asr.model_size}, language={config.asr.language}")
     logger.info(f"RVC: {config.rvc.model_name}, index={config.rvc.index_path}")
 
-    from animetta import $$$
-    from animetta import $$$
 
     pipeline = SVCPipeline(config)
     

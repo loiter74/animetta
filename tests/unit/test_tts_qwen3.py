@@ -2,9 +2,6 @@
 
 import pytest
 
-from animetta import $$$
-from animetta import $$$
-from animetta import $$$
 
 
 class TestQwen3TTSConfigUnit:

@@ -4,7 +4,6 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from langgraph.types import RunnableConfig
 
-from animetta import $$$
 
 
 class TestOutputNode:
@@ -13,7 +12,6 @@ class TestOutputNode:
     @pytest.mark.asyncio
     async def test_no_socketio_returns_error(self):
         """Without Socket.IO in config, returns error."""
-        from animetta import $$$
 
         state = create_initial_state(session_id="test")
         config = RunnableConfig(configurable={})
@@ -23,7 +21,6 @@ class TestOutputNode:
     @pytest.mark.asyncio
     async def test_emits_conversation_start_and_end(self, mock_socketio, mock_service_context):
         """Always emits conversation-start and conversation-end control signals."""
-        from animetta import $$$
 
         state = create_initial_state(session_id="test")
         state["response_text"] = "Hello"
@@ -45,7 +42,6 @@ class TestOutputNode:
     @pytest.mark.asyncio
     async def test_emits_text_when_response_exists(self, mock_socketio, mock_service_context):
         """response_text triggers sentence events."""
-        from animetta import $$$
 
         state = create_initial_state(session_id="test")
         state["response_text"] = "Hello world"
@@ -66,7 +62,6 @@ class TestOutputNode:
     @pytest.mark.asyncio
     async def test_emits_expression_for_emotion(self, mock_socketio, mock_service_context):
         """Emotion in state triggers expression event + Live2D motion."""
-        from animetta import $$$
 
         state = create_initial_state(session_id="test")
         state["response_text"] = "I'm happy"
@@ -94,7 +89,6 @@ class TestOutputNode:
     @pytest.mark.asyncio
     async def test_memory_storage_called(self, mock_socketio, mock_service_context):
         """Memory system store_turn should be called with conversation data."""
-        from animetta import $$$
 
         mock_service_context.memory_system.store_turn = AsyncMock()
 

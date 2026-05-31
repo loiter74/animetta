@@ -5,8 +5,6 @@ Tests for EmotionParamMapper — emotion to Live2D parameter mapping.
 import pytest
 from unittest.mock import patch
 
-from animetta import $$$
-from animetta import $$$
 
 
 # ============================================================

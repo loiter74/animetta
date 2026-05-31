@@ -7,8 +7,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 import sqlite3
 import pytest
-from src.anima.memory.models.memory_entry import MemoryEntry
-from src.anima.memory.storage.memory_entry_store import MemoryEntryStore
+from animetta.memory.models.memory_entry import MemoryEntry
+from animetta.memory.storage.memory_entry_store import MemoryEntryStore
 
 
 @pytest.fixture

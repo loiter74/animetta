@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.anima.memory.tools import (
+from animetta.memory.tools import (
     MEMORY_GET_SCHEMA,
     MEMORY_SEARCH_SCHEMA,
     execute_tool,
@@ -116,7 +116,7 @@ class TestExecuteTool:
 
     def test_search_results_serialization(self):
         mock_manager = MagicMock()
-        from src.anima.memory.models.base import SearchResult
+        from animetta.memory.models.base import SearchResult
 
         mock_manager.search.return_value = [
             SearchResult(

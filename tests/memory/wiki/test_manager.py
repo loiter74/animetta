@@ -8,25 +8,25 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.anima.memory.wiki.manager import WikiManager
-from src.anima.memory.wiki.models import PageType, WikiPage
+from animetta.memory.wiki.manager import WikiManager
+from animetta.memory.wiki.models import PageType, WikiPage
 
 
 @pytest.fixture
 def mock_manager():
     """MemoryManager with mocked backends."""
     with (
-        patch("src.anima.memory.manager.SQLiteStore") as ms,
-        patch("src.anima.memory.manager.ChromaStore") as mc,
-        patch("src.anima.memory.manager.MemoryEntryStore") as me,
+        patch("animetta.memory.manager.SQLiteStore") as ms,
+        patch("animetta.memory.manager.ChromaStore") as mc,
+        patch("animetta.memory.manager.MemoryEntryStore") as me,
     ):
         ms.return_value = MagicMock()
         ms.return_value.conn = MagicMock()
         mc.return_value = MagicMock()
         me.return_value = MagicMock()
 
-        from src.anima.memory.manager import MemoryManager
-        from src.anima.memory.config import MemoryConfig
+        from animetta.memory.manager import MemoryManager
+        from animetta.memory.config import MemoryConfig
 
         config = MagicMock(spec=MemoryConfig)
         config.workspace_dir = "/tmp/test_workspace"

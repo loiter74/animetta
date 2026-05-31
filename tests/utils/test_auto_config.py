@@ -11,7 +11,6 @@ import pytest
 
 @pytest.fixture
 def auto_config():
-    from animetta import $$$
 
     return AutoConfig()
 

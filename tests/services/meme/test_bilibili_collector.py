@@ -16,7 +16,6 @@ class TestCollectedVideo:
     """Dataclass: CollectedVideo."""
 
     def test_creation_and_to_dict(self):
-        from animetta import $$$
 
         v = CollectedVideo(
             bvid="BV1xx",
@@ -40,7 +39,6 @@ class TestCollectedComment:
     """Dataclass: CollectedComment."""
 
     def test_creation_and_to_dict(self):
-        from animetta import $$$
 
         c = CollectedComment(content="好活", likes=42, replies=5, publish_time="2024-01-01")
         d = c.to_dict()
@@ -54,7 +52,6 @@ class TestMemeCandidateRaw:
     """Dataclass: MemeCandidateRaw."""
 
     def test_creation_and_to_dict(self):
-        from animetta import $$$
 
         m = MemeCandidateRaw(
             text="绝绝子",
@@ -75,7 +72,6 @@ class TestBilibiliMemeCollector:
     # ── Constructor ──────────────────────────────────────────────────
 
     def test_constructor_defaults(self, mock_llm):
-        from animetta import $$$
 
         c = BilibiliMemeCollector(llm_client=mock_llm)
         assert c._max_videos == 50
@@ -85,7 +81,6 @@ class TestBilibiliMemeCollector:
         assert c._search_keyword == ""
 
     def test_constructor_custom_config(self, mock_llm):
-        from animetta import $$$
 
         c = BilibiliMemeCollector(
             llm_client=mock_llm,
@@ -97,13 +92,11 @@ class TestBilibiliMemeCollector:
     # ── _parse_tags ──────────────────────────────────────────────────
 
     def test_parse_tags_empty(self):
-        from animetta import $$$
 
         assert BilibiliMemeCollector._parse_tags("") == []
         assert BilibiliMemeCollector._parse_tags(None) == []
 
     def test_parse_tags_comma_separated(self):
-        from animetta import $$$
 
         result = BilibiliMemeCollector._parse_tags("搞笑, 梗, vtuber")
         assert result == ["搞笑", "梗", "vtuber"]
@@ -113,7 +106,6 @@ class TestBilibiliMemeCollector:
     @pytest.mark.asyncio
     async def test_collect_without_llm_uses_heuristic(self):
         """Without LLM, collect uses heuristic identification."""
-        from animetta import $$$
 
         c = BilibiliMemeCollector(llm_client=None, config={"max_videos": 3})
 
@@ -125,7 +117,6 @@ class TestBilibiliMemeCollector:
     @pytest.mark.asyncio
     async def test_collect_with_llm(self, mock_llm):
         """With LLM, collect calls _identify_meme_candidates."""
-        from animetta import $$$
 
         c = BilibiliMemeCollector(llm_client=mock_llm)
 
@@ -137,7 +128,6 @@ class TestBilibiliMemeCollector:
     @pytest.mark.asyncio
     async def test_collect_fetch_failure_returns_empty(self, mock_llm):
         """If trending videos fail, collect returns empty list."""
-        from animetta import $$$
 
         c = BilibiliMemeCollector(llm_client=mock_llm)
 
@@ -148,14 +138,12 @@ class TestBilibiliMemeCollector:
     # ── _heuristic_identify ──────────────────────────────────────────
 
     def test_heuristic_identify_empty(self):
-        from animetta import $$$
 
         c = BilibiliMemeCollector(llm_client=None)
         result = c._heuristic_identify([], {})
         assert result == []
 
     def test_heuristic_identify_finds_repeated_tags(self):
-        from animetta import $$$
 
         c = BilibiliMemeCollector(llm_client=None)
         videos = [
@@ -173,12 +161,10 @@ class TestBilibiliMemeCollector:
     # ── _build_candidates ────────────────────────────────────────────
 
     def test_build_candidates_empty(self):
-        from animetta import $$$
 
         assert BilibiliMemeCollector._build_candidates([], []) == []
 
     def test_build_candidates_filters_empty_text(self):
-        from animetta import $$$
 
         videos = [CollectedVideo(bvid="BV1xx", title="Test")]
         parsed = [
@@ -193,7 +179,6 @@ class TestBilibiliMemeCollector:
     # ── _parse_llm_json ──────────────────────────────────────────────
 
     def test_parse_llm_json_list(self):
-        from animetta import $$$
 
         raw = '[{"text": "梗1"}, {"text": "梗2"}]'
         result = BilibiliMemeCollector._parse_llm_json(raw)
@@ -201,20 +186,17 @@ class TestBilibiliMemeCollector:
         assert result[0]["text"] == "梗1"
 
     def test_parse_llm_json_dict_with_wrapper(self):
-        from animetta import $$$
 
         raw = '{"memes": [{"text": "梗1"}]}'
         result = BilibiliMemeCollector._parse_llm_json(raw)
         assert len(result) == 1
 
     def test_parse_llm_json_invalid(self):
-        from animetta import $$$
 
         result = BilibiliMemeCollector._parse_llm_json("{{{")
         assert result == []
 
     def test_parse_llm_json_with_fence(self):
-        from animetta import $$$
 
         raw = "```json\n[{\"text\": \"梗1\"}]\n```"
         result = BilibiliMemeCollector._parse_llm_json(raw)
@@ -225,7 +207,6 @@ class TestBilibiliMemeCollector:
     @pytest.mark.asyncio
     async def test_fetch_trending_videos_no_bilibili_api(self, mock_llm):
         """If bilibili-api is not installed, returns empty list."""
-        from animetta import $$$
 
         c = BilibiliMemeCollector(llm_client=mock_llm)
         with patch.dict("sys.modules", {"bilibili_api": None}):
@@ -235,7 +216,6 @@ class TestBilibiliMemeCollector:
 
     @pytest.mark.asyncio
     async def test_identify_without_llm_uses_heuristic(self):
-        from animetta import $$$
 
         c = BilibiliMemeCollector(llm_client=None)
         videos = [CollectedVideo(bvid="BV1", title="Test", tags=["meme"])]
@@ -245,7 +225,6 @@ class TestBilibiliMemeCollector:
 
     @pytest.mark.asyncio
     async def test_identify_with_llm_parses_result(self, mock_llm):
-        from animetta import $$$
 
         mock_llm.chat_messages.return_value = {"content": '[{"text": "梗1", "frequency": 2}]'}
         c = BilibiliMemeCollector(llm_client=mock_llm)

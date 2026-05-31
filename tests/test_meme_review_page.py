@@ -7,7 +7,7 @@ import pytest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from unittest.mock import AsyncMock, MagicMock
-from src.anima.memory.meme.models import Meme, MemeSource, CognitiveAnalysis
+from animetta.memory.meme.models import Meme, MemeSource, CognitiveAnalysis
 
 
 class TestMemeReviewStatus:
@@ -89,7 +89,7 @@ class TestMemePoolReviewIntegration:
             self._discarded.add(meme_id)
 
     def test_review_good_updates_score_and_status(self):
-        from src.anima.memory.meme.engine import MemePool
+        from animetta.memory.meme.engine import MemePool
 
         store = self.FakeStore()
         pool = MemePool(store=store)
@@ -104,7 +104,7 @@ class TestMemePoolReviewIntegration:
         assert updated.base_score > 0.7
 
     def test_review_bad_deactivates(self):
-        from src.anima.memory.meme.engine import MemePool
+        from animetta.memory.meme.engine import MemePool
 
         store = self.FakeStore()
         pool = MemePool(store=store)
@@ -121,7 +121,7 @@ class TestMemePoolReviewIntegration:
         assert discarded[0].review_status == "bad"
 
     def test_pending_memes_filter(self):
-        from src.anima.memory.meme.engine import MemePool
+        from animetta.memory.meme.engine import MemePool
 
         store = self.FakeStore()
         pool = MemePool(store=store)

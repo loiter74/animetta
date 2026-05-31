@@ -7,8 +7,6 @@ import pytest
 from langgraph.graph import StateGraph as RealStateGraph
 
 import anima.orchestration.graph.builder as builder_mod
-from animetta import $$$
-from animetta import $$$
 
 
 # ── Fixtures ────────────────────────────────────────────────

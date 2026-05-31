@@ -11,21 +11,18 @@ from unittest.mock import MagicMock, patch
 @pytest.fixture
 def viseme_config():
     """Default VisemeConfig for tests."""
-    from animetta import $$$
     return VisemeConfig()
 
 
 @pytest.fixture
 def viseme_sync(viseme_config):
     """VisemeLipSync with default config."""
-    from animetta import $$$
     return VisemeLipSync(config=viseme_config, sample_rate=24000)
 
 
 @pytest.fixture
 def simple_sync():
     """SimpleLipSync with default params."""
-    from animetta import $$$
     return SimpleLipSync()
 
 
@@ -68,7 +65,6 @@ class TestVisemeConfig:
 
     def test_custom_bands(self):
         """Custom frequency bands override defaults."""
-        from animetta import $$$
         custom_bands = {'low': (100, 400), 'mid': (400, 2000)}
         cfg = VisemeConfig(bands=custom_bands, weights={'a': [0.5, 0.5]})
         assert cfg.bands['low'] == (100, 400)
@@ -76,7 +72,6 @@ class TestVisemeConfig:
 
     def test_custom_smoothing(self):
         """Custom smoothing values are stored."""
-        from animetta import $$$
         cfg = VisemeConfig(smoothing=0.5, attack=0.01, release=0.05)
         assert cfg.smoothing == 0.5
         assert cfg.attack == 0.01
@@ -276,25 +271,21 @@ class TestCreateLipSyncEngine:
 
     def test_viseme_mode_returns_viseme_lip_sync(self):
         """Factory with mode='viseme' returns VisemeLipSync."""
-        from animetta import $$$
         engine = create_lip_sync_engine(mode="viseme")
         assert isinstance(engine, VisemeLipSync)
 
     def test_simple_mode_returns_simple_lip_sync(self):
         """Factory with mode='simple' returns SimpleLipSync."""
-        from animetta import $$$
         engine = create_lip_sync_engine(mode="simple")
         assert isinstance(engine, SimpleLipSync)
 
     def test_invalid_mode_raises_value_error(self):
         """Unknown mode raises ValueError."""
-        from animetta import $$$
         with pytest.raises(ValueError, match="Unknown lip sync mode"):
             create_lip_sync_engine(mode="invalid_mode")
 
     def test_kwargs_passed_to_simple_mode(self):
         """Extra kwargs are forwarded to SimpleLipSync."""
-        from animetta import $$$
         engine = create_lip_sync_engine(mode="simple", sensitivity=3.0, smoothing=0.5)
         assert isinstance(engine, SimpleLipSync)
         assert engine.sensitivity == 3.0
@@ -302,7 +293,6 @@ class TestCreateLipSyncEngine:
 
     def test_kwargs_passed_to_viseme_mode(self):
         """Extra kwargs are forwarded to VisemeConfig."""
-        from animetta import $$$
         engine = create_lip_sync_engine(mode="viseme", smoothing=0.8, attack=0.05)
         assert isinstance(engine, VisemeLipSync)
         assert engine.config.smoothing == 0.8
@@ -310,12 +300,10 @@ class TestCreateLipSyncEngine:
 
     def test_default_sample_rate_is_24000(self):
         """Default sample_rate for viseme mode is 24000."""
-        from animetta import $$$
         engine = create_lip_sync_engine(mode="viseme")
         assert engine.sample_rate == 24000
 
     def test_custom_sample_rate(self):
         """Custom sample_rate is forwarded to VisemeLipSync."""
-        from animetta import $$$
         engine = create_lip_sync_engine(mode="viseme", sample_rate=16000)
         assert engine.sample_rate == 16000

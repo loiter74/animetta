@@ -8,7 +8,6 @@ class TestMinecraftBotConfig:
     """MinecraftBotConfig model tests."""
 
     def test_default_values(self):
-        from animetta import $$$
         cfg = MinecraftBotConfig()
         assert cfg.host == "localhost"
         assert cfg.port == 25565
@@ -16,7 +15,6 @@ class TestMinecraftBotConfig:
         assert cfg.version is None
 
     def test_custom_values(self):
-        from animetta import $$$
         cfg = MinecraftBotConfig(
             host="mc.example.com",
             port=12345,
@@ -29,7 +27,6 @@ class TestMinecraftBotConfig:
         assert cfg.version == "1.20.4"
 
     def test_port_must_be_int(self):
-        from animetta import $$$
         with pytest.raises(ValidationError):
             MinecraftBotConfig(port="not_a_number")
 
@@ -38,14 +35,12 @@ class TestMinecraftSafetyConfig:
     """MinecraftSafetyConfig model tests."""
 
     def test_default_values(self):
-        from animetta import $$$
         cfg = MinecraftSafetyConfig()
         assert cfg.no_griefing is True
         assert cfg.auto_heal is True
         assert cfg.max_distance == 500
 
     def test_custom_values(self):
-        from animetta import $$$
         cfg = MinecraftSafetyConfig(
             no_griefing=False,
             auto_heal=False,
@@ -60,7 +55,6 @@ class TestMinecraftConfig:
     """MinecraftConfig model tests."""
 
     def test_default_values(self):
-        from animetta import $$$
         cfg = MinecraftConfig()
         assert cfg.enabled is False
         assert cfg.autonomous is False
@@ -69,7 +63,6 @@ class TestMinecraftConfig:
         assert cfg.safety.no_griefing is True
 
     def test_enabled_config(self):
-        from animetta import $$$
         cfg = MinecraftConfig(
             enabled=True,
             autonomous=True,
@@ -81,7 +74,6 @@ class TestMinecraftConfig:
         assert cfg.bot.username == "TestBot"
 
     def test_nested_safety_config(self):
-        from animetta import $$$
         cfg = MinecraftConfig(
             safety=MinecraftSafetyConfig(max_distance=300)
         )

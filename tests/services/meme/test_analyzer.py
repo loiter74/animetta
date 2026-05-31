@@ -24,7 +24,6 @@ def mock_meme_pool():
 
 @pytest.fixture
 def analyzer(mock_llm, mock_meme_pool):
-    from animetta import $$$
 
     return MemeCognitiveAnalyzer(
         llm_client=mock_llm,
@@ -50,7 +49,6 @@ class TestMemeCognitiveAnalyzer:
         """Successful LLM call should return a CognitiveAnalysis."""
         mock_llm.chat_messages.return_value = {"content": _MOCK_VALID_JSON}
         result = await analyzer.analyze(text="测试梗", context_hint="吐槽场景")
-        from animetta import $$$
 
         assert isinstance(result, CognitiveAnalysis)
         assert result.humor_mechanism == "双关"
@@ -75,7 +73,6 @@ class TestMemeCognitiveAnalyzer:
         """LLM failure should fall back to basic analysis."""
         mock_llm.chat_messages.side_effect = RuntimeError("LLM down")
         result = await analyzer.analyze(text="测试", context_hint="吐槽")
-        from animetta import $$$
 
         assert isinstance(result, CognitiveAnalysis)
         assert result.humor_mechanism == ""  # basic fallback
@@ -93,7 +90,6 @@ class TestMemeCognitiveAnalyzer:
     @pytest.mark.asyncio
     async def test_analyze_no_llm_returns_basic(self, mock_meme_pool):
         """Without an LLM client, analyze returns basic analysis."""
-        from animetta import $$$
 
         a = MemeCognitiveAnalyzer(llm_client=None, meme_pool=mock_meme_pool)
         result = await a.analyze(text="摆烂了", context_hint="摸鱼")
@@ -196,7 +192,6 @@ class TestMemeCognitiveAnalyzer:
     # ── _basic_analysis ──────────────────────────────────────────────
 
     def test_basic_analysis_defaults(self, analyzer):
-        from animetta import $$$
 
         result = analyzer._basic_analysis(text="测试", context_hint="场景", source_url="url")
         assert isinstance(result, CognitiveAnalysis)

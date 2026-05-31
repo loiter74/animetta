@@ -4,14 +4,6 @@ Tests for EmotionAnalyzerFactory and TimelineStrategyFactory.
 
 import pytest
 
-from animetta import $$$
-from animetta import $$$
-from animetta import $$$
-from animetta import $$$
-from animetta import $$$
-from animetta import $$$
-from animetta import $$$
-from animetta import $$$
 
 
 # ============================================================
@@ -196,7 +188,6 @@ class TestTimelineStrategyFactory:
         strategy = TimelineStrategyFactory.create("position_based")
         assert isinstance(strategy, MockStrategy)
         # Restore
-        from animetta import $$$
         TimelineStrategyFactory._strategies["position_based"] = PositionBasedStrategy
 
 

@@ -3,7 +3,7 @@
 import os, sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from src.anima.memory.search.scorer import (
+from animetta.memory.search.scorer import (
     MemoryScorer,
     EMOTION_INTENSITY,
     EMOTION_BOOST_FACTOR,

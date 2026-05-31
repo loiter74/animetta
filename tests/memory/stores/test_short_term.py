@@ -6,8 +6,8 @@ from datetime import datetime
 
 import pytest
 
-from src.anima.memory.models.turns import MemoryTurn
-from src.anima.memory.stores.short_term import ShortTermMemory
+from animetta.memory.models.turns import MemoryTurn
+from animetta.memory.stores.short_term import ShortTermMemory
 
 
 def _make_turn(session_id: str, text: str, idx: int = 0) -> MemoryTurn:

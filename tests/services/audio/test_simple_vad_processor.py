@@ -4,7 +4,6 @@ from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 import pytest
 
-from animetta import $$$
 
 
 class _TensorLike:
@@ -33,7 +32,6 @@ def mock_callbacks():
 
 @pytest.fixture
 def processor(mock_vad, mock_callbacks):
-    from animetta import $$$
 
     return SimpleVADProcessor(
         session_id="test-simple",
@@ -53,7 +51,6 @@ class TestSimpleVADProcessor:
 
     def test_get_speech_prob_no_model(self):
         """Without a silero model, prob returns 0.0."""
-        from animetta import $$$
 
         vad_no_model = MagicMock(spec=VADInterface)
         p = SimpleVADProcessor(
@@ -64,7 +61,6 @@ class TestSimpleVADProcessor:
 
     def test_get_speech_prob_with_model(self, mock_vad):
         """_get_speech_prob delegates to the Silero model."""
-        from animetta import $$$
 
         mock_vad.model.return_value = _TensorLike(0.85)
         p = SimpleVADProcessor(
@@ -77,7 +73,6 @@ class TestSimpleVADProcessor:
 
     def test_get_speech_prob_error_fallback(self, mock_vad):
         """If the model raises, _get_speech_prob returns 0.0."""
-        from animetta import $$$
 
         mock_vad.model.side_effect = RuntimeError("model crash")
         p = SimpleVADProcessor(

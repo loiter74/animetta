@@ -8,8 +8,8 @@ from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
 
-from src.anima.memory.config import MemoryConfig
-from src.anima.memory.manager import MemoryManager
+from animetta.memory.config import MemoryConfig
+from animetta.memory.manager import MemoryManager
 
 
 @pytest.fixture
@@ -21,9 +21,9 @@ def mock_config(tmp_path):
 def manager(mock_config):
     """Create a MemoryManager with mocked storage backends."""
     with (
-        patch("src.anima.memory.manager.SQLiteStore") as mock_sqlite,
-        patch("src.anima.memory.manager.ChromaStore") as mock_chroma,
-        patch("src.anima.memory.manager.MemoryEntryStore") as mock_entry,
+        patch("animetta.memory.manager.SQLiteStore") as mock_sqlite,
+        patch("animetta.memory.manager.ChromaStore") as mock_chroma,
+        patch("animetta.memory.manager.MemoryEntryStore") as mock_entry,
         patch("sentence_transformers.SentenceTransformer") as mock_st,
     ):
         mock_sqlite_instance = MagicMock()
@@ -49,9 +49,9 @@ class TestMemoryManagerInit:
         ws = tmp_path / "new_workspace"
         config = MemoryConfig(workspace_dir=str(ws))
         with (
-            patch("src.anima.memory.manager.SQLiteStore") as ms,
-            patch("src.anima.memory.manager.ChromaStore") as mc,
-            patch("src.anima.memory.manager.MemoryEntryStore") as me,
+            patch("animetta.memory.manager.SQLiteStore") as ms,
+            patch("animetta.memory.manager.ChromaStore") as mc,
+            patch("animetta.memory.manager.MemoryEntryStore") as me,
             patch("sentence_transformers.SentenceTransformer"),
         ):
             ms.return_value = MagicMock()
@@ -65,9 +65,9 @@ class TestMemoryManagerInit:
         ws = tmp_path / "ws"
         config = MemoryConfig(workspace_dir=str(ws))
         with (
-            patch("src.anima.memory.manager.SQLiteStore") as ms,
-            patch("src.anima.memory.manager.ChromaStore") as mc,
-            patch("src.anima.memory.manager.MemoryEntryStore") as me,
+            patch("animetta.memory.manager.SQLiteStore") as ms,
+            patch("animetta.memory.manager.ChromaStore") as mc,
+            patch("animetta.memory.manager.MemoryEntryStore") as me,
             patch("sentence_transformers.SentenceTransformer"),
         ):
             ms.return_value = MagicMock()
@@ -159,7 +159,7 @@ class TestMemoryManagerSync:
 class TestMemoryManagerSearch:
     """Search delegation."""
 
-    @patch("src.anima.memory.manager.hybrid_search")
+    @patch("animetta.memory.manager.hybrid_search")
     def test_search_calls_hybrid(self, mock_hybrid, manager):
         mock_hybrid.return_value = []
         manager.search("test query")
@@ -167,7 +167,7 @@ class TestMemoryManagerSearch:
         args, kwargs = mock_hybrid.call_args
         assert kwargs["query"] == "test query"
 
-    @patch("src.anima.memory.manager.hybrid_search")
+    @patch("animetta.memory.manager.hybrid_search")
     def test_search_passes_max_results(self, mock_hybrid, manager):
         mock_hybrid.return_value = []
         manager.search("q", max_results=5, min_score=0.2)

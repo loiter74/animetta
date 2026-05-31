@@ -11,7 +11,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 @pytest.fixture
 def live2d_manager():
     """Fresh Live2DManager for each test."""
-    from animetta import $$$
     return Live2DManager()
 
 
@@ -282,7 +281,6 @@ class TestReplaceInterruptLifecycle:
     @pytest.mark.asyncio
     async def test_default_queue_policy_is_append(self, live2d_manager):
         """Default queue_policy in Live2DManager.enqueue_action is 'append'."""
-        from animetta import $$$
         with patch.object(live2d_manager.action_queue, 'enqueue', new=AsyncMock(return_value={"ok": True})):
             await live2d_manager.enqueue_action(
                 action_data={"type": "test"}, action_id="default_policy",

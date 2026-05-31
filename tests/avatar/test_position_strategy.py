@@ -4,8 +4,6 @@ Tests for PositionBasedStrategy — even time distribution of emotion segments.
 
 import pytest
 
-from animetta import $$$
-from animetta import $$$
 
 
 # ============================================================

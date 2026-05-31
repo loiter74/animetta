@@ -3,8 +3,6 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from animetta import $$$
-from animetta import $$$
 
 
 # ── Fixtures ───────────────────────────────────────────────────────

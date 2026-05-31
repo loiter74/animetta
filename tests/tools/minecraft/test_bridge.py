@@ -43,7 +43,6 @@ class TestMinecraftBridgeInit:
     """Bridge construction and initial state tests."""
 
     def test_initial_state_not_running(self, mock_config):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
         assert bridge.is_running is False
         assert bridge._process is None
@@ -51,12 +50,10 @@ class TestMinecraftBridgeInit:
         assert bridge._next_id == 1
 
     def test_autonomous_flag_is_stored(self, mock_config):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config, autonomous=True)
         assert bridge._autonomous_enabled is True
 
     def test_autonomous_flag_defaults_false(self, mock_config):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
         assert bridge._autonomous_enabled is False
 
@@ -65,7 +62,6 @@ class TestMinecraftBridgeStart:
     """Bridge.start() lifecycle tests."""
 
     async def test_start_script_not_found_returns_false(self, mock_config):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
         with patch("os.path.exists", return_value=False):
             result = await bridge.start()
@@ -73,7 +69,6 @@ class TestMinecraftBridgeStart:
         assert bridge.is_running is False
 
     async def test_start_node_modules_missing_returns_false(self, mock_config):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
 
         def exists_side_effect(path):
@@ -89,14 +84,12 @@ class TestMinecraftBridgeStart:
         assert bridge.is_running is False
 
     async def test_start_already_running_returns_true(self, mock_config):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
         bridge._running = True
         result = await bridge.start()
         assert result is True
 
     async def test_start_successful(self, mock_config, mock_process):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
 
         with patch("os.path.exists", return_value=True), \
@@ -109,7 +102,6 @@ class TestMinecraftBridgeStart:
         assert bridge._process is mock_process
 
     async def test_start_login_timeout_still_succeeds(self, mock_config, mock_process):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
 
         with patch("os.path.exists", return_value=True), \
@@ -121,7 +113,6 @@ class TestMinecraftBridgeStart:
         assert bridge.is_running is True
 
     async def test_start_exception_returns_false(self, mock_config):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
 
         with patch("os.path.exists", return_value=True), \
@@ -132,7 +123,6 @@ class TestMinecraftBridgeStart:
         assert bridge.is_running is False
 
     async def test_start_with_autonomous_loop(self, mock_config, mock_process):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config, autonomous=True)
 
         mock_loop = MagicMock()
@@ -152,14 +142,12 @@ class TestMinecraftBridgeSendCommand:
     """Bridge.send_command() tests."""
 
     async def test_send_command_bridge_not_running(self, mock_config):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
         result = await bridge.send_command("status")
         assert result["status"] == "error"
         assert "not running" in result["result"]
 
     async def test_send_command_process_exited(self, mock_config, mock_process):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
         bridge._running = True
         bridge._process = mock_process
@@ -169,7 +157,6 @@ class TestMinecraftBridgeSendCommand:
         assert "exited" in result["result"]
 
     async def test_send_command_success(self, mock_config, mock_process):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
         bridge._running = True
         bridge._process = mock_process
@@ -191,7 +178,6 @@ class TestMinecraftBridgeSendCommand:
         assert decoded["params"] == {"x": 0, "y": 64, "z": 0}
 
     async def test_send_command_timeout(self, mock_config, mock_process):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
         bridge._running = True
         bridge._process = mock_process
@@ -203,7 +189,6 @@ class TestMinecraftBridgeSendCommand:
         assert "timed out" in result["result"]
 
     async def test_send_command_exception(self, mock_config, mock_process):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
         bridge._running = True
         bridge._process = mock_process
@@ -215,7 +200,6 @@ class TestMinecraftBridgeSendCommand:
         assert "bad data" in result["result"]
 
     async def test_send_command_increments_id(self, mock_config, mock_process):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
         bridge._running = True
         bridge._process = mock_process
@@ -238,7 +222,6 @@ class TestMinecraftBridgeReadStdout:
     """Bridge._read_stdout() JSON-RPC parsing tests."""
 
     async def test_read_stdout_parses_response(self, mock_config, mock_process):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
         bridge._running = True
         bridge._process = mock_process
@@ -257,7 +240,6 @@ class TestMinecraftBridgeReadStdout:
         assert future.result() == {"status": "success", "result": "done"}
 
     async def test_read_stdout_handles_invalid_json(self, mock_config, mock_process):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
         bridge._running = True
         bridge._process = mock_process
@@ -271,7 +253,6 @@ class TestMinecraftBridgeReadStdout:
         await bridge._read_stdout()
 
     async def test_read_stdout_login_event_sets_ready(self, mock_config, mock_process):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
         bridge._running = True
         bridge._process = mock_process
@@ -287,7 +268,6 @@ class TestMinecraftBridgeReadStdout:
         assert bridge._bot_ready.is_set()
 
     async def test_read_stdout_handles_cancellation(self, mock_config, mock_process):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
         bridge._running = True
         bridge._process = mock_process
@@ -298,7 +278,6 @@ class TestMinecraftBridgeReadStdout:
         assert bridge.is_running is False
 
     async def test_read_stdout_unhandled_id_not_crash(self, mock_config, mock_process):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
         bridge._running = True
         bridge._process = mock_process
@@ -314,7 +293,6 @@ class TestMinecraftBridgeStop:
     """Bridge.stop() shutdown tests."""
 
     async def test_stop_terminates_process(self, mock_config, mock_process):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
         bridge._running = True
         bridge._process = mock_process
@@ -325,7 +303,6 @@ class TestMinecraftBridgeStop:
         assert bridge.is_running is False
 
     async def test_stop_resolves_pending_futures(self, mock_config, mock_process):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
         bridge._running = True
         bridge._process = mock_process
@@ -341,7 +318,6 @@ class TestMinecraftBridgeStop:
         assert len(bridge._pending) == 0
 
     async def test_stop_terminate_timeout_falls_back_to_kill(self, mock_config, mock_process):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
         bridge._running = True
         bridge._process = mock_process
@@ -356,7 +332,6 @@ class TestMinecraftBridgeStop:
         mock_process.kill.assert_called_once()
 
     async def test_stop_process_already_gone(self, mock_config, mock_process):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
         bridge._running = True
         bridge._process = mock_process
@@ -373,7 +348,6 @@ class TestMinecraftBridgeModeCommands:
     """Bridge mode command tests (set_planner_mode, set_rule_mode, get_plan_status)."""
 
     async def test_set_planner_mode(self, mock_config, mock_process):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
         bridge._running = True
         bridge._process = mock_process
@@ -388,7 +362,6 @@ class TestMinecraftBridgeModeCommands:
         assert result["status"] == "success"
 
     async def test_set_rule_mode(self, mock_config, mock_process):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
         bridge._running = True
         bridge._process = mock_process
@@ -403,7 +376,6 @@ class TestMinecraftBridgeModeCommands:
         assert result["status"] == "success"
 
     async def test_get_plan_status(self, mock_config, mock_process):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
         bridge._running = True
         bridge._process = mock_process
@@ -422,19 +394,16 @@ class TestMinecraftBridgePauseResumeAutonomous:
     """Bridge pause_autonomous / resume_autonomous tests."""
 
     def test_pause_autonomous_no_loop_does_not_crash(self, mock_config):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
         bridge._autonomous_loop = None
         bridge.pause_autonomous()  # Should not raise
 
     def test_resume_autonomous_no_loop_does_not_crash(self, mock_config):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
         bridge._autonomous_loop = None
         bridge.resume_autonomous()  # Should not raise
 
     def test_pause_delegates_to_loop(self, mock_config):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
         mock_loop = MagicMock()
         bridge._autonomous_loop = mock_loop
@@ -442,7 +411,6 @@ class TestMinecraftBridgePauseResumeAutonomous:
         mock_loop.pause.assert_called_once()
 
     def test_resume_delegates_to_loop(self, mock_config):
-        from animetta import $$$
         bridge = MinecraftBridge(mock_config)
         mock_loop = MagicMock()
         bridge._autonomous_loop = mock_loop

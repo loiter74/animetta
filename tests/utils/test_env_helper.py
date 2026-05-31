@@ -10,26 +10,22 @@ class TestEnvHelperDetection:
     """Environment detection tests."""
 
     def test_detect_windows(self):
-        from animetta import $$$
         with patch("platform.system", return_value="Windows"):
             env = EnvHelper.detect_environment()
             assert env == Environment.WINDOWS
 
     def test_detect_macos(self):
-        from animetta import $$$
         with patch("platform.system", return_value="Darwin"):
             env = EnvHelper.detect_environment()
             assert env == Environment.MACOS
 
     def test_detect_linux(self):
-        from animetta import $$$
         with patch("platform.system", return_value="Linux"):
             with patch.object(EnvHelper, "_check_wsl", return_value=Environment.LINUX):
                 env = EnvHelper.detect_environment()
                 assert env == Environment.LINUX
 
     def test_detect_wsl_by_proc_version(self):
-        from animetta import $$$
         with patch("platform.system", return_value="Linux"):
             with patch("pathlib.Path.exists", return_value=True):
                 with patch("builtins.open", MagicMock()):
@@ -42,7 +38,6 @@ class TestEnvHelperDetection:
                             assert env == Environment.WSL
 
     def test_detect_wsl_by_env_var(self):
-        from animetta import $$$
         with patch("platform.system", return_value="Linux"):
             with patch("pathlib.Path.exists", return_value=False):
                 with patch("os.getenv", side_effect=lambda k, d=None: "Ubuntu" if k == "WSL_DISTRO_NAME" else d):
@@ -56,32 +51,26 @@ class TestEnvHelperPathConversion:
     """Windows-WSL path conversion tests."""
 
     def test_convert_windows_to_wsl(self):
-        from animetta import $$$
         result = EnvHelper.convert_windows_to_wsl("E:/anima_data/models")
         assert result == "/mnt/e/anima_data/models"
 
     def test_convert_windows_to_wsl_backward_slash(self):
-        from animetta import $$$
         result = EnvHelper.convert_windows_to_wsl("C:\\Users\\test\\data")
         assert "/mnt/c/" in result
 
     def test_convert_windows_to_wsl_no_drive(self):
-        from animetta import $$$
         result = EnvHelper.convert_windows_to_wsl("/absolute/path")
         assert result == "/absolute/path"
 
     def test_convert_wsl_to_windows(self):
-        from animetta import $$$
         result = EnvHelper.convert_wsl_to_windows("/mnt/e/anima_data/models")
         assert result == "E:/anima_data/models"
 
     def test_convert_wsl_to_windows_not_mnt(self):
-        from animetta import $$$
         result = EnvHelper.convert_wsl_to_windows("/home/user/data")
         assert result == "/home/user/data"
 
     def test_convert_wsl_to_windows_short_path(self):
-        from animetta import $$$
         result = EnvHelper.convert_wsl_to_windows("/mnt/c")
         assert result == "C:"
 
@@ -92,28 +81,24 @@ class TestEnvHelperResolvePath:
     """Cross-environment path resolution tests."""
 
     def test_resolve_no_conversion_needed(self):
-        from animetta import $$$
         with patch("os.path.expandvars", side_effect=lambda x: x):
             with patch.object(EnvHelper, "detect_environment", return_value=Environment.WINDOWS):
                 result = EnvHelper.resolve_model_path("C:/data", env=Environment.WINDOWS)
                 assert result == "C:/data"
 
     def test_resolve_windows_to_wsl(self):
-        from animetta import $$$
         with patch("os.path.expandvars", side_effect=lambda x: x):
             with patch.object(EnvHelper, "detect_environment", return_value=Environment.WINDOWS):
                 result = EnvHelper.resolve_model_path("E:/anima_data", env=Environment.WSL)
                 assert result == "/mnt/e/anima_data"
 
     def test_resolve_wsl_to_windows(self):
-        from animetta import $$$
         with patch("os.path.expandvars", side_effect=lambda x: x):
             with patch.object(EnvHelper, "detect_environment", return_value=Environment.WSL):
                 result = EnvHelper.resolve_model_path("/mnt/e/anima_data", env=Environment.WINDOWS)
                 assert result == "E:/anima_data"
 
     def test_resolve_expand_vars(self):
-        from animetta import $$$
         with patch("os.path.expandvars", side_effect=lambda x: x.replace("$HOME", "/home/user")):
             with patch.object(EnvHelper, "detect_environment", return_value=Environment.LINUX):
                 result = EnvHelper.resolve_model_path("$HOME/data")
@@ -127,7 +112,6 @@ class TestEnvHelperGetDataDir:
 
     @patch("pathlib.Path.exists", return_value=True)
     def test_get_data_dir_windows(self, mock_exists):
-        from animetta import $$$
         with patch.object(EnvHelper, "detect_environment", return_value=Environment.WINDOWS):
             data_dir = EnvHelper.get_data_dir()
             # Should pick up E:/anima_data since it "exists"
@@ -135,7 +119,6 @@ class TestEnvHelperGetDataDir:
 
     @patch("pathlib.Path.exists", return_value=False)
     def test_get_data_dir_windows_fallback(self, mock_exists):
-        from animetta import $$$
         with (
             patch.object(EnvHelper, "detect_environment", return_value=Environment.WINDOWS),
             patch("pathlib.Path.home", return_value=Path("/home/user")),
@@ -144,7 +127,6 @@ class TestEnvHelperGetDataDir:
             assert "anima_data" in str(data_dir)
 
     def test_get_data_dir_from_env(self):
-        from animetta import $$$
         with patch("os.getenv", return_value="/custom/data/dir"):
             data_dir = EnvHelper.get_data_dir()
             assert str(data_dir) == "/custom/data/dir"
@@ -157,7 +139,6 @@ class TestDefaultModelConfig:
 
     @patch("anima.utils.env_helper.EnvHelper.get_data_dir", return_value=Path("/data"))
     def test_default_model_config(self, mock_get_data_dir):
-        from animetta import $$$
         config = EnvHelper.get_default_model_config()
         assert "ANIMA_DATA_DIR" in config
         assert "ANIMA_BASE_MODEL_PATH" in config
@@ -173,7 +154,6 @@ class TestSetupEnvFile:
     @patch("anima.utils.env_helper.EnvHelper.detect_environment", return_value="windows")
     @patch("anima.utils.env_helper.EnvHelper.get_default_model_config")
     def test_setup_env_file_creates(self, mock_config, mock_detect, tmp_path):
-        from animetta import $$$
         mock_config.return_value = {
             "ANIMA_DATA_DIR": "/data",
             "ANIMA_BASE_MODEL_PATH": "/data/models/base",
@@ -191,17 +171,14 @@ class TestConvenienceFunctions:
     """Module-level convenience functions."""
 
     def test_detect_env(self):
-        from animetta import $$$
         with patch("anima.utils.env_helper.EnvHelper.detect_environment", return_value="linux"):
             assert detect_env() == "linux"
 
     def test_get_data_dir_convenience(self):
-        from animetta import $$$
         with patch("anima.utils.env_helper.EnvHelper.get_data_dir", return_value=Path("/data")):
             assert get_data_dir() == Path("/data")
 
     def test_resolve_path_convenience(self):
-        from animetta import $$$
         with patch("anima.utils.env_helper.EnvHelper.resolve_model_path", return_value="/resolved/path"):
             assert resolve_path("/some/path") == "/resolved/path"
 
@@ -210,7 +187,6 @@ class TestPrintEnvironmentInfo:
     """Environment info printing."""
 
     def test_print_environment_info(self, capsys):
-        from animetta import $$$
         with (
             patch.object(EnvHelper, "detect_environment", return_value="linux"),
             patch.object(EnvHelper, "get_data_dir", return_value=Path("/data")),

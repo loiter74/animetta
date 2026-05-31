@@ -10,7 +10,6 @@ class TestMCPClient:
     @pytest.mark.asyncio
     async def test_connect_with_bogus_command_returns_false(self):
         """Connecting with a non-existent command should return False, not crash."""
-        from animetta import $$$
 
         client = MCPClient(
             name="test-server",
@@ -24,7 +23,6 @@ class TestMCPClient:
     @pytest.mark.asyncio
     async def test_disconnect_without_connect(self):
         """Calling disconnect without prior connect should not raise."""
-        from animetta import $$$
 
         client = MCPClient(name="test", transport="stdio", command="echo")
         # No connect() called
@@ -33,7 +31,6 @@ class TestMCPClient:
     @pytest.mark.asyncio
     async def test_list_tools_without_session(self):
         """list_tools returns empty list when not connected."""
-        from animetta import $$$
 
         client = MCPClient(name="test", transport="stdio", command="echo")
         tools = await client.list_tools()
@@ -42,7 +39,6 @@ class TestMCPClient:
     @pytest.mark.asyncio
     async def test_call_tool_without_session(self):
         """call_tool returns None when not connected."""
-        from animetta import $$$
 
         client = MCPClient(name="test", transport="stdio", command="echo")
         result = await client.call_tool("test_tool", {"arg": "val"})
@@ -54,7 +50,6 @@ class TestMCPManager:
 
     def test_build_docker_command(self):
         """_build_docker_command constructs a valid docker run command."""
-        from animetta import $$$
 
         mgr = MCPManager()
         command, args = mgr._build_docker_command(
@@ -78,7 +73,6 @@ class TestMCPManager:
     @pytest.mark.asyncio
     async def test_load_handles_docker_unavailable(self):
         """load() should not crash when Docker is unavailable."""
-        from animetta import $$$
 
         mgr = MCPManager()
         # Simulate a Docker-based MCP server config — Docker isn't running,
@@ -102,7 +96,6 @@ class TestMCPClientInit:
     """MCPClient initialization tests."""
 
     def test_init_stdio(self):
-        from animetta import $$$
         client = MCPClient(
             name="test",
             transport="stdio",
@@ -114,7 +107,6 @@ class TestMCPClientInit:
         assert client.session is None
 
     def test_init_sse(self):
-        from animetta import $$$
         client = MCPClient(
             name="sse-test",
             transport="sse",
@@ -124,7 +116,6 @@ class TestMCPClientInit:
         assert client.transport == "sse"
 
     def test_init_streamable_http(self):
-        from animetta import $$$
         client = MCPClient(
             name="http-test",
             transport="streamable_http",
@@ -138,7 +129,6 @@ class TestMCPToolToLangChain:
     """mcp_tool_to_langchain conversion tests."""
 
     def test_convert_simple_tool(self):
-        from animetta import $$$
 
         client = MCPClient(name="test", transport="stdio", command="echo")
 
@@ -164,7 +154,6 @@ class TestMCPToolToLangChain:
         assert "param2" in schema_fields
 
     def test_convert_tool_no_schema(self):
-        from animetta import $$$
 
         client = MCPClient(name="test", transport="stdio", command="echo")
 
@@ -177,7 +166,6 @@ class TestMCPToolToLangChain:
         assert tool.name == "no_schema_tool"
 
     def test_convert_tool_no_description(self):
-        from animetta import $$$
 
         client = MCPClient(name="test", transport="stdio", command="echo")
 
@@ -191,7 +179,6 @@ class TestMCPToolToLangChain:
 
     @pytest.mark.asyncio
     async def test_execute_converted_tool(self):
-        from animetta import $$$
 
         client = MCPClient(name="test", transport="stdio", command="echo")
 
@@ -223,7 +210,6 @@ class TestMCPManager:
     """Additional MCPManager tests."""
 
     def test_build_docker_command_with_mount_edge_cases(self):
-        from animetta import $$$
 
         mgr = MCPManager()
 
@@ -241,7 +227,6 @@ class TestMCPManager:
         assert "test-image" in args
 
     def test_build_docker_command_defaults(self):
-        from animetta import $$$
 
         mgr = MCPManager()
 
@@ -256,7 +241,6 @@ class TestMCPManager:
 
     @pytest.mark.asyncio
     async def test_close_all_no_clients(self):
-        from animetta import $$$
 
         mgr = MCPManager()
         # Should not raise with no clients
@@ -267,7 +251,6 @@ class TestMCPManager:
     @pytest.mark.asyncio
     async def test_load_sse_transport_without_mcp(self):
         """Loading SSE config without mcp package should degrade gracefully."""
-        from animetta import $$$
 
         mgr = MCPManager()
         configs = [{
@@ -279,7 +262,6 @@ class TestMCPManager:
         assert isinstance(tools, list)
 
     def test_parse_type_all_types(self):
-        from animetta import $$$
 
         assert _parse_type("string") == str
         assert _parse_type("integer") == int

@@ -17,7 +17,6 @@ from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch, mock_open
 
 import pytest
 
-from animetta import $$$
 
 
 # ═══════════════════════════════════════════════════════════════════

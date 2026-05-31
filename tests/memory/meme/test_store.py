@@ -7,8 +7,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.anima.memory.meme.models import CognitiveAnalysis, Meme, MemeSource
-from src.anima.memory.meme.store import MemeStore
+from animetta.memory.meme.models import CognitiveAnalysis, Meme, MemeSource
+from animetta.memory.meme.store import MemeStore
 
 
 @pytest.fixture
@@ -46,7 +46,7 @@ class TestMemeStore:
         assert result is None
 
     def test_get_returns_meme(self, store, mock_wiki):
-        from src.anima.memory.wiki.models import PageType, WikiPage
+        from animetta.memory.wiki.models import PageType, WikiPage
 
         mock_wiki.read_page.return_value = WikiPage(
             title="test",
@@ -77,7 +77,7 @@ class TestMemeStore:
         assert meme.use_count == 2
 
     def test_get_active_filters(self, store, mock_wiki):
-        from src.anima.memory.wiki.models import PageType, WikiPage
+        from animetta.memory.wiki.models import PageType, WikiPage
 
         # Two pages: one active, one inactive
         mock_wiki.list_pages.return_value = [
@@ -106,7 +106,7 @@ class TestMemeStore:
         assert active[0].id == "active"
 
     def test_get_inactive_filters(self, store, mock_wiki):
-        from src.anima.memory.wiki.models import PageType, WikiPage
+        from animetta.memory.wiki.models import PageType, WikiPage
 
         mock_wiki.list_pages.return_value = ["memes/meme_01.md"]
         mock_wiki.read_page.return_value = WikiPage(
@@ -121,7 +121,7 @@ class TestMemeStore:
         assert len(inactive) == 1
 
     def test_update_score(self, store, mock_wiki):
-        from src.anima.memory.wiki.models import PageType, WikiPage
+        from animetta.memory.wiki.models import PageType, WikiPage
 
         page = WikiPage(
             title="x",
@@ -136,7 +136,7 @@ class TestMemeStore:
         assert page.metadata["current_score"] == 0.5
 
     def test_increment_use(self, store, mock_wiki):
-        from src.anima.memory.wiki.models import PageType, WikiPage
+        from animetta.memory.wiki.models import PageType, WikiPage
 
         page = WikiPage(
             title="x",
@@ -151,7 +151,7 @@ class TestMemeStore:
         assert page.metadata["use_count"] == 4
 
     def test_set_active(self, store, mock_wiki):
-        from src.anima.memory.wiki.models import PageType, WikiPage
+        from animetta.memory.wiki.models import PageType, WikiPage
 
         page = WikiPage(
             title="x",
@@ -199,7 +199,7 @@ class TestMemeStore:
         assert result == meme.id
 
     def test_compat_layer_discard(self, store, mock_wiki):
-        from src.anima.memory.wiki.models import PageType, WikiPage
+        from animetta.memory.wiki.models import PageType, WikiPage
 
         page = WikiPage(
             title="x", page_type=PageType.MEME, path="memes/m.md", content="x",
@@ -210,7 +210,7 @@ class TestMemeStore:
         assert page.metadata["is_active"] is False
 
     def test_compat_layer_resurrect(self, store, mock_wiki):
-        from src.anima.memory.wiki.models import PageType, WikiPage
+        from animetta.memory.wiki.models import PageType, WikiPage
 
         page = WikiPage(
             title="x", page_type=PageType.MEME, path="memes/m.md", content="x",

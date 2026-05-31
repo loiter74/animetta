@@ -23,8 +23,6 @@ from typing import List, Dict, Any
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from animetta import $$$
-from animetta import $$$
 
 
 class Benchmark:
@@ -133,8 +131,6 @@ class Benchmark:
     async def _create_real_context(self, provider: str) -> ServiceContext:
         """Create a ServiceContext with a real LLM provider + mock TTS/ASR."""
         from unittest.mock import MagicMock, AsyncMock
-        from animetta import $$$
-        from animetta import $$$
 
         # Build the appropriate config for the provider
         provider_lower = provider.lower()

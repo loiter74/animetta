@@ -2,7 +2,6 @@
 
 import pytest
 
-from animetta import $$$
 
 
 class TestInterruptHandler:

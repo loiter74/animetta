@@ -24,8 +24,6 @@ sys.modules["faster_whisper"] = MagicMock()
 sys.modules["zai"] = MagicMock()
 sys.modules["funasr"] = MagicMock()
 
-from animetta import $$$
-from animetta import $$$
 
 
 # ── Fixtures ─────────────────────────────────────────────────────────
@@ -463,7 +461,6 @@ class TestASRFactory:
 
     def test_build_config_faster_whisper(self):
         """_build_config should build a FasterWhisperASRConfig."""
-        from animetta import $$$
 
         config = ASRFactory._build_config(
             "faster_whisper", {"model": "base", "device": "cpu", "language": "en"}
@@ -475,7 +472,6 @@ class TestASRFactory:
 
     def test_build_config_glm(self):
         """_build_config should build a GLMASRConfig."""
-        from animetta import $$$
 
         config = ASRFactory._build_config("glm", {"api_key": "test-key"})
         assert isinstance(config, GLMASRConfig)
@@ -483,7 +479,6 @@ class TestASRFactory:
 
     def test_build_config_funasr(self):
         """_build_config should build a FunASRConfig."""
-        from animetta import $$$
 
         config = ASRFactory._build_config(
             "funasr", {"model": "paraformer-zh", "device": "cpu"}
@@ -493,7 +488,6 @@ class TestASRFactory:
 
     def test_build_config_mock(self):
         """_build_config should build a MockASRConfig."""
-        from animetta import $$$
 
         config = ASRFactory._build_config("mock", {})
         assert isinstance(config, MockASRConfig)

@@ -3,7 +3,6 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from animetta import $$$
 
 
 # ── Helper fixture ─────────────────────────────────────────────────
@@ -43,8 +42,6 @@ class TestRouteHandlersInit:
 
     def test_init_with_explicit_managers(self, mock_socketio, mock_session_manager):
         """Explicit desktop_manager and live2d_manager are used."""
-        from animetta import $$$
-        from animetta import $$$
         dcm = DesktopClientManager()
         l2d = Live2DManager()
         handlers = RouteHandlers(mock_socketio, mock_session_manager,

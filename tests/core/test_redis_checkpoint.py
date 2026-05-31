@@ -6,7 +6,6 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from langgraph.checkpoint.base import CheckpointTuple
 
-from animetta import $$$
 
 
 # ── Fixtures ───────────────────────────────────────────────────────

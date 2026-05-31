@@ -24,7 +24,6 @@ class TestDanmakuDataclasses:
     """DanmakuSample, InteractionPattern, LivestreamStrategy dataclasses."""
 
     def test_danmaku_sample_defaults(self):
-        from animetta import $$$
 
         s = DanmakuSample(content="你好")
         assert s.content == "你好"
@@ -33,7 +32,6 @@ class TestDanmakuDataclasses:
         assert s.is_super_chat is False
 
     def test_danmaku_sample_to_dict(self):
-        from animetta import $$$
 
         s = DanmakuSample(content="hello", timestamp=100.0, is_gift=True)
         d = s.to_dict()
@@ -41,7 +39,6 @@ class TestDanmakuDataclasses:
         assert d["is_gift"] is True
 
     def test_interaction_pattern(self):
-        from animetta import $$$
 
         p = InteractionPattern(
             name="测试模式",
@@ -54,7 +51,6 @@ class TestDanmakuDataclasses:
         assert d["confidence"] == 0.8
 
     def test_livestream_strategy(self):
-        from animetta import $$$
 
         s = LivestreamStrategy(
             trigger_condition="当弹幕刷屏时",
@@ -75,7 +71,6 @@ class TestBilibiliInteractionLearner:
     @pytest.mark.asyncio
     async def test_learn_patterns_no_room_ids(self, mock_llm, mock_wiki):
         """With no room IDs configured, returns empty list."""
-        from animetta import $$$
 
         learner = BilibiliInteractionLearner(
             llm_client=mock_llm,
@@ -88,7 +83,6 @@ class TestBilibiliInteractionLearner:
     @pytest.mark.asyncio
     async def test_learn_patterns_insufficient_samples(self, mock_llm, mock_wiki):
         """If a room has < min_samples, it is skipped."""
-        from animetta import $$$
 
         learner = BilibiliInteractionLearner(
             llm_client=mock_llm,
@@ -104,7 +98,6 @@ class TestBilibiliInteractionLearner:
     @pytest.mark.asyncio
     async def test_learn_patterns_sufficient_samples(self, mock_llm, mock_wiki):
         """Sufficient samples should trigger LLM analysis."""
-        from animetta import $$$
 
         mock_llm.chat_messages.return_value = {
             "content": (
@@ -132,7 +125,6 @@ class TestBilibiliInteractionLearner:
     @pytest.mark.asyncio
     async def test_learn_patterns_stores_to_wiki(self, mock_llm, mock_wiki):
         """Strategies should be stored to Wiki via write_page."""
-        from animetta import $$$
 
         mock_llm.chat_messages.return_value = {
             "content": (
@@ -158,7 +150,6 @@ class TestBilibiliInteractionLearner:
     @pytest.mark.asyncio
     async def test_collect_danmaku_no_bilibili_api(self, mock_llm):
         """If bilibili_api is not importable, returns empty list."""
-        from animetta import $$$
 
         learner = BilibiliInteractionLearner(llm_client=mock_llm)
 
@@ -170,7 +161,6 @@ class TestBilibiliInteractionLearner:
     @pytest.mark.asyncio
     async def test_collect_danmaku_handles_exception(self, mock_llm):
         """Exception during collection returns empty list."""
-        from animetta import $$$
 
         learner = BilibiliInteractionLearner(llm_client=mock_llm)
 
@@ -185,7 +175,6 @@ class TestBilibiliInteractionLearner:
     @pytest.mark.asyncio
     async def test_analyze_patterns_without_llm(self, mock_wiki):
         """Without LLM client, analysis returns empty list."""
-        from animetta import $$$
 
         learner = BilibiliInteractionLearner(
             llm_client=None, wiki_manager=mock_wiki,
@@ -196,7 +185,6 @@ class TestBilibiliInteractionLearner:
     @pytest.mark.asyncio
     async def test_analyze_patterns_with_llm(self, mock_llm):
         """LLM analysis results should be parsed into LivestreamStrategy list."""
-        from animetta import $$$
 
         mock_llm.chat_messages.return_value = {
             "content": (
@@ -215,7 +203,6 @@ class TestBilibiliInteractionLearner:
     @pytest.mark.asyncio
     async def test_analyze_patterns_llm_error_fallback(self, mock_llm):
         """LLM exception returns empty list."""
-        from animetta import $$$
 
         mock_llm.chat_messages.side_effect = RuntimeError("LLM error")
         learner = BilibiliInteractionLearner(llm_client=mock_llm)
@@ -227,7 +214,6 @@ class TestBilibiliInteractionLearner:
     @pytest.mark.asyncio
     async def test_store_strategies_without_wiki(self, mock_llm):
         """No wiki manager: store is a no-op."""
-        from animetta import $$$
 
         learner = BilibiliInteractionLearner(llm_client=mock_llm, wiki_manager=None)
         strategies = [
@@ -241,7 +227,6 @@ class TestBilibiliInteractionLearner:
     @pytest.mark.asyncio
     async def test_store_strategies_with_wiki(self, mock_llm, mock_wiki):
         """Store calls wiki.write_page with a WikiPage."""
-        from animetta import $$$
 
         learner = BilibiliInteractionLearner(
             llm_client=mock_llm, wiki_manager=mock_wiki,
@@ -258,7 +243,6 @@ class TestBilibiliInteractionLearner:
     @pytest.mark.asyncio
     async def test_store_strategies_handles_exception(self, mock_llm, mock_wiki):
         """Exception during write should not propagate."""
-        from animetta import $$$
 
         mock_wiki.write_page.side_effect = Exception("write failed")
         learner = BilibiliInteractionLearner(
@@ -275,16 +259,13 @@ class TestBilibiliInteractionLearner:
     # ── _parse_json ──────────────────────────────────────────────────
 
     def test_parse_json(self):
-        from animetta import $$$
 
         assert BilibiliInteractionLearner._parse_json('{"a": 1}') == {"a": 1}
 
     def test_parse_json_with_fence(self):
-        from animetta import $$$
 
         assert BilibiliInteractionLearner._parse_json("```json\n{\"a\": 1}\n```") == {"a": 1}
 
     def test_parse_json_invalid(self):
-        from animetta import $$$
 
         assert BilibiliInteractionLearner._parse_json("{{{") == {}

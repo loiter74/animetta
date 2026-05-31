@@ -24,7 +24,6 @@ def _make_llm_service_mock():
     isinstance check passes, plus a ``chat_stream`` that yields
     canned tokens the adapter can collect into an ``AIMessage``.
     """
-    from animetta import $$$
 
     mock = MagicMock(spec=LLMInterface)
     mock.set_system_prompt = MagicMock()
@@ -67,7 +66,6 @@ class TestCreateChatModelFromService:
     """``create_chat_model_from_service()`` — factory entry point."""
 
     def test_returns_adapter_instance(self):
-        from animetta import $$$
 
         mock_svc = _make_llm_service_mock()
         adapter = create_chat_model_from_service(mock_svc)
@@ -75,7 +73,6 @@ class TestCreateChatModelFromService:
         assert isinstance(adapter, LLMChatModelAdapter)
 
     def test_detects_model_name_from_config(self):
-        from animetta import $$$
 
         mock_svc = _make_llm_service_mock()
         adapter = create_chat_model_from_service(mock_svc)
@@ -84,8 +81,6 @@ class TestCreateChatModelFromService:
 
     def test_unwraps_tracing_proxy(self):
         """When ``llm_service`` has ``_target``, the adapter uses the inner service's config."""
-        from animetta import $$$
-        from animetta import $$$
 
         inner_svc = _make_llm_service_mock()
         # Simulate TracingProxy wrapper (plain MagicMock is OK here — it is checked
@@ -104,8 +99,6 @@ class TestCreateChatModelFromService:
 
     def test_falls_back_on_config_model_attr(self):
         """When ``config.model`` is absent, falls back to ``config.type``."""
-        from animetta import $$$
-        from animetta import $$$
 
         mock_svc = MagicMock(spec=LLMInterface)
         mock_svc.close = AsyncMock()
@@ -119,8 +112,6 @@ class TestCreateChatModelFromService:
 
     def test_default_model_name_when_no_config(self):
         """When service has no ``config``, model_name is ``unknown``."""
-        from animetta import $$$
-        from animetta import $$$
 
         # Mock without config attribute — spec limits available attrs
         mock_svc = MagicMock(spec=LLMInterface)
@@ -144,7 +135,6 @@ class TestLLMChatModelAdapterProperties:
     """Static attributes and properties of the adapter."""
 
     def test_llm_type(self):
-        from animetta import $$$
 
         mock_svc = _make_llm_service_mock()
         adapter = LLMChatModelAdapter(llm_service=mock_svc, model_name="gpt-4")
@@ -152,7 +142,6 @@ class TestLLMChatModelAdapterProperties:
         assert adapter._llm_type == "anima_gpt-4"
 
     def test_lc_secrets_empty(self):
-        from animetta import $$$
 
         mock_svc = _make_llm_service_mock()
         adapter = LLMChatModelAdapter(llm_service=mock_svc)
@@ -169,7 +158,6 @@ class TestLLMChatModelAdapterAGenerate:
 
     @pytest.mark.asyncio
     async def test_generates_response_from_human_message(self):
-        from animetta import $$$
 
         mock_svc = _make_llm_service_mock()
         adapter = LLMChatModelAdapter(llm_service=mock_svc)
@@ -183,7 +171,6 @@ class TestLLMChatModelAdapterAGenerate:
 
     @pytest.mark.asyncio
     async def test_sets_system_prompt(self):
-        from animetta import $$$
 
         mock_svc = _make_llm_service_mock()
         adapter = LLMChatModelAdapter(llm_service=mock_svc)
@@ -195,7 +182,6 @@ class TestLLMChatModelAdapterAGenerate:
 
     @pytest.mark.asyncio
     async def test_empty_human_input_returns_fallback(self):
-        from animetta import $$$
 
         mock_svc = _make_llm_service_mock()
         adapter = LLMChatModelAdapter(llm_service=mock_svc)
@@ -208,7 +194,6 @@ class TestLLMChatModelAdapterAGenerate:
 
     @pytest.mark.asyncio
     async def test_stream_notifies_run_manager(self):
-        from animetta import $$$
         from langchain_core.callbacks.manager import CallbackManagerForLLMRun
 
         mock_svc = _make_llm_service_mock()
@@ -225,8 +210,6 @@ class TestLLMChatModelAdapterAGenerate:
 
     @pytest.mark.asyncio
     async def test_handles_generation_error(self):
-        from animetta import $$$
-        from animetta import $$$
 
         mock_svc = MagicMock(spec=LLMInterface)
 
@@ -248,8 +231,6 @@ class TestLLMChatModelAdapterAGenerate:
     @pytest.mark.asyncio
     async def test_uses_latest_human_message(self):
         """Only the last HumanMessage is used as user input."""
-        from animetta import $$$
-        from animetta import $$$
 
         collected = []
 
@@ -284,7 +265,6 @@ class TestLLMChatModelAdapterGenerate:
     """LLMChatModelAdapter._generate() — sync bridge to async."""
 
     def test_sync_generate_bridges_to_async(self):
-        from animetta import $$$
 
         mock_svc = _make_llm_service_mock()
         adapter = LLMChatModelAdapter(llm_service=mock_svc)
@@ -305,7 +285,6 @@ class TestLLMChatModelAdapterBindTools:
     """LLMChatModelAdapter.bind_tools() — tool registration."""
 
     def test_stores_tools_in_bound_tools(self):
-        from animetta import $$$
 
         mock_svc = _make_llm_service_mock()
         adapter = LLMChatModelAdapter(llm_service=mock_svc)
@@ -322,7 +301,6 @@ class TestLLMChatModelAdapterBindTools:
         assert adapter.bound_tools[0].name == "search"
 
     def test_accepts_empty_list(self):
-        from animetta import $$$
 
         mock_svc = _make_llm_service_mock()
         adapter = LLMChatModelAdapter(llm_service=mock_svc)
@@ -341,7 +319,6 @@ class TestLLMChatModelAdapterFullFlow:
 
     @pytest.mark.asyncio
     async def test_create_bind_generate(self):
-        from animetta import $$$
 
         mock_svc = _make_llm_service_mock()
         chat_model = create_chat_model_from_service(mock_svc, enable_tooling=True)

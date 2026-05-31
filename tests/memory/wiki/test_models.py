@@ -6,7 +6,7 @@ from datetime import datetime
 
 import pytest
 
-from src.anima.memory.wiki.models import PageType, WikiPage
+from animetta.memory.wiki.models import PageType, WikiPage
 
 
 class TestPageType:
