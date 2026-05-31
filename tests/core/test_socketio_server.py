@@ -15,6 +15,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from animetta.core.redis_checkpoint import AsyncRedisSaver
+from animetta.utils.logger_manager import LoggerManager
 
 
 # ── Helpers ─────────────────────────────────────────────────────────

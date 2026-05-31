@@ -4,6 +4,7 @@ from __future__ import annotations
 import pytest
 import asyncio
 from unittest.mock import MagicMock, AsyncMock, patch
+from animetta.services.live2d.action_queue import Live2DActionQueue
 
 
 class TestActionMessage:

@@ -6,6 +6,7 @@ import yaml
 import os
 import tempfile
 from unittest.mock import patch, MagicMock, mock_open
+from animetta.services.live2d.preset_loader import PresetLoader
 
 
 def _make_sample_presets() -> dict:

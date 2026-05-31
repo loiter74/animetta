@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from animetta.services.vad import VADState, VADFactory
+from animetta.services.audio.vad_audio_processor import VADAudioProcessor
 
 
 

@@ -7,6 +7,11 @@ import sys
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from animetta.inspection.checks.health import ComponentCheck, check_all_components, _probe_chroma, _probe_llm_available, _probe_asr_available, _probe_memory_read, _probe_stats_store, _probe_metrics_endpoint
+from animetta.inspection.checks.metrics import check_metrics_pipeline
+from animetta.inspection.checks.consistency import chroma_responds
+from animetta.inspection.models import CheckResult
+from animetta.orchestration.graph.stats_store import StatsStore
 
 
 

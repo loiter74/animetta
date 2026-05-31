@@ -6,6 +6,7 @@ import pytest
 from animetta.orchestration.graph.state import create_initial_state
 from unittest.mock import AsyncMock, MagicMock
 from langgraph.types import RunnableConfig
+from animetta.orchestration.graph.node_error import log_node_error
 
 
 

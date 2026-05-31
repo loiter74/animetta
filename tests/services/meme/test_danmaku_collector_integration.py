@@ -9,6 +9,7 @@ when danmaku phrases are fed into the collection pipeline.
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from animetta.services.meme.bilibili_collector import BilibiliMemeCollector
 
 
 @pytest.fixture

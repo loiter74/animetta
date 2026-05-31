@@ -12,6 +12,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.outputs import ChatResult
+from animetta.tracing.proxy import TracingProxy
 
 
 # ═══════════════════════════════════════════════════════════════════════

@@ -18,6 +18,7 @@ import sys
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from animetta.tracing.proxy import TracingProxy
 
 
 

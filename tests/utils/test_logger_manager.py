@@ -4,6 +4,7 @@ from __future__ import annotations
 import pytest
 import sys
 from unittest.mock import patch, MagicMock
+from animetta.utils.logger_manager import LoggerManager
 
 
 class TestLoggerManagerBasic:

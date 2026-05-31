@@ -5,6 +5,7 @@ from animetta.services.vad import VADInterface
 from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 import pytest
+from animetta.services.audio.simple_vad_processor import SimpleVADProcessor
 
 
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 import pytest
+from animetta.services.meme.bilibili_collector import BilibiliMemeCollector
 
 
 @pytest.fixture

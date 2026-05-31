@@ -2,6 +2,7 @@ from __future__ import annotations
 """Tests for translation runtime configuration state."""
 
 import pytest
+from animetta.orchestration.graph.translation_state import TranslationState
 
 
 

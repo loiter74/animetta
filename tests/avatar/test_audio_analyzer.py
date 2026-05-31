@@ -11,6 +11,7 @@ import tempfile
 from pathlib import Path
 
 import pytest
+from animetta.avatar.analyzers.audio import AudioAnalyzer, compute_volume_envelope
 
 
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 import pytest
 from animetta.orchestration.server.live2d import Live2DManager
 from unittest.mock import AsyncMock, MagicMock, patch
+from animetta.services.live2d.action_queue import Live2DActionQueue
 
 
 

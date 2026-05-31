@@ -5,6 +5,7 @@ import signal
 import asyncio
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+from animetta.orchestration.server.lifecycle import LifecycleManager
 
 
 

@@ -6,6 +6,7 @@ import os
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from animetta.notifier.base import get_notifier_registry
 
 
 

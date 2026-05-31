@@ -5,6 +5,8 @@ import pytest
 from animetta.orchestration.server.desktop import DesktopClientManager
 from animetta.orchestration.server.live2d import Live2DManager
 from unittest.mock import AsyncMock, MagicMock, patch
+from animetta.orchestration.server.session import SessionManager
+from animetta.orchestration.server.routes import RouteHandlers
 
 
 

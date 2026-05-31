@@ -6,6 +6,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from starlette.testclient import TestClient
 from starlette.applications import Starlette
+from animetta.orchestration.server.stats_api import get_stats_routes
+from animetta.orchestration.graph.stats_store import StatsStore
 
 
 # ── Helpers ────────────────────────────────────────────────────────

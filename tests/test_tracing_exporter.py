@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from opentelemetry.sdk.trace import ReadableSpan
 from opentelemetry.trace import SpanContext, SpanKind, TraceFlags, Status, StatusCode
+from animetta.orchestration.graph.stats_store import StatsStore
 
 
 @pytest.fixture

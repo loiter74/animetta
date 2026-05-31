@@ -8,6 +8,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
+from animetta.utils.auto_config import AutoConfig
 
 
 @pytest.fixture

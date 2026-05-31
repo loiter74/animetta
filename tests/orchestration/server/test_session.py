@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+from animetta.orchestration.server.session import SessionManager
+from animetta.services.audio.simple_vad_processor import SimpleVADProcessor
 
 
 

@@ -3,7 +3,9 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from animetta.services.live2d.viseme_sync import VisemeConfig, VisemeLipSync, SimpleLipSync, create_lip_sync_engine
 from unittest.mock import MagicMock, patch
+from animetta.services.live2d.viseme_sync import VisemeConfig
 
 
 # ── Fixtures ────────────────────────────────────────────────────────

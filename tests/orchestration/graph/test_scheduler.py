@@ -6,6 +6,7 @@ import time
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from animetta.orchestration.graph.scheduler import AsyncScheduler
 
 
 
