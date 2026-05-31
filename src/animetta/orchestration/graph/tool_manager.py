@@ -1,3 +1,4 @@
+from animetta.tools import load_tools_from_config
 """
 LangGraph tool manager
 Responsible for tool loading (built-in + MCP) and ChatModel creation

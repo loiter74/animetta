@@ -14,8 +14,10 @@ To add a new TTS provider, simply:
 from loguru import logger
 
 from animetta.config.core.registry import ProviderRegistry
+from animetta.tracing.proxy import TracingProxy
 
 from .interface import TTSInterface
+from animetta.config.providers.tts import MockTTSConfig, OpenAITTSConfig, EdgeTTSConfig, ChatTTSConfig, GPTSoVITSConfig, KokoroTTSConfig, Qwen3TTSConfig, VibeVoiceTTSConfig
 from .mock_tts import MockTTS
 
 

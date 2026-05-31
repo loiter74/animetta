@@ -125,7 +125,7 @@ class SessionManager:
             tools_config = await self._load_tools_config()
 
             # Create LangGraph Orchestrator
-            from ..graph.orchestrator import LangGraphOrchestratorFactory
+            from ..graph.orchestrator import LangGraphOrchestrator
 
             # Verbose debug logging
             logger.info(f"[{sid}] tools_config full return value: {tools_config}")
@@ -135,7 +135,7 @@ class SessionManager:
             enable_tools = tools_config.get("enable_tools", False)
             logger.info(f"[{sid}] Tool config status: enable_tools={enable_tools}, type={type(enable_tools)}")
 
-            orchestrator = await LangGraphOrchestratorFactory.create(
+            orchestrator = await LangGraphOrchestrator.create(
                 session_id=sid,
                 service_context=ctx,
                 socketio=socketio,  # Socket.IO instance for sending messages

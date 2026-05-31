@@ -7,12 +7,14 @@ from __future__ import annotations
 from loguru import logger
 
 from animetta.config.core.registry import ProviderRegistry
+from animetta.tracing.proxy import TracingProxy
 from animetta.config.providers.asr import (
     OpenAIASRConfig, GLMASRConfig, MockASRConfig,
     FasterWhisperASRConfig, FunASRConfig,
 )
 
 from .interface import ASRInterface
+from .mock_asr import MockASR
 
 
 class ASRFactory:

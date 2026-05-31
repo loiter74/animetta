@@ -70,8 +70,8 @@ class ChatHandlers:
                 we = get_websocket_errors()
                 if we is not None:
                     we.add(1)
-            except Exception as e:
-                logger.debug(f"[ChatHandlers] OTel websocket_errors metric failed: {e}")
+            except Exception as metric_err:
+                logger.debug(f"[ChatHandlers] OTel websocket_errors metric failed: {metric_err}")
             await self.sio.emit(
                 "error", {"type": "error", "message": str(e)}, to=sid
             )
