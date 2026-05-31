@@ -16,6 +16,9 @@ if str(src_dir) not in sys.path:
 
 from loguru import logger
 
+from animetta.config.app import AppConfig
+from animetta.config.user_settings import UserSettings
+
 # Load environment variables from .env file (must be before other imports)
 try:
     from dotenv import load_dotenv
@@ -37,7 +40,7 @@ import asyncio
 
 def parse_server_args() -> argparse.Namespace:
     """Parse server CLI arguments."""
-        parser = argparse.ArgumentParser(description="Animetta Socket.IO Server")
+    parser = argparse.ArgumentParser(description="Animetta Socket.IO Server")
     parser.add_argument(
         "--redis-url",
         type=str,
