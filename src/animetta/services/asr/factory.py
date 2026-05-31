@@ -1,12 +1,19 @@
-from __future__ import annotations
-
 """
 ASR Factory - creates ASR instances based on configuration
 
 Uses ProviderRegistry for automatic service discovery and instantiation.
-To add a new ASR provider, simply:
-1. Create a config class with @ProviderRegistry.register("asr", "type")
-2. Create a service class with @ProviderRegistry.register_service("asr", "type")
+"""
+
+from __future__ import annotations
+
+from loguru import logger
+
+from .interface import ASRInterface
+from animetta.config.core.registry import ProviderRegistry
+from animetta.config.providers.asr import (
+    OpenAIASRConfig, GLMASRConfig, MockASRConfig,
+    FasterWhisperASRConfig, FunASRConfig,
+)
    and a from_config() classmethod
 """
 
