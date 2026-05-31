@@ -9,6 +9,7 @@ from animetta.memory.v2.metabolism import MetabolismScheduler
 from animetta.memory.v2.search import MemorySearch
 from animetta.memory.v2.store import AtomStore
 from animetta.memory.v2.system import LivingMemorySystem, RecallResult
+from animetta.memory.v2.reconsolidation import ReconsolidationClient, set_reconsolidation_client, get_reconsolidation_client
 
 __all__ = [
     "MemoryAtom", "Layer", "Relation", "RelationType",
@@ -17,4 +18,5 @@ __all__ = [
     "MemorySearch",
     "AtomStore",
     "LivingMemorySystem", "RecallResult",
+    "ReconsolidationClient", "set_reconsolidation_client", "get_reconsolidation_client",
 ]

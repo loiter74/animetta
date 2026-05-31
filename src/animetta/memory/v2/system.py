@@ -8,6 +8,7 @@ Replaces MemorySystem with unified encode/recall API.
 from __future__ import annotations
 
 import asyncio
+import logging
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
@@ -16,6 +17,9 @@ from animetta.memory.v2.atom import MemoryAtom, Layer
 from animetta.memory.v2.store import AtomStore
 from animetta.memory.v2.emotion_field import EmotionalField, VADVector
 from animetta.memory.v2.search import MemorySearch
+from animetta.memory.v2.reconsolidation import get_reconsolidation_client
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -215,22 +219,39 @@ class LivingMemorySystem:
         current_emotion: VADVector,
         query: str,
     ) -> None:
-        """Reconsolidate a single atom.
+        """Reconsolidate a single atom — LLM-driven memory rewriting.
 
-        In production: calls LLM with reconsolidation prompt.
-        For now: performs metadata-only reconsolidation (emotion shift,
-        confidence adjustment, decay rate adaptation).
+        Uses ReconsolidationClient when available (real LLM).
+        Falls back to metadata-only reconsolidation when unavailable.
         """
-        # Shift emotion toward current state
+        new_summary = atom.summary or atom.content
+        new_confidence = min(1.0, atom.confidence + 0.02)
         new_emotion = EmotionalField.emotion_shift(current_emotion,
             VADVector(atom.emotion_valence, atom.emotion_arousal, atom.emotion_dominance))
 
-        # Confidence slightly adjusts (reinforced by recall)
-        new_confidence = min(1.0, atom.confidence + 0.02)
-
-        # Content "rewrite": for now, use existing summary or content
-        # In production, this would be the LLM-generated rewrite
-        new_summary = atom.summary or atom.content
+        # Try LLM-driven reconsolidation
+        client = get_reconsolidation_client()
+        if client and client.is_available:
+            try:
+                result = await client.reconsolidate(
+                    content=atom.content,
+                    version=atom.version,
+                    rewritten_at=atom.rewritten_at.isoformat(),
+                    valence=current_emotion.valence,
+                    arousal=current_emotion.arousal,
+                    dominance=current_emotion.dominance,
+                    query=query,
+                )
+                if result:
+                    new_summary = result.summary
+                    new_confidence = min(1.0, max(0.0,
+                        atom.confidence + result.confidence_delta))
+                    # Apply emotion shift from LLM
+                    shifted = EmotionalField.emotion_shift(current_emotion,
+                        VADVector(atom.emotion_valence, atom.emotion_arousal, atom.emotion_dominance))
+                    new_emotion = shifted
+            except Exception as e:
+                logger.warning(f"Reconsolidation LLM call failed, using metadata fallback: {e}")
 
         # Reduce decay rate (recalled memories decay slower)
         new_decay_rate = max(0.02, atom.decay_rate * 0.95)
