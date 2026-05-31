@@ -17,6 +17,7 @@ from loguru import logger
 
 from animetta.config.app import AppConfig
 from animetta.config.user import UserSettings
+from animetta.utils.logger_manager import logger_manager
 
 # Load environment variables from .env file (must be before other imports)
 try:
