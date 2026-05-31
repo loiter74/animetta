@@ -14,60 +14,47 @@ Directory conventions:
 Backend storage: SQLite FTS5 + Chroma vector + Markdown files
 """
 
+from __future__ import annotations
+
 # Core entry point
 from .models.turns import MemoryTurn
-from .system import MemorySystem
 
 # Backend storage components
 from .config import MemoryConfig, ChunkConfig, SearchConfig, EmbeddingConfig
-from .manager import MemoryManager
 from .models.base import SearchResult, Chunk, FileEntry, MemoryFlushSignal
 from .tools import get_tool_schemas, execute_tool
 
-# Wiki architecture components
-from .wiki import (
-    WikiManager,
-    WikiIngestor,
-    WikiQuery,
-    WikiLint,
-    LintReport,
-    WikiPage,
-    PageType,
-)
+# Lazy imports — tolerate failures for lightweight consumers (memory_v2)
+try:
+    from .system import MemorySystem
+except Exception:
+    MemorySystem = None  # type: ignore[assignment]
 
-# Memory Evolution (new: FuzzyLayer replaces FuzzyMemoryStore)
-from .fuzzy_layer import FuzzyLayer
+try:
+    from .manager import MemoryManager
+except Exception:
+    MemoryManager = None  # type: ignore[assignment]
+
+try:
+    from .wiki import (
+        WikiManager, WikiIngestor, WikiQuery, WikiLint,
+        LintReport, WikiPage, PageType,
+    )
+except Exception:
+    WikiManager = WikiIngestor = WikiQuery = WikiLint = None  # type: ignore[assignment]
+    LintReport = WikiPage = PageType = None  # type: ignore[assignment]
+
+try:
+    from .fuzzy_layer import FuzzyLayer
+except Exception:
+    FuzzyLayer = None  # type: ignore[assignment]
 
 __all__ = [
-    # Core
-    "MemoryTurn",
-    "MemorySystem",
-    # Backend
-    "MemoryConfig",
-    "ChunkConfig",
-    "SearchConfig",
-    "EmbeddingConfig",
-    "MemoryManager",
-    "SearchResult",
-    "Chunk",
-    "FileEntry",
-    "MemoryFlushSignal",
-    # Wiki
-    "WikiManager",
-    "WikiIngestor",
-    "WikiQuery",
-    "WikiLint",
-    "LintReport",
-    "WikiPage",
-    "PageType",
-    # Tools
-    "get_tool_schemas",
-    "execute_tool",
-    # Memory Evolution
-    "FuzzyMemory",
+    "MemoryTurn", "MemorySystem",
+    "MemoryConfig", "ChunkConfig", "SearchConfig", "EmbeddingConfig",
+    "MemoryManager", "SearchResult", "Chunk", "FileEntry", "MemoryFlushSignal",
+    "WikiManager", "WikiIngestor", "WikiQuery", "WikiLint",
+    "LintReport", "WikiPage", "PageType",
+    "get_tool_schemas", "execute_tool",
     "FuzzyLayer",
-    "PeriodicLearner",
-    "Meme",
-    "MemeStore",
-    "MemePool",
 ]

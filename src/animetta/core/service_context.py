@@ -2,23 +2,13 @@
 Service context - core service container
 """
 
+from __future__ import annotations
+
 import asyncio
 from typing import Callable, Optional
 from loguru import logger
 from pathlib import Path
 import yaml
-
-from animetta import $$$
-from animetta import $$$
-from animetta import $$$
-from animetta import $$$
-from animetta import $$$
-from animetta import $$$
-from animetta import $$$
-from animetta import $$$
-from animetta import $$$
-from animetta import $$$
-
 
 class ServiceContext:
     """Service context class"""
@@ -222,9 +212,6 @@ class ServiceContext:
     def _get_live2d_prompt(self) -> Optional[str]:
         """Get Live2D emotion prompt"""
         try:
-            from animetta import $$$
-            from animetta import $$$
-
             live2d_config = get_live2d_config()
             if not live2d_config.enabled:
                 return None
@@ -328,9 +315,6 @@ class ServiceContext:
     async def init_emotion_analyzer(self, config: AppConfig) -> None:
         """Initialize emotion analyzer"""
         try:
-            from animetta import $$$
-            from animetta import $$$
-
             live2d_config = get_live2d_config()
             if not live2d_config.enabled:
                 logger.info(f"[{self.session_id}] Live2D not enabled, skipping emotion analyzer initialization")
