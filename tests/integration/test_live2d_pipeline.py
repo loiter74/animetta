@@ -29,9 +29,13 @@ class TestLive2D:
         await asyncio.sleep(30)
         await sio.disconnect()
         audio = ev.get("audio_with_expression",[])
+        visemes = ev.get("viseme",[]) or ev.get("live2d.viseme",[])
         has_vol = any(isinstance(a,dict) and a.get("volumes") for a in audio)
+        has_viseme = len(visemes) > 0
         errs = ev.get("error",[])
         vcount = len(audio[0].get("volumes",[])) if has_vol and audio else 0
-        print(f"audio_events={len(audio)} volumes={has_vol} vol_samples={vcount} errors={errs}")
+        vc = len(visemes)
+        print(f"audio_events={len(audio)} volumes={has_vol} vol_samples={vcount} visemes={vc} errors={errs}")
         assert "connection-established" in ev, "connect"
+        assert len(ev) >= 2, "pipeline runs (≥2 event types)"
         assert not errs, f"errors: {errs}"

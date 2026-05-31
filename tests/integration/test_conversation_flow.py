@@ -29,8 +29,12 @@ class TestConversation:
         await asyncio.sleep(30)
         await sio.disconnect()
         has_text = any(isinstance(d,dict) and d.get("text") for d in ev.get("sentence",[]))
+        has_expr = any(isinstance(d,dict) and d.get("emotion") for d in ev.get("expression",[]))
+        has_motion = any(isinstance(d,dict) and d.get("index",-1)>=0 for d in ev.get("live2d.action",[]))
         errs = ev.get("error",[])
-        print(f"Events: {sorted(ev.keys())} | sentence={has_text} | errors={errs}")
+        expr_em = ev["expression"][0].get("emotion","") if ev.get("expression") else ""
+        mot_idx = ev["live2d.action"][0].get("index",-1) if ev.get("live2d.action") else -1
+        print(f"Events: {sorted(ev.keys())} | sentence={has_text} emotion={expr_em} motion={mot_idx} errors={errs}")
         assert "connection-established" in ev, "connect"
-        assert len(ev) >= 2, "pipeline runs"
+        assert len(ev) >= 2, "pipeline runs (≥2 event types)"
         assert not errs, f"errors: {errs}"
