@@ -127,10 +127,10 @@ class TestLLMInterface:
         providers = [MockLLM]
         # Try optional providers
         for mod_name, cls_name in [
-            ("animetta.services.intelligence.llm.glm_llm", "GLMLLM"),
-            ("animetta.services.intelligence.llm.openai_llm", "OpenAILLM"),
-            ("animetta.services.intelligence.llm.ollama_llm", "OllamaLLM"),
-            ("animetta.services.intelligence.llm.local_lora_llm", "LocalLoraLLM"),
+            ("animetta.services.llm.glm_llm", "GLMLLM"),
+            ("animetta.services.llm.openai_llm", "OpenAILLM"),
+            ("animetta.services.llm.ollama_llm", "OllamaLLM"),
+            ("animetta.services.llm.local_lora_llm", "LocalLoraLLM"),
         ]:
             try:
                 import importlib
@@ -152,10 +152,10 @@ class TestLLMInterface:
 
         providers = [MockLLM]
         for mod_name, cls_name in [
-            ("animetta.services.intelligence.llm.glm_llm", "GLMLLM"),
-            ("animetta.services.intelligence.llm.openai_llm", "OpenAILLM"),
-            ("animetta.services.intelligence.llm.ollama_llm", "OllamaLLM"),
-            ("animetta.services.intelligence.llm.local_lora_llm", "LocalLoraLLM"),
+            ("animetta.services.llm.glm_llm", "GLMLLM"),
+            ("animetta.services.llm.openai_llm", "OpenAILLM"),
+            ("animetta.services.llm.ollama_llm", "OllamaLLM"),
+            ("animetta.services.llm.local_lora_llm", "LocalLoraLLM"),
         ]:
             try:
                 import importlib
@@ -293,7 +293,7 @@ class TestOpenAILLM:
     def test_from_config_returns_instance(self, openai_llm_config):
         """from_config should return an OpenAILLM instance with correct config."""
 
-        with patch("animetta.services.intelligence.llm.openai_llm.AsyncOpenAI"):
+        with patch("animetta.services.llm.openai_llm.AsyncOpenAI"):
             instance = OpenAILLM.from_config(openai_llm_config, system_prompt="test")
         assert isinstance(instance, OpenAILLM)
         assert instance.api_key == "test-openai-key"
@@ -310,7 +310,7 @@ class TestOpenAILLM:
             model="deepseek-v4-flash",
             base_url="https://api.deepseek.com/v1",
         )
-        with patch("animetta.services.intelligence.llm.openai_llm.AsyncOpenAI"):
+        with patch("animetta.services.llm.openai_llm.AsyncOpenAI"):
             instance = OpenAILLM.from_config(config, system_prompt="hello")
         assert instance.api_key == "test-ds-key"
         assert instance.model == "deepseek-v4-flash"
@@ -319,7 +319,7 @@ class TestOpenAILLM:
     def test_constructor_creates_client(self):
         """Constructor should initialize AsyncOpenAI client."""
 
-        with patch("animetta.services.intelligence.llm.openai_llm.AsyncOpenAI") as mock:
+        with patch("animetta.services.llm.openai_llm.AsyncOpenAI") as mock:
             instance = OpenAILLM(api_key="key", model="gpt-4")
         mock.assert_called_once_with(api_key="key")
         assert instance.client is not None
@@ -327,7 +327,7 @@ class TestOpenAILLM:
     def test_constructor_with_base_url(self):
         """Constructor should pass base_url to AsyncOpenAI."""
 
-        with patch("animetta.services.intelligence.llm.openai_llm.AsyncOpenAI") as mock:
+        with patch("animetta.services.llm.openai_llm.AsyncOpenAI") as mock:
             OpenAILLM(api_key="key", model="gpt-4", base_url="https://custom.example.com")
         mock.assert_called_once_with(
             api_key="key", base_url="https://custom.example.com"
@@ -337,7 +337,7 @@ class TestOpenAILLM:
     async def test_chat_returns_string(self):
         """chat() should return a string from the mocked API."""
 
-        with patch("animetta.services.intelligence.llm.openai_llm.AsyncOpenAI") as mock:
+        with patch("animetta.services.llm.openai_llm.AsyncOpenAI") as mock:
             mock_client = MagicMock()
             mock_response = MagicMock()
             mock_choice = MagicMock()
@@ -354,7 +354,7 @@ class TestOpenAILLM:
     async def test_chat_updates_history(self):
         """chat() should record user/assistant in history."""
 
-        with patch("animetta.services.intelligence.llm.openai_llm.AsyncOpenAI") as mock:
+        with patch("animetta.services.llm.openai_llm.AsyncOpenAI") as mock:
             mock_client = MagicMock()
             mock_response = MagicMock()
             mock_choice = MagicMock()
@@ -374,7 +374,7 @@ class TestOpenAILLM:
     async def test_chat_stream_yields_strings(self):
         """chat_stream() should yield strings from the mocked streaming API."""
 
-        with patch("animetta.services.intelligence.llm.openai_llm.AsyncOpenAI") as mock:
+        with patch("animetta.services.llm.openai_llm.AsyncOpenAI") as mock:
             async def mock_stream():
                 for token in ["Hello", " ", "World"]:
                     chunk = MagicMock()
@@ -397,7 +397,7 @@ class TestOpenAILLM:
     async def test_close(self):
         """close() should call client.close()."""
 
-        with patch("animetta.services.intelligence.llm.openai_llm.AsyncOpenAI") as mock:
+        with patch("animetta.services.llm.openai_llm.AsyncOpenAI") as mock:
             mock_client = MagicMock()
             mock_client.close = AsyncMock()
             mock.return_value = mock_client
@@ -409,7 +409,7 @@ class TestOpenAILLM:
     def test_set_system_prompt(self):
         """set_system_prompt should update the system prompt."""
 
-        with patch("animetta.services.intelligence.llm.openai_llm.AsyncOpenAI"):
+        with patch("animetta.services.llm.openai_llm.AsyncOpenAI"):
             llm = OpenAILLM(api_key="key", model="gpt-4")
         llm.set_system_prompt("New prompt")
         assert llm.system_prompt == "New prompt"
@@ -417,7 +417,7 @@ class TestOpenAILLM:
     def test_history_methods(self):
         """clear_history should reset history."""
 
-        with patch("animetta.services.intelligence.llm.openai_llm.AsyncOpenAI"):
+        with patch("animetta.services.llm.openai_llm.AsyncOpenAI"):
             llm = OpenAILLM(api_key="key", model="gpt-4")
         llm.history.append({"role": "user", "content": "x"})
         llm.clear_history()
@@ -446,7 +446,7 @@ class TestGLMLLM:
     async def test_chat_returns_string(self):
         """chat() should return a string via mocked ZhipuAI."""
 
-        with patch("animetta.services.intelligence.llm.glm_llm.ZhipuAI") as mock_zhipuai:
+        with patch("animetta.services.llm.glm_llm.ZhipuAI") as mock_zhipuai:
             mock_client = MagicMock()
             mock_response = MagicMock()
             mock_choice = MagicMock()
@@ -468,7 +468,7 @@ class TestGLMLLM:
     async def test_chat_stream_yields_strings(self):
         """chat_stream() should yield strings via mocked ZhipuAI."""
 
-        with patch("animetta.services.intelligence.llm.glm_llm.ZhipuAI") as mock_zhipuai:
+        with patch("animetta.services.llm.glm_llm.ZhipuAI") as mock_zhipuai:
             mock_client = MagicMock()
             chunk1 = MagicMock()
             chunk1.choices[0].delta.content = "Hello"
@@ -489,7 +489,7 @@ class TestGLMLLM:
         """close() should set client to None."""
 
         config = GLMLLMConfig(api_key="test-key")
-        with patch("animetta.services.intelligence.llm.glm_llm.ZhipuAI"):
+        with patch("animetta.services.llm.glm_llm.ZhipuAI"):
             llm = GLMLLM(config=config)
         await llm.close()
         assert llm.client is None
@@ -498,7 +498,7 @@ class TestGLMLLM:
     async def test_chat_updates_history(self):
         """chat() should track conversation history."""
 
-        with patch("animetta.services.intelligence.llm.glm_llm.ZhipuAI") as mock_zhipuai:
+        with patch("animetta.services.llm.glm_llm.ZhipuAI") as mock_zhipuai:
             mock_client = MagicMock()
             mock_response = MagicMock()
             mock_choice = MagicMock()
@@ -531,7 +531,7 @@ class TestOllamaLLM:
     def test_from_config_returns_instance(self, ollama_llm_config):
         """from_config should return an OllamaLLM instance."""
 
-        with patch("animetta.services.intelligence.llm.ollama_llm.ollama"):
+        with patch("animetta.services.llm.ollama_llm.ollama"):
             instance = OllamaLLM.from_config(ollama_llm_config, system_prompt="test")
         assert isinstance(instance, OllamaLLM)
         assert instance.model == "llama3"
@@ -548,7 +548,7 @@ class TestOllamaLLM:
     async def test_chat_returns_string(self):
         """chat() should return a string."""
 
-        with patch("animetta.services.intelligence.llm.ollama_llm.ollama") as mock_ollama:
+        with patch("animetta.services.llm.ollama_llm.ollama") as mock_ollama:
             mock_ollama_client = MagicMock()
             mock_ollama.Client.return_value = mock_ollama_client
             mock_ollama_client.chat.return_value = {
@@ -563,7 +563,7 @@ class TestOllamaLLM:
     async def test_chat_stream_yields_strings(self):
         """chat_stream() should yield strings."""
 
-        with patch("animetta.services.intelligence.llm.ollama_llm.ollama") as mock_ollama:
+        with patch("animetta.services.llm.ollama_llm.ollama") as mock_ollama:
             mock_ollama_client = MagicMock()
             mock_ollama.Client.return_value = mock_ollama_client
 
@@ -584,14 +584,14 @@ class TestOllamaLLM:
     async def test_close(self):
         """close() should not raise."""
 
-        with patch("animetta.services.intelligence.llm.ollama_llm.ollama"):
+        with patch("animetta.services.llm.ollama_llm.ollama"):
             llm = OllamaLLM(model="llama3")
         await llm.close()  # should not raise
 
     def test_history_methods(self):
         """clear_history should reset, get_history should return copy."""
 
-        with patch("animetta.services.intelligence.llm.ollama_llm.ollama"):
+        with patch("animetta.services.llm.ollama_llm.ollama"):
             llm = OllamaLLM(model="llama3")
         llm.history.append({"role": "user", "content": "x"})
         assert len(llm.get_history()) == 1
@@ -736,7 +736,7 @@ class TestLocalLoraLLM:
 class TestLLMFactory:
     """Tests for the LLMFactory."""
 
-    @patch("animetta.services.intelligence.llm.factory.ProviderRegistry.create_service")
+    @patch("animetta.services.llm.factory.ProviderRegistry.create_service")
     def test_create_from_config_returns_correct_type(
         self, mock_create_service, openai_llm_config
     ):
@@ -751,7 +751,7 @@ class TestLLMFactory:
         )
         assert result is not None
 
-    @patch("animetta.services.intelligence.llm.factory.ProviderRegistry.create_service")
+    @patch("animetta.services.llm.factory.ProviderRegistry.create_service")
     def test_create_from_config_fallback_to_mock(self, mock_create_service):
         """create_from_config should fall back to MockLLM on error."""
 
@@ -761,7 +761,7 @@ class TestLLMFactory:
         result = LLMFactory.create_from_config(config, system_prompt="fallback")
         assert isinstance(result, MockLLM)
 
-    @patch("animetta.services.intelligence.llm.factory.LLMFactory.create_from_config")
+    @patch("animetta.services.llm.factory.LLMFactory.create_from_config")
     def test_create_uses_mock_for_unknown_provider(self, mock_create_from_config):
         """create() should use MockLLM for unknown provider names."""
 
@@ -770,7 +770,7 @@ class TestLLMFactory:
         config = args[0]
         assert isinstance(config, MockLLMConfig)
 
-    @patch("animetta.services.intelligence.llm.factory.LLMFactory.create_from_config")
+    @patch("animetta.services.llm.factory.LLMFactory.create_from_config")
     def test_create_openai(self, mock_create_from_config):
         """create() with 'openai' should build OpenAILLMConfig."""
 
@@ -780,7 +780,7 @@ class TestLLMFactory:
         assert config.api_key == "key-123"
         assert config.model == "gpt-4"
 
-    @patch("animetta.services.intelligence.llm.factory.LLMFactory.create_from_config")
+    @patch("animetta.services.llm.factory.LLMFactory.create_from_config")
     def test_create_glm(self, mock_create_from_config):
         """create() with 'glm' should build GLMLLMConfig."""
 
@@ -790,7 +790,7 @@ class TestLLMFactory:
         assert config.api_key == "key-456"
         assert config.model == "glm-4"
 
-    @patch("animetta.services.intelligence.llm.factory.LLMFactory.create_from_config")
+    @patch("animetta.services.llm.factory.LLMFactory.create_from_config")
     def test_create_ollama(self, mock_create_from_config):
         """create() with 'ollama' should build OllamaLLMConfig."""
 
@@ -800,7 +800,7 @@ class TestLLMFactory:
         assert config.model == "mistral"
         assert config.base_url == "http://localhost:11434"
 
-    @patch("animetta.services.intelligence.llm.factory.LLMFactory.create_from_config")
+    @patch("animetta.services.llm.factory.LLMFactory.create_from_config")
     def test_create_mock(self, mock_create_from_config):
         """create() with 'mock' should build MockLLMConfig."""
 
@@ -808,7 +808,7 @@ class TestLLMFactory:
         config = mock_create_from_config.call_args[0][0]
         assert isinstance(config, MockLLMConfig)
 
-    @patch("animetta.services.intelligence.llm.factory.ProviderRegistry.list_services")
+    @patch("animetta.services.llm.factory.ProviderRegistry.list_services")
     def test_get_available_providers(self, mock_list_services):
         """get_available_providers should return list from registry."""
 

@@ -45,11 +45,11 @@ class TestCreateFromConfig:
         mock_svc = _mock_service()
 
         with patch(
-            "animetta.services.intelligence.llm.factory.ProviderRegistry.create_service",
+            "animetta.services.llm.factory.ProviderRegistry.create_service",
             return_value=mock_svc,
         ) as mock_create:
             with patch(
-                "animetta.services.intelligence.llm.factory.TracingProxy",
+                "animetta.services.llm.factory.TracingProxy",
                 side_effect=lambda x, **kw: x,
             ):
                 config = MockLLMConfig()
@@ -65,11 +65,11 @@ class TestCreateFromConfig:
         mock_svc = _mock_service()
 
         with patch(
-            "animetta.services.intelligence.llm.factory.ProviderRegistry.create_service",
+            "animetta.services.llm.factory.ProviderRegistry.create_service",
             return_value=mock_svc,
         ) as mock_create:
             with patch(
-                "animetta.services.intelligence.llm.factory.TracingProxy",
+                "animetta.services.llm.factory.TracingProxy",
                 side_effect=lambda x, **kw: x,
             ):
                 config = OpenAILLMConfig(api_key="sk-test", model="gpt-4")
@@ -84,11 +84,11 @@ class TestCreateFromConfig:
         mock_svc = _mock_service()
 
         with patch(
-            "animetta.services.intelligence.llm.factory.ProviderRegistry.create_service",
+            "animetta.services.llm.factory.ProviderRegistry.create_service",
             return_value=mock_svc,
         ) as mock_create:
             with patch(
-                "animetta.services.intelligence.llm.factory.TracingProxy",
+                "animetta.services.llm.factory.TracingProxy",
                 side_effect=lambda x, **kw: x,
             ):
                 config = GLMLLMConfig(api_key="glm-key", model="glm-4")
@@ -103,11 +103,11 @@ class TestCreateFromConfig:
         mock_svc = _mock_service()
 
         with patch(
-            "animetta.services.intelligence.llm.factory.ProviderRegistry.create_service",
+            "animetta.services.llm.factory.ProviderRegistry.create_service",
             return_value=mock_svc,
         ) as mock_create:
             with patch(
-                "animetta.services.intelligence.llm.factory.TracingProxy",
+                "animetta.services.llm.factory.TracingProxy",
                 side_effect=lambda x, **kw: x,
             ):
                 config = OllamaLLMConfig(model="llama3.2")
@@ -124,11 +124,11 @@ class TestCreateFromConfig:
         mock_svc = _mock_service()
 
         with patch(
-            "animetta.services.intelligence.llm.factory.ProviderRegistry.create_service",
+            "animetta.services.llm.factory.ProviderRegistry.create_service",
             return_value=mock_svc,
         ):
             with patch(
-                "animetta.services.intelligence.llm.factory.TracingProxy",
+                "animetta.services.llm.factory.TracingProxy",
                 return_value="proxy-wrapped",
             ) as mock_proxy:
                 config = MockLLMConfig()
@@ -143,11 +143,11 @@ class TestCreateFromConfig:
         """When ProviderRegistry raises, factory falls back to MockLLM."""
 
         with patch(
-            "animetta.services.intelligence.llm.factory.ProviderRegistry.create_service",
+            "animetta.services.llm.factory.ProviderRegistry.create_service",
             side_effect=ValueError("unknown provider"),
         ):
             with patch(
-                "animetta.services.intelligence.llm.mock_llm.MockLLM",
+                "animetta.services.llm.mock_llm.MockLLM",
             ) as MockMockLLM:
                 mock_instance = _mock_service()
                 MockMockLLM.return_value = mock_instance
@@ -162,11 +162,11 @@ class TestCreateFromConfig:
         """ImportError during service creation also triggers fallback."""
 
         with patch(
-            "animetta.services.intelligence.llm.factory.ProviderRegistry.create_service",
+            "animetta.services.llm.factory.ProviderRegistry.create_service",
             side_effect=ImportError("missing dependency"),
         ):
             with patch(
-                "animetta.services.intelligence.llm.mock_llm.MockLLM",
+                "animetta.services.llm.mock_llm.MockLLM",
             ) as MockMockLLM:
                 mock_instance = _mock_service()
                 MockMockLLM.return_value = mock_instance
@@ -181,11 +181,11 @@ class TestCreateFromConfig:
         """Fallback MockLLM receives the same system_prompt."""
 
         with patch(
-            "animetta.services.intelligence.llm.factory.ProviderRegistry.create_service",
+            "animetta.services.llm.factory.ProviderRegistry.create_service",
             side_effect=Exception("fail"),
         ):
             with patch(
-                "animetta.services.intelligence.llm.mock_llm.MockLLM",
+                "animetta.services.llm.mock_llm.MockLLM",
             ) as MockMockLLM:
                 mock_instance = _mock_service()
                 MockMockLLM.return_value = mock_instance
@@ -208,7 +208,7 @@ class TestCreate:
         """``create("mock")`` returns a MockLLM instance."""
 
         with patch(
-            "animetta.services.intelligence.llm.factory.LLMFactory.create_from_config",
+            "animetta.services.llm.factory.LLMFactory.create_from_config",
         ) as mock_create:
             mock_create.return_value = _mock_service()
 
@@ -223,7 +223,7 @@ class TestCreate:
         """``create("openai", api_key=..., model=...)`` passes kwargs to config."""
 
         with patch(
-            "animetta.services.intelligence.llm.factory.LLMFactory.create_from_config",
+            "animetta.services.llm.factory.LLMFactory.create_from_config",
         ) as mock_create:
             mock_create.return_value = _mock_service()
 
@@ -247,7 +247,7 @@ class TestCreate:
         """``create("glm", api_key=...)`` builds a GLMLLMConfig with defaults."""
 
         with patch(
-            "animetta.services.intelligence.llm.factory.LLMFactory.create_from_config",
+            "animetta.services.llm.factory.LLMFactory.create_from_config",
         ) as mock_create:
             mock_create.return_value = _mock_service()
 
@@ -267,7 +267,7 @@ class TestCreate:
         """``create("ollama")`` builds an OllamaLLMConfig with defaults."""
 
         with patch(
-            "animetta.services.intelligence.llm.factory.LLMFactory.create_from_config",
+            "animetta.services.llm.factory.LLMFactory.create_from_config",
         ) as mock_create:
             mock_create.return_value = _mock_service()
 
@@ -286,7 +286,7 @@ class TestCreate:
         """``system_prompt`` is forwarded as positional arg to ``create_from_config``."""
 
         with patch(
-            "animetta.services.intelligence.llm.factory.LLMFactory.create_from_config",
+            "animetta.services.llm.factory.LLMFactory.create_from_config",
         ) as mock_create:
             mock_create.return_value = _mock_service()
 
@@ -301,7 +301,7 @@ class TestCreate:
         """An unrecognised provider name results in a MockLLMConfig."""
 
         with patch(
-            "animetta.services.intelligence.llm.factory.LLMFactory.create_from_config",
+            "animetta.services.llm.factory.LLMFactory.create_from_config",
         ) as mock_create:
             mock_create.return_value = _mock_service()
 
@@ -314,12 +314,12 @@ class TestCreate:
         """An unknown provider triggers a warning log and MockLLM config."""
 
         with patch(
-            "animetta.services.intelligence.llm.factory.LLMFactory.create_from_config",
+            "animetta.services.llm.factory.LLMFactory.create_from_config",
         ) as mock_create:
             mock_create.return_value = _mock_service()
 
             with patch(
-                "animetta.services.intelligence.llm.factory.logger.warning"
+                "animetta.services.llm.factory.logger.warning"
             ) as mock_warn:
                 LLMFactory.create("unknown_xyz")
 
@@ -337,7 +337,7 @@ class TestGetAvailableProviders:
     def test_returns_list(self):
 
         with patch(
-            "animetta.services.intelligence.llm.factory.ProviderRegistry.list_services",
+            "animetta.services.llm.factory.ProviderRegistry.list_services",
             return_value=["mock", "openai", "glm", "ollama"],
         ):
             providers = LLMFactory.get_available_providers()

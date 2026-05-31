@@ -30,7 +30,7 @@ class TestVADServicesRegistered:
         """导入 VAD 模块后 silero 和 mock 都应在 Registry 中"""
 
         # 触发导入
-        import animetta.services.intelligence.vad  # noqa: F401
+        import animetta.services.vad  # noqa: F401
 
         services = ProviderRegistry.list_services("vad")
         assert "silero" in services, f"silero 未注册, 当前: {services}"

@@ -435,8 +435,8 @@ class TestASRFactory:
         result = ASRFactory.create("nonexistent", model="test", language="en")
         assert isinstance(result, MockASR)
 
-    @patch("animetta.services.speech.asr.factory.ASRFactory._build_config")
-    @patch("animetta.services.speech.asr.factory.ProviderRegistry.create_service")
+    @patch("animetta.services.asr.factory.ASRFactory._build_config")
+    @patch("animetta.services.asr.factory.ProviderRegistry.create_service")
     def test_create_calls_registry(self, mock_create_service, mock_build_config):
         """create() should build config and delegate to ProviderRegistry."""
         mock_config = MagicMock()
@@ -453,14 +453,14 @@ class TestASRFactory:
         mock_create_service.assert_called_once_with("asr", mock_config)
         assert result is not None
 
-    @patch("animetta.services.speech.asr.factory.ProviderRegistry.create_service")
+    @patch("animetta.services.asr.factory.ProviderRegistry.create_service")
     def test_create_fallback_on_exception(self, mock_create_service):
         """create() should fall back to MockASR when ProviderRegistry raises."""
         mock_create_service.side_effect = ValueError("Service creation failed")
         result = ASRFactory.create("faster_whisper")
         assert isinstance(result, MockASR)
 
-    @patch("animetta.services.speech.asr.factory.logger")
+    @patch("animetta.services.asr.factory.logger")
     def test_create_unknown_logs_warning(self, mock_logger):
         """create() with unknown provider should log a warning."""
         ASRFactory.create("bogus_provider")

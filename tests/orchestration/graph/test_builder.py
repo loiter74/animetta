@@ -6,6 +6,7 @@ from typing import Any
 from unittest.mock import ANY, MagicMock, call, patch
 
 import pytest
+from animetta.orchestration.graph.state import create_initial_state
 from langgraph.graph import StateGraph as RealStateGraph
 
 import animetta.orchestration.graph.builder as builder_mod

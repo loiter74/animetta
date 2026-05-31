@@ -125,7 +125,7 @@ class TestToolManager:
         mock_chat_model = MagicMock()
 
         with patch(
-            "animetta.services.intelligence.llm.langchain_adapter.create_chat_model_from_service",
+            "animetta.services.llm.langchain_adapter.create_chat_model_from_service",
         ) as mock_create:
             mock_create.return_value = mock_chat_model
 
@@ -141,7 +141,7 @@ class TestToolManager:
     async def test_create_chat_model_failure_returns_none(self, tool_manager):
         """When create_chat_model_from_service raises, return None."""
         with patch(
-            "animetta.services.intelligence.llm.langchain_adapter.create_chat_model_from_service",
+            "animetta.services.llm.langchain_adapter.create_chat_model_from_service",
         ) as mock_create:
             mock_create.side_effect = ImportError("missing dependency")
 

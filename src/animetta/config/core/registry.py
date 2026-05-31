@@ -46,7 +46,8 @@ class ProviderRegistry:
         "vad": {},
     }
 
-    # Compatible with old API — removed: _providers alias (unused)
+    # Compatible with old API
+    _providers = _configs  # Alias for backward compatibility
 
     # ==================== Config Class Registration ====================
 

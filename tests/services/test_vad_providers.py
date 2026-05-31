@@ -410,7 +410,7 @@ class TestSileroVAD:
 class TestVADFactory:
     """Tests for the VADFactory."""
 
-    @patch("animetta.services.intelligence.vad.factory.ProviderRegistry.create_service")
+    @patch("animetta.services.vad.factory.ProviderRegistry.create_service")
     def test_create_from_config_uses_registry(self, mock_create_service):
         """create_from_config should delegate to ProviderRegistry."""
 
@@ -422,7 +422,7 @@ class TestVADFactory:
         mock_create_service.assert_called_once_with("vad", config)
         assert result is not None
 
-    @patch("animetta.services.intelligence.vad.factory.ProviderRegistry.create_service")
+    @patch("animetta.services.vad.factory.ProviderRegistry.create_service")
     def test_create_from_config_fallback_to_mock(self, mock_create_service):
         """create_from_config should fall back to MockVAD on error."""
 
@@ -457,7 +457,7 @@ class TestVADFactory:
         """create('silero') should return a SileroVAD instance."""
         mock_instance = MagicMock()
         with patch(
-            "animetta.services.intelligence.vad.silero_vad.SileroVAD",
+            "animetta.services.vad.silero_vad.SileroVAD",
             return_value=mock_instance,
         ):
             result = VADFactory.create("silero", sample_rate=16000)
@@ -466,7 +466,7 @@ class TestVADFactory:
     def test_create_silero_with_params(self):
         """create('silero') should forward keyword arguments."""
         with patch(
-            "animetta.services.intelligence.vad.silero_vad.SileroVAD",
+            "animetta.services.vad.silero_vad.SileroVAD",
             return_value=MagicMock(),
         ) as mock_cls:
             VADFactory.create(
@@ -487,7 +487,7 @@ class TestVADFactory:
     def test_create_silero_fallback_on_importerror(self):
         """create('silero') should fall back to MockVAD on ImportError."""
         with patch(
-            "animetta.services.intelligence.vad.silero_vad.SileroVAD",
+            "animetta.services.vad.silero_vad.SileroVAD",
             side_effect=ImportError("Not installed"),
         ):
             result = VADFactory.create("silero")
