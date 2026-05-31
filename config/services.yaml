@@ -34,13 +34,6 @@ asr:
       min_silence_duration_ms: 500
       speech_pad_ms: 30
 
-  # 智谱 GLM ASR
-  glm:
-    type: glm
-    api_key: "${GLM_API_KEY}"
-    model: "glm-asr-2512"
-    stream: false
-
   # OpenAI Whisper
   openai:
     type: openai
@@ -83,16 +76,6 @@ tts:
     voice: "zh-CN-XiaoxiaoNeural"
     rate: "+30%"
     pitch: "+150Hz"
-
-  # 智谱 GLM TTS
-  glm:
-    type: glm
-    api_key: "${GLM_API_KEY}"
-    model: "glm-tts"
-    voice: "female"  # male / female
-    response_format: "wav"
-    speed: 1.0
-    volume: 1.0
 
   # OpenAI TTS
   openai:
@@ -242,16 +225,8 @@ tts:
 # ===========================
 
 llm:
-  # 智谱 GLM（推荐)
-  glm:
-    memory_enabled: true
-    llm_config:
-      type: glm
-      api_key: "${GLM_API_KEY}"
-      model: "glm-4-plus"  # 最新旗舰模型，744B 参数，Agent/Coding 能力 SOTA
-      enable_thinking: false  # 关闭深度思考模式，加快响应速度
 
-  # DeepSeek（OpenAI API 兼容，推荐替代 GLM）
+  # DeepSeek（推荐）
   deepseek:
     memory_enabled: true
     llm_config:
