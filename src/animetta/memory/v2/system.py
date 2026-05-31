@@ -13,11 +13,13 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 
-from animetta.memory.v2.atom import MemoryAtom, Layer
+from animetta.memory.v2.atom import MemoryAtom, Layer, Relation, RelationType
 from animetta.memory.v2.store import AtomStore
 from animetta.memory.v2.emotion_field import EmotionalField, VADVector
 from animetta.memory.v2.search import MemorySearch
 from animetta.memory.v2.reconsolidation import get_reconsolidation_client
+from animetta.memory.v2.metabolism import MetabolismScheduler
+from animetta.memory.v2.compile import CompileEngine, COMPILE_TRIGGERS
 
 logger = logging.getLogger(__name__)
 
@@ -74,12 +76,92 @@ class LivingMemorySystem:
     def __init__(self, db_path: str = "memory_db/living_memory.sqlite"):
         self.store = AtomStore(db_path=db_path)
         self._initialized = False
+        self._metabolism_task: asyncio.Task | None = None
+        self._metabolism_interval = 6 * 3600  # 6 hours in seconds
+        self.compile_engine = CompileEngine()
 
     async def initialize(self) -> None:
         await self.store.initialize()
         self._initialized = True
 
+    async def start_metabolism(self) -> None:
+        """Start the background metabolism loop (decay + consolidation + compile)."""
+        if self._metabolism_task and not self._metabolism_task.done():
+            return
+        self._metabolism_task = asyncio.create_task(self._metabolism_loop())
+        logger.info("Metabolism loop started (every 6h)")
+
+    async def stop_metabolism(self) -> None:
+        """Stop the background metabolism loop."""
+        if self._metabolism_task and not self._metabolism_task.done():
+            self._metabolism_task.cancel()
+            try:
+                await self._metabolism_task
+            except asyncio.CancelledError:
+                pass
+        logger.info("Metabolism loop stopped")
+
+    async def _metabolism_loop(self) -> None:
+        """Background loop: periodically run metabolism tick."""
+        while True:
+            try:
+                await asyncio.sleep(self._metabolism_interval)
+                await self._run_metabolism_tick()
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                logger.warning(f"Metabolism tick failed: {e}")
+
+    async def _run_metabolism_tick(self) -> None:
+        """Execute one metabolism tick: decay + compile + forget."""
+        # Get all active atoms
+        atoms = await self.store.get_all_active()
+        if not atoms:
+            return
+
+        count = len(atoms)
+
+        # Phase 1: Decay — recalculate salience
+        for atom in atoms:
+            atom.salience = MetabolismScheduler.compute_salience(atom)
+            await self.store.update_salience(atom.id, atom.salience)
+
+        # Phase 2: Compile — try layer progression
+        await self._try_compile(atoms)
+
+        # Phase 3: Forget — archive low-salience atoms
+        threshold = MetabolismScheduler.adaptive_threshold(count)
+        archived = await self.store.archive_below_threshold(threshold)
+        if archived:
+            logger.info(f"Metabolism: archived {archived} atoms (threshold={threshold:.3f})")
+
+    async def _try_compile(self, atoms: list[MemoryAtom]) -> None:
+        """Try compiling atoms up through layers."""
+        for source_layer in [Layer.RAW, Layer.EPISODIC, Layer.SEMANTIC]:
+            trigger = COMPILE_TRIGGERS[source_layer]
+            eligible = CompileEngine.get_eligible_atoms(atoms, source_layer, trigger)
+
+            if len(eligible) >= trigger.min_atoms:
+                compiled = await self.compile_engine.compile_layer(
+                    eligible, trigger.target_layer
+                )
+                if compiled:
+                    await self.store.create(compiled)
+                    # Mark source atoms as compiled
+                    for a in eligible:
+                        a.relations.append(Relation(
+                            source_id=compiled.id, target_id=a.id,
+                            relation_type=RelationType.DERIVES,
+                        ))
+                        await self.store.update(a)
+                    logger.info(
+                        f"Compiled {len(eligible)} {source_layer.name} → "
+                        f"1 {trigger.target_layer.name}: {compiled.summary[:80]}"
+                    )
+                    break  # One compilation per tick
+
     async def shutdown(self) -> None:
+        await self.stop_metabolism()
         await self.store.close()
 
     # ── Encode ──
