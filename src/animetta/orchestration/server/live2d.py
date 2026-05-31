@@ -4,9 +4,12 @@ Manages Live2D action queuing and execution
 """
 
 from collections.abc import Callable
+from animetta.services.live2d.action_queue import Live2DActionQueue, ActionMessage
 from typing import Any
+from animetta.services.live2d.action_queue import Live2DActionQueue, ActionMessage
 
 from loguru import logger
+from animetta.services.live2d.action_queue import Live2DActionQueue, ActionMessage
 
 
 class Live2DManager:
