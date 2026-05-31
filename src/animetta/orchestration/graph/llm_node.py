@@ -1,21 +1,31 @@
 """LLM inference node - supports tool calls and streaming output"""
 
 import asyncio
-import time as time_module
+import re
 from typing import Any
 
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
-from langgraph.types import RunnableConfig
 from loguru import logger
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, ToolMessage
+from langgraph.types import RunnableConfig
 
+import time as time_module
+
+from .state import AgentState, log_timing
 from .interrupt_handler import get_interrupt_handler
 from .memory_middleware import MemoryMiddleware
 from .node_error import log_node_error
-from .state import AgentState, log_timing
 
 # Configurable timeout for LLM provider calls (default: 30 seconds)
 TIMEOUT_SECONDS = 30
 FALLBACK_RESPONSE = "I need a moment to think about that."
+
+# Regex for emotion tags like [happy], [neutral], [sad]
+_EMOTION_TAG_RE = re.compile(r"\s*\[[\w-]+\]\s*")
+
+
+def _strip_emotion_tags(text: str) -> str:
+    """Remove emotion tags like [happy], [neutral] from LLM output."""
+    return _EMOTION_TAG_RE.sub(" ", text).strip()
 
 # ========================================
 # RAG memory retrieval helper functions
@@ -267,13 +277,13 @@ async def _llm_with_tools(
                     for tc in tool_calls
                 ]
 
-                ai_message = AIMessage(content=response.get("content", "") or "Calling tools...", tool_calls=tool_calls)
+                ai_message = AIMessage(content=_strip_emotion_tags(response.get("content", "") or "Calling tools..."), tool_calls=tool_calls)
 
                 # after_llm_call notification (non-blocking)
                 _notify_middleware_after(session_id, user_text, response.get("content", ""), config)
 
                 return {
-                    "response_text": response.get("content", "") or "Calling tools...",
+                    "response_text": _strip_emotion_tags(response.get("content", "") or "Calling tools..."),
                     "response_chunks": [response.get("content", "") or ""],
                     "messages": [ai_message],
                     "tool_calls": formatted_tool_calls,
@@ -287,7 +297,7 @@ async def _llm_with_tools(
                 _notify_middleware_after(session_id, user_text, full_response, config)
 
                 return {
-                    "response_text": full_response,
+                    "response_text": _strip_emotion_tags(full_response),
                     "response_chunks": [full_response],
                     "messages": [ai_message],
                     "tool_calls": None,
@@ -355,7 +365,7 @@ async def _llm_without_tools(
 
         ai_message = AIMessage(content=full_response)
         return {
-            "response_text": full_response,
+            "response_text": _strip_emotion_tags(full_response),
             "response_chunks": chunks,
             "messages": [ai_message],
             "tool_calls": None,
@@ -374,7 +384,7 @@ async def _llm_without_tools(
     _notify_middleware_after(session_id, user_text, full_response, config)
 
     return {
-        "response_text": full_response,
+        "response_text": _strip_emotion_tags(full_response),
         "response_chunks": chunks,
         "messages": [ai_message],
         "tool_calls": None,
