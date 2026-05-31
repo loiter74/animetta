@@ -2,6 +2,8 @@ from __future__ import annotations
 """Tests for WebSocket route handlers — event dispatch and registration."""
 
 import pytest
+from animetta.orchestration.server.desktop import DesktopClientManager
+from animetta.orchestration.server.live2d import Live2DManager
 from unittest.mock import AsyncMock, MagicMock, patch
 
 

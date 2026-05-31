@@ -14,6 +14,7 @@ from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from animetta.core.redis_checkpoint import AsyncRedisSaver
 
 
 # ── Helpers ─────────────────────────────────────────────────────────
@@ -56,7 +57,7 @@ def mod():
     with (
         patch("dotenv.load_dotenv"),
         patch(
-            "animetta.config.user_settings.UserSettings._load",
+            "animetta.config.user.UserSettings._load",
             return_value={"log_level": "INFO"},
         ),
     ):

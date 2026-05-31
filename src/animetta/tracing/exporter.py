@@ -1,12 +1,8 @@
 """
 StatsSpanExporter — writes OpenTelemetry spans to StatsStore SQLite.
-
-Usage:
-    from opentelemetry.sdk.trace.export import BatchSpanProcessor
-    from anima.tracing import StatsSpanExporter
-
-    provider.add_span_processor(BatchSpanProcessor(StatsSpanExporter()))
 """
+
+from __future__ import annotations
 
 import json
 import logging

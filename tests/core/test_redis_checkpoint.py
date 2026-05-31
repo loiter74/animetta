@@ -5,6 +5,7 @@ import json
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from animetta.core.redis_checkpoint import AsyncRedisSaver
 from langgraph.checkpoint.base import CheckpointTuple
 
 

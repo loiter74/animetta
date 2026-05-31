@@ -2,6 +2,7 @@ from __future__ import annotations
 """Tests for StatsSpanExporter — OTel span → StatsStore mapping."""
 
 import pytest
+from animetta.tracing.exporter import StatsSpanExporter
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from opentelemetry.sdk.trace import ReadableSpan

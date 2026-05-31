@@ -6,6 +6,7 @@ init_tracing(), not at module level. We patch at their source packages.
 """
 
 import pytest
+from animetta.tracing.exporter import StatsSpanExporter
 from unittest.mock import MagicMock, patch
 
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 """Tests for Live2DManager — action queue, policy, callback execution, lazy init."""
 
 import pytest
+from animetta.orchestration.server.live2d import Live2DManager
 from unittest.mock import AsyncMock, MagicMock, patch
 
 

@@ -6,6 +6,7 @@ The fallback test runs without Redis.
 """
 
 import pytest
+from animetta.core.redis_checkpoint import AsyncRedisSaver
 
 
 # ── Test 3.6: session persistence across checkpointer re-creation ─

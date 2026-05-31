@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import pytest
+from animetta.orchestration.server.live2d import Live2DManager
 from unittest.mock import AsyncMock, MagicMock, patch
 
 

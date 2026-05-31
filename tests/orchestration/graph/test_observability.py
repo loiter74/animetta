@@ -7,6 +7,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
+from animetta.orchestration.graph.observability import ObservabilityManager
 import yaml
 
 
