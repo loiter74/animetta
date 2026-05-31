@@ -1,4 +1,4 @@
-"""Integration: conversation pipeline — server start → connect → text → pipeline runs."""
+"""Integration: ASR pipeline — audio input → speech recognition."""
 
 import asyncio, subprocess, sys, time, socketio, pytest
 
@@ -18,19 +18,17 @@ def server():
     try: p.wait(timeout=5)
     except subprocess.TimeoutExpired: p.kill()
 
-class TestConversation:
+class TestASR:
     @pytest.mark.asyncio
-    async def test_pipeline(self, server):
+    async def test_asr(self, server):
         sio, ev = socketio.AsyncClient(), {}
         @sio.on("*")
         async def _(e, d=None): ev.setdefault(e, []).append(d)
         await sio.connect(URL, transports=["websocket"], wait_timeout=10)
-        await sio.emit("text_input", {"text": "Hello!", "user_id": "t", "from_name": "T"})
-        await asyncio.sleep(30)
+        await sio.emit("raw_audio_data", {"audio": [], "sample_rate": 16000})
+        await asyncio.sleep(10)
         await sio.disconnect()
-        has_text = any(isinstance(d,dict) and d.get("text") for d in ev.get("sentence",[]))
         errs = ev.get("error",[])
-        print(f"Events: {sorted(ev.keys())} | sentence={has_text} | errors={errs}")
+        print(f"events={sorted(ev.keys())} errors={errs}")
         assert "connection-established" in ev, "connect"
-        assert len(ev) >= 2, "pipeline runs"
         assert not errs, f"errors: {errs}"

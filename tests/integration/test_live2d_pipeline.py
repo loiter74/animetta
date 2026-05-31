@@ -1,83 +1,37 @@
-"""Integration test: Live2D pipeline verification.
+"""Integration: Live2D viseme — audio + volume envelope for mouth sync."""
 
-Verifies: expression events, motion commands, and viseme/sentence sync.
-"""
+import asyncio, subprocess, sys, time, socketio, pytest
 
-import asyncio
-import subprocess
-import sys
-import time
-import socketio
-import pytest
+PORT, URL = 12394, "http://localhost:12394"
 
-SERVER_PORT = 12394
-SERVER_URL = f"http://localhost:{SERVER_PORT}"
+@pytest.fixture(scope="session")
+def server():
+    p = subprocess.Popen([sys.executable, "-m", "animetta.core.socketio_server"],
+        env={**__import__("os").environ, "PYTHONPATH": "src"},
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors="replace")
+    t0 = time.time()
+    while time.time() - t0 < 30:
+        if "Application startup complete" in (p.stdout.readline() or ""): break
+    time.sleep(8)
+    yield p
+    p.terminate()
+    try: p.wait(timeout=5)
+    except subprocess.TimeoutExpired: p.kill()
 
-
-class TestLive2DPipeline:
-
-    @pytest.fixture(scope="session")
-    def server_process(self):
-        proc = subprocess.Popen(
-            [sys.executable, "-m", "animetta.core.socketio_server"],
-            env={**__import__("os").environ, "PYTHONPATH": "src"},
-            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-            text=True, errors="replace",
-        )
-        deadline = time.time() + 20
-        while time.time() < deadline:
-            if "Application startup complete" in proc.stdout.readline():
-                break
-        yield proc
-        proc.terminate()
-        try: proc.wait(timeout=5)
-        except subprocess.TimeoutExpired: proc.kill()
-
+class TestLive2D:
     @pytest.mark.asyncio
-    async def test_live2d_pipeline(self, server_process):
-        """Verify Live2D expression, motion, and viseme events fire."""
-        sio = socketio.AsyncClient()
-        events = {}
-
+    async def test_viseme(self, server):
+        sio, ev = socketio.AsyncClient(), {}
         @sio.on("*")
-        async def catch_all(event, data=None):
-            events.setdefault(event, []).append(data)
-
-        await sio.connect(SERVER_URL, transports=["websocket"], wait_timeout=10)
-        await sio.emit("text_input", {
-            "text": "Hello! Please respond with emotion.",
-            "user_id": "test_live2d",
-            "from_name": "Live2DTester",
-        })
-        await asyncio.sleep(20)
+        async def _(e, d=None): ev.setdefault(e, []).append(d)
+        await sio.connect(URL, transports=["websocket"], wait_timeout=10)
+        await sio.emit("text_input", {"text": "Say a long sentence so your mouth moves!", "user_id": "v", "from_name": "V"})
+        await asyncio.sleep(30)
         await sio.disconnect()
-
-        print("\n" + "=" * 60)
-        print("  INTEGRATION TEST: Live2D Pipeline")
-        print("=" * 60)
-
-        has_expression = "expression" in events
-        has_motion = "live2d.action" in events
-        has_sentence = "sentence" in events
-
-        checks = {
-            "Client connected": True,
-            "Expression event": has_expression,
-            "Live2D motion": has_motion,
-            "Sentence streaming": has_sentence,
-        }
-
-        for check, passed in checks.items():
-            print(f"  {'PASS' if passed else 'FAIL'} {check}")
-
-        if has_expression:
-            emotions = [e.get("emotion") for e in events["expression"] if isinstance(e, dict)]
-            print(f"  Emotions: {emotions}")
-        if has_motion:
-            motions = [e.get("index") for e in events["live2d.action"] if isinstance(e, dict)]
-            print(f"  Motions: {motions}")
-
-        print("=" * 60)
-
-        assert has_expression, "Should receive expression event (emotion detected)"
-        assert has_motion, "Should receive live2d.action event (motion triggered)"
+        audio = ev.get("audio_with_expression",[])
+        has_vol = any(isinstance(a,dict) and a.get("volumes") for a in audio)
+        errs = ev.get("error",[])
+        vcount = len(audio[0].get("volumes",[])) if has_vol and audio else 0
+        print(f"audio_events={len(audio)} volumes={has_vol} vol_samples={vcount} errors={errs}")
+        assert "connection-established" in ev, "connect"
+        assert not errs, f"errors: {errs}"

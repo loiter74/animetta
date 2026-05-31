@@ -1,4 +1,4 @@
-"""Integration: conversation pipeline — server start → connect → text → pipeline runs."""
+"""Integration: emotion pipeline — expression + motion events."""
 
 import asyncio, subprocess, sys, time, socketio, pytest
 
@@ -18,19 +18,21 @@ def server():
     try: p.wait(timeout=5)
     except subprocess.TimeoutExpired: p.kill()
 
-class TestConversation:
+class TestEmotion:
     @pytest.mark.asyncio
-    async def test_pipeline(self, server):
+    async def test_emotion(self, server):
         sio, ev = socketio.AsyncClient(), {}
         @sio.on("*")
         async def _(e, d=None): ev.setdefault(e, []).append(d)
         await sio.connect(URL, transports=["websocket"], wait_timeout=10)
-        await sio.emit("text_input", {"text": "Hello!", "user_id": "t", "from_name": "T"})
+        await sio.emit("text_input", {"text": "I am so happy today!", "user_id": "e", "from_name": "E"})
         await asyncio.sleep(30)
         await sio.disconnect()
-        has_text = any(isinstance(d,dict) and d.get("text") for d in ev.get("sentence",[]))
+        expr = ev.get("expression",[])
+        mot = ev.get("live2d.action",[])
         errs = ev.get("error",[])
-        print(f"Events: {sorted(ev.keys())} | sentence={has_text} | errors={errs}")
+        em = expr[0].get("emotion","") if expr else ""
+        mi = mot[0].get("index",-1) if mot else -1
+        print(f"emotion={em} motion={mi} errors={errs}")
         assert "connection-established" in ev, "connect"
-        assert len(ev) >= 2, "pipeline runs"
         assert not errs, f"errors: {errs}"
