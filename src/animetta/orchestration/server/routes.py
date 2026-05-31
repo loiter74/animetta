@@ -247,6 +247,60 @@ class RouteHandlers:
     async def on_sing_subtitle_sync(self, sid: str, data: dict) -> None:
         return await self.singing.on_sing_subtitle_sync(sid, data)
 
+    # ── Memory / Wiki (V2 bridge) ────────────────────────────────────
+
+    async def on_memory_organize(self, sid: str, data: dict) -> None:
+        """Trigger V2 memory metabolism + compile, emit progress."""
+        try:
+            ctx = await self.session_manager.get_or_create_context(
+                sid, self.global_config, self._make_send_callback(sid)
+            )
+            mem = getattr(ctx, "memory_system", None)
+            if not mem:
+                await self.sio.emit("memory.organize.result",
+                    {"status": "error", "message": "Memory system not available"}, to=sid)
+                return
+
+            await self.sio.emit("memory.organize.progress",
+                {"text": "Running metabolism tick...", "progress": 30}, to=sid)
+            await mem._run_metabolism_tick()
+
+            await self.sio.emit("memory.organize.progress",
+                {"text": "Compiling RAW → EPISODIC...", "progress": 60}, to=sid)
+
+            await self.sio.emit("memory.organize.result",
+                {"status": "ok", "message": "Memory organized"}, to=sid)
+        except Exception as e:
+            await self.sio.emit("memory.organize.result",
+                {"status": "error", "message": str(e)}, to=sid)
+
+    async def on_get_wiki_pages(self, sid: str, data: dict) -> dict:
+        """Return memory atoms as wiki page data for frontend."""
+        try:
+            ctx = await self.session_manager.get_or_create_context(
+                sid, self.global_config, self._make_send_callback(sid)
+            )
+            mem = getattr(ctx, "memory_system", None)
+            if not mem:
+                return {"pages": [], "error": "Memory system not available"}
+
+            atoms = await mem.store.get_all_active(limit=50)
+            pages = []
+            for a in atoms:
+                pages.append({
+                    "id": a.id,
+                    "title": a.summary or a.content[:80],
+                    "content": a.content,
+                    "layer": a.layer.name,
+                    "confidence": a.confidence,
+                    "salience": a.salience,
+                    "retrieval_count": a.retrieval_count,
+                    "emotion": f"V:{a.emotion_valence:.1f} A:{a.emotion_arousal:.1f}",
+                })
+            return {"pages": pages}
+        except Exception as e:
+            return {"pages": [], "error": str(e)}
+
 
 def register_routes(
     sio: "AsyncServer",
@@ -323,6 +377,10 @@ def register_routes(
     sio.on("sing:confirm_lyrics", handlers.on_sing_confirm_lyrics)
     sio.on("sing:cancel", handlers.on_sing_cancel)
     sio.on("sing:subtitle_sync", handlers.on_sing_subtitle_sync)
+
+    # Memory: wiki pages (legacy compat — delegates to V2)
+    sio.on("memory_organize", handlers.on_memory_organize)
+    sio.on("get_wiki_pages", handlers.on_get_wiki_pages)
 
     logger.info("WebSocket routes registered")
     return handlers
