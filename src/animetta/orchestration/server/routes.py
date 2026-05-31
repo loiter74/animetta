@@ -15,8 +15,6 @@ from .handlers.chat_handlers import ChatHandlers
 from .handlers.config_handlers import ConfigHandlers
 from .handlers.lifecycle_handlers import LifecycleHandlers
 from .handlers.live2d_handlers import Live2DHandlers
-from .handlers.meme_handlers import MemeHandlers
-from .handlers.memory_handlers import MemoryHandlers
 from .handlers.minecraft_handlers import MinecraftHandlers
 from .handlers.persona_handlers import PersonaHandlers
 from .handlers.singing_handlers import SingingHandlers
@@ -57,24 +55,16 @@ class RouteHandlers:
         self.config = ConfigHandlers(
             sio, session_manager, self.desktop_manager, self.live2d_manager
         )
-        self.memory = MemoryHandlers(
-            sio, session_manager, self.desktop_manager, self.live2d_manager
-        )
-        self.meme = MemeHandlers(
-            sio, session_manager, self.desktop_manager, self.live2d_manager
-        )
+        self.bilibili = BilibiliHandlers(sio, session_manager, self.base)
+        self.chat = ChatHandlers(sio, session_manager, self.base)
+        self.live2d = Live2DHandlers(sio, self.live2d_manager, self.base)
+        self.minecraft = MinecraftHandlers(sio)
         self.persona = PersonaHandlers(
             sio, session_manager, self.desktop_manager, self.live2d_manager
         )
         self.lifecycle = LifecycleHandlers(
             sio, session_manager, self.desktop_manager, self.live2d_manager
         )
-
-        # Dependent handlers — use base for shared utilities (_get_or_create_orchestrator, etc.)
-        self.bilibili = BilibiliHandlers(sio, session_manager, self.base)
-        self.chat = ChatHandlers(sio, session_manager, self.base)
-        self.live2d = Live2DHandlers(sio, self.live2d_manager, self.base)
-        self.minecraft = MinecraftHandlers(sio)
         self.singing = SingingHandlers(
             sio, session_manager, self.desktop_manager, self.live2d_manager
         )
@@ -114,14 +104,14 @@ class RouteHandlers:
         """Set global config — delegates to domain handlers."""
         self.base.set_global_config(config)
         self.global_config = self.base.global_config
-        for h in [self.config, self.memory, self.meme, self.persona, self.lifecycle]:
+        for h in [self.config, self.persona, self.lifecycle]:
             h.global_config = config
 
     def set_user_settings(self, user_settings) -> None:
         """Set user settings — delegates to domain handlers."""
         self.base.set_user_settings(user_settings)
         self.user_settings = self.base.user_settings
-        for h in [self.config, self.memory, self.meme, self.persona, self.lifecycle]:
+        for h in [self.config, self.persona, self.lifecycle]:
             h.user_settings = user_settings
 
     # ── Shared utility (backward compat) ─────────────────────────────
@@ -232,43 +222,16 @@ class RouteHandlers:
     async def on_minecraft_stop(self, sid: str, data: dict) -> None:
         return await self.minecraft.on_minecraft_stop(sid, data)
 
-    # ── Memory / Wiki / Meme / Persona events ─────────────────────────
-
-    async def on_memory_organize(self, sid: str, data: dict) -> None:
-        return await self.memory.on_memory_organize(sid, data)
+    # ── Persona events ────────────────────────────────────────────────
 
     async def on_translation_configure(self, sid: str, data: dict) -> None:
         return await self.config.on_translation_configure(sid, data)
-
-    async def on_get_wiki_pages(self, sid: str, data: dict) -> dict:
-        return await self.memory.on_get_wiki_pages(sid, data)
 
     async def on_set_persona(self, sid: str, data: dict) -> None:
         return await self.persona.on_set_persona(sid, data)
 
     async def on_set_personality_mode(self, sid: str, data: dict) -> None:
         return await self.persona.on_set_personality_mode(sid, data)
-
-    async def on_meme_add(self, sid: str, data: dict) -> None:
-        return await self.meme.on_meme_add(sid, data)
-
-    async def on_meme_rate(self, sid: str, data: dict) -> None:
-        return await self.meme.on_meme_rate(sid, data)
-
-    async def on_meme_delete(self, sid: str, data: dict) -> None:
-        return await self.meme.on_meme_delete(sid, data)
-
-    async def on_meme_list(self, sid: str, data: dict) -> None:
-        return await self.meme.on_meme_list(sid, data)
-
-    async def on_meme_review(self, sid: str, data: dict) -> None:
-        return await self.meme.on_meme_review(sid, data)
-
-    async def on_meme_dataset(self, sid: str, data: dict) -> None:
-        return await self.meme.on_meme_dataset(sid, data)
-
-    async def on_meme_collect(self, sid: str, data: dict) -> None:
-        return await self.meme.on_meme_collect(sid, data)
 
     # ── Singing events ────────────────────────────────────────────────
 
