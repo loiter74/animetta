@@ -22,6 +22,7 @@ from animetta.orchestration.server.websocket import WebSocketServer, create_serv
 from animetta.core.redis_checkpoint import AsyncRedisSaver
 from animetta.inspection.scheduler import InspectionScheduler
 from animetta.orchestration.graph.builder import set_external_checkpointer
+from animetta.tracing.bootstrap import init_tracing
 
 # Load environment variables from .env file (must be before other imports)
 try:
@@ -120,7 +121,7 @@ def run_server():
 
     # Run uvicorn server - use factory function to ensure proper initialization
     uvicorn.run(
-        "anima.core.socketio_server:get_asgi_app",
+        "animetta.core.socketio_server:get_asgi_app",
         host=global_config.system.host,
         port=global_config.system.port,
         log_level="info",

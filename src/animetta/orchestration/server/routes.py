@@ -309,28 +309,11 @@ def register_routes(
     sio.on("minecraft.start", handlers.on_minecraft_start)
     sio.on("minecraft.stop", handlers.on_minecraft_stop)
 
-    # Memory organization events
-    sio.on("memory_organize", handlers.on_memory_organize)
-
     # Translation configuration events
     sio.on("translation.configure", handlers.on_translation_configure)
 
-    # Memory: Wiki Pages
-    sio.on("get_wiki_pages", handlers.on_get_wiki_pages)
-
     # Persona runtime switching
     sio.on("set_persona", handlers.on_set_persona)
-
-    # Memory Evolution: MemePool CRUD
-    sio.on("meme_add", handlers.on_meme_add)
-    sio.on("meme_rate", handlers.on_meme_rate)
-    sio.on("meme_delete", handlers.on_meme_delete)
-
-    # Meme Review (筛选器)
-    sio.on("meme:list", handlers.on_meme_list)
-    sio.on("meme:review", handlers.on_meme_review)
-    sio.on("meme:dataset", handlers.on_meme_dataset)
-    sio.on("meme:collect", handlers.on_meme_collect)
 
     # Personality mode runtime switching
     sio.on("set_personality_mode", handlers.on_set_personality_mode)
