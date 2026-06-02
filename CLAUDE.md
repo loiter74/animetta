@@ -7,48 +7,67 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Animetta is a configurable AI virtual companion / VTuber framework with Live2D avatar support. It features:
 - Plugin-based architecture with decorator-based service registration
 - Profile-driven configuration (switch between LLM/ASR/TTS providers)
-- **LangGraph state graph for dialogue orchestration** (migrated from EventBus)
+- LangGraph state graph for dialogue orchestration
 - Streaming response support for LLM and TTS
-- Memory system with vector storage for long-term context
+- Memory system with hybrid vector+keyword search for long-term context
 - Tool calling support with MCP protocol integration
 
 ## Commands
 
 ### Running the Application
 ```bash
-# Start all services (default: backend + web config + desktop app)
+# Start all services (backend + web app)
 python scripts/start.py
-
-# Start with mode selection
-python scripts/start.py --mode desktop   # Electron desktop app (default)
-python scripts/start.py --mode web       # Web mode (requires pnpm)
 
 # Start with options
 python scripts/start.py --backend-only   # Backend only (port 12394)
 python scripts/start.py --no-backend     # Skip backend
-python scripts/start.py --no-web-config  # Skip web config interface
-python scripts/start.py --no-app         # Skip desktop/web app
+python scripts/start.py --no-app         # Skip frontend
 python scripts/start.py --install        # Reinstall dependencies
 
 # Stop all services
 python scripts/stop.py
 
 # Run backend directly
-python -m animetta.socketio_server
+PYTHONPATH=src python -m animetta.core.socketio_server
 ```
 
 ### Development
 ```bash
-# Install backend dependencies
+# Backend
 pip install -r requirements.txt
 
-# Install frontend dependencies (from frontend/)
+# Frontend (from frontend/)
 cd frontend && pnpm install
-
-# Run Electron app (from frontend/)
-pnpm dev              # Development mode with HMR
-pnpm build            # Build for production
+pnpm dev              # Dev server on port 3000 (proxies to backend)
+pnpm build            # Production build
 pnpm typecheck        # TypeScript type checking
+```
+
+### Testing
+```bash
+# Backend tests
+PYTHONPATH=src python -m pytest                          # All fast tests (parallel, skip slow)
+PYTHONPATH=src python -m pytest tests/test_foo.py        # Single test file
+PYTHONPATH=src python -m pytest tests/test_foo.py -k foo # Single test by name
+PYTHONPATH=src python -m pytest -m integration           # Integration tests only
+PYTHONPATH=src python -m pytest -m slow                  # Slow tests only
+
+# Frontend tests (from frontend/)
+pnpm test              # Vitest watch mode
+pnpm test:run          # Vitest single run
+pnpm test:coverage     # With coverage
+```
+
+### Linting & Type Checking
+```bash
+# Backend
+PYTHONPATH=src python -m ruff check src/           # Lint
+PYTHONPATH=src python -m ruff format src/          # Format
+PYTHONPATH=src python -m mypy src/animetta/        # Type check
+
+# Frontend
+cd frontend && pnpm typecheck
 ```
 
 ## Architecture
@@ -57,367 +76,166 @@ pnpm typecheck        # TypeScript type checking
 
 ```
 src/animetta/
-├── socketio_server.py    # Main entry point, WebSocket server
-├── service_context.py    # Service container, manages ASR/TTS/LLM instances
-├── config/               # Configuration loading (YAML + Pydantic)
-│   ├── app.py           # AppConfig - main configuration class
-│   ├── persona.py       # PersonaConfig - character personality
-│   ├── providers/       # Provider-specific config classes (ASR/TTS/LLM/VAD)
-│   └── core/registry.py # Service registry for plugin architecture
-├── graph/                # LangGraph state graph (NEW ARCHITECTURE)
-│   ├── state.py         # AgentState definition
-│   ├── builder.py       # StateGraph builder
-│   ├── orchestrator.py  # LangGraphOrchestrator
-│   ├── config_store.py  # Configuration storage for nodes
-│   └── nodes/           # Graph nodes
-│       ├── asr_node.py      # Speech recognition node
-│       ├── llm_node.py      # LLM reasoning node (with RAG + tools)
-│       ├── tts_node.py      # Speech synthesis node
-│       ├── emotion_node.py  # Emotion analysis node
-│       ├── output_node.py   # Output to frontend + memory storage
-│       └── tool_node.py     # Tool execution node
-├── tools/                # Tool calling system
-│   ├── base.py          # Built-in tools
-│   ├── config.py        # Tool configuration loader
-│   └── mcp_bridge.py    # MCP protocol bridge
-├── services/             # Service implementations
-│   ├── asr/             # Speech recognition (FasterWhisper, GLM, OpenAI)
-│   ├── tts/             # Speech synthesis (Edge TTS, GLM, OpenAI)
-│   ├── llm/             # Language models (GLM, OpenAI, Ollama, LocalLoRA)
-│   │   └── langchain_adapter.py  # LangChain ChatModel adapter
-│   ├── vad/             # Voice activity detection (Silero)
-│   ├── live2d/          # Live2D action queue, viseme sync, preset loader
-│   └── audio/           # Audio processing utilities
-├── memory/               # Conversation memory (OpenClaw-style architecture)
-│   ├── memory_system.py # Unified memory interface
-│   ├── memory_manager.py # Core manager (index/sync/search)
-│   ├── memory_turn.py   # Memory turn data structure
-│   ├── config.py        # Configuration (ChunkConfig, SearchConfig)
-│   ├── models.py        # Data models (Chunk, SearchResult, FileEntry)
-│   ├── chunker.py       # Markdown sliding-window chunking
-│   ├── sqlite_store.py  # SQLite FTS5 + metadata storage
-│   ├── chroma_store.py  # Chroma vector storage
-│   └── hybrid_search.py # Hybrid search (vector 70% + keyword 30%)
-├── avatar/               # Live2D expression analysis
-│   ├── analyzers/       # Keyword-based and LLM-based emotion extraction
-│   └── strategies/      # Duration, intensity, position-based strategies
-├── server/               # Server lifecycle management
-│   ├── lifecycle.py     # Server startup/shutdown
-│   ├── session.py       # Session management (orchestrator factory)
-│   ├── routes.py        # WebSocket route handlers
-│   ├── desktop.py       # Desktop-specific routes
-│   └── live2d.py        # Live2D-specific routes
-└── utils/                # Helpers (env, logging, auto-config)
+├── core/                          # Core runtime
+│   ├── socketio_server.py         # Main entry point, WebSocket server
+│   ├── service_context.py         # Service container (ASR/TTS/LLM/VAD/memory)
+│   └── service_pool.py            # Service instance pooling
+├── orchestration/                 # LangGraph state graph
+│   ├── graph/
+│   │   ├── state.py               # AgentState definition
+│   │   ├── builder.py             # StateGraph builder + compile
+│   │   ├── orchestrator.py        # LangGraphOrchestrator
+│   │   ├── tool_manager.py        # Tool registration & lifecycle
+│   │   ├── personality_node.py    # Personality/mood processing
+│   │   ├── llm_node.py            # LLM reasoning (RAG + tools)
+│   │   ├── asr_node.py            # Speech recognition
+│   │   ├── tts_node.py            # Speech synthesis
+│   │   ├── emotion_node.py        # Emotion analysis
+│   │   ├── tool_node.py           # Tool execution
+│   │   ├── vc_node.py             # Voice conversion
+│   │   ├── output_node.py         # Output to frontend + memory storage
+│   │   ├── node_error.py          # Error handling
+│   │   └── memory_middleware.py   # Memory integration
+│   └── server/
+│       ├── session.py             # Session management
+│       ├── websocket.py           # WebSocket handlers
+│       ├── routes.py              # HTTP routes
+│       ├── lifecycle.py           # Server startup/shutdown
+│       └── handlers/              # Feature-specific handlers
+│           ├── chat_handlers.py
+│           ├── live2d_handlers.py
+│           ├── singing_handlers.py
+│           ├── minecraft_handlers.py
+│           ├── bilibili_handlers.py
+│           ├── persona_handlers.py
+│           ├── config_handlers.py
+│           └── lifecycle_handlers.py
+├── config/                        # Configuration (YAML + Pydantic V2)
+│   ├── app.py                     # AppConfig - main configuration
+│   ├── agent.py                   # AgentConfig
+│   ├── persona/                   # Character personality configs
+│   ├── providers/                 # Provider configs (asr/tts/llm/vad/vc/separation)
+│   ├── live2d.py                  # Live2D configuration
+│   └── core/registry.py           # ProviderRegistry (plugin decorators)
+├── services/                      # Service implementations
+│   ├── asr/                       # Speech recognition (FasterWhisper, FunASR, OpenAI, GLM)
+│   ├── tts/                       # Speech synthesis (Edge TTS, Kokoro, OpenAI, GLM)
+│   ├── llm/                       # Language models (GLM, OpenAI, DeepSeek, Ollama, LocalLoRA)
+│   ├── vad/                       # Voice activity detection (Silero)
+│   ├── vc/                        # Voice conversion (RVC)
+│   ├── live2d/                    # Live2D action queue, viseme sync, preset loader
+│   ├── audio/                     # Audio processing
+│   ├── separation/                # Audio separation (Demucs)
+│   ├── singing/                   # Singing synthesis (lyrics, mixer, RVC bridge)
+│   ├── live/                      # Live streaming services
+│   └── meme/                      # Meme generation & collection (Bilibili)
+├── memory/                        # Conversation memory
+│   ├── v2/                        # LivingMemorySystem (atom-based, current)
+│   │   ├── system.py              # LivingMemorySystem main
+│   │   ├── atom.py                # Memory atoms
+│   │   ├── compile.py             # Memory compilation
+│   │   ├── metabolism.py          # Memory metabolism
+│   │   ├── reconsolidation.py     # Memory reconsolidation
+│   │   ├── emotion_field.py       # Emotion field
+│   │   ├── store.py               # Storage layer
+│   │   └── search.py              # Hybrid search
+│   └── wiki/                      # Wiki-based memory (Markdown source of truth)
+├── avatar/                        # Live2D expression analysis
+│   ├── analyzers/                 # Keyword/LLM/audio-based emotion extraction
+│   ├── strategies/                # Duration, intensity, position-based strategies
+│   └── mappers/                   # Emotion-to-parameter mapping
+├── tools/                         # Tool calling system
+│   ├── base.py                    # Built-in tools
+│   ├── config.py                  # Tool configuration loader
+│   ├── mcp_bridge.py              # MCP protocol bridge
+│   ├── langchain_tools.py         # LangChain tool wrappers
+│   └── minecraft/                 # Minecraft bot integration
+├── notifier/                      # Notification system (Discord, Feishu, Email)
+├── inspection/                    # Pipeline inspection & health checks
+├── tracing/                       # OpenTelemetry tracing
+└── utils/                         # Helpers (env, logging, auto-config)
 ```
 
-### Frontend (Electron + Vue 3 + TypeScript)
+### Frontend (Vue 3 + Vite + TypeScript)
 
-Electron desktop app built with Vue 3, TypeScript, UnoCSS, and Pinia.
-
-**Tech Stack:** electron-vite, Vue 3 (Composition API), TypeScript, UnoCSS, Pinia, pixi.js
+Web application (not Electron). Connects to backend via Socket.IO on port 12394.
 
 ```
 frontend/
-├── electron/              # Electron main process (TypeScript)
-│   ├── main.ts           # Application entry point
-│   ├── preload.ts        # Context bridge (exposes window.electronAPI)
-│   ├── ipc-bridge.ts     # Socket.IO client ↔ IPC relay
-│   └── window-manager.ts # BrowserWindow creation
-├── src/                   # Vue 3 renderer process
-│   ├── App.vue           # Root component
-│   ├── main.ts           # Vue entry (Pinia + UnoCSS)
-│   ├── components/       # Vue components
-│   │   ├── chat/         # ChatPanel, MessageList, InputBar, VoiceButton
-│   │   ├── live2d/       # Live2DRenderer, PopOutButton, useLive2D
-│   │   ├── layout/       # AppLayout, TitleBar
-│   │   └── shared/       # GlassPanel, AnimatedButton
-│   ├── composables/      # Vue Composables (useSocket, useChat, useVoice)
-│   ├── stores/           # Pinia stores (chat, connection)
-│   ├── types/            # TypeScript types (chat, live2d, socket-events)
-│   └── styles/           # Global styles + animations
-├── public/live2d/        # Live2D models + Cubism Core
-├── electron.vite.config.ts
-├── uno.config.ts         # UnoCSS theme (anime color tokens)
-├── tsconfig.json
+├── src/
+│   ├── components/
+│   │   ├── chat/                  # ChatPanel, MessageList, InputBar, VoiceButton
+│   │   ├── live2d/                # Live2DRenderer (pixi.js + pixi-live2d-display)
+│   │   ├── dashboard/             # Stats, charts, performance monitoring
+│   │   ├── layout/                # AppLayout, TitleBar
+│   │   └── shared/                # GlassPanel, AnimatedButton
+│   ├── composables/               # useSocket, useChat, useVoice, useLive2D, useAudio, useSinging, useDanmaku
+│   ├── stores/                    # Pinia stores (chat, connection, memory, singing, personality, dashboard)
+│   ├── types/                     # TypeScript types (chat, live2d, socket-events, singing)
+│   ├── views/                     # Page components (chat, dashboard, meme-review, music)
+│   ├── router/                    # Vue Router (memory history, lazy-loaded routes)
+│   └── styles/                    # Global styles + animations
+├── public/
+│   ├── live2d/                    # Live2D models + Cubism Core
+│   └── avatar/                    # Avatar images
+├── vite.config.ts                 # Vite config (proxy to backend :12394)
+├── vitest.config.ts               # Test config (happy-dom)
+├── uno.config.ts                  # UnoCSS (anime theme tokens, glassmorphism)
 └── package.json
 ```
 
-**Architecture:** Single window with Live2D + Chat side-by-side. Live2D can be popped out to a separate window. Socket.IO runs in main process, events relayed to renderer via IPC.
-
-### Data Flow (LangGraph Architecture)
+### Data Flow (LangGraph)
 
 ```
-User Input (WebSocket)
-    ↓
 [START] → route_input()
     │
-    ├── (audio) → [asr_node] → speech recognition
-    │                       → updates state["user_text"]
-    │
-    └── (text) ──────────────────→ [llm_node]
-                                      │
-                                      ├── RAG: retrieves memory context
-                                      ├── Builds prompt with persona
-                                      ├── Calls LLM with tools
-                                      │
-                             ┌────────┴────────┐
-                             │                 │
-                       (tool_calls)     (direct reply)
-                             │                 │
-                        [tool_node]      [tts_node]
-                             │                 │
-                        execute tools     TTS synthesis
-                             │                 │
-                        results ──────────────┤
-                                               ↓
-                                         [emotion_node]
-                                               ↓
-                                         [output_node]
-                                               ↓
-                                    Socket.IO → Frontend
-                                               ↓
-                                    Store to memory
-                                               ↓
-                                         [END]
-```
-
-**Note:** Each node reads/updates `AgentState` (TypedDict). The `LangGraphOrchestrator` manages graph execution via `graph.astream()` or `graph.ainvoke()`.
-
-## LangGraph Architecture
-
-### AgentState
-
-The central state object passed between nodes:
-
-```python
-class AgentState(TypedDict):
-    # Input
-    input_type: str                    # 'text' or 'audio'
-    raw_audio: Optional[bytes]         # Audio data
-    user_text: str                     # User text (from input or ASR)
-
-    # LLM conversation
-    messages: Annotated[Sequence[BaseMessage], add_messages]  # Message history
-    system_prompt: Optional[str]       # System prompt with persona
-
-    # Tool calling
-    tool_calls: Optional[List[Dict]]   # Tool requests from LLM
-    tool_results: Optional[List[Dict]] # Tool execution results
-
-    # Output
-    response_text: str                 # Final LLM response
-    response_chunks: List[str]         # Streaming chunks
-    tts_audio: Optional[bytes/str]     # TTS audio data
-    emotion: Optional[str]             # Emotion label
-
-    # Metadata
-    session_id: str
-    persona: Optional[Dict]
-    channel_id: Optional[str]
-    user_id: Optional[str]
-    user_name: Optional[str]
-    metadata: Dict[str, Any]
-```
-
-### Node Implementation Pattern
-
-All nodes follow this pattern:
-
-```python
-async def my_node(state: AgentState, config: RunnableConfig) -> AgentState:
-    """
-    Node function
-
-    Args:
-        state: Current state (read/write)
-        config: LangGraph config (contains _config with service_context, etc.)
-
-    Returns:
-        Updated state (or partial state dict)
-    """
-    # Get service context from internal config
-    internal_config = state.get("_config", {})
-    service_context = internal_config.get("service_context")
-
-    # Read from state
-    user_text = state.get("user_text", "")
-
-    # Process...
-    result = process(user_text)
-
-    # Return updated state
-    return {"response_text": result}
-```
-
-### Graph Builder
-
-```python
-from animetta.graph.builder import build_graph
-
-# Build graph with tools
-graph = build_graph(
-    checkpointer=MemorySaver(),  # Optional state persistence
-    enable_tools=True,
-    tools=langchain_tools,
-    tools_map=tools_map,
-)
-
-# Compile and use
-compiled = graph.compile()
-result = await compiled.ainvoke(initial_state)
-```
-
-### Orchestrator Usage
-
-```python
-from animetta.graph.orchestrator import LangGraphOrchestratorFactory
-
-# Create orchestrator
-orchestrator = await LangGraphOrchestratorFactory.create(
-    session_id="user-123",
-    service_context=service_context,
-    socketio=sio,
-    emotion_analyzer=emotion_analyzer,
-    enable_tools=True,  # Enable tool calling
-    tools_config=tools_config,
-)
-
-# Process input
-await orchestrator.process_text(text="你好", user_id="user", user_name="Alice")
-await orchestrator.process_audio(audio_data=b"...")
-```
-
-## Tool System
-
-### Built-in Tools
-
-| Tool | Parameters | Description |
-|------|------------|-------------|
-| `web_search` | `query: str`, `num_results: int` | Internet search |
-| `get_weather` | `city: str` | Weather query |
-| `read_file` | `file_path: str`, `max_length: int` | Read file contents |
-| `get_current_time` | `timezone: str` | Get current time |
-| `list_directory` | `directory: str` | List directory |
-| `calculator` | `expression: str` | Math calculation |
-
-### Tool Configuration
-
-`config/tools.yaml`:
-```yaml
-builtin_tools:
-  - web_search
-  - calculator
-
-mcp_servers:
-  - name: "filesystem"
-    transport: "stdio"
-    command: "npx"
-    args: ["-y", "@modelcontextprotocol/server-filesystem", "./data"]
-
-tool_settings:
-  max_tool_calls_per_turn: 5
-  tool_execution_timeout: 30
-```
-
-### Custom Tool Example
-
-```python
-from langchain_core.tools import tool
-
-@tool
-async def my_tool(param: str) -> str:
-    """Tool description for LLM."""
-    return f"Result: {param}"
-
-# Register in orchestrator
-tools, tools_map = create_tool_registry(
-    builtin_enabled=["calculator"],
-    extra_tools=[my_tool],
-)
-```
-
-## Memory System Architecture
-
-The memory system follows an OpenClaw-style architecture with Markdown as the single source of truth.
-
-### Storage Layers
-
-1. **Short-term Memory**: In-memory session cache (configurable max turns, default 20)
-2. **Long-term Memory**:
-   - **Markdown Files**: Primary storage (wiki/ entities, concepts, sources, synthesis + daily logs in `raw/YYYY-MM-DD.md`)
-   - **SQLite FTS5**: Full-text search index with metadata
-   - **Chroma**: Vector embeddings for semantic search
-
-### Retrieval Strategy
-
-Hybrid search combining:
-- **Vector semantic search** (70% weight): Finds conceptually similar content
-- **BM25 keyword search** (30% weight): Finds exact keyword matches
-
-### RAG Integration
-
-Memory is automatically integrated into the LangGraph flow:
-- **Retrieval**: In `llm_node.py`, before LLM call: `_retrieve_memory_context()`
-- **Storage**: In `output_node.py`, after response: `_store_conversation_to_memory()`
-
-```python
-# llm_node.py - RAG retrieval
-memory_context = await memory.retrieve_context(
-    query=state["user_text"],
-    session_id=state["session_id"],
-    max_turns=5,
-)
-
-# output_node.py - Memory storage
-await memory.store_turn(MemoryTurn(
-    session_id=state["session_id"],
-    user_input=state["user_text"],
-    agent_response=state["response_text"],
-    emotions=[state.get("emotion")],
-))
-```
-
-## Configuration
-
-### Main Config (`config/config.yaml`)
-```yaml
-persona: "neuro-vtuber"   # Character personality
-services:
-  asr: faster_whisper     # Speech recognition
-  tts: edge               # Speech synthesis
-  agent: glm              # Main LLM (with persona)
-  local_llm: local_lora   # Optional: local fine-tuned model
-  vad: silero             # Voice activity detection
-system:
-  host: "0.0.0.0"
-  port: 12394
-```
-
-### Service Config (`config/services.yaml`)
-Contains detailed configurations for all service providers (ASR, TTS, LLM, VAD).
-
-### Personas (`config/personas/`)
-Define character personality, speaking style, and behavior rules.
-
-### Environment Variables (`.env`)
-```bash
-GLM_API_KEY=xxx           # Zhipu AI API key
-OPENAI_API_KEY=xxx        # OpenAI API key (optional)
-ANIMETTA_BASE_MODEL_PATH=xxx # For local LoRA
-ANIMETTA_LORA_PATH=xxx       # For local LoRA
+    ├── (audio) → [asr_node]
+    │                  │
+    └── (text) ────────┴──→ [personality_node]
+                                │
+                           [llm_node]
+                                │
+                       ┌────────┴────────┐
+                       │                 │
+                 (tool_calls)     (direct reply)
+                       │                 │
+                  [tool_node]       [tts_node]
+                       │                 │
+                       └────→ [llm] ←────┘   (tool loop)
+                                │
+                           [emotion_node]
+                                │
+                           [output_node] → Socket.IO → Frontend
+                                │
+                           Store to memory
+                                │
+                              [END]
 ```
 
 ## Key Patterns
 
+### AgentState (`orchestration/graph/state.py`)
+
+The central TypedDict passed between nodes. Key fields:
+- **Input**: `input_type`, `raw_audio`, `user_text`
+- **Conversation**: `messages` (annotated with `add_messages`), `system_prompt`
+- **Tools**: `tool_calls`, `tool_results`
+- **Output**: `response_text`, `response_chunks`, `tts_audio`, `emotion`, `emotion_vad`
+- **Personality**: `personality_mode` (`'default'`|`'streaming'`|`'mood_xxx'`), `personality_mood`
+- **Error**: `error`, `should_retry`, `retry_count`
+- **Metadata**: `session_id`, `persona`, `channel_id`, `user_id`, `user_name`, `_timings`
+
+Use `create_initial_state()` to construct valid initial state.
+
 ### Adding a New Service Provider
 
-1. Create config class in `src/animetta/config/providers/llm/my_llm.py`
-2. Create service in `src/animetta/services/llm/implementations/my_llm.py`
+1. Create config class in `src/animetta/config/providers/<category>/my_provider.py`
+2. Create service in `src/animetta/services/<category>/`
 3. Register with decorators:
 ```python
 @ProviderRegistry.register_config("llm", "my_llm")
 class MyLLMConfig(LLMBaseConfig):
-    ...
+    type: Literal["my_llm"] = "my_llm"
 
 @ProviderRegistry.register_service("llm", "my_llm")
 class MyLLMAgent(LLMInterface):
@@ -426,190 +244,102 @@ class MyLLMAgent(LLMInterface):
         return cls(api_key=config.api_key, model=config.model)
 ```
 
+Categories: `"llm"`, `"asr"`, `"tts"`, `"vad"`
+
 ### Adding a New Graph Node
 
-1. Create node function in `src/animetta/graph/nodes/my_node.py`:
-```python
-from animetta.graph.state import AgentState
-from langgraph.graph import RunnableConfig
-
-async def my_node(state: AgentState, config: RunnableConfig) -> AgentState:
-    # Get internal config
-    internal_config = state.get("_config", {})
-    service_context = internal_config.get("service_context")
-
-    # Process
-    result = process_data(state["input_field"])
-
-    # Return updated state
-    return {"output_field": result}
-```
-
-2. Register in `src/animetta/graph/nodes/__init__.py`:
-```python
-from .my_node import my_node
-```
-
-3. Add to graph in `src/animetta/graph/builder.py`:
-```python
-graph.add_node("my_node", my_node)
-graph.add_edge("previous_node", "my_node")
-```
+1. Create node module in `src/animetta/orchestration/graph/my_node.py`
+2. Import in `builder.py`, add `graph.add_node("my_node", my_node)`
+3. Wire edges: `graph.add_edge("prev_node", "my_node")`
+4. Nodes access services via `ConfigStore.get(session_id, "service_context")`
 
 ### ConfigStore Pattern
 
-LangGraph's config system doesn't pass all needed data to nodes. Use `ConfigStore` for node access:
-
+Nodes can't receive all data through LangGraph's config. Use ConfigStore:
 ```python
-from animetta.graph.config_store import ConfigStore
+from animetta.orchestration.graph.config_store import ConfigStore
 
-# Set config (in orchestrator)
+# Set (in orchestrator)
 ConfigStore.set(session_id, "service_context", service_context)
-ConfigStore.set(session_id, "socketio", sio)
 
-# Get config (in node)
+# Get (in node)
 service_context = ConfigStore.get(state["session_id"], "service_context")
 ```
+
+### Tool Registration
+
+```python
+from langchain_core.tools import tool
+
+@tool
+async def my_tool(param: str) -> str:
+    """Tool description for LLM."""
+    return f"Result: {param}"
+```
+
+Tools are loaded via `config/tools.yaml` and registered in `tool_manager.py`.
+
+## Configuration
+
+### Main Config (`config/config.yaml`)
+```yaml
+persona: "neuro-vtuber"
+services:
+  asr: faster_whisper
+  tts: edge
+  agent: glm
+  local_llm: local_lora
+  vad: silero
+system:
+  host: "0.0.0.0"
+  port: 12394
+```
+
+### Other Config Files
+- `config/services.yaml` — Detailed provider configurations
+- `config/tools.yaml` — Built-in tools, MCP servers, Minecraft settings
+- `config/personas/` — Character personality definitions
+- `config/singing.yaml` — Singing synthesis config
+- `config/observability.yaml` — Tracing/metrics config
+- `.env` — API keys (see `.env.example`)
 
 ## WebSocket Events
 
 **Client → Server:**
-- `text_input` - `{text: string, from_name?: string}`
-- `raw_audio_data` - `{audio: float32[]}` (VAD mode)
-- `mic_audio_end` - Signal end of audio input
-- `interrupt_signal` - `{heard_text?: string}`
+- `text_input` — `{text, from_name?}`
+- `raw_audio_data` — `{audio: float32[]}` (VAD mode)
+- `mic_audio_end` — Signal end of audio
+- `interrupt_signal` — `{heard_text?}`
 
 **Server → Client:**
-- `text` - `{text: string, seq: number}`
-- `audio` - `{data: base64, format: string}`
-- `audio_with_expression` - `{audio_path: str, text: str, emotions: [], volumes: []}`
-- `expression` - `{expression: str}`
-- `control` - `{signal: string}` (conversation-start, conversation-end, interrupt)
-- `transcript` - `{text: string, is_final: boolean}`
+- `text` — `{text, seq}` (streaming chunks)
+- `audio` — `{data: base64, format}`
+- `audio_with_expression` — `{audio_path, text, emotions, volumes}`
+- `expression` — `{expression}`
+- `control` — `{signal}` (conversation-start/end, interrupt)
+- `transcript` — `{text, is_final}`
 
 ## Ports
 
 - Backend: 12394 (Socket.IO + FastAPI)
-- Web Config: 8080 (HTTP)
-- Frontend: Electron desktop app (no port)
+- Frontend dev: 3000 (Vite, proxies to backend)
 
-## Skills
+## Testing Conventions
 
-Use the `live2d` skill when working with Live2D models, expressions, lip sync, or the pixi-live2d-display library.
+- **pytest** with `asyncio_mode = "auto"` — no `@pytest.mark.asyncio` needed
+- **Markers**: `@pytest.mark.integration` (external services), `@pytest.mark.slow` (skipped by default)
+- **Parallel**: `-n auto` enabled by default via pytest-xdist
+- **Coverage**: `--cov=src/animetta` (target tracked in CI)
+- **Frontend**: Vitest with happy-dom, `@testing-library/vue`
 
-## Migration Notes
+## Code Style
 
-### From Vanilla JS to Vue 3 + TypeScript (Completed)
-
-The frontend was migrated from pure Electron + vanilla JS/HTML/CSS to Vue 3 + TypeScript + electron-vite.
-
-- New frontend at `frontend/` (Vue 3 + TypeScript + UnoCSS + Pinia)
-- See `openspec/changes/archive/2026-05-09-vue3-frontend-migration/` for design decisions and task tracking
-
-### From EventBus to LangGraph (Completed)
-
-The following modules have been **removed**:
-- `src/animetta/pipeline/` - Pipeline processing
-- `src/animetta/events/` - EventBus system
-- `src/animetta/handlers/` - Event handlers
-- `src/animetta/adapters/` - Adapter layer
-- `src/animetta/core/` - Core abstractions
-- `src/animetta/services/conversation/` - Old orchestrator
-- `src/animetta/state/` - Old state modules
-
-Replaced by:
-- `src/animetta/graph/` - LangGraph state graph
-- `src/animetta/tools/` - Tool system with MCP support
-
-See [docs/LANGGRAPH_MIGRATION_COMPLETE.md](docs/LANGGRAPH_MIGRATION_COMPLETE.md) for details.
+- **Python**: Ruff (target 3.13, line-length 100, rules E/F/I/N/W/UP/SIM). Double quotes.
+- **TypeScript**: vue-tsc strict checking, UnoCSS for styling
+- **Async-first**: All service methods are async. Use `asyncio_mode = "auto"` in tests.
 
 ## Related Documentation
 
-- [LangGraph Migration Complete](docs/LANGGRAPH_MIGRATION_COMPLETE.md)
-- [Tools System](docs/TOOLS.md)
-- [Live2D System](docs/modules/memory.md#live2d-lip-sync-system-2025-03)
-
-# CLAUDE.md
-
-Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
-
-**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
-
-## 1. Think Before Coding
-
-**Don't assume. Don't hide confusion. Surface tradeoffs.**
-
-Before implementing:
-- State your assumptions explicitly. If uncertain, ask.
-- If multiple interpretations exist, present them - don't pick silently.
-- If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
-
-## 2. Simplicity First
-
-**Minimum code that solves the problem. Nothing speculative.**
-
-- No features beyond what was asked.
-- No abstractions for single-use code.
-- No "flexibility" or "configurability" that wasn't requested.
-- No error handling for impossible scenarios.
-- If you write 200 lines and it could be 50, rewrite it.
-
-Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
-
-## 3. Surgical Changes
-
-**Touch only what you must. Clean up only your own mess.**
-
-When editing existing code:
-- Don't "improve" adjacent code, comments, or formatting.
-- Don't refactor things that aren't broken.
-- Match existing style, even if you'd do it differently.
-- If you notice unrelated dead code, mention it - don't delete it.
-
-When your changes create orphans:
-- Remove imports/variables/functions that YOUR changes made unused.
-- Don't remove pre-existing dead code unless asked.
-
-The test: Every changed line should trace directly to the user's request.
-
-## 4. Goal-Driven Execution
-
-**Define success criteria. Loop until verified.**
-
-Transform tasks into verifiable goals:
-- "Add validation" → "Write tests for invalid inputs, then make them pass"
-- "Fix the bug" → "Write a test that reproduces it, then make it pass"
-- "Refactor X" → "Ensure tests pass before and after"
-
-For multi-step tasks, state a brief plan:
-```
-1. [Step] → verify: [check]
-2. [Step] → verify: [check]
-3. [Step] → verify: [check]
-```
-
-Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
-
----
-
-**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
-
-## Token Optimization
-
-This project uses [RTK](https://github.com/rtk-ai/rtk) (Rust Token Killer) to reduce token consumption.
-
-```bash
-# RTK binary location — always add to PATH before use
-export PATH="$HOME/.local/bin:$PATH"
-
-# Instead of raw commands, use rtk-prefixed versions:
-#   git status     → rtk git status
-#   git log -10    → rtk git log -10
-#   cargo test     → rtk cargo test
-#   cat file       → rtk read file
-
-# rtk meta commands (used directly):
-#   rtk gain       — show token savings
-#   rtk proxy <cmd> — raw passthrough when needed
-```
+- [AGENTS.md](AGENTS.md) — Detailed "where to look" guide for different tasks
+- [docs/TOOLS.md](docs/TOOLS.md) — Tools system guide
+- [docs/ADR/](docs/ADR/) — Architecture Decision Records
