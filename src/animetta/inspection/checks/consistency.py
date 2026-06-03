@@ -14,6 +14,10 @@ from pathlib import Path
 
 from loguru import logger
 
+from animetta.orchestration.graph.stats_store import get_stats_store
+
+from ..models import CheckResult
+
 # Project root relative to this file: 5 levels up
 _PROJECT_ROOT = Path(__file__).parent.parent.parent.parent.parent
 

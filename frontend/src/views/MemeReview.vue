@@ -1,16 +1,21 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useMemeReviewStore } from '@/stores/memeReview'
 import MemeCard from '@/components/meme/MemeCard.vue'
 
 const store = useMemeReviewStore()
 const router = useRouter()
+const route = useRoute()
 const visible = ref(false)
 const collecting = ref(false)
 const collectResult = ref('')
 
 onMounted(() => { visible.value = true; store.fetchMemes() })
+// Close overlay when navigating away (e.g., via TitleBar buttons)
+watch(() => route.name, (name) => {
+  if (name !== 'meme-review') visible.value = false
+})
 function close() { router.push('/') }
 
 function triggerCollect() {
@@ -42,7 +47,7 @@ function triggerCollect() {
           <div class="absolute bottom-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-c-accent/20 to-transparent" />
           <div class="flex items-center gap-2">
             <span class="text-lg">🔍</span>
-            <h2 class="text-base font-semibold text-c-text">梗筛选器</h2>
+            <h1 class="text-base font-semibold text-c-text">梗筛选器</h1>
           </div>
           <div class="flex items-center gap-2">
             <button

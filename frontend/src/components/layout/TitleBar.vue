@@ -30,7 +30,7 @@ function goTo(name: string) {
 </script>
 
 <template>
-  <div class="relative flex items-center justify-between h-11 select-none z-40 border border-c-border rounded-lg max-w-[720px] mx-auto px-4">
+    <div class="relative flex items-center justify-between h-12 select-none z-50 border border-c-border rounded-lg max-w-[720px] mx-auto px-4">
     <div class="absolute inset-0 bg-c-surface/85 backdrop-blur-[16px]" />
     <div class="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-c-accent/20 to-transparent" />
 
@@ -40,11 +40,11 @@ function goTo(name: string) {
         <span class="w-[10px] h-[10px] rounded-full bg-c-error" />
         <span class="w-[10px] h-[10px] rounded-full bg-c-warning" />
         <span class="w-[10px] h-[10px] rounded-full bg-c-success" />
-        <span class="text-sm font-medium text-c-text tracking-wide ml-2">Anima</span>
+        <span class="text-base font-bold text-c-text tracking-wide ml-2 font-quicksand">Anima</span>
       </div>
 
       <!-- Center: nav buttons -->
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-3">
         <button
           @click="goTo('music')"
           class="px-3 py-1.5 text-xs rounded-md transition-colors"

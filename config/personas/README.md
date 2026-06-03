@@ -32,6 +32,7 @@ prompt = persona.build_system_prompt()
 |------|------|------|
 | `default.yaml` | Anima | 默认友好助手 |
 | `neuro-vtuber.yaml` | Neuro | VTuber 风格（毒舌、可爱、混沌） |
+| `soujuurou.yaml` | 静希草十郎 | 魔法使之夜 — 沉默寡言的质朴少年 |
 
 ## 创建自定义人设
 

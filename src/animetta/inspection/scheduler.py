@@ -6,6 +6,9 @@ import asyncio
 
 from loguru import logger
 
+from .inspector import run_full_inspection
+from .reporter import store_report, send_alert
+
 
 class InspectionScheduler:
     """Schedules and runs periodic full inspections.

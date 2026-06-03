@@ -10,6 +10,11 @@ import json
 
 from loguru import logger
 
+from animetta.notifier.manager import NotifierManager
+from animetta.orchestration.graph.stats_store import get_stats_store
+
+from .models import InspectionReport
+
 
 async def store_report(report: InspectionReport) -> None:
     """Persist an inspection report to the StatsStore SQLite database.

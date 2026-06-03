@@ -61,7 +61,7 @@ async def _retrieve_memory_context(
     config: RunnableConfig | None,
     max_turns: int = 5,
     current_emotion: Any = None,
-) -> str:
+) -> tuple[str, dict]:
     """
     Retrieve memory context via LivingMemorySystem V2 recall().
 
@@ -73,12 +73,12 @@ async def _retrieve_memory_context(
         current_emotion: VADVector for mood-congruent recall
 
     Returns:
-        Enriched system prompt with memory and profile
+        Tuple of (enriched system prompt, metadata dict)
     """
     middleware = _get_memory_middleware(config)
     if not middleware:
         logger.debug(f"[{session_id}] [LLMNode] MemoryMiddleware not available, skipping RAG")
-        return ""
+        return "", {}
 
     try:
         enriched, metadata = await middleware.before_llm_call(
@@ -88,10 +88,10 @@ async def _retrieve_memory_context(
         )
         if metadata:
             logger.info(f"[{session_id}] [LLMNode] Memory injected")
-        return enriched
+        return enriched, metadata or {}
     except Exception as e:
         logger.warning(f"[{session_id}] [LLMNode] MemoryMiddleware retrieval failed: {e}")
-        return ""
+        return "", {}
 
 
 def _enrich_system_prompt(
@@ -201,7 +201,7 @@ async def llm_node(
         max_turns=5,
         current_emotion=current_emotion,
     )
-    memory_context = retrieval_result if isinstance(retrieval_result, str) else retrieval_result[0] if isinstance(retrieval_result, tuple) else ""
+    memory_context, rag_metadata = retrieval_result if isinstance(retrieval_result, tuple) else (retrieval_result, {})
     rag_duration = (time_module.perf_counter() - t_rag) * 1000
     log_timing(state, "llm.rag_retrieval", rag_duration, f"query='{user_text[:50]}'")
 
@@ -209,7 +209,7 @@ async def llm_node(
     try:
         rd = get_rag_duration()
         if rd is not None:
-            rd.observe(rag_duration / 1000.0, {"strategy": "hybrid"})
+            rd.record(rag_duration / 1000.0, {"strategy": "hybrid"})
         rc = get_rag_chunks()
         if rc is not None:
             chunk_count = rag_metadata.get("memory_count", rag_metadata.get("fuzzy_count", 0))

@@ -20,6 +20,8 @@ kokoro>=0.9.4
 
 # Qwen3 TTS (CustomVoice model)
 qwen-tts>=0.1.1
+# flash-attn  # Optional: accelerates Qwen3-TTS inference 2-3x (CUDA + Linux only)
+#              # Install: pip install flash-attn --no-build-isolation
 
 python-dotenv>=1.0.0
 pydub>=0.25.0

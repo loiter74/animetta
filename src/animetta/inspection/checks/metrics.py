@@ -13,6 +13,8 @@ import time
 import httpx
 from loguru import logger
 
+from ..models import CheckResult
+
 METRICS_ENDPOINT = "http://localhost:12394/metrics"
 EXPECTED_METRICS = [
     "anima_llm_errors_total",

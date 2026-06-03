@@ -84,6 +84,24 @@ class PersonalityTraits(BaseConfig):
     )
 
 
+class KnowledgeBoundaries(BaseConfig):
+    """Character knowledge boundaries — domains the character knows and doesn't know.
+
+    Used by: system prompt construction (tell LLM what to admit ignorance about)
+             CharacterMemoryFilter (hard-filter unknown-domain atoms from recall)
+             PersonaSeedGenerator (generate semantic atoms encoding self-awareness of ignorance)
+    """
+
+    known: list[str] = Field(
+        default_factory=list,
+        description="Domains the character is knowledgeable about"
+    )
+    unknown: list[str] = Field(
+        default_factory=list,
+        description="Domains the character does NOT understand — used for recall filtering"
+    )
+
+
 class BehaviorRules(BaseConfig):
     """Behavior rules"""
     forbidden_phrases: list[str] = Field(
@@ -165,6 +183,12 @@ class PersonaConfig(BaseConfig):
     live2d_prompt: str | None = Field(
         default=None,
         description="Live2D expression usage prompt (if enabled)"
+    )
+
+    # Knowledge boundaries
+    knowledge_boundaries: KnowledgeBoundaries | None = Field(
+        default=None,
+        description="Character knowledge boundaries (known/unknown domains)"
     )
 
     def build_system_prompt(self, live2d_prompt: str | None = None) -> str:
@@ -255,6 +279,16 @@ class PersonaConfig(BaseConfig):
         live2d = live2d_prompt or self.live2d_prompt
         if live2d:
             parts.append(f"\n{live2d}")
+
+        # 7.5. Knowledge boundaries
+        if self.knowledge_boundaries:
+            kb = self.knowledge_boundaries
+            parts.append("\n## 知识边界 (Knowledge Boundaries)")
+            if kb.known:
+                parts.append(f"\n你熟悉的领域：{'、'.join(kb.known)}")
+            if kb.unknown:
+                parts.append(f"\n你**不了解**的领域：{'、'.join(kb.unknown)}")
+                parts.append("\n如果对话涉及你不了解的领域，请诚实说'不太明白'或'没听过这个'，**绝对不要编造答案**。")
 
         # 8. Example conversations
         if self.examples:

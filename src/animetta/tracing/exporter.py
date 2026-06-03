@@ -35,13 +35,7 @@ class StatsSpanExporter(SpanExporter):
             # Prefer injecting store via __init__ to avoid this dependency.
             try:
                 self._stats_store = await _get_stats()
-            except ImportError:
-                from loguru import logger
-                logger.warning(
-                    "[tracing] orchestration.graph.stats_store not available; "
-                    "stats will not be persisted"
-                )
-                # Return a no-op store
+            except Exception:
                 self._stats_store = _NoOpStatsStore()
         return self._stats_store
 
@@ -58,10 +52,8 @@ class StatsSpanExporter(SpanExporter):
 
     async def _async_export(self, spans: Sequence[ReadableSpan]) -> None:
         """Async write — batch-insert spans into StatsStore."""
-        try:
-            store = await self._get_store()
-        except Exception:
-            logger.warning("[StatsExporter] StatsStore not available")
+        store = await self._get_store()
+        if isinstance(store, _NoOpStatsStore):
             return
 
         for span in spans:

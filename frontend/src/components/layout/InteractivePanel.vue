@@ -28,13 +28,14 @@ useDanmaku()
 <template>
   <div class="absolute inset-y-0 right-0 z-20 flex pointer-events-none">
     <!-- Collapse trigger (visible when collapsed) -->
-    <button
-      v-if="isCollapsed"
-      class="pointer-events-auto w-12 flex flex-col items-center pt-4 gap-3
-             bg-c-bg/60 backdrop-blur-xl border border-c-border/30 rounded-l-2xl
-             text-c-text-dim hover:text-c-accent hover:bg-c-bg/80 transition-colors"
-      @click="isCollapsed = false"
-    >
+      <button
+        v-if="isCollapsed"
+        class="pointer-events-auto w-12 flex flex-col items-center pt-4 gap-3
+               bg-c-bg/60 backdrop-blur-xl border border-c-border/30 rounded-l-2xl
+               text-c-text-dim hover:text-c-accent hover:bg-c-bg/80 transition-colors"
+        aria-label="展开侧边栏"
+        @click="isCollapsed = false"
+      >
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M5 12h14M12 5l7 7-7 7" />
       </svg>
@@ -45,15 +46,15 @@ useDanmaku()
     <Transition name="slide">
       <div
         v-if="!isCollapsed"
-        class="pointer-events-auto flex flex-col glass-strong m-3 ml-0 w-[380px] min-w-[320px] max-w-[420px] interactive-panel"
+        class="pointer-events-auto flex flex-col glass-strong m-3 ml-0 w-[420px] min-w-[320px] max-w-[480px] interactive-panel"
         :class="live2dPopout ? '!w-full !max-w-none !m-0 rounded-none' : ''"
       >
         <!-- Header: Tabs + Collapse -->
-        <div class="flex items-center border-b border-c-border px-3 py-2 shrink-0">
+        <div class="flex items-center border-b border-c-border px-4 py-3 shrink-0">
           <!-- Tab buttons -->
-          <div class="flex gap-1 flex-1">
+          <div class="flex gap-1.5 flex-1">
             <button
-              class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+              class="px-3.5 py-2 rounded-lg text-11px font-medium transition-all"
               :class="activeTab === 'chat'
                 ? 'bg-c-accent/20 text-c-accent'
                 : 'bg-c-bg/40 text-c-text-dim hover:text-c-text hover:bg-c-panel/50'"
@@ -62,7 +63,7 @@ useDanmaku()
               💬 聊天
             </button>
             <button
-              class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+              class="px-3.5 py-2 rounded-lg text-11px font-medium transition-all"
               :class="activeTab === 'live'
                 ? 'bg-c-accent/20 text-c-accent'
                 : 'bg-c-bg/40 text-c-text-dim hover:text-c-text hover:bg-c-panel/50'"
@@ -71,7 +72,7 @@ useDanmaku()
               📺 直播
             </button>
             <button
-              class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+              class="px-3.5 py-2 rounded-lg text-11px font-medium transition-all"
               :class="activeTab === 'memory'
                 ? 'bg-c-accent/20 text-c-accent'
                 : 'bg-c-bg/40 text-c-text-dim hover:text-c-text hover:bg-c-panel/50'"
@@ -80,7 +81,7 @@ useDanmaku()
               🧠 记忆
             </button>
             <button
-              class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+              class="px-3.5 py-2 rounded-lg text-11px font-medium transition-all"
               :class="activeTab === 'personality'
                 ? 'bg-c-accent/20 text-c-accent'
                 : 'bg-c-bg/40 text-c-text-dim hover:text-c-text hover:bg-c-panel/50'"
@@ -89,7 +90,7 @@ useDanmaku()
               🎭 人格
             </button>
             <button
-              class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+              class="px-3.5 py-2 rounded-lg text-11px font-medium transition-all"
               :class="activeTab === 'singing'
                 ? 'bg-c-accent/20 text-c-accent'
                 : 'bg-c-bg/40 text-c-text-dim hover:text-c-text hover:bg-c-panel/50'"
@@ -98,7 +99,7 @@ useDanmaku()
               🎵 音乐
             </button>
             <button
-              class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+              class="px-3.5 py-2 rounded-lg text-11px font-medium transition-all"
               :class="activeTab === 'settings'
                 ? 'bg-c-accent/20 text-c-accent'
                 : 'bg-c-bg/40 text-c-text-dim hover:text-c-text hover:bg-c-panel/50'"
@@ -119,6 +120,7 @@ useDanmaku()
           <button
             class="w-7 h-7 flex items-center justify-center rounded-lg
                    bg-c-bg/40 text-c-text-dim hover:text-c-text hover:bg-c-bg/60 transition-colors"
+            aria-label="收起侧边栏"
             @click="isCollapsed = true"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

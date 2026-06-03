@@ -25,10 +25,25 @@ class MemoryMiddleware:
         user_input: str,
         base_prompt: str | None = None,
         current_emotion: Any = None,
+        character_known: list[str] | None = None,
+        character_unknown: list[str] | None = None,
+        mbti_ei: int = 50,
+        mbti_sn: int = 50,
+        mbti_tf: int = 50,
+        mbti_jp: int = 50,
     ) -> tuple[str, dict | None]:
         """Before LLM call: retrieve memory via LivingMemorySystem.recall().
 
-        Returns (enriched_prompt, metadata_dict).
+        Args:
+            session_id: Current session identifier.
+            user_input: User's message text.
+            base_prompt: System prompt to enrich with memory.
+            current_emotion: Current VAD emotion vector.
+            character_known: Character's known knowledge domains (for filtering).
+            character_unknown: Character's unknown knowledge domains (excluded from recall).
+            mbti_ei, mbti_sn, mbti_tf, mbti_jp: MBTI dimensions for persona-biased ranking.
+
+        Returns: (enriched_prompt, metadata_dict).
         """
         if not self._memory_system:
             logger.debug("[MemoryMiddleware] MemorySystem not configured, skipping")
@@ -42,6 +57,12 @@ class MemoryMiddleware:
                 query=user_input,
                 session_id=session_id,
                 current_emotion=current_emotion,
+                character_known=character_known,
+                character_unknown=character_unknown,
+                mbti_ei=mbti_ei,
+                mbti_sn=mbti_sn,
+                mbti_tf=mbti_tf,
+                mbti_jp=mbti_jp,
             )
         except Exception as e:
             logger.warning(f"[MemoryMiddleware] recall() failed: {e}")

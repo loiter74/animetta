@@ -71,6 +71,7 @@ function handleWheel(e: WheelEvent): void {
       v-if="live2d.isLoaded.value"
       class="absolute top-2 left-2 z-50 px-2.5 py-1 rounded-lg bg-c-bg/60 backdrop-blur-sm text-11px text-c-text-dim hover:text-c-accent hover:bg-c-bg/80 transition-colors border border-c-border/30"
       title="复位位置和缩放"
+      aria-label="复位 Live2D 位置和缩放"
       @click.stop="live2d.resetView()"
     >
       ↺ 复位
@@ -92,6 +93,7 @@ function handleWheel(e: WheelEvent): void {
       <button
         class="px-2 py-1 rounded bg-c-bg/50 backdrop-blur-sm text-10px text-c-text-muted hover:text-c-accent hover:bg-c-bg/80 transition-colors pointer-events-auto"
         title="复位位置和缩放"
+        aria-label="复位 Live2D 位置和缩放"
       @click.stop="live2d.resetView()"
       >
         ↺ 复位

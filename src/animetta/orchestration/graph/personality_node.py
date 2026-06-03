@@ -75,6 +75,45 @@ async def personality_node(
 
     personality_overlay = " ".join(overlay_parts) if overlay_parts else ""
 
+    # Extract character knowledge boundaries and MBTI from persona config
+    character_known: list[str] = []
+    character_unknown: list[str] = []
+    mbti_ei: int = 50
+    mbti_sn: int = 50
+    mbti_tf: int = 50
+    mbti_jp: int = 50
+
+    try:
+        config_store = state.get("_config", {})
+        persona_cfg = getattr(config_store, "persona_config", None)
+        if persona_cfg is None:
+            # Try loading from global config
+            persona_name = getattr(config_store, "persona_name", None)
+            if persona_name:
+                from animetta.config.persona.base import PersonaConfig
+                try:
+                    persona_cfg = PersonaConfig.load(persona_name)
+                except Exception:
+                    persona_cfg = None
+
+        if persona_cfg:
+            # Knowledge boundaries
+            kb = persona_cfg.knowledge_boundaries
+            if kb:
+                character_known = kb.known or []
+                character_unknown = kb.unknown or []
+
+            # MBTI dimensions
+            mbti = persona_cfg.personality.mbti
+            if mbti and mbti.dimensions:
+                dims = mbti.dimensions
+                mbti_ei = dims.ei
+                mbti_sn = dims.sn
+                mbti_tf = dims.tf
+                mbti_jp = dims.jp
+    except Exception as e:
+        logger.debug(f"[{session_id}] [PersonalityNode] Could not extract character config: {e}")
+
     logger.info(
         f"[{session_id}] [PersonalityNode] mode={personality_mode}, "
         f"mood={personality_mood}, overlay={bool(personality_overlay)}"
@@ -88,5 +127,11 @@ async def personality_node(
             "personality_overlay": personality_overlay,
             "personality_mode": personality_mode,
             "personality_mood": personality_mood,
+            "character_known": character_known,
+            "character_unknown": character_unknown,
+            "mbti_ei": mbti_ei,
+            "mbti_sn": mbti_sn,
+            "mbti_tf": mbti_tf,
+            "mbti_jp": mbti_jp,
         },
     }

@@ -110,6 +110,12 @@ class MyLLMAgent(AgentInterface):
 | **TTS** | OpenAI TTS · GLM TTS · Edge TTS · Mock |
 | **VAD** | Silero VAD |
 
+> **💡 TTS 性能提示**：Qwen3-TTS 推荐安装 flash-attn 加速推理（需 CUDA + Linux）：
+> ```bash
+> pip install flash-attn --no-build-isolation
+> ```
+> 未安装时会自动回退到 PyTorch 手动实现，性能略低但不影响功能。
+
 ### 🧩 混合记忆系统
 
 三层存储 + 双路搜索：

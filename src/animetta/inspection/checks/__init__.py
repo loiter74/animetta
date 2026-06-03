@@ -7,6 +7,10 @@ Each check returns a CheckResult:
 - metrics.py — observability pipeline self-check (Prometheus metrics endpoint)
 """
 
+from .consistency import check_data_consistency
+from .health import check_all_components
+from .metrics import check_metrics_pipeline
+from .pipeline import check_conversation_pipeline
 
 __all__ = [
     "check_all_components",

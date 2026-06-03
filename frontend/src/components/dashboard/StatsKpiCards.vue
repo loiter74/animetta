@@ -17,11 +17,11 @@ const kpis = computed(() => [
     <div
       v-for="kpi in kpis"
       :key="kpi.label"
-      class="bg-white/5 rounded-2xl p-4 border border-white/10"
+      class="bg-c-card/50 rounded-xl p-4 border border-c-border"
     >
       <div class="text-2xl mb-2">{{ kpi.icon }}</div>
       <div class="text-xl font-bold text-white">{{ kpi.value }}</div>
-      <div class="text-xs text-gray-400 mt-1">{{ kpi.label }}</div>
+      <div class="text-xs text-c-text-muted mt-1">{{ kpi.label }}</div>
     </div>
   </div>
 </template>

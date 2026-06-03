@@ -13,6 +13,8 @@ from typing import Any
 import yaml
 from loguru import logger
 
+_TRACER_INITIALIZED = False
+
 
 def _load_full_config() -> dict[str, Any]:
     """Load full observability config from config/observability.yaml."""
@@ -39,6 +41,8 @@ def init_tracing(
     Dual-write mode: spans go to both StatsStore (SQLite) and OTel Collector (OTLP).
     Metrics (if configured) are exported via OTLP to the Collector.
 
+    Idempotent: subsequent calls after the first are no-ops.
+
     Args:
         service_name: Service name for Resource attributes.
         enabled: Override config file's enabled flag.
@@ -52,6 +56,11 @@ def init_tracing(
     tracing_cfg = full_cfg.get("tracing", {})
     otlp_cfg = full_cfg.get("otlp", {})
 
+    global _TRACER_INITIALIZED
+    if _TRACER_INITIALIZED:
+        from opentelemetry import trace
+        return trace.get_tracer(service_name or "anima")
+
     if enabled is None:
         enabled = tracing_cfg.get("enabled", True)
     if service_name is None:
@@ -63,6 +72,7 @@ def init_tracing(
         logger.info("[Tracing] Tracing disabled — using NoOpTracerProvider")
         from opentelemetry import trace
         trace.set_tracer_provider(trace.ProxyTracerProvider())
+        _TRACER_INITIALIZED = True
         return trace.get_tracer(service_name)
 
     from opentelemetry import trace
@@ -94,6 +104,7 @@ def init_tracing(
 
     trace.set_tracer_provider(provider)
     logger.info(f"[Tracing] Initialized: service={service_name}")
+    _TRACER_INITIALIZED = True
 
     # ── Initialize OTel Metrics ──
     otlp_metrics_endpoint = otlp_cfg.get("endpoint") if otlp_cfg.get("enabled") else None

@@ -49,9 +49,9 @@ const chartOptions = {
 </script>
 
 <template>
-  <div class="bg-white/5 rounded-2xl p-4 border border-white/10">
-    <h3 class="text-sm font-medium text-gray-300 mb-4">Latency Trend</h3>
-    <Line v-if="store.traces.length" :data="chartData" :options="chartOptions" />
-    <div v-else class="text-gray-500 text-center py-12 text-sm">No data yet</div>
+  <div class="bg-c-card/50 rounded-xl p-4 border border-c-border">
+    <h3 class="text-sm font-medium text-c-text-dim mb-4">Latency Trend</h3>
+    <Line v-if="hasData" :data="chartData" :options="chartOptions" />
+    <div v-else class="text-c-text-muted text-center py-12 text-sm">No data yet</div>
   </div>
 </template>

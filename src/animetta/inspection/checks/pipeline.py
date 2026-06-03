@@ -18,6 +18,8 @@ from typing import Any
 import socketio
 from loguru import logger
 
+from ..models import CheckResult
+
 # ── Constants ────────────────────────────────────────────────────────
 
 BACKEND_URL = "http://localhost:12394"

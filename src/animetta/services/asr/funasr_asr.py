@@ -280,17 +280,17 @@ class FunASRASR(ASRInterface):
     def from_config(cls, config, **kwargs):
         """Create instance from configuration"""
         return cls(
-            model=config.get("model", "paraformer-zh"),
-            language=config.get("language", "zh"),
-            device=config.get("device", "cuda"),
-            ncpu=config.get("ncpu", 4),
-            vad_model=config.get("vad_model", "fsmn-vad"),
-            punc_model=config.get("punc_model", "ct-punc"),
-            spk_model=config.get("spk_model"),
-            chunk_size=config.get("chunk_size", [0, 10, 5]),
-            hotword=config.get("hotword"),
-            model_hub=config.get("model_hub", "ms"),
-            disable_update=config.get("disable_update", True),
+            model=getattr(config, "model", "paraformer-zh"),
+            language=getattr(config, "language", "zh"),
+            device=getattr(config, "device", "cuda"),
+            ncpu=getattr(config, "ncpu", 4),
+            vad_model=getattr(config, "vad_model", "fsmn-vad"),
+            punc_model=getattr(config, "punc_model", "ct-punc"),
+            spk_model=getattr(config, "spk_model", None),
+            chunk_size=getattr(config, "chunk_size", [0, 10, 5]),
+            hotword=getattr(config, "hotword", None),
+            model_hub=getattr(config, "model_hub", "ms"),
+            disable_update=getattr(config, "disable_update", True),
         )
 
     async def preload(self) -> None:

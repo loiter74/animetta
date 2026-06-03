@@ -14,36 +14,37 @@ export default defineConfig({
   ],
   theme: {
     colors: {
-      // 日系二次元主题色（扁平结构，避免 UnoCSS 多层嵌套的 hyphen 歧义）
-      'c-bg': '#1a1028',
-      'c-surface': '#241538',
-      'c-panel': '#2d1b45',
-      'c-card': '#36205a',
-      'c-text': '#e8e0f0',
-      'c-text-dim': '#9b8bb0',
-      'c-text-muted': '#6b5a80',
-      'c-accent': '#e879a8',
-      'c-accent-hover': '#f090c0',
-      'c-accent-soft': 'rgba(232, 121, 168, 0.15)',
-      'c-blue': '#7c8cf5',
-      'c-mint': '#6ee7b7',
-      'c-gold': '#f5c872',
-      'c-success': '#4ade80',
-      'c-warning': '#fbbf24',
-      'c-error': '#f87171',
-      'c-border': 'rgba(255, 255, 255, 0.08)',
-      'c-border-accent': 'rgba(232, 121, 168, 0.3)',
-      'c-user-bubble': 'rgba(124, 140, 245, 0.2)',
-      'c-ai-bubble': 'rgba(232, 121, 168, 0.15)',
-      'c-glow': 'rgba(232, 121, 168, 0.4)',
-      'c-glow-soft': 'rgba(232, 121, 168, 0.15)',
+      // 日系二次元主题色 — CSS custom properties 支持亮色/暗色双模式
+      'c-bg': 'var(--c-bg)',
+      'c-surface': 'var(--c-surface)',
+      'c-panel': 'var(--c-panel)',
+      'c-card': 'var(--c-card)',
+      'c-text': 'var(--c-text)',
+      'c-text-dim': 'var(--c-text-dim)',
+      'c-text-muted': 'var(--c-text-muted)',
+      'c-accent': 'var(--c-accent)',
+      'c-accent-hover': 'var(--c-accent-hover)',
+      'c-accent-soft': 'var(--c-accent-soft)',
+      'c-blue': 'var(--c-blue)',
+      'c-mint': 'var(--c-mint)',
+      'c-gold': 'var(--c-gold)',
+      'c-success': 'var(--c-success)',
+      'c-warning': 'var(--c-warning)',
+      'c-error': 'var(--c-error)',
+      'c-border': 'var(--c-border)',
+      'c-border-accent': 'var(--c-border-accent)',
+      'c-user-bubble': 'var(--c-user-bubble)',
+      'c-ai-bubble': 'var(--c-ai-bubble)',
+      'c-glow': 'var(--c-glow)',
+      'c-glow-soft': 'var(--c-glow-soft)',
     },
     fontFamily: {
-      sans: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans SC", "Microsoft YaHei", sans-serif'
+      sans: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans SC", "Microsoft YaHei", sans-serif',
+      quicksand: '"Quicksand", sans-serif',
     }
   },
   shortcuts: {
-    // Glassmorphism 面板
+    // Glassmorphism 面板 — rounded-2xl (16px) for AIRI-inspired softness
     'glass': 'bg-c-surface/70 backdrop-blur-xl border border-c-border rounded-2xl',
     'glass-strong': 'bg-c-surface/85 backdrop-blur-2xl border border-c-border rounded-2xl',
     // 按钮

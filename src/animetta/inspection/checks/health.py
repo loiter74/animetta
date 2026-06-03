@@ -20,6 +20,11 @@ from pathlib import Path
 
 from loguru import logger
 
+from animetta.core.service_pool import ServicePool
+from animetta.orchestration.graph.stats_store import get_stats_store
+
+from ..models import CheckResult
+
 # ── Timeout constants (seconds) ─────────────────────────────
 
 STATS_STORE_TIMEOUT = 2.0

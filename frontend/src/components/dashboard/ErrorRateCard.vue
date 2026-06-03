@@ -33,8 +33,8 @@ const chartOptions = {
 </script>
 
 <template>
-  <div class="bg-white/5 rounded-2xl p-4 border border-white/10">
-    <h3 class="text-sm font-medium text-gray-300 mb-2">Error Rate</h3>
+  <div class="bg-c-card/50 rounded-xl p-4 border border-c-border">
+    <h3 class="text-sm font-medium text-c-text-dim mb-2">Error Rate</h3>
     <Doughnut :data="chartData" :options="chartOptions" />
     <div class="text-center mt-2">
       <span :class="store.errorRate > 5 ? 'text-red-400' : 'text-green-400'" class="text-sm font-medium">

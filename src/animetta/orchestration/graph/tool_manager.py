@@ -1,5 +1,3 @@
-from animetta.tools import load_tools_from_config
-from animetta.tools.mcp_bridge import MCPManager
 """
 LangGraph tool manager
 Responsible for tool loading (built-in + MCP) and ChatModel creation
@@ -8,6 +6,10 @@ Responsible for tool loading (built-in + MCP) and ChatModel creation
 from typing import Any
 
 from loguru import logger
+
+from animetta.services.llm.langchain_adapter import create_chat_model_from_service
+from animetta.tools import load_tools_from_config
+from animetta.tools.mcp_bridge import MCPManager
 
 
 class ToolManager:

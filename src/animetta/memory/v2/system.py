@@ -17,6 +17,7 @@ from datetime import UTC, datetime, timedelta
 from animetta.memory.v2.atom import Layer, MemoryAtom, Relation, RelationType
 from animetta.memory.v2.compile import COMPILE_TRIGGERS, CompileEngine
 from animetta.memory.v2.emotion_field import EmotionalField, VADVector
+from animetta.memory.v2.character_filter import CharacterMemoryFilter
 from animetta.memory.v2.metabolism import MetabolismScheduler
 from animetta.memory.v2.reconsolidation import get_reconsolidation_client
 from animetta.memory.v2.search import MemorySearch
@@ -211,8 +212,17 @@ class LivingMemorySystem:
         session_id: str = "default",
         current_emotion: VADVector | None = None,
         limit: int = 20,
+        character_known: list[str] | None = None,
+        character_unknown: list[str] | None = None,
+        mbti_ei: int = 50,
+        mbti_sn: int = 50,
+        mbti_tf: int = 50,
+        mbti_jp: int = 50,
     ) -> RecallResult:
         """Recall memories relevant to the query, biased by current emotion.
+
+        Optionally filters and re-ranks results by character persona when
+        knowledge boundary or MBTI parameters are provided.
 
         Returns RecallResult with emotion-ranked atoms, user profile, and memes.
         Asynchronously triggers reconsolidation for high-salience recalled atoms.
@@ -229,8 +239,27 @@ class LivingMemorySystem:
                 a for a in all_active if session_id in a.tags
             ]
 
+        # Character persona filtering (pre-rank)
+        if character_unknown:
+            all_active = CharacterMemoryFilter.filter_by_boundaries(
+                all_active,
+                known=character_known or [],
+                unknown=character_unknown,
+                query=query,
+            )
+
         # Emotion-biased ranking
         ranked = MemorySearch.rank_by_emotion(all_active, current_emotion)
+
+        # Character MBTI re-ranking (post-emotion-rank)
+        if mbti_ei != 50 or mbti_sn != 50 or mbti_tf != 50 or mbti_jp != 50:
+            ranked = CharacterMemoryFilter.rank_by_persona(
+                ranked,
+                mbti_ei=mbti_ei,
+                mbti_sn=mbti_sn,
+                mbti_tf=mbti_tf,
+                mbti_jp=mbti_jp,
+            )
 
         # Take top-K
         top_atoms = ranked[:limit]

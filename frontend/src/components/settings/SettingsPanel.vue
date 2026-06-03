@@ -57,7 +57,17 @@ function handleBilibiliDisconnect(): void {
   socket.emit('bilibili.disconnect')
 }
 
-const activeSection = ref<'status' | 'background' | 'controls' | 'live' | 'subtitle'>('status')
+const activeSection = ref<'status' | 'background' | 'controls' | 'live' | 'subtitle' | 'theme'>('status')
+
+// Theme toggle
+const STORAGE_KEY = 'animetta-theme'
+const currentTheme = ref(document.documentElement.className.includes('theme-light') ? 'light' : 'dark')
+
+function setTheme(theme: 'light' | 'dark'): void {
+  currentTheme.value = theme
+  document.documentElement.className = `theme-${theme}`
+  localStorage.setItem(STORAGE_KEY, theme)
+}
 
 let cleanup: (() => void) | null = null
 
@@ -124,6 +134,11 @@ onUnmounted(() => {
         :class="activeSection === 'subtitle' ? 'bg-c-accent/20 text-c-accent' : 'bg-c-bg/40 text-c-text-dim hover:text-c-text'"
         @click="activeSection = 'subtitle'"
       >📝 字幕</button>
+      <button
+        class="px-2.5 py-1 rounded-lg text-10px font-medium transition-all"
+        :class="activeSection === 'theme' ? 'bg-c-accent/20 text-c-accent' : 'bg-c-bg/40 text-c-text-dim hover:text-c-text'"
+        @click="activeSection = 'theme'"
+      >🎨 主题</button>
     </div>
 
     <!-- Status section -->
@@ -136,21 +151,21 @@ onUnmounted(() => {
       </div>
       <template v-else>
         <div class="mb-5">
-          <h3 class="text-xs font-medium text-c-text-dim uppercase tracking-wider mb-2">角色</h3>
-          <div class="bg-c-card/50 rounded-xl px-3 py-2.5 flex items-center gap-2">
+          <h3 class="text-sm font-medium text-c-text-dim uppercase tracking-wider mb-3">角色</h3>
+          <div class="bg-c-card/50 rounded-xl px-4 py-3 flex items-center gap-2">
             <span class="text-sm">🎭</span>
             <span class="text-sm text-c-text">{{ personaName }}</span>
           </div>
         </div>
         <div class="mb-5">
-          <h3 class="text-xs font-medium text-c-text-dim uppercase tracking-wider mb-2">Live2D 模型</h3>
-          <div class="bg-c-card/50 rounded-xl px-3 py-2.5 flex items-center gap-2">
+          <h3 class="text-sm font-medium text-c-text-dim uppercase tracking-wider mb-3">Live2D 模型</h3>
+          <div class="bg-c-card/50 rounded-xl px-4 py-3 flex items-center gap-2">
             <span class="text-sm">✨</span>
             <span class="text-sm text-c-text truncate" :title="modelInfo">{{ modelInfo }}</span>
           </div>
         </div>
         <div class="mb-4">
-          <h3 class="text-xs font-medium text-c-text-dim uppercase tracking-wider mb-2">服务配置</h3>
+          <h3 class="text-sm font-medium text-c-text-dim uppercase tracking-wider mb-3">服务配置</h3>
           <div class="space-y-1.5">
             <div v-for="svc in services" :key="svc.name" class="bg-c-card/50 rounded-xl px-3 py-2 flex items-center justify-between">
               <span class="text-xs text-c-text-dim">{{ svc.name }}</span>
@@ -159,7 +174,7 @@ onUnmounted(() => {
           </div>
         </div>
         <div class="mb-4">
-          <h3 class="text-xs font-medium text-c-text-dim uppercase tracking-wider mb-2">后端</h3>
+          <h3 class="text-sm font-medium text-c-text-dim uppercase tracking-wider mb-3">后端</h3>
           <div class="bg-c-card/50 rounded-xl px-3 py-2 flex items-center gap-2">
             <span class="text-xs">🖥️</span>
             <span class="text-xs text-c-text-dim">{{ backendInfo }}</span>
@@ -177,8 +192,8 @@ onUnmounted(() => {
     </div>
 
     <!-- Controls section -->
-    <div v-if="activeSection === 'controls'" class="flex-1 overflow-y-auto px-4 py-3 space-y-3">
-      <h3 class="text-xs font-medium text-c-text-dim uppercase tracking-wider mb-2">Live2D</h3>
+    <div v-if="activeSection === 'controls'" class="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+      <h3 class="text-sm font-medium text-c-text-dim uppercase tracking-wider mb-3">Live2D</h3>
       <button
         class="w-full px-3 py-2.5 rounded-xl bg-c-card/50 text-xs text-c-text hover:bg-c-card transition-colors flex items-center gap-2"
         @click="resetLive2dView()"
@@ -189,7 +204,7 @@ onUnmounted(() => {
       <p class="text-10px text-c-text-muted">将 Live2D 模型缩放重置为 1x 并居中</p>
 
       <div class="pt-3 border-t border-c-border/40">
-        <h3 class="text-xs font-medium text-c-text-dim uppercase tracking-wider mb-2">Minecraft 机器人</h3>
+        <h3 class="text-sm font-medium text-c-text-dim uppercase tracking-wider mb-3">Minecraft 机器人</h3>
         <p class="text-10px text-c-text-muted mb-3">启动 AI 控制的 Minecraft 角色，可执行挖掘、建造、战斗等操作</p>
 
         <!-- Connection status -->
@@ -231,7 +246,7 @@ onUnmounted(() => {
     <!-- Live streaming section -->
     <div v-if="activeSection === 'live'" class="flex-1 overflow-y-auto px-4 py-3 space-y-4">
       <div>
-        <h3 class="text-xs font-medium text-c-text-dim uppercase tracking-wider mb-2">Bilibili 直播</h3>
+        <h3 class="text-sm font-medium text-c-text-dim uppercase tracking-wider mb-3">Bilibili 直播</h3>
         <p class="text-10px text-c-text-muted mb-3">连接 Bilibili 直播间并接收实时弹幕</p>
 
         <!-- Room ID input -->
@@ -298,11 +313,11 @@ onUnmounted(() => {
     <!-- Subtitle section -->
     <div v-if="activeSection === 'subtitle'" class="flex-1 overflow-y-auto px-4 py-3 space-y-4">
       <div>
-        <h3 class="text-xs font-medium text-c-text-dim uppercase tracking-wider mb-2">📝 字幕设置</h3>
+        <h3 class="text-sm font-medium text-c-text-dim uppercase tracking-wider mb-3">📝 字幕设置</h3>
         <p class="text-10px text-c-text-muted mb-3">在 Live2D 画布底部显示 AI 回复字幕，支持双语展示</p>
 
         <!-- Enable toggle -->
-        <div class="flex items-center justify-between bg-c-card/50 rounded-xl px-3 py-2.5 mb-3">
+        <div class="flex items-center justify-between bg-c-card/50 rounded-xl px-4 py-3 mb-3">
           <span class="text-xs text-c-text">启用字幕</span>
           <button
             class="w-10 h-5 rounded-full transition-colors relative"
@@ -395,6 +410,37 @@ onUnmounted(() => {
             <option value="Español">Español (西班牙语)</option>
             <option value="Русский">Русский (俄语)</option>
           </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Theme section -->
+    <div v-if="activeSection === 'theme'" class="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+      <div class="mb-5">
+        <h3 class="text-xs font-medium text-c-text-dim uppercase tracking-wider mb-3">外观模式</h3>
+        <div class="grid grid-cols-2 gap-3">
+          <button
+            class="flex flex-col items-center gap-2 p-4 rounded-xl border transition-all"
+            :class="currentTheme === 'dark'
+              ? 'border-c-accent bg-c-accent/10'
+              : 'border-c-border bg-c-card/50 hover:border-c-border-accent'"
+            @click="setTheme('dark')"
+          >
+            <span class="text-2xl">🌙</span>
+            <span class="text-xs font-medium" :class="currentTheme === 'dark' ? 'text-c-accent' : 'text-c-text-dim'">暗色模式</span>
+            <span class="text-10px text-c-text-muted">日系赛博夜晚</span>
+          </button>
+          <button
+            class="flex flex-col items-center gap-2 p-4 rounded-xl border transition-all"
+            :class="currentTheme === 'light'
+              ? 'border-c-accent bg-c-accent/10'
+              : 'border-c-border bg-c-card/50 hover:border-c-border-accent'"
+            @click="setTheme('light')"
+          >
+            <span class="text-2xl">☀️</span>
+            <span class="text-xs font-medium" :class="currentTheme === 'light' ? 'text-c-accent' : 'text-c-text-dim'">亮色模式</span>
+            <span class="text-10px text-c-text-muted">AIRI 柔和白昼</span>
+          </button>
         </div>
       </div>
     </div>

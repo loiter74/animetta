@@ -31,7 +31,7 @@ function sendMessage(): void {
 </script>
 
 <template>
-  <div class="pl-4 pr-3 py-2.5 border border-c-border rounded-xl bg-c-panel flex gap-2.5 items-center max-w-[520px] mx-auto focus-within:border-c-border-accent focus-within:shadow-[0_0_0_3px_var(--c-accent-soft)]">
+  <div class="pl-4 pr-3 py-3 border border-c-border rounded-xl bg-c-panel flex gap-2.5 items-center max-w-[520px] mx-auto focus-within:border-c-border-accent focus-within:shadow-[0_0_0_3px_var(--c-accent-soft)]">
     <textarea
       ref="textareaRef"
       v-model="inputText"

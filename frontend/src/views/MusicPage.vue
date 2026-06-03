@@ -115,6 +115,7 @@ function formatTime(seconds: number): string {
 
 <template>
   <div class="flex-1 h-full overflow-hidden">
+    <h1 class="sr-only">音乐制作</h1>
     <div class="h-full overflow-y-auto">
       <!-- ──── IDLE / ERROR: Centered hero ──── -->
       <div

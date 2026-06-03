@@ -1,7 +1,7 @@
 # ANIMETTA PROJECT KNOWLEDGE BASE
 
-**Generated:** 2026-05-31
-**Commit:** cdd4a87
+**Generated:** 2026-06-03
+**Commit:** 1435204
 **Branch:** main
 
 > Primary knowledge base: [CLAUDE.md](CLAUDE.md). This AGENTS.md is the quick-reference map.
@@ -66,6 +66,34 @@ AI virtual companion / VTuber framework. Python backend (FastAPI + LangGraph + S
 - **Provider plugin pattern**: `interface.py` ABC → implementations → factory → `__init__.py` re-exports
 - **TDD preferred** — write tests first
 
+## AGENT WORKFLOW RULES
+
+### Testing (QA)
+- **启动测试步骤时，必须使用 `qa` skill** — 配合 `playwright` 技能进行页面捕获
+- **每次测试前必须重新获取数据** — 禁止使用上一次 playwright 的缓存结果，必须重新捕获页面
+- **QA 测试流程**：`qa` skill → Playwright 页面捕获（全新获取）→ 发现/修复问题
+
+### 服务启动（6 步轮询协议）
+
+> **核心原则**：成功判定 = 端口监听 + API 返回 200，**不依赖进程退出**。
+> 禁止在主 agent 启动服务 — 会卡住无法校验。所有启动操作必须通过 `task()` 子 agent 执行。
+
+| 步骤 | 操作 | 判定标准 |
+|------|------|----------|
+| **1. 清理端口** | `netstat -ano \| findstr :12394` → 若有残留进程则 `taskkill /PID xxx /F` | 端口 12394 无占用 |
+| **2. 启动后端** | 子 agent 内 `python scripts/start.py --no-frontend &`（后台运行） | 进程启动无报错 |
+| **3. 轮询后端** | `curl -s http://localhost:12394/health` 每 3 秒一次，最多 20 次（60 秒） | HTTP 200 + 响应体含 `"status":"ok"` |
+| **4. 启动前端** | 子 agent 内 `python scripts/start.py --no-backend &`（后台运行） | 进程启动无报错 |
+| **5. 轮询前端** | `curl -s http://localhost:3000` 每 3 秒一次，最多 20 次（60 秒） | HTTP 200 |
+| **6. 报告成功** | 子 agent 输出 `[OK] Backend 12394 + Frontend 3000 both healthy` | 两个端口均就绪 |
+
+**关键约束**：
+- 每步失败即停，不得跳过轮询直接假设成功
+- 后端启动后 **必须用 curl 轮询**，不能只检查进程是否存在（端口可能还没监听）
+- 前端启动后同样必须 curl 验证
+- 日志中不允许出现任何 Traceback 或 ERROR 级别日志
+- 代码变更后 **必须完整走一遍 6 步协议**，确保服务可用
+
 ## ANTI-PATTERNS (THIS PROJECT)
 
 - ❌ Never import from removed modules: `pipeline/`, `events/`, `handlers/`, `adapters/`, old `core/`, `services/conversation/`, old `state/`
@@ -74,6 +102,10 @@ AI virtual companion / VTuber framework. Python backend (FastAPI + LangGraph + S
 - ❌ Never use real-time `getBounds()` in Live2D scaling — use cached `baseBounds`
 - ❌ Never add EventBus back — LangGraph is the only orchestration mode (ADR-001)
 - ❌ Pydantic V2 only — `class Config:` is forbidden
+- ❌ Never start backend in main agent — spawn sub-agent via `task()`, or agent will hang
+- ❌ Never reuse previous Playwright/QA results — always re-capture fresh test data
+- ❌ Never skip the 6-step start protocol after code changes — curl-polling is mandatory, not optional
+- ❌ Never assume process exit = service ready — port listening + HTTP 200 is the only valid success signal
 
 ## DEPRECATED
 
@@ -226,6 +258,10 @@ When the user says "add a `<NewSomething>` component":
 4. If the new component uses any new token, add it to BOTH
    `colors_and_type.css` AND `frontend/uno.config.ts → theme.colors`. Document
    the role in the appropriate spec file.
+5. 启动测试步骤时，要使用qa skill，并使用playwright技能进行页面捕获，在测试前不可以使用上一次playwright的结果，必须重新获取测试数据
+6. 启动服务需要单开子agent 使用script/start.py 同时启动前后端，保证无任何报错信息出现在日志中
+7. 要及时定期检查子agent是否卡住，如果卡住要自行解决。
+
 
 ## What NOT to do
 
@@ -235,3 +271,4 @@ When the user says "add a `<NewSomething>` component":
   the code change.
 - Don't re-derive the design philosophy from the screenshots. The pillars
   and voice are written in `brand.html` — quote them if needed.
+- 不要启动用主agent启动后端服务，这会导致主agent卡住没有相应，无法正常校验程序
