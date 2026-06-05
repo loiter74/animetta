@@ -36,18 +36,18 @@ function goTo(name: string) {
 
     <div class="relative flex items-center justify-between w-full">
       <!-- Left: traffic lights + brand -->
-      <div class="flex items-center gap-2">
-        <span class="w-[10px] h-[10px] rounded-full bg-c-error" />
-        <span class="w-[10px] h-[10px] rounded-full bg-c-warning" />
-        <span class="w-[10px] h-[10px] rounded-full bg-c-success" />
-        <span class="text-base font-bold text-c-text tracking-wide ml-2 font-quicksand">Anima</span>
+      <div class="flex items-center gap-2 min-w-0 shrink-0">
+        <span class="w-[10px] h-[10px] rounded-full bg-c-error shrink-0" />
+        <span class="w-[10px] h-[10px] rounded-full bg-c-warning shrink-0" />
+        <span class="w-[10px] h-[10px] rounded-full bg-c-success shrink-0" />
+        <span class="text-base font-bold text-c-text tracking-wide ml-2 font-quicksand truncate">Anima</span>
       </div>
 
       <!-- Center: nav buttons -->
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-1 sm:gap-3 min-w-0 overflow-hidden">
         <button
           @click="goTo('music')"
-          class="px-3 py-1.5 text-xs rounded-md transition-colors"
+          class="px-2 sm:px-3 py-1.5 text-xs rounded-md transition-colors whitespace-nowrap"
           :class="route.name === 'music'
             ? 'text-c-accent bg-c-accent-soft'
             : 'bg-transparent text-c-text-dim hover:bg-white/4'"
@@ -56,7 +56,7 @@ function goTo(name: string) {
         </button>
         <button
           @click="goTo('meme-review')"
-          class="px-3 py-1.5 text-xs rounded-md transition-colors"
+          class="px-2 sm:px-3 py-1.5 text-xs rounded-md transition-colors whitespace-nowrap"
           :class="route.name === 'meme-review'
             ? 'text-c-accent bg-c-accent-soft'
             : 'bg-transparent text-c-text-dim hover:bg-white/4'"
@@ -65,7 +65,7 @@ function goTo(name: string) {
         </button>
         <button
           @click="goTo('dashboard')"
-          class="px-3 py-1.5 text-xs rounded-md transition-colors"
+          class="px-2 sm:px-3 py-1.5 text-xs rounded-md transition-colors whitespace-nowrap"
           :class="route.name === 'dashboard'
             ? 'text-c-accent bg-c-accent-soft'
             : 'bg-transparent text-c-text-dim hover:bg-white/4'"

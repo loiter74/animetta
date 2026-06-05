@@ -3,7 +3,9 @@ import { ref } from 'vue'
 import Live2DRenderer from '@/components/live2d/Live2DRenderer.vue'
 import SceneEffects from '@/components/shared/SceneEffects.vue'
 import InteractivePanel from '@/components/layout/InteractivePanel.vue'
+import { useMobile } from '@/composables/useMobile'
 
+const { isMobile } = useMobile()
 const live2dPopout = ref(false)
 
 function handlePopout(): void {
@@ -16,7 +18,8 @@ function handlePopoutClosed(): void {
 </script>
 
 <template>
-  <div class="flex-1 relative overflow-hidden">
+  <!-- Desktop layout: absolute layers -->
+  <div v-if="!isMobile" class="flex-1 relative overflow-hidden">
     <!-- Layer 0: Live2D Scene (full viewport) -->
     <div
       v-if="!live2dPopout"
@@ -34,6 +37,23 @@ function handlePopoutClosed(): void {
       @popout="handlePopout"
       @popout-closed="handlePopoutClosed"
       :live2d-popout="live2dPopout"
+    />
+  </div>
+
+  <!-- Mobile layout: vertical column -->
+  <div v-else class="flex-1 flex flex-col overflow-hidden">
+    <!-- Live2D: compact top area (35vh) -->
+    <div v-if="!live2dPopout" class="h-[35vh] shrink-0 relative">
+      <Live2DRenderer />
+    </div>
+
+    <!-- Interactive Panel: fills remaining space below -->
+    <InteractivePanel
+      class="flex-1 min-h-0"
+      :live2d-popout="live2dPopout"
+      :is-mobile="true"
+      @popout="handlePopout"
+      @popout-closed="handlePopoutClosed"
     />
   </div>
 </template>

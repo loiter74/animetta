@@ -5,6 +5,7 @@ import router from './router'
 import 'virtual:uno.css'
 import './styles/animations.css'
 import './styles/themes.css'
+import './styles/mobile.css'
 
 // Theme initialization: localStorage > prefers-color-scheme > dark fallback
 const STORAGE_KEY = 'animetta-theme'

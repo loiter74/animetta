@@ -8,7 +8,7 @@ export type { ScaleStrategy } from './useLive2DModel'
 
 // ===== Import sub-composable internals =====
 import { getApp, initPixiApp, handlePixiResize, destroyPixiApp } from './usePixiApp'
-import { loadModel, unloadModel, setExpression, playMotion, getModel } from './useLive2DModel'
+import { loadModel, unloadModel, setExpression, playMotion, getModel, retryLoad } from './useLive2DModel'
 import { tickLipSync, setMouthTarget } from './useLipSync'
 import { playAudio, stopAudio } from './useAudioPlayback'
 import { playParameterTimeline, setParam, cancelTimeline } from './useParameterTimeline'
@@ -28,7 +28,11 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
   // ===== Init =====
 
   async function init(): Promise<void> {
-    if (!canvasRef.value) return
+    console.log('[Live2D] init() called, canvasRef.value:', canvasRef.value)
+    if (!canvasRef.value) {
+      console.error('[Live2D] Canvas ref is null in init()')
+      return
+    }
 
     try {
       await initPixiApp(canvasRef)
@@ -156,6 +160,7 @@ export function useLive2D(canvasRef: Ref<HTMLCanvasElement | null>) {
     isDragging,
     init,
     loadModel,
+    retryLoad,
     handleResize,
     setExpression,
     playMotion,

@@ -8,7 +8,8 @@ import type { ConnectionStatus } from '@/types/socket-events'
 import type { PipelineStage, SongResult } from '@/types/singing'
 
 // Direct connection to backend. CORS is enabled (cors_allowed_origins='*').
-const SOCKET_URL = 'http://localhost:12394'
+// Use environment variable for production (e.g., ngrok), fallback to localhost for dev.
+const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:12394'
 
 let socket: Socket | null = null
 let _initialized = false

@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import VoiceButton from './VoiceButton.vue'
+import { useMobile } from '@/composables/useMobile'
 
 const { sendText } = defineProps<{ sendText: (text: string) => void }>()
+const { isMobile } = useMobile()
 const inputText = ref('')
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
 
@@ -31,7 +33,13 @@ function sendMessage(): void {
 </script>
 
 <template>
-  <div class="pl-4 pr-3 py-3 border border-c-border rounded-xl bg-c-panel flex gap-2.5 items-center max-w-[520px] mx-auto focus-within:border-c-border-accent focus-within:shadow-[0_0_0_3px_var(--c-accent-soft)]">
+  <div
+    class="border border-c-border rounded-xl bg-c-panel flex gap-2.5 items-center focus-within:border-c-border-accent focus-within:shadow-[0_0_0_3px_var(--c-accent-soft)]"
+    :class="isMobile
+      ? 'px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] w-full'
+      : 'pl-4 pr-3 py-3 max-w-[520px] mx-auto'"
+    style="touch-action: manipulation"
+  >
     <textarea
       ref="textareaRef"
       v-model="inputText"
@@ -41,9 +49,12 @@ function sendMessage(): void {
       @input="handleInput"
       @keydown="handleKeydown"
     />
-    <VoiceButton />
+    <VoiceButton
+      :class="isMobile ? '!w-12 !h-12' : ''"
+    />
     <button
-      class="bg-c-accent hover:bg-c-accent-hover text-white rounded-md w-8 h-8 flex items-center justify-center transition-all duration-200 disabled:bg-c-card disabled:text-c-text-muted disabled:cursor-not-allowed"
+      class="bg-c-accent hover:bg-c-accent-hover text-white rounded-md flex items-center justify-center transition-all duration-200 disabled:bg-c-card disabled:text-c-text-muted disabled:cursor-not-allowed"
+      :class="isMobile ? 'w-12 h-12' : 'w-8 h-8'"
       :disabled="!inputText.trim()"
       @click="sendMessage"
     >

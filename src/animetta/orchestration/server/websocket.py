@@ -141,8 +141,16 @@ class WebSocketServer:
             Route("/api/singing/recent", serve_singing_recent),
         ]
 
+        # Frontend static files (production build)
+        frontend_dist = Path(__file__).parent.parent.parent.parent.parent / "frontend" / "dist"
+        frontend_routes = []
+        if frontend_dist.is_dir():
+            from starlette.staticfiles import StaticFiles
+            frontend_routes = [Mount("/app", StaticFiles(directory=str(frontend_dist), html=True), name="frontend")]
+            logger.info(f"[Socket.IO] Frontend static files mounted at /app from {frontend_dist}")
+
         self.asgi_app = Starlette(
-            routes=stats_routes + metrics_route + singing_routes + [Mount("/", app=sio_app)],
+            routes=stats_routes + metrics_route + singing_routes + frontend_routes + [Mount("/", app=sio_app)],
         )
         self.model_manager = ModelLoadingManager()
         self.session_manager = SessionManager(model_manager=self.model_manager)

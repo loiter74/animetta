@@ -1,38 +1,45 @@
 import { resolve } from 'path'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import unocss from 'unocss/vite'
 
-export default defineConfig({
-  root: resolve(__dirname),
-  server: {
-    port: 3000,
-    strictPort: true,
-    proxy: {
-      '/socket.io': {
-        target: 'http://localhost:12394',
-        ws: true,
-      },
-      '/api': {
-        target: 'http://localhost:12394',
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+  const apiUrl = env.VITE_API_URL || 'http://localhost:12394'
+
+  return {
+    root: resolve(__dirname),
+    server: {
+      port: 3000,
+      strictPort: true,
+      // Allow ngrok tunnels to access dev server
+      allowedHosts: ['.ngrok-free.dev', '.ngrok.io'],
+      proxy: {
+        '/socket.io': {
+          target: apiUrl,
+          ws: true,
+        },
+        '/api': {
+          target: apiUrl,
+        },
       },
     },
-  },
-  build: {
-    rollupOptions: {
-      input: resolve(__dirname, 'index.html')
-    }
-  },
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, 'src')
-    }
-  },
-  optimizeDeps: {
-    include: ['pixi.js', 'pixi-live2d-display', '@pixi/utils', '@pixi/math', '@pixi/core', '@pixi/display']
-  },
-  plugins: [
-    vue(),
-    unocss()
-  ]
+    build: {
+      rollupOptions: {
+        input: resolve(__dirname, 'index.html')
+      }
+    },
+    resolve: {
+      alias: {
+        '@': resolve(__dirname, 'src')
+      }
+    },
+    optimizeDeps: {
+      include: ['pixi.js', 'pixi-live2d-display', '@pixi/utils', '@pixi/math', '@pixi/core', '@pixi/display']
+    },
+    plugins: [
+      vue(),
+      unocss()
+    ]
+  }
 })

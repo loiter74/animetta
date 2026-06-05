@@ -13,7 +13,7 @@ persona: "soujuurou"
 
 services:
   asr: mock  # 使用 mock ASR（funasr 未安装）
-  tts: qwen3_voice_clone  # Qwen3-TTS 1.7B-Base voice clone → 久远寺有珠 (花澤香菜)
+  tts: edge  # Edge TTS (微软免费，快速响应)
   agent: deepseek  # 底座LLM：DeepSeek V4（OpenAI API 兼容）
   # local_llm: local_lora  # 本地LLM：LocalLoraLLM（简单应答，无persona，保留LoRA效果）- 已禁用
   vad: silero   # vad: silero / mock

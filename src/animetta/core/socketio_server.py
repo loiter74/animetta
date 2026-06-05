@@ -211,7 +211,72 @@ def get_asgi_app():
         asgi_app = _server.get_app()
         _INIT_DONE.set()
 
-    return asgi_app
+    return _wrap_with_frontend_serving(asgi_app)
+
+
+def _wrap_with_frontend_serving(app):
+    """Wrap ASGI app with frontend static file serving.
+
+    Serves frontend/dist as static files for SPA deployment.
+    Uses middleware to avoid conflicts with /socket.io/ and /api/ routes.
+
+    Args:
+        app: The original ASGI app (Socket.IO + API routes)
+    Returns:
+        Wrapped ASGI app with frontend serving
+    """
+    import mimetypes
+    from starlette.middleware.base import BaseHTTPMiddleware
+    from starlette.responses import FileResponse
+
+    # Resolve frontend/dist path (project_root/frontend/dist)
+    _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
+    _FRONTEND_DIST = _PROJECT_ROOT / "frontend" / "dist"
+
+    if not _FRONTEND_DIST.is_dir():
+        logger.warning(f"[Frontend] frontend/dist not found: {_FRONTEND_DIST}")
+        logger.warning("[Frontend] Static file serving disabled — run 'npm run build' in frontend/")
+        return app
+
+    logger.info(f"[Frontend] Serving static files from: {_FRONTEND_DIST}")
+
+    _INDEX_HTML = _FRONTEND_DIST / "index.html"
+
+    class FrontendServingMiddleware(BaseHTTPMiddleware):
+        """Middleware that serves frontend static files for SPA deployment.
+
+        - /assets/* and other static files: served directly from frontend/dist
+        - /api/*, /socket.io/*, /metrics: passed through to backend
+        - All other paths: served index.html (SPA fallback)
+        """
+
+        async def dispatch(self, request, call_next):
+            path = request.url.path
+
+            # API and WebSocket routes — pass through to backend
+            if path.startswith("/api/") or path.startswith("/socket.io") or path == "/metrics":
+                return await call_next(request)
+
+            # Try to serve exact file match from frontend/dist
+            file_path = _FRONTEND_DIST / path.lstrip("/")
+            if file_path.is_file():
+                mime_type, _ = mimetypes.guess_type(str(file_path))
+                return FileResponse(
+                    str(file_path),
+                    media_type=mime_type or "application/octet-stream",
+                )
+
+            # SPA fallback: serve index.html for all non-API, non-file routes
+            # This enables client-side routing (Vue Router history mode)
+            if _INDEX_HTML.is_file():
+                return FileResponse(str(_INDEX_HTML), media_type="text/html")
+
+            # No frontend built — fall through to backend
+            return await call_next(request)
+
+    app.add_middleware(FrontendServingMiddleware)
+    logger.info("[Frontend] SPA middleware registered — /api/ and /socket.io/ pass through")
+    return app
 
 
 def _setup_checkpointer() -> None:

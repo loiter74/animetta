@@ -7,9 +7,11 @@ import SpeakingIndicator from './SpeakingIndicator.vue'
 import { useChat } from '@/composables/useChat'
 import { useChatStore } from '@/stores/chat'
 import { getSocket } from '@/composables/useSocket'
+import { useMobile } from '@/composables/useMobile'
 
 const { sendText, sendInterrupt, organizeMemory } = useChat()
 const store = useChatStore()
+const { isMobile } = useMobile()
 
 // Memory organize progress
 const memoryProgress = ref('')

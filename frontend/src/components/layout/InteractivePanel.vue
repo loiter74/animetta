@@ -8,6 +8,7 @@ import PersonalityPanel from '@/components/personality/PersonalityPanel.vue'
 import MusicCard from '@/components/singing/MusicCard.vue'
 import PopOutButton from '@/components/live2d/PopOutButton.vue'
 import { useDanmaku } from '@/composables/useDanmaku'
+import { useMobile } from '@/composables/useMobile'
 
 const props = defineProps<{
   live2dPopout: boolean
@@ -18,15 +19,64 @@ const emit = defineEmits<{
   popoutClosed: []
 }>()
 
+const { isMobile } = useMobile()
 const isCollapsed = ref(false)
 const activeTab = ref<'chat' | 'live' | 'memory' | 'personality' | 'singing' | 'settings'>('chat')
+
+// Mobile tab definitions (icon-only)
+const mobileTabs = [
+  { key: 'chat' as const, icon: '💬', label: '聊天' },
+  { key: 'live' as const, icon: '📺', label: '直播' },
+  { key: 'memory' as const, icon: '🧠', label: '记忆' },
+  { key: 'personality' as const, icon: '🎭', label: '人格' },
+  { key: 'singing' as const, icon: '🎵', label: '音乐' },
+  { key: 'settings' as const, icon: '⚙️', label: '设置' },
+]
+
+// Desktop tab labels
+const desktopTabLabels: Record<string, string> = {
+  chat: '💬 聊天', live: '📺 直播', memory: '🧠 记忆',
+  personality: '🎭 人格', singing: '🎵 音乐', settings: '⚙️ 设置',
+}
 
 // Initialize danmaku socket listeners (runs globally, not per-tab)
 useDanmaku()
 </script>
 
 <template>
-  <div class="absolute inset-y-0 right-0 z-20 flex pointer-events-none">
+  <!-- ========== MOBILE LAYOUT ========== -->
+  <div v-if="isMobile" class="flex flex-col h-full pointer-events-none">
+    <!-- Mobile: panel content (fills space between Live2D and bottom nav) -->
+    <div class="flex-1 overflow-hidden relative pointer-events-auto">
+      <Transition name="fade" mode="out-in">
+        <ChatPanel v-if="activeTab === 'chat'" key="chat" />
+        <LiveChatPanel v-else-if="activeTab === 'live'" key="live" />
+        <MemoryPanel v-else-if="activeTab === 'memory'" key="memory" />
+        <PersonalityPanel v-else-if="activeTab === 'personality'" key="personality" />
+        <MusicCard v-else-if="activeTab === 'singing'" key="singing" />
+        <SettingsPanel v-else key="settings" />
+      </Transition>
+    </div>
+
+    <!-- Mobile: fixed bottom navigation bar -->
+    <nav class="shrink-0 pointer-events-auto flex items-center justify-around py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] bg-c-surface/90 backdrop-blur-xl border-t border-c-border">
+      <button
+        v-for="tab in mobileTabs"
+        :key="tab.key"
+        class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all touch-manipulation"
+        :class="activeTab === tab.key
+          ? 'bg-c-accent/20 text-c-accent'
+          : 'text-c-text-dim active:text-c-accent'"
+        @click="activeTab = tab.key"
+      >
+        <span class="text-lg leading-none">{{ tab.icon }}</span>
+        <span class="text-9px leading-tight">{{ tab.label }}</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ========== DESKTOP LAYOUT (unchanged) ========== -->
+  <div v-else class="absolute inset-y-0 right-0 z-20 flex pointer-events-none">
     <!-- Collapse trigger (visible when collapsed) -->
       <button
         v-if="isCollapsed"
@@ -39,7 +89,7 @@ useDanmaku()
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M5 12h14M12 5l7 7-7 7" />
       </svg>
-      <span class="text-10px writing-mode-vertical">{{ { chat: '聊天', live: '直播', memory: '记忆', personality: '人格', singing: '音乐', settings: '设置' }[activeTab] }}</span>
+      <span class="text-10px writing-mode-vertical">{{ desktopTabLabels[activeTab] }}</span>
     </button>
 
     <!-- Main panel -->
@@ -54,58 +104,15 @@ useDanmaku()
           <!-- Tab buttons -->
           <div class="flex gap-1.5 flex-1">
             <button
+              v-for="tab in (['chat', 'live', 'memory', 'personality', 'singing', 'settings'] as const)"
+              :key="tab"
               class="px-3.5 py-2 rounded-lg text-11px font-medium transition-all"
-              :class="activeTab === 'chat'
+              :class="activeTab === tab
                 ? 'bg-c-accent/20 text-c-accent'
                 : 'bg-c-bg/40 text-c-text-dim hover:text-c-text hover:bg-c-panel/50'"
-              @click="activeTab = 'chat'"
+              @click="activeTab = tab"
             >
-              💬 聊天
-            </button>
-            <button
-              class="px-3.5 py-2 rounded-lg text-11px font-medium transition-all"
-              :class="activeTab === 'live'
-                ? 'bg-c-accent/20 text-c-accent'
-                : 'bg-c-bg/40 text-c-text-dim hover:text-c-text hover:bg-c-panel/50'"
-              @click="activeTab = 'live'"
-            >
-              📺 直播
-            </button>
-            <button
-              class="px-3.5 py-2 rounded-lg text-11px font-medium transition-all"
-              :class="activeTab === 'memory'
-                ? 'bg-c-accent/20 text-c-accent'
-                : 'bg-c-bg/40 text-c-text-dim hover:text-c-text hover:bg-c-panel/50'"
-              @click="activeTab = 'memory'"
-            >
-              🧠 记忆
-            </button>
-            <button
-              class="px-3.5 py-2 rounded-lg text-11px font-medium transition-all"
-              :class="activeTab === 'personality'
-                ? 'bg-c-accent/20 text-c-accent'
-                : 'bg-c-bg/40 text-c-text-dim hover:text-c-text hover:bg-c-panel/50'"
-              @click="activeTab = 'personality'"
-            >
-              🎭 人格
-            </button>
-            <button
-              class="px-3.5 py-2 rounded-lg text-11px font-medium transition-all"
-              :class="activeTab === 'singing'
-                ? 'bg-c-accent/20 text-c-accent'
-                : 'bg-c-bg/40 text-c-text-dim hover:text-c-text hover:bg-c-panel/50'"
-              @click="activeTab = 'singing'"
-            >
-              🎵 音乐
-            </button>
-            <button
-              class="px-3.5 py-2 rounded-lg text-11px font-medium transition-all"
-              :class="activeTab === 'settings'
-                ? 'bg-c-accent/20 text-c-accent'
-                : 'bg-c-bg/40 text-c-text-dim hover:text-c-text hover:bg-c-panel/50'"
-              @click="activeTab = 'settings'"
-            >
-              ⚙️ 设置
+              {{ desktopTabLabels[tab] }}
             </button>
           </div>
 
@@ -188,5 +195,21 @@ useDanmaku()
 
 .writing-mode-vertical {
   writing-mode: vertical-rl;
+}
+
+/* Mobile slide-up transition */
+.slide-up-enter-active {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.slide-up-leave-active {
+  transition: all 0.25s ease-in;
+}
+.slide-up-enter-from {
+  transform: translateY(100%);
+  opacity: 0;
+}
+.slide-up-leave-to {
+  transform: translateY(100%);
+  opacity: 0;
 }
 </style>

@@ -152,7 +152,50 @@ class Qwen3TTSTTS(TTSInterface):
                     logger.warning("FlashAttention 2 not available, using default attention (higher VRAM usage)")
 
             try:
-                self._model = Qwen3TTSModel.from_pretrained(self.model, **kwargs)
+                # Force offline mode — must patch BEFORE from_pretrained calls.
+                # transformers.utils.hub._is_offline_mode is cached at import time,
+                # so setting env vars later has no effect. Patch the cached value directly.
+                import os
+                os.environ["HF_HUB_OFFLINE"] = "1"
+                os.environ["TRANSFORMERS_OFFLINE"] = "1"
+                import huggingface_hub.constants as hf_constants
+                hf_constants.HF_HUB_OFFLINE = True
+                import transformers.utils.hub as tf_hub
+                tf_hub._is_offline_mode = True
+
+                # Monkey-patch Qwen3TTSModel.from_pretrained to pass local_files_only
+                # to AutoProcessor.from_pretrained (upstream bug: kwargs not forwarded).
+                # Also strip fix_mistral_regex=True which triggers is_base_mistral() →
+                # model_info() network call that fails in offline mode.
+                import functools
+                from transformers import AutoProcessor as _AutoProcessor
+                _original_ap_fp = _AutoProcessor.from_pretrained
+                @functools.wraps(_original_ap_fp)
+                def _patched_ap_fp(*args, **ap_kwargs):
+                    ap_kwargs.setdefault("local_files_only", True)
+                    ap_kwargs.pop("fix_mistral_regex", None)  # triggers network in offline mode
+                    return _original_ap_fp(*args, **ap_kwargs)
+                _AutoProcessor.from_pretrained = _patched_ap_fp
+
+                # Patch _patch_mistral_regex to skip is_base_mistral() network call.
+                # is_base_mistral() calls model_info() which hits huggingface.co API.
+                from transformers.tokenization_utils_base import PreTrainedTokenizerBase
+                _original_pmr = PreTrainedTokenizerBase._patch_mistral_regex
+                @classmethod
+                def _offline_pmr(cls, *args, **pmr_kwargs):
+                    return args[0] if args else None  # return tokenizer unchanged
+                PreTrainedTokenizerBase._patch_mistral_regex = _offline_pmr
+
+                try:
+                    self._model = Qwen3TTSModel.from_pretrained(
+                        self.model,
+                        local_files_only=True,
+                        **kwargs,
+                    )
+                finally:
+                    # Restore original methods
+                    _AutoProcessor.from_pretrained = _original_ap_fp
+                    PreTrainedTokenizerBase._patch_mistral_regex = _original_pmr
                 self._loaded = True
                 logger.info("Qwen3-TTS model loaded successfully")
             except torch.cuda.OutOfMemoryError:

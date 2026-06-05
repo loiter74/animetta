@@ -13,6 +13,15 @@ export default defineConfig({
     transformerDirectives()
   ],
   theme: {
+    // Responsive breakpoints — aligned with useMobile composable
+    // sm:640 md:768 lg:1024 xl:1280 2xl:1536 (UnoCSS defaults, explicit for clarity)
+    breakpoints: {
+      sm: '640px',
+      md: '768px',
+      lg: '1024px',
+      xl: '1280px',
+      '2xl': '1536px',
+    },
     colors: {
       // 日系二次元主题色 — CSS custom properties 支持亮色/暗色双模式
       'c-bg': 'var(--c-bg)',
@@ -58,5 +67,9 @@ export default defineConfig({
     'animate-slide-up': 'animate-[slideUp_0.3s_ease]',
     'animate-slide-in-right': 'animate-[slideInRight_0.3s_cubic-bezier(0.16,1,0.3,1)]',
     'animate-slide-out-right': 'animate-[slideOutRight_0.25s_ease-in]',
+    // Mobile utilities
+    'touch-manipulation': '[touch-action:manipulation]',
+    'safe-bottom': 'pb-[env(safe-area-inset-bottom)]',
+    'safe-top': 'pt-[env(safe-area-inset-top)]',
   }
 })

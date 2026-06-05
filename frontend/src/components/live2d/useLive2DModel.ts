@@ -50,8 +50,16 @@ export function unloadModel(): void {
 
 export async function loadModel(modelPath: string): Promise<void> {
   const app = getApp()
+  if (!app) {
+    loadError.value = 'PixiJS 未初始化，请刷新页面重试'
+    isLoading.value = false
+    return
+  }
   isLoading.value = true
   loadError.value = ''
+
+  // 30-second timeout for the entire loading process
+  const LOAD_TIMEOUT_MS = 30_000
 
   try {
     unloadModel()
@@ -59,7 +67,14 @@ export async function loadModel(modelPath: string): Promise<void> {
     // Dynamic import: Live2D is optional, app works without it
     const { Live2DModel } = await import('pixi-live2d-display/cubism4')
 
-    model = await Live2DModel.from(modelPath)
+    // Wrap model creation with timeout
+    model = await Promise.race([
+      Live2DModel.from(modelPath),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('模型加载超时（30秒）')), LOAD_TIMEOUT_MS)
+      )
+    ])
+
     // Disable idle group to prevent random idle motion cycling,
     // then play motion[0] (Hiyori_m01: gentle head sway with ParamAngleX)
     // on loop for a natural subtle swaying effect.
@@ -77,15 +92,20 @@ export async function loadModel(modelPath: string): Promise<void> {
 
     app.stage.addChild(model)
 
-    // Wait for bounds to be available
-    await new Promise<void>((resolve) => {
-      const check = () => {
-        const b = model.getBounds()
-        if (b?.width > 0) return resolve()
-        requestAnimationFrame(check)
-      }
-      check()
-    })
+    // Wait for bounds to be available (with timeout to prevent infinite loop)
+    await Promise.race([
+      new Promise<void>((resolve) => {
+        const check = () => {
+          const b = model.getBounds()
+          if (b?.width > 0) return resolve()
+          requestAnimationFrame(check)
+        }
+        check()
+      }),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('模型边界计算超时')), 10_000)
+      )
+    ])
 
     // Cache initial bounds (before any scaling) as the stable reference
     const initialBounds = model.getBounds()
@@ -153,4 +173,13 @@ export function setExpression(name: string): void {
 
 export function playMotion(group: string, index: number): void {
   model?.motion?.(group, index)
+}
+
+// ===== Retry =====
+
+/** Retry loading the default model after a failure */
+export async function retryLoad(): Promise<void> {
+  loadError.value = ''
+  isLoaded.value = false
+  await loadModel(MODEL_PATH)
 }

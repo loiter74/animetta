@@ -17,8 +17,13 @@ export function getLastCanvasH(): number { return lastCanvasH }
 export async function initPixiApp(
   canvasRef: Ref<HTMLCanvasElement | null>
 ): Promise<void> {
-  if (!canvasRef.value) return
+  console.log('[PixiApp] initPixiApp called, canvasRef.value:', canvasRef.value)
+  if (!canvasRef.value) {
+    console.error('[PixiApp] Canvas ref is null, cannot initialize')
+    return
+  }
   container = canvasRef.value.parentElement
+  console.log('[PixiApp] Container:', container)
 
   const PIXI = await import('pixi.js')
 

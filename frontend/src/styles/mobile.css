@@ -1,0 +1,53 @@
+/* Mobile-specific styles */
+
+/* Prevent double-tap zoom on mobile */
+@media (max-width: 767px) {
+  * {
+    touch-action: manipulation;
+  }
+
+  /* Better tap targets on mobile */
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Prevent pull-to-refresh */
+  body {
+    overscroll-behavior-y: contain;
+  }
+
+  /* Smooth scrolling on mobile */
+  .overflow-y-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Safe area padding for notch devices */
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Prevent text selection on UI elements */
+  button, .no-select {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Better focus styles for mobile */
+  textarea:focus, input:focus {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+}
+
+/* Tablet-specific styles */
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* Adjust panel width for tablets */
+  .interactive-panel {
+    width: 360px !important;
+    min-width: 280px !important;
+  }
+}

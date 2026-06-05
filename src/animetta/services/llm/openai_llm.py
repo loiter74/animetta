@@ -60,8 +60,18 @@ class OpenAILLM(LLMInterface):
         # Conversation history
         self.history: list[dict[str, str]] = []
 
-        # Initialize async client
-        client_kwargs = {"api_key": api_key}
+        # Initialize async client with custom httpx settings for connection stability
+        import httpx
+        http_client = httpx.AsyncClient(
+            timeout=httpx.Timeout(30.0, connect=10.0),
+            limits=httpx.Limits(
+                max_connections=10,
+                max_keepalive_connections=5,
+                keepalive_expiry=30.0,
+            ),
+            transport=httpx.AsyncHTTPTransport(retries=2),
+        )
+        client_kwargs = {"api_key": api_key, "http_client": http_client}
         if base_url:
             client_kwargs["base_url"] = base_url
 
