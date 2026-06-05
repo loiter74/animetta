@@ -1,0 +1,38 @@
+{
+  "$schema": "https://schema.zeabur.app/latest.json",
+  "name": "animetta",
+  "description": "AI Virtual Companion / VTuber Framework",
+  "version": "1.0.0",
+  "services": {
+    "backend": {
+      "dockerfile": "Dockerfile",
+      "rootDir": ".",
+      "env": {
+        "ANIMETTA_HOST": "0.0.0.0",
+        "ANIMETTA_PORT": "12394",
+        "ANIMETTA_LOG_LEVEL": "INFO",
+        "PYTHONPATH": "/app/src"
+      },
+      "ports": [
+        {
+          "containerPort": 12394,
+          "protocol": "TCP"
+        }
+      ],
+      "healthCheck": {
+        "path": "/health",
+        "port": 12394,
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3
+      }
+    }
+  },
+  "deployment": {
+    "region": "hkg",
+    "spec": {
+      "cpu": "1",
+      "memory": "512Mi"
+    }
+  }
+}
