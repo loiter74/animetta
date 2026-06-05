@@ -12,6 +12,8 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 const store = useDashboardStore()
 
+const hasData = computed(() => store.traces.length > 0)
+
 const chartData = computed(() => ({
   labels: store.traces.slice(0, 20).reverse().map(t =>
     t.created_at ? new Date(t.created_at).toLocaleTimeString() : ''

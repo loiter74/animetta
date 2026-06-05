@@ -5,6 +5,7 @@ LangGraph Orchestrator
 
 from __future__ import annotations
 
+import time as time_module
 from typing import Any
 
 from loguru import logger
@@ -104,7 +105,7 @@ class LangGraphOrchestrator:
             )
 
             self._is_running = True
-            logger.info(f"[{self.session_id}] [LangGraph] State graph started")
+            logger.info(f"[{self.session_id}] [LangGraph] State graph started — _is_running={self._is_running}")
 
         except Exception as e:
             logger.error(f"[{self.session_id}] [LangGraph] Start failed: {e}")
@@ -251,11 +252,18 @@ class LangGraphOrchestrator:
         if callbacks:
             run_config["callbacks"] = callbacks
 
+        logger.info(f"[{self.session_id}] [LangGraph] _run_graph starting — input_type={input_type}, user_text={user_text[:50]}...")
+        t_start = time_module.perf_counter()
+
         try:
             result = await self.graph.ainvoke(initial_state, config=run_config)
+            duration_ms = (time_module.perf_counter() - t_start) * 1000
+            logger.info(f"[{self.session_id}] [LangGraph] _run_graph completed in {duration_ms:.0f}ms")
             self._stats_handler.finish_trace(status="success")
             return result
         except Exception as e:
+            duration_ms = (time_module.perf_counter() - t_start) * 1000
+            logger.error(f"[{self.session_id}] [LangGraph] _run_graph failed after {duration_ms:.0f}ms: {e}")
             self._stats_handler.finish_trace(status="error", error_msg=str(e)[:500])
             raise
         finally:

@@ -55,12 +55,21 @@ class ChatHandlers:
 
         try:
             orchestrator = await self.admin._get_or_create_orchestrator(sid)
-            await orchestrator.process_text(
+            result = await orchestrator.process_text(
                 text=text,
                 user_id=data.get("user_id", "user"),
                 user_name=data.get("from_name", "User"),
                 channel_id=sid,
             )
+
+            # Check if process_text returned an error dict (silent failure)
+            if isinstance(result, dict) and result.get("error"):
+                error_msg = result["error"]
+                logger.error(f"[{sid}] process_text returned error: {error_msg}")
+                await self.sio.emit(
+                    "error", {"type": "error", "message": error_msg}, to=sid
+                )
+
         except Exception as e:
             logger.error(f"[{sid}] Error processing text input: {e}")
 

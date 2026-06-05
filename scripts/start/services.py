@@ -13,14 +13,54 @@ from .colors import info, warn
 from .process import ProcessManager
 
 
+def _get_python_exe() -> str:
+    """Get the correct Python executable, preferring miniconda3 over venvs."""
+    # Check if sys.executable is already miniconda3
+    exe = Path(sys.executable)
+    if "miniconda3" in str(exe).lower() or "anaconda3" in str(exe).lower():
+        return sys.executable
+
+    # Try to find miniconda3 python
+    candidates = [
+        Path.home() / "miniconda3" / "python.exe",
+        Path.home() / "miniconda3" / "bin" / "python",
+        Path.home() / "anaconda3" / "python.exe",
+        Path.home() / "anaconda3" / "bin" / "python",
+    ]
+    for p in candidates:
+        if p.exists():
+            return str(p)
+
+    # Fallback to sys.executable
+    return sys.executable
+
+
 def start_backend(project_root: Path, pm: ProcessManager) -> tuple:
     """Start the Socket.IO backend server on port 12394."""
     info("Starting backend Socket.IO server (port 12394)...")
-    python_exe = sys.executable
+    python_exe = _get_python_exe()
     src_path = project_root / "src"
     env = os.environ.copy()
     env["PYTHONPATH"] = str(src_path)
     env["PYTHONIOENCODING"] = "utf-8"
+
+    # Install requirements if any core dependency is missing
+    requirements_file = project_root / "requirements.txt"
+    if requirements_file.exists():
+        try:
+            result = subprocess.run(
+                [python_exe, "-c", "import loguru, opentelemetry"],
+                capture_output=True, timeout=10
+            )
+            if result.returncode != 0:
+                warn("Missing dependencies, installing from requirements.txt...")
+                subprocess.run(
+                    [python_exe, "-m", "pip", "install", "-r", str(requirements_file)],
+                    check=False
+                )
+        except Exception:
+            pass
+
     process = subprocess.Popen(
         [python_exe, "-m", "animetta.core.socketio_server"],
         cwd=project_root, env=env, stdout=None, stderr=None,

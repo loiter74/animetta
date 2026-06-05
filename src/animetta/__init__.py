@@ -10,17 +10,23 @@ Animetta - Animated Narrative Intelligence & Messaging Assistant
 __version__ = "0.1.0"
 __author__ = "Animetta Team"
 
-from .config import (
-    AgentConfig,
-    AppConfig,
-    ASRConfig,
-    LLMConfig,
-    PersonaConfig,
-    SystemConfig,
-    TTSConfig,
-)
-from .core.service_context import ServiceContext
-from .services import ASRInterface, LLMInterface, TTSInterface
+# Lazy imports to avoid ImportError when dependencies are not installed
+# (e.g., during package installation or when running scripts that don't need all modules)
+def __getattr__(name):
+    if name in ("AgentConfig", "AppConfig", "ASRConfig", "LLMConfig", 
+                "PersonaConfig", "SystemConfig", "TTSConfig"):
+        from .config import (
+            AgentConfig, AppConfig, ASRConfig, LLMConfig,
+            PersonaConfig, SystemConfig, TTSConfig,
+        )
+        return locals()[name]
+    elif name == "ServiceContext":
+        from .core.service_context import ServiceContext
+        return ServiceContext
+    elif name in ("ASRInterface", "LLMInterface", "TTSInterface"):
+        from .services import ASRInterface, LLMInterface, TTSInterface
+        return locals()[name]
+    raise AttributeError(f"module 'animetta' has no attribute {name!r}")
 
 __all__ = [
     "AppConfig",

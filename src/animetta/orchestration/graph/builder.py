@@ -97,9 +97,13 @@ def build_graph(
     graph.add_node("emotion", emotion_node)
     graph.add_node("output", output_node)
 
+    registered_nodes = ["asr", "personality", "llm", "tts", "emotion", "output"]
     if enable_tools:
         graph.add_node("tools", tool_node)
+        registered_nodes.append("tools")
         logger.info("[LangGraph] Tool node registered")
+
+    logger.info(f"[LangGraph] Registered nodes: {registered_nodes}")
 
     # Set entry point
     graph.set_conditional_entry_point(route_input, {"asr": "asr", "llm": "personality"})
