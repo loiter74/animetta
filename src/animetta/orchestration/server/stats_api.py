@@ -10,6 +10,7 @@ from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
 
 from ..graph.stats_store import get_stats_store
+from ...inspection.checks import check_all_components
 
 # Dashboard frontend file directory
 STATS_FRONTEND_DIR = str(
