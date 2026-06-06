@@ -11,12 +11,10 @@ loguru>=0.7.0
 numpy>=1.24.0
 torch>=2.0.0
 torchaudio>=2.0.0
-edge-tts>=6.1.0
-
 # Kokoro TTS (open-weight multilingual TTS, 82M params)
 # For Chinese support: pip install misaki[zh]
-# Models auto-download from HuggingFace on first use (~300MB)
 kokoro>=0.9.4
+misaki[zh]>=0.8.0
 
 # Qwen3 TTS (CustomVoice model)
 qwen-tts>=0.1.1
@@ -26,7 +24,8 @@ qwen-tts>=0.1.1
 python-dotenv>=1.0.0
 pydub>=0.25.0
 # Python 3.13+ compat: audioop was removed, audioop-lts backports it
-audioop-lts>=0.2.2
+# Only needed for Python 3.13+, Python 3.12 includes audioop in stdlib
+# audioop-lts>=0.2.2
 
 # Open source free ASR
 faster-whisper>=1.0.0
@@ -46,8 +45,7 @@ sentence-transformers>=2.2.0
 scikit-learn>=1.3.0
 chromadb>=0.4.0
 
-# GLM API (for GLM LLM and ASR)
-zhipuai>=2.0.0
+# GLM API (for GLM LLM and ASR) — zhipuai removed, edge-tts blocked in containers
 
 # VAD (Voice Activity Detection)
 silero-vad>=5.0.0
@@ -78,8 +76,7 @@ aiosqlite>=0.20.0
 # HTTP client (Notifier webhook delivery)
 httpx>=0.27.0
 
-# JWT - 兼容 zhipuai 和 mcp 的版本
-# 注意：zhipuai 声称需要 <2.9.0，但实际测试 2.10.x 可正常工作
+# JWT - 兼容 mcp 的版本
 pyjwt>=2.10.0
 
 # Bilibili 直播弹幕接收

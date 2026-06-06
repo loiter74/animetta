@@ -20,6 +20,7 @@ import os
 
 from loguru import logger
 
+from animetta.utils.service_availability import is_service_available
 from .config import MinecraftConfig
 
 
@@ -44,6 +45,10 @@ class MinecraftBridge:
         """Start the Mineflayer bot subprocess"""
         if self._running:
             return True
+
+        if not is_service_available("node"):
+            logger.info("[MinecraftBridge] Skipped — Node.js not available in this environment")
+            return False
 
         bot_dir = os.path.join(os.path.dirname(__file__), "bot")
         bot_script = os.path.join(bot_dir, "index.js")

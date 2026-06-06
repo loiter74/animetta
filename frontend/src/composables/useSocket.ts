@@ -7,12 +7,14 @@ import type { ModelStatusPayload } from '@/types/model-loading'
 import type { ConnectionStatus } from '@/types/socket-events'
 import type { PipelineStage, SongResult } from '@/types/singing'
 
-// Direct connection to backend. CORS is enabled (cors_allowed_origins='*').
-// Use environment variable for production (e.g., ngrok), fallback to localhost for dev.
-const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:12394'
+// Connect via same-origin (nginx in Docker, Vite proxy in dev) to avoid
+// CORS + WSL2 WebSocket relay issues. Set VITE_API_URL to override (e.g. ngrok).
+const SOCKET_URL = import.meta.env.VITE_API_URL || ''
 
 let socket: Socket | null = null
 let _initialized = false
+let _connectFailures = 0
+const MAX_FAILURES_BEFORE_ERROR = 3
 
 /**
  * Create a singleton Socket.IO connection to the Animetta backend.
@@ -22,7 +24,8 @@ export function useSocket() {
   const store = useConnectionStore()
 
   if (!_initialized && !socket) {
-    socket = io(SOCKET_URL, {
+    const url = SOCKET_URL || window.location.origin
+    socket = io(url, {
       path: '/socket.io/',
       transports: ['websocket', 'polling'],
       reconnection: true,
@@ -32,6 +35,7 @@ export function useSocket() {
     })
 
     socket.on('connect', () => {
+      _connectFailures = 0
       store.setStatus('connected')
     })
 
@@ -39,8 +43,14 @@ export function useSocket() {
       store.setStatus('disconnected')
     })
 
-    socket.on('connect_error', (err) => {
-      store.setStatus('error', err.message)
+    socket.on('connect_error', () => {
+      _connectFailures++
+      if (_connectFailures >= MAX_FAILURES_BEFORE_ERROR) {
+        store.setStatus('error', `Connection failed after ${_connectFailures} attempts`)
+      } else {
+        // First few failures are normal (WebSocket → polling fallback)
+        store.setStatus('connecting')
+      }
     })
 
     // Listen for model loading status
@@ -82,8 +92,8 @@ export function useSocket() {
   }
 
   onMounted(() => {
-    // Pull initial status
-    store.setStatus(socket?.connected ? 'connected' : 'disconnected')
+    // Show connecting state until first connect/error event fires
+    store.setStatus(socket?.connected ? 'connected' : 'connecting')
   })
 
   return { socket, connectionStatus: store.status }

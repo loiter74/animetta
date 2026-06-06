@@ -34,6 +34,12 @@ TTS_TIMEOUT = 3.0
 ASR_TIMEOUT = 3.0
 MEMORY_TIMEOUT = 3.0
 METRICS_TIMEOUT = 3.0
+LLM_CONNECTIVITY_TIMEOUT = 5.0
+
+# Module-level cache for LLM API connectivity probe
+# Updated by ServiceContext._verify_llm_connectivity() at startup and by
+# the inspection scheduler periodically (every 10 minutes).
+_llm_connectivity_cache: dict[str, object] = {"ok": None, "status": "pending"}
 
 
 # ── ComponentCheck ──────────────────────────────────────────
@@ -196,6 +202,25 @@ async def _probe_metrics_endpoint() -> bool:
         return False
 
 
+async def _probe_llm_connectivity() -> bool:
+    """Check LLM API endpoint is reachable with configured API key.
+
+    Reads from module-level cache populated by ServiceContext at startup
+    and refreshed periodically by the inspection scheduler.
+    """
+    import time as time_mod
+
+    status = _llm_connectivity_cache.get("ok")
+    if status is None:
+        logger.debug("[health/llm_connectivity] probe not yet executed — returning pending")
+        return True  # Not a failure—just hasn't run yet
+    if status is True:
+        return True
+    # Cache has ok=False — record the error in the check result
+    # We return False so the caller creates a CheckResult.failed()
+    return False
+
+
 # ── Check registry ──────────────────────────────────────────
 
 COMPONENT_CHECKS: tuple[ComponentCheck, ...] = (
@@ -216,6 +241,12 @@ COMPONENT_CHECKS: tuple[ComponentCheck, ...] = (
         probe=_probe_llm_available,
         timeout=LLM_TIMEOUT,
         description="LLM service loaded in ServicePool",
+    ),
+    ComponentCheck(
+        name="llm_connectivity",
+        probe=_probe_llm_connectivity,
+        timeout=LLM_CONNECTIVITY_TIMEOUT,
+        description="LLM API endpoint reachable with configured API key",
     ),
     ComponentCheck(
         name="tts_available",
@@ -309,3 +340,58 @@ async def check_all_components() -> dict[str, CheckResult]:
             )
 
     return result_dict
+
+
+async def refresh_llm_connectivity_cache() -> None:
+    """Refresh the LLM connectivity cache by probing the configured API.
+
+    Called by the inspection scheduler periodically (every ~10 minutes)
+    to keep the health probe cache current without blocking health checks.
+    """
+    import time as time_mod
+
+    try:
+        from animetta.core.service_pool import ServicePool
+
+        if not ServicePool._ready or ServicePool._llm is None:
+            _llm_connectivity_cache.update({"ok": None, "status": "llm_not_available"})
+            return
+
+        llm = ServicePool._llm
+        # Only probe remote APIs
+        if not hasattr(llm, "base_url") or not llm.base_url:
+            _llm_connectivity_cache.update({"ok": True, "status": "local_model"})
+            return
+
+        api_key = getattr(llm, "api_key", None)
+        base_url = llm.base_url.rstrip("/")
+
+        if not api_key:
+            _llm_connectivity_cache.update({"ok": False, "error": "no_api_key"})
+            return
+
+        import httpx
+        t0 = time_mod.perf_counter()
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            resp = await client.get(
+                f"{base_url}/models",
+                headers={"Authorization": f"Bearer {api_key}"},
+            )
+        latency_ms = (time_mod.perf_counter() - t0) * 1000
+
+        if resp.status_code == 200:
+            _llm_connectivity_cache.update(
+                {"ok": True, "latency_ms": round(latency_ms, 1)}
+            )
+        elif resp.status_code == 401:
+            _llm_connectivity_cache.update({"ok": False, "error": "invalid_api_key"})
+        else:
+            _llm_connectivity_cache.update(
+                {"ok": False, "error": f"http_{resp.status_code}"}
+            )
+    except ImportError:
+        _llm_connectivity_cache.update({"ok": None, "status": "httpx_not_installed"})
+    except Exception as e:
+        _llm_connectivity_cache.update(
+            {"ok": False, "error": f"connection_failed: {e}"}
+        )

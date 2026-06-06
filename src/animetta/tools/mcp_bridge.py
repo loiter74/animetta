@@ -105,7 +105,7 @@ class MCPClient:
             logger.info(f"[MCP:{self.name}] Found {len(response.tools)} tools")
             return response.tools
         except Exception as e:
-            logger.error(f"[MCP:{self.name}] Failed to get tool list: {e}")
+            logger.warning(f"[MCP:{self.name}] Failed to get tool list: {e}")
             return []
 
     async def call_tool(self, name: str, arguments: dict[str, Any]) -> Any:
@@ -115,7 +115,7 @@ class MCPClient:
         try:
             return await self.session.call_tool(name, arguments)
         except Exception as e:
-            logger.error(f"[MCP:{self.name}] Failed to call tool {name}: {e}")
+            logger.warning(f"[MCP:{self.name}] Failed to call tool {name}: {e}")
             return None
 
 

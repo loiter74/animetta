@@ -23,6 +23,8 @@ from collections.abc import Callable
 
 from loguru import logger
 
+from animetta.utils.service_availability import get_availability_summary
+
 
 class ServiceContext:
     """Service context class"""
@@ -88,6 +90,10 @@ class ServiceContext:
             asyncio.create_task(self.model_manager.warmup())
 
         logger.info(f"[{self.session_id}] Services loaded")
+        logger.info(get_availability_summary())
+
+        # Verify LLM API connectivity (non-blocking, populates health probe cache)
+        asyncio.create_task(self._verify_llm_connectivity())
 
     async def load_cache(
         self,
@@ -155,7 +161,7 @@ class ServiceContext:
             logger.warning(f"[{self.session_id}] Tokenizer preload failed (does not affect operation): {e}")
 
     async def init_tts(self, tts_config: TTSConfig) -> None:
-        """Initialize TTS service"""
+        """Initialize TTS service with fallback chain: requested → CPU fallback → MockTTS."""
         if self.tts_engine is not None:
             logger.debug(f"[{self.session_id}] TTS already initialized, skipping")
             return
@@ -165,15 +171,11 @@ class ServiceContext:
         logger.info(f"[{self.session_id}] Initializing TTS: {provider}/{model}")
 
         # Convert the config object to dict and pass all fields to factory
-        # This ensures provider-specific params (ref_audio_path, prompt_text, etc.)
-        # are forwarded properly, not just the generic ones.
         tts_kwargs = {"provider": provider}
-        # Try model_dump() for Pydantic v2 configs, fall back to manual field extraction
         if hasattr(tts_config, 'model_dump'):
             cfg_dict = tts_config.model_dump(exclude={'type'})
             tts_kwargs.update(cfg_dict)
         else:
-            # Manual extraction for non-standard configs
             for field in ['api_key', 'model', 'voice', 'base_url', 'response_format',
                           'speed', 'volume', 'ref_audio_path', 'prompt_text',
                           'prompt_lang', 'text_lang', 'top_k', 'top_p', 'temperature',
@@ -182,7 +184,32 @@ class ServiceContext:
                 val = getattr(tts_config, field, None)
                 if val is not None:
                     tts_kwargs[field] = val
+
+        # --- Fallback chain ---
+        # 1. Try requested config (e.g. kokoro + cuda)
         self.tts_engine = TTSFactory.create(**tts_kwargs)
+
+        # 2. If GPU provider fell back to MockTTS, retry with CPU
+        device = tts_kwargs.get("device", "")
+        if self.tts_engine is not None and device and "cuda" in str(device).lower():
+            from animetta.services.tts.mock_tts import MockTTS
+            # TracingProxy wraps the real engine in _target
+            inner = getattr(self.tts_engine, "_target", self.tts_engine)
+            if isinstance(inner, MockTTS) and provider != "mock":
+                logger.warning(
+                    f"[{self.session_id}] TTS provider '{provider}' failed with device='{device}', "
+                    f"retrying with device='cpu'"
+                )
+                fallback_kwargs = {**tts_kwargs, "device": "cpu"}
+                self.tts_engine = TTSFactory.create(**fallback_kwargs)
+
+        # 3. Log final fallback state
+        from animetta.services.tts.mock_tts import MockTTS
+        inner = getattr(self.tts_engine, "_target", self.tts_engine)
+        if isinstance(inner, MockTTS) and provider != "mock":
+            logger.warning(
+                f"[{self.session_id}] TTS fallback: '{provider}' unavailable, using MockTTS (silent)"
+            )
 
         if hasattr(self.tts_engine, 'preload') and self.model_manager is not None:
             self.model_manager.register("tts", self.tts_engine.preload, "tts")
@@ -310,7 +337,11 @@ class ServiceContext:
 
     # Lifecycle management
     async def close(self) -> None:
-        """Close and clean up all resources"""
+        """Close and clean up per-session resources.
+
+        Shared engines (LLM/TTS/ASR from ServicePool) are NOT closed here
+        — they are managed by ServicePool.shutdown().
+        """
         logger.info(f"[{self.session_id}] Shutting down service context...")
 
         if self.memory_system:
@@ -321,15 +352,8 @@ class ServiceContext:
             except Exception as e:
                 logger.warning(f"[{self.session_id}] Memory shutdown failed: {e}")
 
-        if self.asr_engine:
-            await self.asr_engine.close()
-            self.asr_engine = None
-        if self.tts_engine:
-            await self.tts_engine.close()
-            self.tts_engine = None
-        if self.llm_engine:
-            await self.llm_engine.close()
-            self.llm_engine = None
+        # Only close per-session engines (VAD), NOT shared engines from pool
+        # Shared engines are managed by ServicePool and shared across sessions
         if self.vad_engine:
             await self.vad_engine.close()
             self.vad_engine = None
@@ -339,6 +363,75 @@ class ServiceContext:
             self.audio_processor = None
 
         logger.info(f"[{self.session_id}] Service context closed")
+
+    async def _verify_llm_connectivity(self) -> None:
+        """Verify LLM API endpoint is reachable with the configured API key.
+
+        Calls GET {base_url}/models with the API key, stores result in
+        the module-level cache used by the health probe.
+        Populates `inspection.checks.health._llm_connectivity_cache`.
+        """
+        import time as time_mod
+
+        from animetta.inspection.checks import health as health_checks
+
+        llm = self.llm_engine
+        if llm is None:
+            health_checks._llm_connectivity_cache = {
+                "ok": None, "status": "llm_not_initialized"
+            }
+            return
+
+        # Only probe remote APIs — skip local models
+        if not hasattr(llm, "base_url") or not llm.base_url:
+            health_checks._llm_connectivity_cache = {
+                "ok": True, "status": "local_model"
+            }
+            logger.info("[health] LLM connectivity: skipped (local model)")
+            return
+
+        api_key = getattr(llm, "api_key", None)
+        base_url = llm.base_url.rstrip("/")
+
+        if not api_key:
+            health_checks._llm_connectivity_cache = {
+                "ok": False, "error": "no_api_key"
+            }
+            logger.error("[health] LLM connectivity: FAILED — no API key configured")
+            return
+
+        try:
+            import httpx
+            t0 = time_mod.perf_counter()
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                resp = await client.get(
+                    f"{base_url}/models",
+                    headers={"Authorization": f"Bearer {api_key}"},
+                )
+            latency_ms = (time_mod.perf_counter() - t0) * 1000
+
+            if resp.status_code == 200:
+                health_checks._llm_connectivity_cache = {
+                    "ok": True, "latency_ms": round(latency_ms, 1)
+                }
+                logger.info(f"[health] LLM connectivity: OK ({latency_ms:.0f}ms)")
+            elif resp.status_code == 401:
+                health_checks._llm_connectivity_cache = {
+                    "ok": False, "error": "invalid_api_key"
+                }
+                logger.error("[health] LLM connectivity: FAILED — invalid API key (401)")
+            else:
+                health_checks._llm_connectivity_cache = {
+                    "ok": False, "error": f"http_{resp.status_code}"
+                }
+                logger.warning(
+                    f"[health] LLM connectivity: returned HTTP {resp.status_code}"
+                )
+        except Exception as e:
+            health_checks._llm_connectivity_cache = {
+                "ok": False, "error": f"connection_failed: {e}"
+            }
+            logger.error(f"[health] LLM connectivity: FAILED — {e}")
 
     # Core business flow
     async def process_text_input(self, text: str) -> str:
