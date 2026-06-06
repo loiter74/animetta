@@ -12,7 +12,7 @@ services:
       - ANIMETTA_HOST=0.0.0.0
       - ANIMETTA_PORT=12394
       - ANIMETTA_LOG_LEVEL=${ANIMETTA_LOG_LEVEL:-INFO}
-      - ANIMETTA_DEVICE=cuda
+      - ANIMETTA_DEVICE=cpu
       - GLM_API_KEY=${GLM_API_KEY:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - OPENAI_BASE_URL=${OPENAI_BASE_URL:-}
@@ -29,16 +29,8 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80/health"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
-      start_period: 120s
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
 
 volumes:
   animetta-memory-db:
