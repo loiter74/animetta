@@ -1,7 +1,7 @@
 """
 Bilibili danmaku integration handlers.
 
-Manages the BilibiliDanmakuService lifecycle and processes
+Manages the DanmakuService lifecycle and processes
 incoming danmaku messages through the AI orchestrator.
 """
 
@@ -10,6 +10,7 @@ import time
 from typing import TYPE_CHECKING
 
 from loguru import logger
+from animetta.services.bilibili import DanmakuService
 
 if TYPE_CHECKING:
     from socketio import AsyncServer
@@ -47,7 +48,7 @@ class BilibiliHandlers:
             self.stop_bilibili()
 
         self._main_loop = asyncio.get_running_loop()
-        self._bilibili_service = BilibiliDanmakuService(
+        self._bilibili_service = DanmakuService(
             room_id=room_id,
             sessdata=sessdata,
         )

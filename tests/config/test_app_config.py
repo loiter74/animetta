@@ -8,7 +8,7 @@ from pathlib import Path
 from unittest.mock import patch, MagicMock, call
 
 import pytest
-from animetta.config.app import AppConfig
+from animetta.config.app import AppConfig, ServicesConfig, expand_env_vars, _load_env_file, _load_service_config
 
 
 
@@ -192,21 +192,21 @@ class TestLoadEnvFile:
     @patch("animetta.config.app.load_dotenv")
     @patch("pathlib.Path.exists", return_value=False)
     def test_loads_anima_env_file_var(
-        self, mock_exists, mock_load_dotenv
-    ):
-        """ANIMA_ENV_FILE env var path is checked first."""
-        with patch.dict(os.environ, {"ANIMA_ENV_FILE": "/custom/path/.env"}, clear=False):
-            _load_env_file()
+         self, mock_exists, mock_load_dotenv
+     ):
+         """ANIMETTA_ENV_FILE env var path is checked first."""
+         with patch.dict(os.environ, {"ANIMETTA_ENV_FILE": "/custom/path/.env"}, clear=False):
+             _load_env_file()
 
     @patch("animetta.config.app.load_dotenv")
     @patch("pathlib.Path.exists", return_value=True)
     def test_priority_anima_env_file_first(self, mock_exists, mock_load_dotenv):
-        """ANIMA_ENV_FILE path has highest priority — checked first."""
-        with patch.dict(os.environ, {"ANIMA_ENV_FILE": "/custom/.env"}, clear=False):
-            _load_env_file()
-            mock_load_dotenv.assert_called_once()
-            called_path = mock_load_dotenv.call_args[1]["dotenv_path"]
-            assert "custom" in called_path and ".env" in called_path
+         """ANIMETTA_ENV_FILE path has highest priority — checked first."""
+         with patch.dict(os.environ, {"ANIMETTA_ENV_FILE": "/custom/.env"}, clear=False):
+             _load_env_file()
+             mock_load_dotenv.assert_called_once()
+             called_path = mock_load_dotenv.call_args[1]["dotenv_path"]
+             assert "custom" in called_path and ".env" in called_path
 
 
 # =============================================================================
@@ -517,37 +517,37 @@ class TestFromYaml:
     @patch("animetta.config.app._load_yaml_file")
     @patch("pathlib.Path.exists")
     def test_env_override_system_host_port(
-        self, mock_exists, mock_load_yaml, mock_load_service, mock_load_env
-    ):
-        """ANIMA_HOST and ANIMA_PORT env vars override system config."""
-        mock_exists.return_value = True
-        mock_load_yaml.return_value = {
-            "persona": "default",
-            "services": {"asr": "mock", "tts": "mock", "agent": "mock", "vad": "mock"},
-            "system": {"host": "localhost", "port": 12394},
-        }
+         self, mock_exists, mock_load_yaml, mock_load_service, mock_load_env
+     ):
+         """ANIMETTA_HOST and ANIMETTA_PORT env vars override system config."""
+         mock_exists.return_value = True
+         mock_load_yaml.return_value = {
+             "persona": "default",
+             "services": {"asr": "mock", "tts": "mock", "agent": "mock", "vad": "mock"},
+             "system": {"host": "localhost", "port": 12394},
+         }
 
-        def load_service_side(service_type, service_name):
-            configs = {
-                ("asr", "mock"): {"type": "mock"},
-                ("tts", "mock"): {"type": "mock"},
-                ("llm", "mock"): {
-                    "memory_enabled": False,
-                    "llm_config": {"type": "mock"},
-                },
-                ("vad", "mock"): {"type": "mock"},
-            }
-            return configs.get((service_type, service_name), {"type": "mock"})
+         def load_service_side(service_type, service_name):
+             configs = {
+                 ("asr", "mock"): {"type": "mock"},
+                 ("tts", "mock"): {"type": "mock"},
+                 ("llm", "mock"): {
+                     "memory_enabled": False,
+                     "llm_config": {"type": "mock"},
+                 },
+                 ("vad", "mock"): {"type": "mock"},
+             }
+             return configs.get((service_type, service_name), {"type": "mock"})
 
-        mock_load_service.side_effect = load_service_side
+         mock_load_service.side_effect = load_service_side
 
-        with patch.dict(
-            os.environ, {"ANIMA_HOST": "1.2.3.4", "ANIMA_PORT": "8888"}, clear=False
-        ):
-            config = AppConfig.from_yaml("/fake/path.yaml")
+         with patch.dict(
+             os.environ, {"ANIMETTA_HOST": "1.2.3.4", "ANIMETTA_PORT": "8888"}, clear=False
+         ):
+             config = AppConfig.from_yaml("/fake/path.yaml")
 
-        assert config.system.host == "1.2.3.4"
-        assert config.system.port == 8888
+         assert config.system.host == "1.2.3.4"
+         assert config.system.port == 8888
 
     @patch("animetta.config.app._load_env_file")
     @patch("animetta.config.app._load_service_config")
@@ -699,7 +699,7 @@ class TestLoad:
         mock_config = MagicMock(spec=AppConfig)
         mock_from_yaml.return_value = mock_config
 
-        with patch.dict(os.environ, {"ANIMA_CONFIG": "/env/path/config.yaml"}, clear=False):
+        with patch.dict(os.environ, {"ANIMETTA_CONFIG": "/env/path/config.yaml"}, clear=False):
             result = AppConfig.load()
 
         mock_from_yaml.assert_called_once_with("/env/path/config.yaml")

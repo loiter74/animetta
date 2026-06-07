@@ -8,7 +8,7 @@ from ...core.registry import ProviderRegistry
 from .base import ASRBaseConfig
 
 
-@ProviderRegistry.register("asr", "funasr")
+@ProviderRegistry.register_config("asr", "funasr")
 class FunASRConfig(ASRBaseConfig):
     """FunASR Paraformer configuration
 

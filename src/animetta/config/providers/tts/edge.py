@@ -8,7 +8,7 @@ from ...core.registry import ProviderRegistry
 from .base import TTSBaseConfig
 
 
-@ProviderRegistry.register("tts", "edge")
+@ProviderRegistry.register_config("tts", "edge")
 class EdgeTTSConfig(TTSBaseConfig):
     """Edge TTS configuration (Microsoft free TTS)"""
     type: Literal["edge"] = "edge"

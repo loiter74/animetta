@@ -104,6 +104,6 @@ class LLMFactory:
         return LLMFactory.create_from_config(config, system_prompt)
 
     @staticmethod
-    def get_available_providers() -> list:
+    def get_available_configs() -> list:
         """Get the list of all available providers"""
         return ProviderRegistry.list_services("llm")

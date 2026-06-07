@@ -8,7 +8,7 @@ from ...core.registry import ProviderRegistry
 from .base import TTSBaseConfig
 
 
-@ProviderRegistry.register("tts", "gpt_sovits")
+@ProviderRegistry.register_config("tts", "gpt_sovits")
 class GPTSoVITSConfig(TTSBaseConfig):
     """GPT-SoVITS TTS configuration
 

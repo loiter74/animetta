@@ -1,22 +1,16 @@
-"""VC (Voice Conversion) provider configuration module"""
+"""VC (Voice Conversion) provider configuration — discriminated union for YAML deserialization."""
 
-from typing import Annotated, Union
+from ...core.registry import ProviderRegistry
 
-from pydantic import Field
+# Import all implementations so their @register_config decorators fire
+from .base import VCBaseConfig           # noqa: F401 — triggers registration chain
+from .mock import MockVCConfig           # noqa: F401
+from .rvc import RVCConfig               # noqa: F401
 
-from .base import VCBaseConfig
-from .mock import MockVCConfig
-from .rvc import RVCConfig
+# Discriminated Union type — auto-generated from registered configs
+VCConfig = ProviderRegistry.create_union_type("vc")
 
 __all__ = [
     "VCBaseConfig",
-    "MockVCConfig",
-    "RVCConfig",
     "VCConfig",
-]
-
-# Discriminated Union type
-VCConfig = Annotated[
-    MockVCConfig | RVCConfig,
-    Field(discriminator="type")
 ]

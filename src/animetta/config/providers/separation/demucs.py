@@ -8,7 +8,7 @@ from ...core.registry import ProviderRegistry
 from .base import SeparationBaseConfig
 
 
-@ProviderRegistry.register("separation", "demucs")
+@ProviderRegistry.register_config("separation", "demucs")
 class DemucsSeparationConfig(SeparationBaseConfig):
     """Demucs / Mel-Band RoFormer source separation configuration
 

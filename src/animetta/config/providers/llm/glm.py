@@ -8,7 +8,7 @@ from ...core.registry import ProviderRegistry
 from .base import LLMBaseConfig
 
 
-@ProviderRegistry.register("llm", "glm")
+@ProviderRegistry.register_config("llm", "glm")
 class GLMLLMConfig(LLMBaseConfig):
     """Zhipu AI GLM configuration"""
     type: Literal["glm"] = "glm"

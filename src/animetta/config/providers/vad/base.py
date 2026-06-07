@@ -1,9 +1,8 @@
 """VAD base configuration"""
 
-from ...core.base import BaseConfig
+from ...core.base import ProviderConfig
 
 
-class VADBaseConfig(BaseConfig):
+class VADBaseConfig(ProviderConfig):
     """VAD configuration base class"""
-    type: str = "base"
     sample_rate: int = 16000

@@ -5,7 +5,7 @@ import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from animetta.services.meme.bilibili_interaction import BilibiliInteractionLearner
+from animetta.services.bilibili import InteractionLearner, InteractionPattern, LivestreamStrategy, DanmakuMessage
 
 
 @pytest.fixture
@@ -23,21 +23,21 @@ def mock_wiki():
 
 
 class TestDanmakuDataclasses:
-    """DanmakuSample, InteractionPattern, LivestreamStrategy dataclasses."""
+    """DanmakuMessage, InteractionPattern, LivestreamStrategy dataclasses."""
 
     def test_danmaku_sample_defaults(self):
 
-        s = DanmakuSample(content="你好")
-        assert s.content == "你好"
-        assert s.timestamp == 0.0
+        s = DanmakuMessage(text="你好")
+        assert s.text == "你好"
+        assert isinstance(s.timestamp, float)
         assert s.is_gift is False
         assert s.is_super_chat is False
 
     def test_danmaku_sample_to_dict(self):
 
-        s = DanmakuSample(content="hello", timestamp=100.0, is_gift=True)
+        s = DanmakuMessage(text="hello", timestamp=100.0, is_gift=True)
         d = s.to_dict()
-        assert d["content"] == "hello"
+        assert d["text"] == "hello"
         assert d["is_gift"] is True
 
     def test_interaction_pattern(self):
@@ -74,7 +74,7 @@ class TestBilibiliInteractionLearner:
     async def test_learn_patterns_no_room_ids(self, mock_llm, mock_wiki):
         """With no room IDs configured, returns empty list."""
 
-        learner = BilibiliInteractionLearner(
+        learner = InteractionLearner(
             llm_client=mock_llm,
             wiki_manager=mock_wiki,
             config={"room_ids": []},
@@ -86,7 +86,7 @@ class TestBilibiliInteractionLearner:
     async def test_learn_patterns_insufficient_samples(self, mock_llm, mock_wiki):
         """If a room has < min_samples, it is skipped."""
 
-        learner = BilibiliInteractionLearner(
+        learner = InteractionLearner(
             llm_client=mock_llm,
             wiki_manager=mock_wiki,
             config={"room_ids": [123], "min_samples_per_room": 100},
@@ -109,7 +109,7 @@ class TestBilibiliInteractionLearner:
             )
         }
 
-        learner = BilibiliInteractionLearner(
+        learner = InteractionLearner(
             llm_client=mock_llm,
             wiki_manager=mock_wiki,
             config={"room_ids": [123], "min_samples_per_room": 5},
@@ -117,7 +117,7 @@ class TestBilibiliInteractionLearner:
 
         with patch.object(learner, "_collect_danmaku") as mock_collect:
             mock_collect.return_value = [
-                DanmakuSample(content=f"sample{i}") for i in range(10)
+                DanmakuMessage(text=f"sample{i}") for i in range(10)
             ]
             result = await learner.learn_patterns()
             assert len(result) == 1
@@ -136,14 +136,14 @@ class TestBilibiliInteractionLearner:
             )
         }
 
-        learner = BilibiliInteractionLearner(
+        learner = InteractionLearner(
             llm_client=mock_llm,
             wiki_manager=mock_wiki,
             config={"room_ids": [123], "min_samples_per_room": 2},
         )
 
         with patch.object(learner, "_collect_danmaku") as mock_collect:
-            mock_collect.return_value = [DanmakuSample(content="hi") for _ in range(5)]
+            mock_collect.return_value = [DanmakuMessage(text="hi") for _ in range(5)]
             await learner.learn_patterns()
             mock_wiki.write_page.assert_called_once()
 
@@ -153,7 +153,7 @@ class TestBilibiliInteractionLearner:
     async def test_collect_danmaku_no_bilibili_api(self, mock_llm):
         """If bilibili_api is not importable, returns empty list."""
 
-        learner = BilibiliInteractionLearner(llm_client=mock_llm)
+        learner = InteractionLearner(llm_client=mock_llm)
 
         import sys
 
@@ -164,7 +164,7 @@ class TestBilibiliInteractionLearner:
     async def test_collect_danmaku_handles_exception(self, mock_llm):
         """Exception during collection returns empty list."""
 
-        learner = BilibiliInteractionLearner(llm_client=mock_llm)
+        learner = InteractionLearner(llm_client=mock_llm)
 
         # Mock run_in_executor to raise
         loop = asyncio.get_event_loop()
@@ -178,7 +178,7 @@ class TestBilibiliInteractionLearner:
     async def test_analyze_patterns_without_llm(self, mock_wiki):
         """Without LLM client, analysis returns empty list."""
 
-        learner = BilibiliInteractionLearner(
+        learner = InteractionLearner(
             llm_client=None, wiki_manager=mock_wiki,
         )
         result = await learner._analyze_patterns({123: []})
@@ -196,8 +196,8 @@ class TestBilibiliInteractionLearner:
             )
         }
 
-        learner = BilibiliInteractionLearner(llm_client=mock_llm)
-        samples = [DanmakuSample(content="测试" + str(i)) for i in range(5)]
+        learner = InteractionLearner(llm_client=mock_llm)
+        samples = [DanmakuMessage(text="测试" + str(i)) for i in range(5)]
         result = await learner._analyze_patterns({123: samples})
         assert len(result) == 1
         assert result[0].trigger_condition == "A"
@@ -207,7 +207,7 @@ class TestBilibiliInteractionLearner:
         """LLM exception returns empty list."""
 
         mock_llm.chat_messages.side_effect = RuntimeError("LLM error")
-        learner = BilibiliInteractionLearner(llm_client=mock_llm)
+        learner = InteractionLearner(llm_client=mock_llm)
         result = await learner._analyze_patterns({123: []})
         assert result == []
 
@@ -217,7 +217,7 @@ class TestBilibiliInteractionLearner:
     async def test_store_strategies_without_wiki(self, mock_llm):
         """No wiki manager: store is a no-op."""
 
-        learner = BilibiliInteractionLearner(llm_client=mock_llm, wiki_manager=None)
+        learner = InteractionLearner(llm_client=mock_llm, wiki_manager=None)
         strategies = [
             LivestreamStrategy(
                 trigger_condition="测试", suggested_behavior="行为",
@@ -230,7 +230,7 @@ class TestBilibiliInteractionLearner:
     async def test_store_strategies_with_wiki(self, mock_llm, mock_wiki):
         """Store calls wiki.write_page with a WikiPage."""
 
-        learner = BilibiliInteractionLearner(
+        learner = InteractionLearner(
             llm_client=mock_llm, wiki_manager=mock_wiki,
         )
         strategies = [
@@ -247,7 +247,7 @@ class TestBilibiliInteractionLearner:
         """Exception during write should not propagate."""
 
         mock_wiki.write_page.side_effect = Exception("write failed")
-        learner = BilibiliInteractionLearner(
+        learner = InteractionLearner(
             llm_client=mock_llm, wiki_manager=mock_wiki,
         )
         strategies = [
@@ -262,12 +262,12 @@ class TestBilibiliInteractionLearner:
 
     def test_parse_json(self):
 
-        assert BilibiliInteractionLearner._parse_json('{"a": 1}') == {"a": 1}
+        assert InteractionLearner._parse_json('{"a": 1}') == {"a": 1}
 
     def test_parse_json_with_fence(self):
 
-        assert BilibiliInteractionLearner._parse_json("```json\n{\"a\": 1}\n```") == {"a": 1}
+        assert InteractionLearner._parse_json("```json\n{\"a\": 1}\n```") == {"a": 1}
 
     def test_parse_json_invalid(self):
 
-        assert BilibiliInteractionLearner._parse_json("{{{") == {}
+        assert InteractionLearner._parse_json("{{{") == {}

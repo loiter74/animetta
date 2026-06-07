@@ -7,9 +7,11 @@ from typing import Literal
 
 from pydantic import ConfigDict, Field
 
+from ...core.registry import ProviderRegistry
 from .base import LLMBaseConfig
 
 
+@ProviderRegistry.register_config("llm", "local_lora")
 class LocalLoraLLMConfig(LLMBaseConfig):
     """
     Local LoRA fine-tuned model configuration
@@ -42,11 +44,6 @@ class LocalLoraLLMConfig(LLMBaseConfig):
     max_new_tokens: int = Field(
         default=512,
         description="Maximum generated tokens"
-    )
-
-    temperature: float = Field(
-        default=0.7,
-        description="Generation temperature"
     )
 
     top_p: float = Field(

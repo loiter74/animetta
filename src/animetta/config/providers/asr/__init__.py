@@ -1,28 +1,19 @@
-"""ASR provider configuration module"""
+"""ASR provider configuration — discriminated union for YAML deserialization."""
 
-from typing import Annotated, Union
+from ...core.registry import ProviderRegistry
 
-from pydantic import Field
+# Import all implementations so their @register_config decorators fire
+from .base import ASRBaseConfig                   # noqa: F401 — triggers registration chain
+from .mock import MockASRConfig                   # noqa: F401
+from .openai import OpenAIASRConfig               # noqa: F401
+from .glm import GLMASRConfig                     # noqa: F401
+from .faster_whisper import FasterWhisperASRConfig # noqa: F401
+from .funasr import FunASRConfig                   # noqa: F401
 
-from .base import ASRBaseConfig
-from .faster_whisper import FasterWhisperASRConfig
-from .funasr import FunASRConfig
-from .glm import GLMASRConfig
-from .mock import MockASRConfig
-from .openai import OpenAIASRConfig
+# Discriminated Union type — auto-generated from registered configs
+ASRConfig = ProviderRegistry.create_union_type("asr")
 
 __all__ = [
     "ASRBaseConfig",
-    "MockASRConfig",
-    "OpenAIASRConfig",
-    "GLMASRConfig",
-    "FasterWhisperASRConfig",
-    "FunASRConfig",
     "ASRConfig",
-]
-
-# Discriminated Union type
-ASRConfig = Annotated[
-    MockASRConfig | OpenAIASRConfig | GLMASRConfig | FasterWhisperASRConfig | FunASRConfig,
-    Field(discriminator="type")
 ]

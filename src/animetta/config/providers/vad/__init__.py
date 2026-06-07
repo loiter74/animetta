@@ -1,22 +1,16 @@
-"""VAD provider configuration module"""
+"""VAD provider configuration — discriminated union for YAML deserialization."""
 
-from typing import Annotated, Union
+from ...core.registry import ProviderRegistry
 
-from pydantic import Field
+# Import all implementations so their @register_config decorators fire
+from .base import VADBaseConfig          # noqa: F401 — triggers registration chain
+from .mock import MockVADConfig          # noqa: F401
+from .silero import SileroVADConfig      # noqa: F401
 
-from .base import VADBaseConfig
-from .mock import MockVADConfig
-from .silero import SileroVADConfig
+# Discriminated Union type — auto-generated from registered configs
+VADConfig = ProviderRegistry.create_union_type("vad")
 
 __all__ = [
     "VADBaseConfig",
-    "MockVADConfig",
-    "SileroVADConfig",
     "VADConfig",
-]
-
-# Discriminated Union type
-VADConfig = Annotated[
-    MockVADConfig | SileroVADConfig,
-    Field(discriminator="type")
 ]

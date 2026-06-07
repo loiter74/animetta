@@ -6,7 +6,7 @@ from ...core.registry import ProviderRegistry
 from .base import ASRBaseConfig
 
 
-@ProviderRegistry.register("asr", "mock")
+@ProviderRegistry.register_config("asr", "mock")
 class MockASRConfig(ASRBaseConfig):
     """Mock ASR configuration - for testing"""
     type: Literal["mock"] = "mock"

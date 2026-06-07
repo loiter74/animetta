@@ -8,10 +8,9 @@ from ...core.registry import ProviderRegistry
 from .base import TTSBaseConfig
 
 
-@ProviderRegistry.register("tts", "openai")
+@ProviderRegistry.register_config("tts", "openai")
 class OpenAITTSConfig(TTSBaseConfig):
     """OpenAI TTS configuration"""
     type: Literal["openai"] = "openai"
     model: str = Field(default="tts-1", description="TTS model name")
     voice: str = Field(default="alloy", description="Voice / timbre")
-    base_url: str | None = Field(default=None, description="API Base URL")

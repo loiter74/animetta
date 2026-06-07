@@ -1,5 +1,5 @@
 from __future__ import annotations
-from animetta.services.meme.danmaku_buffer import DanmakuBuffer
+from animetta.services.bilibili import DanmakuBuffer, MemeCollector, CollectedVideo
 """Integration tests for BilibiliMemeCollector danmaku data source.
 
 Tests the interaction between DanmakuBuffer and BilibiliMemeCollector
@@ -9,7 +9,6 @@ when danmaku phrases are fed into the collection pipeline.
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from animetta.services.meme.bilibili_collector import BilibiliMemeCollector
 
 
 @pytest.fixture
@@ -41,12 +40,12 @@ class TestCollectorWithDanmakuBuffer:
     def test_constructor_accepts_danmaku_buffer(self, mock_llm):
 
         buf = DanmakuBuffer()
-        c = BilibiliMemeCollector(llm_client=mock_llm, danmaku_buffer=buf)
+        c = MemeCollector(llm_client=mock_llm, danmaku_buffer=buf)
         assert c._danmaku_buffer is buf
 
     def test_fetch_danmaku_phrases_returns_hot_phrases(self, mock_llm, mock_danmaku_buffer):
 
-        c = BilibiliMemeCollector(
+        c = MemeCollector(
             llm_client=mock_llm,
             danmaku_buffer=mock_danmaku_buffer,
         )
@@ -62,7 +61,7 @@ class TestCollectorWithDanmakuBuffer:
 
     def test_fetch_danmaku_phrases_empty_when_no_buffer(self, mock_llm):
 
-        c = BilibiliMemeCollector(llm_client=mock_llm, danmaku_buffer=None)
+        c = MemeCollector(llm_client=mock_llm, danmaku_buffer=None)
         import asyncio
         phrases = asyncio.run(c._fetch_danmaku_phrases())
         assert phrases == []
@@ -70,7 +69,7 @@ class TestCollectorWithDanmakuBuffer:
     def test_collect_passes_danmaku_to_llm_context(self, mock_llm, mock_danmaku_buffer):
         """Verify that danmaku phrases appear in the LLM prompt."""
 
-        c = BilibiliMemeCollector(
+        c = MemeCollector(
             llm_client=mock_llm,
             config={"request_timeout": 30},
             danmaku_buffer=mock_danmaku_buffer,
@@ -96,7 +95,7 @@ class TestCollectorWithDanmakuBuffer:
     def test_heuristic_identify_includes_danmaku_strategy(self, mock_llm):
         """Heuristic identification should use danmaku phrases as strategy 4."""
 
-        c = BilibiliMemeCollector(llm_client=None)  # No LLM → heuristic
+        c = MemeCollector(llm_client=None)  # No LLM → heuristic
 
         videos = [
             CollectedVideo(bvid="BV1xx", title="普通视频", tags=["日常"]),
@@ -113,7 +112,7 @@ class TestCollectorWithDanmakuBuffer:
     def test_heuristic_danmaku_only_returns_candidates(self, mock_llm):
         """When only danmaku data is available, should still return candidates."""
 
-        c = BilibiliMemeCollector(llm_client=None)
+        c = MemeCollector(llm_client=None)
 
         danmaku = ["绝绝子", "绝绝子", "绝绝子", "笑死"]
         candidates = c._heuristic_danmaku_only(danmaku)
@@ -124,5 +123,5 @@ class TestCollectorWithDanmakuBuffer:
 
     def test_heuristic_danmaku_only_empty_input(self, mock_llm):
 
-        c = BilibiliMemeCollector(llm_client=None)
+        c = MemeCollector(llm_client=None)
         assert c._heuristic_danmaku_only([]) == []

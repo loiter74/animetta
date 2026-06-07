@@ -107,6 +107,6 @@ class VADFactory:
             return MockVAD()
 
     @staticmethod
-    def get_available_providers() -> list[str]:
+    def get_available_configs() -> list[str]:
         """Get a list of all available providers"""
         return ["mock", "silero"]

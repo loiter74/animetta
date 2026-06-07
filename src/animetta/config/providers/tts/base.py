@@ -4,9 +4,10 @@
 from pydantic import Field
 
 from ...core.base import ProviderConfig
+from ...core.mixins import ApiKeyMixin, ModelMixin
 
 
-class TTSBaseConfig(ProviderConfig):
+class TTSBaseConfig(ProviderConfig, ApiKeyMixin, ModelMixin):
     """
     TTS provider configuration base class
 
@@ -14,4 +15,3 @@ class TTSBaseConfig(ProviderConfig):
     """
     voice: str = Field(default="default", description="Voice / timbre")
     speed: float = Field(default=1.0, ge=0.5, le=2.0, description="Speech speed")
-    api_key: str | None = Field(default=None, description="API Key")

@@ -1,36 +1,23 @@
-"""TTS provider configuration module"""
+"""TTS provider configuration — discriminated union for YAML deserialization."""
 
-from typing import Annotated, Union
+from ...core.registry import ProviderRegistry
 
-from pydantic import Field
+# Import all implementations so their @register_config decorators fire
+from .base import TTSBaseConfig           # noqa: F401 — triggers registration chain
+from .mock import MockTTSConfig           # noqa: F401
+from .openai import OpenAITTSConfig       # noqa: F401
+from .edge import EdgeTTSConfig           # noqa: F401
+from .glm import GLMTTSConfig             # noqa: F401
+from .chattts import ChatTTSConfig        # noqa: F401
+from .vibe_voice import VibeVoiceTTSConfig # noqa: F401
+from .kokoro import KokoroTTSConfig       # noqa: F401
+from .gpt_sovits import GPTSoVITSConfig   # noqa: F401
+from .qwen3 import Qwen3TTSConfig         # noqa: F401
 
-from .base import TTSBaseConfig
-from .chattts import ChatTTSConfig
-from .edge import EdgeTTSConfig
-from .glm import GLMTTSConfig
-from .gpt_sovits import GPTSoVITSConfig
-from .kokoro import KokoroTTSConfig
-from .mock import MockTTSConfig
-from .openai import OpenAITTSConfig
-from .qwen3 import Qwen3TTSConfig
-from .vibe_voice import VibeVoiceTTSConfig
+# Discriminated Union type — auto-generated from registered configs
+TTSConfig = ProviderRegistry.create_union_type("tts")
 
 __all__ = [
     "TTSBaseConfig",
-    "MockTTSConfig",
-    "OpenAITTSConfig",
-    "EdgeTTSConfig",
-    "GLMTTSConfig",
-    "ChatTTSConfig",
-    "VibeVoiceTTSConfig",
-    "KokoroTTSConfig",
-    "GPTSoVITSConfig",
-    "Qwen3TTSConfig",
     "TTSConfig",
-]
-
-# Discriminated Union type
-TTSConfig = Annotated[
-    MockTTSConfig | OpenAITTSConfig | EdgeTTSConfig | GLMTTSConfig | ChatTTSConfig | VibeVoiceTTSConfig | KokoroTTSConfig | GPTSoVITSConfig | Qwen3TTSConfig,
-    Field(discriminator="type")
 ]

@@ -73,9 +73,9 @@ class TestMBTIDimensions:
         # ei=51 (>50) → E, else I
         dims = MBTIDimensions(ei=51, sn=51, tf=51, jp=51)
         assert dims.to_mbti_type() == "ENTJ"
-        # ei=50 (not >50) → I, tf=50 (not >50) → F
+        # ei=50 (not >50) → I, sn=51 (>50) → N, tf=50 (not >50) → F, jp=51 (>50) → J
         dims = MBTIDimensions(ei=50, sn=51, tf=50, jp=51)
-        assert dims.to_mbti_type() == "ISFJ"
+        assert dims.to_mbti_type() == "INFJ"
 
     # ── describe_dimension() ─────────────────────────────────
 
@@ -160,10 +160,11 @@ class TestMBTIDimensionDelta:
         assert d.evidence == "User prefers structure"
 
     def test_confidence_is_clamped_to_0_1(self):
-        d = MBTIDimensionDelta(delta=1, confidence=2.0)
-        assert d.confidence == 1.0
-        d2 = MBTIDimensionDelta(delta=1, confidence=-0.5)
-        assert d2.confidence == 0.0
+        from pydantic import ValidationError
+        with pytest.raises(ValidationError):
+            MBTIDimensionDelta(delta=1, confidence=2.0)
+        with pytest.raises(ValidationError):
+            MBTIDimensionDelta(delta=1, confidence=-0.5)
 
     def test_delta_accepts_negative_values(self):
         d = MBTIDimensionDelta(delta=-10)

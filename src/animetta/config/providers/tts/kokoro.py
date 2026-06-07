@@ -22,7 +22,7 @@ DEFAULT_GLADOS_EFFECTS: dict[str, Any] = {
 }
 
 
-@ProviderRegistry.register("tts", "kokoro")
+@ProviderRegistry.register_config("tts", "kokoro")
 class KokoroTTSConfig(TTSBaseConfig):
     """
     Kokoro TTS configuration (open-weight multilingual TTS)
@@ -49,18 +49,12 @@ class KokoroTTSConfig(TTSBaseConfig):
         description="Local path to model checkpoint. If None, downloads from HF."
     )
     device: str = Field(
-        default="cpu",
-        description="Device for inference: 'cpu', 'cuda', or None for auto-select"
+        default="cuda",
+        description="Device for inference: 'cuda' (preferred), 'cpu' (fallback), or None for auto-select"
     )
     lang_code: str = Field(
         default="z",
         description="Language code: 'z'=Mandarin Chinese, 'a'=US English, 'b'=British English"
-    )
-    speed: float = Field(
-        default=1.0,
-        ge=0.5,
-        le=2.0,
-        description="Speech speed multiplier"
     )
     glados_effect: dict[str, Any] | None = Field(
         default=None,

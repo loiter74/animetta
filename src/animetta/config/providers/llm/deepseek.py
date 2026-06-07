@@ -8,7 +8,7 @@ from ...core.registry import ProviderRegistry
 from .base import LLMBaseConfig
 
 
-@ProviderRegistry.register("llm", "deepseek")
+@ProviderRegistry.register_config("llm", "deepseek")
 class DeepSeekLLMConfig(LLMBaseConfig):
     """DeepSeek LLM configuration"""
     type: Literal["deepseek"] = "deepseek"

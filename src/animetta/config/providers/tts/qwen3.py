@@ -8,7 +8,7 @@ from ...core.registry import ProviderRegistry
 from .base import TTSBaseConfig
 
 
-@ProviderRegistry.register("tts", "qwen3")
+@ProviderRegistry.register_config("tts", "qwen3")
 class Qwen3TTSConfig(TTSBaseConfig):
     """Qwen3-TTS configuration
 

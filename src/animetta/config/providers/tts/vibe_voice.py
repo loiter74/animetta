@@ -8,7 +8,7 @@ from ...core.registry import ProviderRegistry
 from .base import TTSBaseConfig
 
 
-@ProviderRegistry.register("tts", "vibe_voice")
+@ProviderRegistry.register_config("tts", "vibe_voice")
 class VibeVoiceTTSConfig(TTSBaseConfig):
     """VibeVoice TTS configuration
 
@@ -45,16 +45,8 @@ class VibeVoiceTTSConfig(TTSBaseConfig):
         default=None,
         description="Local mode: model weight path (default HuggingFace auto-download)",
     )
-    device: str = Field(
-        default="cuda:0",
-        description="Local mode: inference device cuda:0 / cpu",
-    )
 
     # === Synthesis parameters ===
-    voice: str = Field(
-        default="default",
-        description="Default voice name",
-    )
     num_speakers: int = Field(
         default=1,
         ge=1,

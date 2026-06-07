@@ -100,6 +100,6 @@ class ASRFactory:
             return None
 
     @staticmethod
-    def get_available_providers() -> list[str]:
+    def get_available_configs() -> list[str]:
         """Get list of all available providers"""
         return list(ProviderRegistry.list_services("asr"))

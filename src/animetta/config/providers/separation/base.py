@@ -3,9 +3,10 @@
 from pydantic import Field
 
 from ...core.base import ProviderConfig
+from ...core.mixins import DeviceMixin
 
 
-class SeparationBaseConfig(ProviderConfig):
+class SeparationBaseConfig(ProviderConfig, DeviceMixin):
     """
     Audio Source Separation provider configuration base class
 
@@ -13,5 +14,4 @@ class SeparationBaseConfig(ProviderConfig):
     Source separation decomposes an audio mixture into its constituent
     stems (e.g., vocals, drums, bass, other).
     """
-    device: str = Field(default="cuda:0", description="Device for inference (cuda:0 / cpu)")
     sample_rate: int = Field(default=44100, description="Target sample rate for processing")

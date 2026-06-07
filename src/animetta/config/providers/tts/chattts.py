@@ -8,7 +8,7 @@ from ...core.registry import ProviderRegistry
 from .base import TTSBaseConfig
 
 
-@ProviderRegistry.register("tts", "chattts")
+@ProviderRegistry.register_config("tts", "chattts")
 class ChatTTSConfig(TTSBaseConfig):
     """ChatTTS configuration (open-source conversational TTS)"""
     type: Literal["chattts"] = "chattts"

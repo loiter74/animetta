@@ -1,31 +1,20 @@
-"""LLM provider configuration module"""
+"""LLM provider configuration — discriminated union for YAML deserialization."""
 
-from typing import Annotated, Union
+from ...core.registry import ProviderRegistry
 
-from pydantic import Field
+# Import all implementations so their @register_config decorators fire
+from .base import LLMBaseConfig               # noqa: F401 — triggers registration chain
+from .mock import MockLLMConfig               # noqa: F401
+from .openai import OpenAILLMConfig           # noqa: F401
+from .glm import GLMLLMConfig                 # noqa: F401
+from .ollama import OllamaLLMConfig           # noqa: F401
+from .local_lora_llm import LocalLoraLLMConfig # noqa: F401
+from .deepseek import DeepSeekLLMConfig       # noqa: F401
 
-from .base import LLMBaseConfig
-from .deepseek import DeepSeekLLMConfig
-from .glm import GLMLLMConfig
-from .local_lora_llm import LocalLoraLLMConfig
-from .mock import MockLLMConfig
-from .ollama import OllamaLLMConfig
-from .openai import OpenAILLMConfig
+# Discriminated Union type — auto-generated from registered configs
+LLMConfig = ProviderRegistry.create_union_type("llm")
 
-# Export all configuration classes
 __all__ = [
     "LLMBaseConfig",
-    "MockLLMConfig",
-    "OpenAILLMConfig",
-    "GLMLLMConfig",
-    "OllamaLLMConfig",
-    "LocalLoraLLMConfig",
-    "DeepSeekLLMConfig",
     "LLMConfig",
-]
-
-# Discriminated Union type - Pydantic will automatically select the correct class based on the type field
-LLMConfig = Annotated[
-    MockLLMConfig | OpenAILLMConfig | GLMLLMConfig | OllamaLLMConfig | LocalLoraLLMConfig | DeepSeekLLMConfig,
-    Field(discriminator="type")
 ]

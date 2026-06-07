@@ -8,7 +8,7 @@ the bilibili-api-python library. Runs in a separate thread with its
 own asyncio event loop to avoid blocking the main server loop.
 
 Usage:
-    service = BilibiliDanmakuService(room_id=123456, sessdata="...")
+    service = DanmakuService(room_id=123456, sessdata="...")
     service.set_callback(lambda msg: ...)
     service.start()
     # ... later ...
@@ -20,38 +20,14 @@ import contextlib
 import threading
 import time
 from collections.abc import Callable
-from dataclasses import asdict, dataclass, field
 from typing import Any
 
 from loguru import logger
 
-
-@dataclass
-class DanmakuMessage:
-    """Parsed danmaku message from Bilibili live room"""
-    text: str
-    user_name: str
-    user_id: int
-    timestamp: float = field(default_factory=time.time)
-
-    def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
+from .models import DanmakuMessage, DanmakuReply
 
 
-@dataclass
-class DanmakuReply:
-    """AI reply to a danmaku message"""
-    danmaku_text: str
-    reply_text: str
-    user_name: str
-    character_name: str = "AI"
-    timestamp: float = field(default_factory=time.time)
-
-    def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
-
-
-class BilibiliDanmakuService:
+class DanmakuService:
     """
     Bilibili live danmaku receiver service.
 
@@ -94,7 +70,7 @@ class BilibiliDanmakuService:
         self._monitor = None
 
         # DanmakuBuffer for meme collection pipeline
-        self._danmaku_buffer: DanmakuBuffer | None = None
+        self._danmaku_buffer = None
 
         # Connection state
         self._connected = False
@@ -112,7 +88,7 @@ class BilibiliDanmakuService:
         """Register callback for connection status changes."""
         self._on_status_change = callback
 
-    def set_buffer(self, buffer: DanmakuBuffer) -> None:
+    def set_buffer(self, buffer) -> None:
         """Attach a DanmakuBuffer to receive copies of all incoming danmaku.
 
         The buffer receives the same danmaku messages forwarded to the
@@ -128,7 +104,7 @@ class BilibiliDanmakuService:
     def start(self) -> None:
         """Start the Bilibili danmaku service in a background thread."""
         if self._running:
-            logger.warning("[BilibiliDanmaku] Already running")
+            logger.warning("[DanmakuService] Already running")
             return
 
         self._running = True
@@ -138,11 +114,11 @@ class BilibiliDanmakuService:
             daemon=True,
         )
         self._thread.start()
-        logger.info(f"[BilibiliDanmaku] Started for room {self.room_id}")
+        logger.info(f"[DanmakuService] Started for room {self.room_id}")
 
     def stop(self) -> None:
         """Stop the Bilibili danmaku service gracefully."""
-        logger.info("[BilibiliDanmaku] Stopping...")
+        logger.info("[DanmakuService] Stopping...")
         self._running = False
 
         if self._loop and self._loop.is_running():
@@ -150,16 +126,16 @@ class BilibiliDanmakuService:
                 # Schedule disconnect on the event loop and wake it up
                 asyncio.run_coroutine_threadsafe(self._disconnect(), self._loop)
             except Exception as e:
-                logger.warning(f"[BilibiliDanmaku] Error during disconnect: {e}")
+                logger.warning(f"[DanmakuService] Error during disconnect: {e}")
 
         if self._thread:
             self._thread.join(timeout=5)
             if self._thread.is_alive():
-                logger.warning("[BilibiliDanmaku] Thread did not stop in time")
+                logger.warning("[DanmakuService] Thread did not stop in time")
             self._thread = None
 
         self._connected = False
-        logger.info("[BilibiliDanmaku] Stopped")
+        logger.info("[DanmakuService] Stopped")
 
     # ========================================
     # Internal: Thread entry point
@@ -173,7 +149,7 @@ class BilibiliDanmakuService:
         try:
             self._loop.run_until_complete(self._run())
         except Exception as e:
-            logger.error(f"[BilibiliDanmaku] Event loop error: {e}")
+            logger.error(f"[DanmakuService] Event loop error: {e}")
         finally:
             self._loop.close()
             self._loop = None
@@ -190,20 +166,20 @@ class BilibiliDanmakuService:
                 self._reconnect_delay = 1.0
             except Exception as e:
                 retries += 1
-                logger.error(f"[BilibiliDanmaku] Connection error (attempt {retries}/{self.max_retries}): {e}")
+                logger.error(f"[DanmakuService] Connection error (attempt {retries}/{self.max_retries}): {e}")
 
                 if not self._running:
                     break
 
                 if retries > self.max_retries:
-                    logger.error("[BilibiliDanmaku] Max retries reached, giving up")
+                    logger.error("[DanmakuService] Max retries reached, giving up")
                     self._notify_status(False, f"Max retries reached: {e}")
                     break
 
                 # Exponential backoff
                 wait = self._reconnect_delay
                 self._reconnect_delay = min(self._reconnect_delay * 2, 60.0)
-                logger.info(f"[BilibiliDanmaku] Reconnecting in {wait:.1f}s...")
+                logger.info(f"[DanmakuService] Reconnecting in {wait:.1f}s...")
                 self._notify_status(False, f"Reconnecting in {wait:.1f}s...")
                 await asyncio.sleep(wait)
 
@@ -216,7 +192,7 @@ class BilibiliDanmakuService:
         try:
             from bilibili_api import Credential, live
         except ImportError:
-            logger.error("[BilibiliDanmaku] bilibili-api-python not installed. Run: pip install bilibili-api-python")
+            logger.error("[DanmakuService] bilibili-api-python not installed. Run: pip install bilibili-api-python")
             raise
 
         # Build credential if sessdata is provided
@@ -246,12 +222,12 @@ class BilibiliDanmakuService:
                     user_id=user_id,
                 )
 
-                logger.debug(f"[BilibiliDanmaku] 弹幕 {user_name}: {content}")
+                logger.debug(f"[DanmakuService] 弹幕 {user_name}: {content}")
 
                 # Put into queue for cross-thread consumption
                 await self._queue.put(msg)
             except Exception as e:
-                logger.error(f"[BilibiliDanmaku] Error parsing DANMU_MSG: {e}")
+                logger.error(f"[DanmakuService] Error parsing DANMU_MSG: {e}")
 
         @self._monitor.on('SEND_GIFT')
         async def on_gift(event):
@@ -266,11 +242,13 @@ class BilibiliDanmakuService:
                     text=content,
                     user_name=user_name,
                     user_id=gift_data.get("uid", 0),
+                    is_gift=True,
+                    meta={"gift_name": gift_name, "gift_num": gift_num},
                 )
 
                 await self._queue.put(msg)
             except Exception as e:
-                logger.error(f"[BilibiliDanmaku] Error parsing SEND_GIFT: {e}")
+                logger.error(f"[DanmakuService] Error parsing SEND_GIFT: {e}")
 
         @self._monitor.on('SUPER_CHAT_MESSAGE')
         async def on_sc(event):
@@ -285,11 +263,13 @@ class BilibiliDanmakuService:
                     text=content,
                     user_name=user_name,
                     user_id=sc_data.get("uid", 0),
+                    is_super_chat=True,
+                    meta={"price": price},
                 )
 
                 await self._queue.put(msg)
             except Exception as e:
-                logger.error(f"[BilibiliDanmaku] Error parsing SUPER_CHAT: {e}")
+                logger.error(f"[DanmakuService] Error parsing SUPER_CHAT: {e}")
 
         @self._monitor.on('INTERACT_WORD_V2')
         async def on_interact(event):
@@ -307,7 +287,7 @@ class BilibiliDanmakuService:
 
                 await self._queue.put(msg)
             except Exception as e:
-                logger.error(f"[BilibiliDanmaku] Error parsing INTERACT_WORD: {e}")
+                logger.error(f"[DanmakuService] Error parsing INTERACT_WORD: {e}")
 
         # Start consumer task (drains queue → calls callback)
         consumer_task = asyncio.create_task(self._consume_queue())
@@ -315,7 +295,7 @@ class BilibiliDanmakuService:
         # Notify connected
         self._connected = True
         self._notify_status(True, "Connected")
-        logger.info(f"[BilibiliDanmaku] Connected to room {self.room_id}")
+        logger.info(f"[DanmakuService] Connected to room {self.room_id}")
 
         try:
             # This blocks until disconnected
@@ -362,7 +342,7 @@ class BilibiliDanmakuService:
             except TimeoutError:
                 continue
             except Exception as e:
-                logger.error(f"[BilibiliDanmaku] Queue consumer error: {e}")
+                logger.error(f"[DanmakuService] Queue consumer error: {e}")
 
     # ========================================
     # Internal: Helpers
@@ -375,7 +355,7 @@ class BilibiliDanmakuService:
             try:
                 await self._monitor.disconnect()
             except Exception as e:
-                logger.debug(f"[BilibiliDanmaku] Disconnect error: {e}")
+                logger.debug(f"[DanmakuService] Disconnect error: {e}")
             self._monitor = None
 
     def _notify_status(self, connected: bool, message: str) -> None:

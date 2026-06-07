@@ -8,7 +8,7 @@ from ...core.registry import ProviderRegistry
 from .base import ASRBaseConfig
 
 
-@ProviderRegistry.register("asr", "faster_whisper")
+@ProviderRegistry.register_config("asr", "faster_whisper")
 class FasterWhisperASRConfig(ASRBaseConfig):
     """Faster-Whisper ASR configuration"""
     type: Literal["faster_whisper"] = "faster_whisper"
@@ -17,11 +17,6 @@ class FasterWhisperASRConfig(ASRBaseConfig):
     model: str = Field(
         default="distil-large-v3",
         description="Whisper model name (tiny/base/small/medium/large-v2/large-v3/distil-*)"
-    )
-
-    language: str = Field(
-        default="zh",
-        description="Language code (zh=Chinese, en=English, ja=Japanese, etc.)"
     )
 
     # Device and performance configuration

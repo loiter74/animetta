@@ -1,12 +1,12 @@
-"""DanmakuBuffer — 实时弹幕缓冲区，为 BilibiliMemeCollector 提供弹幕数据源.
+"""DanmakuBuffer — 实时弹幕缓冲区，为 MemeCollector 提供弹幕数据源.
 
-Collects real-time danmaku from BilibiliDanmakuService, maintains a ring buffer
+Collects real-time danmaku from DanmakuService, maintains a ring buffer
 of recent messages, and provides frequency-based hot phrase extraction for the
 meme collection pipeline.
 
 Typical usage:
     buffer = DanmakuBuffer(max_size=1000)
-    bilibili_service.set_buffer(buffer)
+    danmaku_service.set_buffer(buffer)
 
     # Later, in the collector:
     hot_phrases = buffer.get_hot_phrases(min_freq=3, window_minutes=30)
@@ -17,31 +17,14 @@ from __future__ import annotations
 import logging
 import time
 from collections import Counter
-from dataclasses import dataclass
+
+from .models import DanmakuPhrase
+from .text_utils import STOPWORDS
 
 logger = logging.getLogger(__name__)
 
 # Minimum text length to consider a danmaku meaningful
 _MIN_DANMAKU_LENGTH = 2
-
-# Chinese stopwords for heuristic filtering
-_STOPWORDS = frozenset({
-    "的", "了", "在", "是", "我", "有", "和", "就", "不", "人", "都", "一",
-    "一个", "这个", "那个", "什么", "怎么", "如何", "可以", "没有", "还是",
-    "但是", "因为", "所以", "如果", "虽然", "而且", "或者", "不是", "就是",
-    "我们", "你们", "他们", "它们", "自己", "起来", "这些", "那些",
-})
-
-
-@dataclass
-class DanmakuPhrase:
-    """A high-frequency phrase extracted from recent danmaku."""
-
-    text: str
-    frequency: int
-    first_seen: float  # Unix timestamp
-    last_seen: float  # Unix timestamp
-    source_room_id: int = 0
 
 
 class DanmakuBuffer:
@@ -201,9 +184,8 @@ class DanmakuBuffer:
                     continue
                 if phrase.isdigit():
                     continue
-                if phrase in _STOPWORDS:
+                if phrase in STOPWORDS:
                     continue
-                # Skip if phrase is all non-Chinese characters (pure emoji/ascii)
                 ngram_set.add(phrase)
 
         for phrase in ngram_set:

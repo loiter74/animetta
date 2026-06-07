@@ -6,7 +6,7 @@ from ...core.registry import ProviderRegistry
 from .base import LLMBaseConfig
 
 
-@ProviderRegistry.register("llm", "mock")
+@ProviderRegistry.register_config("llm", "mock")
 class MockLLMConfig(LLMBaseConfig):
     """Mock LLM configuration - for testing"""
     type: Literal["mock"] = "mock"

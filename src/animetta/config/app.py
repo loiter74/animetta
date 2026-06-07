@@ -127,11 +127,6 @@ def _load_yaml_file(path: Path) -> dict[str, Any]:
     return data or {}
 
 
-# Cache loaded service configs to avoid duplicate logs
-_services_yaml_cache: dict[str, Any] | None = None
-_services_config_logged: set = set()
-
-
 def _load_service_config(service_type: str, service_name: str) -> dict[str, Any]:
     """
     Load configuration for a single service
@@ -291,35 +286,40 @@ class AppConfig(BaseConfig):
         return cls(**merged)
 
     def _apply_env_expansion(self) -> None:
-        """Recursively expand environment variables in all configs"""
-        # Expand environment variables in service configs
-        # Since ASRConfig/TTSConfig is a Discriminated Union,
-        # TypeAdapter is needed for validation
-        if self.asr:
-            asr_dict = self.asr.model_dump()
-            asr_dict = expand_env_vars(asr_dict)
-            self.asr = _asr_adapter.validate_python(asr_dict)
-            logger.debug(f"ASR config after expansion: type={self.asr.type}")
-
-        if self.tts:
-            tts_dict = self.tts.model_dump()
-            tts_dict = expand_env_vars(tts_dict)
-            self.tts = _tts_adapter.validate_python(tts_dict)
-            logger.debug(f"TTS config after expansion: type={self.tts.type}")
-
+        """Recursively expand environment variables in all service configs."""
+        # Pre-expansion debug logging
         if self.agent:
-            agent_dict = self.agent.model_dump()
-            logger.debug(f"Agent config before expansion: {agent_dict}")
-            agent_dict = expand_env_vars(agent_dict)
-            logger.debug(f"Agent config after expansion: {agent_dict}")
-            self.agent = AgentConfig.model_validate(agent_dict)
-            # Validate llm_config type and API Key
+            logger.debug(f"Agent config before expansion: {self.agent.model_dump()}")
+        if self.local_llm:
+            logger.debug(f"Local LLM config before expansion: {self.local_llm.model_dump()}")
+
+        # Core expansion loop — model_dump → expand_env_vars → validate
+        for label, adapter, use_adapter in [
+            ("asr", _asr_adapter, True),
+            ("tts", _tts_adapter, True),
+            ("agent", None, False),
+            ("local_llm", _llm_adapter, True),
+        ]:
+            val = getattr(self, label)
+            if val is None:
+                continue
+            d = expand_env_vars(val.model_dump())
+            if use_adapter:
+                setattr(self, label, adapter.validate_python(d))
+            else:
+                setattr(self, label, AgentConfig.model_validate(d))
+
+        # Post-expansion debug logging + API key validation
+        if self.asr:
+            logger.debug(f"ASR config after expansion: type={self.asr.type}")
+        if self.tts:
+            logger.debug(f"TTS config after expansion: type={self.tts.type}")
+        if self.agent:
+            logger.debug(f"Agent config after expansion: {self.agent.model_dump()}")
             if self.agent.llm_config:
                 logger.debug(f"Agent LLM type: {self.agent.llm_config.type}")
                 logger.debug(f"Agent LLM Config class: {type(self.agent.llm_config).__name__}")
 
-                # Only check LLM types that need API Key
-                # Local models (local_lora, ollama, mock) don't need API Key
                 needs_api_key = self.agent.llm_config.type not in ["local_lora", "ollama", "mock"]
 
                 if needs_api_key and hasattr(self.agent.llm_config, 'api_key'):
@@ -330,16 +330,8 @@ class AppConfig(BaseConfig):
                         logger.error(f"[AppConfig] Agent LLM API Key is empty! LLM type: {self.agent.llm_config.type} requires API Key")
                 elif not needs_api_key:
                     logger.debug(f"[AppConfig] Using local LLM: {self.agent.llm_config.type}")
-
-        # Handle local_llm config
         if self.local_llm:
-            local_llm_dict = self.local_llm.model_dump()
-            logger.debug(f"Local LLM config before expansion: {local_llm_dict}")
-            local_llm_dict = expand_env_vars(local_llm_dict)
-            logger.debug(f"Local LLM config after expansion: {local_llm_dict}")
-            self.local_llm = _llm_adapter.validate_python(local_llm_dict)
-
-            # Validate API Key (local models don't need API Key, but check just in case)
+            logger.debug(f"Local LLM config after expansion: {self.local_llm.model_dump()}")
             if hasattr(self.local_llm, 'api_key'):
                 api_key = self.local_llm.api_key
                 if api_key:
@@ -348,21 +340,16 @@ class AppConfig(BaseConfig):
                     logger.debug("[AppConfig] Local LLM does not need API Key (local model)")
 
     def _apply_env_overrides(self) -> None:
-        """Apply environment variable overrides"""
-        # LLM configuration
-        if self.agent and self.agent.llm_config:
-            if os.getenv("LLM_API_KEY"):
-                self.agent.llm_config.api_key = os.getenv("LLM_API_KEY")
-            if os.getenv("LLM_MODEL") and hasattr(self.agent.llm_config, 'model'):
-                self.agent.llm_config.model = os.getenv("LLM_MODEL")
-
-        # ASR configuration
-        if self.asr and hasattr(self.asr, 'api_key') and os.getenv("ASR_API_KEY"):
-            self.asr.api_key = os.getenv("ASR_API_KEY")
-
-        # TTS configuration
-        if self.tts and hasattr(self.tts, 'api_key') and os.getenv("TTS_API_KEY"):
-            self.tts.api_key = os.getenv("TTS_API_KEY")
+        """Apply environment variable overrides."""
+        overrides = [
+            ("LLM_API_KEY", self.agent and self.agent.llm_config, "api_key"),
+            ("LLM_MODEL", self.agent and self.agent.llm_config and hasattr(self.agent.llm_config, "model") and self.agent.llm_config, "model"),
+            ("ASR_API_KEY", self.asr and hasattr(self.asr, "api_key") and self.asr, "api_key"),
+            ("TTS_API_KEY", self.tts and hasattr(self.tts, "api_key") and self.tts, "api_key"),
+        ]
+        for env_var, target, field in overrides:
+            if target and os.getenv(env_var):
+                setattr(target, field, os.getenv(env_var))
 
         # System configuration
         if os.getenv("ANIMETTA_HOST"):

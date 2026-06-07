@@ -1,22 +1,16 @@
-"""Audio Source Separation provider configuration module"""
+"""Audio Source Separation provider configuration — discriminated union for YAML deserialization."""
 
-from typing import Annotated, Union
+from ...core.registry import ProviderRegistry
 
-from pydantic import Field
+# Import all implementations so their @register_config decorators fire
+from .base import SeparationBaseConfig           # noqa: F401 — triggers registration chain
+from .mock import MockSeparationConfig           # noqa: F401
+from .demucs import DemucsSeparationConfig       # noqa: F401
 
-from .base import SeparationBaseConfig
-from .demucs import DemucsSeparationConfig
-from .mock import MockSeparationConfig
+# Discriminated Union type — auto-generated from registered configs
+SeparationConfig = ProviderRegistry.create_union_type("separation")
 
 __all__ = [
     "SeparationBaseConfig",
-    "MockSeparationConfig",
-    "DemucsSeparationConfig",
     "SeparationConfig",
-]
-
-# Discriminated Union type
-SeparationConfig = Annotated[
-    MockSeparationConfig | DemucsSeparationConfig,
-    Field(discriminator="type")
 ]

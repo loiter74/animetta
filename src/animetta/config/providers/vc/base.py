@@ -3,9 +3,10 @@
 from pydantic import Field
 
 from ...core.base import ProviderConfig
+from ...core.mixins import DeviceMixin
 
 
-class VCBaseConfig(ProviderConfig):
+class VCBaseConfig(ProviderConfig, DeviceMixin):
     """
     Voice Conversion provider configuration base class
 
@@ -13,5 +14,4 @@ class VCBaseConfig(ProviderConfig):
     Voice conversion transforms the timbre of an input audio while
     preserving the linguistic content.
     """
-    device: str = Field(default="cuda:0", description="Device for inference (cuda:0 / cpu)")
     is_half: bool = Field(default=True, description="Use FP16 half precision for inference")

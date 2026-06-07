@@ -8,7 +8,7 @@ from ...core.registry import ProviderRegistry
 from .base import ASRBaseConfig
 
 
-@ProviderRegistry.register("asr", "glm")
+@ProviderRegistry.register_config("asr", "glm")
 class GLMASRConfig(ASRBaseConfig):
     """Zhipu AI GLM ASR configuration"""
     type: Literal["glm"] = "glm"

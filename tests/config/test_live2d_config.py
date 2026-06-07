@@ -1,5 +1,5 @@
 from __future__ import annotations
-from animetta.config.live2d import Live2DConfig
+from animetta.config.live2d import Live2DConfig, Live2DModelConfig, Live2DLipSyncConfig, reset_live2d_config, get_live2d_config
 """Tests for Live2D config (config/live2d.py)"""
 
 import sys

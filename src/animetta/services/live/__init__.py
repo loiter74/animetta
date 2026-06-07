@@ -1,14 +1,14 @@
 """
 Live streaming platform services.
 
-Currently supports:
-- Bilibili: receive live danmaku (bullet comments) and AI interaction
+Re-exported from services.bilibili after consolidation.
+Keep this shim for backward compatibility — new code should import from services.bilibili directly.
 """
 
-from .bilibili_danmaku import BilibiliDanmakuService, DanmakuMessage, DanmakuReply
+from animetta.services.bilibili import DanmakuService, DanmakuMessage, DanmakuReply
 
 __all__ = [
-    "BilibiliDanmakuService",
+    "DanmakuService",
     "DanmakuMessage",
     "DanmakuReply",
 ]

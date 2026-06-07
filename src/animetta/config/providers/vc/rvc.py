@@ -8,7 +8,7 @@ from ...core.registry import ProviderRegistry
 from .base import VCBaseConfig
 
 
-@ProviderRegistry.register("vc", "rvc")
+@ProviderRegistry.register_config("vc", "rvc")
 class RVCConfig(VCBaseConfig):
     """RVC voice conversion configuration
 

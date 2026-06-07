@@ -6,7 +6,7 @@ from ...core.registry import ProviderRegistry
 from .base import VCBaseConfig
 
 
-@ProviderRegistry.register("vc", "mock")
+@ProviderRegistry.register_config("vc", "mock")
 class MockVCConfig(VCBaseConfig):
     """Mock VC configuration - for testing"""
     type: Literal["mock"] = "mock"

@@ -47,7 +47,7 @@ class TTSFactory:
             svc = ProviderRegistry.create_service("tts", config)
             return TracingProxy(svc, service_name="tts")
         except Exception as e:
-            logger.warning(f"Failed to create TTS ({provider}): {e}, falling back to Mock")
+            logger.warning(f"TTS provider '{provider}' failed to initialize: {e}, falling back to MockTTS")
             return MockTTS()
 
     @staticmethod
@@ -92,7 +92,7 @@ class TTSFactory:
                     voice=kwargs.get("voice", "zf_xiaobei"),
                     model_repo_id=kwargs.get("model_repo_id", "hexgrad/Kokoro-82M"),
                     model_path=kwargs.get("model_path"),
-                    device=kwargs.get("device", "cpu"),
+                    device=kwargs.get("device", "cuda"),
                     lang_code=kwargs.get("lang_code", "z"),
                     speed=kwargs.get("speed", 1.0),
                     glados_effect=kwargs.get("glados_effect"),
@@ -154,6 +154,6 @@ class TTSFactory:
             return None
 
     @staticmethod
-    def get_available_providers() -> list[str]:
+    def get_available_configs() -> list[str]:
         """Get list of all available providers"""
         return list(ProviderRegistry.list_services("tts"))

@@ -15,7 +15,6 @@ class SileroVADConfig(VADBaseConfig):
     Default values are consistent with config/services.yaml
     """
     type: Literal["silero"] = "silero"
-    sample_rate: int = Field(default=16000, description="Sample rate")
     prob_threshold: float = Field(default=0.15, description="Speech probability threshold")
     db_threshold: float = Field(default=-100, description="Decibel threshold")
     required_hits: int = Field(default=6, description="Consecutive hits required to start speech")

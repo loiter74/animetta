@@ -1,5 +1,6 @@
 from __future__ import annotations
 from animetta.config.persona import PersonaConfig
+from animetta.config.persona.base import PersonalityTraits, BehaviorRules
 """Tests for PersonaConfig (config/persona/base.py)"""
 
 import sys

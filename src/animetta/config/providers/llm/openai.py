@@ -8,7 +8,7 @@ from ...core.registry import ProviderRegistry
 from .base import LLMBaseConfig
 
 
-@ProviderRegistry.register("llm", "openai")
+@ProviderRegistry.register_config("llm", "openai")
 class OpenAILLMConfig(LLMBaseConfig):
     """OpenAI LLM configuration"""
     type: Literal["openai"] = "openai"

@@ -31,15 +31,12 @@ def registry():
     saved = {
         "_configs": ProviderRegistry._configs,
         "_services": ProviderRegistry._services,
-        "_providers": ProviderRegistry._providers,
     }
-    ProviderRegistry._configs = {"llm": {}, "asr": {}, "tts": {}, "vad": {}}
-    ProviderRegistry._services = {"llm": {}, "asr": {}, "tts": {}, "vad": {}}
-    ProviderRegistry._providers = ProviderRegistry._configs
+    ProviderRegistry._configs = {}
+    ProviderRegistry._services = {}
     yield ProviderRegistry
     ProviderRegistry._configs = saved["_configs"]
     ProviderRegistry._services = saved["_services"]
-    ProviderRegistry._providers = saved["_providers"]
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -120,28 +117,28 @@ class TestRegisterConfig:
 
 
 class TestRegisterAlias:
-    """Tests for ProviderRegistry.register (backward compat alias)"""
+    """Tests for ProviderRegistry.register_config (primary API)"""
 
-    def test_register_is_alias_for_register_config(self, registry):
-        """register() should behave identically to register_config()"""
-        @registry.register("llm", "test_model")
+    def test_register_config_stores_in_configs(self, registry):
+        """register_config() stores class in _configs dict"""
+        @registry.register_config("llm", "test_model")
         class TestConfig(ProviderConfig):
             type: Literal["test_model"] = "test_model"
 
         assert registry._configs["llm"]["test_model"] is TestConfig
 
-    def test_register_and_register_config_same_dict(self, registry):
-        """register and register_config write to the same dict"""
-        @registry.register("llm", "from_register")
+    def test_register_config_multiple_calls_same_dict(self, registry):
+        """Multiple register_config calls write to the same dict"""
+        @registry.register_config("llm", "from_a")
         class A(ProviderConfig):
             type: Literal["a"] = "a"
 
-        @registry.register_config("llm", "from_config")
+        @registry.register_config("llm", "from_b")
         class B(ProviderConfig):
             type: Literal["b"] = "b"
 
-        assert "from_register" in registry._configs["llm"]
-        assert "from_config" in registry._configs["llm"]
+        assert "from_a" in registry._configs["llm"]
+        assert "from_b" in registry._configs["llm"]
 
 
 class TestRegisterService:
@@ -266,81 +263,93 @@ class TestListServices:
 
 
 class TestGet:
-    """Tests for ProviderRegistry.get"""
+    """Tests for ProviderRegistry.get_config"""
 
     def test_returns_config_class(self, registry):
-        """get returns the registered config class"""
+        """get_config returns the registered config class"""
         @registry.register_config("llm", "openai")
         class ConfigClass(ProviderConfig):
             type: Literal["openai"] = "openai"
 
-        result = registry.get("llm", "openai")
+        result = registry.get_config("llm", "openai")
         assert result is ConfigClass
 
     def test_returns_none_for_unknown(self, registry):
-        """get returns None when provider not found"""
-        result = registry.get("llm", "nonexistent")
+        """get_config returns None when provider not found"""
+        result = registry.get_config("llm", "nonexistent")
         assert result is None
 
-    def test_uses_providers_alias(self, registry):
-        """get reads from _providers (alias of _configs)"""
+    def test_reads_from_configs(self, registry):
+        """get_config reads from _configs dict"""
         @registry.register_config("tts", "edge")
         class EdgeConfig(ProviderConfig):
             type: Literal["edge"] = "edge"
 
-        # Should work since _providers is aliased to _configs
-        result = registry.get("tts", "edge")
+        result = registry.get_config("tts", "edge")
         assert result is EdgeConfig
 
 
 class TestListProviders:
-    """Tests for ProviderRegistry.list_providers"""
+    """Tests for ProviderRegistry.list_configs"""
 
-    def test_list_providers_returns_names(self, registry):
-        """list_providers returns registered provider names"""
-        registry._providers["llm"]["p1"] = MockOpenAIConfig
-        registry._providers["llm"]["p2"] = MockGLMConfig
+    def test_list_configs_returns_names(self, registry):
+        """list_configs returns registered config names"""
+        @registry.register_config("llm", "p1")
+        class P1Config(ProviderConfig):
+            type: Literal["p1"] = "p1"
 
-        names = registry.list_providers("llm")
+        @registry.register_config("llm", "p2")
+        class P2Config(ProviderConfig):
+            type: Literal["p2"] = "p2"
+
+        names = registry.list_configs("llm")
         assert sorted(names) == ["p1", "p2"]
 
-    def test_list_providers_empty(self, registry):
-        """list_providers returns empty list for empty category"""
-        assert registry.list_providers("vad") == []
+    def test_list_configs_empty(self, registry):
+        """list_configs returns empty list for empty category"""
+        assert registry.list_configs("vad") == []
 
 
 class TestGetAllProviders:
-    """Tests for ProviderRegistry.get_all_providers"""
+    """Tests for ProviderRegistry.get_all_configs"""
 
-    def test_get_all_providers_returns_copy(self, registry):
-        """get_all_providers returns all providers as a nested dict"""
-        registry._providers["llm"]["openai"] = MockOpenAIConfig
-        registry._providers["llm"]["glm"] = MockGLMConfig
-        registry._providers["asr"]["whisper"] = MockWhisperConfig
+    def test_get_all_configs_returns_copy(self, registry):
+        """get_all_configs returns all providers as a nested dict"""
+        @registry.register_config("llm", "openai")
+        class OpenAICfg(ProviderConfig):
+            type: Literal["openai"] = "openai"
 
-        all_providers = registry.get_all_providers()
+        @registry.register_config("llm", "glm")
+        class GLMCfg(ProviderConfig):
+            type: Literal["glm"] = "glm"
 
-        assert "llm" in all_providers
-        assert "asr" in all_providers
-        assert "tts" in all_providers
-        assert "vad" in all_providers
-        assert all_providers["llm"]["openai"] is MockOpenAIConfig
-        assert all_providers["asr"]["whisper"] is MockWhisperConfig
+        @registry.register_config("asr", "whisper")
+        class WhisperCfg(ProviderConfig):
+            type: Literal["whisper"] = "whisper"
 
-    def test_get_all_providers_is_top_level_copy(self, registry):
-        """get_all_providers returns a top-level copy (inner dicts are shared references)"""
-        registry._providers["llm"]["openai"] = MockOpenAIConfig
-        all_providers = registry.get_all_providers()
+        all_configs = registry.get_all_configs()
+
+        assert "llm" in all_configs
+        assert "asr" in all_configs
+        assert all_configs["llm"]["openai"] is OpenAICfg
+        assert all_configs["asr"]["whisper"] is WhisperCfg
+
+    def test_get_all_configs_is_top_level_copy(self, registry):
+        """get_all_configs returns a top-level copy (inner dicts are shared references)"""
+        @registry.register_config("llm", "openai")
+        class OpenAICfg(ProviderConfig):
+            type: Literal["openai"] = "openai"
+
+        all_configs = registry.get_all_configs()
 
         # Modifying the top-level dict should not affect the original
-        all_providers["new_cat"] = {}
-        assert "new_cat" not in registry._providers
+        all_configs["new_cat"] = {}
+        assert "new_cat" not in registry._configs
 
-    def test_get_all_providers_empty_categories(self, registry):
-        """get_all_providers returns all category keys even when empty"""
-        all_providers = registry.get_all_providers()
-        assert set(all_providers.keys()) == {"llm", "asr", "tts", "vad"}
-        assert all_providers["llm"] == {}
+    def test_get_all_configs_empty(self, registry):
+        """get_all_configs returns empty dict when nothing registered"""
+        all_configs = registry.get_all_configs()
+        assert all_configs == {}
 
 
 class TestCreateUnionType:
@@ -350,8 +359,13 @@ class TestCreateUnionType:
         """create_union_type returns Annotated[Union[...], Field(discriminator='type')]"""
         import typing
 
-        registry._providers["llm"]["openai"] = MockOpenAIConfig
-        registry._providers["llm"]["glm"] = MockGLMConfig
+        @registry.register_config("llm", "openai")
+        class OpenAICfg(ProviderConfig):
+            type: Literal["openai"] = "openai"
+
+        @registry.register_config("llm", "glm")
+        class GLMCfg(ProviderConfig):
+            type: Literal["glm"] = "glm"
 
         result = registry.create_union_type("llm")
 
@@ -365,8 +379,8 @@ class TestCreateUnionType:
         assert typing.get_origin(union_type) is typing.Union
 
         union_args = typing.get_args(union_type)
-        assert MockOpenAIConfig in union_args
-        assert MockGLMConfig in union_args
+        assert OpenAICfg in union_args
+        assert GLMCfg in union_args
 
     def test_raises_value_error_when_no_providers(self, registry):
         """create_union_type raises ValueError when no providers registered"""
@@ -377,7 +391,9 @@ class TestCreateUnionType:
         """create_union_type works with a single provider"""
         import typing
 
-        registry._providers["tts"]["edge"] = MockWhisperConfig
+        @registry.register_config("tts", "edge")
+        class EdgeCfg(ProviderConfig):
+            type: Literal["edge"] = "edge"
 
         result = registry.create_union_type("tts")
 
@@ -387,7 +403,7 @@ class TestCreateUnionType:
 
         # First arg - in single-provider case it's the class itself (Union unwrapped)
         args = typing.get_args(result)
-        assert args[0] is MockWhisperConfig
+        assert args[0] is EdgeCfg
 
 
 class TestClear:
@@ -395,34 +411,54 @@ class TestClear:
 
     def test_clear_specific_category(self, registry):
         """clear(category) clears only the specified category"""
-        registry._providers["llm"]["openai"] = MockOpenAIConfig
-        registry._providers["asr"]["whisper"] = MockWhisperConfig
+        @registry.register_config("llm", "openai")
+        class OpenAICfg(ProviderConfig):
+            type: Literal["openai"] = "openai"
+
+        @registry.register_config("asr", "whisper")
+        class WhisperCfg(ProviderConfig):
+            type: Literal["whisper"] = "whisper"
 
         registry.clear("llm")
 
-        assert registry._providers["llm"] == {}
-        assert "whisper" in registry._providers["asr"]
+        assert registry._configs.get("llm") is None
+        assert "whisper" in registry._configs["asr"]
 
     def test_clear_all(self, registry):
         """clear() with no args clears all categories"""
-        registry._providers["llm"]["openai"] = MockOpenAIConfig
-        registry._providers["asr"]["whisper"] = MockWhisperConfig
-        registry._providers["tts"]["edge"] = MockOpenAIConfig
-        registry._providers["vad"]["silero"] = MockOpenAIConfig
+        @registry.register_config("llm", "openai")
+        class OpenAICfg(ProviderConfig):
+            type: Literal["openai"] = "openai"
+
+        @registry.register_config("asr", "whisper")
+        class WhisperCfg(ProviderConfig):
+            type: Literal["whisper"] = "whisper"
+
+        @registry.register_config("tts", "edge")
+        class EdgeCfg(ProviderConfig):
+            type: Literal["edge"] = "edge"
+
+        @registry.register_config("vad", "silero")
+        class SileroCfg(ProviderConfig):
+            type: Literal["silero"] = "silero"
 
         registry.clear()
 
-        for cat in ("llm", "asr", "tts", "vad"):
-            assert registry._providers[cat] == {}
+        assert registry._configs == {}
 
     def test_clear_does_not_affect_services(self, registry):
         """clear should only affect provider configs, not service registrations"""
-        registry._providers["llm"]["openai"] = MockOpenAIConfig
-        registry._services["llm"]["openai"] = MockServiceWithFromConfig
+        @registry.register_config("llm", "openai")
+        class OpenAICfg(ProviderConfig):
+            type: Literal["openai"] = "openai"
+
+        @registry.register_service("llm", "openai")
+        class OpenAIService:
+            pass
 
         registry.clear()
 
         # Providers cleared
-        assert registry._providers["llm"] == {}
+        assert registry._configs == {}
         # Services untouched
-        assert registry._services["llm"]["openai"] is MockServiceWithFromConfig
+        assert registry._services["llm"]["openai"] is OpenAIService

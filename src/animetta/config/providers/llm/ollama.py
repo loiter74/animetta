@@ -8,7 +8,7 @@ from ...core.registry import ProviderRegistry
 from .base import LLMBaseConfig
 
 
-@ProviderRegistry.register("llm", "ollama")
+@ProviderRegistry.register_config("llm", "ollama")
 class OllamaLLMConfig(LLMBaseConfig):
     """Ollama LLM configuration"""
     type: Literal["ollama"] = "ollama"

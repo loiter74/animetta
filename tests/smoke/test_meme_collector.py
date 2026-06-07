@@ -12,7 +12,7 @@ import pytest
 
 def test_meme_module_imports():
     """Core meme types should be importable."""
-    from animetta.services.meme import DanmakuBuffer, DanmakuPhrase
+    from animetta.services.bilibili import DanmakuBuffer, DanmakuPhrase
 
     assert DanmakuBuffer is not None
     assert DanmakuPhrase is not None
@@ -20,13 +20,13 @@ def test_meme_module_imports():
 
 def test_bilibili_collector_imports():
     """BilibiliMemeCollector and MemeCandidateRaw should be importable."""
-    from animetta.services.meme.bilibili_collector import (
-        BilibiliMemeCollector,
-        MemeCandidateRaw,
+    from animetta.services.bilibili import (
+        MemeCollector,
+        MemeCandidate,
     )
 
-    assert BilibiliMemeCollector is not None
-    assert MemeCandidateRaw is not None
+    assert MemeCollector is not None
+    assert MemeCandidate is not None
 
 
 def test_meme_analyzer_imports():
@@ -41,7 +41,7 @@ def test_meme_analyzer_imports():
 
 def test_danmaku_phrase_fields():
     """DanmakuPhrase should have expected fields."""
-    from animetta.services.meme import DanmakuPhrase
+    from animetta.services.bilibili import DanmakuPhrase
 
     phrase = DanmakuPhrase(
         text="草",
@@ -57,7 +57,7 @@ def test_danmaku_phrase_fields():
 
 def test_danmaku_buffer_defaults():
     """DanmakuBuffer should be instantiable with defaults."""
-    from animetta.services.meme import DanmakuBuffer
+    from animetta.services.bilibili import DanmakuBuffer
 
     buf = DanmakuBuffer()
     assert buf is not None
@@ -65,7 +65,7 @@ def test_danmaku_buffer_defaults():
 
 def test_danmaku_buffer_custom_size():
     """DanmakuBuffer should accept custom max_size."""
-    from animetta.services.meme import DanmakuBuffer
+    from animetta.services.bilibili import DanmakuBuffer
 
     buf = DanmakuBuffer(max_size=50)
     assert buf is not None
@@ -73,9 +73,9 @@ def test_danmaku_buffer_custom_size():
 
 def test_meme_candidate_raw_creation():
     """MemeCandidateRaw should hold text, source, and metadata."""
-    from animetta.services.meme.bilibili_collector import MemeCandidateRaw
+    from animetta.services.bilibili import MemeCandidate
 
-    candidate = MemeCandidateRaw(
+    candidate = MemeCandidate(
         text="绝绝子",
         context_hint="美食视频弹幕高频出现",
         tags=["food", "positive"],
@@ -100,16 +100,16 @@ def test_cognitive_analysis_prompt_exists():
 
 def test_collector_stopwords_exist():
     """The collector should define Chinese stopwords for filtering."""
-    from animetta.services.meme.bilibili_collector import _STOPWORDS
+    from animetta.services.bilibili.text_utils import STOPWORDS
 
-    assert len(_STOPWORDS) > 10
-    assert "的" in _STOPWORDS
-    assert "了" in _STOPWORDS
+    assert len(STOPWORDS) > 10
+    assert "的" in STOPWORDS
+    assert "了" in STOPWORDS
 
 
 def test_collector_meme_prompts_exist():
     """The collector should have meme identification prompts."""
-    from animetta.services.meme.bilibili_collector import (
+    from animetta.services.bilibili.meme_collector import (
         MEME_IDENTIFY_SYSTEM_PROMPT,
         MEME_IDENTIFY_USER_PROMPT,
     )

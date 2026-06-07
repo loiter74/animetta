@@ -9,7 +9,7 @@ import sys
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from animetta.services.live.bilibili_danmaku import BilibiliDanmakuService
+from animetta.services.bilibili import DanmakuService, DanmakuMessage, DanmakuReply
 
 pytestmark = pytest.mark.slow
 
@@ -45,7 +45,7 @@ def service():
     We override _run_event_loop to avoid actually starting threads.
     """
 
-    svc = BilibiliDanmakuService(room_id=12345, sessdata="test_sessdata")
+    svc = DanmakuService(room_id=12345, sessdata="test_sessdata")
     return svc
 
 
