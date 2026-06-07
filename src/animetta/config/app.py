@@ -14,6 +14,7 @@ from .agent import AgentConfig
 from .core.base import BaseConfig
 from .persona import PersonaConfig
 from .providers.asr import ASRConfig
+from .providers.bilibili import BilibiliConfig
 from .providers.llm import LLMConfig
 from .providers.tts import TTSConfig
 from .providers.vad import VADConfig
@@ -199,6 +200,9 @@ class AppConfig(BaseConfig):
     # Private fields
     _persona: PersonaConfig | None = PrivateAttr(default=None)
 
+    # Bilibili danmaku config (loaded from config/bilibili.yaml)
+    bilibili: BilibiliConfig | None = Field(default=None, description="Bilibili live danmaku integration config")
+
     def get_persona(self) -> PersonaConfig:
         """Get persona configuration (lazy loaded)"""
         if self._persona is None:
@@ -270,9 +274,13 @@ class AppConfig(BaseConfig):
 
         vad_data = _load_service_config("vad", vad_name)
 
+        # Load bilibili config from separate file (optional)
+        bilibili_path = CONFIG_DIR / "bilibili.yaml"
+        bilibili_data = _load_yaml_file(bilibili_path) if bilibili_path.exists() else None
+
         # Build complete configuration
-        # Strip keys that aren't Pydantic fields (e.g., 'bilibili' consumed elsewhere)
-        known_fields = {"persona", "services", "system", "asr", "tts", "agent", "local_llm", "vad"}
+        # Strip keys that aren't Pydantic fields
+        known_fields = {"persona", "services", "system", "asr", "tts", "agent", "local_llm", "vad", "bilibili"}
         filtered = {k: v for k, v in main_config.items() if k in known_fields}
         merged = {
             **filtered,
@@ -281,6 +289,7 @@ class AppConfig(BaseConfig):
             "agent": agent_data,
             "local_llm": local_llm_data,
             "vad": vad_data,
+            "bilibili": bilibili_data,
         }
 
         return cls(**merged)

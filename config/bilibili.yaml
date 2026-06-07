@@ -1,0 +1,4 @@
+# Bilibili 直播弹幕配置
+enabled: false
+room_id: 0
+sessdata: ""

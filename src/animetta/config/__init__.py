@@ -3,8 +3,8 @@ Configuration module (refactored)
 Uses plugin-based Provider architecture + Pydantic Discriminated Unions
 
 Architecture:
-- core/: Core infrastructure (BaseConfig, ProviderRegistry)
-- providers/: Provider configurations (LLM/ASR/TTS implementations)
+- core/: Core infrastructure (BaseConfig, ProviderRegistry, Mixins)
+- providers/: Provider configurations (LLM/ASR/TTS/VAD/VC/Separation/Bilibili)
 - agent.py: Agent configuration (combined LLM)
 - persona.py: Persona configuration (includes avatar, etc.)
 - system.py: System configuration
@@ -12,24 +12,16 @@ Architecture:
 """
 
 # Core
-# Composite configs
-from .agent import AgentConfig
-from .app import AppConfig
 from .core.base import BaseConfig
+from .core.mixins import ApiKeyMixin, DeviceMixin, ModelMixin, TemperatureMixin
 from .core.registry import ProviderRegistry
-from .persona import (
-    BehaviorRules,
-    MBTIDimensionDelta,
-    MBTIDimensions,
-    MBTIProfile,
-    PersonaConfig,
-    PersonalityTraits,
-)
 
 # Providers - ASR
 from .providers.asr import (
     ASRBaseConfig,
     ASRConfig,
+    FasterWhisperASRConfig,
+    FunASRConfig,
     GLMASRConfig,
     MockASRConfig,
     OpenAIASRConfig,
@@ -41,6 +33,7 @@ from .providers.llm import (
     GLMLLMConfig,
     LLMBaseConfig,
     LLMConfig,
+    LocalLoraLLMConfig,
     MockLLMConfig,
     OllamaLLMConfig,
     OpenAILLMConfig,
@@ -48,12 +41,17 @@ from .providers.llm import (
 
 # Providers - TTS
 from .providers.tts import (
+    ChatTTSConfig,
     EdgeTTSConfig,
     GLMTTSConfig,
+    GPTSoVITSConfig,
+    KokoroTTSConfig,
     MockTTSConfig,
     OpenAITTSConfig,
+    Qwen3TTSConfig,
     TTSBaseConfig,
     TTSConfig,
+    VibeVoiceTTSConfig,
 )
 
 # Providers - VAD
@@ -63,12 +61,47 @@ from .providers.vad import (
     VADBaseConfig,
     VADConfig,
 )
+
+# Providers - VC
+from .providers.vc import (
+    MockVCConfig,
+    RVCConfig,
+    VCBaseConfig,
+    VCConfig,
+)
+
+# Providers - Separation
+from .providers.separation import (
+    DemucsSeparationConfig,
+    MockSeparationConfig,
+    SeparationBaseConfig,
+    SeparationConfig,
+)
+
+# Providers - Bilibili
+from .providers.bilibili import BilibiliConfig
+
+# Composite configs
+from .agent import AgentConfig
+from .app import AppConfig
+from .persona import (
+    BehaviorRules,
+    MBTIDimensionDelta,
+    MBTIDimensions,
+    MBTIProfile,
+    PersonaConfig,
+    PersonalityTraits,
+)
 from .system import SystemConfig
 
 __all__ = [
     # Core
     "BaseConfig",
     "ProviderRegistry",
+    "ApiKeyMixin",
+    "ModelMixin",
+    "DeviceMixin",
+    "TemperatureMixin",
     # LLM Providers
     "LLMConfig",
     "LLMBaseConfig",
@@ -77,12 +110,15 @@ __all__ = [
     "GLMLLMConfig",
     "OllamaLLMConfig",
     "DeepSeekLLMConfig",
+    "LocalLoraLLMConfig",
     # ASR Providers
     "ASRConfig",
     "ASRBaseConfig",
     "MockASRConfig",
     "OpenAIASRConfig",
     "GLMASRConfig",
+    "FasterWhisperASRConfig",
+    "FunASRConfig",
     # TTS Providers
     "TTSConfig",
     "TTSBaseConfig",
@@ -90,11 +126,28 @@ __all__ = [
     "OpenAITTSConfig",
     "EdgeTTSConfig",
     "GLMTTSConfig",
+    "ChatTTSConfig",
+    "VibeVoiceTTSConfig",
+    "KokoroTTSConfig",
+    "GPTSoVITSConfig",
+    "Qwen3TTSConfig",
     # VAD Providers
     "VADConfig",
     "VADBaseConfig",
     "MockVADConfig",
     "SileroVADConfig",
+    # VC Providers
+    "VCConfig",
+    "VCBaseConfig",
+    "MockVCConfig",
+    "RVCConfig",
+    # Separation Providers
+    "SeparationConfig",
+    "SeparationBaseConfig",
+    "MockSeparationConfig",
+    "DemucsSeparationConfig",
+    # Bilibili
+    "BilibiliConfig",
     # Composite
     "AgentConfig",
     "SystemConfig",
@@ -102,6 +155,9 @@ __all__ = [
     "PersonaConfig",
     "PersonalityTraits",
     "BehaviorRules",
+    "MBTIDimensions",
+    "MBTIDimensionDelta",
+    "MBTIProfile",
     # App
     "AppConfig",
 ]
