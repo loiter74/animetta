@@ -10,6 +10,7 @@ import os
 # Ensure project root is on path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
+from animetta.tools.minecraft import MinecraftBridge, MinecraftConfig
 from loguru import logger
 
 logger.remove()

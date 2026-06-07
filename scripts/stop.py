@@ -12,24 +12,8 @@ import subprocess
 import argparse
 from pathlib import Path
 
-
-# ===========================
-# Colors and Output
-# ===========================
-
-class Colors:
-    """ANSI color codes"""
-    CYAN = '\033[0;36m'
-    GREEN = '\033[0;32m'
-    YELLOW = '\033[0;33m'
-    RED = '\033[0;31m'
-    MAGENTA = '\033[0;35m'
-    NC = '\033[0m'  # No Color
-
-    @staticmethod
-    def enabled():
-        """Check if colors are supported"""
-        return platform.system() != "Windows" or os.getenv('TERM')
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+from animetta.utils.terminal import Colors
 
 
 def info(msg):

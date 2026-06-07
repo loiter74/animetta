@@ -8,45 +8,28 @@ import sys
 import shutil
 from pathlib import Path
 from datetime import datetime
-import platform
+
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+from animetta.utils.terminal import Colors
 
 
 def print_header(text: str):
     """打印标题"""
-    if platform.system() == "Windows":
-        # 使用 ANSI 颜色代码
-        colors = {"cyan": "\033[36m", "green": "\033[32m", "yellow": "\033[33m", "red": "\033[31m", "reset": "\033[0m"}
-        print(f"{colors['cyan']}=========================================={colors['reset']}")
-        print(f"{colors['cyan']}  {text}{colors['reset']}")
-        print(f"{colors['cyan']}=========================================={colors['reset']}")
-    else:
-        print("=" * 40)
-        print(f"  {text}")
-        print("=" * 40)
+    print(f"{Colors.CYAN}{'=' * 40}{Colors.NC}" if Colors.enabled() else "=" * 40)
+    print(f"{Colors.CYAN}  {text}{Colors.NC}" if Colors.enabled() else f"  {text}")
+    print(f"{Colors.CYAN}{'=' * 40}{Colors.NC}" if Colors.enabled() else "=" * 40)
 
 
 def print_success(text: str):
-    """打印成功信息"""
-    if platform.system() == "Windows":
-        print(f"\033[32m{text}\033[0m")
-    else:
-        print(text)
+    print(f"{Colors.GREEN}{text}{Colors.NC}" if Colors.enabled() else text)
 
 
 def print_warning(text: str):
-    """打印警告信息"""
-    if platform.system() == "Windows":
-        print(f"\033[33m{text}\033[0m")
-    else:
-        print(text)
+    print(f"{Colors.YELLOW}{text}{Colors.NC}" if Colors.enabled() else text)
 
 
 def print_error(text: str):
-    """打印错误信息"""
-    if platform.system() == "Windows":
-        print(f"\033[31m{text}\033[0m")
-    else:
-        print(text)
+    print(f"{Colors.RED}{text}{Colors.NC}" if Colors.enabled() else text)
 
 
 def main():
