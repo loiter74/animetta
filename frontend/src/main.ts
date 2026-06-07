@@ -1,11 +1,16 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import App from './App.vue'
 import router from './router'
 import 'virtual:uno.css'
 import './styles/animations.css'
 import './styles/themes.css'
 import './styles/mobile.css'
+
+// Register GSAP plugins
+gsap.registerPlugin(ScrollTrigger)
 
 // Theme initialization: localStorage > prefers-color-scheme > dark fallback
 const STORAGE_KEY = 'animetta-theme'

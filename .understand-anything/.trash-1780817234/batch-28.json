@@ -1,0 +1,1866 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 25,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "frontend/src/components/settings/BackgroundSettings.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 70,
+      "nonEmptyLines": 62,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/components/settings/SettingsPanel.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 454,
+      "nonEmptyLines": 420,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/components/shared/AnimatedButton.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 38,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/components/shared/BentoCard.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 74,
+      "nonEmptyLines": 66,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/components/shared/BentoGrid.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 41,
+      "nonEmptyLines": 35,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/components/shared/GlassPanel.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 37,
+      "nonEmptyLines": 32,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/components/shared/SceneEffects.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 60,
+      "nonEmptyLines": 57,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/components/singing/MusicCard.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 282,
+      "nonEmptyLines": 260,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/components/singing/PlaybackControls.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 136,
+      "nonEmptyLines": 119,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/components/singing/ProcessTimeline.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 108,
+      "nonEmptyLines": 98,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/components/singing/WaveformDisplay.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 134,
+      "nonEmptyLines": 116,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/composables/__tests__/useLive2D.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 221,
+      "nonEmptyLines": 193,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/composables/__tests__/useSubtitle.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 129,
+      "nonEmptyLines": 112,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/composables/useAudio.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 36,
+      "nonEmptyLines": 31,
+      "functions": [
+        {
+          "name": "useAudio",
+          "startLine": 3,
+          "endLine": 36,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "useAudio",
+          "line": 3,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useAudio",
+          "callee": "ref",
+          "lineNumber": 4
+        },
+        {
+          "caller": "play",
+          "callee": "stop",
+          "lineNumber": 8
+        },
+        {
+          "caller": "play",
+          "callee": "audio.play",
+          "lineNumber": 13
+        },
+        {
+          "caller": "playUrl",
+          "callee": "stop",
+          "lineNumber": 18
+        },
+        {
+          "caller": "playUrl",
+          "callee": "audio.play",
+          "lineNumber": 23
+        },
+        {
+          "caller": "stop",
+          "callee": "currentAudio.pause",
+          "lineNumber": 29
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/composables/useChat.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 122,
+      "nonEmptyLines": 100,
+      "functions": [
+        {
+          "name": "useChat",
+          "startLine": 6,
+          "endLine": 122,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "useChat",
+          "line": 6,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useChat",
+          "callee": "useChatStore",
+          "lineNumber": 7
+        },
+        {
+          "caller": "useChat",
+          "callee": "onMounted",
+          "lineNumber": 16
+        },
+        {
+          "caller": "useChat",
+          "callee": "getSocket",
+          "lineNumber": 17
+        },
+        {
+          "caller": "useChat",
+          "callee": "store.finalizeResponse",
+          "lineNumber": 25
+        },
+        {
+          "caller": "useChat",
+          "callee": "store.resetResponse",
+          "lineNumber": 30
+        },
+        {
+          "caller": "useChat",
+          "callee": "store.bufferChunk",
+          "lineNumber": 33
+        },
+        {
+          "caller": "useChat",
+          "callee": "store.processBufferedChunks",
+          "lineNumber": 34
+        },
+        {
+          "caller": "useChat",
+          "callee": "store.scheduleFlush",
+          "lineNumber": 37
+        },
+        {
+          "caller": "useChat",
+          "callee": "store.updateStreamingMessage",
+          "lineNumber": 37
+        },
+        {
+          "caller": "useChat",
+          "callee": "store.updateStreamingMessage",
+          "lineNumber": 40
+        },
+        {
+          "caller": "useChat",
+          "callee": "store.finalizeResponse",
+          "lineNumber": 46
+        },
+        {
+          "caller": "useChat",
+          "callee": "data.text?.trim",
+          "lineNumber": 52
+        },
+        {
+          "caller": "useChat",
+          "callee": "store.createMessage",
+          "lineNumber": 53
+        },
+        {
+          "caller": "useChat",
+          "callee": "socket.on",
+          "lineNumber": 67
+        },
+        {
+          "caller": "useChat",
+          "callee": "socket.on",
+          "lineNumber": 68
+        },
+        {
+          "caller": "useChat",
+          "callee": "socket.on",
+          "lineNumber": 69
+        },
+        {
+          "caller": "useChat",
+          "callee": "socket.on",
+          "lineNumber": 70
+        },
+        {
+          "caller": "useChat",
+          "callee": "socket.on",
+          "lineNumber": 71
+        },
+        {
+          "caller": "useChat",
+          "callee": "onUnmounted",
+          "lineNumber": 74
+        },
+        {
+          "caller": "useChat",
+          "callee": "getSocket",
+          "lineNumber": 75
+        },
+        {
+          "caller": "useChat",
+          "callee": "socket.off",
+          "lineNumber": 78
+        },
+        {
+          "caller": "useChat",
+          "callee": "socket.off",
+          "lineNumber": 79
+        },
+        {
+          "caller": "useChat",
+          "callee": "socket.off",
+          "lineNumber": 80
+        },
+        {
+          "caller": "useChat",
+          "callee": "socket.off",
+          "lineNumber": 81
+        },
+        {
+          "caller": "useChat",
+          "callee": "socket.off",
+          "lineNumber": 82
+        },
+        {
+          "caller": "sendText",
+          "callee": "getSocket",
+          "lineNumber": 86
+        },
+        {
+          "caller": "sendText",
+          "callee": "store.createMessage",
+          "lineNumber": 89
+        },
+        {
+          "caller": "sendText",
+          "callee": "socket.emit",
+          "lineNumber": 92
+        },
+        {
+          "caller": "sendInterrupt",
+          "callee": "store.finalizeResponse",
+          "lineNumber": 96
+        },
+        {
+          "caller": "organizeMemory",
+          "callee": "getSocket",
+          "lineNumber": 100
+        },
+        {
+          "caller": "organizeMemory",
+          "callee": "socket.emit",
+          "lineNumber": 104
+        },
+        {
+          "caller": "onResult",
+          "callee": "console.log",
+          "lineNumber": 108
+        },
+        {
+          "caller": "onResult",
+          "callee": "socket.off",
+          "lineNumber": 110
+        },
+        {
+          "caller": "onResult",
+          "callee": "socket.emit",
+          "lineNumber": 111
+        },
+        {
+          "caller": "organizeMemory",
+          "callee": "socket.on",
+          "lineNumber": 113
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/composables/useDanmaku.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 63,
+      "nonEmptyLines": 53,
+      "functions": [
+        {
+          "name": "useDanmaku",
+          "startLine": 7,
+          "endLine": 63,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "useDanmaku",
+          "line": 7,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useDanmaku",
+          "callee": "useDanmakuStore",
+          "lineNumber": 8
+        },
+        {
+          "caller": "useDanmaku",
+          "callee": "useChatStore",
+          "lineNumber": 9
+        },
+        {
+          "caller": "connect",
+          "callee": "getSocket",
+          "lineNumber": 12
+        },
+        {
+          "caller": "connect",
+          "callee": "store.setConnecting",
+          "lineNumber": 14
+        },
+        {
+          "caller": "connect",
+          "callee": "socket.emit",
+          "lineNumber": 15
+        },
+        {
+          "caller": "disconnect",
+          "callee": "getSocket",
+          "lineNumber": 19
+        },
+        {
+          "caller": "disconnect",
+          "callee": "socket.emit",
+          "lineNumber": 21
+        },
+        {
+          "caller": "updateRoom",
+          "callee": "getSocket",
+          "lineNumber": 25
+        },
+        {
+          "caller": "updateRoom",
+          "callee": "store.setConnecting",
+          "lineNumber": 27
+        },
+        {
+          "caller": "updateRoom",
+          "callee": "socket.emit",
+          "lineNumber": 28
+        },
+        {
+          "caller": "useDanmaku",
+          "callee": "onMounted",
+          "lineNumber": 31
+        },
+        {
+          "caller": "useDanmaku",
+          "callee": "getSocket",
+          "lineNumber": 32
+        },
+        {
+          "caller": "useDanmaku",
+          "callee": "socket.on",
+          "lineNumber": 35
+        },
+        {
+          "caller": "useDanmaku",
+          "callee": "store.addMessage",
+          "lineNumber": 36
+        },
+        {
+          "caller": "useDanmaku",
+          "callee": "socket.on",
+          "lineNumber": 39
+        },
+        {
+          "caller": "useDanmaku",
+          "callee": "store.setStatus",
+          "lineNumber": 40
+        },
+        {
+          "caller": "useDanmaku",
+          "callee": "socket.on",
+          "lineNumber": 43
+        },
+        {
+          "caller": "useDanmaku",
+          "callee": "store.setLastReply",
+          "lineNumber": 45
+        },
+        {
+          "caller": "useDanmaku",
+          "callee": "chatStore.createMessage",
+          "lineNumber": 47
+        },
+        {
+          "caller": "useDanmaku",
+          "callee": "onUnmounted",
+          "lineNumber": 54
+        },
+        {
+          "caller": "useDanmaku",
+          "callee": "getSocket",
+          "lineNumber": 55
+        },
+        {
+          "caller": "useDanmaku",
+          "callee": "socket.off",
+          "lineNumber": 57
+        },
+        {
+          "caller": "useDanmaku",
+          "callee": "socket.off",
+          "lineNumber": 58
+        },
+        {
+          "caller": "useDanmaku",
+          "callee": "socket.off",
+          "lineNumber": 59
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/composables/useGsap.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 29,
+      "nonEmptyLines": 24,
+      "functions": [
+        {
+          "name": "useGsap",
+          "startLine": 9,
+          "endLine": 29,
+          "params": [
+            "callback"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "useGsap",
+          "line": 9,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useGsap",
+          "callee": "ref",
+          "lineNumber": 10
+        },
+        {
+          "caller": "useGsap",
+          "callee": "ref",
+          "lineNumber": 11
+        },
+        {
+          "caller": "useGsap",
+          "callee": "onMounted",
+          "lineNumber": 13
+        },
+        {
+          "caller": "useGsap",
+          "callee": "window.matchMedia",
+          "lineNumber": 15
+        },
+        {
+          "caller": "useGsap",
+          "callee": "gsap.context",
+          "lineNumber": 20
+        },
+        {
+          "caller": "useGsap",
+          "callee": "onUnmounted",
+          "lineNumber": 24
+        },
+        {
+          "caller": "useGsap",
+          "callee": "ctx.value?.revert",
+          "lineNumber": 25
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/composables/useHoverPhysics.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 92,
+      "nonEmptyLines": 81,
+      "functions": [
+        {
+          "name": "useHoverPhysics",
+          "startLine": 18,
+          "endLine": 48,
+          "params": [
+            "element",
+            "options"
+          ]
+        },
+        {
+          "name": "useMagneticHover",
+          "startLine": 53,
+          "endLine": 92,
+          "params": [
+            "element",
+            "options"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "useHoverPhysics",
+          "line": 18,
+          "isDefault": false
+        },
+        {
+          "name": "useMagneticHover",
+          "line": 53,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useHoverPhysics",
+          "callee": "ref",
+          "lineNumber": 23
+        },
+        {
+          "caller": "onEnter",
+          "callee": "gsap.to",
+          "lineNumber": 28
+        },
+        {
+          "caller": "onLeave",
+          "callee": "gsap.to",
+          "lineNumber": 39
+        },
+        {
+          "caller": "useMagneticHover",
+          "callee": "ref",
+          "lineNumber": 58
+        },
+        {
+          "caller": "onMove",
+          "callee": "element.value.getBoundingClientRect",
+          "lineNumber": 62
+        },
+        {
+          "caller": "onMove",
+          "callee": "gsap.to",
+          "lineNumber": 66
+        },
+        {
+          "caller": "onLeave",
+          "callee": "gsap.to",
+          "lineNumber": 82
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/composables/useMessageStore.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 100,
+      "nonEmptyLines": 87,
+      "functions": [
+        {
+          "name": "openMessageDB",
+          "startLine": 10,
+          "endLine": 40,
+          "params": []
+        },
+        {
+          "name": "useMessageStore",
+          "startLine": 42,
+          "endLine": 100,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "useMessageStore",
+          "line": 42,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "openMessageDB",
+          "callee": "indexedDB.open",
+          "lineNumber": 13
+        },
+        {
+          "caller": "openMessageDB",
+          "callee": "db.objectStoreNames.contains",
+          "lineNumber": 17
+        },
+        {
+          "caller": "openMessageDB",
+          "callee": "db.createObjectStore",
+          "lineNumber": 18
+        },
+        {
+          "caller": "openMessageDB",
+          "callee": "store.createIndex",
+          "lineNumber": 19
+        },
+        {
+          "caller": "openMessageDB",
+          "callee": "store.createIndex",
+          "lineNumber": 20
+        },
+        {
+          "caller": "openMessageDB",
+          "callee": "db.close",
+          "lineNumber": 27
+        },
+        {
+          "caller": "openMessageDB",
+          "callee": "resolve",
+          "lineNumber": 30
+        },
+        {
+          "caller": "openMessageDB",
+          "callee": "reject",
+          "lineNumber": 35
+        },
+        {
+          "caller": "useMessageStore",
+          "callee": "ref",
+          "lineNumber": 43
+        },
+        {
+          "caller": "useMessageStore",
+          "callee": "openMessageDB()\n    .then(() => { isReady.value = true })\n    .catch",
+          "lineNumber": 45
+        },
+        {
+          "caller": "useMessageStore",
+          "callee": "openMessageDB()\n    .then",
+          "lineNumber": 45
+        },
+        {
+          "caller": "useMessageStore",
+          "callee": "openMessageDB",
+          "lineNumber": 45
+        },
+        {
+          "caller": "saveMessages",
+          "callee": "openMessageDB",
+          "lineNumber": 50
+        },
+        {
+          "caller": "saveMessages",
+          "callee": "db.transaction",
+          "lineNumber": 52
+        },
+        {
+          "caller": "saveMessages",
+          "callee": "tx.objectStore",
+          "lineNumber": 53
+        },
+        {
+          "caller": "saveMessages",
+          "callee": "store.clear",
+          "lineNumber": 54
+        },
+        {
+          "caller": "saveMessages",
+          "callee": "store.add",
+          "lineNumber": 56
+        },
+        {
+          "caller": "saveMessages",
+          "callee": "resolve",
+          "lineNumber": 58
+        },
+        {
+          "caller": "saveMessages",
+          "callee": "reject",
+          "lineNumber": 59
+        },
+        {
+          "caller": "loadMessages",
+          "callee": "openMessageDB",
+          "lineNumber": 64
+        },
+        {
+          "caller": "loadMessages",
+          "callee": "db.transaction",
+          "lineNumber": 66
+        },
+        {
+          "caller": "loadMessages",
+          "callee": "tx.objectStore",
+          "lineNumber": 67
+        },
+        {
+          "caller": "loadMessages",
+          "callee": "store.index",
+          "lineNumber": 68
+        },
+        {
+          "caller": "loadMessages",
+          "callee": "index.getAll",
+          "lineNumber": 69
+        },
+        {
+          "caller": "loadMessages",
+          "callee": "resolve",
+          "lineNumber": 70
+        },
+        {
+          "caller": "loadMessages",
+          "callee": "reject",
+          "lineNumber": 71
+        },
+        {
+          "caller": "pruneMessages",
+          "callee": "openMessageDB",
+          "lineNumber": 76
+        },
+        {
+          "caller": "pruneMessages",
+          "callee": "db.transaction",
+          "lineNumber": 77
+        },
+        {
+          "caller": "pruneMessages",
+          "callee": "tx.objectStore",
+          "lineNumber": 78
+        },
+        {
+          "caller": "pruneMessages",
+          "callee": "store.index",
+          "lineNumber": 79
+        },
+        {
+          "caller": "pruneMessages",
+          "callee": "index.getAll",
+          "lineNumber": 81
+        },
+        {
+          "caller": "pruneMessages",
+          "callee": "resolve",
+          "lineNumber": 82
+        },
+        {
+          "caller": "pruneMessages",
+          "callee": "reject",
+          "lineNumber": 83
+        },
+        {
+          "caller": "pruneMessages",
+          "callee": "all.slice",
+          "lineNumber": 87
+        },
+        {
+          "caller": "pruneMessages",
+          "callee": "db.transaction",
+          "lineNumber": 88
+        },
+        {
+          "caller": "pruneMessages",
+          "callee": "writeTx.objectStore",
+          "lineNumber": 89
+        },
+        {
+          "caller": "pruneMessages",
+          "callee": "writeStore.delete",
+          "lineNumber": 92
+        },
+        {
+          "caller": "pruneMessages",
+          "callee": "resolve",
+          "lineNumber": 94
+        },
+        {
+          "caller": "pruneMessages",
+          "callee": "reject",
+          "lineNumber": 95
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/composables/useMobile.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 71,
+      "nonEmptyLines": 58,
+      "functions": [
+        {
+          "name": "evaluate",
+          "startLine": 18,
+          "endLine": 27,
+          "params": []
+        },
+        {
+          "name": "onMobileChange",
+          "startLine": 29,
+          "endLine": 32,
+          "params": []
+        },
+        {
+          "name": "onTabletChange",
+          "startLine": 34,
+          "endLine": 37,
+          "params": []
+        },
+        {
+          "name": "useMobile",
+          "startLine": 48,
+          "endLine": 71,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "useMobile",
+          "line": 48,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "onMobileChange",
+          "callee": "evaluate",
+          "lineNumber": 31
+        },
+        {
+          "caller": "onTabletChange",
+          "callee": "evaluate",
+          "lineNumber": 36
+        },
+        {
+          "caller": "useMobile",
+          "callee": "onMounted",
+          "lineNumber": 49
+        },
+        {
+          "caller": "useMobile",
+          "callee": "window.matchMedia",
+          "lineNumber": 51
+        },
+        {
+          "caller": "useMobile",
+          "callee": "window.matchMedia",
+          "lineNumber": 52
+        },
+        {
+          "caller": "useMobile",
+          "callee": "mobileQuery.addEventListener",
+          "lineNumber": 54
+        },
+        {
+          "caller": "useMobile",
+          "callee": "tabletQuery.addEventListener",
+          "lineNumber": 55
+        },
+        {
+          "caller": "useMobile",
+          "callee": "evaluate",
+          "lineNumber": 57
+        },
+        {
+          "caller": "useMobile",
+          "callee": "onUnmounted",
+          "lineNumber": 62
+        },
+        {
+          "caller": "useMobile",
+          "callee": "mobileQuery?.removeEventListener",
+          "lineNumber": 64
+        },
+        {
+          "caller": "useMobile",
+          "callee": "tabletQuery?.removeEventListener",
+          "lineNumber": 65
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/composables/useScrollTrigger.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 82,
+      "nonEmptyLines": 74,
+      "functions": [
+        {
+          "name": "useScrollTrigger",
+          "startLine": 20,
+          "endLine": 56,
+          "params": [
+            "trigger",
+            "options"
+          ]
+        },
+        {
+          "name": "useScrollScrub",
+          "startLine": 61,
+          "endLine": 69,
+          "params": [
+            "trigger",
+            "options"
+          ]
+        },
+        {
+          "name": "useScrollPin",
+          "startLine": 74,
+          "endLine": 82,
+          "params": [
+            "trigger",
+            "options"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "useScrollTrigger",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "useScrollScrub",
+          "line": 61,
+          "isDefault": false
+        },
+        {
+          "name": "useScrollPin",
+          "line": 74,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useScrollTrigger",
+          "callee": "useGsap",
+          "lineNumber": 26
+        },
+        {
+          "caller": "useScrollTrigger",
+          "callee": "watch",
+          "lineNumber": 27
+        },
+        {
+          "caller": "useScrollTrigger",
+          "callee": "gsap.fromTo",
+          "lineNumber": 31
+        },
+        {
+          "caller": "useScrollScrub",
+          "callee": "useScrollTrigger",
+          "lineNumber": 65
+        },
+        {
+          "caller": "useScrollPin",
+          "callee": "useScrollTrigger",
+          "lineNumber": 78
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 3,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/composables/useSinging.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 33,
+      "nonEmptyLines": 28,
+      "functions": [
+        {
+          "name": "useSinging",
+          "startLine": 4,
+          "endLine": 33,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "useSinging",
+          "line": 4,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useSinging",
+          "callee": "useSingingStore",
+          "lineNumber": 5
+        },
+        {
+          "caller": "process",
+          "callee": "store.setProgress",
+          "lineNumber": 9
+        },
+        {
+          "caller": "process",
+          "callee": "getSocket",
+          "lineNumber": 10
+        },
+        {
+          "caller": "process",
+          "callee": "store.setError",
+          "lineNumber": 12
+        },
+        {
+          "caller": "process",
+          "callee": "socket.emit",
+          "lineNumber": 15
+        },
+        {
+          "caller": "confirmLyrics",
+          "callee": "getSocket",
+          "lineNumber": 19
+        },
+        {
+          "caller": "confirmLyrics",
+          "callee": "socket.emit",
+          "lineNumber": 21
+        },
+        {
+          "caller": "cancel",
+          "callee": "getSocket",
+          "lineNumber": 26
+        },
+        {
+          "caller": "cancel",
+          "callee": "socket.emit",
+          "lineNumber": 28
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/composables/useSocket.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 105,
+      "nonEmptyLines": 91,
+      "functions": [
+        {
+          "name": "useSocket",
+          "startLine": 23,
+          "endLine": 100,
+          "params": []
+        },
+        {
+          "name": "getSocket",
+          "startLine": 103,
+          "endLine": 105,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "useSocket",
+          "line": 23,
+          "isDefault": false
+        },
+        {
+          "name": "getSocket",
+          "line": 103,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useSocket",
+          "callee": "useConnectionStore",
+          "lineNumber": 24
+        },
+        {
+          "caller": "useSocket",
+          "callee": "io",
+          "lineNumber": 28
+        },
+        {
+          "caller": "useSocket",
+          "callee": "socket.on",
+          "lineNumber": 37
+        },
+        {
+          "caller": "useSocket",
+          "callee": "store.setStatus",
+          "lineNumber": 39
+        },
+        {
+          "caller": "useSocket",
+          "callee": "socket.on",
+          "lineNumber": 42
+        },
+        {
+          "caller": "useSocket",
+          "callee": "store.setStatus",
+          "lineNumber": 43
+        },
+        {
+          "caller": "useSocket",
+          "callee": "socket.on",
+          "lineNumber": 46
+        },
+        {
+          "caller": "useSocket",
+          "callee": "store.setStatus",
+          "lineNumber": 49
+        },
+        {
+          "caller": "useSocket",
+          "callee": "store.setStatus",
+          "lineNumber": 52
+        },
+        {
+          "caller": "useSocket",
+          "callee": "useModelLoadingStore",
+          "lineNumber": 57
+        },
+        {
+          "caller": "useSocket",
+          "callee": "socket.on",
+          "lineNumber": 58
+        },
+        {
+          "caller": "useSocket",
+          "callee": "modelStore.updateModelStatus",
+          "lineNumber": 59
+        },
+        {
+          "caller": "useSocket",
+          "callee": "socket.on",
+          "lineNumber": 63
+        },
+        {
+          "caller": "useSocket",
+          "callee": "useSingingStore",
+          "lineNumber": 68
+        },
+        {
+          "caller": "useSocket",
+          "callee": "socket.on",
+          "lineNumber": 69
+        },
+        {
+          "caller": "useSocket",
+          "callee": "singStore.setProgress",
+          "lineNumber": 70
+        },
+        {
+          "caller": "useSocket",
+          "callee": "socket.on",
+          "lineNumber": 72
+        },
+        {
+          "caller": "useSocket",
+          "callee": "singStore.setResult",
+          "lineNumber": 73
+        },
+        {
+          "caller": "useSocket",
+          "callee": "socket.on",
+          "lineNumber": 84
+        },
+        {
+          "caller": "useSocket",
+          "callee": "singStore.setError",
+          "lineNumber": 85
+        },
+        {
+          "caller": "useSocket",
+          "callee": "socket.on",
+          "lineNumber": 87
+        },
+        {
+          "caller": "useSocket",
+          "callee": "singStore.setProgress",
+          "lineNumber": 88
+        },
+        {
+          "caller": "useSocket",
+          "callee": "onMounted",
+          "lineNumber": 94
+        },
+        {
+          "caller": "useSocket",
+          "callee": "store.setStatus",
+          "lineNumber": 96
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/composables/useSubtitle.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 202,
+      "nonEmptyLines": 176,
+      "functions": [
+        {
+          "name": "useSubtitle",
+          "startLine": 6,
+          "endLine": 202,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "useSubtitle",
+          "line": 6,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useSubtitle",
+          "callee": "useSubtitleStore",
+          "lineNumber": 7
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "ref",
+          "lineNumber": 9
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "ref",
+          "lineNumber": 10
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "ref",
+          "lineNumber": 11
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "ref",
+          "lineNumber": 12
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "ref",
+          "lineNumber": 13
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "ref",
+          "lineNumber": 14
+        },
+        {
+          "caller": "stripEmotionTags",
+          "callee": "text.replace(/\\[(happy|sad|angry|surprised|thinking|neutral)\\]/g, '').trim",
+          "lineNumber": 18
+        },
+        {
+          "caller": "stripEmotionTags",
+          "callee": "text.replace",
+          "lineNumber": 18
+        },
+        {
+          "caller": "scheduleHide",
+          "callee": "clearTimeout",
+          "lineNumber": 26
+        },
+        {
+          "caller": "scheduleHide",
+          "callee": "setTimeout",
+          "lineNumber": 27
+        },
+        {
+          "caller": "cancelHide",
+          "callee": "clearTimeout",
+          "lineNumber": 36
+        },
+        {
+          "caller": "showSubtitle",
+          "callee": "cancelHide",
+          "lineNumber": 42
+        },
+        {
+          "caller": "showSubtitle",
+          "callee": "stripEmotionTags",
+          "lineNumber": 43
+        },
+        {
+          "caller": "estimateAudioDurationSec",
+          "callee": "Math.floor",
+          "lineNumber": 66
+        },
+        {
+          "caller": "estimateAudioDurationSec",
+          "callee": "atob",
+          "lineNumber": 73
+        },
+        {
+          "caller": "estimateAudioDurationSec",
+          "callee": "audioData.substring",
+          "lineNumber": 73
+        },
+        {
+          "caller": "u8",
+          "callee": "header.charCodeAt",
+          "lineNumber": 74
+        },
+        {
+          "caller": "estimateAudioDurationSec",
+          "callee": "u8",
+          "lineNumber": 75
+        },
+        {
+          "caller": "estimateAudioDurationSec",
+          "callee": "u8",
+          "lineNumber": 75
+        },
+        {
+          "caller": "estimateAudioDurationSec",
+          "callee": "u8",
+          "lineNumber": 75
+        },
+        {
+          "caller": "estimateAudioDurationSec",
+          "callee": "u8",
+          "lineNumber": 75
+        },
+        {
+          "caller": "estimateAudioDurationSec",
+          "callee": "u8",
+          "lineNumber": 76
+        },
+        {
+          "caller": "estimateAudioDurationSec",
+          "callee": "u8",
+          "lineNumber": 76
+        },
+        {
+          "caller": "estimateAudioDurationSec",
+          "callee": "u8",
+          "lineNumber": 77
+        },
+        {
+          "caller": "estimateAudioDurationSec",
+          "callee": "u8",
+          "lineNumber": 77
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "onMounted",
+          "lineNumber": 98
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "getSocket",
+          "lineNumber": 99
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "showSubtitle",
+          "lineNumber": 109
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "scheduleHide",
+          "lineNumber": 111
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "stripEmotionTags",
+          "lineNumber": 121
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "stripEmotionTags",
+          "lineNumber": 124
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "showSubtitle",
+          "lineNumber": 129
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "cancelHide",
+          "lineNumber": 130
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "scheduleHide",
+          "lineNumber": 143
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "cancelHide",
+          "lineNumber": 151
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "scheduleHide",
+          "lineNumber": 152
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "cancelHide",
+          "lineNumber": 159
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "estimateAudioDurationSec",
+          "lineNumber": 160
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "Math.max",
+          "lineNumber": 162
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "Math.round",
+          "lineNumber": 162
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "scheduleHide",
+          "lineNumber": 163
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "showSubtitle",
+          "lineNumber": 168
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "cancelHide",
+          "lineNumber": 169
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "socket.on",
+          "lineNumber": 172
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "socket.on",
+          "lineNumber": 173
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "socket.on",
+          "lineNumber": 174
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "socket.on",
+          "lineNumber": 175
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "socket.on",
+          "lineNumber": 176
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "socket.on",
+          "lineNumber": 177
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "onUnmounted",
+          "lineNumber": 180
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "getSocket",
+          "lineNumber": 181
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "socket.off",
+          "lineNumber": 184
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "socket.off",
+          "lineNumber": 185
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "socket.off",
+          "lineNumber": 186
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "socket.off",
+          "lineNumber": 187
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "socket.off",
+          "lineNumber": 188
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "socket.off",
+          "lineNumber": 189
+        },
+        {
+          "caller": "useSubtitle",
+          "callee": "clearTimeout",
+          "lineNumber": 190
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/composables/useVoice.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 117,
+      "nonEmptyLines": 98,
+      "functions": [
+        {
+          "name": "useVoice",
+          "startLine": 4,
+          "endLine": 117,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "useVoice",
+          "line": 4,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useVoice",
+          "callee": "ref",
+          "lineNumber": 5
+        },
+        {
+          "caller": "useVoice",
+          "callee": "ref",
+          "lineNumber": 6
+        },
+        {
+          "caller": "useVoice",
+          "callee": "ref",
+          "lineNumber": 7
+        },
+        {
+          "caller": "start",
+          "callee": "navigator.mediaDevices.getUserMedia",
+          "lineNumber": 22
+        },
+        {
+          "caller": "start",
+          "callee": "stream.getAudioTracks",
+          "lineNumber": 31
+        },
+        {
+          "caller": "start",
+          "callee": "track.getSettings",
+          "lineNumber": 32
+        },
+        {
+          "caller": "start",
+          "callee": "audioContext.createMediaStreamSource",
+          "lineNumber": 36
+        },
+        {
+          "caller": "start",
+          "callee": "audioContext.createScriptProcessor",
+          "lineNumber": 37
+        },
+        {
+          "caller": "start",
+          "callee": "audioContext.createGain",
+          "lineNumber": 38
+        },
+        {
+          "caller": "start",
+          "callee": "event.inputBuffer.getChannelData",
+          "lineNumber": 43
+        },
+        {
+          "caller": "start",
+          "callee": "Math.floor",
+          "lineNumber": 46
+        },
+        {
+          "caller": "start",
+          "callee": "Math.floor",
+          "lineNumber": 50
+        },
+        {
+          "caller": "start",
+          "callee": "Math.min",
+          "lineNumber": 51
+        },
+        {
+          "caller": "start",
+          "callee": "Math.sqrt",
+          "lineNumber": 59
+        },
+        {
+          "caller": "start",
+          "callee": "resampleBuffer.push",
+          "lineNumber": 62
+        },
+        {
+          "caller": "start",
+          "callee": "getSocket",
+          "lineNumber": 63
+        },
+        {
+          "caller": "start",
+          "callee": "resampleBuffer.splice",
+          "lineNumber": 65
+        },
+        {
+          "caller": "start",
+          "callee": "socket.emit",
+          "lineNumber": 68
+        },
+        {
+          "caller": "start",
+          "callee": "sourceNode.connect",
+          "lineNumber": 73
+        },
+        {
+          "caller": "start",
+          "callee": "gainNode.connect",
+          "lineNumber": 74
+        },
+        {
+          "caller": "start",
+          "callee": "scriptProcessor.connect",
+          "lineNumber": 75
+        },
+        {
+          "caller": "stop",
+          "callee": "gainNode?.disconnect",
+          "lineNumber": 88
+        },
+        {
+          "caller": "stop",
+          "callee": "scriptProcessor?.disconnect",
+          "lineNumber": 89
+        },
+        {
+          "caller": "stop",
+          "callee": "sourceNode?.disconnect",
+          "lineNumber": 90
+        },
+        {
+          "caller": "stop",
+          "callee": "audioContext?.close",
+          "lineNumber": 91
+        },
+        {
+          "caller": "stop",
+          "callee": "stream?.getTracks().forEach",
+          "lineNumber": 92
+        },
+        {
+          "caller": "stop",
+          "callee": "stream?.getTracks",
+          "lineNumber": 92
+        },
+        {
+          "caller": "stop",
+          "callee": "t.stop",
+          "lineNumber": 92
+        },
+        {
+          "caller": "stop",
+          "callee": "getSocket",
+          "lineNumber": 102
+        },
+        {
+          "caller": "stop",
+          "callee": "socket.emit",
+          "lineNumber": 104
+        },
+        {
+          "caller": "toggle",
+          "callee": "stop",
+          "lineNumber": 109
+        },
+        {
+          "caller": "toggle",
+          "callee": "start",
+          "lineNumber": 109
+        },
+        {
+          "caller": "useVoice",
+          "callee": "onUnmounted",
+          "lineNumber": 112
+        },
+        {
+          "caller": "useVoice",
+          "callee": "stop",
+          "lineNumber": 113
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    }
+  ]
+}

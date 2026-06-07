@@ -17,6 +17,7 @@ from starlette.applications import Starlette
 from starlette.responses import PlainTextResponse
 from starlette.routing import Route
 
+from animetta.inspection.checks.metrics import check_metrics_pipeline
 
 # ─────────────────────────────────────────────────────────────
 # Test app factory

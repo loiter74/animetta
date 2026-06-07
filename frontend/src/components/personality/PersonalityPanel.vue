@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { usePersonalityStore } from '@/stores/personality'
 import { Radar } from 'vue-chartjs'
 import {
@@ -15,6 +15,10 @@ import {
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend)
 
 const store = usePersonalityStore()
+
+onMounted(() => {
+  store.fetchAvailablePersonas()
+})
 
 const collapsed = ref(false)
 const mbtiCollapsed = ref(false)
@@ -115,7 +119,7 @@ function toggleMode(): void {
       <span class="text-sm font-medium text-c-text">人格配置</span>
       <div class="flex-1" />
       <button
-        class="w-7 h-7 flex items-center justify-center rounded-lg bg-c-bg/40 text-c-text-dim hover:text-c-text hover:bg-c-bg/60 transition-colors"
+        class="w-7 h-7 flex items-center justify-center rounded-lg bg-c-bg/50 text-c-text-dim hover:text-c-text hover:bg-c-bg/70 transition-colors"
         @click="collapsed = !collapsed"
       >
         <svg
@@ -136,7 +140,7 @@ function toggleMode(): void {
           class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium"
           :class="store.currentMode === 'streaming'
             ? 'bg-c-accent/20 text-c-accent'
-            : 'bg-c-card/50 text-c-text-dim'"
+            : 'bg-c-card/80 text-c-text-dim'"
         >
           {{ store.currentMode === 'streaming' ? '流式' : '默认' }}
         </span>
@@ -147,7 +151,7 @@ function toggleMode(): void {
         <label class="text-xs font-medium text-c-text-dim uppercase tracking-wider mb-2 block">角色人设</label>
         <select
           v-model="selectedPersona"
-          class="w-full px-3 py-2 rounded-xl bg-c-bg/60 border border-c-border/40 text-sm text-c-text
+          class="w-full px-3 py-2 rounded-xl bg-c-bg/80 border border-c-border/40 text-sm text-c-text
                  focus:outline-none focus:border-c-accent/50 transition-colors appearance-none cursor-pointer"
         >
           <option value="" disabled>选择人设...</option>
@@ -155,22 +159,37 @@ function toggleMode(): void {
         </select>
         <button
           class="mt-2 w-full px-3 py-2 rounded-xl text-xs font-medium transition-all
-                 bg-c-accent/15 text-c-accent hover:bg-c-accent/25
                  flex items-center justify-center gap-1.5"
+          :class="store.personaSuccess
+            ? 'bg-c-success/20 text-c-success'
+            : store.personaError
+              ? 'bg-c-error/20 text-c-error'
+              : 'bg-c-accent/20 text-c-accent hover:bg-c-accent/30'"
+          :disabled="store.personaLoading"
           @click="applyPersona"
         >
-          应用
+          <svg v-if="store.personaLoading" class="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" />
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          <span v-else-if="store.personaSuccess">✓ 已应用</span>
+          <span v-else-if="store.personaError">{{ store.personaError }}</span>
+          <span v-else>应用</span>
         </button>
       </div>
 
       <!-- Streaming mode toggle -->
       <div>
         <label class="text-xs font-medium text-c-text-dim uppercase tracking-wider mb-2 block">流式模式</label>
-        <div class="flex items-center justify-between bg-c-card/50 rounded-xl px-3 py-2.5">
+        <div class="flex items-center justify-between bg-c-card/80 rounded-xl px-3 py-2.5">
           <span class="text-xs text-c-text">{{ store.currentMode === 'streaming' ? '已开启' : '已关闭' }}</span>
           <button
             class="w-10 h-5 rounded-full transition-colors relative shrink-0"
-            :class="store.currentMode === 'streaming' ? 'bg-c-accent' : 'bg-c-bg/60 border border-c-border/40'"
+            :class="[
+              store.currentMode === 'streaming' ? 'bg-c-accent' : 'bg-c-bg/80 border border-c-border/40',
+              store.modeLoading ? 'opacity-50 cursor-not-allowed' : ''
+            ]"
+            :disabled="store.modeLoading"
             @click="toggleMode"
           >
             <span
@@ -184,7 +203,7 @@ function toggleMode(): void {
       <!-- Memory influence slider -->
       <div>
         <label class="text-xs font-medium text-c-text-dim uppercase tracking-wider mb-2 block">记忆影响度</label>
-        <div class="bg-c-card/50 rounded-xl px-3 py-2.5">
+        <div class="bg-c-card/80 rounded-xl px-3 py-2.5">
           <div class="flex items-center justify-between mb-1.5">
             <span class="text-xs text-c-text-dim">影响权重</span>
             <span class="text-xs text-c-accent font-medium tabular-nums">{{ store.memoryInfluence.toFixed(1) }}</span>
@@ -208,7 +227,7 @@ function toggleMode(): void {
       <!-- Current mood -->
       <div>
         <label class="text-xs font-medium text-c-text-dim uppercase tracking-wider mb-2 block">当前情绪</label>
-        <div class="bg-c-card/50 rounded-xl px-3 py-2.5 flex items-center gap-2">
+        <div class="bg-c-card/80 rounded-xl px-3 py-2.5 flex items-center gap-2">
           <span class="text-sm">💭</span>
           <span v-if="store.currentMood" class="text-sm text-c-text capitalize">{{ store.currentMood }}</span>
           <span v-else class="text-sm text-c-text-muted">暂无检测数据</span>
@@ -220,7 +239,7 @@ function toggleMode(): void {
         <div class="flex items-center justify-between mb-2">
           <label class="text-xs font-medium text-c-text-dim uppercase tracking-wider">MBTI 人格</label>
           <button
-            class="w-7 h-7 flex items-center justify-center rounded-lg bg-c-bg/40 text-c-text-dim hover:text-c-text hover:bg-c-bg/60 transition-colors"
+            class="w-7 h-7 flex items-center justify-center rounded-lg bg-c-bg/50 text-c-text-dim hover:text-c-text hover:bg-c-bg/70 transition-colors"
             @click="mbtiCollapsed = !mbtiCollapsed"
           >
             <svg
@@ -235,21 +254,21 @@ function toggleMode(): void {
 
         <div v-show="!mbtiCollapsed" class="space-y-3">
           <!-- Type badge -->
-          <div class="bg-c-card/50 rounded-xl px-3 py-2.5 flex items-center gap-2">
+          <div class="bg-c-card/80 rounded-xl px-3 py-2.5 flex items-center gap-2">
             <span v-if="computedMbtiType" class="text-sm font-bold text-c-accent">{{ computedMbtiType }}</span>
             <span v-else class="text-sm text-c-text-muted">暂无检测数据</span>
           </div>
 
           <!-- Radar chart -->
-          <div class="bg-c-card/50 rounded-xl p-3" style="height: 200px">
+          <div class="bg-c-card/80 rounded-xl p-3" style="height: 200px">
             <Radar :data="chartData" :options="chartOptions" />
           </div>
 
           <!-- Dimension bars -->
-          <div class="bg-c-card/50 rounded-xl px-3 py-2.5 space-y-2.5">
+          <div class="bg-c-card/80 rounded-xl px-3 py-2.5 space-y-2.5">
             <div v-for="dim in dimensions" :key="dim.label" class="flex items-center gap-2">
               <span class="text-xs text-c-text-dim w-8 shrink-0">{{ dim.label }}</span>
-              <div class="flex-1 h-1.5 rounded-full bg-c-bg/60 overflow-hidden">
+              <div class="flex-1 h-1.5 rounded-full bg-c-bg/80 overflow-hidden">
                 <div
                   class="h-full rounded-full transition-all duration-500"
                   :style="{ width: dim.val + '%', background: dim.color }"

@@ -1,5 +1,6 @@
 from __future__ import annotations
 from animetta.avatar.strategies.position import PositionBasedStrategy
+from animetta.avatar.strategies.base import TimelineConfig, TimelineSegment
 """
 Tests for PositionBasedStrategy — even time distribution of emotion segments.
 """

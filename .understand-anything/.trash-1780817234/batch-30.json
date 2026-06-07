@@ -1,0 +1,1367 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 25,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "frontend/src/types/socket-events.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 34,
+      "nonEmptyLines": 30,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/views/ChatPage.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 8,
+      "nonEmptyLines": 7,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/views/DashboardPage.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 55,
+      "nonEmptyLines": 49,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/views/MemeReview.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 166,
+      "nonEmptyLines": 156,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/views/MusicPage.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 467,
+      "nonEmptyLines": 431,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/stats/index.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 1,
+      "nonEmptyLines": 1,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/stats/stats.css",
+      "language": "css",
+      "fileCategory": "markup",
+      "totalLines": 148,
+      "nonEmptyLines": 131,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/stats/stats.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 216,
+      "nonEmptyLines": 189,
+      "functions": [
+        {
+          "name": "fetchOverview",
+          "startLine": 4,
+          "endLine": 14,
+          "params": []
+        },
+        {
+          "name": "fetchErrorRate",
+          "startLine": 16,
+          "endLine": 23,
+          "params": []
+        },
+        {
+          "name": "fetchNodeStats",
+          "startLine": 28,
+          "endLine": 78,
+          "params": []
+        },
+        {
+          "name": "fetchTraces",
+          "startLine": 81,
+          "endLine": 107,
+          "params": []
+        },
+        {
+          "name": "showTraceDetail",
+          "startLine": 110,
+          "endLine": 158,
+          "params": [
+            "traceId"
+          ]
+        },
+        {
+          "name": "renderTree",
+          "startLine": 168,
+          "endLine": 188,
+          "params": [
+            "nodes",
+            "totalDuration",
+            "depth"
+          ]
+        },
+        {
+          "name": "closeModal",
+          "startLine": 190,
+          "endLine": 192,
+          "params": []
+        },
+        {
+          "name": "escapeHtml",
+          "startLine": 199,
+          "endLine": 203,
+          "params": [
+            "text"
+          ]
+        },
+        {
+          "name": "refreshAll",
+          "startLine": 206,
+          "endLine": 212,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "fetchOverview",
+          "callee": "fetch",
+          "lineNumber": 5
+        },
+        {
+          "caller": "fetchOverview",
+          "callee": "res.json",
+          "lineNumber": 6
+        },
+        {
+          "caller": "fetchOverview",
+          "callee": "document.getElementById",
+          "lineNumber": 8
+        },
+        {
+          "caller": "fetchOverview",
+          "callee": "data.total_requests.toLocaleString",
+          "lineNumber": 9
+        },
+        {
+          "caller": "fetchOverview",
+          "callee": "document.getElementById",
+          "lineNumber": 10
+        },
+        {
+          "caller": "fetchOverview",
+          "callee": "document.getElementById",
+          "lineNumber": 12
+        },
+        {
+          "caller": "fetchOverview",
+          "callee": "data.p95_duration_ms.toFixed",
+          "lineNumber": 13
+        },
+        {
+          "caller": "fetchErrorRate",
+          "callee": "fetch",
+          "lineNumber": 17
+        },
+        {
+          "caller": "fetchErrorRate",
+          "callee": "res.json",
+          "lineNumber": 18
+        },
+        {
+          "caller": "fetchErrorRate",
+          "callee": "data.reduce",
+          "lineNumber": 19
+        },
+        {
+          "caller": "fetchErrorRate",
+          "callee": "data.reduce",
+          "lineNumber": 20
+        },
+        {
+          "caller": "fetchErrorRate",
+          "callee": "(totalErrors / totalCalls * 100).toFixed",
+          "lineNumber": 21
+        },
+        {
+          "caller": "fetchErrorRate",
+          "callee": "document.getElementById",
+          "lineNumber": 22
+        },
+        {
+          "caller": "fetchNodeStats",
+          "callee": "fetch",
+          "lineNumber": 29
+        },
+        {
+          "caller": "fetchNodeStats",
+          "callee": "res.json",
+          "lineNumber": 30
+        },
+        {
+          "caller": "fetchNodeStats",
+          "callee": "data.map",
+          "lineNumber": 34
+        },
+        {
+          "caller": "fetchNodeStats",
+          "callee": "data.map",
+          "lineNumber": 35
+        },
+        {
+          "caller": "fetchNodeStats",
+          "callee": "data.map",
+          "lineNumber": 36
+        },
+        {
+          "caller": "fetchNodeStats",
+          "callee": "nodeChart.update",
+          "lineNumber": 42
+        },
+        {
+          "caller": "fetchNodeStats",
+          "callee": "document.getElementById",
+          "lineNumber": 46
+        },
+        {
+          "caller": "fetchTraces",
+          "callee": "fetch",
+          "lineNumber": 82
+        },
+        {
+          "caller": "fetchTraces",
+          "callee": "res.json",
+          "lineNumber": 83
+        },
+        {
+          "caller": "fetchTraces",
+          "callee": "document.getElementById",
+          "lineNumber": 85
+        },
+        {
+          "caller": "fetchTraces",
+          "callee": "data.forEach",
+          "lineNumber": 88
+        },
+        {
+          "caller": "fetchTraces",
+          "callee": "document.createElement",
+          "lineNumber": 89
+        },
+        {
+          "caller": "fetchTraces",
+          "callee": "showTraceDetail",
+          "lineNumber": 91
+        },
+        {
+          "caller": "fetchTraces",
+          "callee": "new Date(trace.created_at + \"Z\").toLocaleTimeString",
+          "lineNumber": 94
+        },
+        {
+          "caller": "fetchTraces",
+          "callee": "escapeHtml",
+          "lineNumber": 101
+        },
+        {
+          "caller": "fetchTraces",
+          "callee": "trace.total_duration_ms.toFixed",
+          "lineNumber": 102
+        },
+        {
+          "caller": "fetchTraces",
+          "callee": "tbody.appendChild",
+          "lineNumber": 105
+        },
+        {
+          "caller": "showTraceDetail",
+          "callee": "fetch",
+          "lineNumber": 112
+        },
+        {
+          "caller": "showTraceDetail",
+          "callee": "res.json",
+          "lineNumber": 113
+        },
+        {
+          "caller": "showTraceDetail",
+          "callee": "alert",
+          "lineNumber": 114
+        },
+        {
+          "caller": "showTraceDetail",
+          "callee": "document.getElementById",
+          "lineNumber": 116
+        },
+        {
+          "caller": "showTraceDetail",
+          "callee": "new Date(data.created_at + \"Z\").toLocaleString",
+          "lineNumber": 118
+        },
+        {
+          "caller": "showTraceDetail",
+          "callee": "renderTree",
+          "lineNumber": 122
+        },
+        {
+          "caller": "showTraceDetail",
+          "callee": "data.trace_id.slice",
+          "lineNumber": 128
+        },
+        {
+          "caller": "showTraceDetail",
+          "callee": "totalDuration.toFixed",
+          "lineNumber": 132
+        },
+        {
+          "caller": "showTraceDetail",
+          "callee": "data.spans.map(s => `\n                <li class=\"span-item\">\n                    <span class=\"span-name\">${s.node_name}</span>\n                    <span class=\"span-duration\">${s.duration_ms ? s.duration_ms.toFixed(1) + \"ms\" : \"-\"}</span>\n                    <span class=\"span-summary\">${escapeHtml(s.output_summary || s.input_summary || \"-\")}</span>\n                </li>\n            `).join",
+          "lineNumber": 147
+        },
+        {
+          "caller": "showTraceDetail",
+          "callee": "data.spans.map",
+          "lineNumber": 147
+        },
+        {
+          "caller": "showTraceDetail",
+          "callee": "s.duration_ms.toFixed",
+          "lineNumber": 150
+        },
+        {
+          "caller": "showTraceDetail",
+          "callee": "escapeHtml",
+          "lineNumber": 151
+        },
+        {
+          "caller": "showTraceDetail",
+          "callee": "document.getElementById(\"trace-modal\").classList.remove",
+          "lineNumber": 157
+        },
+        {
+          "caller": "showTraceDetail",
+          "callee": "document.getElementById",
+          "lineNumber": 157
+        },
+        {
+          "caller": "renderTree",
+          "callee": "Math.min",
+          "lineNumber": 170
+        },
+        {
+          "caller": "renderTree",
+          "callee": "nodes.forEach",
+          "lineNumber": 172
+        },
+        {
+          "caller": "renderTree",
+          "callee": "dur.toFixed",
+          "lineNumber": 176
+        },
+        {
+          "caller": "renderTree",
+          "callee": "Math.max",
+          "lineNumber": 179
+        },
+        {
+          "caller": "renderTree",
+          "callee": "escapeHtml",
+          "lineNumber": 180
+        },
+        {
+          "caller": "renderTree",
+          "callee": "escapeHtml",
+          "lineNumber": 181
+        },
+        {
+          "caller": "renderTree",
+          "callee": "renderTree",
+          "lineNumber": 184
+        },
+        {
+          "caller": "closeModal",
+          "callee": "document.getElementById(\"trace-modal\").classList.add",
+          "lineNumber": 191
+        },
+        {
+          "caller": "closeModal",
+          "callee": "document.getElementById",
+          "lineNumber": 191
+        },
+        {
+          "caller": "escapeHtml",
+          "callee": "document.createElement",
+          "lineNumber": 200
+        },
+        {
+          "caller": "refreshAll",
+          "callee": "Promise.all",
+          "lineNumber": 208
+        },
+        {
+          "caller": "refreshAll",
+          "callee": "fetchOverview",
+          "lineNumber": 208
+        },
+        {
+          "caller": "refreshAll",
+          "callee": "fetchNodeStats",
+          "lineNumber": 208
+        },
+        {
+          "caller": "refreshAll",
+          "callee": "fetchTraces",
+          "lineNumber": 208
+        },
+        {
+          "caller": "refreshAll",
+          "callee": "fetchErrorRate",
+          "lineNumber": 208
+        },
+        {
+          "caller": "refreshAll",
+          "callee": "console.error",
+          "lineNumber": 210
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 9,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/uno.config.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 75,
+      "nonEmptyLines": 74,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/vite.config.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 45,
+      "nonEmptyLines": 43,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/vitest.config.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 16,
+      "nonEmptyLines": 15,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "memory_db/.gitkeep",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 0,
+      "metrics": {}
+    },
+    {
+      "path": "observability/alerts/rules.yml",
+      "language": "yaml",
+      "fileCategory": "config",
+      "totalLines": 78,
+      "nonEmptyLines": 73,
+      "sections": [
+        {
+          "heading": "groups",
+          "level": 1,
+          "line": 4
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "path": "observability/grafana/provisioning/dashboards/dashboards.yml",
+      "language": "yaml",
+      "fileCategory": "config",
+      "totalLines": 16,
+      "nonEmptyLines": 14,
+      "sections": [
+        {
+          "heading": "apiVersion",
+          "level": 1,
+          "line": 4
+        },
+        {
+          "heading": "providers",
+          "level": 1,
+          "line": 6
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "path": "observability/grafana/provisioning/datasources/datasources.yml",
+      "language": "yaml",
+      "fileCategory": "config",
+      "totalLines": 33,
+      "nonEmptyLines": 29,
+      "sections": [
+        {
+          "heading": "apiVersion",
+          "level": 1,
+          "line": 4
+        },
+        {
+          "heading": "datasources",
+          "level": 1,
+          "line": 6
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "path": "openspec/config.yaml",
+      "language": "yaml",
+      "fileCategory": "config",
+      "totalLines": 20,
+      "nonEmptyLines": 18,
+      "sections": [
+        {
+          "heading": "schema",
+          "level": 1,
+          "line": 1
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "path": "openspec/specs/alerting-rules/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 62,
+      "nonEmptyLines": 46,
+      "sections": [
+        {
+          "heading": "ADDED Requirements",
+          "level": 2,
+          "line": 1
+        },
+        {
+          "heading": "Requirement: High error rate alert",
+          "level": 3,
+          "line": 3
+        },
+        {
+          "heading": "Scenario: Error rate alert fires",
+          "level": 4,
+          "line": 6
+        },
+        {
+          "heading": "Scenario: Error rate recovers",
+          "level": 4,
+          "line": 11
+        },
+        {
+          "heading": "Requirement: High latency alert",
+          "level": 3,
+          "line": 15
+        },
+        {
+          "heading": "Scenario: Latency alert fires",
+          "level": 4,
+          "line": 18
+        },
+        {
+          "heading": "Requirement: Monthly cost budget warning",
+          "level": 3,
+          "line": 22
+        },
+        {
+          "heading": "Scenario: Cost warning fires",
+          "level": 4,
+          "line": 25
+        },
+        {
+          "heading": "Requirement: Monthly cost budget critical",
+          "level": 3,
+          "line": 30
+        },
+        {
+          "heading": "Scenario: Cost critical fires",
+          "level": 4,
+          "line": 33
+        },
+        {
+          "heading": "Requirement: Service down alert",
+          "level": 3,
+          "line": 37
+        },
+        {
+          "heading": "Scenario: Service down alert fires",
+          "level": 4,
+          "line": 40
+        },
+        {
+          "heading": "Requirement: Alert routing via webhook",
+          "level": 3,
+          "line": 45
+        },
+        {
+          "heading": "Scenario: Alert sent to Discord",
+          "level": 4,
+          "line": 48
+        },
+        {
+          "heading": "Scenario: No webhook configured",
+          "level": 4,
+          "line": 53
+        },
+        {
+          "heading": "Requirement: Webhook URL in .env, not committed",
+          "level": 3,
+          "line": 57
+        },
+        {
+          "heading": "Scenario: .env.example includes placeholder",
+          "level": 4,
+          "line": 60
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 17
+      }
+    },
+    {
+      "path": "openspec/specs/anime-theme/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 59,
+      "nonEmptyLines": 43,
+      "sections": [
+        {
+          "heading": "ADDED Requirements",
+          "level": 2,
+          "line": 1
+        },
+        {
+          "heading": "Requirement: 主题色系统",
+          "level": 3,
+          "line": 3
+        },
+        {
+          "heading": "Scenario: 主题色 token 使用",
+          "level": 4,
+          "line": 6
+        },
+        {
+          "heading": "Scenario: 暗色模式",
+          "level": 4,
+          "line": 10
+        },
+        {
+          "heading": "Requirement: Glassmorphism 面板",
+          "level": 3,
+          "line": 14
+        },
+        {
+          "heading": "Scenario: 半透明模糊面板",
+          "level": 4,
+          "line": 17
+        },
+        {
+          "heading": "Requirement: 消息气泡样式",
+          "level": 3,
+          "line": 21
+        },
+        {
+          "heading": "Scenario: 用户消息气泡",
+          "level": 4,
+          "line": 24
+        },
+        {
+          "heading": "Scenario: AI 消息气泡",
+          "level": 4,
+          "line": 28
+        },
+        {
+          "heading": "Requirement: 动画系统",
+          "level": 3,
+          "line": 32
+        },
+        {
+          "heading": "Scenario: 消息入场动画",
+          "level": 4,
+          "line": 35
+        },
+        {
+          "heading": "Scenario: 连接状态脉冲",
+          "level": 4,
+          "line": 39
+        },
+        {
+          "heading": "Requirement: 自定义标题栏样式",
+          "level": 3,
+          "line": 43
+        },
+        {
+          "heading": "Scenario: 标题栏渲染",
+          "level": 4,
+          "line": 46
+        },
+        {
+          "heading": "Requirement: 连接状态指示灯",
+          "level": 3,
+          "line": 50
+        },
+        {
+          "heading": "Scenario: 已连接",
+          "level": 4,
+          "line": 53
+        },
+        {
+          "heading": "Scenario: 断开连接",
+          "level": 4,
+          "line": 57
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 17
+      }
+    },
+    {
+      "path": "openspec/specs/auto-benchmark/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 48,
+      "nonEmptyLines": 35,
+      "sections": [
+        {
+          "heading": "ADDED Requirements",
+          "level": 2,
+          "line": 1
+        },
+        {
+          "heading": "Requirement: One-command auto benchmark",
+          "level": 3,
+          "line": 3
+        },
+        {
+          "heading": "Scenario: Auto mode execution",
+          "level": 4,
+          "line": 6
+        },
+        {
+          "heading": "Scenario: Cleanup on exit",
+          "level": 4,
+          "line": 10
+        },
+        {
+          "heading": "Requirement: Mock configuration generation",
+          "level": 3,
+          "line": 14
+        },
+        {
+          "heading": "Scenario: Mock config created",
+          "level": 4,
+          "line": 17
+        },
+        {
+          "heading": "Requirement: Historical results tracking",
+          "level": 3,
+          "line": 21
+        },
+        {
+          "heading": "Scenario: Run saved",
+          "level": 4,
+          "line": 24
+        },
+        {
+          "heading": "Scenario: Latest baseline updated",
+          "level": 4,
+          "line": 28
+        },
+        {
+          "heading": "Requirement: Baseline comparison",
+          "level": 3,
+          "line": 32
+        },
+        {
+          "heading": "Scenario: Delta shown",
+          "level": 4,
+          "line": 35
+        },
+        {
+          "heading": "Scenario: Regression detection",
+          "level": 4,
+          "line": 39
+        },
+        {
+          "heading": "Requirement: OTel span collection",
+          "level": 3,
+          "line": 43
+        },
+        {
+          "heading": "Scenario: Service spans reported",
+          "level": 4,
+          "line": 46
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 14
+      }
+    },
+    {
+      "path": "openspec/specs/autonomous-loop/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 47,
+      "nonEmptyLines": 36,
+      "sections": [
+        {
+          "heading": "autonomous-loop Specification",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Purpose",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Requirements",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "Requirement: Autonomous decision loop",
+          "level": 3,
+          "line": 6
+        },
+        {
+          "heading": "Scenario: Loop triggers at idle",
+          "level": 4,
+          "line": 9
+        },
+        {
+          "heading": "Scenario: LLM instruction preempts autonomous loop",
+          "level": 4,
+          "line": 14
+        },
+        {
+          "heading": "Scenario: Loop evaluates state before deciding",
+          "level": 4,
+          "line": 19
+        },
+        {
+          "heading": "Scenario: Action timeout reset",
+          "level": 4,
+          "line": 24
+        },
+        {
+          "heading": "Requirement: Behavior priority system",
+          "level": 3,
+          "line": 29
+        },
+        {
+          "heading": "Scenario: Survival overrides building",
+          "level": 4,
+          "line": 32
+        },
+        {
+          "heading": "Scenario: Night safety override",
+          "level": 4,
+          "line": 37
+        },
+        {
+          "heading": "Requirement: Behavior cooldown",
+          "level": 3,
+          "line": 41
+        },
+        {
+          "heading": "Scenario: Cooldown prevents spam",
+          "level": 4,
+          "line": 44
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 13
+      }
+    },
+    {
+      "path": "openspec/specs/behavior-rules/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 40,
+      "nonEmptyLines": 30,
+      "sections": [
+        {
+          "heading": "behavior-rules Specification",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Purpose",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Requirements",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "Requirement: Rules file format",
+          "level": 3,
+          "line": 6
+        },
+        {
+          "heading": "Scenario: Load rules on startup",
+          "level": 4,
+          "line": 9
+        },
+        {
+          "heading": "Scenario: Rules override defaults",
+          "level": 4,
+          "line": 15
+        },
+        {
+          "heading": "Requirement: Character personality definition",
+          "level": 3,
+          "line": 19
+        },
+        {
+          "heading": "Scenario: Personality affects chat style",
+          "level": 4,
+          "line": 22
+        },
+        {
+          "heading": "Requirement: Building blueprint definition",
+          "level": 3,
+          "line": 26
+        },
+        {
+          "heading": "Scenario: Blueprint parsed correctly",
+          "level": 4,
+          "line": 29
+        },
+        {
+          "heading": "Requirement: Safety configuration",
+          "level": 3,
+          "line": 33
+        },
+        {
+          "heading": "Scenario: Safety hardcodes override rules",
+          "level": 4,
+          "line": 36
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 12
+      }
+    },
+    {
+      "path": "openspec/specs/behavior-state-machine/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 29,
+      "nonEmptyLines": 22,
+      "sections": [
+        {
+          "heading": "behavior-state-machine Specification",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Purpose",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Requirements",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "Requirement: State-based behavior execution",
+          "level": 3,
+          "line": 6
+        },
+        {
+          "heading": "Scenario: State transition on condition",
+          "level": 4,
+          "line": 9
+        },
+        {
+          "heading": "Scenario: Emergency interrupt",
+          "level": 4,
+          "line": 14
+        },
+        {
+          "heading": "Requirement: Mode switching",
+          "level": 3,
+          "line": 19
+        },
+        {
+          "heading": "Scenario: Switch to planner mode",
+          "level": 4,
+          "line": 22
+        },
+        {
+          "heading": "Scenario: Switch to rule mode",
+          "level": 4,
+          "line": 26
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "path": "openspec/specs/benchmark-report/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 31,
+      "nonEmptyLines": 24,
+      "sections": [
+        {
+          "heading": "ADDED Requirements",
+          "level": 2,
+          "line": 1
+        },
+        {
+          "heading": "Requirement: Benchmark produces latency distribution report",
+          "level": 3,
+          "line": 3
+        },
+        {
+          "heading": "Scenario: Run benchmark with 100 turns",
+          "level": 4,
+          "line": 6
+        },
+        {
+          "heading": "Scenario: Benchmark output is exportable",
+          "level": 4,
+          "line": 12
+        },
+        {
+          "heading": "Requirement: Benchmark measures throughput under load",
+          "level": 3,
+          "line": 17
+        },
+        {
+          "heading": "Scenario: Concurrent load test",
+          "level": 4,
+          "line": 20
+        },
+        {
+          "heading": "Requirement: Benchmark compares real vs mock performance",
+          "level": 3,
+          "line": 25
+        },
+        {
+          "heading": "Scenario: Real provider benchmark",
+          "level": 4,
+          "line": 28
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    },
+    {
+      "path": "openspec/specs/bilibili-interaction-learning/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 62,
+      "nonEmptyLines": 48,
+      "sections": [
+        {
+          "heading": "bilibili-interaction-learning Specification",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Purpose",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "ADDED Requirements",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "Requirement: 弹幕互动模式采集",
+          "level": 3,
+          "line": 8
+        },
+        {
+          "heading": "Scenario: 弹幕数据采集",
+          "level": 4,
+          "line": 11
+        },
+        {
+          "heading": "Scenario: 采集样本不足",
+          "level": 4,
+          "line": 17
+        },
+        {
+          "heading": "Requirement: 交互模式分析",
+          "level": 3,
+          "line": 22
+        },
+        {
+          "heading": "Scenario: 互动模式分析",
+          "level": 4,
+          "line": 25
+        },
+        {
+          "heading": "Scenario: 互动模式结构化输出",
+          "level": 4,
+          "line": 33
+        },
+        {
+          "heading": "Requirement: 直播优化策略生成",
+          "level": 3,
+          "line": 38
+        },
+        {
+          "heading": "Scenario: 策略生成",
+          "level": 4,
+          "line": 41
+        },
+        {
+          "heading": "Scenario: 策略存储",
+          "level": 4,
+          "line": 46
+        },
+        {
+          "heading": "Requirement: 弹幕采集安全",
+          "level": 3,
+          "line": 51
+        },
+        {
+          "heading": "Scenario: API 限流遵守",
+          "level": 4,
+          "line": 54
+        },
+        {
+          "heading": "Scenario: 用户数据匿名化",
+          "level": 4,
+          "line": 59
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 15
+      }
+    },
+    {
+      "path": "openspec/specs/bilibili-meme-collector/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 101,
+      "nonEmptyLines": 81,
+      "sections": [
+        {
+          "heading": "bilibili-meme-collector Specification",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Purpose",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Requirements",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "Requirement: 热门视频采集",
+          "level": 3,
+          "line": 6
+        },
+        {
+          "heading": "Scenario: 每日定时采集",
+          "level": 4,
+          "line": 9
+        },
+        {
+          "heading": "Scenario: API 请求限流保护",
+          "level": 4,
+          "line": 15
+        },
+        {
+          "heading": "Scenario: API 调用失败降级",
+          "level": 4,
+          "line": 21
+        },
+        {
+          "heading": "Scenario: 采集超时保护",
+          "level": 4,
+          "line": 26
+        },
+        {
+          "heading": "Requirement: 高赞评论抓取",
+          "level": 3,
+          "line": 31
+        },
+        {
+          "heading": "Scenario: 评论抓取",
+          "level": 4,
+          "line": 34
+        },
+        {
+          "heading": "Scenario: 评论点赞门槛",
+          "level": 4,
+          "line": 41
+        },
+        {
+          "heading": "Scenario: 评论为空的视频",
+          "level": 4,
+          "line": 46
+        },
+        {
+          "heading": "Requirement: 梗候选识别",
+          "level": 3,
+          "line": 51
+        },
+        {
+          "heading": "Scenario: 多源梗候选识别",
+          "level": 4,
+          "line": 54
+        },
+        {
+          "heading": "Scenario: 无新梗可识别",
+          "level": 4,
+          "line": 62
+        },
+        {
+          "heading": "Requirement: 弹幕数据采集",
+          "level": 3,
+          "line": 67
+        },
+        {
+          "heading": "Scenario: 实时弹幕采集",
+          "level": 4,
+          "line": 70
+        },
+        {
+          "heading": "Scenario: 历史弹幕采集",
+          "level": 4,
+          "line": 75
+        },
+        {
+          "heading": "Scenario: 弹幕源不可用",
+          "level": 4,
+          "line": 81
+        },
+        {
+          "heading": "Requirement: Heuristic 语义级短语提取",
+          "level": 3,
+          "line": 87
+        },
+        {
+          "heading": "Scenario: Heuristic 降级识别",
+          "level": 4,
+          "line": 90
+        },
+        {
+          "heading": "Scenario: jieba 导入失败",
+          "level": 4,
+          "line": 97
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 22
+      }
+    }
+  ]
+}

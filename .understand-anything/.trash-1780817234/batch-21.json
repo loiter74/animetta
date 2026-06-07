@@ -1,0 +1,31 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 3,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "frontend/src/styles/animations.css",
+      "language": "css",
+      "fileCategory": "markup",
+      "totalLines": 106,
+      "nonEmptyLines": 91,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/styles/mobile.css",
+      "language": "css",
+      "fileCategory": "markup",
+      "totalLines": 53,
+      "nonEmptyLines": 44,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/styles/themes.css",
+      "language": "css",
+      "fileCategory": "markup",
+      "totalLines": 55,
+      "nonEmptyLines": 53,
+      "metrics": {}
+    }
+  ]
+}

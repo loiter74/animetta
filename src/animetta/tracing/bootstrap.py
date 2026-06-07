@@ -85,8 +85,8 @@ def init_tracing(
     resource = Resource.create({
         "service.name": service_name,
         "service.version": (
-            __import__("anima").__version__
-            if hasattr(__import__("anima"), "__version__")
+            __import__("animetta").__version__
+            if hasattr(__import__("animetta"), "__version__")
             else "unknown"
         ),
     })

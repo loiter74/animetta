@@ -1,0 +1,100 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 3,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "frontend/public/live2d/haru/haru_greeter_t03.model3.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 97,
+      "nonEmptyLines": 97,
+      "sections": [
+        {
+          "heading": "Version",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "FileReferences",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "Groups",
+          "level": 1,
+          "line": 70
+        },
+        {
+          "heading": "HitAreas",
+          "level": 1,
+          "line": 87
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "path": "frontend/public/live2d/haru/haru_greeter_t03.physics3.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 373,
+      "nonEmptyLines": 373,
+      "sections": [
+        {
+          "heading": "Version",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "Meta",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "PhysicsSettings",
+          "level": 1,
+          "line": 37
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "path": "frontend/public/live2d/haru/haru_greeter_t03.pose3.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 25,
+      "nonEmptyLines": 25,
+      "sections": [
+        {
+          "heading": "Type",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "Groups",
+          "level": 1,
+          "line": 3
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    }
+  ]
+}

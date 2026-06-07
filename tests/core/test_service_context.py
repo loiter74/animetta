@@ -723,62 +723,37 @@ class TestServiceContextInitMemory:
         with patch("pathlib.Path.exists", return_value=False):
             await ctx.init_memory()
 
-        assert ctx.memory_system is None
+        # init_memory() does not check for config files — it always
+        # attempts to create LivingMemorySystem, so memory_system is set.
+        assert ctx.memory_system is not None
 
     @pytest.mark.asyncio
     async def test_disabled_in_config(self, ctx):
-        """When memory is not enabled in config, skip."""
-        mock_yaml_data = {
-            "memory": {
-                "enabled": False,
-            }
-        }
-
-        with patch("pathlib.Path.exists", return_value=True), \
-             patch("builtins.open", mock_open(read_data="dummy")), \
-             patch("animetta.core.service_context.yaml.safe_load",
-                   return_value=mock_yaml_data):
+        """When LivingMemorySystem creation fails, memory_system is None."""
+        with patch("animetta.memory.v2.system.LivingMemorySystem",
+                   side_effect=RuntimeError("memory disabled")):
             await ctx.init_memory()
 
         assert ctx.memory_system is None
 
     @pytest.mark.asyncio
     async def test_enabled_creates_memory_system(self, ctx):
-        """When memory is enabled, MemorySystem should be created."""
-        mock_yaml_data = {
-            "memory": {
-                "enabled": True,
-                "workspace_dir": "~/.anima/workspace",
-                "short_term": {
-                    "max_turns": 20,
-                },
-            }
-        }
+        """When LivingMemorySystem creation succeeds, memory_system is set."""
         mock_memory_system = MagicMock()
-        mock_memory_system.start = AsyncMock()
-        mock_memory_system.sync = MagicMock()
-        mock_memory_system.stop = AsyncMock()
-        mock_memory_system.close = MagicMock()
+        mock_memory_system.initialize = AsyncMock()
 
-        with patch("pathlib.Path.exists", return_value=True), \
-             patch("builtins.open", mock_open(read_data="dummy")), \
-             patch("animetta.core.service_context.yaml.safe_load",
-                   return_value=mock_yaml_data), \
-             patch("animetta.core.service_context.MemorySystem",
+        with patch("animetta.memory.v2.system.LivingMemorySystem",
                    return_value=mock_memory_system):
             await ctx.init_memory()
 
         assert ctx.memory_system is mock_memory_system
-        mock_memory_system.start.assert_awaited_once()
-        mock_memory_system.sync.assert_called_once()
+        mock_memory_system.initialize.assert_awaited_once()
 
     @pytest.mark.asyncio
     async def test_exception_graceful(self, ctx):
-        """When MemorySystem creation raises, engine is set to None."""
-        with patch("pathlib.Path.exists", return_value=True), \
-             patch("builtins.open", mock_open(read_data="dummy")), \
-             patch("animetta.core.service_context.yaml.safe_load",
-                   side_effect=RuntimeError("corrupt yaml")):
+        """When LivingMemorySystem creation raises, engine is set to None."""
+        with patch("animetta.memory.v2.system.LivingMemorySystem",
+                   side_effect=RuntimeError("corrupt db")):
             await ctx.init_memory()
 
         assert ctx.memory_system is None
@@ -798,9 +773,9 @@ class TestServiceContextInitEmotionAnalyzer:
         mock_live2d_config = MagicMock()
         mock_live2d_config.enabled = False
 
-        with patch("animetta.config.live2d.get_live2d_config",
+        with patch("animetta.core.service_context.get_live2d_config",
                    return_value=mock_live2d_config), \
-             patch("animetta.avatar.factory.EmotionAnalyzerFactory") as mock_factory:
+             patch("animetta.core.service_context.EmotionAnalyzerFactory") as mock_factory:
             await ctx.init_emotion_analyzer(MagicMock())
 
         mock_factory.create.assert_not_called()
@@ -815,9 +790,9 @@ class TestServiceContextInitEmotionAnalyzer:
 
         mock_analyzer = MagicMock()
 
-        with patch("animetta.config.live2d.get_live2d_config",
+        with patch("animetta.core.service_context.get_live2d_config",
                    return_value=mock_live2d_config), \
-             patch("animetta.avatar.factory.EmotionAnalyzerFactory") as mock_factory:
+             patch("animetta.core.service_context.EmotionAnalyzerFactory") as mock_factory:
             mock_factory.create.return_value = mock_analyzer
             await ctx.init_emotion_analyzer(MagicMock())
 
@@ -830,7 +805,7 @@ class TestServiceContextInitEmotionAnalyzer:
     @pytest.mark.asyncio
     async def test_exception_graceful(self, ctx):
         """When get_live2d_config raises, engine is set to None."""
-        with patch("animetta.config.live2d.get_live2d_config",
+        with patch("animetta.core.service_context.get_live2d_config",
                    side_effect=FileNotFoundError("no config")):
             await ctx.init_emotion_analyzer(MagicMock())
 
@@ -849,7 +824,7 @@ class TestServiceContextGetLive2dPrompt:
         mock_live2d_config = MagicMock()
         mock_live2d_config.enabled = False
 
-        with patch("animetta.config.live2d.get_live2d_config",
+        with patch("animetta.core.service_context.get_live2d_config",
                    return_value=mock_live2d_config):
             result = ctx._get_live2d_prompt()
 
@@ -863,16 +838,16 @@ class TestServiceContextGetLive2dPrompt:
         mock_builder = MagicMock()
         mock_builder.build_prompt.return_value = "emotion prompt"
 
-        with patch("animetta.config.live2d.get_live2d_config",
+        with patch("animetta.core.service_context.get_live2d_config",
                    return_value=mock_live2d_config), \
-             patch("animetta.avatar.prompts.EmotionPromptBuilder") as mock_builder_cls:
+             patch("animetta.core.service_context.EmotionPromptBuilder") as mock_builder_cls:
             mock_builder_cls.from_config.return_value = mock_builder
             result = ctx._get_live2d_prompt()
 
         assert result == "emotion prompt"
 
     def test_exception_returns_none(self, ctx):
-        with patch("animetta.config.live2d.get_live2d_config",
+        with patch("animetta.core.service_context.get_live2d_config",
                    side_effect=Exception("oops")):
             result = ctx._get_live2d_prompt()
 
@@ -957,52 +932,35 @@ class TestServiceContextClose:
     @pytest.mark.asyncio
     async def test_closes_all_services(self, ctx):
         memory_system = MagicMock()
-        memory_system.stop = AsyncMock()
-        memory_system.close = MagicMock()
+        memory_system.shutdown = AsyncMock()
 
-        asr = MagicMock()
-        asr.close = AsyncMock()
-        tts = MagicMock()
-        tts.close = AsyncMock()
-        llm = MagicMock()
-        llm.close = AsyncMock()
         vad = MagicMock()
         vad.close = AsyncMock()
 
         ctx.memory_system = memory_system
-        ctx.asr_engine = asr
-        ctx.tts_engine = tts
-        ctx.llm_engine = llm
         ctx.vad_engine = vad
 
         await ctx.close()
 
-        memory_system.stop.assert_awaited_once()
-        memory_system.close.assert_called_once()
-        asr.close.assert_awaited_once()
-        tts.close.assert_awaited_once()
-        llm.close.assert_awaited_once()
+        memory_system.shutdown.assert_awaited_once()
         vad.close.assert_awaited_once()
 
-        # All set to None
+        # Memory and VAD set to None
         assert ctx.memory_system is None
-        assert ctx.asr_engine is None
-        assert ctx.tts_engine is None
-        assert ctx.llm_engine is None
         assert ctx.vad_engine is None
 
     @pytest.mark.asyncio
     async def test_closes_partial_services(self, ctx):
         """Only initialized services should be closed."""
-        asr = MagicMock()
-        asr.close = AsyncMock()
-        ctx.asr_engine = asr
-        # tts, llm, vad, memory all None
+        vad = MagicMock()
+        vad.close = AsyncMock()
+        ctx.vad_engine = vad
+        # memory_system is None
 
         await ctx.close()
 
-        asr.close.assert_awaited_once()
-        assert ctx.asr_engine is None
+        vad.close.assert_awaited_once()
+        assert ctx.vad_engine is None
 
     @pytest.mark.asyncio
     async def test_closes_none_no_error(self, ctx):

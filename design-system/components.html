@@ -867,6 +867,83 @@
     </div>
   </article>
 
+  <!-- Bento Grid -------------------------------- -->
+  <article class="comp">
+    <div class="comp-head">
+      <h3>Bento Grid</h3>
+      <span class="key">&lt;BentoGrid&gt; · &lt;BentoCard&gt;</span>
+      <p>Dense grid layout with scroll reveal and hover physics.</p>
+    </div>
+    <div class="comp-body">
+      <div class="grid grid-cols-4 gap-4" style="grid-auto-flow: dense;">
+        <div class="glass rounded-2xl p-6 col-span-2 row-span-2">
+          <div class="text-10px uppercase tracking-widest text-c-text-muted mb-2">2x2 Card</div>
+          <div class="text-2xl font-bold text-c-text">Large Feature</div>
+        </div>
+        <div class="glass rounded-2xl p-6">
+          <div class="text-10px uppercase tracking-widest text-c-text-muted mb-2">1x1 Card</div>
+          <div class="text-lg font-semibold text-c-text">Stat</div>
+        </div>
+        <div class="glass rounded-2xl p-6">
+          <div class="text-10px uppercase tracking-widest text-c-text-muted mb-2">1x1 Card</div>
+          <div class="text-lg font-semibold text-c-text">Metric</div>
+        </div>
+        <div class="glass rounded-2xl p-6 col-span-2">
+          <div class="text-10px uppercase tracking-widest text-c-text-muted mb-2">2x1 Card</div>
+          <div class="text-lg font-semibold text-c-text">Chart</div>
+        </div>
+      </div>
+    </div>
+    <div class="comp-spec">
+      <div class="spec-pair"><b>Grid</b><span>CSS Grid · grid-auto-flow: dense</span></div>
+      <div class="spec-pair"><b>Columns</span><span>4 / 2 / 1 (responsive)</span></div>
+      <div class="spec-pair"><b>Gap</b><span>16px (default)</span></div>
+      <div class="spec-pair"><b>Hover</b><span>scale-103 · 700ms ease-out</span></div>
+    </div>
+  </article>
+
+  <!-- Scroll Reveal -------------------------------- -->
+  <article class="comp">
+    <div class="comp-head">
+      <h3>Scroll Reveal</h3>
+      <span class="key">&lt;ScrollReveal&gt;</span>
+      <p>GSAP-powered scroll-triggered entrance animation.</p>
+    </div>
+    <div class="comp-body" style="text-align: center;">
+      <div class="glass rounded-2xl p-8 inline-block">
+        <div class="text-lg font-semibold text-c-text">Scroll to reveal</div>
+        <div class="text-sm text-c-text-dim mt-2">Fades in + slides up when entering viewport</div>
+      </div>
+    </div>
+    <div class="comp-spec">
+      <div class="spec-pair"><b>Trigger</b><span>top 85%</span></div>
+      <div class="spec-pair"><b>Animation</b><span>opacity 0→1, y 30→0</span></div>
+      <div class="spec-pair"><b>Duration</b><span>0.6s power2.out</span></div>
+      <div class="spec-pair"><b>Reduced motion</b><span>Disabled if prefers-reduced-motion</span></div>
+    </div>
+  </article>
+
+  <!-- Scroll Progress -------------------------------- -->
+  <article class="comp">
+    <div class="comp-head">
+      <h3>Scroll Progress</h3>
+      <span class="key">&lt;ScrollProgress&gt;</span>
+      <p>Fixed progress bar at top of viewport.</p>
+    </div>
+    <div class="comp-body" style="text-align: center;">
+      <div class="relative h-8 bg-c-border rounded-full overflow-hidden max-w-md mx-auto">
+        <div class="absolute inset-y-0 left-0 bg-c-accent rounded-full" style="width: 60%;"></div>
+      </div>
+      <div class="text-sm text-c-text-dim mt-4">Scroll down to see progress</div>
+    </div>
+    <div class="comp-spec">
+      <div class="spec-pair"><b>Position</b><span>fixed top-0</span></div>
+      <div class="spec-pair"><b>Height</b><span>4px</span></div>
+      <div class="spec-pair"><b>Color</b><span>--c-accent</span></div>
+      <div class="spec-pair"><b>Z-index</b><span>50</span></div>
+    </div>
+  </article>
+
 </main>
 </body>
 </html>

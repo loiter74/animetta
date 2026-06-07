@@ -5,12 +5,14 @@
   "version": "1.0.0",
   "services": {
     "backend": {
-      "dockerfile": "Dockerfile",
+      "dockerfile": "Dockerfile.cuda",
       "rootDir": ".",
       "env": {
         "ANIMETTA_HOST": "0.0.0.0",
         "ANIMETTA_PORT": "12394",
         "ANIMETTA_LOG_LEVEL": "INFO",
+        "ANIMETTA_TTS": "kokoro",
+        "ANIMETTA_DEVICE": "cuda",
         "PYTHONPATH": "/app/src"
       },
       "ports": [
@@ -30,9 +32,10 @@
   },
   "deployment": {
     "region": "hkg",
+    "gpu": true,
     "spec": {
-      "cpu": "1",
-      "memory": "512Mi"
+      "cpu": "2",
+      "memory": "2Gi"
     }
   }
 }

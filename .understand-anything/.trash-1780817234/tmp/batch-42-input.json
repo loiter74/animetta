@@ -1,0 +1,182 @@
+{
+  "projectRoot": "C:\\Users\\30262\\Project\\Anima",
+  "batchFiles": [
+    {
+      "path": "src/animetta/services/singing/interface.py",
+      "language": "python",
+      "sizeLines": 75,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/singing/lyrics.py",
+      "language": "python",
+      "sizeLines": 142,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/singing/mixer.py",
+      "language": "python",
+      "sizeLines": 67,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/singing/rvc_bridge.py",
+      "language": "python",
+      "sizeLines": 48,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/singing/separator.py",
+      "language": "python",
+      "sizeLines": 197,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/singing/svc_bridge.py",
+      "language": "python",
+      "sizeLines": 136,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/singing/svc_pipeline.py",
+      "language": "python",
+      "sizeLines": 400,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/tts/__init__.py",
+      "language": "python",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/tts/contrib/__init__.py",
+      "language": "python",
+      "sizeLines": 23,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/tts/contrib/chattts_tts.py",
+      "language": "python",
+      "sizeLines": 351,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/tts/contrib/glados_effect.py",
+      "language": "python",
+      "sizeLines": 375,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/tts/contrib/glm_tts.py",
+      "language": "python",
+      "sizeLines": 299,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/tts/contrib/kokoro_tts.py",
+      "language": "python",
+      "sizeLines": 254,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/tts/contrib/vibe_voice_tts.py",
+      "language": "python",
+      "sizeLines": 354,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/tts/edge_tts.py",
+      "language": "python",
+      "sizeLines": 206,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/tts/factory.py",
+      "language": "python",
+      "sizeLines": 159,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/tts/gpt_sovits_tts.py",
+      "language": "python",
+      "sizeLines": 277,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/tts/interface.py",
+      "language": "python",
+      "sizeLines": 60,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/tts/mock_tts.py",
+      "language": "python",
+      "sizeLines": 49,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/tts/qwen3_tts.py",
+      "language": "python",
+      "sizeLines": 458,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/vad/__init__.py",
+      "language": "python",
+      "sizeLines": 28,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/vad/detector.py",
+      "language": "python",
+      "sizeLines": 170,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/vad/factory.py",
+      "language": "python",
+      "sizeLines": 112,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/vad/interface.py",
+      "language": "python",
+      "sizeLines": 81,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/vad/mock_vad.py",
+      "language": "python",
+      "sizeLines": 151,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "src/animetta/services/singing/interface.py": [],
+    "src/animetta/services/singing/lyrics.py": [],
+    "src/animetta/services/singing/mixer.py": [],
+    "src/animetta/services/singing/rvc_bridge.py": [],
+    "src/animetta/services/singing/separator.py": [],
+    "src/animetta/services/singing/svc_bridge.py": [],
+    "src/animetta/services/singing/svc_pipeline.py": [],
+    "src/animetta/services/tts/__init__.py": [],
+    "src/animetta/services/tts/contrib/__init__.py": [],
+    "src/animetta/services/tts/contrib/chattts_tts.py": [],
+    "src/animetta/services/tts/contrib/glados_effect.py": [],
+    "src/animetta/services/tts/contrib/glm_tts.py": [],
+    "src/animetta/services/tts/contrib/kokoro_tts.py": [],
+    "src/animetta/services/tts/contrib/vibe_voice_tts.py": [],
+    "src/animetta/services/tts/edge_tts.py": [],
+    "src/animetta/services/tts/factory.py": [],
+    "src/animetta/services/tts/gpt_sovits_tts.py": [],
+    "src/animetta/services/tts/interface.py": [],
+    "src/animetta/services/tts/mock_tts.py": [],
+    "src/animetta/services/tts/qwen3_tts.py": [],
+    "src/animetta/services/vad/__init__.py": [],
+    "src/animetta/services/vad/detector.py": [],
+    "src/animetta/services/vad/factory.py": [],
+    "src/animetta/services/vad/interface.py": [],
+    "src/animetta/services/vad/mock_vad.py": []
+  }
+}

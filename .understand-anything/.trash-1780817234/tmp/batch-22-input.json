@@ -1,0 +1,56 @@
+{
+  "projectRoot": "C:\\Users\\30262\\Project\\Anima",
+  "batchFiles": [
+    {
+      "path": "observability/Dockerfile.notifier",
+      "language": "dockerfile",
+      "sizeLines": 15,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "observability/alertmanager.yml",
+      "language": "yaml",
+      "sizeLines": 16,
+      "fileCategory": "config"
+    },
+    {
+      "path": "observability/docker-compose.yml",
+      "language": "yaml",
+      "sizeLines": 121,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "observability/loki-config.yaml",
+      "language": "yaml",
+      "sizeLines": 34,
+      "fileCategory": "config"
+    },
+    {
+      "path": "observability/otel-collector-config.yaml",
+      "language": "yaml",
+      "sizeLines": 66,
+      "fileCategory": "config"
+    },
+    {
+      "path": "observability/prometheus.yml",
+      "language": "yaml",
+      "sizeLines": 18,
+      "fileCategory": "config"
+    },
+    {
+      "path": "observability/tempo-config.yaml",
+      "language": "yaml",
+      "sizeLines": 27,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "observability/Dockerfile.notifier": [],
+    "observability/alertmanager.yml": [],
+    "observability/docker-compose.yml": [],
+    "observability/loki-config.yaml": [],
+    "observability/otel-collector-config.yaml": [],
+    "observability/prometheus.yml": [],
+    "observability/tempo-config.yaml": []
+  }
+}

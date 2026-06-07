@@ -1,0 +1,49 @@
+{
+  "projectRoot": "C:\\Users\\30262\\Project\\Anima",
+  "batchFiles": [
+    {
+      "path": "tests/tracing/test_proxy.py",
+      "language": "python",
+      "sizeLines": 192,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/unit/test_tts_qwen3.py",
+      "language": "python",
+      "sizeLines": 100,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/utils/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/utils/test_auto_config.py",
+      "language": "python",
+      "sizeLines": 158,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/utils/test_env_helper.py",
+      "language": "python",
+      "sizeLines": 199,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/utils/test_logger_manager.py",
+      "language": "python",
+      "sizeLines": 87,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "tests/tracing/test_proxy.py": [],
+    "tests/unit/test_tts_qwen3.py": [],
+    "tests/utils/__init__.py": [],
+    "tests/utils/test_auto_config.py": [],
+    "tests/utils/test_env_helper.py": [],
+    "tests/utils/test_logger_manager.py": []
+  }
+}

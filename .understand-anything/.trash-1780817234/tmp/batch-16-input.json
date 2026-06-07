@@ -1,0 +1,63 @@
+{
+  "projectRoot": "C:\\Users\\30262\\Project\\Anima",
+  "batchFiles": [
+    {
+      "path": "frontend/public/live2d/haru/expressions/F01.exp3.json",
+      "language": "json",
+      "sizeLines": 10,
+      "fileCategory": "config"
+    },
+    {
+      "path": "frontend/public/live2d/haru/expressions/F02.exp3.json",
+      "language": "json",
+      "sizeLines": 35,
+      "fileCategory": "config"
+    },
+    {
+      "path": "frontend/public/live2d/haru/expressions/F03.exp3.json",
+      "language": "json",
+      "sizeLines": 55,
+      "fileCategory": "config"
+    },
+    {
+      "path": "frontend/public/live2d/haru/expressions/F04.exp3.json",
+      "language": "json",
+      "sizeLines": 60,
+      "fileCategory": "config"
+    },
+    {
+      "path": "frontend/public/live2d/haru/expressions/F05.exp3.json",
+      "language": "json",
+      "sizeLines": 35,
+      "fileCategory": "config"
+    },
+    {
+      "path": "frontend/public/live2d/haru/expressions/F06.exp3.json",
+      "language": "json",
+      "sizeLines": 35,
+      "fileCategory": "config"
+    },
+    {
+      "path": "frontend/public/live2d/haru/expressions/F07.exp3.json",
+      "language": "json",
+      "sizeLines": 65,
+      "fileCategory": "config"
+    },
+    {
+      "path": "frontend/public/live2d/haru/expressions/F08.exp3.json",
+      "language": "json",
+      "sizeLines": 30,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "frontend/public/live2d/haru/expressions/F01.exp3.json": [],
+    "frontend/public/live2d/haru/expressions/F02.exp3.json": [],
+    "frontend/public/live2d/haru/expressions/F03.exp3.json": [],
+    "frontend/public/live2d/haru/expressions/F04.exp3.json": [],
+    "frontend/public/live2d/haru/expressions/F05.exp3.json": [],
+    "frontend/public/live2d/haru/expressions/F06.exp3.json": [],
+    "frontend/public/live2d/haru/expressions/F07.exp3.json": [],
+    "frontend/public/live2d/haru/expressions/F08.exp3.json": []
+  }
+}

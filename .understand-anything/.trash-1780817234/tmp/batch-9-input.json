@@ -1,0 +1,91 @@
+{
+  "projectRoot": "C:\\Users\\30262\\Project\\Anima",
+  "batchFiles": [
+    {
+      "path": "design-system/AGENTS.md",
+      "language": "markdown",
+      "sizeLines": 78,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "design-system/CLAUDE.md",
+      "language": "markdown",
+      "sizeLines": 78,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "design-system/README.md",
+      "language": "markdown",
+      "sizeLines": 37,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "design-system/USAGE.md",
+      "language": "markdown",
+      "sizeLines": 120,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "design-system/brand.html",
+      "language": "html",
+      "sizeLines": 477,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "design-system/colors.html",
+      "language": "html",
+      "sizeLines": 556,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "design-system/colors_and_type.css",
+      "language": "css",
+      "sizeLines": 233,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "design-system/components.html",
+      "language": "html",
+      "sizeLines": 872,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "design-system/iconography.html",
+      "language": "html",
+      "sizeLines": 715,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "design-system/spacing.html",
+      "language": "html",
+      "sizeLines": 510,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "design-system/typography.html",
+      "language": "html",
+      "sizeLines": 481,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "design-system/ui-kit.html",
+      "language": "html",
+      "sizeLines": 752,
+      "fileCategory": "markup"
+    }
+  ],
+  "batchImportData": {
+    "design-system/AGENTS.md": [],
+    "design-system/CLAUDE.md": [],
+    "design-system/README.md": [],
+    "design-system/USAGE.md": [],
+    "design-system/brand.html": [],
+    "design-system/colors.html": [],
+    "design-system/colors_and_type.css": [],
+    "design-system/components.html": [],
+    "design-system/iconography.html": [],
+    "design-system/spacing.html": [],
+    "design-system/typography.html": [],
+    "design-system/ui-kit.html": []
+  }
+}

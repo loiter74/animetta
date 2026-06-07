@@ -80,15 +80,16 @@ async def tts_node(
     logger.debug(f"[{session_id}] [TTSNode] Text length: {len(response_text)} chars → {len(clean_text)} chars (cleaned)")
 
     try:
+        # Darwin-TTS on CPU needs 2-5min per sentence, so use 300s timeout
         audio = await asyncio.wait_for(
-            tts_engine.synthesize(clean_text), timeout=180.0
+            tts_engine.synthesize(clean_text), timeout=300.0
         )
     except TimeoutError:
         logger.warning(
-            f"[{session_id}] [TTSNode] TTS timed out after 30s"
+            f"[{session_id}] [TTSNode] TTS timed out after 300s"
         )
-        await log_node_error(session_id, "tts_node", "timeout", duration_ms=180000)
-        return {"tts_audio": b"", "error": "TTS timed out after 30s"}
+        await log_node_error(session_id, "tts_node", "timeout", duration_ms=300000)
+        return {"tts_audio": b"", "error": "TTS timed out after 300s"}
     except Exception as e:
         logger.warning(f"[{session_id}] [TTSNode] TTS failed ({type(e).__name__}): {e}")
         await log_node_error(session_id, "tts_node", "network_error", duration_ms=0)

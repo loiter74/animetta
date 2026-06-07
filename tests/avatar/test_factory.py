@@ -5,9 +5,11 @@ from animetta.avatar.analyzers.keyword import KeywordAnalyzer
 from animetta.avatar.analyzers.llm_tag import StandaloneLLMTagAnalyzer
 from animetta.avatar.factory import EmotionAnalyzerFactory
 from animetta.avatar.factory import TimelineStrategyFactory
+from animetta.avatar.factory import create_emotion_analyzer, create_timeline_strategy
 from animetta.avatar.strategies.duration import DurationBasedStrategy
 from animetta.avatar.strategies.intensity import IntensityBasedStrategy
 from animetta.avatar.strategies.position import PositionBasedStrategy
+from animetta.avatar.strategies.base import ITimelineStrategy
 """
 Tests for EmotionAnalyzerFactory and TimelineStrategyFactory.
 """

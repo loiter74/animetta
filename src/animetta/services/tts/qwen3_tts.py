@@ -156,6 +156,26 @@ class Qwen3TTSTTS(TTSInterface):
                 # transformers.utils.hub._is_offline_mode is cached at import time,
                 # so setting env vars later has no effect. Patch the cached value directly.
                 import os
+                
+                # Check if model is already cached
+                from pathlib import Path
+                cache_dir = Path.home() / ".cache" / "huggingface" / "hub"
+                model_cache_path = cache_dir / f"models--{self.model.replace('/', '--')}"
+                is_cached = model_cache_path.exists()
+                
+                # For Darwin-TTS model, download first if not cached
+                if "Darwin-TTS" in self.model and not is_cached:
+                    logger.info(f"Downloading Darwin-TTS model: {self.model}")
+                    self._model = Qwen3TTSModel.from_pretrained(
+                        self.model,
+                        device_map=self.device,
+                        dtype=self._get_torch_dtype(),
+                    )
+                    self._loaded = True
+                    logger.info("Darwin-TTS model downloaded and loaded successfully")
+                    return
+                
+                # For other models, use offline mode
                 os.environ["HF_HUB_OFFLINE"] = "1"
                 os.environ["TRANSFORMERS_OFFLINE"] = "1"
                 import huggingface_hub.constants as hf_constants

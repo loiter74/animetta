@@ -48,7 +48,7 @@ AI virtual companion / VTuber framework. Python backend (FastAPI + LangGraph + S
 | Add graph node | `src/animetta/orchestration/graph/` | Follow node pattern in `__init__.py` |
 | Add tool | `src/animetta/tools/base.py` or `custom_tools.py` | Use `@tool` decorator |
 | Add persona | `config/personas/` + `src/animetta/config/persona/` | YAML + Pydantic |
-| Fix WebSocket route | `src/animetta/orchestration/server/routes.py` | **1377 lines - largest file** |
+| Fix WebSocket route | `src/animetta/orchestration/server/routes.py` | **395 lines - known hotspot** |
 | Change memory behavior | `src/animetta/memory/v2/` | Atom-based V2 architecture, see ADR-005 |
 | Fix Live2D expression | `src/animetta/avatar/` + `frontend/src/components/live2d/` | |
 | Add singing feature | `src/animetta/services/singing/` | RVC/SVC pipeline + mixer |

@@ -1,0 +1,182 @@
+{
+  "projectRoot": "C:\\Users\\30262\\Project\\Anima",
+  "batchFiles": [
+    {
+      "path": "tests/smoke/conversation_e2e.py",
+      "language": "python",
+      "sizeLines": 130,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_main_path.py",
+      "language": "python",
+      "sizeLines": 204,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_notifier.py",
+      "language": "python",
+      "sizeLines": 229,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_redis_checkpoint.py",
+      "language": "python",
+      "sizeLines": 142,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_stats_store.py",
+      "language": "python",
+      "sizeLines": 374,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_tracing_exporter.py",
+      "language": "python",
+      "sizeLines": 124,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_tracing_proxy.py",
+      "language": "python",
+      "sizeLines": 121,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/tools/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/tools/minecraft/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/tools/minecraft/test_autonomous.py",
+      "language": "python",
+      "sizeLines": 505,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/tools/minecraft/test_bridge.py",
+      "language": "python",
+      "sizeLines": 420,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/tools/minecraft/test_config.py",
+      "language": "python",
+      "sizeLines": 82,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/tools/minecraft/test_planner.py",
+      "language": "python",
+      "sizeLines": 379,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/tools/minecraft/test_rules_engine.py",
+      "language": "python",
+      "sizeLines": 224,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/tools/minecraft/test_world_state.py",
+      "language": "python",
+      "sizeLines": 249,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/tools/test_base.py",
+      "language": "python",
+      "sizeLines": 138,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/tools/test_config.py",
+      "language": "python",
+      "sizeLines": 194,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/tools/test_custom_tools.py",
+      "language": "python",
+      "sizeLines": 88,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/tools/test_langchain_tools.py",
+      "language": "python",
+      "sizeLines": 114,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/tools/test_mcp_bridge.py",
+      "language": "python",
+      "sizeLines": 275,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/tracing/test_bootstrap.py",
+      "language": "python",
+      "sizeLines": 114,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/tracing/test_context.py",
+      "language": "python",
+      "sizeLines": 111,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/tracing/test_cost_calculator.py",
+      "language": "python",
+      "sizeLines": 105,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/tracing/test_exporter.py",
+      "language": "python",
+      "sizeLines": 232,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/tracing/test_metrics.py",
+      "language": "python",
+      "sizeLines": 107,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "tests/smoke/conversation_e2e.py": [],
+    "tests/test_main_path.py": [],
+    "tests/test_notifier.py": [],
+    "tests/test_redis_checkpoint.py": [],
+    "tests/test_stats_store.py": [],
+    "tests/test_tracing_exporter.py": [],
+    "tests/test_tracing_proxy.py": [],
+    "tests/tools/__init__.py": [],
+    "tests/tools/minecraft/__init__.py": [],
+    "tests/tools/minecraft/test_autonomous.py": [],
+    "tests/tools/minecraft/test_bridge.py": [],
+    "tests/tools/minecraft/test_config.py": [],
+    "tests/tools/minecraft/test_planner.py": [],
+    "tests/tools/minecraft/test_rules_engine.py": [],
+    "tests/tools/minecraft/test_world_state.py": [],
+    "tests/tools/test_base.py": [],
+    "tests/tools/test_config.py": [],
+    "tests/tools/test_custom_tools.py": [],
+    "tests/tools/test_langchain_tools.py": [],
+    "tests/tools/test_mcp_bridge.py": [],
+    "tests/tracing/test_bootstrap.py": [],
+    "tests/tracing/test_context.py": [],
+    "tests/tracing/test_cost_calculator.py": [],
+    "tests/tracing/test_exporter.py": [],
+    "tests/tracing/test_metrics.py": []
+  }
+}

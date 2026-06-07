@@ -47,6 +47,7 @@ function goTo(name: string) {
       <div class="flex items-center gap-1 sm:gap-3 min-w-0 overflow-hidden">
         <button
           @click="goTo('music')"
+          aria-label="音乐制作"
           class="px-2 sm:px-3 py-1.5 text-xs rounded-md transition-colors whitespace-nowrap"
           :class="route.name === 'music'
             ? 'text-c-accent bg-c-accent-soft'
@@ -56,6 +57,7 @@ function goTo(name: string) {
         </button>
         <button
           @click="goTo('meme-review')"
+          aria-label="梗筛选"
           class="px-2 sm:px-3 py-1.5 text-xs rounded-md transition-colors whitespace-nowrap"
           :class="route.name === 'meme-review'
             ? 'text-c-accent bg-c-accent-soft'
@@ -65,6 +67,7 @@ function goTo(name: string) {
         </button>
         <button
           @click="goTo('dashboard')"
+          :aria-label="route.name === 'dashboard' ? '返回聊天' : '仪表盘'"
           class="px-2 sm:px-3 py-1.5 text-xs rounded-md transition-colors whitespace-nowrap"
           :class="route.name === 'dashboard'
             ? 'text-c-accent bg-c-accent-soft'

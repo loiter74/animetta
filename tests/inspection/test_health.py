@@ -7,7 +7,7 @@ import sys
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from animetta.inspection.checks.health import ComponentCheck, check_all_components, _probe_chroma, _probe_llm_available, _probe_asr_available, _probe_memory_read, _probe_stats_store, _probe_metrics_endpoint
+from animetta.inspection.checks.health import ComponentCheck, check_all_components, _probe_chroma, _probe_llm_available, _probe_asr_available, _probe_memory_read, _probe_stats_store, _probe_metrics_endpoint, STATS_STORE_TIMEOUT, CHROMA_TIMEOUT, LLM_TIMEOUT, TTS_TIMEOUT, ASR_TIMEOUT, MEMORY_TIMEOUT, METRICS_TIMEOUT, _run_single_probe, COMPONENT_CHECKS, _probe_tts_available
 from animetta.inspection.checks.metrics import check_metrics_pipeline
 from animetta.inspection.checks.consistency import chroma_responds
 from animetta.inspection.models import CheckResult
@@ -112,7 +112,7 @@ class TestComponentChecksRegistry:
     """Validate the COMPONENT_CHECKS registry."""
 
     def test_has_seven_checks(self):
-        assert len(COMPONENT_CHECKS) == 7
+        assert len(COMPONENT_CHECKS) == 8
 
     def test_all_names_unique(self):
         names = [c.name for c in COMPONENT_CHECKS]
@@ -124,6 +124,7 @@ class TestComponentChecksRegistry:
             "stats_store",
             "chroma",
             "llm_available",
+            "llm_connectivity",
             "tts_available",
             "asr_available",
             "memory_read",
@@ -166,7 +167,7 @@ class TestProbeStatsStore:
         mock_store._db.execute = AsyncMock(return_value=mock_cursor)
 
         with patch(
-            "animetta.orchestration.graph.stats_store.get_stats_store",
+            "animetta.inspection.checks.health.get_stats_store",
             AsyncMock(return_value=mock_store),
         ):
             result = await _probe_stats_store()
@@ -175,7 +176,7 @@ class TestProbeStatsStore:
     @pytest.mark.asyncio(loop_scope="function")
     async def test_failure_on_exception(self):
         with patch(
-            "animetta.orchestration.graph.stats_store.get_stats_store",
+            "animetta.inspection.checks.health.get_stats_store",
             AsyncMock(side_effect=RuntimeError("db down")),
         ):
             result = await _probe_stats_store()
@@ -527,7 +528,7 @@ class TestCheckAllComponents:
 
         with (
             patch(
-                "animetta.orchestration.graph.stats_store.get_stats_store",
+                "animetta.inspection.checks.health.get_stats_store",
                 AsyncMock(return_value=mock_store),
             ),
             patch("animetta.core.service_pool.ServicePool._ready", False),
@@ -541,11 +542,12 @@ class TestCheckAllComponents:
                 sys.modules.pop("chromadb.config", None)
 
         assert isinstance(results, dict)
-        assert len(results) == 7
+        assert len(results) == 8
         expected_names = {
             "stats_store",
             "chroma",
             "llm_available",
+            "llm_connectivity",
             "tts_available",
             "asr_available",
             "memory_read",
@@ -575,7 +577,7 @@ class TestCheckAllComponents:
 
         with (
             patch(
-                "animetta.orchestration.graph.stats_store.get_stats_store",
+                "animetta.inspection.checks.health.get_stats_store",
                 AsyncMock(return_value=mock_store),
             ),
             patch("animetta.core.service_pool.ServicePool._ready", True),
@@ -620,7 +622,7 @@ class TestCheckAllComponents:
         )
 
         with patch(
-            "anima.inspection.checks.health.COMPONENT_CHECKS", custom_checks
+            "animetta.inspection.checks.health.COMPONENT_CHECKS", custom_checks
         ):
             results = await check_all_components()
 
@@ -645,7 +647,7 @@ class TestCheckAllComponents:
         )
 
         with patch(
-            "anima.inspection.checks.health.COMPONENT_CHECKS", custom_checks
+            "animetta.inspection.checks.health.COMPONENT_CHECKS", custom_checks
         ):
             results = await check_all_components()
 
@@ -668,7 +670,7 @@ class TestCheckAllComponents:
         )
 
         with patch(
-            "anima.inspection.checks.health.COMPONENT_CHECKS", custom_checks
+            "animetta.inspection.checks.health.COMPONENT_CHECKS", custom_checks
         ):
             results = await check_all_components()
 
@@ -688,7 +690,7 @@ class TestCheckAllComponents:
         )
 
         with patch(
-            "anima.inspection.checks.health.COMPONENT_CHECKS", custom_checks
+            "animetta.inspection.checks.health.COMPONENT_CHECKS", custom_checks
         ):
             results = await check_all_components()
 
@@ -702,6 +704,6 @@ class TestCheckAllComponents:
         try:
             results = await check_all_components()
             assert isinstance(results, dict)
-            assert len(results) == 7
+            assert len(results) == 8
         except Exception as e:
             pytest.fail(f"check_all_components raised unexpectedly: {e}")

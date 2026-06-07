@@ -106,6 +106,7 @@ useDanmaku()
             <button
               v-for="tab in (['chat', 'live', 'memory', 'personality', 'singing', 'settings'] as const)"
               :key="tab"
+              :aria-label="desktopTabLabels[tab]"
               class="px-3.5 py-2 rounded-lg text-11px font-medium transition-all"
               :class="activeTab === tab
                 ? 'bg-c-accent/20 text-c-accent'

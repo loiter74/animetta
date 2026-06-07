@@ -2,6 +2,7 @@ from __future__ import annotations
 """Tests for inspection data models."""
 
 import pytest
+from animetta.inspection.models import CheckResult, InspectionReport
 
 
 class TestCheckResult:

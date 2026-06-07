@@ -1,0 +1,182 @@
+{
+  "projectRoot": "C:\\Users\\30262\\Project\\Anima",
+  "batchFiles": [
+    {
+      "path": "tests/orchestration/graph/test_emotion_node.py",
+      "language": "python",
+      "sizeLines": 68,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/orchestration/graph/test_interrupt_handler.py",
+      "language": "python",
+      "sizeLines": 182,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/orchestration/graph/test_llm_node.py",
+      "language": "python",
+      "sizeLines": 322,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/orchestration/graph/test_memory_middleware.py",
+      "language": "python",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/orchestration/graph/test_node_error.py",
+      "language": "python",
+      "sizeLines": 125,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/orchestration/graph/test_observability.py",
+      "language": "python",
+      "sizeLines": 495,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/orchestration/graph/test_orchestrator.py",
+      "language": "python",
+      "sizeLines": 110,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/orchestration/graph/test_output_node.py",
+      "language": "python",
+      "sizeLines": 115,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/orchestration/graph/test_personality_node.py",
+      "language": "python",
+      "sizeLines": 184,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/orchestration/graph/test_scheduler.py",
+      "language": "python",
+      "sizeLines": 536,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/orchestration/graph/test_state.py",
+      "language": "python",
+      "sizeLines": 313,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/orchestration/graph/test_tool_manager.py",
+      "language": "python",
+      "sizeLines": 269,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/orchestration/graph/test_tool_node.py",
+      "language": "python",
+      "sizeLines": 275,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/orchestration/graph/test_translation_state.py",
+      "language": "python",
+      "sizeLines": 159,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/orchestration/graph/test_tts_node.py",
+      "language": "python",
+      "sizeLines": 65,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/orchestration/server/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/orchestration/server/test_desktop.py",
+      "language": "python",
+      "sizeLines": 259,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/orchestration/server/test_lifecycle.py",
+      "language": "python",
+      "sizeLines": 218,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/orchestration/server/test_live2d_server.py",
+      "language": "python",
+      "sizeLines": 342,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/orchestration/server/test_live2d.py",
+      "language": "python",
+      "sizeLines": 259,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/orchestration/server/test_routes.py",
+      "language": "python",
+      "sizeLines": 349,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/orchestration/server/test_session.py",
+      "language": "python",
+      "sizeLines": 371,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/orchestration/server/test_stats_api.py",
+      "language": "python",
+      "sizeLines": 253,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/orchestration/server/test_websocket.py",
+      "language": "python",
+      "sizeLines": 276,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/services/__init__.py",
+      "language": "python",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "tests/orchestration/graph/test_emotion_node.py": [],
+    "tests/orchestration/graph/test_interrupt_handler.py": [],
+    "tests/orchestration/graph/test_llm_node.py": [],
+    "tests/orchestration/graph/test_memory_middleware.py": [],
+    "tests/orchestration/graph/test_node_error.py": [],
+    "tests/orchestration/graph/test_observability.py": [],
+    "tests/orchestration/graph/test_orchestrator.py": [],
+    "tests/orchestration/graph/test_output_node.py": [],
+    "tests/orchestration/graph/test_personality_node.py": [],
+    "tests/orchestration/graph/test_scheduler.py": [],
+    "tests/orchestration/graph/test_state.py": [],
+    "tests/orchestration/graph/test_tool_manager.py": [],
+    "tests/orchestration/graph/test_tool_node.py": [],
+    "tests/orchestration/graph/test_translation_state.py": [],
+    "tests/orchestration/graph/test_tts_node.py": [],
+    "tests/orchestration/server/__init__.py": [],
+    "tests/orchestration/server/test_desktop.py": [],
+    "tests/orchestration/server/test_lifecycle.py": [],
+    "tests/orchestration/server/test_live2d_server.py": [],
+    "tests/orchestration/server/test_live2d.py": [],
+    "tests/orchestration/server/test_routes.py": [],
+    "tests/orchestration/server/test_session.py": [],
+    "tests/orchestration/server/test_stats_api.py": [],
+    "tests/orchestration/server/test_websocket.py": [],
+    "tests/services/__init__.py": []
+  }
+}

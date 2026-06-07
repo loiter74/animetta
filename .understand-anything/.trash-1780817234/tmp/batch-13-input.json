@@ -1,0 +1,147 @@
+{
+  "projectRoot": "C:\\Users\\30262\\Project\\Anima",
+  "batchFiles": [
+    {
+      "path": "docs/plans/2026-04-29-pipeline-stats-dashboard-design.md",
+      "language": "markdown",
+      "sizeLines": 178,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/plans/2026-04-29-pipeline-stats-dashboard.md",
+      "language": "markdown",
+      "sizeLines": 1147,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/plans/2026-05-01-enterprise-upgrade-design.md",
+      "language": "markdown",
+      "sizeLines": 248,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/plans/2026-05-01-enterprise-upgrade-plan.md",
+      "language": "markdown",
+      "sizeLines": 810,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/plans/2026-05-01-enterprise-upgrade-status.md",
+      "language": "markdown",
+      "sizeLines": 83,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/plans/2026-05-01-interview-showcase-design.md",
+      "language": "markdown",
+      "sizeLines": 276,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/plans/2026-05-01-interview-showcase-plan.md",
+      "language": "markdown",
+      "sizeLines": 793,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/plans/2026-05-01-startup-refactor-design.md",
+      "language": "markdown",
+      "sizeLines": 76,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/plans/2026-05-01-startup-refactor-plan.md",
+      "language": "markdown",
+      "sizeLines": 539,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/plans/2026-05-01-unified-model-loading-design.md",
+      "language": "markdown",
+      "sizeLines": 184,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/plans/2026-05-01-unified-model-loading-plan.md",
+      "language": "markdown",
+      "sizeLines": 834,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/plans/2026-05-10-background-command-design.md",
+      "language": "markdown",
+      "sizeLines": 89,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/plans/2026-05-10-interview-enhancements-design.md",
+      "language": "markdown",
+      "sizeLines": 327,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/plans/2026-05-10-interview-enhancements-plan.md",
+      "language": "markdown",
+      "sizeLines": 909,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/plans/2026-05-10-interview-flow-design.md",
+      "language": "markdown",
+      "sizeLines": 79,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/plans/2026-05-10-memory-architecture-refactor-design.md",
+      "language": "markdown",
+      "sizeLines": 69,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/plans/2026-05-10-memory-architecture-refactor.md",
+      "language": "markdown",
+      "sizeLines": 754,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/plans/2026-05-12-memory-pipeline-tests-design.md",
+      "language": "markdown",
+      "sizeLines": 34,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/plans/2026-05-17-singing-module-design.md",
+      "language": "markdown",
+      "sizeLines": 181,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/plans/2026-05-17-singing-module-plan.md",
+      "language": "markdown",
+      "sizeLines": 1748,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    "docs/plans/2026-04-29-pipeline-stats-dashboard-design.md": [],
+    "docs/plans/2026-04-29-pipeline-stats-dashboard.md": [],
+    "docs/plans/2026-05-01-enterprise-upgrade-design.md": [],
+    "docs/plans/2026-05-01-enterprise-upgrade-plan.md": [],
+    "docs/plans/2026-05-01-enterprise-upgrade-status.md": [],
+    "docs/plans/2026-05-01-interview-showcase-design.md": [],
+    "docs/plans/2026-05-01-interview-showcase-plan.md": [],
+    "docs/plans/2026-05-01-startup-refactor-design.md": [],
+    "docs/plans/2026-05-01-startup-refactor-plan.md": [],
+    "docs/plans/2026-05-01-unified-model-loading-design.md": [],
+    "docs/plans/2026-05-01-unified-model-loading-plan.md": [],
+    "docs/plans/2026-05-10-background-command-design.md": [],
+    "docs/plans/2026-05-10-interview-enhancements-design.md": [],
+    "docs/plans/2026-05-10-interview-enhancements-plan.md": [],
+    "docs/plans/2026-05-10-interview-flow-design.md": [],
+    "docs/plans/2026-05-10-memory-architecture-refactor-design.md": [],
+    "docs/plans/2026-05-10-memory-architecture-refactor.md": [],
+    "docs/plans/2026-05-12-memory-pipeline-tests-design.md": [],
+    "docs/plans/2026-05-17-singing-module-design.md": [],
+    "docs/plans/2026-05-17-singing-module-plan.md": []
+  }
+}

@@ -48,7 +48,7 @@ from .session import SessionManager
 from animetta.core.model_loading_manager import ModelLoadingManager
 from animetta.core.service_pool import ServicePool
 from animetta.tracing.bootstrap import init_tracing
-from .stats_api import get_stats_routes
+from .stats_api import get_stats_routes, set_model_manager
 from animetta.core.model_loading_manager import ModelLoadingManager
 from animetta.core.service_pool import ServicePool
 from animetta.tracing.bootstrap import init_tracing
@@ -153,6 +153,7 @@ class WebSocketServer:
             routes=stats_routes + metrics_route + singing_routes + frontend_routes + [Mount("/", app=sio_app)],
         )
         self.model_manager = ModelLoadingManager()
+        set_model_manager(self.model_manager)
         self.session_manager = SessionManager(model_manager=self.model_manager)
         self.desktop_manager = DesktopClientManager()
         self.live2d_manager = Live2DManager()

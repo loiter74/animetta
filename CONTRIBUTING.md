@@ -62,6 +62,47 @@ See [TESTING.md](TESTING.md) for detailed test conventions.
 4. Update docs if changing public interfaces
 5. Open PR against `main`
 
+## Docker Development
+
+```bash
+# Build and run with GPU
+docker compose up -d --build
+
+# View logs
+docker compose logs -f animetta
+
+# Run tests inside container
+docker compose exec animetta PYTHONPATH=/app/src python -m pytest tests/ -v
+
+# Shell access
+docker compose exec animetta bash
+
+# Rebuild after code changes
+docker compose build && docker compose up -d
+
+# CPU-only mode
+docker compose -f docker-compose.cpu.yml up -d --build
+```
+
+### Container Structure
+
+The container runs nginx (port 80) + Python backend (port 12394) via `docker/entrypoint.sh`. Frontend is pre-built and served as static files by nginx. See `docs/docker-deployment.md` for full details.
+
+### Debugging
+
+```bash
+# Check backend health
+curl http://localhost/health
+
+# Inspect container
+docker compose exec animetta env          # Environment variables
+docker compose exec animetta ls /app/data # Check volumes
+docker compose exec animetta nvidia-smi   # GPU status
+
+# Restart backend only (without rebuild)
+docker compose restart animetta
+```
+
 ## Adding a New Service Provider
 
 1. Create config class with `@ProviderRegistry.register_config`

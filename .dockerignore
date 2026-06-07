@@ -8,7 +8,6 @@ __pycache__
 *.md
 docs/
 tests/
-frontend/
 node_modules/
 openspec/
 memory_db/
@@ -29,3 +28,18 @@ observability/
 coverage/
 .coverage
 *.log
+
+# Keep frontend/ for build but exclude dev artifacts
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Keep docker/ config files
+# docker/
+
+# Exclude runtime data
+data/
+logs/
+dogfood-output/
+playwright-mcp/
+.gitnexus/

@@ -1,0 +1,572 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 5,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "docs/README.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 78,
+      "nonEmptyLines": 56,
+      "sections": [
+        {
+          "heading": "Animetta 项目文档",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "文档导航",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "开发指南",
+          "level": 3,
+          "line": 9
+        },
+        {
+          "heading": "架构设计",
+          "level": 3,
+          "line": 16
+        },
+        {
+          "heading": "功能模块",
+          "level": 3,
+          "line": 23
+        },
+        {
+          "heading": "实现计划",
+          "level": 3,
+          "line": 29
+        },
+        {
+          "heading": "项目结构",
+          "level": 2,
+          "line": 37
+        },
+        {
+          "heading": "快速开始",
+          "level": 2,
+          "line": 56
+        },
+        {
+          "heading": "技术栈",
+          "level": 2,
+          "line": 71
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "path": "docs/TOOLS.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 272,
+      "nonEmptyLines": 205,
+      "sections": [
+        {
+          "heading": "Animetta 工具系统使用说明",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "概述",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "支持的功能",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "目录结构",
+          "level": 2,
+          "line": 13
+        },
+        {
+          "heading": "内置工具",
+          "level": 2,
+          "line": 25
+        },
+        {
+          "heading": "配置文件",
+          "level": 2,
+          "line": 38
+        },
+        {
+          "heading": "LangGraph 集成",
+          "level": 2,
+          "line": 63
+        },
+        {
+          "heading": "数据流",
+          "level": 3,
+          "line": 67
+        },
+        {
+          "heading": "启用工具调用",
+          "level": 3,
+          "line": 84
+        },
+        {
+          "heading": "配置说明",
+          "level": 3,
+          "line": 90
+        },
+        {
+          "heading": "使用示例",
+          "level": 2,
+          "line": 104
+        },
+        {
+          "heading": "测试工具调用",
+          "level": 3,
+          "line": 106
+        },
+        {
+          "heading": "代码示例",
+          "level": 3,
+          "line": 119
+        },
+        {
+          "heading": "自定义工具",
+          "level": 3,
+          "line": 138
+        },
+        {
+          "heading": "技术实现",
+          "level": 2,
+          "line": 160
+        },
+        {
+          "heading": "GLM-4 工具调用格式",
+          "level": 3,
+          "line": 162
+        },
+        {
+          "heading": "关键文件",
+          "level": 3,
+          "line": 199
+        },
+        {
+          "heading": "故障排除",
+          "level": 2,
+          "line": 209
+        },
+        {
+          "heading": "问题：工具没有被调用",
+          "level": 3,
+          "line": 211
+        },
+        {
+          "heading": "问题：工具调用报错",
+          "level": 3,
+          "line": 237
+        },
+        {
+          "heading": "问题：无限循环调用工具",
+          "level": 3,
+          "line": 245
+        },
+        {
+          "heading": "依赖",
+          "level": 2,
+          "line": 253
+        },
+        {
+          "heading": "注意事项",
+          "level": 2,
+          "line": 259
+        },
+        {
+          "heading": "下一步",
+          "level": 2,
+          "line": 266
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 24
+      }
+    },
+    {
+      "path": "docs/docker-deployment.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 152,
+      "nonEmptyLines": 109,
+      "sections": [
+        {
+          "heading": "Docker Deployment Guide",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Prerequisites",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "Install NVIDIA Container Toolkit",
+          "level": 3,
+          "line": 10
+        },
+        {
+          "heading": "Quick Start",
+          "level": 2,
+          "line": 25
+        },
+        {
+          "heading": "GPU vs CPU Deployment",
+          "level": 2,
+          "line": 43
+        },
+        {
+          "heading": "Volume Mounts",
+          "level": 2,
+          "line": 59
+        },
+        {
+          "heading": "Environment Variables",
+          "level": 2,
+          "line": 73
+        },
+        {
+          "heading": "Troubleshooting",
+          "level": 2,
+          "line": 92
+        },
+        {
+          "heading": "Container won't start",
+          "level": 3,
+          "line": 94
+        },
+        {
+          "heading": "GPU not detected",
+          "level": 3,
+          "line": 100
+        },
+        {
+          "heading": "Health check failing",
+          "level": 3,
+          "line": 110
+        },
+        {
+          "heading": "Models not downloading",
+          "level": 3,
+          "line": 118
+        },
+        {
+          "heading": "Frontend not loading",
+          "level": 3,
+          "line": 126
+        },
+        {
+          "heading": "Permission errors on volumes",
+          "level": 3,
+          "line": 134
+        },
+        {
+          "heading": "Building Locally",
+          "level": 2,
+          "line": 141
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 15
+      }
+    },
+    {
+      "path": "docs/rag-evaluation-report.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 301,
+      "nonEmptyLines": 202,
+      "sections": [
+        {
+          "heading": "Animetta RAG 系统评估报告",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "1. 动机：为什么需要这份报告",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "2. 评估数据集",
+          "level": 2,
+          "line": 21
+        },
+        {
+          "heading": "2.1 构建方法",
+          "level": 3,
+          "line": 23
+        },
+        {
+          "heading": "2.2 数据集规模与分布",
+          "level": 3,
+          "line": 35
+        },
+        {
+          "heading": "2.3 示例查询",
+          "level": 3,
+          "line": 47
+        },
+        {
+          "heading": "2.4 标注信度",
+          "level": 3,
+          "line": 58
+        },
+        {
+          "heading": "3. 评估方法论",
+          "level": 2,
+          "line": 64
+        },
+        {
+          "heading": "3.1 检索指标",
+          "level": 3,
+          "line": 66
+        },
+        {
+          "heading": "3.2 实验分组",
+          "level": 3,
+          "line": 81
+        },
+        {
+          "heading": "3.3 评估管线",
+          "level": 3,
+          "line": 92
+        },
+        {
+          "heading": "3.4 硬件环境",
+          "level": 3,
+          "line": 101
+        },
+        {
+          "heading": "4. 基线结果",
+          "level": 2,
+          "line": 107
+        },
+        {
+          "heading": "4.1 整体指标",
+          "level": 3,
+          "line": 109
+        },
+        {
+          "heading": "4.2 按类别分析",
+          "level": 3,
+          "line": 126
+        },
+        {
+          "heading": "5. 消融实验",
+          "level": 2,
+          "line": 151
+        },
+        {
+          "heading": "实验 1：混合权重网格",
+          "level": 3,
+          "line": 153
+        },
+        {
+          "heading": "实验 2：Chunk 大小",
+          "level": 3,
+          "line": 175
+        },
+        {
+          "heading": "6. 关键发现",
+          "level": 2,
+          "line": 213
+        },
+        {
+          "heading": "6.1 Chunk 大小是决定性参数",
+          "level": 3,
+          "line": 215
+        },
+        {
+          "heading": "6.2 混合权重没有意义（负结果）",
+          "level": 3,
+          "line": 219
+        },
+        {
+          "heading": "6.3 时间查询是系统的阿喀琉斯之踵",
+          "level": 3,
+          "line": 223
+        },
+        {
+          "heading": "6.4 BM25 在中英文混合场景下表现不佳",
+          "level": 3,
+          "line": 227
+        },
+        {
+          "heading": "6.5 事实检索工作得不错",
+          "level": 3,
+          "line": 231
+        },
+        {
+          "heading": "7. 局限性",
+          "level": 2,
+          "line": 237
+        },
+        {
+          "heading": "8. 未来工作",
+          "level": 2,
+          "line": 255
+        },
+        {
+          "heading": "短期（当前 sprint）",
+          "level": 3,
+          "line": 257
+        },
+        {
+          "heading": "中期（下个 sprint）",
+          "level": 3,
+          "line": 263
+        },
+        {
+          "heading": "长期（路线图）",
+          "level": 3,
+          "line": 269
+        },
+        {
+          "heading": "附录 A：全部实验数据汇总",
+          "level": 2,
+          "line": 278
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 30
+      }
+    },
+    {
+      "path": "docs/rvc-training-guide.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 133,
+      "nonEmptyLines": 98,
+      "sections": [
+        {
+          "heading": "RVC WebUI Training Guide",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Overview",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "Step 1: Launch RVC WebUI",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "Step 2: Go to \"Train\" tab",
+          "level": 2,
+          "line": 18
+        },
+        {
+          "heading": "2a: Experiment Name",
+          "level": 3,
+          "line": 20
+        },
+        {
+          "heading": "2b: Target Sample Rate",
+          "level": 3,
+          "line": 23
+        },
+        {
+          "heading": "2c: Version",
+          "level": 3,
+          "line": 26
+        },
+        {
+          "heading": "2d: Training Data Path",
+          "level": 3,
+          "line": 29
+        },
+        {
+          "heading": "2e: One-click Preprocessing",
+          "level": 3,
+          "line": 32
+        },
+        {
+          "heading": "Step 3: Train",
+          "level": 2,
+          "line": 37
+        },
+        {
+          "heading": "Parameters",
+          "level": 3,
+          "line": 39
+        },
+        {
+          "heading": "Start Training",
+          "level": 3,
+          "line": 49
+        },
+        {
+          "heading": "Checkpoint Selection",
+          "level": 3,
+          "line": 54
+        },
+        {
+          "heading": "Step 4: Build Index",
+          "level": 2,
+          "line": 61
+        },
+        {
+          "heading": "Step 5: Quick Test",
+          "level": 2,
+          "line": 68
+        },
+        {
+          "heading": "Step 6: Deploy to Anima",
+          "level": 2,
+          "line": 86
+        },
+        {
+          "heading": "Expected Results",
+          "level": 2,
+          "line": 96
+        },
+        {
+          "heading": "Troubleshooting",
+          "level": 2,
+          "line": 107
+        },
+        {
+          "heading": "Repeat for New Characters",
+          "level": 2,
+          "line": 118
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 19
+      }
+    }
+  ]
+}

@@ -14,6 +14,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from animetta.orchestration.graph.stats_store import StatsStore
+from animetta.inspection.checks.consistency import has_trace_in_last, chroma_responds, check_data_consistency, log_file_stale
+from animetta.inspection.models import CheckResult
 
 
 # ─────────────────────────────────────────────────────────────
@@ -57,7 +59,7 @@ class TestHasTraceInLast:
 
         mock_store = _make_mock_store(trace_count=3)
         with patch(
-            "anima.inspection.checks.consistency.get_stats_store",
+            "animetta.inspection.checks.consistency.get_stats_store",
             new=AsyncMock(return_value=mock_store),
         ):
             result = await has_trace_in_last(minutes=60)
@@ -68,7 +70,7 @@ class TestHasTraceInLast:
 
         mock_store = _make_mock_store(trace_count=0)
         with patch(
-            "anima.inspection.checks.consistency.get_stats_store",
+            "animetta.inspection.checks.consistency.get_stats_store",
             new=AsyncMock(return_value=mock_store),
         ):
             result = await has_trace_in_last(minutes=60)
@@ -79,7 +81,7 @@ class TestHasTraceInLast:
 
         mock_store = _make_mock_store(raises=True)
         with patch(
-            "anima.inspection.checks.consistency.get_stats_store",
+            "animetta.inspection.checks.consistency.get_stats_store",
             new=AsyncMock(return_value=mock_store),
         ):
             result = await has_trace_in_last(minutes=60)
@@ -89,7 +91,7 @@ class TestHasTraceInLast:
     async def test_get_stats_store_raises(self):
 
         with patch(
-            "anima.inspection.checks.consistency.get_stats_store",
+            "animetta.inspection.checks.consistency.get_stats_store",
             side_effect=RuntimeError("boom"),
         ):
             result = await has_trace_in_last(minutes=60)
@@ -186,7 +188,7 @@ class TestLogFileStale:
 class TestCheckDataConsistency:
     """Aggregation: check_data_consistency()."""
 
-    _STATS = "anima.inspection.checks.consistency.get_stats_store"
+    _STATS = "animetta.inspection.checks.consistency.get_stats_store"
     _CHROMA = "chromadb.PersistentClient"
 
     @pytest.mark.asyncio

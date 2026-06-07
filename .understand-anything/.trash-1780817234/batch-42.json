@@ -1,0 +1,6625 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 25,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "src/animetta/services/singing/interface.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 75,
+      "nonEmptyLines": 58,
+      "classes": [
+        {
+          "name": "PipelineStage",
+          "startLine": 10,
+          "endLine": 18,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "LyricLine",
+          "startLine": 22,
+          "endLine": 26,
+          "methods": [],
+          "properties": [
+            "text",
+            "translation",
+            "start_ms",
+            "end_ms"
+          ]
+        },
+        {
+          "name": "SongResult",
+          "startLine": 30,
+          "endLine": 39,
+          "methods": [],
+          "properties": [
+            "audio_path",
+            "subtitle_path",
+            "tts_audio_path",
+            "original_audio_path",
+            "vocals_path",
+            "duration_sec",
+            "lyrics",
+            "video_title",
+            "volumes"
+          ]
+        },
+        {
+          "name": "PipelineProgress",
+          "startLine": 43,
+          "endLine": 46,
+          "methods": [],
+          "properties": [
+            "stage",
+            "progress",
+            "message"
+          ]
+        },
+        {
+          "name": "SingingService",
+          "startLine": 49,
+          "endLine": 75,
+          "methods": [
+            "process",
+            "cancel",
+            "confirm_lyrics",
+            "get_progress",
+            "close"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "PipelineStage",
+          "line": 10,
+          "isDefault": false
+        },
+        {
+          "name": "LyricLine",
+          "line": 21,
+          "isDefault": false
+        },
+        {
+          "name": "SongResult",
+          "line": 29,
+          "isDefault": false
+        },
+        {
+          "name": "PipelineProgress",
+          "line": 42,
+          "isDefault": false
+        },
+        {
+          "name": "SingingService",
+          "line": 49,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 5,
+        "functionCount": 0,
+        "classCount": 5
+      }
+    },
+    {
+      "path": "src/animetta/services/singing/lyrics.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 142,
+      "nonEmptyLines": 119,
+      "classes": [
+        {
+          "name": "LyricsGenerator",
+          "startLine": 14,
+          "endLine": 142,
+          "methods": [
+            "__init__",
+            "_get_model",
+            "transcribe",
+            "_build_ass_header",
+            "_segments_to_ass",
+            "_sec_to_ass_time",
+            "parse_lyric_lines",
+            "_ass_time_to_ms",
+            "parse_lrc",
+            "close"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "LyricsGenerator",
+          "line": 14,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "Path",
+          "lineNumber": 26
+        },
+        {
+          "caller": "__init__",
+          "callee": "self.output_dir.mkdir",
+          "lineNumber": 27
+        },
+        {
+          "caller": "_get_model",
+          "callee": "faster_whisper.WhisperModel",
+          "lineNumber": 35
+        },
+        {
+          "caller": "transcribe",
+          "callee": "logger.info",
+          "lineNumber": 43
+        },
+        {
+          "caller": "transcribe",
+          "callee": "self._get_model",
+          "lineNumber": 45
+        },
+        {
+          "caller": "_do_transcribe",
+          "callee": "model.transcribe",
+          "lineNumber": 51
+        },
+        {
+          "caller": "_do_transcribe",
+          "callee": "list",
+          "lineNumber": 52
+        },
+        {
+          "caller": "transcribe",
+          "callee": "asyncio.to_thread",
+          "lineNumber": 54
+        },
+        {
+          "caller": "transcribe",
+          "callee": "self._segments_to_ass",
+          "lineNumber": 56
+        },
+        {
+          "caller": "transcribe",
+          "callee": "self._build_ass_header",
+          "lineNumber": 57
+        },
+        {
+          "caller": "transcribe",
+          "callee": "\"\\n\".join",
+          "lineNumber": 57
+        },
+        {
+          "caller": "transcribe",
+          "callee": "logger.info",
+          "lineNumber": 59
+        },
+        {
+          "caller": "transcribe",
+          "callee": "len",
+          "lineNumber": 59
+        },
+        {
+          "caller": "_segments_to_ass",
+          "callee": "self._sec_to_ass_time",
+          "lineNumber": 81
+        },
+        {
+          "caller": "_segments_to_ass",
+          "callee": "self._sec_to_ass_time",
+          "lineNumber": 82
+        },
+        {
+          "caller": "_segments_to_ass",
+          "callee": "seg.text.strip",
+          "lineNumber": 83
+        },
+        {
+          "caller": "_segments_to_ass",
+          "callee": "lines.append",
+          "lineNumber": 85
+        },
+        {
+          "caller": "_sec_to_ass_time",
+          "callee": "int",
+          "lineNumber": 90
+        },
+        {
+          "caller": "_sec_to_ass_time",
+          "callee": "int",
+          "lineNumber": 91
+        },
+        {
+          "caller": "_sec_to_ass_time",
+          "callee": "int",
+          "lineNumber": 92
+        },
+        {
+          "caller": "_sec_to_ass_time",
+          "callee": "int",
+          "lineNumber": 93
+        },
+        {
+          "caller": "_sec_to_ass_time",
+          "callee": "int",
+          "lineNumber": 93
+        },
+        {
+          "caller": "parse_lyric_lines",
+          "callee": "ass_content.split",
+          "lineNumber": 99
+        },
+        {
+          "caller": "parse_lyric_lines",
+          "callee": "line.startswith",
+          "lineNumber": 100
+        },
+        {
+          "caller": "parse_lyric_lines",
+          "callee": "line.split",
+          "lineNumber": 101
+        },
+        {
+          "caller": "parse_lyric_lines",
+          "callee": "len",
+          "lineNumber": 102
+        },
+        {
+          "caller": "parse_lyric_lines",
+          "callee": "parts[1].strip",
+          "lineNumber": 103
+        },
+        {
+          "caller": "parse_lyric_lines",
+          "callee": "parts[2].strip",
+          "lineNumber": 104
+        },
+        {
+          "caller": "parse_lyric_lines",
+          "callee": "parts[9].strip",
+          "lineNumber": 105
+        },
+        {
+          "caller": "parse_lyric_lines",
+          "callee": "lines.append",
+          "lineNumber": 106
+        },
+        {
+          "caller": "parse_lyric_lines",
+          "callee": "LyricLine",
+          "lineNumber": 106
+        },
+        {
+          "caller": "parse_lyric_lines",
+          "callee": "self._ass_time_to_ms",
+          "lineNumber": 108
+        },
+        {
+          "caller": "parse_lyric_lines",
+          "callee": "self._ass_time_to_ms",
+          "lineNumber": 109
+        },
+        {
+          "caller": "_ass_time_to_ms",
+          "callee": "time_str.split",
+          "lineNumber": 115
+        },
+        {
+          "caller": "_ass_time_to_ms",
+          "callee": "s.split",
+          "lineNumber": 116
+        },
+        {
+          "caller": "_ass_time_to_ms",
+          "callee": "int",
+          "lineNumber": 117
+        },
+        {
+          "caller": "_ass_time_to_ms",
+          "callee": "int",
+          "lineNumber": 117
+        },
+        {
+          "caller": "_ass_time_to_ms",
+          "callee": "int",
+          "lineNumber": 117
+        },
+        {
+          "caller": "_ass_time_to_ms",
+          "callee": "int",
+          "lineNumber": 117
+        },
+        {
+          "caller": "parse_lrc",
+          "callee": "lrc_text.strip().split",
+          "lineNumber": 123
+        },
+        {
+          "caller": "parse_lrc",
+          "callee": "lrc_text.strip",
+          "lineNumber": 123
+        },
+        {
+          "caller": "parse_lrc",
+          "callee": "re.match",
+          "lineNumber": 124
+        },
+        {
+          "caller": "parse_lrc",
+          "callee": "int",
+          "lineNumber": 126
+        },
+        {
+          "caller": "parse_lrc",
+          "callee": "int",
+          "lineNumber": 126
+        },
+        {
+          "caller": "parse_lrc",
+          "callee": "int",
+          "lineNumber": 126
+        },
+        {
+          "caller": "parse_lrc",
+          "callee": "m[4].strip",
+          "lineNumber": 126
+        },
+        {
+          "caller": "parse_lrc",
+          "callee": "lines.append",
+          "lineNumber": 129
+        },
+        {
+          "caller": "parse_lrc",
+          "callee": "LyricLine",
+          "lineNumber": 129
+        },
+        {
+          "caller": "parse_lrc",
+          "callee": "range",
+          "lineNumber": 131
+        },
+        {
+          "caller": "parse_lrc",
+          "callee": "len",
+          "lineNumber": 131
+        },
+        {
+          "caller": "close",
+          "callee": "gc.collect",
+          "lineNumber": 142
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/services/singing/mixer.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 67,
+      "nonEmptyLines": 54,
+      "classes": [
+        {
+          "name": "AudioMixer",
+          "startLine": 12,
+          "endLine": 67,
+          "methods": [
+            "__init__",
+            "mix",
+            "_get_duration",
+            "close"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "AudioMixer",
+          "line": 12,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "Path",
+          "lineNumber": 16
+        },
+        {
+          "caller": "__init__",
+          "callee": "self.output_dir.mkdir",
+          "lineNumber": 17
+        },
+        {
+          "caller": "mix",
+          "callee": "logger.info",
+          "lineNumber": 24
+        },
+        {
+          "caller": "mix",
+          "callee": "str",
+          "lineNumber": 33
+        },
+        {
+          "caller": "mix",
+          "callee": "asyncio.to_thread",
+          "lineNumber": 37
+        },
+        {
+          "caller": "mix",
+          "callee": "subprocess.run",
+          "lineNumber": 38
+        },
+        {
+          "caller": "mix",
+          "callee": "RuntimeError",
+          "lineNumber": 41
+        },
+        {
+          "caller": "mix",
+          "callee": "self._get_duration",
+          "lineNumber": 43
+        },
+        {
+          "caller": "mix",
+          "callee": "str",
+          "lineNumber": 43
+        },
+        {
+          "caller": "mix",
+          "callee": "logger.info",
+          "lineNumber": 44
+        },
+        {
+          "caller": "mix",
+          "callee": "str",
+          "lineNumber": 45
+        },
+        {
+          "caller": "mix",
+          "callee": "RuntimeError",
+          "lineNumber": 48
+        },
+        {
+          "caller": "_get_duration",
+          "callee": "asyncio.to_thread",
+          "lineNumber": 59
+        },
+        {
+          "caller": "_get_duration",
+          "callee": "subprocess.run",
+          "lineNumber": 60
+        },
+        {
+          "caller": "_get_duration",
+          "callee": "float",
+          "lineNumber": 62
+        },
+        {
+          "caller": "_get_duration",
+          "callee": "result.stdout.strip",
+          "lineNumber": 62
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/services/singing/rvc_bridge.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 48,
+      "nonEmptyLines": 42,
+      "classes": [
+        {
+          "name": "RVCBridge",
+          "startLine": 11,
+          "endLine": 48,
+          "methods": [
+            "__init__",
+            "convert",
+            "close"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "RVCBridge",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "Path",
+          "lineNumber": 17
+        },
+        {
+          "caller": "__init__",
+          "callee": "str",
+          "lineNumber": 18
+        },
+        {
+          "caller": "convert",
+          "callee": "Path",
+          "lineNumber": 25
+        },
+        {
+          "caller": "convert",
+          "callee": "out.parent.mkdir",
+          "lineNumber": 25
+        },
+        {
+          "caller": "convert",
+          "callee": "str",
+          "lineNumber": 27
+        },
+        {
+          "caller": "convert",
+          "callee": "os.path.abspath",
+          "lineNumber": 28
+        },
+        {
+          "caller": "convert",
+          "callee": "os.path.abspath",
+          "lineNumber": 29
+        },
+        {
+          "caller": "convert",
+          "callee": "str",
+          "lineNumber": 29
+        },
+        {
+          "caller": "convert",
+          "callee": "out.with_suffix",
+          "lineNumber": 29
+        },
+        {
+          "caller": "convert",
+          "callee": "str",
+          "lineNumber": 31
+        },
+        {
+          "caller": "convert",
+          "callee": "str",
+          "lineNumber": 32
+        },
+        {
+          "caller": "convert",
+          "callee": "str",
+          "lineNumber": 33
+        },
+        {
+          "caller": "convert",
+          "callee": "str",
+          "lineNumber": 34
+        },
+        {
+          "caller": "convert",
+          "callee": "str",
+          "lineNumber": 35
+        },
+        {
+          "caller": "convert",
+          "callee": "logger.info",
+          "lineNumber": 36
+        },
+        {
+          "caller": "convert",
+          "callee": "os.environ.copy",
+          "lineNumber": 37
+        },
+        {
+          "caller": "convert",
+          "callee": "asyncio.create_subprocess_exec",
+          "lineNumber": 38
+        },
+        {
+          "caller": "convert",
+          "callee": "str",
+          "lineNumber": 39
+        },
+        {
+          "caller": "convert",
+          "callee": "asyncio.wait_for",
+          "lineNumber": 40
+        },
+        {
+          "caller": "convert",
+          "callee": "proc.communicate",
+          "lineNumber": 40
+        },
+        {
+          "caller": "convert",
+          "callee": "RuntimeError",
+          "lineNumber": 42
+        },
+        {
+          "caller": "convert",
+          "callee": "stderr.decode",
+          "lineNumber": 42
+        },
+        {
+          "caller": "convert",
+          "callee": "out.with_suffix",
+          "lineNumber": 43
+        },
+        {
+          "caller": "convert",
+          "callee": "actual.exists",
+          "lineNumber": 44
+        },
+        {
+          "caller": "convert",
+          "callee": "actual.stat",
+          "lineNumber": 44
+        },
+        {
+          "caller": "convert",
+          "callee": "logger.info",
+          "lineNumber": 45
+        },
+        {
+          "caller": "convert",
+          "callee": "str",
+          "lineNumber": 45
+        },
+        {
+          "caller": "convert",
+          "callee": "RuntimeError",
+          "lineNumber": 46
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/services/singing/separator.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 197,
+      "nonEmptyLines": 153,
+      "functions": [
+        {
+          "name": "create_separator",
+          "startLine": 183,
+          "endLine": 193,
+          "params": [
+            "engine",
+            "model",
+            "output_dir"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "BaseSeparator",
+          "startLine": 14,
+          "endLine": 27,
+          "methods": [
+            "__init__",
+            "separate",
+            "close"
+          ],
+          "properties": []
+        },
+        {
+          "name": "DemucsSeparator",
+          "startLine": 30,
+          "endLine": 121,
+          "methods": [
+            "__init__",
+            "__init__",
+            "separate"
+          ],
+          "properties": []
+        },
+        {
+          "name": "UVRSeparator",
+          "startLine": 124,
+          "endLine": 180,
+          "methods": [
+            "__init__",
+            "separate"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "BaseSeparator",
+          "line": 14,
+          "isDefault": false
+        },
+        {
+          "name": "DemucsSeparator",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "UVRSeparator",
+          "line": 124,
+          "isDefault": false
+        },
+        {
+          "name": "create_separator",
+          "line": 183,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "Path",
+          "lineNumber": 18
+        },
+        {
+          "caller": "__init__",
+          "callee": "self.output_dir.mkdir",
+          "lineNumber": 19
+        },
+        {
+          "caller": "__init__",
+          "callee": "super().__init__",
+          "lineNumber": 34
+        },
+        {
+          "caller": "__init__",
+          "callee": "super",
+          "lineNumber": 34
+        },
+        {
+          "caller": "__init__",
+          "callee": "Path",
+          "lineNumber": 43
+        },
+        {
+          "caller": "__init__",
+          "callee": "self.output_dir.mkdir",
+          "lineNumber": 44
+        },
+        {
+          "caller": "separate",
+          "callee": "logger.info",
+          "lineNumber": 52
+        },
+        {
+          "caller": "separate",
+          "callee": "Path",
+          "lineNumber": 54
+        },
+        {
+          "caller": "separate",
+          "callee": "session_dir.mkdir",
+          "lineNumber": 55
+        },
+        {
+          "caller": "separate",
+          "callee": "vocals_path.exists",
+          "lineNumber": 60
+        },
+        {
+          "caller": "separate",
+          "callee": "backing_path.exists",
+          "lineNumber": 60
+        },
+        {
+          "caller": "separate",
+          "callee": "logger.info",
+          "lineNumber": 61
+        },
+        {
+          "caller": "separate",
+          "callee": "str",
+          "lineNumber": 62
+        },
+        {
+          "caller": "separate",
+          "callee": "str",
+          "lineNumber": 62
+        },
+        {
+          "caller": "separate",
+          "callee": "Path",
+          "lineNumber": 66
+        },
+        {
+          "caller": "separate",
+          "callee": "demucs_wrapper.exists",
+          "lineNumber": 68
+        },
+        {
+          "caller": "separate",
+          "callee": "str",
+          "lineNumber": 70
+        },
+        {
+          "caller": "separate",
+          "callee": "str",
+          "lineNumber": 74
+        },
+        {
+          "caller": "separate",
+          "callee": "str",
+          "lineNumber": 83
+        },
+        {
+          "caller": "separate",
+          "callee": "asyncio.create_subprocess_exec",
+          "lineNumber": 88
+        },
+        {
+          "caller": "separate",
+          "callee": "asyncio.wait_for",
+          "lineNumber": 94
+        },
+        {
+          "caller": "separate",
+          "callee": "proc.communicate",
+          "lineNumber": 94
+        },
+        {
+          "caller": "separate",
+          "callee": "stderr.decode",
+          "lineNumber": 97
+        },
+        {
+          "caller": "separate",
+          "callee": "RuntimeError",
+          "lineNumber": 98
+        },
+        {
+          "caller": "separate",
+          "callee": "Path",
+          "lineNumber": 103
+        },
+        {
+          "caller": "separate",
+          "callee": "src_vocals.exists",
+          "lineNumber": 108
+        },
+        {
+          "caller": "separate",
+          "callee": "RuntimeError",
+          "lineNumber": 109
+        },
+        {
+          "caller": "separate",
+          "callee": "src_backing.exists",
+          "lineNumber": 110
+        },
+        {
+          "caller": "separate",
+          "callee": "RuntimeError",
+          "lineNumber": 111
+        },
+        {
+          "caller": "separate",
+          "callee": "shutil.copy2",
+          "lineNumber": 114
+        },
+        {
+          "caller": "separate",
+          "callee": "shutil.copy2",
+          "lineNumber": 115
+        },
+        {
+          "caller": "separate",
+          "callee": "logger.info",
+          "lineNumber": 117
+        },
+        {
+          "caller": "separate",
+          "callee": "str",
+          "lineNumber": 118
+        },
+        {
+          "caller": "separate",
+          "callee": "str",
+          "lineNumber": 118
+        },
+        {
+          "caller": "separate",
+          "callee": "RuntimeError",
+          "lineNumber": 121
+        },
+        {
+          "caller": "__init__",
+          "callee": "super().__init__",
+          "lineNumber": 128
+        },
+        {
+          "caller": "__init__",
+          "callee": "super",
+          "lineNumber": 128
+        },
+        {
+          "caller": "separate",
+          "callee": "logger.info",
+          "lineNumber": 137
+        },
+        {
+          "caller": "separate",
+          "callee": "Path",
+          "lineNumber": 139
+        },
+        {
+          "caller": "separate",
+          "callee": "session_dir.mkdir",
+          "lineNumber": 140
+        },
+        {
+          "caller": "separate",
+          "callee": "vocals_path.exists",
+          "lineNumber": 145
+        },
+        {
+          "caller": "separate",
+          "callee": "backing_path.exists",
+          "lineNumber": 145
+        },
+        {
+          "caller": "separate",
+          "callee": "logger.info",
+          "lineNumber": 146
+        },
+        {
+          "caller": "separate",
+          "callee": "str",
+          "lineNumber": 147
+        },
+        {
+          "caller": "separate",
+          "callee": "str",
+          "lineNumber": 147
+        },
+        {
+          "caller": "_do_separate",
+          "callee": "Separator",
+          "lineNumber": 152
+        },
+        {
+          "caller": "_do_separate",
+          "callee": "str",
+          "lineNumber": 152
+        },
+        {
+          "caller": "_do_separate",
+          "callee": "sep.separate",
+          "lineNumber": 154
+        },
+        {
+          "caller": "separate",
+          "callee": "asyncio.to_thread",
+          "lineNumber": 158
+        },
+        {
+          "caller": "separate",
+          "callee": "list",
+          "lineNumber": 161
+        },
+        {
+          "caller": "separate",
+          "callee": "session_dir.glob",
+          "lineNumber": 161
+        },
+        {
+          "caller": "separate",
+          "callee": "list",
+          "lineNumber": 161
+        },
+        {
+          "caller": "separate",
+          "callee": "session_dir.glob",
+          "lineNumber": 161
+        },
+        {
+          "caller": "separate",
+          "callee": "list",
+          "lineNumber": 162
+        },
+        {
+          "caller": "separate",
+          "callee": "session_dir.glob",
+          "lineNumber": 162
+        },
+        {
+          "caller": "separate",
+          "callee": "list",
+          "lineNumber": 162
+        },
+        {
+          "caller": "separate",
+          "callee": "session_dir.glob",
+          "lineNumber": 162
+        },
+        {
+          "caller": "separate",
+          "callee": "shutil.copy2",
+          "lineNumber": 165
+        },
+        {
+          "caller": "separate",
+          "callee": "shutil.copy2",
+          "lineNumber": 167
+        },
+        {
+          "caller": "separate",
+          "callee": "vocals_path.exists",
+          "lineNumber": 169
+        },
+        {
+          "caller": "separate",
+          "callee": "list",
+          "lineNumber": 171
+        },
+        {
+          "caller": "separate",
+          "callee": "session_dir.glob",
+          "lineNumber": 171
+        },
+        {
+          "caller": "separate",
+          "callee": "len",
+          "lineNumber": 172
+        },
+        {
+          "caller": "separate",
+          "callee": "shutil.copy2",
+          "lineNumber": 173
+        },
+        {
+          "caller": "separate",
+          "callee": "shutil.copy2",
+          "lineNumber": 174
+        },
+        {
+          "caller": "separate",
+          "callee": "logger.info",
+          "lineNumber": 176
+        },
+        {
+          "caller": "separate",
+          "callee": "str",
+          "lineNumber": 177
+        },
+        {
+          "caller": "separate",
+          "callee": "str",
+          "lineNumber": 177
+        },
+        {
+          "caller": "separate",
+          "callee": "RuntimeError",
+          "lineNumber": 180
+        },
+        {
+          "caller": "create_separator",
+          "callee": "UVRSeparator",
+          "lineNumber": 192
+        },
+        {
+          "caller": "create_separator",
+          "callee": "DemucsSeparator",
+          "lineNumber": 193
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 4,
+        "functionCount": 1,
+        "classCount": 3
+      }
+    },
+    {
+      "path": "src/animetta/services/singing/svc_bridge.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 136,
+      "nonEmptyLines": 118,
+      "classes": [
+        {
+          "name": "SVCBridge",
+          "startLine": 17,
+          "endLine": 136,
+          "methods": [
+            "__init__",
+            "_ensure_client",
+            "_check_endpoints",
+            "convert",
+            "close"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "SVCBridge",
+          "line": 17,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_ensure_client",
+          "callee": "httpx.Timeout",
+          "lineNumber": 29
+        },
+        {
+          "caller": "_ensure_client",
+          "callee": "httpx.AsyncClient",
+          "lineNumber": 30
+        },
+        {
+          "caller": "_ensure_client",
+          "callee": "self.config.base_url.rstrip",
+          "lineNumber": 31
+        },
+        {
+          "caller": "_check_endpoints",
+          "callee": "self._ensure_client",
+          "lineNumber": 37
+        },
+        {
+          "caller": "_check_endpoints",
+          "callee": "self._client.get",
+          "lineNumber": 42
+        },
+        {
+          "caller": "_check_endpoints",
+          "callee": "result.get",
+          "lineNumber": 46
+        },
+        {
+          "caller": "_check_endpoints",
+          "callee": "result.get",
+          "lineNumber": 47
+        },
+        {
+          "caller": "convert",
+          "callee": "self._ensure_client",
+          "lineNumber": 69
+        },
+        {
+          "caller": "convert",
+          "callee": "Path",
+          "lineNumber": 70
+        },
+        {
+          "caller": "convert",
+          "callee": "output_path_obj.parent.mkdir",
+          "lineNumber": 71
+        },
+        {
+          "caller": "convert",
+          "callee": "self._check_endpoints",
+          "lineNumber": 74
+        },
+        {
+          "caller": "convert",
+          "callee": "logger.info",
+          "lineNumber": 75
+        },
+        {
+          "caller": "convert",
+          "callee": "endpoints.get",
+          "lineNumber": 78
+        },
+        {
+          "caller": "convert",
+          "callee": "logger.info",
+          "lineNumber": 79
+        },
+        {
+          "caller": "convert",
+          "callee": "open",
+          "lineNumber": 81
+        },
+        {
+          "caller": "convert",
+          "callee": "self._client.post",
+          "lineNumber": 88
+        },
+        {
+          "caller": "convert",
+          "callee": "output_path_obj.write_bytes",
+          "lineNumber": 92
+        },
+        {
+          "caller": "convert",
+          "callee": "logger.info",
+          "lineNumber": 93
+        },
+        {
+          "caller": "convert",
+          "callee": "str",
+          "lineNumber": 94
+        },
+        {
+          "caller": "convert",
+          "callee": "logger.warning",
+          "lineNumber": 96
+        },
+        {
+          "caller": "convert",
+          "callee": "logger.warning",
+          "lineNumber": 98
+        },
+        {
+          "caller": "convert",
+          "callee": "endpoints.get",
+          "lineNumber": 101
+        },
+        {
+          "caller": "convert",
+          "callee": "logger.info",
+          "lineNumber": 102
+        },
+        {
+          "caller": "convert",
+          "callee": "self._client.post",
+          "lineNumber": 104
+        },
+        {
+          "caller": "convert",
+          "callee": "output_path_obj.write_bytes",
+          "lineNumber": 119
+        },
+        {
+          "caller": "convert",
+          "callee": "logger.info",
+          "lineNumber": 120
+        },
+        {
+          "caller": "convert",
+          "callee": "str",
+          "lineNumber": 121
+        },
+        {
+          "caller": "convert",
+          "callee": "logger.warning",
+          "lineNumber": 123
+        },
+        {
+          "caller": "convert",
+          "callee": "logger.warning",
+          "lineNumber": 125
+        },
+        {
+          "caller": "convert",
+          "callee": "RuntimeError",
+          "lineNumber": 127
+        },
+        {
+          "caller": "close",
+          "callee": "self._client.aclose",
+          "lineNumber": 135
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/services/singing/svc_pipeline.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 400,
+      "nonEmptyLines": 352,
+      "classes": [
+        {
+          "name": "SVCPipeline",
+          "startLine": 30,
+          "endLine": 400,
+          "methods": [
+            "__init__",
+            "set_progress_callback",
+            "_update_progress",
+            "process",
+            "process_from_file",
+            "_init_session",
+            "_run_stages",
+            "_generate_tts_vocals",
+            "_check_cancelled",
+            "cancel",
+            "confirm_lyrics",
+            "get_progress",
+            "close"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "SVCPipeline",
+          "line": 30,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "BilibiliDownloader",
+          "lineNumber": 46
+        },
+        {
+          "caller": "__init__",
+          "callee": "create_separator",
+          "lineNumber": 47
+        },
+        {
+          "caller": "__init__",
+          "callee": "LyricsGenerator",
+          "lineNumber": 52
+        },
+        {
+          "caller": "__init__",
+          "callee": "SVCBridge",
+          "lineNumber": 58
+        },
+        {
+          "caller": "__init__",
+          "callee": "RVCBridge",
+          "lineNumber": 59
+        },
+        {
+          "caller": "__init__",
+          "callee": "AudioMixer",
+          "lineNumber": 72
+        },
+        {
+          "caller": "_update_progress",
+          "callee": "self._on_progress",
+          "lineNumber": 86
+        },
+        {
+          "caller": "_update_progress",
+          "callee": "PipelineProgress",
+          "lineNumber": 86
+        },
+        {
+          "caller": "process",
+          "callee": "self._update_progress",
+          "lineNumber": 102
+        },
+        {
+          "caller": "process",
+          "callee": "self._downloader.download",
+          "lineNumber": 103
+        },
+        {
+          "caller": "process",
+          "callee": "self._check_cancelled",
+          "lineNumber": 104
+        },
+        {
+          "caller": "process",
+          "callee": "self._update_progress",
+          "lineNumber": 105
+        },
+        {
+          "caller": "process",
+          "callee": "self._downloader._sanitize_filename",
+          "lineNumber": 108
+        },
+        {
+          "caller": "process",
+          "callee": "Path",
+          "lineNumber": 109
+        },
+        {
+          "caller": "process",
+          "callee": "self._init_session",
+          "lineNumber": 111
+        },
+        {
+          "caller": "process",
+          "callee": "Path",
+          "lineNumber": 112
+        },
+        {
+          "caller": "process",
+          "callee": "shutil.copy2",
+          "lineNumber": 113
+        },
+        {
+          "caller": "process",
+          "callee": "str",
+          "lineNumber": 113
+        },
+        {
+          "caller": "process",
+          "callee": "self._run_stages",
+          "lineNumber": 115
+        },
+        {
+          "caller": "process",
+          "callee": "str",
+          "lineNumber": 115
+        },
+        {
+          "caller": "process",
+          "callee": "logger.info",
+          "lineNumber": 118
+        },
+        {
+          "caller": "process_from_file",
+          "callee": "self._init_session",
+          "lineNumber": 133
+        },
+        {
+          "caller": "process_from_file",
+          "callee": "str",
+          "lineNumber": 133
+        },
+        {
+          "caller": "process_from_file",
+          "callee": "self._run_stages",
+          "lineNumber": 136
+        },
+        {
+          "caller": "process_from_file",
+          "callee": "logger.info",
+          "lineNumber": 138
+        },
+        {
+          "caller": "_init_session",
+          "callee": "re.sub(r'[<>:\"/\\\\|?*\\s]+', '_', seed)[:40].strip",
+          "lineNumber": 144
+        },
+        {
+          "caller": "_init_session",
+          "callee": "re.sub",
+          "lineNumber": 144
+        },
+        {
+          "caller": "_init_session",
+          "callee": "hashlib.md5(\n            f\"{seed}{datetime.now().isoformat()}\".encode()\n        ).hexdigest",
+          "lineNumber": 145
+        },
+        {
+          "caller": "_init_session",
+          "callee": "hashlib.md5",
+          "lineNumber": 145
+        },
+        {
+          "caller": "_init_session",
+          "callee": "f\"{seed}{datetime.now().isoformat()}\".encode",
+          "lineNumber": 146
+        },
+        {
+          "caller": "_init_session",
+          "callee": "datetime.now().isoformat",
+          "lineNumber": 146
+        },
+        {
+          "caller": "_init_session",
+          "callee": "datetime.now",
+          "lineNumber": 146
+        },
+        {
+          "caller": "_init_session",
+          "callee": "Path",
+          "lineNumber": 149
+        },
+        {
+          "caller": "_init_session",
+          "callee": "session_output_dir.mkdir",
+          "lineNumber": 150
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "RuntimeError",
+          "lineNumber": 157
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._update_progress",
+          "lineNumber": 161
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._separator.separate",
+          "lineNumber": 162
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._check_cancelled",
+          "lineNumber": 163
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._update_progress",
+          "lineNumber": 164
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._downloader.fetch_lyrics_lrc",
+          "lineNumber": 170
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "logger.debug",
+          "lineNumber": 172
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "LyricsGenerator.parse_lrc",
+          "lineNumber": 175
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "logger.info",
+          "lineNumber": 176
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "len",
+          "lineNumber": 176
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._lyrics_gen._build_ass_header",
+          "lineNumber": 178
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._lyrics_gen._sec_to_ass_time",
+          "lineNumber": 180
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._lyrics_gen._sec_to_ass_time",
+          "lineNumber": 181
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._update_progress",
+          "lineNumber": 186
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._lyrics_gen.transcribe",
+          "lineNumber": 187
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._check_cancelled",
+          "lineNumber": 188
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._update_progress",
+          "lineNumber": 189
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "ass_path.write_text",
+          "lineNumber": 193
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "Path",
+          "lineNumber": 195
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "subtitle_output_path.write_text",
+          "lineNumber": 196
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._update_progress",
+          "lineNumber": 205
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._update_progress",
+          "lineNumber": 209
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "asyncio.Event",
+          "lineNumber": 212
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._lyrics_ready.wait",
+          "lineNumber": 214
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._check_cancelled",
+          "lineNumber": 215
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._update_progress",
+          "lineNumber": 216
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._lyrics_gen.parse_lyric_lines",
+          "lineNumber": 220
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._update_progress",
+          "lineNumber": 223
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "logger.info",
+          "lineNumber": 227
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._rvc.convert",
+          "lineNumber": 228
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "str",
+          "lineNumber": 228
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._svc.convert",
+          "lineNumber": 230
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "str",
+          "lineNumber": 230
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._check_cancelled",
+          "lineNumber": 231
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._update_progress",
+          "lineNumber": 232
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "logger.warning",
+          "lineNumber": 234
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "shutil.copy2",
+          "lineNumber": 235
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "str",
+          "lineNumber": 235
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._update_progress",
+          "lineNumber": 236
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "Path",
+          "lineNumber": 239
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "shutil.copy2",
+          "lineNumber": 240
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "str",
+          "lineNumber": 240
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "str",
+          "lineNumber": 240
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._update_progress",
+          "lineNumber": 243
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._mixer.mix",
+          "lineNumber": 244
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "str",
+          "lineNumber": 245
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._check_cancelled",
+          "lineNumber": 247
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._update_progress",
+          "lineNumber": 248
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._update_progress",
+          "lineNumber": 253
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._generate_tts_vocals",
+          "lineNumber": 254
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._update_progress",
+          "lineNumber": 258
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "logger.warning",
+          "lineNumber": 260
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._mixer._get_duration",
+          "lineNumber": 263
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "self._update_progress",
+          "lineNumber": 264
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "AudioAnalyzer",
+          "lineNumber": 269
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "analyzer.compute_volume_envelope",
+          "lineNumber": 270
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "str",
+          "lineNumber": 271
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "logger.info",
+          "lineNumber": 273
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "len",
+          "lineNumber": 273
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "logger.warning",
+          "lineNumber": 275
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "SongResult",
+          "lineNumber": 277
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "str",
+          "lineNumber": 279
+        },
+        {
+          "caller": "_run_stages",
+          "callee": "str",
+          "lineNumber": 282
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "Path",
+          "lineNumber": 304
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "open",
+          "lineNumber": 305
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "yaml.safe_load",
+          "lineNumber": 306
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "(svc_cfg or {}).get(\"tts\", {}).get",
+          "lineNumber": 307
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "(svc_cfg or {}).get",
+          "lineNumber": 307
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "tts_cfg.get",
+          "lineNumber": 308
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "logger.info",
+          "lineNumber": 309
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "logger.warning",
+          "lineNumber": 312
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "\" \".join",
+          "lineNumber": 316
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "l.text.strip",
+          "lineNumber": 316
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "logger.warning",
+          "lineNumber": 318
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "logger.info",
+          "lineNumber": 321
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "len",
+          "lineNumber": 321
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "tts_cfg.get",
+          "lineNumber": 326
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "httpx.Timeout",
+          "lineNumber": 327
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "httpx.AsyncClient",
+          "lineNumber": 328
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "base_url.rstrip",
+          "lineNumber": 328
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "tts_cfg.get",
+          "lineNumber": 331
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "tts_cfg.get",
+          "lineNumber": 333
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "tts_cfg.get",
+          "lineNumber": 334
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "tts_cfg.get",
+          "lineNumber": 335
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "tts_cfg.get",
+          "lineNumber": 336
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "tts_cfg.get",
+          "lineNumber": 337
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "tts_cfg.get",
+          "lineNumber": 338
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "tts_cfg.get",
+          "lineNumber": 340
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "tts_cfg.get",
+          "lineNumber": 341
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "tts_cfg.get",
+          "lineNumber": 344
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "client.post",
+          "lineNumber": 348
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "logger.warning",
+          "lineNumber": 350
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "tts_vocals_path.write_bytes",
+          "lineNumber": 355
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "logger.info",
+          "lineNumber": 356
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "len",
+          "lineNumber": 356
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "logger.warning",
+          "lineNumber": 358
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "self._mixer.mix",
+          "lineNumber": 363
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "str",
+          "lineNumber": 364
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "logger.info",
+          "lineNumber": 366
+        },
+        {
+          "caller": "_generate_tts_vocals",
+          "callee": "logger.warning",
+          "lineNumber": 369
+        },
+        {
+          "caller": "_check_cancelled",
+          "callee": "asyncio.CancelledError",
+          "lineNumber": 374
+        },
+        {
+          "caller": "cancel",
+          "callee": "self._lyrics_ready.is_set",
+          "lineNumber": 378
+        },
+        {
+          "caller": "cancel",
+          "callee": "self._lyrics_ready.set",
+          "lineNumber": 379
+        },
+        {
+          "caller": "confirm_lyrics",
+          "callee": "self._lyrics_ready.is_set",
+          "lineNumber": 383
+        },
+        {
+          "caller": "confirm_lyrics",
+          "callee": "self._lyrics_ready.set",
+          "lineNumber": 384
+        },
+        {
+          "caller": "get_progress",
+          "callee": "PipelineProgress",
+          "lineNumber": 387
+        },
+        {
+          "caller": "close",
+          "callee": "self._downloader.close",
+          "lineNumber": 394
+        },
+        {
+          "caller": "close",
+          "callee": "self._separator.close",
+          "lineNumber": 395
+        },
+        {
+          "caller": "close",
+          "callee": "self._lyrics_gen.close",
+          "lineNumber": 396
+        },
+        {
+          "caller": "close",
+          "callee": "self._svc.close",
+          "lineNumber": 397
+        },
+        {
+          "caller": "close",
+          "callee": "self._rvc.close",
+          "lineNumber": 399
+        },
+        {
+          "caller": "close",
+          "callee": "self._mixer.close",
+          "lineNumber": 400
+        }
+      ],
+      "metrics": {
+        "importCount": 7,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/services/tts/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 39,
+      "nonEmptyLines": 35,
+      "metrics": {
+        "importCount": 7,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/services/tts/contrib/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 23,
+      "nonEmptyLines": 19,
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/services/tts/contrib/chattts_tts.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 351,
+      "nonEmptyLines": 298,
+      "classes": [
+        {
+          "name": "ChatTTSTTS",
+          "startLine": 23,
+          "endLine": 351,
+          "methods": [
+            "__init__",
+            "_ensure_loaded",
+            "preload",
+            "_clean_text",
+            "_build_params",
+            "_wav_to_bytes",
+            "synthesize",
+            "close",
+            "from_config"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "ChatTTSTTS",
+          "line": 22,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_ensure_loaded",
+          "callee": "logger.error",
+          "lineNumber": 74
+        },
+        {
+          "caller": "_ensure_loaded",
+          "callee": "ImportError",
+          "lineNumber": 75
+        },
+        {
+          "caller": "_ensure_loaded",
+          "callee": "logger.info",
+          "lineNumber": 79
+        },
+        {
+          "caller": "_ensure_loaded",
+          "callee": "ChatTTS.Chat",
+          "lineNumber": 81
+        },
+        {
+          "caller": "_ensure_loaded",
+          "callee": "self._chat.load",
+          "lineNumber": 82
+        },
+        {
+          "caller": "_ensure_loaded",
+          "callee": "torch.manual_seed",
+          "lineNumber": 92
+        },
+        {
+          "caller": "_ensure_loaded",
+          "callee": "self._chat.sample_random_speaker",
+          "lineNumber": 93
+        },
+        {
+          "caller": "_ensure_loaded",
+          "callee": "logger.info",
+          "lineNumber": 94
+        },
+        {
+          "caller": "_ensure_loaded",
+          "callee": "logger.info",
+          "lineNumber": 96
+        },
+        {
+          "caller": "preload",
+          "callee": "logger.debug",
+          "lineNumber": 101
+        },
+        {
+          "caller": "preload",
+          "callee": "logger.info",
+          "lineNumber": 104
+        },
+        {
+          "caller": "preload",
+          "callee": "asyncio.get_event_loop",
+          "lineNumber": 107
+        },
+        {
+          "caller": "preload",
+          "callee": "loop.run_in_executor",
+          "lineNumber": 108
+        },
+        {
+          "caller": "preload",
+          "callee": "logger.info",
+          "lineNumber": 110
+        },
+        {
+          "caller": "_clean_text",
+          "callee": "re.compile",
+          "lineNumber": 136
+        },
+        {
+          "caller": "_clean_text",
+          "callee": "''.join",
+          "lineNumber": 136
+        },
+        {
+          "caller": "_clean_text",
+          "callee": "emoji_pattern.sub",
+          "lineNumber": 137
+        },
+        {
+          "caller": "_clean_text",
+          "callee": "text.replace",
+          "lineNumber": 141
+        },
+        {
+          "caller": "_clean_text",
+          "callee": "text.replace",
+          "lineNumber": 146
+        },
+        {
+          "caller": "_clean_text",
+          "callee": "text.replace",
+          "lineNumber": 150
+        },
+        {
+          "caller": "_clean_text",
+          "callee": "text.strip",
+          "lineNumber": 152
+        },
+        {
+          "caller": "_clean_text",
+          "callee": "text.strip",
+          "lineNumber": 153
+        },
+        {
+          "caller": "_clean_text",
+          "callee": "re.sub(r'\\s+', ' ', text).strip",
+          "lineNumber": 156
+        },
+        {
+          "caller": "_clean_text",
+          "callee": "re.sub",
+          "lineNumber": 156
+        },
+        {
+          "caller": "_build_params",
+          "callee": "ChatTTS.Chat.InferCodeParams",
+          "lineNumber": 164
+        },
+        {
+          "caller": "_wav_to_bytes",
+          "callee": "np.clip",
+          "lineNumber": 179
+        },
+        {
+          "caller": "_wav_to_bytes",
+          "callee": "(wav_array * 32767).astype",
+          "lineNumber": 180
+        },
+        {
+          "caller": "_wav_to_bytes",
+          "callee": "len",
+          "lineNumber": 183
+        },
+        {
+          "caller": "_wav_to_bytes",
+          "callee": "struct.pack",
+          "lineNumber": 190
+        },
+        {
+          "caller": "_wav_to_bytes",
+          "callee": "wav_array.tobytes",
+          "lineNumber": 207
+        },
+        {
+          "caller": "synthesize",
+          "callee": "self._ensure_loaded",
+          "lineNumber": 230
+        },
+        {
+          "caller": "synthesize",
+          "callee": "self._clean_text",
+          "lineNumber": 233
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.warning",
+          "lineNumber": 235
+        },
+        {
+          "caller": "synthesize",
+          "callee": "np.zeros",
+          "lineNumber": 236
+        },
+        {
+          "caller": "synthesize",
+          "callee": "self._wav_to_bytes",
+          "lineNumber": 237
+        },
+        {
+          "caller": "synthesize",
+          "callee": "tempfile.mktemp",
+          "lineNumber": 238
+        },
+        {
+          "caller": "synthesize",
+          "callee": "open",
+          "lineNumber": 239
+        },
+        {
+          "caller": "synthesize",
+          "callee": "f.write",
+          "lineNumber": 240
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.debug",
+          "lineNumber": 243
+        },
+        {
+          "caller": "synthesize",
+          "callee": "self._build_params",
+          "lineNumber": 246
+        },
+        {
+          "caller": "synthesize",
+          "callee": "asyncio.get_event_loop",
+          "lineNumber": 250
+        },
+        {
+          "caller": "synthesize",
+          "callee": "loop.run_in_executor",
+          "lineNumber": 251
+        },
+        {
+          "caller": "synthesize",
+          "callee": "self._chat.infer",
+          "lineNumber": 253
+        },
+        {
+          "caller": "synthesize",
+          "callee": "len",
+          "lineNumber": 260
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.warning",
+          "lineNumber": 261
+        },
+        {
+          "caller": "synthesize",
+          "callee": "np.zeros",
+          "lineNumber": 262
+        },
+        {
+          "caller": "synthesize",
+          "callee": "self._wav_to_bytes",
+          "lineNumber": 263
+        },
+        {
+          "caller": "synthesize",
+          "callee": "tempfile.mktemp",
+          "lineNumber": 264
+        },
+        {
+          "caller": "synthesize",
+          "callee": "open",
+          "lineNumber": 265
+        },
+        {
+          "caller": "synthesize",
+          "callee": "f.write",
+          "lineNumber": 266
+        },
+        {
+          "caller": "synthesize",
+          "callee": "wav_array.flatten",
+          "lineNumber": 272
+        },
+        {
+          "caller": "synthesize",
+          "callee": "len",
+          "lineNumber": 274
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.warning",
+          "lineNumber": 275
+        },
+        {
+          "caller": "synthesize",
+          "callee": "np.zeros",
+          "lineNumber": 276
+        },
+        {
+          "caller": "synthesize",
+          "callee": "self._wav_to_bytes",
+          "lineNumber": 277
+        },
+        {
+          "caller": "synthesize",
+          "callee": "tempfile.mktemp",
+          "lineNumber": 278
+        },
+        {
+          "caller": "synthesize",
+          "callee": "open",
+          "lineNumber": 279
+        },
+        {
+          "caller": "synthesize",
+          "callee": "f.write",
+          "lineNumber": 280
+        },
+        {
+          "caller": "synthesize",
+          "callee": "self._wav_to_bytes",
+          "lineNumber": 283
+        },
+        {
+          "caller": "synthesize",
+          "callee": "Path",
+          "lineNumber": 286
+        },
+        {
+          "caller": "synthesize",
+          "callee": "output_path.parent.mkdir",
+          "lineNumber": 287
+        },
+        {
+          "caller": "synthesize",
+          "callee": "open",
+          "lineNumber": 288
+        },
+        {
+          "caller": "synthesize",
+          "callee": "f.write",
+          "lineNumber": 289
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.debug",
+          "lineNumber": 290
+        },
+        {
+          "caller": "synthesize",
+          "callee": "len",
+          "lineNumber": 291
+        },
+        {
+          "caller": "synthesize",
+          "callee": "str",
+          "lineNumber": 293
+        },
+        {
+          "caller": "synthesize",
+          "callee": "tempfile.mktemp",
+          "lineNumber": 296
+        },
+        {
+          "caller": "synthesize",
+          "callee": "open",
+          "lineNumber": 297
+        },
+        {
+          "caller": "synthesize",
+          "callee": "f.write",
+          "lineNumber": 298
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.debug",
+          "lineNumber": 299
+        },
+        {
+          "caller": "synthesize",
+          "callee": "len",
+          "lineNumber": 300
+        },
+        {
+          "caller": "synthesize",
+          "callee": "str",
+          "lineNumber": 305
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.warning",
+          "lineNumber": 307
+        },
+        {
+          "caller": "synthesize",
+          "callee": "np.zeros",
+          "lineNumber": 308
+        },
+        {
+          "caller": "synthesize",
+          "callee": "self._wav_to_bytes",
+          "lineNumber": 309
+        },
+        {
+          "caller": "synthesize",
+          "callee": "Path",
+          "lineNumber": 311
+        },
+        {
+          "caller": "synthesize",
+          "callee": "output_path.parent.mkdir",
+          "lineNumber": 312
+        },
+        {
+          "caller": "synthesize",
+          "callee": "open",
+          "lineNumber": 313
+        },
+        {
+          "caller": "synthesize",
+          "callee": "f.write",
+          "lineNumber": 314
+        },
+        {
+          "caller": "synthesize",
+          "callee": "str",
+          "lineNumber": 315
+        },
+        {
+          "caller": "synthesize",
+          "callee": "tempfile.mktemp",
+          "lineNumber": 316
+        },
+        {
+          "caller": "synthesize",
+          "callee": "open",
+          "lineNumber": 317
+        },
+        {
+          "caller": "synthesize",
+          "callee": "f.write",
+          "lineNumber": 318
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.error",
+          "lineNumber": 320
+        },
+        {
+          "caller": "close",
+          "callee": "torch.cuda.is_available",
+          "lineNumber": 333
+        },
+        {
+          "caller": "close",
+          "callee": "torch.cuda.empty_cache",
+          "lineNumber": 334
+        },
+        {
+          "caller": "close",
+          "callee": "logger.info",
+          "lineNumber": 338
+        },
+        {
+          "caller": "from_config",
+          "callee": "cls",
+          "lineNumber": 343
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/services/tts/contrib/glados_effect.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 375,
+      "nonEmptyLines": 305,
+      "functions": [
+        {
+          "name": "_find_sox",
+          "startLine": 52,
+          "endLine": 92,
+          "params": []
+        },
+        {
+          "name": "_build_effects_cli_args",
+          "startLine": 95,
+          "endLine": 105,
+          "params": [
+            "params"
+          ]
+        },
+        {
+          "name": "_build_effects_list",
+          "startLine": 108,
+          "endLine": 152,
+          "params": [
+            "params"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "GladosEffectProcessor",
+          "startLine": 155,
+          "endLine": 375,
+          "methods": [
+            "__init__",
+            "enabled",
+            "enabled",
+            "check_sox_available",
+            "_process_via_cli",
+            "_process_via_torchaudio",
+            "process",
+            "close"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "_find_sox",
+          "line": 52,
+          "isDefault": false
+        },
+        {
+          "name": "_build_effects_cli_args",
+          "line": 95,
+          "isDefault": false
+        },
+        {
+          "name": "_build_effects_list",
+          "line": 108,
+          "isDefault": false
+        },
+        {
+          "name": "GladosEffectProcessor",
+          "line": 155,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_find_sox",
+          "callee": "os.environ.get",
+          "lineNumber": 60
+        },
+        {
+          "caller": "_find_sox",
+          "callee": "subprocess.run",
+          "lineNumber": 62
+        },
+        {
+          "caller": "_find_sox",
+          "callee": "subprocess.run",
+          "lineNumber": 71
+        },
+        {
+          "caller": "_find_sox",
+          "callee": "where.stdout.strip().split(\"\\n\")[0].strip",
+          "lineNumber": 75
+        },
+        {
+          "caller": "_find_sox",
+          "callee": "where.stdout.strip().split",
+          "lineNumber": 75
+        },
+        {
+          "caller": "_find_sox",
+          "callee": "where.stdout.strip",
+          "lineNumber": 75
+        },
+        {
+          "caller": "_find_sox",
+          "callee": "os.path.isfile",
+          "lineNumber": 82
+        },
+        {
+          "caller": "_find_sox",
+          "callee": "subprocess.run",
+          "lineNumber": 84
+        },
+        {
+          "caller": "_build_effects_cli_args",
+          "callee": "_build_effects_list",
+          "lineNumber": 102
+        },
+        {
+          "caller": "_build_effects_cli_args",
+          "callee": "args.extend",
+          "lineNumber": 104
+        },
+        {
+          "caller": "_build_effects_list",
+          "callee": "params.get",
+          "lineNumber": 125
+        },
+        {
+          "caller": "_build_effects_list",
+          "callee": "effects.append",
+          "lineNumber": 126
+        },
+        {
+          "caller": "_build_effects_list",
+          "callee": "str",
+          "lineNumber": 126
+        },
+        {
+          "caller": "_build_effects_list",
+          "callee": "params.get",
+          "lineNumber": 129
+        },
+        {
+          "caller": "_build_effects_list",
+          "callee": "effects.append",
+          "lineNumber": 130
+        },
+        {
+          "caller": "_build_effects_list",
+          "callee": "params.get",
+          "lineNumber": 133
+        },
+        {
+          "caller": "_build_effects_list",
+          "callee": "effects.append",
+          "lineNumber": 134
+        },
+        {
+          "caller": "_build_effects_list",
+          "callee": "str",
+          "lineNumber": 134
+        },
+        {
+          "caller": "_build_effects_list",
+          "callee": "params.get",
+          "lineNumber": 137
+        },
+        {
+          "caller": "_build_effects_list",
+          "callee": "effects.append",
+          "lineNumber": 138
+        },
+        {
+          "caller": "_build_effects_list",
+          "callee": "chorus_str.split",
+          "lineNumber": 138
+        },
+        {
+          "caller": "_build_effects_list",
+          "callee": "params.get",
+          "lineNumber": 141
+        },
+        {
+          "caller": "_build_effects_list",
+          "callee": "effects.append",
+          "lineNumber": 142
+        },
+        {
+          "caller": "_build_effects_list",
+          "callee": "bandpass_str.split",
+          "lineNumber": 142
+        },
+        {
+          "caller": "_build_effects_list",
+          "callee": "params.get",
+          "lineNumber": 145
+        },
+        {
+          "caller": "_build_effects_list",
+          "callee": "effects.append",
+          "lineNumber": 146
+        },
+        {
+          "caller": "_build_effects_list",
+          "callee": "compand_str.split",
+          "lineNumber": 146
+        },
+        {
+          "caller": "_build_effects_list",
+          "callee": "params.get",
+          "lineNumber": 149
+        },
+        {
+          "caller": "_build_effects_list",
+          "callee": "effects.append",
+          "lineNumber": 150
+        },
+        {
+          "caller": "_build_effects_list",
+          "callee": "str",
+          "lineNumber": 150
+        },
+        {
+          "caller": "__init__",
+          "callee": "self.params.get",
+          "lineNumber": 181
+        },
+        {
+          "caller": "__init__",
+          "callee": "bool",
+          "lineNumber": 181
+        },
+        {
+          "caller": "check_sox_available",
+          "callee": "torch.zeros",
+          "lineNumber": 210
+        },
+        {
+          "caller": "check_sox_available",
+          "callee": "torchaudio.sox_effects.apply_effects_tensor",
+          "lineNumber": 211
+        },
+        {
+          "caller": "check_sox_available",
+          "callee": "logger.info",
+          "lineNumber": 216
+        },
+        {
+          "caller": "check_sox_available",
+          "callee": "_find_sox",
+          "lineNumber": 222
+        },
+        {
+          "caller": "check_sox_available",
+          "callee": "logger.info",
+          "lineNumber": 227
+        },
+        {
+          "caller": "check_sox_available",
+          "callee": "logger.warning",
+          "lineNumber": 230
+        },
+        {
+          "caller": "_process_via_cli",
+          "callee": "_build_effects_cli_args",
+          "lineNumber": 240
+        },
+        {
+          "caller": "_process_via_cli",
+          "callee": "tempfile.NamedTemporaryFile",
+          "lineNumber": 243
+        },
+        {
+          "caller": "_process_via_cli",
+          "callee": "tempfile.NamedTemporaryFile",
+          "lineNumber": 245
+        },
+        {
+          "caller": "_process_via_cli",
+          "callee": "tmp_in.write",
+          "lineNumber": 250
+        },
+        {
+          "caller": "_process_via_cli",
+          "callee": "subprocess.run",
+          "lineNumber": 260
+        },
+        {
+          "caller": "_process_via_cli",
+          "callee": "logger.error",
+          "lineNumber": 268
+        },
+        {
+          "caller": "_process_via_cli",
+          "callee": "open",
+          "lineNumber": 275
+        },
+        {
+          "caller": "_process_via_cli",
+          "callee": "f.read",
+          "lineNumber": 276
+        },
+        {
+          "caller": "_process_via_cli",
+          "callee": "len",
+          "lineNumber": 278
+        },
+        {
+          "caller": "_process_via_cli",
+          "callee": "logger.warning",
+          "lineNumber": 279
+        },
+        {
+          "caller": "_process_via_cli",
+          "callee": "logger.debug",
+          "lineNumber": 284
+        },
+        {
+          "caller": "_process_via_cli",
+          "callee": "len",
+          "lineNumber": 285
+        },
+        {
+          "caller": "_process_via_cli",
+          "callee": "len",
+          "lineNumber": 285
+        },
+        {
+          "caller": "_process_via_cli",
+          "callee": "logger.error",
+          "lineNumber": 290
+        },
+        {
+          "caller": "_process_via_cli",
+          "callee": "logger.error",
+          "lineNumber": 293
+        },
+        {
+          "caller": "_process_via_cli",
+          "callee": "os.unlink",
+          "lineNumber": 298
+        },
+        {
+          "caller": "_process_via_cli",
+          "callee": "os.unlink",
+          "lineNumber": 299
+        },
+        {
+          "caller": "_process_via_torchaudio",
+          "callee": "io.BytesIO",
+          "lineNumber": 306
+        },
+        {
+          "caller": "_process_via_torchaudio",
+          "callee": "torchaudio.load",
+          "lineNumber": 307
+        },
+        {
+          "caller": "_process_via_torchaudio",
+          "callee": "_build_effects_list",
+          "lineNumber": 309
+        },
+        {
+          "caller": "_process_via_torchaudio",
+          "callee": "effects.append",
+          "lineNumber": 312
+        },
+        {
+          "caller": "_process_via_torchaudio",
+          "callee": "str",
+          "lineNumber": 312
+        },
+        {
+          "caller": "_process_via_torchaudio",
+          "callee": "torchaudio.sox_effects.apply_effects_tensor",
+          "lineNumber": 314
+        },
+        {
+          "caller": "_process_via_torchaudio",
+          "callee": "io.BytesIO",
+          "lineNumber": 318
+        },
+        {
+          "caller": "_process_via_torchaudio",
+          "callee": "torchaudio.save",
+          "lineNumber": 319
+        },
+        {
+          "caller": "_process_via_torchaudio",
+          "callee": "output_buffer.getvalue",
+          "lineNumber": 325
+        },
+        {
+          "caller": "_process_via_torchaudio",
+          "callee": "logger.debug",
+          "lineNumber": 327
+        },
+        {
+          "caller": "_process_via_torchaudio",
+          "callee": "len",
+          "lineNumber": 328
+        },
+        {
+          "caller": "_process_via_torchaudio",
+          "callee": "len",
+          "lineNumber": 328
+        },
+        {
+          "caller": "_process_via_torchaudio",
+          "callee": "logger.error",
+          "lineNumber": 334
+        },
+        {
+          "caller": "process",
+          "callee": "self.check_sox_available",
+          "lineNumber": 356
+        },
+        {
+          "caller": "process",
+          "callee": "logger.debug",
+          "lineNumber": 357
+        },
+        {
+          "caller": "process",
+          "callee": "len",
+          "lineNumber": 361
+        },
+        {
+          "caller": "process",
+          "callee": "logger.warning",
+          "lineNumber": 362
+        },
+        {
+          "caller": "process",
+          "callee": "len",
+          "lineNumber": 363
+        },
+        {
+          "caller": "process",
+          "callee": "self._process_via_cli",
+          "lineNumber": 369
+        },
+        {
+          "caller": "process",
+          "callee": "self._process_via_torchaudio",
+          "lineNumber": 371
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 4,
+        "functionCount": 3,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/services/tts/contrib/glm_tts.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 299,
+      "nonEmptyLines": 258,
+      "classes": [
+        {
+          "name": "GLMTTS",
+          "startLine": 20,
+          "endLine": 299,
+          "methods": [
+            "__init__",
+            "from_config",
+            "_get_client",
+            "synthesize",
+            "_synthesize_sync",
+            "_synthesize_stream",
+            "synthesize_stream",
+            "close"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "GLMTTS",
+          "line": 19,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "from_config",
+          "callee": "cls",
+          "lineNumber": 57
+        },
+        {
+          "caller": "from_config",
+          "callee": "getattr",
+          "lineNumber": 59
+        },
+        {
+          "caller": "from_config",
+          "callee": "getattr",
+          "lineNumber": 61
+        },
+        {
+          "caller": "from_config",
+          "callee": "getattr",
+          "lineNumber": 62
+        },
+        {
+          "caller": "from_config",
+          "callee": "getattr",
+          "lineNumber": 63
+        },
+        {
+          "caller": "_get_client",
+          "callee": "ZhipuAiClient",
+          "lineNumber": 71
+        },
+        {
+          "caller": "_get_client",
+          "callee": "logger.info",
+          "lineNumber": 72
+        },
+        {
+          "caller": "_get_client",
+          "callee": "logger.error",
+          "lineNumber": 74
+        },
+        {
+          "caller": "_get_client",
+          "callee": "ImportError",
+          "lineNumber": 75
+        },
+        {
+          "caller": "synthesize",
+          "callee": "self._get_client",
+          "lineNumber": 108
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.debug",
+          "lineNumber": 116
+        },
+        {
+          "caller": "synthesize",
+          "callee": "self._synthesize_stream",
+          "lineNumber": 121
+        },
+        {
+          "caller": "synthesize",
+          "callee": "self._synthesize_sync",
+          "lineNumber": 126
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.error",
+          "lineNumber": 130
+        },
+        {
+          "caller": "_synthesize_sync",
+          "callee": "asyncio.get_event_loop",
+          "lineNumber": 147
+        },
+        {
+          "caller": "_call_api",
+          "callee": "client.audio.speech",
+          "lineNumber": 150
+        },
+        {
+          "caller": "_synthesize_sync",
+          "callee": "loop.run_in_executor",
+          "lineNumber": 160
+        },
+        {
+          "caller": "_synthesize_sync",
+          "callee": "Path",
+          "lineNumber": 164
+        },
+        {
+          "caller": "_synthesize_sync",
+          "callee": "output_path.parent.mkdir",
+          "lineNumber": 165
+        },
+        {
+          "caller": "_synthesize_sync",
+          "callee": "response.stream_to_file",
+          "lineNumber": 166
+        },
+        {
+          "caller": "_synthesize_sync",
+          "callee": "str",
+          "lineNumber": 166
+        },
+        {
+          "caller": "_synthesize_sync",
+          "callee": "logger.info",
+          "lineNumber": 167
+        },
+        {
+          "caller": "_synthesize_sync",
+          "callee": "str",
+          "lineNumber": 168
+        },
+        {
+          "caller": "_synthesize_sync",
+          "callee": "io.BytesIO",
+          "lineNumber": 172
+        },
+        {
+          "caller": "_synthesize_sync",
+          "callee": "response.iter_bytes",
+          "lineNumber": 173
+        },
+        {
+          "caller": "_synthesize_sync",
+          "callee": "buffer.write",
+          "lineNumber": 174
+        },
+        {
+          "caller": "_synthesize_sync",
+          "callee": "buffer.getvalue",
+          "lineNumber": 175
+        },
+        {
+          "caller": "_synthesize_sync",
+          "callee": "logger.debug",
+          "lineNumber": 176
+        },
+        {
+          "caller": "_synthesize_sync",
+          "callee": "len",
+          "lineNumber": 176
+        },
+        {
+          "caller": "_synthesize_stream",
+          "callee": "asyncio.get_event_loop",
+          "lineNumber": 193
+        },
+        {
+          "caller": "_call_api",
+          "callee": "client.audio.speech",
+          "lineNumber": 196
+        },
+        {
+          "caller": "_synthesize_stream",
+          "callee": "loop.run_in_executor",
+          "lineNumber": 208
+        },
+        {
+          "caller": "_synthesize_stream",
+          "callee": "base64.b64decode",
+          "lineNumber": 221
+        },
+        {
+          "caller": "_synthesize_stream",
+          "callee": "audio_chunks.append",
+          "lineNumber": 222
+        },
+        {
+          "caller": "_synthesize_stream",
+          "callee": "b''.join",
+          "lineNumber": 225
+        },
+        {
+          "caller": "_synthesize_stream",
+          "callee": "Path",
+          "lineNumber": 229
+        },
+        {
+          "caller": "_synthesize_stream",
+          "callee": "output_path.parent.mkdir",
+          "lineNumber": 230
+        },
+        {
+          "caller": "_synthesize_stream",
+          "callee": "open",
+          "lineNumber": 231
+        },
+        {
+          "caller": "_synthesize_stream",
+          "callee": "f.write",
+          "lineNumber": 232
+        },
+        {
+          "caller": "_synthesize_stream",
+          "callee": "logger.info",
+          "lineNumber": 233
+        },
+        {
+          "caller": "_synthesize_stream",
+          "callee": "str",
+          "lineNumber": 234
+        },
+        {
+          "caller": "_synthesize_stream",
+          "callee": "logger.debug",
+          "lineNumber": 236
+        },
+        {
+          "caller": "_synthesize_stream",
+          "callee": "len",
+          "lineNumber": 236
+        },
+        {
+          "caller": "synthesize_stream",
+          "callee": "self._get_client",
+          "lineNumber": 262
+        },
+        {
+          "caller": "synthesize_stream",
+          "callee": "asyncio.get_event_loop",
+          "lineNumber": 268
+        },
+        {
+          "caller": "_call_api",
+          "callee": "client.audio.speech",
+          "lineNumber": 271
+        },
+        {
+          "caller": "synthesize_stream",
+          "callee": "loop.run_in_executor",
+          "lineNumber": 283
+        },
+        {
+          "caller": "synthesize_stream",
+          "callee": "base64.b64decode",
+          "lineNumber": 293
+        },
+        {
+          "caller": "close",
+          "callee": "logger.debug",
+          "lineNumber": 299
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/services/tts/contrib/kokoro_tts.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 254,
+      "nonEmptyLines": 208,
+      "classes": [
+        {
+          "name": "KokoroTTS",
+          "startLine": 30,
+          "endLine": 254,
+          "methods": [
+            "__init__",
+            "from_config",
+            "_ensure_pipeline",
+            "synthesize",
+            "_tensor_to_wav_bytes",
+            "close"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "KokoroTTS",
+          "line": 29,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "glados_effect.get",
+          "lineNumber": 72
+        },
+        {
+          "caller": "__init__",
+          "callee": "GladosEffectProcessor",
+          "lineNumber": 73
+        },
+        {
+          "caller": "__init__",
+          "callee": "logger.info",
+          "lineNumber": 81
+        },
+        {
+          "caller": "from_config",
+          "callee": "cls",
+          "lineNumber": 89
+        },
+        {
+          "caller": "from_config",
+          "callee": "getattr",
+          "lineNumber": 90
+        },
+        {
+          "caller": "from_config",
+          "callee": "getattr",
+          "lineNumber": 91
+        },
+        {
+          "caller": "from_config",
+          "callee": "getattr",
+          "lineNumber": 92
+        },
+        {
+          "caller": "from_config",
+          "callee": "getattr",
+          "lineNumber": 93
+        },
+        {
+          "caller": "from_config",
+          "callee": "getattr",
+          "lineNumber": 94
+        },
+        {
+          "caller": "from_config",
+          "callee": "getattr",
+          "lineNumber": 95
+        },
+        {
+          "caller": "from_config",
+          "callee": "getattr",
+          "lineNumber": 96
+        },
+        {
+          "caller": "_ensure_pipeline",
+          "callee": "logger.info",
+          "lineNumber": 109
+        },
+        {
+          "caller": "_ensure_pipeline",
+          "callee": "KPipeline",
+          "lineNumber": 117
+        },
+        {
+          "caller": "_ensure_pipeline",
+          "callee": "logger.info",
+          "lineNumber": 122
+        },
+        {
+          "caller": "_ensure_pipeline",
+          "callee": "logger.error",
+          "lineNumber": 128
+        },
+        {
+          "caller": "_ensure_pipeline",
+          "callee": "ImportError",
+          "lineNumber": 132
+        },
+        {
+          "caller": "_ensure_pipeline",
+          "callee": "logger.error",
+          "lineNumber": 138
+        },
+        {
+          "caller": "synthesize",
+          "callee": "self._ensure_pipeline",
+          "lineNumber": 161
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.debug",
+          "lineNumber": 166
+        },
+        {
+          "caller": "synthesize",
+          "callee": "self._pipeline",
+          "lineNumber": 175
+        },
+        {
+          "caller": "synthesize",
+          "callee": "audio_chunks.append",
+          "lineNumber": 181
+        },
+        {
+          "caller": "synthesize",
+          "callee": "result.audio.cpu",
+          "lineNumber": 181
+        },
+        {
+          "caller": "synthesize",
+          "callee": "RuntimeError",
+          "lineNumber": 184
+        },
+        {
+          "caller": "synthesize",
+          "callee": "torch.cat",
+          "lineNumber": 187
+        },
+        {
+          "caller": "synthesize",
+          "callee": "len",
+          "lineNumber": 187
+        },
+        {
+          "caller": "synthesize",
+          "callee": "full_audio.abs().max",
+          "lineNumber": 190
+        },
+        {
+          "caller": "synthesize",
+          "callee": "full_audio.abs",
+          "lineNumber": 190
+        },
+        {
+          "caller": "synthesize",
+          "callee": "self._tensor_to_wav_bytes",
+          "lineNumber": 195
+        },
+        {
+          "caller": "synthesize",
+          "callee": "self._effect_processor.process",
+          "lineNumber": 199
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.debug",
+          "lineNumber": 201
+        },
+        {
+          "caller": "synthesize",
+          "callee": "len",
+          "lineNumber": 202
+        },
+        {
+          "caller": "synthesize",
+          "callee": "Path",
+          "lineNumber": 207
+        },
+        {
+          "caller": "synthesize",
+          "callee": "output_path.write_bytes",
+          "lineNumber": 208
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.debug",
+          "lineNumber": 209
+        },
+        {
+          "caller": "synthesize",
+          "callee": "str",
+          "lineNumber": 210
+        },
+        {
+          "caller": "synthesize",
+          "callee": "tempfile.mktemp",
+          "lineNumber": 214
+        },
+        {
+          "caller": "synthesize",
+          "callee": "Path(temp_file).write_bytes",
+          "lineNumber": 215
+        },
+        {
+          "caller": "synthesize",
+          "callee": "Path",
+          "lineNumber": 215
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.debug",
+          "lineNumber": 216
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.error",
+          "lineNumber": 220
+        },
+        {
+          "caller": "_tensor_to_wav_bytes",
+          "callee": "audio_tensor.dim",
+          "lineNumber": 236
+        },
+        {
+          "caller": "_tensor_to_wav_bytes",
+          "callee": "audio_tensor.squeeze",
+          "lineNumber": 237
+        },
+        {
+          "caller": "_tensor_to_wav_bytes",
+          "callee": "(audio_tensor.numpy() * 32767).clip(-32768, 32767).astype",
+          "lineNumber": 238
+        },
+        {
+          "caller": "_tensor_to_wav_bytes",
+          "callee": "(audio_tensor.numpy() * 32767).clip",
+          "lineNumber": 238
+        },
+        {
+          "caller": "_tensor_to_wav_bytes",
+          "callee": "audio_tensor.numpy",
+          "lineNumber": 238
+        },
+        {
+          "caller": "_tensor_to_wav_bytes",
+          "callee": "io.BytesIO",
+          "lineNumber": 240
+        },
+        {
+          "caller": "_tensor_to_wav_bytes",
+          "callee": "wave.open",
+          "lineNumber": 241
+        },
+        {
+          "caller": "_tensor_to_wav_bytes",
+          "callee": "wf.setnchannels",
+          "lineNumber": 242
+        },
+        {
+          "caller": "_tensor_to_wav_bytes",
+          "callee": "wf.setsampwidth",
+          "lineNumber": 243
+        },
+        {
+          "caller": "_tensor_to_wav_bytes",
+          "callee": "wf.setframerate",
+          "lineNumber": 244
+        },
+        {
+          "caller": "_tensor_to_wav_bytes",
+          "callee": "wf.writeframes",
+          "lineNumber": 245
+        },
+        {
+          "caller": "_tensor_to_wav_bytes",
+          "callee": "samples.tobytes",
+          "lineNumber": 245
+        },
+        {
+          "caller": "_tensor_to_wav_bytes",
+          "callee": "buffer.getvalue",
+          "lineNumber": 246
+        },
+        {
+          "caller": "close",
+          "callee": "self._effect_processor.close",
+          "lineNumber": 251
+        },
+        {
+          "caller": "close",
+          "callee": "logger.debug",
+          "lineNumber": 254
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/services/tts/contrib/vibe_voice_tts.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 354,
+      "nonEmptyLines": 305,
+      "classes": [
+        {
+          "name": "VibeVoiceTTS",
+          "startLine": 30,
+          "endLine": 354,
+          "methods": [
+            "__init__",
+            "_get_client",
+            "from_config",
+            "synthesize",
+            "_synthesize_remote",
+            "_synthesize_local",
+            "_find_infer_script",
+            "synthesize_stream",
+            "close"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "VibeVoiceTTS",
+          "line": 29,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "base_url.rstrip",
+          "lineNumber": 78
+        },
+        {
+          "caller": "_get_client",
+          "callee": "httpx.AsyncClient",
+          "lineNumber": 92
+        },
+        {
+          "caller": "_get_client",
+          "callee": "logger.info",
+          "lineNumber": 100
+        },
+        {
+          "caller": "_get_client",
+          "callee": "logger.error",
+          "lineNumber": 104
+        },
+        {
+          "caller": "_get_client",
+          "callee": "ImportError",
+          "lineNumber": 105
+        },
+        {
+          "caller": "from_config",
+          "callee": "cls",
+          "lineNumber": 111
+        },
+        {
+          "caller": "from_config",
+          "callee": "getattr",
+          "lineNumber": 113
+        },
+        {
+          "caller": "from_config",
+          "callee": "getattr",
+          "lineNumber": 115
+        },
+        {
+          "caller": "synthesize",
+          "callee": "text.strip",
+          "lineNumber": 144
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.warning",
+          "lineNumber": 145
+        },
+        {
+          "caller": "synthesize",
+          "callee": "str",
+          "lineNumber": 146
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.debug",
+          "lineNumber": 148
+        },
+        {
+          "caller": "synthesize",
+          "callee": "len",
+          "lineNumber": 149
+        },
+        {
+          "caller": "synthesize",
+          "callee": "self._synthesize_remote",
+          "lineNumber": 155
+        },
+        {
+          "caller": "synthesize",
+          "callee": "kwargs.get",
+          "lineNumber": 159
+        },
+        {
+          "caller": "synthesize",
+          "callee": "kwargs.get",
+          "lineNumber": 160
+        },
+        {
+          "caller": "synthesize",
+          "callee": "self._synthesize_local",
+          "lineNumber": 163
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.error",
+          "lineNumber": 169
+        },
+        {
+          "caller": "_synthesize_remote",
+          "callee": "self._get_client",
+          "lineNumber": 183
+        },
+        {
+          "caller": "_synthesize_remote",
+          "callee": "client.post",
+          "lineNumber": 193
+        },
+        {
+          "caller": "_synthesize_remote",
+          "callee": "response.raise_for_status",
+          "lineNumber": 194
+        },
+        {
+          "caller": "_synthesize_remote",
+          "callee": "RuntimeError",
+          "lineNumber": 199
+        },
+        {
+          "caller": "_synthesize_remote",
+          "callee": "logger.debug",
+          "lineNumber": 201
+        },
+        {
+          "caller": "_synthesize_remote",
+          "callee": "len",
+          "lineNumber": 202
+        },
+        {
+          "caller": "_synthesize_remote",
+          "callee": "Path",
+          "lineNumber": 207
+        },
+        {
+          "caller": "_synthesize_remote",
+          "callee": "output_path.parent.mkdir",
+          "lineNumber": 208
+        },
+        {
+          "caller": "_synthesize_remote",
+          "callee": "open",
+          "lineNumber": 209
+        },
+        {
+          "caller": "_synthesize_remote",
+          "callee": "f.write",
+          "lineNumber": 210
+        },
+        {
+          "caller": "_synthesize_remote",
+          "callee": "logger.info",
+          "lineNumber": 211
+        },
+        {
+          "caller": "_synthesize_remote",
+          "callee": "str",
+          "lineNumber": 212
+        },
+        {
+          "caller": "_synthesize_remote",
+          "callee": "ConnectionError",
+          "lineNumber": 216
+        },
+        {
+          "caller": "_synthesize_remote",
+          "callee": "RuntimeError",
+          "lineNumber": 221
+        },
+        {
+          "caller": "_synthesize_local",
+          "callee": "Path",
+          "lineNumber": 234
+        },
+        {
+          "caller": "_synthesize_local",
+          "callee": "out_file.parent.mkdir",
+          "lineNumber": 235
+        },
+        {
+          "caller": "_synthesize_local",
+          "callee": "Path",
+          "lineNumber": 237
+        },
+        {
+          "caller": "_synthesize_local",
+          "callee": "tempfile.mktemp",
+          "lineNumber": 237
+        },
+        {
+          "caller": "_synthesize_local",
+          "callee": "self._find_infer_script",
+          "lineNumber": 240
+        },
+        {
+          "caller": "_synthesize_local",
+          "callee": "str",
+          "lineNumber": 244
+        },
+        {
+          "caller": "_synthesize_local",
+          "callee": "cmd.extend",
+          "lineNumber": 248
+        },
+        {
+          "caller": "_synthesize_local",
+          "callee": "cmd.extend",
+          "lineNumber": 250
+        },
+        {
+          "caller": "_synthesize_local",
+          "callee": "logger.debug",
+          "lineNumber": 252
+        },
+        {
+          "caller": "_synthesize_local",
+          "callee": "' '.join",
+          "lineNumber": 252
+        },
+        {
+          "caller": "_synthesize_local",
+          "callee": "asyncio.create_subprocess_exec",
+          "lineNumber": 255
+        },
+        {
+          "caller": "_synthesize_local",
+          "callee": "process.communicate",
+          "lineNumber": 260
+        },
+        {
+          "caller": "_synthesize_local",
+          "callee": "stderr.decode",
+          "lineNumber": 263
+        },
+        {
+          "caller": "_synthesize_local",
+          "callee": "RuntimeError",
+          "lineNumber": 264
+        },
+        {
+          "caller": "_synthesize_local",
+          "callee": "out_file.exists",
+          "lineNumber": 268
+        },
+        {
+          "caller": "_synthesize_local",
+          "callee": "out_file.stat",
+          "lineNumber": 268
+        },
+        {
+          "caller": "_synthesize_local",
+          "callee": "RuntimeError",
+          "lineNumber": 269
+        },
+        {
+          "caller": "_synthesize_local",
+          "callee": "logger.debug",
+          "lineNumber": 271
+        },
+        {
+          "caller": "_synthesize_local",
+          "callee": "out_file.stat",
+          "lineNumber": 272
+        },
+        {
+          "caller": "_synthesize_local",
+          "callee": "str",
+          "lineNumber": 276
+        },
+        {
+          "caller": "_synthesize_local",
+          "callee": "out_file.read_bytes",
+          "lineNumber": 278
+        },
+        {
+          "caller": "_synthesize_local",
+          "callee": "out_file.unlink",
+          "lineNumber": 279
+        },
+        {
+          "caller": "_synthesize_local",
+          "callee": "RuntimeError",
+          "lineNumber": 283
+        },
+        {
+          "caller": "_find_infer_script",
+          "callee": "os.path.expanduser",
+          "lineNumber": 290
+        },
+        {
+          "caller": "_find_infer_script",
+          "callee": "os.path.expanduser",
+          "lineNumber": 291
+        },
+        {
+          "caller": "_find_infer_script",
+          "callee": "Path",
+          "lineNumber": 294
+        },
+        {
+          "caller": "_find_infer_script",
+          "callee": "(demo_dir / \"tts_1p5b_inference.py\").exists",
+          "lineNumber": 297
+        },
+        {
+          "caller": "_find_infer_script",
+          "callee": "str",
+          "lineNumber": 298
+        },
+        {
+          "caller": "_find_infer_script",
+          "callee": "os.path.isfile",
+          "lineNumber": 301
+        },
+        {
+          "caller": "synthesize_stream",
+          "callee": "self._synthesize_local",
+          "lineNumber": 322
+        },
+        {
+          "caller": "synthesize_stream",
+          "callee": "self._get_client",
+          "lineNumber": 330
+        },
+        {
+          "caller": "synthesize_stream",
+          "callee": "kwargs.get",
+          "lineNumber": 334
+        },
+        {
+          "caller": "synthesize_stream",
+          "callee": "kwargs.get",
+          "lineNumber": 335
+        },
+        {
+          "caller": "synthesize_stream",
+          "callee": "client.stream",
+          "lineNumber": 340
+        },
+        {
+          "caller": "synthesize_stream",
+          "callee": "response.raise_for_status",
+          "lineNumber": 341
+        },
+        {
+          "caller": "synthesize_stream",
+          "callee": "response.aiter_bytes",
+          "lineNumber": 342
+        },
+        {
+          "caller": "synthesize_stream",
+          "callee": "logger.error",
+          "lineNumber": 346
+        },
+        {
+          "caller": "close",
+          "callee": "self._client.aclose",
+          "lineNumber": 352
+        },
+        {
+          "caller": "close",
+          "callee": "logger.debug",
+          "lineNumber": 354
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/services/tts/edge_tts.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 206,
+      "nonEmptyLines": 169,
+      "functions": [
+        {
+          "name": "_wrap_ssml",
+          "startLine": 24,
+          "endLine": 59,
+          "params": [
+            "text",
+            "voice",
+            "rate",
+            "pitch"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "EdgeTTS",
+          "startLine": 71,
+          "endLine": 206,
+          "methods": [
+            "__init__",
+            "from_config",
+            "_get_communicate",
+            "synthesize",
+            "close"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "_wrap_ssml",
+          "line": 24,
+          "isDefault": false
+        },
+        {
+          "name": "EdgeTTS",
+          "line": 70,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_wrap_ssml",
+          "callee": "text.strip().startswith",
+          "lineNumber": 31
+        },
+        {
+          "caller": "_wrap_ssml",
+          "callee": "text.strip",
+          "lineNumber": 31
+        },
+        {
+          "caller": "_wrap_ssml",
+          "callee": "text\n        .replace(\"&\", \"&amp;\")\n        .replace(\"<\", \"&lt;\")\n        .replace(\">\", \"&gt;\")\n        .replace('\"', \"&quot;\")\n        .replace",
+          "lineNumber": 35
+        },
+        {
+          "caller": "_wrap_ssml",
+          "callee": "text\n        .replace(\"&\", \"&amp;\")\n        .replace(\"<\", \"&lt;\")\n        .replace(\">\", \"&gt;\")\n        .replace",
+          "lineNumber": 35
+        },
+        {
+          "caller": "_wrap_ssml",
+          "callee": "text\n        .replace(\"&\", \"&amp;\")\n        .replace(\"<\", \"&lt;\")\n        .replace",
+          "lineNumber": 35
+        },
+        {
+          "caller": "_wrap_ssml",
+          "callee": "text\n        .replace(\"&\", \"&amp;\")\n        .replace",
+          "lineNumber": 35
+        },
+        {
+          "caller": "_wrap_ssml",
+          "callee": "text\n        .replace",
+          "lineNumber": 35
+        },
+        {
+          "caller": "_wrap_ssml",
+          "callee": "attrs.append",
+          "lineNumber": 47
+        },
+        {
+          "caller": "_wrap_ssml",
+          "callee": "attrs.append",
+          "lineNumber": 49
+        },
+        {
+          "caller": "_wrap_ssml",
+          "callee": "\" \".join",
+          "lineNumber": 50
+        },
+        {
+          "caller": "from_config",
+          "callee": "getattr",
+          "lineNumber": 105
+        },
+        {
+          "caller": "from_config",
+          "callee": "getattr",
+          "lineNumber": 106
+        },
+        {
+          "caller": "from_config",
+          "callee": "getattr",
+          "lineNumber": 107
+        },
+        {
+          "caller": "from_config",
+          "callee": "getattr",
+          "lineNumber": 109
+        },
+        {
+          "caller": "from_config",
+          "callee": "logger.info",
+          "lineNumber": 114
+        },
+        {
+          "caller": "from_config",
+          "callee": "logger.info",
+          "lineNumber": 117
+        },
+        {
+          "caller": "from_config",
+          "callee": "cls",
+          "lineNumber": 119
+        },
+        {
+          "caller": "_get_communicate",
+          "callee": "logger.info",
+          "lineNumber": 127
+        },
+        {
+          "caller": "_get_communicate",
+          "callee": "logger.error",
+          "lineNumber": 129
+        },
+        {
+          "caller": "_get_communicate",
+          "callee": "ImportError",
+          "lineNumber": 130
+        },
+        {
+          "caller": "synthesize",
+          "callee": "_wrap_ssml",
+          "lineNumber": 159
+        },
+        {
+          "caller": "synthesize",
+          "callee": "edge_tts.Communicate",
+          "lineNumber": 160
+        },
+        {
+          "caller": "synthesize",
+          "callee": "edge_tts.Communicate",
+          "lineNumber": 162
+        },
+        {
+          "caller": "synthesize",
+          "callee": "io.BytesIO",
+          "lineNumber": 166
+        },
+        {
+          "caller": "synthesize",
+          "callee": "Path",
+          "lineNumber": 169
+        },
+        {
+          "caller": "synthesize",
+          "callee": "communicate_instance.stream",
+          "lineNumber": 174
+        },
+        {
+          "caller": "synthesize",
+          "callee": "output_buffer.write",
+          "lineNumber": 176
+        },
+        {
+          "caller": "synthesize",
+          "callee": "output_buffer.getvalue",
+          "lineNumber": 178
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.debug",
+          "lineNumber": 179
+        },
+        {
+          "caller": "synthesize",
+          "callee": "len",
+          "lineNumber": 179
+        },
+        {
+          "caller": "synthesize",
+          "callee": "len",
+          "lineNumber": 179
+        },
+        {
+          "caller": "synthesize",
+          "callee": "kwargs.get",
+          "lineNumber": 181
+        },
+        {
+          "caller": "synthesize",
+          "callee": "tempfile.mktemp",
+          "lineNumber": 182
+        },
+        {
+          "caller": "synthesize",
+          "callee": "open",
+          "lineNumber": 183
+        },
+        {
+          "caller": "synthesize",
+          "callee": "f.write",
+          "lineNumber": 184
+        },
+        {
+          "caller": "synthesize",
+          "callee": "open",
+          "lineNumber": 188
+        },
+        {
+          "caller": "synthesize",
+          "callee": "communicate_instance.stream",
+          "lineNumber": 189
+        },
+        {
+          "caller": "synthesize",
+          "callee": "f.write",
+          "lineNumber": 191
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.debug",
+          "lineNumber": 193
+        },
+        {
+          "caller": "synthesize",
+          "callee": "len",
+          "lineNumber": 193
+        },
+        {
+          "caller": "synthesize",
+          "callee": "str",
+          "lineNumber": 194
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.error",
+          "lineNumber": 197
+        },
+        {
+          "caller": "synthesize",
+          "callee": "locals",
+          "lineNumber": 200
+        },
+        {
+          "caller": "synthesize",
+          "callee": "output_buffer.close",
+          "lineNumber": 201
+        },
+        {
+          "caller": "close",
+          "callee": "logger.debug",
+          "lineNumber": 206
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/services/tts/factory.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 159,
+      "nonEmptyLines": 144,
+      "classes": [
+        {
+          "name": "TTSFactory",
+          "startLine": 24,
+          "endLine": 159,
+          "methods": [
+            "create",
+            "_build_config",
+            "get_available_providers"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "TTSFactory",
+          "line": 24,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "create",
+          "callee": "TTSFactory._build_config",
+          "lineNumber": 41
+        },
+        {
+          "caller": "create",
+          "callee": "logger.warning",
+          "lineNumber": 43
+        },
+        {
+          "caller": "create",
+          "callee": "MockTTS",
+          "lineNumber": 44
+        },
+        {
+          "caller": "create",
+          "callee": "ProviderRegistry.create_service",
+          "lineNumber": 47
+        },
+        {
+          "caller": "create",
+          "callee": "TracingProxy",
+          "lineNumber": 48
+        },
+        {
+          "caller": "create",
+          "callee": "logger.warning",
+          "lineNumber": 50
+        },
+        {
+          "caller": "create",
+          "callee": "MockTTS",
+          "lineNumber": 51
+        },
+        {
+          "caller": "_build_config",
+          "callee": "OpenAITTSConfig",
+          "lineNumber": 58
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 59
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 60
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 61
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 62
+        },
+        {
+          "caller": "_build_config",
+          "callee": "EdgeTTSConfig",
+          "lineNumber": 65
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 66
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 67
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 68
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 69
+        },
+        {
+          "caller": "_build_config",
+          "callee": "GLMTTSConfig",
+          "lineNumber": 72
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 73
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 74
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 75
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 76
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 77
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 78
+        },
+        {
+          "caller": "_build_config",
+          "callee": "ChatTTSConfig",
+          "lineNumber": 81
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 82
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 83
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 84
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 85
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 86
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 87
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 88
+        },
+        {
+          "caller": "_build_config",
+          "callee": "KokoroTTSConfig",
+          "lineNumber": 91
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 92
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 93
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 94
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 95
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 96
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 97
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 98
+        },
+        {
+          "caller": "_build_config",
+          "callee": "VibeVoiceTTSConfig",
+          "lineNumber": 101
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 102
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 103
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 104
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 105
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 106
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 107
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 108
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 109
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 110
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 111
+        },
+        {
+          "caller": "_build_config",
+          "callee": "GPTSoVITSConfig",
+          "lineNumber": 114
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 115
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 116
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 117
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 118
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 119
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 120
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 121
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 122
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 123
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 124
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 125
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 126
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 127
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 128
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 129
+        },
+        {
+          "caller": "_build_config",
+          "callee": "MockTTSConfig",
+          "lineNumber": 132
+        },
+        {
+          "caller": "_build_config",
+          "callee": "Qwen3TTSConfig",
+          "lineNumber": 134
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 135
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 136
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 137
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 138
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 139
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 140
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 141
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 142
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 143
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 144
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 145
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 146
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 147
+        },
+        {
+          "caller": "_build_config",
+          "callee": "kwargs.get",
+          "lineNumber": 148
+        },
+        {
+          "caller": "_build_config",
+          "callee": "logger.warning",
+          "lineNumber": 153
+        },
+        {
+          "caller": "get_available_providers",
+          "callee": "list",
+          "lineNumber": 159
+        },
+        {
+          "caller": "get_available_providers",
+          "callee": "ProviderRegistry.list_services",
+          "lineNumber": 159
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/services/tts/gpt_sovits_tts.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 277,
+      "nonEmptyLines": 241,
+      "classes": [
+        {
+          "name": "GPTSoVITSTTS",
+          "startLine": 22,
+          "endLine": 277,
+          "methods": [
+            "__init__",
+            "_ensure_client",
+            "_call_api",
+            "preload",
+            "synthesize",
+            "close",
+            "from_config"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "GPTSoVITSTTS",
+          "line": 21,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "base_url.rstrip",
+          "lineNumber": 71
+        },
+        {
+          "caller": "_ensure_client",
+          "callee": "logger.error",
+          "lineNumber": 97
+        },
+        {
+          "caller": "_ensure_client",
+          "callee": "ImportError",
+          "lineNumber": 98
+        },
+        {
+          "caller": "_ensure_client",
+          "callee": "httpx.Timeout",
+          "lineNumber": 102
+        },
+        {
+          "caller": "_ensure_client",
+          "callee": "httpx.AsyncClient",
+          "lineNumber": 103
+        },
+        {
+          "caller": "_ensure_client",
+          "callee": "logger.info",
+          "lineNumber": 104
+        },
+        {
+          "caller": "_call_api",
+          "callee": "self._ensure_client",
+          "lineNumber": 133
+        },
+        {
+          "caller": "_call_api",
+          "callee": "kwargs.get",
+          "lineNumber": 141
+        },
+        {
+          "caller": "_call_api",
+          "callee": "kwargs.get",
+          "lineNumber": 142
+        },
+        {
+          "caller": "_call_api",
+          "callee": "kwargs.get",
+          "lineNumber": 143
+        },
+        {
+          "caller": "_call_api",
+          "callee": "kwargs.get",
+          "lineNumber": 144
+        },
+        {
+          "caller": "_call_api",
+          "callee": "kwargs.get",
+          "lineNumber": 145
+        },
+        {
+          "caller": "_call_api",
+          "callee": "kwargs.get",
+          "lineNumber": 146
+        },
+        {
+          "caller": "_call_api",
+          "callee": "kwargs.get",
+          "lineNumber": 147
+        },
+        {
+          "caller": "_call_api",
+          "callee": "kwargs.get",
+          "lineNumber": 148
+        },
+        {
+          "caller": "_call_api",
+          "callee": "kwargs.get",
+          "lineNumber": 149
+        },
+        {
+          "caller": "_call_api",
+          "callee": "kwargs.get",
+          "lineNumber": 152
+        },
+        {
+          "caller": "_call_api",
+          "callee": "logger.debug",
+          "lineNumber": 156
+        },
+        {
+          "caller": "_call_api",
+          "callee": "len",
+          "lineNumber": 156
+        },
+        {
+          "caller": "_call_api",
+          "callee": "payload.get",
+          "lineNumber": 156
+        },
+        {
+          "caller": "_call_api",
+          "callee": "payload.get",
+          "lineNumber": 156
+        },
+        {
+          "caller": "_call_api",
+          "callee": "payload.get",
+          "lineNumber": 156
+        },
+        {
+          "caller": "_call_api",
+          "callee": "self._client.post",
+          "lineNumber": 159
+        },
+        {
+          "caller": "_call_api",
+          "callee": "logger.error",
+          "lineNumber": 161
+        },
+        {
+          "caller": "_call_api",
+          "callee": "ConnectionError",
+          "lineNumber": 162
+        },
+        {
+          "caller": "_call_api",
+          "callee": "response.json",
+          "lineNumber": 171
+        },
+        {
+          "caller": "_call_api",
+          "callee": "error_body.get",
+          "lineNumber": 172
+        },
+        {
+          "caller": "_call_api",
+          "callee": "str",
+          "lineNumber": 172
+        },
+        {
+          "caller": "_call_api",
+          "callee": "error_body.get",
+          "lineNumber": 173
+        },
+        {
+          "caller": "_call_api",
+          "callee": "logger.error",
+          "lineNumber": 179
+        },
+        {
+          "caller": "_call_api",
+          "callee": "RuntimeError",
+          "lineNumber": 180
+        },
+        {
+          "caller": "preload",
+          "callee": "self._call_api",
+          "lineNumber": 191
+        },
+        {
+          "caller": "preload",
+          "callee": "logger.info",
+          "lineNumber": 192
+        },
+        {
+          "caller": "preload",
+          "callee": "logger.info",
+          "lineNumber": 194
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.warning",
+          "lineNumber": 217
+        },
+        {
+          "caller": "synthesize",
+          "callee": "np.zeros",
+          "lineNumber": 221
+        },
+        {
+          "caller": "synthesize",
+          "callee": "struct.pack",
+          "lineNumber": 222
+        },
+        {
+          "caller": "synthesize",
+          "callee": "len",
+          "lineNumber": 224
+        },
+        {
+          "caller": "synthesize",
+          "callee": "len",
+          "lineNumber": 225
+        },
+        {
+          "caller": "synthesize",
+          "callee": "silence.tobytes",
+          "lineNumber": 227
+        },
+        {
+          "caller": "synthesize",
+          "callee": "Path",
+          "lineNumber": 229
+        },
+        {
+          "caller": "synthesize",
+          "callee": "output_path.parent.mkdir",
+          "lineNumber": 230
+        },
+        {
+          "caller": "synthesize",
+          "callee": "open",
+          "lineNumber": 231
+        },
+        {
+          "caller": "synthesize",
+          "callee": "f.write",
+          "lineNumber": 232
+        },
+        {
+          "caller": "synthesize",
+          "callee": "str",
+          "lineNumber": 233
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.debug",
+          "lineNumber": 236
+        },
+        {
+          "caller": "synthesize",
+          "callee": "len",
+          "lineNumber": 236
+        },
+        {
+          "caller": "synthesize",
+          "callee": "self._call_api",
+          "lineNumber": 238
+        },
+        {
+          "caller": "synthesize",
+          "callee": "Path",
+          "lineNumber": 241
+        },
+        {
+          "caller": "synthesize",
+          "callee": "output_path.parent.mkdir",
+          "lineNumber": 242
+        },
+        {
+          "caller": "synthesize",
+          "callee": "open",
+          "lineNumber": 243
+        },
+        {
+          "caller": "synthesize",
+          "callee": "f.write",
+          "lineNumber": 244
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.debug",
+          "lineNumber": 245
+        },
+        {
+          "caller": "synthesize",
+          "callee": "len",
+          "lineNumber": 245
+        },
+        {
+          "caller": "synthesize",
+          "callee": "str",
+          "lineNumber": 246
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.debug",
+          "lineNumber": 248
+        },
+        {
+          "caller": "synthesize",
+          "callee": "len",
+          "lineNumber": 248
+        },
+        {
+          "caller": "synthesize",
+          "callee": "len",
+          "lineNumber": 248
+        },
+        {
+          "caller": "close",
+          "callee": "self._client.aclose",
+          "lineNumber": 254
+        },
+        {
+          "caller": "close",
+          "callee": "logger.debug",
+          "lineNumber": 256
+        },
+        {
+          "caller": "from_config",
+          "callee": "cls",
+          "lineNumber": 261
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/services/tts/interface.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 60,
+      "nonEmptyLines": 48,
+      "classes": [
+        {
+          "name": "TTSInterface",
+          "startLine": 11,
+          "endLine": 60,
+          "methods": [
+            "synthesize",
+            "close",
+            "audio_format",
+            "sample_rate",
+            "requires_gpu"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "TTSInterface",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/services/tts/mock_tts.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 49,
+      "nonEmptyLines": 37,
+      "classes": [
+        {
+          "name": "MockTTS",
+          "startLine": 15,
+          "endLine": 49,
+          "methods": [
+            "__init__",
+            "from_config",
+            "synthesize",
+            "close"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "MockTTS",
+          "line": 14,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "from_config",
+          "callee": "cls",
+          "lineNumber": 27
+        },
+        {
+          "caller": "synthesize",
+          "callee": "asyncio.sleep",
+          "lineNumber": 38
+        },
+        {
+          "caller": "synthesize",
+          "callee": "str",
+          "lineNumber": 42
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/services/tts/qwen3_tts.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 458,
+      "nonEmptyLines": 398,
+      "classes": [
+        {
+          "name": "Qwen3TTSTTS",
+          "startLine": 34,
+          "endLine": 458,
+          "methods": [
+            "__init__",
+            "_get_torch_dtype",
+            "_load_model",
+            "_build_voice_clone_prompt",
+            "from_config",
+            "synthesize",
+            "synthesize_stream",
+            "preload",
+            "close"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Qwen3TTSTTS",
+          "line": 33,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "threading.Lock",
+          "lineNumber": 81
+        },
+        {
+          "caller": "__init__",
+          "callee": "asyncio.Event",
+          "lineNumber": 83
+        },
+        {
+          "caller": "__init__",
+          "callee": "self._synth_done.set",
+          "lineNumber": 84
+        },
+        {
+          "caller": "_get_torch_dtype",
+          "callee": "torch.cuda.is_available",
+          "lineNumber": 90
+        },
+        {
+          "caller": "_get_torch_dtype",
+          "callee": "torch.cuda.is_bf16_supported",
+          "lineNumber": 90
+        },
+        {
+          "caller": "_get_torch_dtype",
+          "callee": "logger.warning",
+          "lineNumber": 91
+        },
+        {
+          "caller": "_load_model",
+          "callee": "logger.info",
+          "lineNumber": 109
+        },
+        {
+          "caller": "_load_model",
+          "callee": "logger.info",
+          "lineNumber": 110
+        },
+        {
+          "caller": "_load_model",
+          "callee": "ImportError",
+          "lineNumber": 115
+        },
+        {
+          "caller": "_load_model",
+          "callee": "self.device.startswith",
+          "lineNumber": 120
+        },
+        {
+          "caller": "_load_model",
+          "callee": "torch.cuda.is_available",
+          "lineNumber": 120
+        },
+        {
+          "caller": "_load_model",
+          "callee": "logger.warning",
+          "lineNumber": 121
+        },
+        {
+          "caller": "_load_model",
+          "callee": "self.device.startswith",
+          "lineNumber": 125
+        },
+        {
+          "caller": "_load_model",
+          "callee": "hasattr",
+          "lineNumber": 128
+        },
+        {
+          "caller": "_load_model",
+          "callee": "torch.backends.cuda.enable_flash_sdp",
+          "lineNumber": 129
+        },
+        {
+          "caller": "_load_model",
+          "callee": "hasattr",
+          "lineNumber": 130
+        },
+        {
+          "caller": "_load_model",
+          "callee": "torch.backends.cuda.enable_mem_efficient_sdp",
+          "lineNumber": 131
+        },
+        {
+          "caller": "_load_model",
+          "callee": "logger.debug",
+          "lineNumber": 132
+        },
+        {
+          "caller": "_load_model",
+          "callee": "self.device.startswith",
+          "lineNumber": 135
+        },
+        {
+          "caller": "_load_model",
+          "callee": "torch.cuda.get_device_properties",
+          "lineNumber": 136
+        },
+        {
+          "caller": "_load_model",
+          "callee": "logger.warning",
+          "lineNumber": 138
+        },
+        {
+          "caller": "_load_model",
+          "callee": "self._get_torch_dtype",
+          "lineNumber": 145
+        },
+        {
+          "caller": "_load_model",
+          "callee": "logger.debug",
+          "lineNumber": 150
+        },
+        {
+          "caller": "_load_model",
+          "callee": "logger.warning",
+          "lineNumber": 152
+        },
+        {
+          "caller": "_load_model",
+          "callee": "Path.home",
+          "lineNumber": 162
+        },
+        {
+          "caller": "_load_model",
+          "callee": "self.model.replace",
+          "lineNumber": 163
+        },
+        {
+          "caller": "_load_model",
+          "callee": "model_cache_path.exists",
+          "lineNumber": 164
+        },
+        {
+          "caller": "_load_model",
+          "callee": "logger.info",
+          "lineNumber": 168
+        },
+        {
+          "caller": "_load_model",
+          "callee": "Qwen3TTSModel.from_pretrained",
+          "lineNumber": 169
+        },
+        {
+          "caller": "_load_model",
+          "callee": "self._get_torch_dtype",
+          "lineNumber": 172
+        },
+        {
+          "caller": "_load_model",
+          "callee": "logger.info",
+          "lineNumber": 175
+        },
+        {
+          "caller": "_load_model",
+          "callee": "functools.wraps",
+          "lineNumber": 193
+        },
+        {
+          "caller": "_patched_ap_fp",
+          "callee": "ap_kwargs.setdefault",
+          "lineNumber": 195
+        },
+        {
+          "caller": "_patched_ap_fp",
+          "callee": "ap_kwargs.pop",
+          "lineNumber": 196
+        },
+        {
+          "caller": "_patched_ap_fp",
+          "callee": "_original_ap_fp",
+          "lineNumber": 197
+        },
+        {
+          "caller": "_load_model",
+          "callee": "Qwen3TTSModel.from_pretrained",
+          "lineNumber": 210
+        },
+        {
+          "caller": "_load_model",
+          "callee": "logger.info",
+          "lineNumber": 220
+        },
+        {
+          "caller": "_load_model",
+          "callee": "logger.error",
+          "lineNumber": 222
+        },
+        {
+          "caller": "_load_model",
+          "callee": "RuntimeError",
+          "lineNumber": 226
+        },
+        {
+          "caller": "_load_model",
+          "callee": "str(e).lower",
+          "lineNumber": 231
+        },
+        {
+          "caller": "_load_model",
+          "callee": "str",
+          "lineNumber": 231
+        },
+        {
+          "caller": "_load_model",
+          "callee": "str(e).lower",
+          "lineNumber": 231
+        },
+        {
+          "caller": "_load_model",
+          "callee": "str",
+          "lineNumber": 231
+        },
+        {
+          "caller": "_load_model",
+          "callee": "RuntimeError",
+          "lineNumber": 232
+        },
+        {
+          "caller": "_load_model",
+          "callee": "str(e).lower",
+          "lineNumber": 238
+        },
+        {
+          "caller": "_load_model",
+          "callee": "str",
+          "lineNumber": 238
+        },
+        {
+          "caller": "_load_model",
+          "callee": "logger.warning",
+          "lineNumber": 239
+        },
+        {
+          "caller": "_load_model",
+          "callee": "Qwen3TTSModel.from_pretrained",
+          "lineNumber": 242
+        },
+        {
+          "caller": "_load_model",
+          "callee": "logger.info",
+          "lineNumber": 244
+        },
+        {
+          "caller": "_build_voice_clone_prompt",
+          "callee": "ValueError",
+          "lineNumber": 258
+        },
+        {
+          "caller": "_build_voice_clone_prompt",
+          "callee": "os.path.exists",
+          "lineNumber": 260
+        },
+        {
+          "caller": "_build_voice_clone_prompt",
+          "callee": "FileNotFoundError",
+          "lineNumber": 261
+        },
+        {
+          "caller": "_build_voice_clone_prompt",
+          "callee": "logger.info",
+          "lineNumber": 263
+        },
+        {
+          "caller": "_build_voice_clone_prompt",
+          "callee": "self._model.create_voice_clone_prompt",
+          "lineNumber": 264
+        },
+        {
+          "caller": "_build_voice_clone_prompt",
+          "callee": "logger.debug",
+          "lineNumber": 269
+        },
+        {
+          "caller": "_build_voice_clone_prompt",
+          "callee": "len",
+          "lineNumber": 269
+        },
+        {
+          "caller": "from_config",
+          "callee": "cls",
+          "lineNumber": 275
+        },
+        {
+          "caller": "from_config",
+          "callee": "getattr",
+          "lineNumber": 280
+        },
+        {
+          "caller": "from_config",
+          "callee": "getattr",
+          "lineNumber": 287
+        },
+        {
+          "caller": "from_config",
+          "callee": "getattr",
+          "lineNumber": 288
+        },
+        {
+          "caller": "from_config",
+          "callee": "getattr",
+          "lineNumber": 289
+        },
+        {
+          "caller": "synthesize",
+          "callee": "text.strip",
+          "lineNumber": 313
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.warning",
+          "lineNumber": 314
+        },
+        {
+          "caller": "synthesize",
+          "callee": "str",
+          "lineNumber": 315
+        },
+        {
+          "caller": "synthesize",
+          "callee": "self._synth_done.clear",
+          "lineNumber": 317
+        },
+        {
+          "caller": "synthesize",
+          "callee": "asyncio.get_event_loop",
+          "lineNumber": 321
+        },
+        {
+          "caller": "synthesize",
+          "callee": "loop.run_in_executor",
+          "lineNumber": 322
+        },
+        {
+          "caller": "synthesize",
+          "callee": "kwargs.get",
+          "lineNumber": 325
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.debug",
+          "lineNumber": 328
+        },
+        {
+          "caller": "synthesize",
+          "callee": "len",
+          "lineNumber": 329
+        },
+        {
+          "caller": "synthesize",
+          "callee": "self._build_voice_clone_prompt",
+          "lineNumber": 335
+        },
+        {
+          "caller": "synthesize",
+          "callee": "loop.run_in_executor",
+          "lineNumber": 336
+        },
+        {
+          "caller": "synthesize",
+          "callee": "self._model.generate_voice_clone",
+          "lineNumber": 338
+        },
+        {
+          "caller": "synthesize",
+          "callee": "kwargs.get",
+          "lineNumber": 342
+        },
+        {
+          "caller": "synthesize",
+          "callee": "kwargs.get",
+          "lineNumber": 343
+        },
+        {
+          "caller": "synthesize",
+          "callee": "kwargs.get",
+          "lineNumber": 344
+        },
+        {
+          "caller": "synthesize",
+          "callee": "kwargs.get",
+          "lineNumber": 345
+        },
+        {
+          "caller": "synthesize",
+          "callee": "loop.run_in_executor",
+          "lineNumber": 350
+        },
+        {
+          "caller": "synthesize",
+          "callee": "self._model.generate_custom_voice",
+          "lineNumber": 352
+        },
+        {
+          "caller": "synthesize",
+          "callee": "kwargs.get",
+          "lineNumber": 357
+        },
+        {
+          "caller": "synthesize",
+          "callee": "kwargs.get",
+          "lineNumber": 358
+        },
+        {
+          "caller": "synthesize",
+          "callee": "kwargs.get",
+          "lineNumber": 359
+        },
+        {
+          "caller": "synthesize",
+          "callee": "kwargs.get",
+          "lineNumber": 360
+        },
+        {
+          "caller": "synthesize",
+          "callee": "len",
+          "lineNumber": 364
+        },
+        {
+          "caller": "synthesize",
+          "callee": "RuntimeError",
+          "lineNumber": 365
+        },
+        {
+          "caller": "synthesize",
+          "callee": "isinstance",
+          "lineNumber": 371
+        },
+        {
+          "caller": "synthesize",
+          "callee": "BytesIO",
+          "lineNumber": 372
+        },
+        {
+          "caller": "synthesize",
+          "callee": "sf.write",
+          "lineNumber": 373
+        },
+        {
+          "caller": "synthesize",
+          "callee": "buffer.getvalue",
+          "lineNumber": 374
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.debug",
+          "lineNumber": 376
+        },
+        {
+          "caller": "synthesize",
+          "callee": "len",
+          "lineNumber": 376
+        },
+        {
+          "caller": "synthesize",
+          "callee": "Path",
+          "lineNumber": 379
+        },
+        {
+          "caller": "synthesize",
+          "callee": "output_path.parent.mkdir",
+          "lineNumber": 380
+        },
+        {
+          "caller": "synthesize",
+          "callee": "sf.write",
+          "lineNumber": 381
+        },
+        {
+          "caller": "synthesize",
+          "callee": "str",
+          "lineNumber": 381
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.info",
+          "lineNumber": 382
+        },
+        {
+          "caller": "synthesize",
+          "callee": "str",
+          "lineNumber": 383
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.error",
+          "lineNumber": 387
+        },
+        {
+          "caller": "synthesize",
+          "callee": "self._synth_done.set",
+          "lineNumber": 390
+        },
+        {
+          "caller": "synthesize_stream",
+          "callee": "NotImplementedError",
+          "lineNumber": 407
+        },
+        {
+          "caller": "preload",
+          "callee": "logger.debug",
+          "lineNumber": 421
+        },
+        {
+          "caller": "preload",
+          "callee": "logger.info",
+          "lineNumber": 424
+        },
+        {
+          "caller": "preload",
+          "callee": "asyncio.get_event_loop",
+          "lineNumber": 425
+        },
+        {
+          "caller": "preload",
+          "callee": "loop.run_in_executor",
+          "lineNumber": 426
+        },
+        {
+          "caller": "preload",
+          "callee": "logger.info",
+          "lineNumber": 427
+        },
+        {
+          "caller": "close",
+          "callee": "self._synth_done.is_set",
+          "lineNumber": 439
+        },
+        {
+          "caller": "close",
+          "callee": "logger.debug",
+          "lineNumber": 440
+        },
+        {
+          "caller": "close",
+          "callee": "asyncio.wait_for",
+          "lineNumber": 442
+        },
+        {
+          "caller": "close",
+          "callee": "self._synth_done.wait",
+          "lineNumber": 442
+        },
+        {
+          "caller": "close",
+          "callee": "logger.warning",
+          "lineNumber": 444
+        },
+        {
+          "caller": "close",
+          "callee": "logger.info",
+          "lineNumber": 446
+        },
+        {
+          "caller": "close",
+          "callee": "gc.collect",
+          "lineNumber": 450
+        },
+        {
+          "caller": "close",
+          "callee": "torch.cuda.is_available",
+          "lineNumber": 453
+        },
+        {
+          "caller": "close",
+          "callee": "torch.cuda.empty_cache",
+          "lineNumber": 454
+        },
+        {
+          "caller": "close",
+          "callee": "logger.debug",
+          "lineNumber": 455
+        },
+        {
+          "caller": "close",
+          "callee": "logger.info",
+          "lineNumber": 458
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/services/vad/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 28,
+      "nonEmptyLines": 25,
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/services/vad/detector.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 170,
+      "nonEmptyLines": 138,
+      "classes": [
+        {
+          "name": "SileroDetector",
+          "startLine": 16,
+          "endLine": 170,
+          "methods": [
+            "__init__",
+            "_load_vad_model",
+            "get_speech_prob",
+            "detect",
+            "get_current_state"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "SileroDetector",
+          "line": 16,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "self._load_vad_model",
+          "lineNumber": 36
+        },
+        {
+          "caller": "_load_vad_model",
+          "callee": "logger.info",
+          "lineNumber": 47
+        },
+        {
+          "caller": "_load_vad_model",
+          "callee": "load_silero_vad",
+          "lineNumber": 48
+        },
+        {
+          "caller": "_load_vad_model",
+          "callee": "logger.info",
+          "lineNumber": 49
+        },
+        {
+          "caller": "_load_vad_model",
+          "callee": "logger.warning",
+          "lineNumber": 52
+        },
+        {
+          "caller": "_load_vad_model",
+          "callee": "logger.error",
+          "lineNumber": 55
+        },
+        {
+          "caller": "get_speech_prob",
+          "callee": "torch.Tensor",
+          "lineNumber": 69
+        },
+        {
+          "caller": "get_speech_prob",
+          "callee": "torch.no_grad",
+          "lineNumber": 70
+        },
+        {
+          "caller": "get_speech_prob",
+          "callee": "self.model(chunk_tensor, self.sample_rate).item",
+          "lineNumber": 71
+        },
+        {
+          "caller": "get_speech_prob",
+          "callee": "self.model",
+          "lineNumber": 71
+        },
+        {
+          "caller": "detect",
+          "callee": "np.array",
+          "lineNumber": 90
+        },
+        {
+          "caller": "detect",
+          "callee": "len",
+          "lineNumber": 94
+        },
+        {
+          "caller": "detect",
+          "callee": "float",
+          "lineNumber": 95
+        },
+        {
+          "caller": "detect",
+          "callee": "np.min",
+          "lineNumber": 95
+        },
+        {
+          "caller": "detect",
+          "callee": "float",
+          "lineNumber": 96
+        },
+        {
+          "caller": "detect",
+          "callee": "np.max",
+          "lineNumber": 96
+        },
+        {
+          "caller": "detect",
+          "callee": "float",
+          "lineNumber": 97
+        },
+        {
+          "caller": "detect",
+          "callee": "np.max",
+          "lineNumber": 97
+        },
+        {
+          "caller": "detect",
+          "callee": "np.abs",
+          "lineNumber": 97
+        },
+        {
+          "caller": "detect",
+          "callee": "len",
+          "lineNumber": 99
+        },
+        {
+          "caller": "detect",
+          "callee": "float",
+          "lineNumber": 100
+        },
+        {
+          "caller": "detect",
+          "callee": "np.min",
+          "lineNumber": 100
+        },
+        {
+          "caller": "detect",
+          "callee": "float",
+          "lineNumber": 101
+        },
+        {
+          "caller": "detect",
+          "callee": "np.max",
+          "lineNumber": 101
+        },
+        {
+          "caller": "detect",
+          "callee": "float",
+          "lineNumber": 102
+        },
+        {
+          "caller": "detect",
+          "callee": "np.max",
+          "lineNumber": 102
+        },
+        {
+          "caller": "detect",
+          "callee": "np.abs",
+          "lineNumber": 102
+        },
+        {
+          "caller": "detect",
+          "callee": "len",
+          "lineNumber": 107
+        },
+        {
+          "caller": "detect",
+          "callee": "np.max",
+          "lineNumber": 107
+        },
+        {
+          "caller": "detect",
+          "callee": "np.abs",
+          "lineNumber": 107
+        },
+        {
+          "caller": "detect",
+          "callee": "logger.info",
+          "lineNumber": 110
+        },
+        {
+          "caller": "detect",
+          "callee": "float",
+          "lineNumber": 116
+        },
+        {
+          "caller": "detect",
+          "callee": "np.min",
+          "lineNumber": 116
+        },
+        {
+          "caller": "detect",
+          "callee": "len",
+          "lineNumber": 116
+        },
+        {
+          "caller": "detect",
+          "callee": "float",
+          "lineNumber": 117
+        },
+        {
+          "caller": "detect",
+          "callee": "np.max",
+          "lineNumber": 117
+        },
+        {
+          "caller": "detect",
+          "callee": "len",
+          "lineNumber": 117
+        },
+        {
+          "caller": "detect",
+          "callee": "float",
+          "lineNumber": 118
+        },
+        {
+          "caller": "detect",
+          "callee": "np.sqrt",
+          "lineNumber": 118
+        },
+        {
+          "caller": "detect",
+          "callee": "np.mean",
+          "lineNumber": 118
+        },
+        {
+          "caller": "detect",
+          "callee": "len",
+          "lineNumber": 118
+        },
+        {
+          "caller": "detect",
+          "callee": "logger.info",
+          "lineNumber": 119
+        },
+        {
+          "caller": "detect",
+          "callee": "logger.info",
+          "lineNumber": 120
+        },
+        {
+          "caller": "detect",
+          "callee": "range",
+          "lineNumber": 129
+        },
+        {
+          "caller": "detect",
+          "callee": "len",
+          "lineNumber": 129
+        },
+        {
+          "caller": "detect",
+          "callee": "len",
+          "lineNumber": 133
+        },
+        {
+          "caller": "detect",
+          "callee": "np.zeros",
+          "lineNumber": 135
+        },
+        {
+          "caller": "detect",
+          "callee": "len",
+          "lineNumber": 136
+        },
+        {
+          "caller": "detect",
+          "callee": "self.get_speech_prob",
+          "lineNumber": 140
+        },
+        {
+          "caller": "detect",
+          "callee": "vad_instance.state_machine.process",
+          "lineNumber": 143
+        },
+        {
+          "caller": "detect",
+          "callee": "logger.debug",
+          "lineNumber": 155
+        },
+        {
+          "caller": "detect",
+          "callee": "len",
+          "lineNumber": 155
+        },
+        {
+          "caller": "detect",
+          "callee": "VADResult",
+          "lineNumber": 161
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/services/vad/factory.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 112,
+      "nonEmptyLines": 97,
+      "classes": [
+        {
+          "name": "VADFactory",
+          "startLine": 21,
+          "endLine": 112,
+          "methods": [
+            "create_from_config",
+            "create",
+            "get_available_providers"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "VADFactory",
+          "line": 21,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "create_from_config",
+          "callee": "ProviderRegistry.create_service",
+          "lineNumber": 40
+        },
+        {
+          "caller": "create_from_config",
+          "callee": "logger.info",
+          "lineNumber": 41
+        },
+        {
+          "caller": "create_from_config",
+          "callee": "TracingProxy",
+          "lineNumber": 42
+        },
+        {
+          "caller": "create_from_config",
+          "callee": "logger.error",
+          "lineNumber": 44
+        },
+        {
+          "caller": "create_from_config",
+          "callee": "type",
+          "lineNumber": 44
+        },
+        {
+          "caller": "create_from_config",
+          "callee": "logger.warning",
+          "lineNumber": 46
+        },
+        {
+          "caller": "create_from_config",
+          "callee": "MockVAD",
+          "lineNumber": 47
+        },
+        {
+          "caller": "create_from_config",
+          "callee": "getattr",
+          "lineNumber": 48
+        },
+        {
+          "caller": "create",
+          "callee": "SileroVAD",
+          "lineNumber": 72
+        },
+        {
+          "caller": "create",
+          "callee": "kwargs.get",
+          "lineNumber": 73
+        },
+        {
+          "caller": "create",
+          "callee": "kwargs.get",
+          "lineNumber": 74
+        },
+        {
+          "caller": "create",
+          "callee": "kwargs.get",
+          "lineNumber": 75
+        },
+        {
+          "caller": "create",
+          "callee": "kwargs.get",
+          "lineNumber": 76
+        },
+        {
+          "caller": "create",
+          "callee": "kwargs.get",
+          "lineNumber": 77
+        },
+        {
+          "caller": "create",
+          "callee": "kwargs.get",
+          "lineNumber": 78
+        },
+        {
+          "caller": "create",
+          "callee": "logger.warning",
+          "lineNumber": 81
+        },
+        {
+          "caller": "create",
+          "callee": "logger.info",
+          "lineNumber": 82
+        },
+        {
+          "caller": "create",
+          "callee": "MockVAD",
+          "lineNumber": 84
+        },
+        {
+          "caller": "create",
+          "callee": "kwargs.get",
+          "lineNumber": 85
+        },
+        {
+          "caller": "create",
+          "callee": "kwargs.get",
+          "lineNumber": 86
+        },
+        {
+          "caller": "create",
+          "callee": "kwargs.get",
+          "lineNumber": 87
+        },
+        {
+          "caller": "create",
+          "callee": "kwargs.get",
+          "lineNumber": 88
+        },
+        {
+          "caller": "create",
+          "callee": "logger.error",
+          "lineNumber": 91
+        },
+        {
+          "caller": "create",
+          "callee": "MockVAD",
+          "lineNumber": 93
+        },
+        {
+          "caller": "create",
+          "callee": "kwargs.get",
+          "lineNumber": 94
+        },
+        {
+          "caller": "create",
+          "callee": "MockVAD",
+          "lineNumber": 98
+        },
+        {
+          "caller": "create",
+          "callee": "kwargs.get",
+          "lineNumber": 99
+        },
+        {
+          "caller": "create",
+          "callee": "kwargs.get",
+          "lineNumber": 100
+        },
+        {
+          "caller": "create",
+          "callee": "kwargs.get",
+          "lineNumber": 101
+        },
+        {
+          "caller": "create",
+          "callee": "kwargs.get",
+          "lineNumber": 102
+        },
+        {
+          "caller": "create",
+          "callee": "logger.warning",
+          "lineNumber": 105
+        },
+        {
+          "caller": "create",
+          "callee": "MockVAD",
+          "lineNumber": 107
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/services/vad/interface.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 81,
+      "nonEmptyLines": 63,
+      "classes": [
+        {
+          "name": "VADState",
+          "startLine": 13,
+          "endLine": 17,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "VADResult",
+          "startLine": 20,
+          "endLine": 46,
+          "methods": [
+            "__init__",
+            "is_special_signal",
+            "__repr__"
+          ],
+          "properties": []
+        },
+        {
+          "name": "VADInterface",
+          "startLine": 49,
+          "endLine": 81,
+          "methods": [
+            "detect_speech",
+            "reset",
+            "get_current_state",
+            "close"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "VADState",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "VADResult",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "VADInterface",
+          "line": 49,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__repr__",
+          "callee": "len",
+          "lineNumber": 44
+        },
+        {
+          "caller": "__repr__",
+          "callee": "len",
+          "lineNumber": 46
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 0,
+        "classCount": 3
+      }
+    },
+    {
+      "path": "src/animetta/services/vad/mock_vad.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 151,
+      "nonEmptyLines": 120,
+      "classes": [
+        {
+          "name": "MockVAD",
+          "startLine": 17,
+          "endLine": 151,
+          "methods": [
+            "__init__",
+            "_calculate_db",
+            "detect_speech",
+            "reset",
+            "get_current_state",
+            "close"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "MockVAD",
+          "line": 16,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "bytearray",
+          "lineNumber": 43
+        },
+        {
+          "caller": "__init__",
+          "callee": "logger.info",
+          "lineNumber": 49
+        },
+        {
+          "caller": "_calculate_db",
+          "callee": "np.sqrt",
+          "lineNumber": 53
+        },
+        {
+          "caller": "_calculate_db",
+          "callee": "np.mean",
+          "lineNumber": 53
+        },
+        {
+          "caller": "_calculate_db",
+          "callee": "np.square",
+          "lineNumber": 53
+        },
+        {
+          "caller": "_calculate_db",
+          "callee": "np.log10",
+          "lineNumber": 54
+        },
+        {
+          "caller": "detect_speech",
+          "callee": "np.array",
+          "lineNumber": 63
+        },
+        {
+          "caller": "detect_speech",
+          "callee": "len",
+          "lineNumber": 66
+        },
+        {
+          "caller": "detect_speech",
+          "callee": "np.max",
+          "lineNumber": 66
+        },
+        {
+          "caller": "detect_speech",
+          "callee": "np.abs",
+          "lineNumber": 66
+        },
+        {
+          "caller": "detect_speech",
+          "callee": "self._calculate_db",
+          "lineNumber": 71
+        },
+        {
+          "caller": "detect_speech",
+          "callee": "(audio_np * 32767).astype",
+          "lineNumber": 75
+        },
+        {
+          "caller": "detect_speech",
+          "callee": "int_audio.tobytes",
+          "lineNumber": 76
+        },
+        {
+          "caller": "detect_speech",
+          "callee": "self.pre_buffer.append",
+          "lineNumber": 81
+        },
+        {
+          "caller": "detect_speech",
+          "callee": "len",
+          "lineNumber": 82
+        },
+        {
+          "caller": "detect_speech",
+          "callee": "self.pre_buffer.pop",
+          "lineNumber": 83
+        },
+        {
+          "caller": "detect_speech",
+          "callee": "self.audio_buffer.extend",
+          "lineNumber": 91
+        },
+        {
+          "caller": "detect_speech",
+          "callee": "VADResult",
+          "lineNumber": 93
+        },
+        {
+          "caller": "detect_speech",
+          "callee": "self.audio_buffer.extend",
+          "lineNumber": 103
+        },
+        {
+          "caller": "detect_speech",
+          "callee": "b\"\".join",
+          "lineNumber": 115
+        },
+        {
+          "caller": "detect_speech",
+          "callee": "bytes",
+          "lineNumber": 116
+        },
+        {
+          "caller": "detect_speech",
+          "callee": "self.audio_buffer.clear",
+          "lineNumber": 118
+        },
+        {
+          "caller": "detect_speech",
+          "callee": "self.pre_buffer.clear",
+          "lineNumber": 119
+        },
+        {
+          "caller": "detect_speech",
+          "callee": "VADResult",
+          "lineNumber": 121
+        },
+        {
+          "caller": "detect_speech",
+          "callee": "VADResult",
+          "lineNumber": 128
+        },
+        {
+          "caller": "reset",
+          "callee": "self.audio_buffer.clear",
+          "lineNumber": 140
+        },
+        {
+          "caller": "reset",
+          "callee": "self.pre_buffer.clear",
+          "lineNumber": 141
+        },
+        {
+          "caller": "reset",
+          "callee": "logger.debug",
+          "lineNumber": 142
+        },
+        {
+          "caller": "close",
+          "callee": "self.reset",
+          "lineNumber": 150
+        },
+        {
+          "caller": "close",
+          "callee": "logger.info",
+          "lineNumber": 151
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    }
+  ]
+}

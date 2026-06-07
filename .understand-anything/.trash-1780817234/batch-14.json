@@ -1,0 +1,1538 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 16,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "docs/plans/2026-05-19-qwen3-tts-integration-design.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 114,
+      "nonEmptyLines": 83,
+      "sections": [
+        {
+          "heading": "Qwen3-TTS Integration Design",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Overview",
+          "level": 2,
+          "line": 8
+        },
+        {
+          "heading": "Architecture",
+          "level": 2,
+          "line": 12
+        },
+        {
+          "heading": "Data Flow",
+          "level": 3,
+          "line": 14
+        },
+        {
+          "heading": "Lifecycle",
+          "level": 3,
+          "line": 24
+        },
+        {
+          "heading": "Files to Create",
+          "level": 2,
+          "line": 36
+        },
+        {
+          "heading": "1. `src/animetta/config/providers/tts/qwen3.py`",
+          "level": 3,
+          "line": 38
+        },
+        {
+          "heading": "2. `src/animetta/services/speech/tts/qwen3_tts.py`",
+          "level": 3,
+          "line": 58
+        },
+        {
+          "heading": "Files to Modify",
+          "level": 2,
+          "line": 69
+        },
+        {
+          "heading": "3. `src/animetta/config/providers/tts/__init__.py`",
+          "level": 3,
+          "line": 71
+        },
+        {
+          "heading": "4. `src/animetta/services/speech/tts/__init__.py`",
+          "level": 3,
+          "line": 75
+        },
+        {
+          "heading": "5. `src/animetta/services/speech/tts/factory.py`",
+          "level": 3,
+          "line": 79
+        },
+        {
+          "heading": "6. `config/services.yaml`",
+          "level": 3,
+          "line": 82
+        },
+        {
+          "heading": "Dependencies",
+          "level": 2,
+          "line": 85
+        },
+        {
+          "heading": "Preset Voices (CustomVoice 1.7B)",
+          "level": 2,
+          "line": 94
+        },
+        {
+          "heading": "Multi-language Support",
+          "level": 2,
+          "line": 102
+        },
+        {
+          "heading": "Testing",
+          "level": 2,
+          "line": 106
+        },
+        {
+          "heading": "utw-loop",
+          "level": 2,
+          "line": 112
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 18
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-19-qwen3-tts-integration-plan.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 942,
+      "nonEmptyLines": 752,
+      "sections": [
+        {
+          "heading": "Qwen3-TTS Integration Implementation Plan (v2 — Oracle Reviewed)",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Pre-implementation Checklist (Oracle Required Fixes)",
+          "level": 2,
+          "line": 15
+        },
+        {
+          "heading": "Task 1: Create Qwen3TTSConfig (Pydantic config class)",
+          "level": 3,
+          "line": 31
+        },
+        {
+          "heading": "Task 2: Create Qwen3TTSTTS (service implementation — with Oracle fixes)",
+          "level": 3,
+          "line": 143
+        },
+        {
+          "heading": "Task 3: Register provider in __init__.py files and factory",
+          "level": 3,
+          "line": 503
+        },
+        {
+          "heading": "Task 4: Add YAML configuration entry",
+          "level": 3,
+          "line": 578
+        },
+        {
+          "heading": "Task 5: Install dependencies",
+          "level": 3,
+          "line": 624
+        },
+        {
+          "heading": "Task 6: Write tests — integration with test_tts_providers.py + standalone test",
+          "level": 3,
+          "line": 662
+        },
+        {
+          "heading": "Task 7: LSP diagnostics and final verification",
+          "level": 3,
+          "line": 881
+        },
+        {
+          "heading": "Summary of All Changes",
+          "level": 2,
+          "line": 918
+        },
+        {
+          "heading": "Oracle-Reviewed Critical Fixes Applied",
+          "level": 3,
+          "line": 932
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 11
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-19-singing-bugfix-design.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 316,
+      "nonEmptyLines": 235,
+      "sections": [
+        {
+          "heading": "音乐模块 Bug 修复 — 设计文档",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "概述",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "Bug 1: 口型驱动修复",
+          "level": 2,
+          "line": 19
+        },
+        {
+          "heading": "根因分析",
+          "level": 3,
+          "line": 21
+        },
+        {
+          "heading": "修复方案",
+          "level": 3,
+          "line": 36
+        },
+        {
+          "heading": "1.1 WaveformDisplay.vue — 移除混音回退",
+          "level": 4,
+          "line": 38
+        },
+        {
+          "heading": "1.2 WaveformDisplay.vue — 同步隐藏人声音频",
+          "level": 4,
+          "line": 48
+        },
+        {
+          "heading": "1.3 MusicPage.vue — handleTimeupdate 同步",
+          "level": 4,
+          "line": 55
+        },
+        {
+          "heading": "1.4 MusicPage.vue — 无 vocals_url 时禁用口型",
+          "level": 4,
+          "line": 63
+        },
+        {
+          "heading": "影响范围",
+          "level": 3,
+          "line": 71
+        },
+        {
+          "heading": "Bug 2: 歌词字幕集成 + .ass 文件修复",
+          "level": 2,
+          "line": 81
+        },
+        {
+          "heading": ".ass 文件诊断（新增）",
+          "level": 3,
+          "line": 83
+        },
+        {
+          "heading": "根因分析",
+          "level": 3,
+          "line": 105
+        },
+        {
+          "heading": ".ass 格式修复（紧急）",
+          "level": 4,
+          "line": 111
+        },
+        {
+          "heading": "2.1 后端 — B站原生歌词 API（优先）",
+          "level": 4,
+          "line": 121
+        },
+        {
+          "heading": "2.2 后端 — LLM 歌词翻译",
+          "level": 4,
+          "line": 145
+        },
+        {
+          "heading": "2.2 后端 — 逐行歌词事件",
+          "level": 4,
+          "line": 173
+        },
+        {
+          "heading": "2.3 前端 — useSubtitle 扩展",
+          "level": 4,
+          "line": 197
+        },
+        {
+          "heading": "2.4 前端 — MusicPage 移除内联歌词",
+          "level": 4,
+          "line": 209
+        },
+        {
+          "heading": "数据流",
+          "level": 3,
+          "line": 216
+        },
+        {
+          "heading": "影响范围",
+          "level": 3,
+          "line": 230
+        },
+        {
+          "heading": "Bug 3: AI 歌声哑音",
+          "level": 2,
+          "line": 243
+        },
+        {
+          "heading": "根因分析",
+          "level": 3,
+          "line": 245
+        },
+        {
+          "heading": "修复方案",
+          "level": 3,
+          "line": 261
+        },
+        {
+          "heading": "3.1 生成索引文件",
+          "level": 4,
+          "line": 263
+        },
+        {
+          "heading": "3.2 更新 singing.yaml",
+          "level": 4,
+          "line": 276
+        },
+        {
+          "heading": "3.3 可选优化",
+          "level": 4,
+          "line": 290
+        },
+        {
+          "heading": "影响范围",
+          "level": 3,
+          "line": 298
+        },
+        {
+          "heading": "实施计划",
+          "level": 2,
+          "line": 308
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 29
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-20-persona-voice-clone-binding-design.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 48,
+      "nonEmptyLines": 38,
+      "sections": [
+        {
+          "heading": "Persona ↔ Voice Clone Binding — Design (MVP)",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Overview",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "Architecture",
+          "level": 2,
+          "line": 11
+        },
+        {
+          "heading": "Key Changes",
+          "level": 2,
+          "line": 33
+        },
+        {
+          "heading": "Scope",
+          "level": 2,
+          "line": 44
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 5
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-20-qwen3-tts-voice-clone-design.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 92,
+      "nonEmptyLines": 70,
+      "sections": [
+        {
+          "heading": "Qwen3-TTS Voice Clone for 久远寺有珠 — Quick Validation Design",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Overview",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "Architecture & Data Flow",
+          "level": 2,
+          "line": 11
+        },
+        {
+          "heading": "Implementation Changes",
+          "level": 2,
+          "line": 26
+        },
+        {
+          "heading": "Files to Modify",
+          "level": 3,
+          "line": 28
+        },
+        {
+          "heading": "Config Fields (Qwen3TTSConfig)",
+          "level": 3,
+          "line": 36
+        },
+        {
+          "heading": "Dispatch Logic",
+          "level": 3,
+          "line": 45
+        },
+        {
+          "heading": "Lazy Prompt Caching",
+          "level": 3,
+          "line": 54
+        },
+        {
+          "heading": "Error Handling & Edge Cases",
+          "level": 2,
+          "line": 58
+        },
+        {
+          "heading": "QA Verification",
+          "level": 2,
+          "line": 69
+        },
+        {
+          "heading": "Scope Boundary",
+          "level": 2,
+          "line": 78
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 11
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-20-qwen3-tts-voice-clone-plan.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 522,
+      "nonEmptyLines": 386,
+      "sections": [
+        {
+          "heading": "Qwen3-TTS Voice Clone for 久远寺有珠 — Implementation Plan",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Task 1: Add voice clone fields to Qwen3TTSConfig",
+          "level": 3,
+          "line": 15
+        },
+        {
+          "heading": "Task 2: Add voice clone synthesis path to Qwen3TTSTTS",
+          "level": 3,
+          "line": 65
+        },
+        {
+          "heading": "Task 3: Add qwen3_voice_clone service config",
+          "level": 3,
+          "line": 206
+        },
+        {
+          "heading": "Task 4: Unit tests for voice clone config fields",
+          "level": 3,
+          "line": 253
+        },
+        {
+          "heading": "Task 5: Integration test for voice clone synthesis path",
+          "level": 3,
+          "line": 327
+        },
+        {
+          "heading": "Task 6: Manual QA — smoke test with real reference audio",
+          "level": 3,
+          "line": 413
+        },
+        {
+          "heading": "Task 7: Final regression check",
+          "level": 3,
+          "line": 473
+        },
+        {
+          "heading": "Summary",
+          "level": 2,
+          "line": 510
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-22-enhance-music-progress.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 239,
+      "nonEmptyLines": 182,
+      "sections": [
+        {
+          "heading": "Enhance Music Production Progress Bar — Implementation Plan",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Task 1: Add Overall Progress Bar to ProcessTimeline",
+          "level": 3,
+          "line": 15
+        },
+        {
+          "heading": "Task 2: Add Per-Step Mini Progress Bar",
+          "level": 3,
+          "line": 68
+        },
+        {
+          "heading": "Task 3: Add Compact Mode",
+          "level": 3,
+          "line": 122
+        },
+        {
+          "heading": "Task 4: Update MusicCard to Use Compact Mode",
+          "level": 3,
+          "line": 182
+        },
+        {
+          "heading": "Task 5: Verification",
+          "level": 3,
+          "line": 212
+        },
+        {
+          "heading": "Files Changed Summary",
+          "level": 3,
+          "line": 232
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-23-character-singing-model-training-design.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 235,
+      "nonEmptyLines": 190,
+      "sections": [
+        {
+          "heading": "Character Singing Voice Model Training Design — 赛马娘 / Uma Musume",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Overview",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "Architecture",
+          "level": 2,
+          "line": 13
+        },
+        {
+          "heading": "Stage 1: Data Collection",
+          "level": 2,
+          "line": 47
+        },
+        {
+          "heading": "Data Sources",
+          "level": 3,
+          "line": 49
+        },
+        {
+          "heading": "Target",
+          "level": 3,
+          "line": 57
+        },
+        {
+          "heading": "Stage 2: Preprocessing Pipeline",
+          "level": 2,
+          "line": 63
+        },
+        {
+          "heading": "Scripts Structure",
+          "level": 3,
+          "line": 65
+        },
+        {
+          "heading": "High-Pitch Augmentation (04_augment_pitch.py)",
+          "level": 3,
+          "line": 78
+        },
+        {
+          "heading": "Audio Requirements",
+          "level": 3,
+          "line": 90
+        },
+        {
+          "heading": "Stage 3: RVC Training Configuration",
+          "level": 2,
+          "line": 98
+        },
+        {
+          "heading": "Training Parameters",
+          "level": 3,
+          "line": 100
+        },
+        {
+          "heading": "Training Steps (RVC WebUI)",
+          "level": 3,
+          "line": 113
+        },
+        {
+          "heading": "Stage 4: Anima Integration",
+          "level": 2,
+          "line": 129
+        },
+        {
+          "heading": "Config Changes",
+          "level": 3,
+          "line": 131
+        },
+        {
+          "heading": "File Deployment",
+          "level": 3,
+          "line": 146
+        },
+        {
+          "heading": "Deploy Script (deploy_to_anima.py)",
+          "level": 3,
+          "line": 154
+        },
+        {
+          "heading": "Stage 5: Inference & High-Pitch Optimization",
+          "level": 2,
+          "line": 161
+        },
+        {
+          "heading": "Anima Pipeline Integration",
+          "level": 3,
+          "line": 163
+        },
+        {
+          "heading": "High-Pitch Inference Parameters",
+          "level": 3,
+          "line": 167
+        },
+        {
+          "heading": "Standalone Usage",
+          "level": 3,
+          "line": 180
+        },
+        {
+          "heading": "High-Pitch Enhancement Strategy Summary",
+          "level": 2,
+          "line": 193
+        },
+        {
+          "heading": "Paradigm Repeatability",
+          "level": 2,
+          "line": 203
+        },
+        {
+          "heading": "Future Iterations (Stage 2)",
+          "level": 2,
+          "line": 221
+        },
+        {
+          "heading": "References",
+          "level": 2,
+          "line": 228
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 25
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-23-character-singing-model-training-plan.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 826,
+      "nonEmptyLines": 619,
+      "sections": [
+        {
+          "heading": "Character Singing Model Training — Implementation Plan",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Task 1: Create `scripts/train/` directory structure and config template",
+          "level": 3,
+          "line": 15
+        },
+        {
+          "heading": "1. Edit config.yaml (change character name)",
+          "level": 1,
+          "line": 93
+        },
+        {
+          "heading": "2. Place raw audio files in data/training/raw/",
+          "level": 1,
+          "line": 94
+        },
+        {
+          "heading": "3. Run preprocessing pipeline",
+          "level": 1,
+          "line": 95
+        },
+        {
+          "heading": "4. Open RVC WebUI → train with resulting dataset",
+          "level": 1,
+          "line": 100
+        },
+        {
+          "heading": "Experiment name: {character.name}",
+          "level": 1,
+          "line": 101
+        },
+        {
+          "heading": "Sample rate: {rvc.sample_rate}",
+          "level": 1,
+          "line": 102
+        },
+        {
+          "heading": "Version: {rvc.version}",
+          "level": 1,
+          "line": 103
+        },
+        {
+          "heading": "5. Deploy to Anima",
+          "level": 1,
+          "line": 104
+        },
+        {
+          "heading": "Task 2: Implement `02_slice_and_denoise.py`",
+          "level": 3,
+          "line": 141
+        },
+        {
+          "heading": "Task 3: Implement `03_normalize.py`",
+          "level": 3,
+          "line": 315
+        },
+        {
+          "heading": "Task 4: Implement `04_augment_pitch.py` (核心高音增强)",
+          "level": 3,
+          "line": 408
+        },
+        {
+          "heading": "Task 5: Implement `05_split_dataset.py`",
+          "level": 3,
+          "line": 544
+        },
+        {
+          "heading": "Task 6: Implement `deploy_to_anima.py`",
+          "level": 3,
+          "line": 624
+        },
+        {
+          "heading": "Task 7: Create RVC Training Quick Reference",
+          "level": 3,
+          "line": 728
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 16
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-23-governance-report.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 160,
+      "nonEmptyLines": 114,
+      "sections": [
+        {
+          "heading": "Anima 项目治理方案",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "问题一：子系统间耦合度偏高",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "现状",
+          "level": 3,
+          "line": 9
+        },
+        {
+          "heading": "治理方案",
+          "level": 3,
+          "line": 29
+        },
+        {
+          "heading": "问题二：TTS 实现过多，维护成本高",
+          "level": 2,
+          "line": 61
+        },
+        {
+          "heading": "现状",
+          "level": 3,
+          "line": 63
+        },
+        {
+          "heading": "治理方案",
+          "level": 3,
+          "line": 74
+        },
+        {
+          "heading": "问题三：配置文件中的硬编码本地路径",
+          "level": 2,
+          "line": 114
+        },
+        {
+          "heading": "现状",
+          "level": 3,
+          "line": 116
+        },
+        {
+          "heading": "治理方案",
+          "level": 3,
+          "line": 128
+        },
+        {
+          "heading": "问题四：生成文件/运行时数据误入仓库",
+          "level": 2,
+          "line": 136
+        },
+        {
+          "heading": "治理方案",
+          "level": 3,
+          "line": 138
+        },
+        {
+          "heading": "执行优先级",
+          "level": 2,
+          "line": 147
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 13
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-31-debt-cleanup-v2-integration-design.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 147,
+      "nonEmptyLines": 97,
+      "sections": [
+        {
+          "heading": "Animetta 全面债务清除 + LivingMemory V2 集成设计",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "概述",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "四阶段策略",
+          "level": 3,
+          "line": 15
+        },
+        {
+          "heading": "Phase 1: V2 接入 LangGraph",
+          "level": 2,
+          "line": 29
+        },
+        {
+          "heading": "触点 1: state.py — 清理 + 新增",
+          "level": 3,
+          "line": 31
+        },
+        {
+          "heading": "触点 2: emotion_node.py — 离散 → VAD",
+          "level": 3,
+          "line": 43
+        },
+        {
+          "heading": "触点 3: output_node.py — 存储改造",
+          "level": 3,
+          "line": 52
+        },
+        {
+          "heading": "触点 4: memory_middleware.py — 检索统一",
+          "level": 3,
+          "line": 58
+        },
+        {
+          "heading": "触点 5: llm_node.py — 适配接口",
+          "level": 3,
+          "line": 64
+        },
+        {
+          "heading": "触点 6: service_context.py — 初始化 + 修复 bug",
+          "level": 3,
+          "line": 68
+        },
+        {
+          "heading": "Phase 2: 清理 Legacy Memory 模块",
+          "level": 2,
+          "line": 76
+        },
+        {
+          "heading": "操作",
+          "level": 3,
+          "line": 78
+        },
+        {
+          "heading": "同步删除",
+          "level": 3,
+          "line": 92
+        },
+        {
+          "heading": "Phase 3: 清理测试债务",
+          "level": 2,
+          "line": 100
+        },
+        {
+          "heading": "问题 A: 931 处 `$$$` 占位符（120 测试文件）",
+          "level": 3,
+          "line": 102
+        },
+        {
+          "heading": "问题 B: 30+ 文件使用过期 `src.anima` 路径",
+          "level": 3,
+          "line": 116
+        },
+        {
+          "heading": "Phase 4: 修复残留 NameError",
+          "level": 2,
+          "line": 122
+        },
+        {
+          "heading": "层 A: V2 集成路径（必须修复）",
+          "level": 3,
+          "line": 124
+        },
+        {
+          "heading": "层 B: 非关键路径（脚本批量修复）",
+          "level": 3,
+          "line": 132
+        },
+        {
+          "heading": "改动总览",
+          "level": 2,
+          "line": 140
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 20
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-31-debt-cleanup-v2-integration-plan.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 589,
+      "nonEmptyLines": 426,
+      "sections": [
+        {
+          "heading": "全面债务清除 + LivingMemory V2 集成实施计划",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Phase 1: V2 LangGraph Integration",
+          "level": 2,
+          "line": 13
+        },
+        {
+          "heading": "Task 1.1: Update AgentState — remove old memory fields, add emotion_vad",
+          "level": 3,
+          "line": 15
+        },
+        {
+          "heading": "Task 1.2: Update emotion_node — discrete emotion → VAD vector",
+          "level": 3,
+          "line": 54
+        },
+        {
+          "heading": "Task 1.3: Update output_node — replace MemoryTurn with encode()",
+          "level": 3,
+          "line": 87
+        },
+        {
+          "heading": "Task 1.4: Update memory_middleware — unified recall()",
+          "level": 3,
+          "line": 147
+        },
+        {
+          "heading": "Task 1.5: Update llm_node — adapt retrieval interface",
+          "level": 3,
+          "line": 213
+        },
+        {
+          "heading": "Task 1.6: Update service_context — init LivingMemorySystem",
+          "level": 3,
+          "line": 252
+        },
+        {
+          "heading": "Phase 2: Legacy Memory Cleanup",
+          "level": 2,
+          "line": 291
+        },
+        {
+          "heading": "Task 2.1: Create _legacy directory and move old modules",
+          "level": 3,
+          "line": 293
+        },
+        {
+          "heading": "Task 2.2: Remove orchestrator legacy logic",
+          "level": 3,
+          "line": 334
+        },
+        {
+          "heading": "Task 2.3: Archive old memory config",
+          "level": 3,
+          "line": 355
+        },
+        {
+          "heading": "Phase 3: Test Debt Cleanup",
+          "level": 2,
+          "line": 375
+        },
+        {
+          "heading": "Task 3.1: Create batch-fix script for test $$$ → proper imports",
+          "level": 3,
+          "line": 377
+        },
+        {
+          "heading": "Task 3.2: Manual fixes for edge cases",
+          "level": 3,
+          "line": 493
+        },
+        {
+          "heading": "Phase 4: NameError Remediation",
+          "level": 2,
+          "line": 523
+        },
+        {
+          "heading": "Task 4.1: Fix critical path source files",
+          "level": 3,
+          "line": 525
+        },
+        {
+          "heading": "Task 4.2: Full package import verification",
+          "level": 3,
+          "line": 564
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 18
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-31-living-memory-architecture-design.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 342,
+      "nonEmptyLines": 263,
+      "sections": [
+        {
+          "heading": "Animetta 活性记忆架构设计 (Living Memory V2)",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "概述",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "设计决策",
+          "level": 3,
+          "line": 18
+        },
+        {
+          "heading": "Section 1: MemoryAtom — 统一记忆体",
+          "level": 2,
+          "line": 29
+        },
+        {
+          "heading": "字段定义",
+          "level": 3,
+          "line": 38
+        },
+        {
+          "heading": "Layer 语义",
+          "level": 3,
+          "line": 79
+        },
+        {
+          "heading": "Section 2: ReconsolidationEngine — 回忆即重写",
+          "level": 2,
+          "line": 90
+        },
+        {
+          "heading": "触发流程",
+          "level": 3,
+          "line": 94
+        },
+        {
+          "heading": "LLM Prompt 模板",
+          "level": 3,
+          "line": 117
+        },
+        {
+          "heading": "节流机制",
+          "level": 3,
+          "line": 142
+        },
+        {
+          "heading": "成本估算",
+          "level": 3,
+          "line": 151
+        },
+        {
+          "heading": "Section 3: EmotionalField — 情绪是场",
+          "level": 2,
+          "line": 157
+        },
+        {
+          "heading": "VAD 模型",
+          "level": 3,
+          "line": 161
+        },
+        {
+          "heading": "离散 → VAD 映射",
+          "level": 3,
+          "line": 169
+        },
+        {
+          "heading": "渗透的四个环节",
+          "level": 3,
+          "line": 181
+        },
+        {
+          "heading": "检索公式",
+          "level": 3,
+          "line": 190
+        },
+        {
+          "heading": "Section 4: MetabolismScheduler — 记忆代谢",
+          "level": 2,
+          "line": 200
+        },
+        {
+          "heading": "统一代谢公式",
+          "level": 3,
+          "line": 204
+        },
+        {
+          "heading": "三阶段循环 (每 6h)",
+          "level": 3,
+          "line": 212
+        },
+        {
+          "heading": "Section 5: AtomStore — 持久化层",
+          "level": 2,
+          "line": 232
+        },
+        {
+          "heading": "三层存储",
+          "level": 3,
+          "line": 236
+        },
+        {
+          "heading": "检索接口",
+          "level": 3,
+          "line": 252
+        },
+        {
+          "heading": "Section 6: LangGraph 集成",
+          "level": 2,
+          "line": 274
+        },
+        {
+          "heading": "三个触点",
+          "level": 3,
+          "line": 276
+        },
+        {
+          "heading": "新接口",
+          "level": 3,
+          "line": 287
+        },
+        {
+          "heading": "文件结构",
+          "level": 2,
+          "line": 300
+        },
+        {
+          "heading": "与现有系统的替换关系",
+          "level": 2,
+          "line": 331
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 27
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-31-living-memory-architecture-plan.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 1371,
+      "nonEmptyLines": 1108,
+      "sections": [
+        {
+          "heading": "Living Memory V2 Implementation Plan",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Task 1: MemoryAtom model and Layer/Relation types",
+          "level": 2,
+          "line": 13
+        },
+        {
+          "heading": "Task 2: AtomStore — SQLite persistence layer",
+          "level": 2,
+          "line": 188
+        },
+        {
+          "heading": "Task 3: EmotionalField — VAD vector model",
+          "level": 2,
+          "line": 501
+        },
+        {
+          "heading": "Task 4: MetabolismScheduler — unified decay/consolidation/forgetting",
+          "level": 2,
+          "line": 671
+        },
+        {
+          "heading": "Task 5: Mixed search with emotion bias",
+          "level": 2,
+          "line": 825
+        },
+        {
+          "heading": "Task 6: LivingMemorySystem — wiring hub",
+          "level": 2,
+          "line": 923
+        },
+        {
+          "heading": "Task 7: LangGraph integration — 6 touchpoints",
+          "level": 2,
+          "line": 1119
+        },
+        {
+          "heading": "Task 8: Move legacy modules to _legacy/",
+          "level": 2,
+          "line": 1208
+        },
+        {
+          "heading": "Task 9: Integration test — end-to-end encode → recall → reconsolidate",
+          "level": 2,
+          "line": 1247
+        },
+        {
+          "heading": "Task 10: Acceptance — run full test suite",
+          "level": 2,
+          "line": 1342
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 11
+      }
+    },
+    {
+      "path": "docs/plans/2026-06-02-qa-bug-bash-design.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 160,
+      "nonEmptyLines": 101,
+      "sections": [
+        {
+          "heading": "QA Bug Bash — Design Document",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Overview",
+          "level": 2,
+          "line": 8
+        },
+        {
+          "heading": "Architecture",
+          "level": 2,
+          "line": 12
+        },
+        {
+          "heading": "Change 1: `qa-backend-crash-fixes`",
+          "level": 2,
+          "line": 25
+        },
+        {
+          "heading": "Fix 1: Inspection Scheduler Import Error",
+          "level": 3,
+          "line": 27
+        },
+        {
+          "heading": "Fix 2: FunASR Config Attribute Error",
+          "level": 3,
+          "line": 40
+        },
+        {
+          "heading": "Fix 3: StatsStore Not Available",
+          "level": 3,
+          "line": 48
+        },
+        {
+          "heading": "Change 2: `qa-frontend-fixes`",
+          "level": 2,
+          "line": 58
+        },
+        {
+          "heading": "Fix 4: Dashboard Overlay Blocks TitleBar",
+          "level": 3,
+          "line": 60
+        },
+        {
+          "heading": "Fix 5: ARIA Labels on All Buttons",
+          "level": 3,
+          "line": 73
+        },
+        {
+          "heading": "Fix 6: Semantic Heading Structure",
+          "level": 3,
+          "line": 84
+        },
+        {
+          "heading": "Fix 7: Frontend Test Bootstrap",
+          "level": 3,
+          "line": 92
+        },
+        {
+          "heading": "Fix 8: WebGL GPU Stall (Live2D)",
+          "level": 3,
+          "line": 106
+        },
+        {
+          "heading": "Change 3: `qa-observability-polish`",
+          "level": 2,
+          "line": 117
+        },
+        {
+          "heading": "Fix 9: Duplicate TracerProvider Override",
+          "level": 3,
+          "line": 119
+        },
+        {
+          "heading": "Fix 10: flash-attn Installation Guidance",
+          "level": 3,
+          "line": 137
+        },
+        {
+          "heading": "Implementation Plan",
+          "level": 2,
+          "line": 145
+        },
+        {
+          "heading": "Non-Goals",
+          "level": 2,
+          "line": 155
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 18
+      }
+    },
+    {
+      "path": "docs/plans/2026-06-06-containerization-design.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 262,
+      "nonEmptyLines": 203,
+      "sections": [
+        {
+          "heading": "Animetta 容器化部署设计",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "概述",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "关键决策",
+          "level": 3,
+          "line": 13
+        },
+        {
+          "heading": "架构设计",
+          "level": 2,
+          "line": 22
+        },
+        {
+          "heading": "Dockerfile 设计",
+          "level": 2,
+          "line": 57
+        },
+        {
+          "heading": "Docker Compose 配置",
+          "level": 2,
+          "line": 114
+        },
+        {
+          "heading": "TTS 迁移计划",
+          "level": 2,
+          "line": 161
+        },
+        {
+          "heading": "问题",
+          "level": 3,
+          "line": 163
+        },
+        {
+          "heading": "解决方案",
+          "level": 3,
+          "line": 167
+        },
+        {
+          "heading": "依赖修改",
+          "level": 3,
+          "line": 176
+        },
+        {
+          "heading": "数据持久化",
+          "level": 2,
+          "line": 188
+        },
+        {
+          "heading": "目录结构",
+          "level": 3,
+          "line": 190
+        },
+        {
+          "heading": "待办",
+          "level": 3,
+          "line": 208
+        },
+        {
+          "heading": "健康检查",
+          "level": 2,
+          "line": 214
+        },
+        {
+          "heading": "Kubernetes 迁移路径",
+          "level": 2,
+          "line": 227
+        },
+        {
+          "heading": "实施步骤",
+          "level": 2,
+          "line": 245
+        },
+        {
+          "heading": "参考资料",
+          "level": 2,
+          "line": 258
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 17
+      }
+    }
+  ]
+}

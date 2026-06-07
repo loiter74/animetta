@@ -7,9 +7,11 @@
 - [前置要求](#前置要求)
 - [注册 Zeabur 账号](#注册-zeabur-账号)
 - [部署后端服务](#部署后端服务)
+- [GPU 支持](#gpu-支持)
 - [环境变量配置](#环境变量配置)
 - [域名绑定](#域名绑定)
 - [前端部署](#前端部署)
+- [本地 Docker Compose 部署](#本地-docker-compose-部署)
 - [GitHub Actions 自动部署](#github-actions-自动部署)
 - [故障排除](#故障排除)
 
@@ -34,8 +36,20 @@
 2. 点击 **Create Project**，选择区域（推荐 `hkg` 香港）
 3. 点击 **Add Service** → **Deploy from GitHub**
 4. 选择 `animetta` 仓库
-5. Zeabur 会自动检测 `Dockerfile` 并开始构建
+5. Zeabur 会自动检测 `Dockerfile.cuda` 并开始构建
 6. 等待构建完成（约 3-5 分钟）
+
+> **注意**: 项目使用 `Dockerfile.cuda` 构建，包含 CUDA 12.4 运行时和 Kokoro TTS 引擎。需要在 Zeabur 开启 GPU 实例支持（见下方）。
+
+## GPU 支持
+
+Animetta 使用 Kokoro TTS 和 Whisper ASR，两者均支持 GPU 加速。在 Zeabur 部署时：
+
+1. 在服务详情页进入 **Settings**
+2. 在 **Instance Type** 中选择带 GPU 的实例（推荐 NVIDIA A10G）
+3. 确保环境变量 `ANIMETTA_DEVICE=cuda` 已设置
+
+> **无 GPU 也能运行**：设置 `ANIMETTA_DEVICE=cpu` 即可回退到 CPU 模式，TTS 和 ASR 会自动使用 CPU 推理，性能较低但功能完整。
 
 ### 方式二：使用 zeabur.json 配置
 
@@ -48,12 +62,14 @@
   "description": "AI Virtual Companion / VTuber Framework",
   "services": {
     "backend": {
-      "dockerfile": "Dockerfile",
+      "dockerfile": "Dockerfile.cuda",
       "rootDir": ".",
       "env": {
         "ANIMETTA_HOST": "0.0.0.0",
         "ANIMETTA_PORT": "12394",
         "ANIMETTA_LOG_LEVEL": "INFO",
+        "ANIMETTA_TTS": "kokoro",
+        "ANIMETTA_DEVICE": "cuda",
         "PYTHONPATH": "/app/src"
       },
       "ports": [
@@ -91,7 +107,7 @@
 | 变量名 | 说明 | 默认值 |
 |--------|------|--------|
 | `ANIMETTA_LLM` | LLM 服务商 | `deepseek` |
-| `ANIMETTA_TTS` | TTS 服务商 | `edge` |
+| `ANIMETTA_TTS` | TTS 服务商 | `kokoro` |
 | `ANIMETTA_ASR` | ASR 服务商 | `faster_whisper` |
 | `ANIMETTA_VAD` | VAD 服务商 | `silero` |
 | `ANIMETTA_LOG_LEVEL` | 日志级别 | `INFO` |
@@ -162,6 +178,46 @@
 VITE_API_URL=https://your-backend.zeabur.app
 VITE_WS_URL=wss://your-backend.zeabur.app
 ```
+
+## 本地 Docker Compose 部署
+
+在部署到 Zeabur 之前，建议先用 Docker Compose 在本地测试。
+
+### GPU 模式（推荐）
+
+需要 NVIDIA GPU + Docker Desktop 的 GPU 支持：
+
+```bash
+# 复制环境变量
+cp .env.example .env
+# 编辑 .env 填入 API Key
+
+# 启动（GPU 模式）
+docker compose up -d
+
+# 查看日志
+docker compose logs -f
+```
+
+### CPU 模式
+
+无 GPU 环境使用 CPU 备用配置：
+
+```bash
+docker compose -f docker-compose.cpu.yml up -d
+```
+
+### 验证
+
+```bash
+# 健康检查
+curl http://localhost:12394/health
+
+# 前端访问
+open http://localhost
+```
+
+> 详细说明参见 [Docker 部署指南](./docs/docker-deployment.md)。
 
 ## GitHub Actions 自动部署
 

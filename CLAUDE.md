@@ -32,6 +32,19 @@ python scripts/stop.py
 PYTHONPATH=src python -m animetta.core.socketio_server
 ```
 
+### Docker (Production)
+```bash
+# GPU deployment
+docker compose up -d --build
+
+# CPU-only
+docker compose -f docker-compose.cpu.yml up -d --build
+
+# Logs / shell
+docker compose logs -f animetta
+docker compose exec animetta bash
+```
+
 ### Development
 ```bash
 # Backend
@@ -323,6 +336,22 @@ system:
 
 - Backend: 12394 (Socket.IO + FastAPI)
 - Frontend dev: 3000 (Vite, proxies to backend)
+- Docker nginx: 80 (serves frontend + proxies to backend)
+
+## Containerization Conventions
+
+**Key files:**
+- `Dockerfile.cuda` — Multi-stage build (frontend builder → Python deps → CUDA 12.4 runtime)
+- `docker-compose.yml` — GPU deployment with NVIDIA runtime
+- `docker-compose.cpu.yml` — CPU-only fallback
+- `docker/nginx.conf` — Reverse proxy config (WebSocket + API + static files)
+- `docker/entrypoint.sh` — Starts nginx + backend, handles SIGTERM gracefully
+
+**Volumes:** `animetta-memory-db` (`/app/memory_db`), `animetta-data` (`/app/data`). Both use named volumes for persistence.
+
+**TTS:** Default is `vibe_voice`. `edge-tts` has been removed from requirements and is no longer available as a provider. Use `kokoro` or `openai` as alternatives.
+
+**When modifying Docker config:** Always test `docker compose build` succeeds and `curl http://localhost/health` returns ok after `docker compose up -d`.
 
 ## Testing Conventions
 

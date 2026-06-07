@@ -5,6 +5,7 @@ Tests for mapper base — ParameterState, ExpressionFrame, IEmotionParamMapper.
 
 import pytest
 from abc import ABC
+from animetta.avatar.mappers.base import ParameterState, ExpressionFrame, IEmotionParamMapper
 
 
 

@@ -1,0 +1,499 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 12,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "docs/adrs/ADR-001-langgraph-over-eventbus.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 60,
+      "nonEmptyLines": 46,
+      "sections": [
+        {
+          "heading": "ADR-001: LangGraph over EventBus",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Context",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "Decision",
+          "level": 2,
+          "line": 15
+        },
+        {
+          "heading": "Consequences",
+          "level": 2,
+          "line": 40
+        },
+        {
+          "heading": "Alternatives Considered",
+          "level": 2,
+          "line": 53
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 5
+      }
+    },
+    {
+      "path": "docs/adrs/ADR-002-hybrid-search.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 54,
+      "nonEmptyLines": 39,
+      "sections": [
+        {
+          "heading": "ADR-002: Chroma + SQLite FTS5 Hybrid Search",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Context",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "Decision",
+          "level": 2,
+          "line": 15
+        },
+        {
+          "heading": "Consequences",
+          "level": 2,
+          "line": 33
+        },
+        {
+          "heading": "Alternatives Considered",
+          "level": 2,
+          "line": 46
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 5
+      }
+    },
+    {
+      "path": "docs/adrs/ADR-003-plugin-architecture.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 65,
+      "nonEmptyLines": 49,
+      "sections": [
+        {
+          "heading": "ADR-003: Plugin-Based Provider Architecture",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Context",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "Decision",
+          "level": 2,
+          "line": 15
+        },
+        {
+          "heading": "Consequences",
+          "level": 2,
+          "line": 46
+        },
+        {
+          "heading": "Alternatives Considered",
+          "level": 2,
+          "line": 59
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 5
+      }
+    },
+    {
+      "path": "docs/adrs/ADR-004-streaming-response.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 61,
+      "nonEmptyLines": 47,
+      "sections": [
+        {
+          "heading": "ADR-004: Streaming-First Response Design",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Context",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "Decision",
+          "level": 2,
+          "line": 15
+        },
+        {
+          "heading": "Consequences",
+          "level": 2,
+          "line": 43
+        },
+        {
+          "heading": "Alternatives Considered",
+          "level": 2,
+          "line": 55
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 5
+      }
+    },
+    {
+      "path": "docs/adrs/ADR-005-wiki-memory.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 73,
+      "nonEmptyLines": 54,
+      "sections": [
+        {
+          "heading": "ADR-005: Wiki-Architecture Memory System",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Context",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "Decision",
+          "level": 2,
+          "line": 16
+        },
+        {
+          "heading": "Consequences",
+          "level": 2,
+          "line": 53
+        },
+        {
+          "heading": "Alternatives Considered",
+          "level": 2,
+          "line": 66
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 5
+      }
+    },
+    {
+      "path": "docs/adrs/ADR-006-observability-stack.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 57,
+      "nonEmptyLines": 43,
+      "sections": [
+        {
+          "heading": "ADR-006: Observability Stack",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Context",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "Decision",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "Architecture",
+          "level": 3,
+          "line": 19
+        },
+        {
+          "heading": "Key Design Decisions",
+          "level": 3,
+          "line": 44
+        },
+        {
+          "heading": "Consequences",
+          "level": 2,
+          "line": 52
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": "docs/adrs/ADR-007-wiki-memory-extensions.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 35,
+      "nonEmptyLines": 25,
+      "sections": [
+        {
+          "heading": "ADR-007: Wiki Memory Extensions",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Context",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "Decision",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "Consequences",
+          "level": 2,
+          "line": 29
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "path": "docs/adrs/ADR-008-mcp-bridge.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 48,
+      "nonEmptyLines": 36,
+      "sections": [
+        {
+          "heading": "ADR-008: MCP Bridge Architecture",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Context",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "Decision",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "Architecture",
+          "level": 3,
+          "line": 19
+        },
+        {
+          "heading": "Key Design Decisions",
+          "level": 3,
+          "line": 35
+        },
+        {
+          "heading": "Consequences",
+          "level": 2,
+          "line": 42
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": "docs/adrs/ADR-009-live2d-expression.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 43,
+      "nonEmptyLines": 31,
+      "sections": [
+        {
+          "heading": "ADR-009: Live2D Expression System",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Context",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "Decision",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "Pipeline",
+          "level": 3,
+          "line": 19
+        },
+        {
+          "heading": "Key Design Decisions",
+          "level": 3,
+          "line": 30
+        },
+        {
+          "heading": "Consequences",
+          "level": 2,
+          "line": 37
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": "docs/adrs/ADR-010-bilibili-meme-collection.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 41,
+      "nonEmptyLines": 29,
+      "sections": [
+        {
+          "heading": "ADR-010: Bilibili Meme Collection",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Context",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "Decision",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "Architecture",
+          "level": 3,
+          "line": 18
+        },
+        {
+          "heading": "Key Design Decisions",
+          "level": 3,
+          "line": 28
+        },
+        {
+          "heading": "Consequences",
+          "level": 2,
+          "line": 35
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": "docs/adrs/ADR-011-realtime-audio-pipeline.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 41,
+      "nonEmptyLines": 29,
+      "sections": [
+        {
+          "heading": "ADR-011: Real-time Audio Pipeline",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Context",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "Decision",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "Pipeline",
+          "level": 3,
+          "line": 18
+        },
+        {
+          "heading": "Key Design Decisions",
+          "level": 3,
+          "line": 28
+        },
+        {
+          "heading": "Consequences",
+          "level": 2,
+          "line": 35
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": "docs/adrs/README.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 9,
+      "nonEmptyLines": 8,
+      "sections": [
+        {
+          "heading": "Architecture Decision Records",
+          "level": 1,
+          "line": 1
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    }
+  ]
+}

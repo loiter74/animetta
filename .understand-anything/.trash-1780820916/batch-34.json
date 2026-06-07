@@ -1,0 +1,2766 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 22,
+  "filesSkipped": [
+    "scripts/transcribe_alice.py",
+    "scripts/verify_cuda_compat.py",
+    "scripts/vibe_voice_server.py"
+  ],
+  "results": [
+    {
+      "path": "smoke-test.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 51,
+      "nonEmptyLines": 40,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 43,
+      "nonEmptyLines": 39,
+      "functions": [
+        {
+          "name": "__getattr__",
+          "startLine": 15,
+          "endLine": 29,
+          "params": [
+            "name"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "__getattr__",
+          "line": 15,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__getattr__",
+          "callee": "locals",
+          "lineNumber": 22
+        },
+        {
+          "caller": "__getattr__",
+          "callee": "locals",
+          "lineNumber": 28
+        },
+        {
+          "caller": "__getattr__",
+          "callee": "AttributeError",
+          "lineNumber": 29
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/AGENTS.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 77,
+      "nonEmptyLines": 70,
+      "sections": [
+        {
+          "heading": "ANIMA BACKEND — PYTHON PACKAGE",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "OVERVIEW",
+          "level": 2,
+          "line": 8
+        },
+        {
+          "heading": "STRUCTURE",
+          "level": 2,
+          "line": 11
+        },
+        {
+          "heading": "WHERE TO LOOK",
+          "level": 2,
+          "line": 48
+        },
+        {
+          "heading": "KEY PATTERNS",
+          "level": 2,
+          "line": 64
+        },
+        {
+          "heading": "NOTES",
+          "level": 2,
+          "line": 70
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": "src/animetta/avatar/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 50,
+      "nonEmptyLines": 46,
+      "metrics": {
+        "importCount": 8,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/avatar/AGENTS.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 53,
+      "nonEmptyLines": 45,
+      "sections": [
+        {
+          "heading": "AVATAR — EMOTION ANALYSIS & LIVE2D MAPPING",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "OVERVIEW",
+          "level": 2,
+          "line": 8
+        },
+        {
+          "heading": "STRUCTURE",
+          "level": 2,
+          "line": 11
+        },
+        {
+          "heading": "WHERE TO LOOK",
+          "level": 2,
+          "line": 32
+        },
+        {
+          "heading": "KEY PATTERNS",
+          "level": 2,
+          "line": 41
+        },
+        {
+          "heading": "ANTI-PATTERNS",
+          "level": 2,
+          "line": 46
+        },
+        {
+          "heading": "NOTES",
+          "level": 2,
+          "line": 51
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    },
+    {
+      "path": "src/animetta/avatar/analyzers/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 20,
+      "nonEmptyLines": 17,
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/avatar/analyzers/audio.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 169,
+      "nonEmptyLines": 132,
+      "functions": [
+        {
+          "name": "compute_volume_envelope",
+          "startLine": 156,
+          "endLine": 169,
+          "params": [
+            "audio_path",
+            "sample_rate",
+            "gain"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "AudioAnalyzer",
+          "startLine": 19,
+          "endLine": 152,
+          "methods": [
+            "__init__",
+            "compute_volume_envelope",
+            "_load_audio",
+            "get_audio_duration"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "AudioAnalyzer",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "compute_volume_envelope",
+          "line": 156,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "RuntimeError",
+          "lineNumber": 41
+        },
+        {
+          "caller": "compute_volume_envelope",
+          "callee": "self._load_audio",
+          "lineNumber": 67
+        },
+        {
+          "caller": "compute_volume_envelope",
+          "callee": "len",
+          "lineNumber": 70
+        },
+        {
+          "caller": "compute_volume_envelope",
+          "callee": "int",
+          "lineNumber": 71
+        },
+        {
+          "caller": "compute_volume_envelope",
+          "callee": "logger.warning",
+          "lineNumber": 74
+        },
+        {
+          "caller": "compute_volume_envelope",
+          "callee": "range",
+          "lineNumber": 79
+        },
+        {
+          "caller": "compute_volume_envelope",
+          "callee": "int",
+          "lineNumber": 80
+        },
+        {
+          "caller": "compute_volume_envelope",
+          "callee": "int",
+          "lineNumber": 81
+        },
+        {
+          "caller": "compute_volume_envelope",
+          "callee": "volumes.append",
+          "lineNumber": 88
+        },
+        {
+          "caller": "compute_volume_envelope",
+          "callee": "float",
+          "lineNumber": 88
+        },
+        {
+          "caller": "compute_volume_envelope",
+          "callee": "volumes.append",
+          "lineNumber": 90
+        },
+        {
+          "caller": "compute_volume_envelope",
+          "callee": "max",
+          "lineNumber": 94
+        },
+        {
+          "caller": "compute_volume_envelope",
+          "callee": "len",
+          "lineNumber": 98
+        },
+        {
+          "caller": "compute_volume_envelope",
+          "callee": "min",
+          "lineNumber": 102
+        },
+        {
+          "caller": "compute_volume_envelope",
+          "callee": "logger.debug",
+          "lineNumber": 104
+        },
+        {
+          "caller": "compute_volume_envelope",
+          "callee": "len",
+          "lineNumber": 105
+        },
+        {
+          "caller": "compute_volume_envelope",
+          "callee": "logger.warning",
+          "lineNumber": 112
+        },
+        {
+          "caller": "_load_audio",
+          "callee": "Path",
+          "lineNumber": 125
+        },
+        {
+          "caller": "_load_audio",
+          "callee": "path.exists",
+          "lineNumber": 126
+        },
+        {
+          "caller": "_load_audio",
+          "callee": "FileNotFoundError",
+          "lineNumber": 127
+        },
+        {
+          "caller": "_load_audio",
+          "callee": "AudioSegment.from_file",
+          "lineNumber": 130
+        },
+        {
+          "caller": "_load_audio",
+          "callee": "audio.set_channels",
+          "lineNumber": 133
+        },
+        {
+          "caller": "get_audio_duration",
+          "callee": "self._load_audio",
+          "lineNumber": 148
+        },
+        {
+          "caller": "get_audio_duration",
+          "callee": "len",
+          "lineNumber": 149
+        },
+        {
+          "caller": "get_audio_duration",
+          "callee": "logger.error",
+          "lineNumber": 151
+        },
+        {
+          "caller": "compute_volume_envelope",
+          "callee": "AudioAnalyzer",
+          "lineNumber": 168
+        },
+        {
+          "caller": "compute_volume_envelope",
+          "callee": "analyzer.compute_volume_envelope",
+          "lineNumber": 169
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/avatar/analyzers/base.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 189,
+      "nonEmptyLines": 152,
+      "classes": [
+        {
+          "name": "EmotionData",
+          "startLine": 14,
+          "endLine": 65,
+          "methods": [
+            "to_dict",
+            "__repr__"
+          ],
+          "properties": [
+            "primary",
+            "confidence",
+            "timeline",
+            "metadata"
+          ]
+        },
+        {
+          "name": "IEmotionAnalyzer",
+          "startLine": 68,
+          "endLine": 189,
+          "methods": [
+            "extract",
+            "name",
+            "priority",
+            "validate_input",
+            "get_supported_emotions"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "EmotionData",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "IEmotionAnalyzer",
+          "line": 68,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__repr__",
+          "callee": "len",
+          "lineNumber": 65
+        },
+        {
+          "caller": "validate_input",
+          "callee": "len",
+          "lineNumber": 178
+        },
+        {
+          "caller": "validate_input",
+          "callee": "text.strip",
+          "lineNumber": 178
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 0,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "src/animetta/avatar/analyzers/keyword.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 352,
+      "nonEmptyLines": 295,
+      "classes": [
+        {
+          "name": "KeywordAnalyzer",
+          "startLine": 15,
+          "endLine": 352,
+          "methods": [
+            "__init__",
+            "extract",
+            "_calculate_confidence",
+            "_extract_primary",
+            "_get_default_emotion_data",
+            "name",
+            "priority",
+            "get_supported_emotions",
+            "validate_input",
+            "extract_emotion_tags",
+            "get_emotion_summary",
+            "add_keywords",
+            "remove_keywords"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "KeywordAnalyzer",
+          "line": 15,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "self.DEFAULT_KEYWORDS.copy",
+          "lineNumber": 125
+        },
+        {
+          "caller": "__init__",
+          "callee": "ValueError",
+          "lineNumber": 130
+        },
+        {
+          "caller": "extract",
+          "callee": "self.validate_input",
+          "lineNumber": 150
+        },
+        {
+          "caller": "extract",
+          "callee": "ValueError",
+          "lineNumber": 151
+        },
+        {
+          "caller": "extract",
+          "callee": "self.keywords.items",
+          "lineNumber": 156
+        },
+        {
+          "caller": "extract",
+          "callee": "sum",
+          "lineNumber": 157
+        },
+        {
+          "caller": "extract",
+          "callee": "self._calculate_confidence",
+          "lineNumber": 162
+        },
+        {
+          "caller": "extract",
+          "callee": "self._extract_primary",
+          "lineNumber": 165
+        },
+        {
+          "caller": "extract",
+          "callee": "scores.get",
+          "lineNumber": 174
+        },
+        {
+          "caller": "extract",
+          "callee": "sum",
+          "lineNumber": 176
+        },
+        {
+          "caller": "extract",
+          "callee": "scores.values",
+          "lineNumber": 176
+        },
+        {
+          "caller": "extract",
+          "callee": "EmotionData",
+          "lineNumber": 179
+        },
+        {
+          "caller": "extract",
+          "callee": "logger.error",
+          "lineNumber": 187
+        },
+        {
+          "caller": "extract",
+          "callee": "self._get_default_emotion_data",
+          "lineNumber": 189
+        },
+        {
+          "caller": "_calculate_confidence",
+          "callee": "max",
+          "lineNumber": 215
+        },
+        {
+          "caller": "_calculate_confidence",
+          "callee": "scores.values",
+          "lineNumber": 215
+        },
+        {
+          "caller": "_calculate_confidence",
+          "callee": "min",
+          "lineNumber": 216
+        },
+        {
+          "caller": "_calculate_confidence",
+          "callee": "max",
+          "lineNumber": 220
+        },
+        {
+          "caller": "_calculate_confidence",
+          "callee": "scores.values",
+          "lineNumber": 220
+        },
+        {
+          "caller": "_calculate_confidence",
+          "callee": "len",
+          "lineNumber": 221
+        },
+        {
+          "caller": "_calculate_confidence",
+          "callee": "min",
+          "lineNumber": 222
+        },
+        {
+          "caller": "_extract_primary",
+          "callee": "max",
+          "lineNumber": 242
+        },
+        {
+          "caller": "_get_default_emotion_data",
+          "callee": "EmotionData",
+          "lineNumber": 256
+        },
+        {
+          "caller": "_get_default_emotion_data",
+          "callee": "len",
+          "lineNumber": 263
+        },
+        {
+          "caller": "get_supported_emotions",
+          "callee": "list",
+          "lineNumber": 279
+        },
+        {
+          "caller": "get_supported_emotions",
+          "callee": "self.keywords.keys",
+          "lineNumber": 279
+        },
+        {
+          "caller": "validate_input",
+          "callee": "isinstance",
+          "lineNumber": 291
+        },
+        {
+          "caller": "validate_input",
+          "callee": "len",
+          "lineNumber": 291
+        },
+        {
+          "caller": "validate_input",
+          "callee": "text.strip",
+          "lineNumber": 291
+        },
+        {
+          "caller": "extract_emotion_tags",
+          "callee": "self.extract",
+          "lineNumber": 303
+        },
+        {
+          "caller": "extract_emotion_tags",
+          "callee": "result.metadata.get",
+          "lineNumber": 304
+        },
+        {
+          "caller": "extract_emotion_tags",
+          "callee": "list",
+          "lineNumber": 305
+        },
+        {
+          "caller": "extract_emotion_tags",
+          "callee": "matched_emotions.keys",
+          "lineNumber": 305
+        },
+        {
+          "caller": "get_emotion_summary",
+          "callee": "self.extract",
+          "lineNumber": 317
+        },
+        {
+          "caller": "get_emotion_summary",
+          "callee": "result.metadata.get",
+          "lineNumber": 322
+        },
+        {
+          "caller": "get_emotion_summary",
+          "callee": "result.metadata.get",
+          "lineNumber": 323
+        },
+        {
+          "caller": "get_emotion_summary",
+          "callee": "result.metadata.get",
+          "lineNumber": 324
+        },
+        {
+          "caller": "add_keywords",
+          "callee": "self.keywords[emotion].extend",
+          "lineNumber": 339
+        },
+        {
+          "caller": "remove_keywords",
+          "callee": "self.keywords[emotion].remove",
+          "lineNumber": 352
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/avatar/analyzers/llm_tag.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 295,
+      "nonEmptyLines": 237,
+      "classes": [
+        {
+          "name": "EmotionTag",
+          "startLine": 14,
+          "endLine": 27,
+          "methods": [
+            "__init__",
+            "__repr__",
+            "__eq__"
+          ],
+          "properties": []
+        },
+        {
+          "name": "EmotionExtractionResult",
+          "startLine": 30,
+          "endLine": 38,
+          "methods": [
+            "__init__",
+            "__repr__"
+          ],
+          "properties": []
+        },
+        {
+          "name": "StandaloneLLMTagAnalyzer",
+          "startLine": 41,
+          "endLine": 295,
+          "methods": [
+            "__init__",
+            "extract_legacy",
+            "extract",
+            "_remove_segments",
+            "_calculate_confidence",
+            "_build_timeline",
+            "_extract_primary",
+            "_count_emotions",
+            "_get_default_emotion_data",
+            "name",
+            "priority",
+            "get_supported_emotions",
+            "validate_input"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "EmotionTag",
+          "line": 14,
+          "isDefault": false
+        },
+        {
+          "name": "EmotionExtractionResult",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "StandaloneLLMTagAnalyzer",
+          "line": 41,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__eq__",
+          "callee": "isinstance",
+          "lineNumber": 25
+        },
+        {
+          "caller": "__repr__",
+          "callee": "len",
+          "lineNumber": 38
+        },
+        {
+          "caller": "__repr__",
+          "callee": "len",
+          "lineNumber": 38
+        },
+        {
+          "caller": "__init__",
+          "callee": "set",
+          "lineNumber": 87
+        },
+        {
+          "caller": "__init__",
+          "callee": "ValueError",
+          "lineNumber": 92
+        },
+        {
+          "caller": "extract_legacy",
+          "callee": "EmotionExtractionResult",
+          "lineNumber": 110
+        },
+        {
+          "caller": "extract_legacy",
+          "callee": "self.EMOTION_PATTERN.finditer",
+          "lineNumber": 119
+        },
+        {
+          "caller": "extract_legacy",
+          "callee": "match.group(1).lower",
+          "lineNumber": 120
+        },
+        {
+          "caller": "extract_legacy",
+          "callee": "match.group",
+          "lineNumber": 120
+        },
+        {
+          "caller": "extract_legacy",
+          "callee": "match.start",
+          "lineNumber": 121
+        },
+        {
+          "caller": "extract_legacy",
+          "callee": "logger.debug",
+          "lineNumber": 125
+        },
+        {
+          "caller": "extract_legacy",
+          "callee": "emotions.append",
+          "lineNumber": 129
+        },
+        {
+          "caller": "extract_legacy",
+          "callee": "EmotionTag",
+          "lineNumber": 129
+        },
+        {
+          "caller": "extract_legacy",
+          "callee": "segments_to_remove.append",
+          "lineNumber": 130
+        },
+        {
+          "caller": "extract_legacy",
+          "callee": "match.start",
+          "lineNumber": 130
+        },
+        {
+          "caller": "extract_legacy",
+          "callee": "match.end",
+          "lineNumber": 130
+        },
+        {
+          "caller": "extract_legacy",
+          "callee": "self._remove_segments",
+          "lineNumber": 133
+        },
+        {
+          "caller": "extract_legacy",
+          "callee": "logger.debug",
+          "lineNumber": 135
+        },
+        {
+          "caller": "extract_legacy",
+          "callee": "len",
+          "lineNumber": 135
+        },
+        {
+          "caller": "extract_legacy",
+          "callee": "EmotionExtractionResult",
+          "lineNumber": 137
+        },
+        {
+          "caller": "extract_legacy",
+          "callee": "len",
+          "lineNumber": 140
+        },
+        {
+          "caller": "extract",
+          "callee": "self.validate_input",
+          "lineNumber": 158
+        },
+        {
+          "caller": "extract",
+          "callee": "ValueError",
+          "lineNumber": 159
+        },
+        {
+          "caller": "extract",
+          "callee": "self.extract_legacy",
+          "lineNumber": 163
+        },
+        {
+          "caller": "extract",
+          "callee": "self._calculate_confidence",
+          "lineNumber": 166
+        },
+        {
+          "caller": "extract",
+          "callee": "self._build_timeline",
+          "lineNumber": 169
+        },
+        {
+          "caller": "extract",
+          "callee": "self._extract_primary",
+          "lineNumber": 172
+        },
+        {
+          "caller": "extract",
+          "callee": "self._count_emotions",
+          "lineNumber": 175
+        },
+        {
+          "caller": "extract",
+          "callee": "str",
+          "lineNumber": 178
+        },
+        {
+          "caller": "extract",
+          "callee": "EmotionData",
+          "lineNumber": 185
+        },
+        {
+          "caller": "extract",
+          "callee": "logger.error",
+          "lineNumber": 193
+        },
+        {
+          "caller": "extract",
+          "callee": "self._get_default_emotion_data",
+          "lineNumber": 195
+        },
+        {
+          "caller": "_remove_segments",
+          "callee": "sorted",
+          "lineNumber": 212
+        },
+        {
+          "caller": "_calculate_confidence",
+          "callee": "len",
+          "lineNumber": 228
+        },
+        {
+          "caller": "_calculate_confidence",
+          "callee": "len",
+          "lineNumber": 229
+        },
+        {
+          "caller": "_calculate_confidence",
+          "callee": "min",
+          "lineNumber": 230
+        },
+        {
+          "caller": "_build_timeline",
+          "callee": "timeline.append",
+          "lineNumber": 240
+        },
+        {
+          "caller": "_count_emotions",
+          "callee": "counts.get",
+          "lineNumber": 259
+        },
+        {
+          "caller": "_get_default_emotion_data",
+          "callee": "EmotionData",
+          "lineNumber": 264
+        },
+        {
+          "caller": "_get_default_emotion_data",
+          "callee": "len",
+          "lineNumber": 271
+        },
+        {
+          "caller": "get_supported_emotions",
+          "callee": "list",
+          "lineNumber": 290
+        },
+        {
+          "caller": "validate_input",
+          "callee": "isinstance",
+          "lineNumber": 295
+        },
+        {
+          "caller": "validate_input",
+          "callee": "len",
+          "lineNumber": 295
+        },
+        {
+          "caller": "validate_input",
+          "callee": "text.strip",
+          "lineNumber": 295
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 3,
+        "functionCount": 0,
+        "classCount": 3
+      }
+    },
+    {
+      "path": "src/animetta/avatar/factory.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 304,
+      "nonEmptyLines": 242,
+      "functions": [
+        {
+          "name": "create_emotion_analyzer",
+          "startLine": 273,
+          "endLine": 287,
+          "params": [
+            "name",
+            "config"
+          ]
+        },
+        {
+          "name": "create_timeline_strategy",
+          "startLine": 290,
+          "endLine": 304,
+          "params": [
+            "name",
+            "config"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "EmotionAnalyzerFactory",
+          "startLine": 21,
+          "endLine": 144,
+          "methods": [
+            "register",
+            "create",
+            "list_all",
+            "is_registered"
+          ],
+          "properties": [
+            "_analyzers"
+          ]
+        },
+        {
+          "name": "TimelineStrategyFactory",
+          "startLine": 147,
+          "endLine": 269,
+          "methods": [
+            "register",
+            "create",
+            "list_all",
+            "is_registered"
+          ],
+          "properties": [
+            "_strategies"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "EmotionAnalyzerFactory",
+          "line": 21,
+          "isDefault": false
+        },
+        {
+          "name": "TimelineStrategyFactory",
+          "line": 147,
+          "isDefault": false
+        },
+        {
+          "name": "create_emotion_analyzer",
+          "line": 273,
+          "isDefault": false
+        },
+        {
+          "name": "create_timeline_strategy",
+          "line": 290,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "register",
+          "callee": "logger.warning",
+          "lineNumber": 72
+        },
+        {
+          "caller": "register",
+          "callee": "issubclass",
+          "lineNumber": 75
+        },
+        {
+          "caller": "register",
+          "callee": "ValueError",
+          "lineNumber": 76
+        },
+        {
+          "caller": "register",
+          "callee": "logger.info",
+          "lineNumber": 81
+        },
+        {
+          "caller": "create",
+          "callee": "cls._analyzers.get",
+          "lineNumber": 104
+        },
+        {
+          "caller": "create",
+          "callee": "\", \".join",
+          "lineNumber": 107
+        },
+        {
+          "caller": "create",
+          "callee": "cls._analyzers.keys",
+          "lineNumber": 107
+        },
+        {
+          "caller": "create",
+          "callee": "ValueError",
+          "lineNumber": 108
+        },
+        {
+          "caller": "create",
+          "callee": "analyzer_class",
+          "lineNumber": 116
+        },
+        {
+          "caller": "create",
+          "callee": "logger.debug",
+          "lineNumber": 117
+        },
+        {
+          "caller": "create",
+          "callee": "logger.error",
+          "lineNumber": 120
+        },
+        {
+          "caller": "list_all",
+          "callee": "list",
+          "lineNumber": 131
+        },
+        {
+          "caller": "list_all",
+          "callee": "cls._analyzers.keys",
+          "lineNumber": 131
+        },
+        {
+          "caller": "register",
+          "callee": "logger.warning",
+          "lineNumber": 197
+        },
+        {
+          "caller": "register",
+          "callee": "issubclass",
+          "lineNumber": 200
+        },
+        {
+          "caller": "register",
+          "callee": "ValueError",
+          "lineNumber": 201
+        },
+        {
+          "caller": "register",
+          "callee": "logger.info",
+          "lineNumber": 206
+        },
+        {
+          "caller": "create",
+          "callee": "cls._strategies.get",
+          "lineNumber": 229
+        },
+        {
+          "caller": "create",
+          "callee": "\", \".join",
+          "lineNumber": 232
+        },
+        {
+          "caller": "create",
+          "callee": "cls._strategies.keys",
+          "lineNumber": 232
+        },
+        {
+          "caller": "create",
+          "callee": "ValueError",
+          "lineNumber": 233
+        },
+        {
+          "caller": "create",
+          "callee": "strategy_class",
+          "lineNumber": 241
+        },
+        {
+          "caller": "create",
+          "callee": "logger.debug",
+          "lineNumber": 242
+        },
+        {
+          "caller": "create",
+          "callee": "logger.error",
+          "lineNumber": 245
+        },
+        {
+          "caller": "list_all",
+          "callee": "list",
+          "lineNumber": 256
+        },
+        {
+          "caller": "list_all",
+          "callee": "cls._strategies.keys",
+          "lineNumber": 256
+        },
+        {
+          "caller": "create_emotion_analyzer",
+          "callee": "EmotionAnalyzerFactory.create",
+          "lineNumber": 287
+        },
+        {
+          "caller": "create_timeline_strategy",
+          "callee": "TimelineStrategyFactory.create",
+          "lineNumber": 304
+        }
+      ],
+      "metrics": {
+        "importCount": 7,
+        "exportCount": 4,
+        "functionCount": 2,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "src/animetta/avatar/mappers/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 20,
+      "nonEmptyLines": 17,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/avatar/mappers/base.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 136,
+      "nonEmptyLines": 109,
+      "classes": [
+        {
+          "name": "ParameterState",
+          "startLine": 12,
+          "endLine": 30,
+          "methods": [
+            "to_dict"
+          ],
+          "properties": [
+            "name",
+            "value",
+            "duration"
+          ]
+        },
+        {
+          "name": "ExpressionFrame",
+          "startLine": 34,
+          "endLine": 54,
+          "methods": [
+            "to_dict"
+          ],
+          "properties": [
+            "parameters",
+            "intensity",
+            "timestamp"
+          ]
+        },
+        {
+          "name": "IEmotionParamMapper",
+          "startLine": 57,
+          "endLine": 136,
+          "methods": [
+            "map_emotion",
+            "map_emotions_timeline",
+            "name",
+            "get_supported_emotions",
+            "apply_intensity"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "ParameterState",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "ExpressionFrame",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "IEmotionParamMapper",
+          "line": 57,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "to_dict",
+          "callee": "p.to_dict",
+          "lineNumber": 51
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 0,
+        "classCount": 3
+      }
+    },
+    {
+      "path": "src/animetta/avatar/mappers/config/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 1,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/avatar/mappers/config/emotion_mappings.yaml",
+      "language": "yaml",
+      "fileCategory": "config",
+      "totalLines": 163,
+      "nonEmptyLines": 149,
+      "sections": [
+        {
+          "heading": "emotions",
+          "level": 1,
+          "line": 12
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/avatar/mappers/emotion_param_mapper.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 349,
+      "nonEmptyLines": 295,
+      "classes": [
+        {
+          "name": "EmotionParamMapper",
+          "startLine": 171,
+          "endLine": 349,
+          "methods": [
+            "__init__",
+            "map_emotion",
+            "map_emotions_timeline",
+            "_add_variance",
+            "name",
+            "get_supported_emotions",
+            "add_emotion_mapping",
+            "load_from_yaml"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "EmotionParamMapper",
+          "line": 171,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "map_emotion",
+          "callee": "emotion.lower",
+          "lineNumber": 221
+        },
+        {
+          "caller": "map_emotion",
+          "callee": "logger.warning",
+          "lineNumber": 224
+        },
+        {
+          "caller": "map_emotion",
+          "callee": "param_config.items",
+          "lineNumber": 231
+        },
+        {
+          "caller": "map_emotion",
+          "callee": "self.apply_intensity",
+          "lineNumber": 233
+        },
+        {
+          "caller": "map_emotion",
+          "callee": "self._add_variance",
+          "lineNumber": 236
+        },
+        {
+          "caller": "map_emotion",
+          "callee": "parameters.append",
+          "lineNumber": 238
+        },
+        {
+          "caller": "map_emotion",
+          "callee": "ParameterState",
+          "lineNumber": 238
+        },
+        {
+          "caller": "map_emotion",
+          "callee": "ExpressionFrame",
+          "lineNumber": 244
+        },
+        {
+          "caller": "map_emotions_timeline",
+          "callee": "self.map_emotion",
+          "lineNumber": 268
+        },
+        {
+          "caller": "map_emotions_timeline",
+          "callee": "frames.append",
+          "lineNumber": 275
+        },
+        {
+          "caller": "map_emotions_timeline",
+          "callee": "frames.sort",
+          "lineNumber": 278
+        },
+        {
+          "caller": "_add_variance",
+          "callee": "random.uniform",
+          "lineNumber": 301
+        },
+        {
+          "caller": "_add_variance",
+          "callee": "max",
+          "lineNumber": 304
+        },
+        {
+          "caller": "_add_variance",
+          "callee": "min",
+          "lineNumber": 304
+        },
+        {
+          "caller": "get_supported_emotions",
+          "callee": "list",
+          "lineNumber": 312
+        },
+        {
+          "caller": "get_supported_emotions",
+          "callee": "self.mappings.keys",
+          "lineNumber": 312
+        },
+        {
+          "caller": "add_emotion_mapping",
+          "callee": "emotion.lower",
+          "lineNumber": 326
+        },
+        {
+          "caller": "load_from_yaml",
+          "callee": "Path",
+          "lineNumber": 339
+        },
+        {
+          "caller": "load_from_yaml",
+          "callee": "path.exists",
+          "lineNumber": 340
+        },
+        {
+          "caller": "load_from_yaml",
+          "callee": "logger.error",
+          "lineNumber": 341
+        },
+        {
+          "caller": "load_from_yaml",
+          "callee": "open",
+          "lineNumber": 344
+        },
+        {
+          "caller": "load_from_yaml",
+          "callee": "yaml.safe_load",
+          "lineNumber": 345
+        },
+        {
+          "caller": "load_from_yaml",
+          "callee": "self.mappings.update",
+          "lineNumber": 348
+        },
+        {
+          "caller": "load_from_yaml",
+          "callee": "logger.info",
+          "lineNumber": 349
+        },
+        {
+          "caller": "load_from_yaml",
+          "callee": "len",
+          "lineNumber": 349
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/avatar/prompts.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 210,
+      "nonEmptyLines": 166,
+      "functions": [
+        {
+          "name": "load_prompt_template",
+          "startLine": 196,
+          "endLine": 210,
+          "params": [
+            "template_path"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "EmotionPromptBuilder",
+          "startLine": 9,
+          "endLine": 193,
+          "methods": [
+            "__init__",
+            "build_prompt",
+            "_build_zh_prompt",
+            "_build_en_prompt",
+            "_get_examples",
+            "_get_examples_en",
+            "from_config"
+          ],
+          "properties": [
+            "DEFAULT_EMOTIONS"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "EmotionPromptBuilder",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "load_prompt_template",
+          "line": 196,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "build_prompt",
+          "callee": "self._build_zh_prompt",
+          "lineNumber": 49
+        },
+        {
+          "caller": "build_prompt",
+          "callee": "self._build_en_prompt",
+          "lineNumber": 51
+        },
+        {
+          "caller": "_build_zh_prompt",
+          "callee": "self.emotions.items",
+          "lineNumber": 64
+        },
+        {
+          "caller": "_build_zh_prompt",
+          "callee": "lines.append",
+          "lineNumber": 65
+        },
+        {
+          "caller": "_build_zh_prompt",
+          "callee": "lines.extend",
+          "lineNumber": 67
+        },
+        {
+          "caller": "_build_zh_prompt",
+          "callee": "self._get_examples",
+          "lineNumber": 76
+        },
+        {
+          "caller": "_build_zh_prompt",
+          "callee": "lines.append",
+          "lineNumber": 78
+        },
+        {
+          "caller": "_build_zh_prompt",
+          "callee": "lines.extend",
+          "lineNumber": 80
+        },
+        {
+          "caller": "_build_zh_prompt",
+          "callee": "\"\\n\".join",
+          "lineNumber": 92
+        },
+        {
+          "caller": "_build_en_prompt",
+          "callee": "self.emotions.items",
+          "lineNumber": 104
+        },
+        {
+          "caller": "_build_en_prompt",
+          "callee": "lines.append",
+          "lineNumber": 105
+        },
+        {
+          "caller": "_build_en_prompt",
+          "callee": "lines.extend",
+          "lineNumber": 107
+        },
+        {
+          "caller": "_build_en_prompt",
+          "callee": "self._get_examples_en",
+          "lineNumber": 115
+        },
+        {
+          "caller": "_build_en_prompt",
+          "callee": "lines.append",
+          "lineNumber": 117
+        },
+        {
+          "caller": "_build_en_prompt",
+          "callee": "lines.extend",
+          "lineNumber": 119
+        },
+        {
+          "caller": "_build_en_prompt",
+          "callee": "\"\\n\".join",
+          "lineNumber": 128
+        },
+        {
+          "caller": "_get_examples",
+          "callee": "examples.append",
+          "lineNumber": 135
+        },
+        {
+          "caller": "_get_examples",
+          "callee": "examples.append",
+          "lineNumber": 138
+        },
+        {
+          "caller": "_get_examples",
+          "callee": "examples.append",
+          "lineNumber": 141
+        },
+        {
+          "caller": "_get_examples",
+          "callee": "examples.append",
+          "lineNumber": 144
+        },
+        {
+          "caller": "_get_examples",
+          "callee": "examples.append",
+          "lineNumber": 147
+        },
+        {
+          "caller": "_get_examples_en",
+          "callee": "examples.append",
+          "lineNumber": 156
+        },
+        {
+          "caller": "_get_examples_en",
+          "callee": "examples.append",
+          "lineNumber": 159
+        },
+        {
+          "caller": "_get_examples_en",
+          "callee": "examples.append",
+          "lineNumber": 162
+        },
+        {
+          "caller": "_get_examples_en",
+          "callee": "examples.append",
+          "lineNumber": 165
+        },
+        {
+          "caller": "_get_examples_en",
+          "callee": "examples.append",
+          "lineNumber": 168
+        },
+        {
+          "caller": "from_config",
+          "callee": "config.get",
+          "lineNumber": 183
+        },
+        {
+          "caller": "from_config",
+          "callee": "cls",
+          "lineNumber": 193
+        },
+        {
+          "caller": "load_prompt_template",
+          "callee": "Path",
+          "lineNumber": 206
+        },
+        {
+          "caller": "load_prompt_template",
+          "callee": "path.exists",
+          "lineNumber": 207
+        },
+        {
+          "caller": "load_prompt_template",
+          "callee": "path.read_text",
+          "lineNumber": 208
+        },
+        {
+          "caller": "load_prompt_template",
+          "callee": "FileNotFoundError",
+          "lineNumber": 210
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/avatar/strategies/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 20,
+      "nonEmptyLines": 17,
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/avatar/strategies/base.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 348,
+      "nonEmptyLines": 286,
+      "classes": [
+        {
+          "name": "TimelineSegment",
+          "startLine": 14,
+          "endLine": 102,
+          "methods": [
+            "duration",
+            "to_dict",
+            "to_frontend_format",
+            "__repr__",
+            "contains_time",
+            "overlaps_with"
+          ],
+          "properties": [
+            "emotion",
+            "start_time",
+            "end_time",
+            "intensity"
+          ]
+        },
+        {
+          "name": "TimelineConfig",
+          "startLine": 106,
+          "endLine": 129,
+          "methods": [
+            "validate"
+          ],
+          "properties": [
+            "default_emotion",
+            "min_segment_duration",
+            "transition_duration",
+            "enable_smoothing"
+          ]
+        },
+        {
+          "name": "ITimelineStrategy",
+          "startLine": 132,
+          "endLine": 348,
+          "methods": [
+            "calculate",
+            "name",
+            "validate_input",
+            "ensure_full_coverage",
+            "merge_adjacent_same_emotion"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "TimelineSegment",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "TimelineConfig",
+          "line": 105,
+          "isDefault": false
+        },
+        {
+          "name": "ITimelineStrategy",
+          "line": 132,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "validate",
+          "callee": "len",
+          "lineNumber": 128
+        },
+        {
+          "caller": "validate_input",
+          "callee": "len",
+          "lineNumber": 247
+        },
+        {
+          "caller": "ensure_full_coverage",
+          "callee": "TimelineSegment",
+          "lineNumber": 272
+        },
+        {
+          "caller": "ensure_full_coverage",
+          "callee": "sorted",
+          "lineNumber": 280
+        },
+        {
+          "caller": "ensure_full_coverage",
+          "callee": "result.append",
+          "lineNumber": 289
+        },
+        {
+          "caller": "ensure_full_coverage",
+          "callee": "TimelineSegment",
+          "lineNumber": 289
+        },
+        {
+          "caller": "ensure_full_coverage",
+          "callee": "result.append",
+          "lineNumber": 295
+        },
+        {
+          "caller": "ensure_full_coverage",
+          "callee": "max",
+          "lineNumber": 296
+        },
+        {
+          "caller": "ensure_full_coverage",
+          "callee": "result.append",
+          "lineNumber": 300
+        },
+        {
+          "caller": "ensure_full_coverage",
+          "callee": "TimelineSegment",
+          "lineNumber": 300
+        },
+        {
+          "caller": "merge_adjacent_same_emotion",
+          "callee": "sorted",
+          "lineNumber": 328
+        },
+        {
+          "caller": "merge_adjacent_same_emotion",
+          "callee": "TimelineSegment",
+          "lineNumber": 337
+        },
+        {
+          "caller": "merge_adjacent_same_emotion",
+          "callee": "max",
+          "lineNumber": 340
+        },
+        {
+          "caller": "merge_adjacent_same_emotion",
+          "callee": "max",
+          "lineNumber": 341
+        },
+        {
+          "caller": "merge_adjacent_same_emotion",
+          "callee": "result.append",
+          "lineNumber": 344
+        },
+        {
+          "caller": "merge_adjacent_same_emotion",
+          "callee": "result.append",
+          "lineNumber": 347
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 0,
+        "classCount": 3
+      }
+    },
+    {
+      "path": "src/animetta/avatar/strategies/duration.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 375,
+      "nonEmptyLines": 308,
+      "classes": [
+        {
+          "name": "DurationBasedStrategy",
+          "startLine": 15,
+          "endLine": 375,
+          "methods": [
+            "__init__",
+            "calculate",
+            "_calculate_weighted_segments",
+            "_filter_short_segments",
+            "_create_default_segment",
+            "name",
+            "validate_input",
+            "set_duration_weight",
+            "get_duration_weight",
+            "get_segment_info"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "DurationBasedStrategy",
+          "line": 15,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "TimelineConfig",
+          "lineNumber": 74
+        },
+        {
+          "caller": "__init__",
+          "callee": "self.DEFAULT_DURATION_WEIGHTS.copy",
+          "lineNumber": 75
+        },
+        {
+          "caller": "calculate",
+          "callee": "self.validate_input",
+          "lineNumber": 107
+        },
+        {
+          "caller": "calculate",
+          "callee": "ValueError",
+          "lineNumber": 108
+        },
+        {
+          "caller": "calculate",
+          "callee": "logger.debug",
+          "lineNumber": 113
+        },
+        {
+          "caller": "calculate",
+          "callee": "self._create_default_segment",
+          "lineNumber": 114
+        },
+        {
+          "caller": "calculate",
+          "callee": "self._calculate_weighted_segments",
+          "lineNumber": 120
+        },
+        {
+          "caller": "calculate",
+          "callee": "self.merge_adjacent_same_emotion",
+          "lineNumber": 128
+        },
+        {
+          "caller": "calculate",
+          "callee": "self.ensure_full_coverage",
+          "lineNumber": 131
+        },
+        {
+          "caller": "calculate",
+          "callee": "self._filter_short_segments",
+          "lineNumber": 138
+        },
+        {
+          "caller": "calculate",
+          "callee": "logger.debug",
+          "lineNumber": 143
+        },
+        {
+          "caller": "calculate",
+          "callee": "len",
+          "lineNumber": 144
+        },
+        {
+          "caller": "calculate",
+          "callee": "logger.error",
+          "lineNumber": 151
+        },
+        {
+          "caller": "calculate",
+          "callee": "self._create_default_segment",
+          "lineNumber": 152
+        },
+        {
+          "caller": "_calculate_weighted_segments",
+          "callee": "self._duration_weights.get",
+          "lineNumber": 177
+        },
+        {
+          "caller": "_calculate_weighted_segments",
+          "callee": "weights.append",
+          "lineNumber": 178
+        },
+        {
+          "caller": "_calculate_weighted_segments",
+          "callee": "sum",
+          "lineNumber": 181
+        },
+        {
+          "caller": "_calculate_weighted_segments",
+          "callee": "len",
+          "lineNumber": 184
+        },
+        {
+          "caller": "_calculate_weighted_segments",
+          "callee": "enumerate",
+          "lineNumber": 190
+        },
+        {
+          "caller": "_calculate_weighted_segments",
+          "callee": "zip",
+          "lineNumber": 190
+        },
+        {
+          "caller": "_calculate_weighted_segments",
+          "callee": "len",
+          "lineNumber": 193
+        },
+        {
+          "caller": "_calculate_weighted_segments",
+          "callee": "max",
+          "lineNumber": 198
+        },
+        {
+          "caller": "_calculate_weighted_segments",
+          "callee": "min",
+          "lineNumber": 199
+        },
+        {
+          "caller": "_calculate_weighted_segments",
+          "callee": "len",
+          "lineNumber": 205
+        },
+        {
+          "caller": "_calculate_weighted_segments",
+          "callee": "segments.append",
+          "lineNumber": 208
+        },
+        {
+          "caller": "_calculate_weighted_segments",
+          "callee": "TimelineSegment",
+          "lineNumber": 208
+        },
+        {
+          "caller": "_filter_short_segments",
+          "callee": "filtered.append",
+          "lineNumber": 241
+        },
+        {
+          "caller": "_filter_short_segments",
+          "callee": "logger.debug",
+          "lineNumber": 243
+        },
+        {
+          "caller": "_filter_short_segments",
+          "callee": "max",
+          "lineNumber": 250
+        },
+        {
+          "caller": "_create_default_segment",
+          "callee": "TimelineSegment",
+          "lineNumber": 271
+        },
+        {
+          "caller": "validate_input",
+          "callee": "isinstance",
+          "lineNumber": 301
+        },
+        {
+          "caller": "validate_input",
+          "callee": "logger.warning",
+          "lineNumber": 302
+        },
+        {
+          "caller": "validate_input",
+          "callee": "isinstance",
+          "lineNumber": 305
+        },
+        {
+          "caller": "validate_input",
+          "callee": "logger.warning",
+          "lineNumber": 306
+        },
+        {
+          "caller": "validate_input",
+          "callee": "type",
+          "lineNumber": 306
+        },
+        {
+          "caller": "validate_input",
+          "callee": "logger.warning",
+          "lineNumber": 310
+        },
+        {
+          "caller": "set_duration_weight",
+          "callee": "ValueError",
+          "lineNumber": 324
+        },
+        {
+          "caller": "set_duration_weight",
+          "callee": "logger.debug",
+          "lineNumber": 327
+        },
+        {
+          "caller": "get_duration_weight",
+          "callee": "self._duration_weights.get",
+          "lineNumber": 339
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "emotion_counts.get",
+          "lineNumber": 363
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "emotion_durations.get",
+          "lineNumber": 364
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "len",
+          "lineNumber": 367
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "sum",
+          "lineNumber": 368
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "list",
+          "lineNumber": 369
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "emotion_counts.keys",
+          "lineNumber": 369
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "sum",
+          "lineNumber": 372
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "len",
+          "lineNumber": 372
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "min",
+          "lineNumber": 373
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "max",
+          "lineNumber": 374
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/avatar/strategies/intensity.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 419,
+      "nonEmptyLines": 349,
+      "classes": [
+        {
+          "name": "IntensityBasedStrategy",
+          "startLine": 15,
+          "endLine": 419,
+          "methods": [
+            "__init__",
+            "calculate",
+            "_calculate_intensity_segments",
+            "_filter_low_intensity_segments",
+            "_create_default_segment",
+            "name",
+            "validate_input",
+            "set_emotion_intensity",
+            "get_emotion_intensity",
+            "get_segment_info"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "IntensityBasedStrategy",
+          "line": 15,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "TimelineConfig",
+          "lineNumber": 77
+        },
+        {
+          "caller": "__init__",
+          "callee": "self.DEFAULT_EMOTION_INTENSITIES.copy",
+          "lineNumber": 78
+        },
+        {
+          "caller": "__init__",
+          "callee": "max",
+          "lineNumber": 80
+        },
+        {
+          "caller": "__init__",
+          "callee": "min",
+          "lineNumber": 80
+        },
+        {
+          "caller": "calculate",
+          "callee": "self.validate_input",
+          "lineNumber": 110
+        },
+        {
+          "caller": "calculate",
+          "callee": "ValueError",
+          "lineNumber": 111
+        },
+        {
+          "caller": "calculate",
+          "callee": "logger.debug",
+          "lineNumber": 116
+        },
+        {
+          "caller": "calculate",
+          "callee": "self._create_default_segment",
+          "lineNumber": 117
+        },
+        {
+          "caller": "calculate",
+          "callee": "self._calculate_intensity_segments",
+          "lineNumber": 123
+        },
+        {
+          "caller": "calculate",
+          "callee": "self.merge_adjacent_same_emotion",
+          "lineNumber": 131
+        },
+        {
+          "caller": "calculate",
+          "callee": "self.ensure_full_coverage",
+          "lineNumber": 134
+        },
+        {
+          "caller": "calculate",
+          "callee": "self._filter_low_intensity_segments",
+          "lineNumber": 141
+        },
+        {
+          "caller": "calculate",
+          "callee": "logger.debug",
+          "lineNumber": 146
+        },
+        {
+          "caller": "calculate",
+          "callee": "len",
+          "lineNumber": 147
+        },
+        {
+          "caller": "calculate",
+          "callee": "logger.error",
+          "lineNumber": 154
+        },
+        {
+          "caller": "calculate",
+          "callee": "self._create_default_segment",
+          "lineNumber": 155
+        },
+        {
+          "caller": "_calculate_intensity_segments",
+          "callee": "self._emotion_intensities.get",
+          "lineNumber": 180
+        },
+        {
+          "caller": "_calculate_intensity_segments",
+          "callee": "intensities.append",
+          "lineNumber": 181
+        },
+        {
+          "caller": "_calculate_intensity_segments",
+          "callee": "zip",
+          "lineNumber": 186
+        },
+        {
+          "caller": "_calculate_intensity_segments",
+          "callee": "filtered_emotions.append",
+          "lineNumber": 188
+        },
+        {
+          "caller": "_calculate_intensity_segments",
+          "callee": "filtered_intensities.append",
+          "lineNumber": 189
+        },
+        {
+          "caller": "_calculate_intensity_segments",
+          "callee": "logger.debug",
+          "lineNumber": 191
+        },
+        {
+          "caller": "_calculate_intensity_segments",
+          "callee": "self._create_default_segment",
+          "lineNumber": 197
+        },
+        {
+          "caller": "_calculate_intensity_segments",
+          "callee": "len",
+          "lineNumber": 204
+        },
+        {
+          "caller": "_calculate_intensity_segments",
+          "callee": "len",
+          "lineNumber": 207
+        },
+        {
+          "caller": "_calculate_intensity_segments",
+          "callee": "zip",
+          "lineNumber": 211
+        },
+        {
+          "caller": "_calculate_intensity_segments",
+          "callee": "sum",
+          "lineNumber": 214
+        },
+        {
+          "caller": "_calculate_intensity_segments",
+          "callee": "enumerate",
+          "lineNumber": 220
+        },
+        {
+          "caller": "_calculate_intensity_segments",
+          "callee": "zip",
+          "lineNumber": 220
+        },
+        {
+          "caller": "_calculate_intensity_segments",
+          "callee": "len",
+          "lineNumber": 227
+        },
+        {
+          "caller": "_calculate_intensity_segments",
+          "callee": "len",
+          "lineNumber": 235
+        },
+        {
+          "caller": "_calculate_intensity_segments",
+          "callee": "segments.append",
+          "lineNumber": 238
+        },
+        {
+          "caller": "_calculate_intensity_segments",
+          "callee": "TimelineSegment",
+          "lineNumber": 238
+        },
+        {
+          "caller": "_filter_low_intensity_segments",
+          "callee": "filtered.append",
+          "lineNumber": 270
+        },
+        {
+          "caller": "_filter_low_intensity_segments",
+          "callee": "logger.debug",
+          "lineNumber": 272
+        },
+        {
+          "caller": "_filter_low_intensity_segments",
+          "callee": "max",
+          "lineNumber": 279
+        },
+        {
+          "caller": "_create_default_segment",
+          "callee": "TimelineSegment",
+          "lineNumber": 300
+        },
+        {
+          "caller": "validate_input",
+          "callee": "isinstance",
+          "lineNumber": 330
+        },
+        {
+          "caller": "validate_input",
+          "callee": "logger.warning",
+          "lineNumber": 331
+        },
+        {
+          "caller": "validate_input",
+          "callee": "isinstance",
+          "lineNumber": 334
+        },
+        {
+          "caller": "validate_input",
+          "callee": "logger.warning",
+          "lineNumber": 335
+        },
+        {
+          "caller": "validate_input",
+          "callee": "type",
+          "lineNumber": 335
+        },
+        {
+          "caller": "validate_input",
+          "callee": "logger.warning",
+          "lineNumber": 339
+        },
+        {
+          "caller": "set_emotion_intensity",
+          "callee": "ValueError",
+          "lineNumber": 353
+        },
+        {
+          "caller": "set_emotion_intensity",
+          "callee": "logger.debug",
+          "lineNumber": 356
+        },
+        {
+          "caller": "get_emotion_intensity",
+          "callee": "self._emotion_intensities.get",
+          "lineNumber": 368
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "emotion_counts.get",
+          "lineNumber": 394
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "emotion_durations.get",
+          "lineNumber": 395
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "emotion_intensities[seg.emotion].append",
+          "lineNumber": 400
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "sum",
+          "lineNumber": 404
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "len",
+          "lineNumber": 404
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "emotion_intensities.items",
+          "lineNumber": 405
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "len",
+          "lineNumber": 409
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "sum",
+          "lineNumber": 410
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "list",
+          "lineNumber": 411
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "emotion_counts.keys",
+          "lineNumber": 411
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "sum",
+          "lineNumber": 414
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "len",
+          "lineNumber": 414
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "sum",
+          "lineNumber": 416
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "len",
+          "lineNumber": 416
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "min",
+          "lineNumber": 417
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "max",
+          "lineNumber": 418
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/avatar/strategies/position.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 326,
+      "nonEmptyLines": 270,
+      "classes": [
+        {
+          "name": "PositionBasedStrategy",
+          "startLine": 15,
+          "endLine": 326,
+          "methods": [
+            "__init__",
+            "calculate",
+            "_calculate_even_segments",
+            "_calculate_intensity",
+            "_filter_short_segments",
+            "_create_default_segment",
+            "name",
+            "validate_input",
+            "get_segment_info"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "PositionBasedStrategy",
+          "line": 15,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "TimelineConfig",
+          "lineNumber": 59
+        },
+        {
+          "caller": "calculate",
+          "callee": "self.validate_input",
+          "lineNumber": 90
+        },
+        {
+          "caller": "calculate",
+          "callee": "ValueError",
+          "lineNumber": 91
+        },
+        {
+          "caller": "calculate",
+          "callee": "logger.debug",
+          "lineNumber": 96
+        },
+        {
+          "caller": "calculate",
+          "callee": "self._create_default_segment",
+          "lineNumber": 97
+        },
+        {
+          "caller": "calculate",
+          "callee": "self._calculate_even_segments",
+          "lineNumber": 103
+        },
+        {
+          "caller": "calculate",
+          "callee": "self.merge_adjacent_same_emotion",
+          "lineNumber": 111
+        },
+        {
+          "caller": "calculate",
+          "callee": "self.ensure_full_coverage",
+          "lineNumber": 114
+        },
+        {
+          "caller": "calculate",
+          "callee": "self._filter_short_segments",
+          "lineNumber": 121
+        },
+        {
+          "caller": "calculate",
+          "callee": "logger.debug",
+          "lineNumber": 126
+        },
+        {
+          "caller": "calculate",
+          "callee": "len",
+          "lineNumber": 127
+        },
+        {
+          "caller": "calculate",
+          "callee": "logger.error",
+          "lineNumber": 134
+        },
+        {
+          "caller": "calculate",
+          "callee": "self._create_default_segment",
+          "lineNumber": 136
+        },
+        {
+          "caller": "_calculate_even_segments",
+          "callee": "len",
+          "lineNumber": 158
+        },
+        {
+          "caller": "_calculate_even_segments",
+          "callee": "enumerate",
+          "lineNumber": 161
+        },
+        {
+          "caller": "_calculate_even_segments",
+          "callee": "self._calculate_intensity",
+          "lineNumber": 166
+        },
+        {
+          "caller": "_calculate_even_segments",
+          "callee": "len",
+          "lineNumber": 166
+        },
+        {
+          "caller": "_calculate_even_segments",
+          "callee": "segments.append",
+          "lineNumber": 168
+        },
+        {
+          "caller": "_calculate_even_segments",
+          "callee": "TimelineSegment",
+          "lineNumber": 168
+        },
+        {
+          "caller": "_filter_short_segments",
+          "callee": "filtered.append",
+          "lineNumber": 218
+        },
+        {
+          "caller": "_filter_short_segments",
+          "callee": "logger.debug",
+          "lineNumber": 220
+        },
+        {
+          "caller": "_filter_short_segments",
+          "callee": "max",
+          "lineNumber": 228
+        },
+        {
+          "caller": "_create_default_segment",
+          "callee": "TimelineSegment",
+          "lineNumber": 249
+        },
+        {
+          "caller": "validate_input",
+          "callee": "isinstance",
+          "lineNumber": 280
+        },
+        {
+          "caller": "validate_input",
+          "callee": "logger.warning",
+          "lineNumber": 281
+        },
+        {
+          "caller": "validate_input",
+          "callee": "isinstance",
+          "lineNumber": 285
+        },
+        {
+          "caller": "validate_input",
+          "callee": "logger.warning",
+          "lineNumber": 286
+        },
+        {
+          "caller": "validate_input",
+          "callee": "type",
+          "lineNumber": 286
+        },
+        {
+          "caller": "validate_input",
+          "callee": "logger.warning",
+          "lineNumber": 291
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "emotion_counts.get",
+          "lineNumber": 316
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "len",
+          "lineNumber": 319
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "sum",
+          "lineNumber": 320
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "list",
+          "lineNumber": 321
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "emotion_counts.keys",
+          "lineNumber": 321
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "sum",
+          "lineNumber": 323
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "len",
+          "lineNumber": 323
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "min",
+          "lineNumber": 324
+        },
+        {
+          "caller": "get_segment_info",
+          "callee": "max",
+          "lineNumber": 325
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    }
+  ]
+}

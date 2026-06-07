@@ -169,6 +169,7 @@ function playRecent(item: RecentItem) {
       v-if="store.isProcessing || store.status === 'waiting_lyrics'"
       :current-stage="store.status"
       :progress="store.progress"
+      :compact="true"
     />
 
     <!-- Lyrics confirmation hint -->

@@ -1,0 +1,35 @@
+{
+  "projectRoot": "C:\\Users\\30262\\Project\\Anima",
+  "batchFiles": [
+    {
+      "path": "scripts/README.md",
+      "language": "markdown",
+      "sizeLines": 77,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "scripts/download-models.sh",
+      "language": "shell",
+      "sizeLines": 117,
+      "fileCategory": "script"
+    },
+    {
+      "path": "scripts/start_mc_bot.bat",
+      "language": "batch",
+      "sizeLines": 7,
+      "fileCategory": "script"
+    },
+    {
+      "path": "scripts/test.bat",
+      "language": "batch",
+      "sizeLines": 3,
+      "fileCategory": "script"
+    }
+  ],
+  "batchImportData": {
+    "scripts/README.md": [],
+    "scripts/download-models.sh": [],
+    "scripts/start_mc_bot.bat": [],
+    "scripts/test.bat": []
+  }
+}

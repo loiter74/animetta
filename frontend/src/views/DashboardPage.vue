@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
 import { useDashboardStore } from '../stores/dashboardStore'
+import BentoGrid from '../components/shared/BentoGrid.vue'
+import BentoCard from '../components/shared/BentoCard.vue'
 import StatsKpiCards from '../components/dashboard/StatsKpiCards.vue'
 import LatencyBreakdown from '../components/dashboard/LatencyBreakdown.vue'
 import TokenUsageChart from '../components/dashboard/TokenUsageChart.vue'
@@ -22,8 +24,8 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="flex-1 overflow-y-auto p-6 space-y-6">
-    <div class="flex items-center justify-between">
+  <div class="flex-1 overflow-y-auto p-6">
+    <div class="flex items-center justify-between mb-6">
       <h1 class="text-xl font-bold text-white">Dashboard</h1>
       <div class="flex items-center gap-2 text-xs text-gray-400">
         <span
@@ -40,16 +42,31 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <StatsKpiCards />
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <LatencyBreakdown />
-      <TokenUsageChart />
-    </div>
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <ErrorRateCard />
-      <div class="lg:col-span-2">
+    <BentoGrid>
+      <!-- KPI Cards - full width -->
+      <BentoCard :col-span="2" :row-span="1" type="stat">
+        <StatsKpiCards />
+      </BentoCard>
+
+      <!-- Latency Chart -->
+      <BentoCard type="chart">
+        <LatencyBreakdown />
+      </BentoCard>
+
+      <!-- Token Usage -->
+      <BentoCard type="chart">
+        <TokenUsageChart />
+      </BentoCard>
+
+      <!-- Error Rate -->
+      <BentoCard type="stat">
+        <ErrorRateCard />
+      </BentoCard>
+
+      <!-- Session Timeline - spans 2 columns -->
+      <BentoCard :col-span="2" type="chart">
         <SessionTimeline />
-      </div>
-    </div>
+      </BentoCard>
+    </BentoGrid>
   </div>
 </template>

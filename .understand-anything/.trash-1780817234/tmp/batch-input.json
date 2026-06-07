@@ -1,0 +1,36 @@
+{
+  "batchIndex": 1,
+  "files": [
+    {
+      "path": ".dockerignore",
+      "language": "unknown",
+      "sizeLines": 45,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "docker-compose.cpu.yml",
+      "language": "yaml",
+      "sizeLines": 37,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "docker-compose.yml",
+      "language": "yaml",
+      "sizeLines": 45,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "Dockerfile",
+      "language": "dockerfile",
+      "sizeLines": 40,
+      "fileCategory": "infra"
+    }
+  ],
+  "batchImportData": {
+    ".dockerignore": [],
+    "docker-compose.cpu.yml": [],
+    "docker-compose.yml": [],
+    "Dockerfile": []
+  },
+  "neighborMap": {}
+}

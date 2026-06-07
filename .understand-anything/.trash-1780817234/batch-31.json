@@ -1,0 +1,2137 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 25,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "openspec/specs/chat-ui/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 82,
+      "nonEmptyLines": 60,
+      "sections": [
+        {
+          "heading": "ADDED Requirements",
+          "level": 2,
+          "line": 1
+        },
+        {
+          "heading": "Requirement: ChatPanel 布局组件",
+          "level": 3,
+          "line": 3
+        },
+        {
+          "heading": "Scenario: 聊天面板渲染",
+          "level": 4,
+          "line": 6
+        },
+        {
+          "heading": "Requirement: MessageList 消息列表",
+          "level": 3,
+          "line": 10
+        },
+        {
+          "heading": "Scenario: 新消息自动滚动",
+          "level": 4,
+          "line": 13
+        },
+        {
+          "heading": "Scenario: 用户手动上翻后不强制滚动",
+          "level": 4,
+          "line": 17
+        },
+        {
+          "heading": "Scenario: 空状态提示",
+          "level": 4,
+          "line": 21
+        },
+        {
+          "heading": "Requirement: MessageBubble 消息气泡",
+          "level": 3,
+          "line": 25
+        },
+        {
+          "heading": "Scenario: 用户消息气泡",
+          "level": 4,
+          "line": 28
+        },
+        {
+          "heading": "Scenario: AI 回复流式显示",
+          "level": 4,
+          "line": 32
+        },
+        {
+          "heading": "Scenario: AI 回复完成",
+          "level": 4,
+          "line": 36
+        },
+        {
+          "heading": "Requirement: InputBar 输入栏",
+          "level": 3,
+          "line": 40
+        },
+        {
+          "heading": "Scenario: 文本输入发送",
+          "level": 4,
+          "line": 43
+        },
+        {
+          "heading": "Scenario: 多行输入",
+          "level": 4,
+          "line": 47
+        },
+        {
+          "heading": "Scenario: 输入框自动增高",
+          "level": 4,
+          "line": 51
+        },
+        {
+          "heading": "Requirement: VoiceButton 语音按钮",
+          "level": 3,
+          "line": 55
+        },
+        {
+          "heading": "Scenario: 开始录音",
+          "level": 4,
+          "line": 58
+        },
+        {
+          "heading": "Scenario: 录音中音量反馈",
+          "level": 4,
+          "line": 62
+        },
+        {
+          "heading": "Scenario: 停止录音",
+          "level": 4,
+          "line": 66
+        },
+        {
+          "heading": "Requirement: TypingIndicator 打字指示器",
+          "level": 3,
+          "line": 70
+        },
+        {
+          "heading": "Scenario: AI 处理中",
+          "level": 4,
+          "line": 73
+        },
+        {
+          "heading": "Requirement: SpeakingIndicator 说话指示器",
+          "level": 3,
+          "line": 77
+        },
+        {
+          "heading": "Scenario: TTS 播放中",
+          "level": 4,
+          "line": 80
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 23
+      }
+    },
+    {
+      "path": "openspec/specs/collect-build-pipeline/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 50,
+      "nonEmptyLines": 38,
+      "sections": [
+        {
+          "heading": "collect-build-pipeline Specification",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Purpose",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Requirements",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "Requirement: Material inventory tracking",
+          "level": 3,
+          "line": 6
+        },
+        {
+          "heading": "Scenario: Check material sufficiency",
+          "level": 4,
+          "line": 9
+        },
+        {
+          "heading": "Scenario: Inventory status report",
+          "level": 4,
+          "line": 14
+        },
+        {
+          "heading": "Requirement: Target material gathering",
+          "level": 3,
+          "line": 18
+        },
+        {
+          "heading": "Scenario: Gather missing materials",
+          "level": 4,
+          "line": 21
+        },
+        {
+          "heading": "Scenario: Gather until sufficient",
+          "level": 4,
+          "line": 26
+        },
+        {
+          "heading": "Requirement: Build plan execution",
+          "level": 3,
+          "line": 30
+        },
+        {
+          "heading": "Scenario: Execute build steps in order",
+          "level": 4,
+          "line": 33
+        },
+        {
+          "heading": "Scenario: Build progress tracking",
+          "level": 4,
+          "line": 38
+        },
+        {
+          "heading": "Requirement: Building site management",
+          "level": 3,
+          "line": 43
+        },
+        {
+          "heading": "Scenario: Designate build site",
+          "level": 4,
+          "line": 46
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 14
+      }
+    },
+    {
+      "path": "openspec/specs/component-health-check/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 75,
+      "nonEmptyLines": 46,
+      "sections": [
+        {
+          "heading": "Component Health Check",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "ADDED Requirements",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "Requirement: Health endpoint returns per-component status",
+          "level": 3,
+          "line": 7
+        },
+        {
+          "heading": "Scenario: All components healthy",
+          "level": 4,
+          "line": 11
+        },
+        {
+          "heading": "Scenario: One component fails",
+          "level": 4,
+          "line": 16
+        },
+        {
+          "heading": "Requirement: Component checks execute concurrently with independent timeouts",
+          "level": 3,
+          "line": 21
+        },
+        {
+          "heading": "Scenario: Slow component does not block others",
+          "level": 4,
+          "line": 25
+        },
+        {
+          "heading": "Scenario: Component raises an exception",
+          "level": 4,
+          "line": 30
+        },
+        {
+          "heading": "Requirement: Health check covers core service dependencies",
+          "level": 3,
+          "line": 35
+        },
+        {
+          "heading": "Scenario: StatsStore SQLite is locked",
+          "level": 4,
+          "line": 49
+        },
+        {
+          "heading": "Scenario: Metrics endpoint missing expected metrics",
+          "level": 4,
+          "line": 54
+        },
+        {
+          "heading": "Requirement: Backward compatibility of health endpoint",
+          "level": 3,
+          "line": 59
+        },
+        {
+          "heading": "Scenario: Existing consumer reads only status field",
+          "level": 4,
+          "line": 63
+        },
+        {
+          "heading": "Requirement: Component check timeout configuration",
+          "level": 3,
+          "line": 68
+        },
+        {
+          "heading": "Scenario: Changing timeout for a component",
+          "level": 4,
+          "line": 72
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 15
+      }
+    },
+    {
+      "path": "openspec/specs/conversation-fix/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 28,
+      "nonEmptyLines": 22,
+      "sections": [
+        {
+          "heading": "ADDED Requirements",
+          "level": 2,
+          "line": 1
+        },
+        {
+          "heading": "Requirement: AI conversation response display",
+          "level": 3,
+          "line": 3
+        },
+        {
+          "heading": "Scenario: Normal text conversation",
+          "level": 4,
+          "line": 6
+        },
+        {
+          "heading": "Requirement: Environment variable loading",
+          "level": 3,
+          "line": 13
+        },
+        {
+          "heading": "Scenario: API key from .env",
+          "level": 4,
+          "line": 16
+        },
+        {
+          "heading": "Requirement: OpenAI-compatible LLM provider instantiation",
+          "level": 3,
+          "line": 22
+        },
+        {
+          "heading": "Scenario: DeepSeek provider instantiation",
+          "level": 4,
+          "line": 25
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    },
+    {
+      "path": "openspec/specs/danmaku-buffer/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 46,
+      "nonEmptyLines": 35,
+      "sections": [
+        {
+          "heading": "danmaku-buffer Specification",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Purpose",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Requirements",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "Requirement: 实时弹幕接收",
+          "level": 3,
+          "line": 6
+        },
+        {
+          "heading": "Scenario: 弹幕推入缓冲区",
+          "level": 4,
+          "line": 9
+        },
+        {
+          "heading": "Scenario: 弹幕非中文/空内容过滤",
+          "level": 4,
+          "line": 15
+        },
+        {
+          "heading": "Requirement: 缓冲区容量管理",
+          "level": 3,
+          "line": 19
+        },
+        {
+          "heading": "Scenario: 缓冲区满时覆盖最旧数据",
+          "level": 4,
+          "line": 22
+        },
+        {
+          "heading": "Requirement: 高频短语查询",
+          "level": 3,
+          "line": 27
+        },
+        {
+          "heading": "Scenario: 获取最近高频短语",
+          "level": 4,
+          "line": 30
+        },
+        {
+          "heading": "Scenario: 缓冲区无数据",
+          "level": 4,
+          "line": 35
+        },
+        {
+          "heading": "Requirement: 缓冲区状态查询",
+          "level": 3,
+          "line": 40
+        },
+        {
+          "heading": "Scenario: 查询缓冲区统计",
+          "level": 4,
+          "line": 43
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 13
+      }
+    },
+    {
+      "path": "openspec/specs/error-resilience/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 34,
+      "nonEmptyLines": 27,
+      "sections": [
+        {
+          "heading": "ADDED Requirements",
+          "level": 2,
+          "line": 1
+        },
+        {
+          "heading": "Requirement: LLM timeout triggers mock fallback",
+          "level": 3,
+          "line": 3
+        },
+        {
+          "heading": "Scenario: LLM timeout during streaming",
+          "level": 4,
+          "line": 6
+        },
+        {
+          "heading": "Scenario: Normal operation unaffected",
+          "level": 4,
+          "line": 14
+        },
+        {
+          "heading": "Requirement: All external services have fallback path",
+          "level": 3,
+          "line": 19
+        },
+        {
+          "heading": "Scenario: TTS provider rate-limited",
+          "level": 4,
+          "line": 22
+        },
+        {
+          "heading": "Requirement: Fallback is per-turn, not permanent",
+          "level": 3,
+          "line": 28
+        },
+        {
+          "heading": "Scenario: Recovery after single failure",
+          "level": 4,
+          "line": 31
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    },
+    {
+      "path": "openspec/specs/grafana-dashboards/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 67,
+      "nonEmptyLines": 53,
+      "sections": [
+        {
+          "heading": "ADDED Requirements",
+          "level": 2,
+          "line": 1
+        },
+        {
+          "heading": "Requirement: Grafana auto-provisioned with Prometheus and Tempo datasources",
+          "level": 3,
+          "line": 3
+        },
+        {
+          "heading": "Scenario: Datasources available on first launch",
+          "level": 4,
+          "line": 6
+        },
+        {
+          "heading": "Requirement: Overview Dashboard",
+          "level": 3,
+          "line": 11
+        },
+        {
+          "heading": "Scenario: Overview panel data",
+          "level": 4,
+          "line": 14
+        },
+        {
+          "heading": "Requirement: LangGraph Pipeline Dashboard",
+          "level": 3,
+          "line": 23
+        },
+        {
+          "heading": "Scenario: Pipeline panel data",
+          "level": 4,
+          "line": 26
+        },
+        {
+          "heading": "Requirement: RAG Performance Dashboard",
+          "level": 3,
+          "line": 34
+        },
+        {
+          "heading": "Scenario: RAG panel data",
+          "level": 4,
+          "line": 37
+        },
+        {
+          "heading": "Requirement: Cost and Tokens Dashboard",
+          "level": 3,
+          "line": 44
+        },
+        {
+          "heading": "Scenario: Cost panel data",
+          "level": 4,
+          "line": 47
+        },
+        {
+          "heading": "Requirement: Dashboard JSON in version control",
+          "level": 3,
+          "line": 55
+        },
+        {
+          "heading": "Scenario: Dashboard loaded from git",
+          "level": 4,
+          "line": 58
+        },
+        {
+          "heading": "Requirement: Session ID drill-down variable",
+          "level": 3,
+          "line": 62
+        },
+        {
+          "heading": "Scenario: Filter by session",
+          "level": 4,
+          "line": 65
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 15
+      }
+    },
+    {
+      "path": "openspec/specs/inspection-scheduler/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 78,
+      "nonEmptyLines": 44,
+      "sections": [
+        {
+          "heading": "Inspection Scheduler",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "ADDED Requirements",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "Requirement: Data models for inspection results",
+          "level": 3,
+          "line": 7
+        },
+        {
+          "heading": "Scenario: All checks pass",
+          "level": 4,
+          "line": 15
+        },
+        {
+          "heading": "Scenario: One check fails",
+          "level": 4,
+          "line": 20
+        },
+        {
+          "heading": "Requirement: Scheduled daily execution",
+          "level": 3,
+          "line": 25
+        },
+        {
+          "heading": "Scenario: Server starts and runs first inspection after warmup",
+          "level": 4,
+          "line": 31
+        },
+        {
+          "heading": "Scenario: Inspection crashes due to transient error",
+          "level": 4,
+          "line": 36
+        },
+        {
+          "heading": "Requirement: Report persistence to StatsStore",
+          "level": 3,
+          "line": 41
+        },
+        {
+          "heading": "Scenario: Successful report persistence",
+          "level": 4,
+          "line": 45
+        },
+        {
+          "heading": "Scenario: StatsStore unavailable during persistence",
+          "level": 4,
+          "line": 50
+        },
+        {
+          "heading": "Requirement: Failure alerting via Notifier",
+          "level": 3,
+          "line": 55
+        },
+        {
+          "heading": "Scenario: Inspection fails and alert is sent",
+          "level": 4,
+          "line": 61
+        },
+        {
+          "heading": "Scenario: Inspection passes without alert",
+          "level": 4,
+          "line": 66
+        },
+        {
+          "heading": "Requirement: External API for manual inspection triggers",
+          "level": 3,
+          "line": 71
+        },
+        {
+          "heading": "Scenario: Manual inspection via API",
+          "level": 4,
+          "line": 75
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 16
+      }
+    },
+    {
+      "path": "openspec/specs/live2d-vue-component/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 59,
+      "nonEmptyLines": 43,
+      "sections": [
+        {
+          "heading": "ADDED Requirements",
+          "level": 2,
+          "line": 1
+        },
+        {
+          "heading": "Requirement: Live2D 渲染组件",
+          "level": 3,
+          "line": 3
+        },
+        {
+          "heading": "Scenario: 模型加载",
+          "level": 4,
+          "line": 6
+        },
+        {
+          "heading": "Scenario: 模型加载失败",
+          "level": 4,
+          "line": 10
+        },
+        {
+          "heading": "Scenario: window.PIXI 桥接",
+          "level": 4,
+          "line": 14
+        },
+        {
+          "heading": "Requirement: 表情控制",
+          "level": 3,
+          "line": 18
+        },
+        {
+          "heading": "Scenario: 切换表情",
+          "level": 4,
+          "line": 21
+        },
+        {
+          "heading": "Requirement: 口型同步",
+          "level": 3,
+          "line": 25
+        },
+        {
+          "heading": "Scenario: TTS 音频播放时口型同步",
+          "level": 4,
+          "line": 28
+        },
+        {
+          "heading": "Requirement: 自动行为",
+          "level": 3,
+          "line": 32
+        },
+        {
+          "heading": "Scenario: 自动眨眼",
+          "level": 4,
+          "line": 35
+        },
+        {
+          "heading": "Scenario: 鼠标注视跟踪",
+          "level": 4,
+          "line": 39
+        },
+        {
+          "heading": "Requirement: 响应式缩放",
+          "level": 3,
+          "line": 43
+        },
+        {
+          "heading": "Scenario: 容器大小变化",
+          "level": 4,
+          "line": 46
+        },
+        {
+          "heading": "Requirement: 无全局脚本依赖",
+          "level": 3,
+          "line": 50
+        },
+        {
+          "heading": "Scenario: 开发模式",
+          "level": 4,
+          "line": 53
+        },
+        {
+          "heading": "Scenario: 生产构建",
+          "level": 4,
+          "line": 57
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 17
+      }
+    },
+    {
+      "path": "openspec/specs/llm-cost-tracking/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 55,
+      "nonEmptyLines": 40,
+      "sections": [
+        {
+          "heading": "ADDED Requirements",
+          "level": 2,
+          "line": 1
+        },
+        {
+          "heading": "Requirement: Provider pricing table",
+          "level": 3,
+          "line": 3
+        },
+        {
+          "heading": "Scenario: Pricing lookup",
+          "level": 4,
+          "line": 6
+        },
+        {
+          "heading": "Scenario: Unlisted model defaults to zero",
+          "level": 4,
+          "line": 10
+        },
+        {
+          "heading": "Scenario: Free providers return zero",
+          "level": 4,
+          "line": 14
+        },
+        {
+          "heading": "Requirement: Covered providers",
+          "level": 3,
+          "line": 18
+        },
+        {
+          "heading": "Scenario: DeepSeek pricing available",
+          "level": 4,
+          "line": 21
+        },
+        {
+          "heading": "Requirement: Pricing update reminder",
+          "level": 3,
+          "line": 25
+        },
+        {
+          "heading": "Scenario: Date comment present",
+          "level": 4,
+          "line": 28
+        },
+        {
+          "heading": "Requirement: LLM cost counter metric",
+          "level": 3,
+          "line": 32
+        },
+        {
+          "heading": "Scenario: Cost recorded after LLM call",
+          "level": 4,
+          "line": 35
+        },
+        {
+          "heading": "Requirement: Token extraction from OpenAI/DeepSeek responses",
+          "level": 3,
+          "line": 39
+        },
+        {
+          "heading": "Scenario: Non-streaming token extraction",
+          "level": 4,
+          "line": 42
+        },
+        {
+          "heading": "Scenario: Streaming token extraction from final chunk",
+          "level": 4,
+          "line": 46
+        },
+        {
+          "heading": "Requirement: Token extraction from GLM responses",
+          "level": 3,
+          "line": 50
+        },
+        {
+          "heading": "Scenario: GLM token tracking feeds metrics",
+          "level": 4,
+          "line": 53
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 16
+      }
+    },
+    {
+      "path": "openspec/specs/llm-evaluation/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 36,
+      "nonEmptyLines": 28,
+      "sections": [
+        {
+          "heading": "ADDED Requirements",
+          "level": 2,
+          "line": 1
+        },
+        {
+          "heading": "Requirement: Multi-LLM comparison script",
+          "level": 3,
+          "line": 3
+        },
+        {
+          "heading": "Scenario: Compare two LLMs on factual accuracy",
+          "level": 4,
+          "line": 6
+        },
+        {
+          "heading": "Requirement: Semantic similarity scoring",
+          "level": 3,
+          "line": 13
+        },
+        {
+          "heading": "Scenario: Score calculation",
+          "level": 4,
+          "line": 16
+        },
+        {
+          "heading": "Scenario: Divergent response scoring",
+          "level": 4,
+          "line": 21
+        },
+        {
+          "heading": "Requirement: Quality-latency tradeoff table",
+          "level": 3,
+          "line": 26
+        },
+        {
+          "heading": "Scenario: Evaluation output format",
+          "level": 4,
+          "line": 29
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    },
+    {
+      "path": "openspec/specs/llm-planner/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 31,
+      "nonEmptyLines": 23,
+      "sections": [
+        {
+          "heading": "llm-planner Specification",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Purpose",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Requirements",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "Requirement: Natural language goal decomposition",
+          "level": 3,
+          "line": 6
+        },
+        {
+          "heading": "Scenario: Simple building goal",
+          "level": 4,
+          "line": 9
+        },
+        {
+          "heading": "Scenario: Unknown goal fallback",
+          "level": 4,
+          "line": 13
+        },
+        {
+          "heading": "Requirement: Dynamic replanning",
+          "level": 3,
+          "line": 17
+        },
+        {
+          "heading": "Scenario: Material shortage triggers replan",
+          "level": 4,
+          "line": 20
+        },
+        {
+          "heading": "Requirement: Dual-mode operation",
+          "level": 3,
+          "line": 25
+        },
+        {
+          "heading": "Scenario: LLM unavailable falls back to rules",
+          "level": 4,
+          "line": 28
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 10
+      }
+    },
+    {
+      "path": "openspec/specs/meme-cognitive-analysis/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 53,
+      "nonEmptyLines": 42,
+      "sections": [
+        {
+          "heading": "meme-cognitive-analysis Specification",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Purpose",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "ADDED Requirements",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "Requirement: 梗认知分析",
+          "level": 3,
+          "line": 8
+        },
+        {
+          "heading": "Scenario: 认知分析执行",
+          "level": 4,
+          "line": 11
+        },
+        {
+          "heading": "Scenario: 认知分析 JSON Schema 校验",
+          "level": 4,
+          "line": 17
+        },
+        {
+          "heading": "Scenario: 认知分析失败降级",
+          "level": 4,
+          "line": 23
+        },
+        {
+          "heading": "Requirement: CognitiveAnalysis 数据模型",
+          "level": 3,
+          "line": 29
+        },
+        {
+          "heading": "Scenario: CognitiveAnalysis 字段完整性",
+          "level": 4,
+          "line": 32
+        },
+        {
+          "heading": "Requirement: 梗分析结果入库",
+          "level": 3,
+          "line": 42
+        },
+        {
+          "heading": "Scenario: 高信心梗入库",
+          "level": 4,
+          "line": 45
+        },
+        {
+          "heading": "Scenario: 低信心梗跳过",
+          "level": 4,
+          "line": 50
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 12
+      }
+    },
+    {
+      "path": "openspec/specs/meme-context-injection/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 60,
+      "nonEmptyLines": 46,
+      "sections": [
+        {
+          "heading": "meme-context-injection Specification",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Purpose",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "ADDED Requirements",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "Requirement: 语义匹配替代关键词匹配",
+          "level": 3,
+          "line": 8
+        },
+        {
+          "heading": "Scenario: 语义匹配执行",
+          "level": 4,
+          "line": 11
+        },
+        {
+          "heading": "Scenario: 无合适梗匹配",
+          "level": 4,
+          "line": 17
+        },
+        {
+          "heading": "Requirement: 梗上下文注入",
+          "level": 3,
+          "line": 22
+        },
+        {
+          "heading": "Scenario: 梗信息注入",
+          "level": 4,
+          "line": 25
+        },
+        {
+          "heading": "Scenario: 梗注入不影响正常对话",
+          "level": 4,
+          "line": 31
+        },
+        {
+          "heading": "Requirement: 梗使用后反馈",
+          "level": 3,
+          "line": 36
+        },
+        {
+          "heading": "Scenario: 使用梗后触发评分更新",
+          "level": 4,
+          "line": 39
+        },
+        {
+          "heading": "Scenario: 用户反馈影响梗评分",
+          "level": 4,
+          "line": 44
+        },
+        {
+          "heading": "Requirement: B 站来源标识",
+          "level": 3,
+          "line": 50
+        },
+        {
+          "heading": "Scenario: 来源字段持久化",
+          "level": 4,
+          "line": 53
+        },
+        {
+          "heading": "Scenario: 按来源筛选",
+          "level": 4,
+          "line": 58
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 15
+      }
+    },
+    {
+      "path": "openspec/specs/meme-review-api/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 74,
+      "nonEmptyLines": 57,
+      "sections": [
+        {
+          "heading": "meme-review-api Specification",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Purpose",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Requirements",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "Requirement: 待筛选梗列表 API",
+          "level": 3,
+          "line": 6
+        },
+        {
+          "heading": "Scenario: 获取待筛选梗",
+          "level": 4,
+          "line": 9
+        },
+        {
+          "heading": "Scenario: 无待筛选梗",
+          "level": 4,
+          "line": 14
+        },
+        {
+          "heading": "Requirement: 梗筛选提交 API",
+          "level": 3,
+          "line": 19
+        },
+        {
+          "heading": "Scenario: 提交「好」评价",
+          "level": 4,
+          "line": 22
+        },
+        {
+          "heading": "Scenario: 提交「烂」评价",
+          "level": 4,
+          "line": 28
+        },
+        {
+          "heading": "Scenario: 无效请求",
+          "level": 4,
+          "line": 35
+        },
+        {
+          "heading": "Requirement: 数据集导出 API",
+          "level": 3,
+          "line": 40
+        },
+        {
+          "heading": "Scenario: 导出数据集",
+          "level": 4,
+          "line": 43
+        },
+        {
+          "heading": "Requirement: MemePool 持久化与查询一致性",
+          "level": 3,
+          "line": 49
+        },
+        {
+          "heading": "Scenario: 采集后立即可查询",
+          "level": 4,
+          "line": 53
+        },
+        {
+          "heading": "Scenario: 日志可诊断",
+          "level": 4,
+          "line": 58
+        },
+        {
+          "heading": "Requirement: Meme 数据模型扩展",
+          "level": 3,
+          "line": 64
+        },
+        {
+          "heading": "Scenario: review_status 默认值",
+          "level": 4,
+          "line": 67
+        },
+        {
+          "heading": "Scenario: review_status 持久化",
+          "level": 4,
+          "line": 71
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 18
+      }
+    },
+    {
+      "path": "openspec/specs/meme-review-ui/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 74,
+      "nonEmptyLines": 56,
+      "sections": [
+        {
+          "heading": "meme-review-ui Specification",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Purpose",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "ADDED Requirements",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "Requirement: 梗筛选页面路由",
+          "level": 3,
+          "line": 8
+        },
+        {
+          "heading": "Scenario: 路由访问",
+          "level": 4,
+          "line": 11
+        },
+        {
+          "heading": "Requirement: 梗卡片展示",
+          "level": 3,
+          "line": 16
+        },
+        {
+          "heading": "Scenario: 卡片内容展示",
+          "level": 4,
+          "line": 19
+        },
+        {
+          "heading": "Scenario: 逐个展示",
+          "level": 4,
+          "line": 24
+        },
+        {
+          "heading": "Scenario: 空列表状态",
+          "level": 4,
+          "line": 29
+        },
+        {
+          "heading": "Requirement: 好/坏投票",
+          "level": 3,
+          "line": 33
+        },
+        {
+          "heading": "Scenario: 标记为「好」",
+          "level": 4,
+          "line": 36
+        },
+        {
+          "heading": "Scenario: 标记为「烂」",
+          "level": 4,
+          "line": 42
+        },
+        {
+          "heading": "Requirement: AI 吐槽展示",
+          "level": 3,
+          "line": 48
+        },
+        {
+          "heading": "Scenario: 吐槽展示",
+          "level": 4,
+          "line": 51
+        },
+        {
+          "heading": "Scenario: 吐槽加载中",
+          "level": 4,
+          "line": 56
+        },
+        {
+          "heading": "Requirement: 进度追踪",
+          "level": 3,
+          "line": 60
+        },
+        {
+          "heading": "Scenario: 进度显示",
+          "level": 4,
+          "line": 63
+        },
+        {
+          "heading": "Requirement: 数据集导出",
+          "level": 3,
+          "line": 68
+        },
+        {
+          "heading": "Scenario: 导出按钮",
+          "level": 4,
+          "line": 71
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 19
+      }
+    },
+    {
+      "path": "openspec/specs/meme-roast/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 71,
+      "nonEmptyLines": 57,
+      "sections": [
+        {
+          "heading": "meme-roast Specification",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Purpose",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "ADDED Requirements",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "Requirement: 好梗 AI 赞赏",
+          "level": 3,
+          "line": 8
+        },
+        {
+          "heading": "Scenario: 赞赏生成",
+          "level": 4,
+          "line": 11
+        },
+        {
+          "heading": "Scenario: 赞赏风格约束",
+          "level": 4,
+          "line": 18
+        },
+        {
+          "heading": "Requirement: 烂梗 AI 吐槽",
+          "level": 3,
+          "line": 23
+        },
+        {
+          "heading": "Scenario: 吐槽生成",
+          "level": 4,
+          "line": 26
+        },
+        {
+          "heading": "Scenario: 吐槽风格约束",
+          "level": 4,
+          "line": 32
+        },
+        {
+          "heading": "Requirement: 反馈生成失败降级",
+          "level": 3,
+          "line": 38
+        },
+        {
+          "heading": "Scenario: LLM 调用失败",
+          "level": 4,
+          "line": 41
+        },
+        {
+          "heading": "Scenario: 好梗降级模板",
+          "level": 4,
+          "line": 46
+        },
+        {
+          "heading": "Scenario: 烂梗降级模板",
+          "level": 4,
+          "line": 55
+        },
+        {
+          "heading": "Requirement: 反馈内容存储",
+          "level": 3,
+          "line": 65
+        },
+        {
+          "heading": "Scenario: 反馈存储",
+          "level": 4,
+          "line": 68
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 15
+      }
+    },
+    {
+      "path": "openspec/specs/memory-middleware/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 46,
+      "nonEmptyLines": 31,
+      "sections": [
+        {
+          "heading": "memory-middleware Specification",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Purpose",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Requirements",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "Requirement: 記憶中間件（MemoryMiddleware）",
+          "level": 3,
+          "line": 6
+        },
+        {
+          "heading": "Scenario: LLM 呼叫前自動注入記憶",
+          "level": 4,
+          "line": 23
+        },
+        {
+          "heading": "Scenario: LLM 回應後自動儲存",
+          "level": 4,
+          "line": 29
+        },
+        {
+          "heading": "Requirement: LangGraph 整合",
+          "level": 3,
+          "line": 34
+        },
+        {
+          "heading": "Scenario: 中間件不阻斷主流程",
+          "level": 4,
+          "line": 42
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    },
+    {
+      "path": "openspec/specs/minecraft-toggle/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 32,
+      "nonEmptyLines": 25,
+      "sections": [
+        {
+          "heading": "ADDED Requirements",
+          "level": 2,
+          "line": 1
+        },
+        {
+          "heading": "Requirement: Minecraft start/stop via Socket.IO",
+          "level": 3,
+          "line": 3
+        },
+        {
+          "heading": "Scenario: Start Minecraft bot",
+          "level": 4,
+          "line": 6
+        },
+        {
+          "heading": "Scenario: Stop Minecraft bot",
+          "level": 4,
+          "line": 12
+        },
+        {
+          "heading": "Scenario: Connection failure",
+          "level": 4,
+          "line": 17
+        },
+        {
+          "heading": "Requirement: Frontend Minecraft toggle in Settings panel",
+          "level": 3,
+          "line": 21
+        },
+        {
+          "heading": "Scenario: Toggle displayed",
+          "level": 4,
+          "line": 24
+        },
+        {
+          "heading": "Scenario: Connection status feedback",
+          "level": 4,
+          "line": 29
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    },
+    {
+      "path": "openspec/specs/node-error-logging/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 43,
+      "nonEmptyLines": 33,
+      "sections": [
+        {
+          "heading": "ADDED Requirements",
+          "level": 2,
+          "line": 1
+        },
+        {
+          "heading": "Requirement: Graph nodes report structured errors to StatsStore",
+          "level": 3,
+          "line": 3
+        },
+        {
+          "heading": "Scenario: LLM node logs timeout error",
+          "level": 4,
+          "line": 6
+        },
+        {
+          "heading": "Scenario: TTS node logs rate-limit error",
+          "level": 4,
+          "line": 11
+        },
+        {
+          "heading": "Scenario: Node without trace_id logs error without span",
+          "level": 4,
+          "line": 15
+        },
+        {
+          "heading": "Requirement: Error types are classified consistently",
+          "level": 3,
+          "line": 20
+        },
+        {
+          "heading": "Scenario: Valid error type is accepted",
+          "level": 4,
+          "line": 23
+        },
+        {
+          "heading": "Scenario: Unknown error type defaults to \"unknown\"",
+          "level": 4,
+          "line": 27
+        },
+        {
+          "heading": "Requirement: RAG retrieval is performed once per LLM turn",
+          "level": 3,
+          "line": 32
+        },
+        {
+          "heading": "Scenario: Single RAG call for streaming path",
+          "level": 4,
+          "line": 35
+        },
+        {
+          "heading": "Scenario: Single RAG call for tool-calling path",
+          "level": 4,
+          "line": 40
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 11
+      }
+    },
+    {
+      "path": "openspec/specs/observability-config/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 20,
+      "nonEmptyLines": 15,
+      "sections": [
+        {
+          "heading": "ADDED Requirements",
+          "level": 2,
+          "line": 1
+        },
+        {
+          "heading": "Requirement: OTLP export disabled by default",
+          "level": 3,
+          "line": 3
+        },
+        {
+          "heading": "Scenario: Default configuration",
+          "level": 4,
+          "line": 6
+        },
+        {
+          "heading": "Scenario: Opt-in activation",
+          "level": 4,
+          "line": 11
+        },
+        {
+          "heading": "Requirement: Config comment documents opt-in behavior",
+          "level": 3,
+          "line": 15
+        },
+        {
+          "heading": "Scenario: User reads config",
+          "level": 4,
+          "line": 18
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": "openspec/specs/otel-metrics/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 99,
+      "nonEmptyLines": 74,
+      "sections": [
+        {
+          "heading": "ADDED Requirements",
+          "level": 2,
+          "line": 1
+        },
+        {
+          "heading": "Requirement: OTel MeterProvider initialized",
+          "level": 3,
+          "line": 3
+        },
+        {
+          "heading": "Scenario: MeterProvider created at startup (OTLP disabled — default)",
+          "level": 4,
+          "line": 6
+        },
+        {
+          "heading": "Scenario: MeterProvider created at startup (OTLP enabled — opt-in)",
+          "level": 4,
+          "line": 12
+        },
+        {
+          "heading": "Scenario: Metrics disabled when tracing disabled",
+          "level": 4,
+          "line": 16
+        },
+        {
+          "heading": "Requirement: LangGraph node duration histogram",
+          "level": 3,
+          "line": 20
+        },
+        {
+          "heading": "Scenario: Node duration recorded on completion",
+          "level": 4,
+          "line": 23
+        },
+        {
+          "heading": "Scenario: All 7 nodes tracked",
+          "level": 4,
+          "line": 28
+        },
+        {
+          "heading": "Requirement: LangGraph node error counter",
+          "level": 3,
+          "line": 32
+        },
+        {
+          "heading": "Scenario: Node error counted",
+          "level": 4,
+          "line": 35
+        },
+        {
+          "heading": "Scenario: Error types include structured categories",
+          "level": 4,
+          "line": 39
+        },
+        {
+          "heading": "Requirement: LLM request duration histogram",
+          "level": 3,
+          "line": 43
+        },
+        {
+          "heading": "Scenario: LLM call duration recorded",
+          "level": 4,
+          "line": 46
+        },
+        {
+          "heading": "Requirement: LLM token counters",
+          "level": 3,
+          "line": 50
+        },
+        {
+          "heading": "Scenario: Token counts from API response",
+          "level": 4,
+          "line": 53
+        },
+        {
+          "heading": "Scenario: Token extraction from streaming",
+          "level": 4,
+          "line": 58
+        },
+        {
+          "heading": "Requirement: RAG retrieval metrics",
+          "level": 3,
+          "line": 62
+        },
+        {
+          "heading": "Scenario: Hybrid search retrieval measured",
+          "level": 4,
+          "line": 65
+        },
+        {
+          "heading": "Requirement: ASR/TTS duration metrics",
+          "level": 3,
+          "line": 70
+        },
+        {
+          "heading": "Scenario: TTS synthesis duration measured",
+          "level": 4,
+          "line": 73
+        },
+        {
+          "heading": "Requirement: WebSocket session and message metrics",
+          "level": 3,
+          "line": 77
+        },
+        {
+          "heading": "Scenario: Active session tracking",
+          "level": 4,
+          "line": 80
+        },
+        {
+          "heading": "Scenario: Message counting",
+          "level": 4,
+          "line": 86
+        },
+        {
+          "heading": "Requirement: Tool call metrics",
+          "level": 3,
+          "line": 90
+        },
+        {
+          "heading": "Scenario: Tool execution counted",
+          "level": 4,
+          "line": 93
+        },
+        {
+          "heading": "Scenario: Tool error counted",
+          "level": 4,
+          "line": 97
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 26
+      }
+    },
+    {
+      "path": "openspec/specs/otel-tracing/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 95,
+      "nonEmptyLines": 73,
+      "sections": [
+        {
+          "heading": "ADDED Requirements",
+          "level": 2,
+          "line": 1
+        },
+        {
+          "heading": "Requirement: Service calls produce OTel spans",
+          "level": 3,
+          "line": 3
+        },
+        {
+          "heading": "Scenario: LLM chat_stream traced",
+          "level": 4,
+          "line": 6
+        },
+        {
+          "heading": "Scenario: TTS synthesize traced",
+          "level": 4,
+          "line": 10
+        },
+        {
+          "heading": "Scenario: Service error captured",
+          "level": 4,
+          "line": 14
+        },
+        {
+          "heading": "Requirement: Span hierarchy matches call tree",
+          "level": 3,
+          "line": 18
+        },
+        {
+          "heading": "Scenario: Nested span creation",
+          "level": 4,
+          "line": 21
+        },
+        {
+          "heading": "Scenario: Context propagation across async boundaries",
+          "level": 4,
+          "line": 26
+        },
+        {
+          "heading": "Requirement: Spans written to StatsStore AND exported via OTLP",
+          "level": 3,
+          "line": 30
+        },
+        {
+          "heading": "Scenario: Dual export active",
+          "level": 4,
+          "line": 33
+        },
+        {
+          "heading": "Scenario: OTLP disabled",
+          "level": 4,
+          "line": 38
+        },
+        {
+          "heading": "Scenario: OTLP endpoint unreachable",
+          "level": 4,
+          "line": 43
+        },
+        {
+          "heading": "Scenario: Batch writing",
+          "level": 4,
+          "line": 48
+        },
+        {
+          "heading": "Requirement: Dashboard shows span tree",
+          "level": 3,
+          "line": 52
+        },
+        {
+          "heading": "Scenario: View trace tree",
+          "level": 4,
+          "line": 55
+        },
+        {
+          "heading": "Requirement: Tracing can be disabled",
+          "level": 3,
+          "line": 60
+        },
+        {
+          "heading": "Scenario: Disable tracing",
+          "level": 4,
+          "line": 63
+        },
+        {
+          "heading": "Requirement: OTLP configuration in observability.yaml",
+          "level": 3,
+          "line": 68
+        },
+        {
+          "heading": "Scenario: OTLP config loaded",
+          "level": 4,
+          "line": 71
+        },
+        {
+          "heading": "Requirement: OTel Collector, Prometheus, Tempo, Grafana via docker-compose",
+          "level": 3,
+          "line": 78
+        },
+        {
+          "heading": "Scenario: One-command startup",
+          "level": 4,
+          "line": 81
+        },
+        {
+          "heading": "Requirement: BatchSpanProcessor for OTLP export",
+          "level": 3,
+          "line": 89
+        },
+        {
+          "heading": "Scenario: Batch export configuration",
+          "level": 4,
+          "line": 92
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 23
+      }
+    },
+    {
+      "path": "openspec/specs/pipeline-smoke-test/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 50,
+      "nonEmptyLines": 29,
+      "sections": [
+        {
+          "heading": "Pipeline Smoke Test",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Requirements",
+          "level": 2,
+          "line": 4
+        },
+        {
+          "heading": "Requirement: Smoke test uses real Socket.IO client",
+          "level": 3,
+          "line": 5
+        },
+        {
+          "heading": "Scenario: Successful full-pipeline smoke test",
+          "level": 4,
+          "line": 9
+        },
+        {
+          "heading": "Requirement: Event collection via wildcard listener",
+          "level": 3,
+          "line": 14
+        },
+        {
+          "heading": "Scenario: All expected events received",
+          "level": 4,
+          "line": 18
+        },
+        {
+          "heading": "Scenario: Missing expected events",
+          "level": 4,
+          "line": 23
+        },
+        {
+          "heading": "Scenario: Unexpected extra events",
+          "level": 4,
+          "line": 28
+        },
+        {
+          "heading": "Requirement: Test message isolation",
+          "level": 3,
+          "line": 33
+        },
+        {
+          "heading": "Scenario: Inspection message filtered from memory",
+          "level": 4,
+          "line": 37
+        },
+        {
+          "heading": "Requirement: Smoke test timeout and resource cleanup",
+          "level": 3,
+          "line": 42
+        },
+        {
+          "heading": "Scenario: Test exceeds total timeout",
+          "level": 4,
+          "line": 46
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 12
+      }
+    },
+    {
+      "path": "openspec/specs/proactive-chat/spec.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 37,
+      "nonEmptyLines": 28,
+      "sections": [
+        {
+          "heading": "proactive-chat Specification",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Purpose",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Requirements",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "Requirement: Proactive chat triggers",
+          "level": 3,
+          "line": 6
+        },
+        {
+          "heading": "Scenario: Player nearby triggers chat",
+          "level": 4,
+          "line": 9
+        },
+        {
+          "heading": "Scenario: Weather/time triggers chat",
+          "level": 4,
+          "line": 15
+        },
+        {
+          "heading": "Scenario: Build progress chat",
+          "level": 4,
+          "line": 20
+        },
+        {
+          "heading": "Requirement: Chat cooldown",
+          "level": 3,
+          "line": 24
+        },
+        {
+          "heading": "Scenario: Chat cooldown respected",
+          "level": 4,
+          "line": 27
+        },
+        {
+          "heading": "Requirement: Context-aware chat messages",
+          "level": 3,
+          "line": 31
+        },
+        {
+          "heading": "Scenario: Message from template",
+          "level": 4,
+          "line": 34
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 11
+      }
+    }
+  ]
+}

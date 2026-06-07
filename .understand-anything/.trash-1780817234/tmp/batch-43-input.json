@@ -1,0 +1,182 @@
+{
+  "projectRoot": "C:\\Users\\30262\\Project\\Anima",
+  "batchFiles": [
+    {
+      "path": "src/animetta/services/vad/silero_vad.py",
+      "language": "python",
+      "sizeLines": 362,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/vc/__init__.py",
+      "language": "python",
+      "sizeLines": 13,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/vc/factory.py",
+      "language": "python",
+      "sizeLines": 73,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/vc/interface.py",
+      "language": "python",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/vc/mock_vc.py",
+      "language": "python",
+      "sizeLines": 51,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/vc/rvc_vc.py",
+      "language": "python",
+      "sizeLines": 319,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/tools/__init__.py",
+      "language": "python",
+      "sizeLines": 23,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/tools/AGENTS.md",
+      "language": "markdown",
+      "sizeLines": 62,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "src/animetta/tools/audio_tools.py",
+      "language": "python",
+      "sizeLines": 288,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/tools/base.py",
+      "language": "python",
+      "sizeLines": 201,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/tools/config.py",
+      "language": "python",
+      "sizeLines": 112,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/tools/custom_tools.py",
+      "language": "python",
+      "sizeLines": 203,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/tools/langchain_tools.py",
+      "language": "python",
+      "sizeLines": 102,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/tools/mcp_bridge.py",
+      "language": "python",
+      "sizeLines": 299,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/tools/minecraft/__init__.py",
+      "language": "python",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/tools/minecraft/autonomous.py",
+      "language": "python",
+      "sizeLines": 386,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/tools/minecraft/bot/behaviors/autoEat.js",
+      "language": "javascript",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/tools/minecraft/bot/behaviors/combat.js",
+      "language": "javascript",
+      "sizeLines": 54,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/tools/minecraft/bot/behaviors/planExecutor.js",
+      "language": "javascript",
+      "sizeLines": 88,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/tools/minecraft/bot/index.js",
+      "language": "javascript",
+      "sizeLines": 600,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/tools/minecraft/bot/package.json",
+      "language": "json",
+      "sizeLines": 15,
+      "fileCategory": "config"
+    },
+    {
+      "path": "src/animetta/tools/minecraft/bridge.py",
+      "language": "python",
+      "sizeLines": 306,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/tools/minecraft/config.py",
+      "language": "python",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/tools/minecraft/planner.py",
+      "language": "python",
+      "sizeLines": 253,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/tools/minecraft/rules_engine.py",
+      "language": "python",
+      "sizeLines": 213,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "src/animetta/services/vad/silero_vad.py": [],
+    "src/animetta/services/vc/__init__.py": [],
+    "src/animetta/services/vc/factory.py": [],
+    "src/animetta/services/vc/interface.py": [],
+    "src/animetta/services/vc/mock_vc.py": [],
+    "src/animetta/services/vc/rvc_vc.py": [],
+    "src/animetta/tools/__init__.py": [],
+    "src/animetta/tools/AGENTS.md": [],
+    "src/animetta/tools/audio_tools.py": [],
+    "src/animetta/tools/base.py": [],
+    "src/animetta/tools/config.py": [],
+    "src/animetta/tools/custom_tools.py": [],
+    "src/animetta/tools/langchain_tools.py": [],
+    "src/animetta/tools/mcp_bridge.py": [],
+    "src/animetta/tools/minecraft/__init__.py": [],
+    "src/animetta/tools/minecraft/autonomous.py": [],
+    "src/animetta/tools/minecraft/bot/behaviors/autoEat.js": [],
+    "src/animetta/tools/minecraft/bot/behaviors/combat.js": [],
+    "src/animetta/tools/minecraft/bot/behaviors/planExecutor.js": [],
+    "src/animetta/tools/minecraft/bot/index.js": [],
+    "src/animetta/tools/minecraft/bot/package.json": [],
+    "src/animetta/tools/minecraft/bridge.py": [],
+    "src/animetta/tools/minecraft/config.py": [],
+    "src/animetta/tools/minecraft/planner.py": [],
+    "src/animetta/tools/minecraft/rules_engine.py": []
+  }
+}

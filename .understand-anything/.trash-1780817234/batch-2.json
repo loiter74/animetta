@@ -1,0 +1,68 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 1,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "docker/mcp-filesystem/Dockerfile",
+      "language": "dockerfile",
+      "fileCategory": "infra",
+      "totalLines": 14,
+      "nonEmptyLines": 10,
+      "services": [
+        {
+          "name": "node",
+          "image": "node:22-alpine",
+          "ports": [],
+          "startLine": 1,
+          "endLine": 15
+        }
+      ],
+      "steps": [
+        {
+          "name": "FROM node:22-alpine",
+          "startLine": 1,
+          "endLine": 1
+        },
+        {
+          "name": "RUN npm install -g @modelcontextprotocol/server-filesystem",
+          "startLine": 4,
+          "endLine": 4
+        },
+        {
+          "name": "RUN adduser -D -s /bin/sh mcp",
+          "startLine": 7,
+          "endLine": 7
+        },
+        {
+          "name": "USER mcp",
+          "startLine": 8,
+          "endLine": 8
+        },
+        {
+          "name": "WORKDIR /data",
+          "startLine": 10,
+          "endLine": 10
+        },
+        {
+          "name": "ENTRYPOINT [\"mcp-server-filesystem\"]",
+          "startLine": 13,
+          "endLine": 13
+        },
+        {
+          "name": "CMD [\"/data\"]",
+          "startLine": 14,
+          "endLine": 14
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "serviceCount": 1,
+        "stepCount": 7
+      }
+    }
+  ]
+}

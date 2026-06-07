@@ -12,6 +12,15 @@ from starlette.staticfiles import StaticFiles
 from ..graph.stats_store import get_stats_store
 from ...inspection.checks import check_all_components
 
+# ── Module-level references for health check enrichment ──────
+_model_manager: Any | None = None
+
+
+def set_model_manager(manager: Any) -> None:
+    """Register the ModelLoadingManager so /health can report model states."""
+    global _model_manager
+    _model_manager = manager
+
 # Dashboard frontend file directory
 STATS_FRONTEND_DIR = str(
     Path(__file__).parent.parent.parent.parent.parent / "frontend" / "stats"
@@ -120,6 +129,10 @@ async def health_check(request):
     Returns:
         - status: "ok" if all component checks pass, "degraded" if any fail,
           "error" if the health check itself fails.
+        - service: always "anima"
+        - timestamp: unix epoch seconds
+        - gpu: GPU availability, name, and memory info
+        - models: per-model loading state from ModelLoadingManager
         - checks: dict of component name → CheckResult (Pydantic model dumped as dict).
     """
     import time
@@ -131,15 +144,18 @@ async def health_check(request):
         all_ok = all(c.ok for c in checks.values())
         status = "ok" if all_ok else "degraded"
 
-        return JSONResponse({
+        payload: dict[str, Any] = {
             "status": status,
             "service": "anima",
             "timestamp": timestamp,
+            "gpu": _get_gpu_info(),
+            "models": _get_model_status(),
             "checks": {
                 name: result.model_dump()
                 for name, result in checks.items()
             },
-        })
+        }
+        return JSONResponse(payload)
     except Exception as e:
         logger.error(f"[health] Health check failed: {e}")
         return JSONResponse({
@@ -148,6 +164,54 @@ async def health_check(request):
             "timestamp": timestamp,
             "error": str(e),
         })
+
+
+def _get_gpu_info() -> dict[str, Any]:
+    """Return GPU availability, device name, and memory stats.
+
+    Returns a dict with keys:
+        available (bool), name (str|None), memory_total_mb (float|None),
+        memory_used_mb (float|None), memory_free_mb (float|None).
+    """
+    try:
+        import torch
+
+        if not torch.cuda.is_available():
+            return {"available": False}
+
+        device_name = torch.cuda.get_device_name(0)
+        total = torch.cuda.get_device_properties(0).total_mem / (1024 * 1024)
+        reserved = torch.cuda.memory_reserved(0) / (1024 * 1024)
+        allocated = torch.cuda.memory_allocated(0) / (1024 * 1024)
+        free = total - reserved
+
+        return {
+            "available": True,
+            "name": device_name,
+            "memory_total_mb": round(total, 1),
+            "memory_used_mb": round(allocated, 1),
+            "memory_free_mb": round(free, 1),
+        }
+    except ImportError:
+        return {"available": False, "name": None}
+    except Exception as e:
+        logger.warning(f"[health/gpu] GPU info probe failed: {e}")
+        return {"available": False, "error": str(e)}
+
+
+def _get_model_status() -> dict[str, str]:
+    """Return per-model loading states from ModelLoadingManager.
+
+    Returns a dict mapping model name → state string
+    (unloaded / loading / loaded / error).
+    """
+    if _model_manager is None:
+        return {}
+    try:
+        return _model_manager.get_status()
+    except Exception as e:
+        logger.warning(f"[health/models] Failed to get model status: {e}")
+        return {"_error": str(e)}
 
 
 async def stats_inspection_latest(request: Request) -> JSONResponse:

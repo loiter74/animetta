@@ -1,0 +1,119 @@
+{
+  "projectRoot": "C:\\Users\\30262\\Project\\Anima",
+  "batchFiles": [
+    {
+      "path": "docs/benchmarks/runs/20260505_211313.json",
+      "language": "json",
+      "sizeLines": 25,
+      "fileCategory": "config"
+    },
+    {
+      "path": "docs/benchmarks/runs/20260505_211858.json",
+      "language": "json",
+      "sizeLines": 42,
+      "fileCategory": "config"
+    },
+    {
+      "path": "docs/benchmarks/runs/20260505_212749.json",
+      "language": "json",
+      "sizeLines": 70,
+      "fileCategory": "config"
+    },
+    {
+      "path": "docs/benchmarks/runs/20260505_212905.json",
+      "language": "json",
+      "sizeLines": 96,
+      "fileCategory": "config"
+    },
+    {
+      "path": "docs/benchmarks/runs/20260505_213034.json",
+      "language": "json",
+      "sizeLines": 110,
+      "fileCategory": "config"
+    },
+    {
+      "path": "docs/benchmarks/runs/20260505_213210.json",
+      "language": "json",
+      "sizeLines": 124,
+      "fileCategory": "config"
+    },
+    {
+      "path": "docs/benchmarks/runs/20260505_213328.json",
+      "language": "json",
+      "sizeLines": 71,
+      "fileCategory": "config"
+    },
+    {
+      "path": "docs/benchmarks/runs/20260505_214233.json",
+      "language": "json",
+      "sizeLines": 35,
+      "fileCategory": "config"
+    },
+    {
+      "path": "docs/benchmarks/runs/20260505_215121.json",
+      "language": "json",
+      "sizeLines": 35,
+      "fileCategory": "config"
+    },
+    {
+      "path": "docs/benchmarks/runs/20260505_215237.json",
+      "language": "json",
+      "sizeLines": 86,
+      "fileCategory": "config"
+    },
+    {
+      "path": "docs/benchmarks/runs/20260505_222000.json",
+      "language": "json",
+      "sizeLines": 81,
+      "fileCategory": "config"
+    },
+    {
+      "path": "docs/benchmarks/runs/20260506_003317.json",
+      "language": "json",
+      "sizeLines": 86,
+      "fileCategory": "config"
+    },
+    {
+      "path": "docs/benchmarks/runs/20260506_003448.json",
+      "language": "json",
+      "sizeLines": 91,
+      "fileCategory": "config"
+    },
+    {
+      "path": "docs/benchmarks/runs/20260510_115103.json",
+      "language": "json",
+      "sizeLines": 27,
+      "fileCategory": "config"
+    },
+    {
+      "path": "docs/benchmarks/runs/20260510_115117.json",
+      "language": "json",
+      "sizeLines": 22,
+      "fileCategory": "config"
+    },
+    {
+      "path": "docs/benchmarks/runs/latest.json",
+      "language": "json",
+      "sizeLines": 22,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "docs/benchmarks/runs/20260505_211313.json": [],
+    "docs/benchmarks/runs/20260505_211858.json": [],
+    "docs/benchmarks/runs/20260505_212749.json": [],
+    "docs/benchmarks/runs/20260505_212905.json": [],
+    "docs/benchmarks/runs/20260505_213034.json": [],
+    "docs/benchmarks/runs/20260505_213210.json": [],
+    "docs/benchmarks/runs/20260505_213328.json": [],
+    "docs/benchmarks/runs/20260505_214233.json": [],
+    "docs/benchmarks/runs/20260505_215121.json": [],
+    "docs/benchmarks/runs/20260505_215237.json": [],
+    "docs/benchmarks/runs/20260505_222000.json": [],
+    "docs/benchmarks/runs/20260506_003317.json": [],
+    "docs/benchmarks/runs/20260506_003448.json": [],
+    "docs/benchmarks/runs/20260510_115103.json": [],
+    "docs/benchmarks/runs/20260510_115117.json": [],
+    "docs/benchmarks/runs/latest.json": []
+  }
+}

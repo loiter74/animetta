@@ -1,0 +1,92 @@
+# .understandignore — patterns for files/dirs to exclude from analysis
+# Syntax: same as .gitignore (globs, # comments, ! negation, trailing / for dirs)
+# Lines below are suggestions — uncomment to activate.
+# Use ! prefix to force-include something excluded by defaults.
+#
+# Built-in defaults (always excluded unless negated):
+#   node_modules/, .git/, dist/, build/, obj/, *.lock, *.min.js, etc.
+#
+# --- From .gitignore (uncomment to exclude) ---
+
+# *.py[cod]
+# *$py.class
+# *.so
+# .Python
+# develop-eggs/
+# downloads/
+# eggs/
+# .eggs/
+# lib/
+# lib64/
+# parts/
+# sdist/
+# var/
+# wheels/
+# *.egg-info/
+# .installed.cfg
+# *.egg
+# ENV/
+# env/
+# *.swp
+# *.swo
+# *~
+# logs/
+# config/config.yaml
+# cache/
+# *.wav
+# .DS_Store
+# Thumbs.db
+# .pnpm-store/
+# frontend-legacy/
+# .env
+# .env.local
+# *.local
+# .user_settings.yaml
+# .claude/skills/
+# memory_db/*.sqlite
+# memory_db/*.sqlite-*
+# memory_db/chroma_db/
+# memory_db/memory/*.md
+# memory_db/MEMORY.md
+# !memory_db/.gitkeep
+# training_data/datasets/raw/
+# data/
+# .gstack/
+# .coverage
+# *.tar.gz
+# .gitnexus/
+# Users30262Projectrtk-ai/
+# nul
+# C:tmp_pip/
+# .opencode/
+# .sisyphus/
+# .pytest_cache/
+# .playwright-mcp/
+# *.tmp
+# cov_report.json
+# eval_results.json
+# eval_prompts.txt
+# test-results/
+# memory_db/raw/*.md
+# memory_db/wiki/memes/
+# memory_db/wiki/sources/
+# memory_db/wiki/synthesis/
+# memory_db/wiki/entities/
+# memory_db/wiki/concepts/
+# memory_db/wiki/log.md
+# memory_db/wiki/index.md
+# !memory_db/wiki/WIKI_RULES.md
+# openspec/changes/
+# memory_db/chroma_v2/
+
+# --- Detected directories (uncomment to exclude) ---
+
+# tests/
+# docs/
+# scripts/
+
+# --- Test file patterns (uncomment to exclude) ---
+
+# *.test.*
+# *.spec.*
+# *.snap

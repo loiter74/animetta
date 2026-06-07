@@ -1,0 +1,182 @@
+{
+  "projectRoot": "C:\\Users\\30262\\Project\\Anima",
+  "batchFiles": [
+    {
+      "path": "frontend/src/env.d.ts",
+      "language": "typescript",
+      "sizeLines": 17,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/main.ts",
+      "language": "typescript",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/router/__tests__/router.test.ts",
+      "language": "typescript",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/router/index.ts",
+      "language": "typescript",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/smoke.test.ts",
+      "language": "typescript",
+      "sizeLines": 7,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/stores/__tests__/chat.test.ts",
+      "language": "typescript",
+      "sizeLines": 241,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/stores/__tests__/connection.test.ts",
+      "language": "typescript",
+      "sizeLines": 55,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/stores/__tests__/danmaku.test.ts",
+      "language": "typescript",
+      "sizeLines": 136,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/stores/__tests__/modelLoading.test.ts",
+      "language": "typescript",
+      "sizeLines": 111,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/stores/__tests__/subtitle.test.ts",
+      "language": "typescript",
+      "sizeLines": 155,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/stores/chat.ts",
+      "language": "typescript",
+      "sizeLines": 146,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/stores/connection.ts",
+      "language": "typescript",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/stores/danmaku.ts",
+      "language": "typescript",
+      "sizeLines": 64,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/stores/dashboardStore.ts",
+      "language": "typescript",
+      "sizeLines": 85,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/stores/memeReview.ts",
+      "language": "typescript",
+      "sizeLines": 130,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/stores/memory.ts",
+      "language": "typescript",
+      "sizeLines": 86,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/stores/minecraft.ts",
+      "language": "typescript",
+      "sizeLines": 63,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/stores/modelLoading.ts",
+      "language": "typescript",
+      "sizeLines": 61,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/stores/personality.ts",
+      "language": "typescript",
+      "sizeLines": 135,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/stores/singing.ts",
+      "language": "typescript",
+      "sizeLines": 65,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/stores/subtitle.ts",
+      "language": "typescript",
+      "sizeLines": 128,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/types/chat.ts",
+      "language": "typescript",
+      "sizeLines": 45,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/types/live2d.ts",
+      "language": "typescript",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/types/model-loading.ts",
+      "language": "typescript",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/types/singing.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "frontend/src/env.d.ts": [],
+    "frontend/src/main.ts": [],
+    "frontend/src/router/__tests__/router.test.ts": [],
+    "frontend/src/router/index.ts": [],
+    "frontend/src/smoke.test.ts": [],
+    "frontend/src/stores/__tests__/chat.test.ts": [],
+    "frontend/src/stores/__tests__/connection.test.ts": [],
+    "frontend/src/stores/__tests__/danmaku.test.ts": [],
+    "frontend/src/stores/__tests__/modelLoading.test.ts": [],
+    "frontend/src/stores/__tests__/subtitle.test.ts": [],
+    "frontend/src/stores/chat.ts": [],
+    "frontend/src/stores/connection.ts": [],
+    "frontend/src/stores/danmaku.ts": [],
+    "frontend/src/stores/dashboardStore.ts": [],
+    "frontend/src/stores/memeReview.ts": [],
+    "frontend/src/stores/memory.ts": [],
+    "frontend/src/stores/minecraft.ts": [],
+    "frontend/src/stores/modelLoading.ts": [],
+    "frontend/src/stores/personality.ts": [],
+    "frontend/src/stores/singing.ts": [],
+    "frontend/src/stores/subtitle.ts": [],
+    "frontend/src/types/chat.ts": [],
+    "frontend/src/types/live2d.ts": [],
+    "frontend/src/types/model-loading.ts": [],
+    "frontend/src/types/singing.ts": []
+  }
+}

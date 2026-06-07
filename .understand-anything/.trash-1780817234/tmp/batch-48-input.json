@@ -1,0 +1,182 @@
+{
+  "projectRoot": "C:\\Users\\30262\\Project\\Anima",
+  "batchFiles": [
+    {
+      "path": "tests/services/audio/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/services/audio/test_processor.py",
+      "language": "python",
+      "sizeLines": 191,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/services/audio/test_simple_vad_processor.py",
+      "language": "python",
+      "sizeLines": 238,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/services/audio/test_vad_processor.py",
+      "language": "python",
+      "sizeLines": 243,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/services/llm/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/services/llm/test_stream_handler.py",
+      "language": "python",
+      "sizeLines": 128,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/services/llm/test_tool_handler.py",
+      "language": "python",
+      "sizeLines": 207,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/services/meme/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/services/meme/test_analyzer.py",
+      "language": "python",
+      "sizeLines": 203,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/services/meme/test_bilibili_collector.py",
+      "language": "python",
+      "sizeLines": 236,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/services/meme/test_bilibili_interaction.py",
+      "language": "python",
+      "sizeLines": 273,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/services/meme/test_danmaku_buffer.py",
+      "language": "python",
+      "sizeLines": 211,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/services/meme/test_danmaku_collector_integration.py",
+      "language": "python",
+      "sizeLines": 128,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/services/meme/test_heuristic_semantic.py",
+      "language": "python",
+      "sizeLines": 104,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/services/test_asr_providers.py",
+      "language": "python",
+      "sizeLines": 510,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/services/test_bilibili_danmaku.py",
+      "language": "python",
+      "sizeLines": 227,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/services/test_glm_message_converter.py",
+      "language": "python",
+      "sizeLines": 292,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/services/test_langchain_adapter.py",
+      "language": "python",
+      "sizeLines": 338,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/services/test_live2d_action_queue.py",
+      "language": "python",
+      "sizeLines": 151,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/services/test_live2d_preset_loader.py",
+      "language": "python",
+      "sizeLines": 232,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/services/test_live2d_viseme_sync.py",
+      "language": "python",
+      "sizeLines": 312,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/services/test_llm_factory.py",
+      "language": "python",
+      "sizeLines": 346,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/services/test_llm_providers.py",
+      "language": "python",
+      "sizeLines": 817,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/services/test_tts_providers.py",
+      "language": "python",
+      "sizeLines": 766,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/services/test_vad_providers.py",
+      "language": "python",
+      "sizeLines": 505,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "tests/services/audio/__init__.py": [],
+    "tests/services/audio/test_processor.py": [],
+    "tests/services/audio/test_simple_vad_processor.py": [],
+    "tests/services/audio/test_vad_processor.py": [],
+    "tests/services/llm/__init__.py": [],
+    "tests/services/llm/test_stream_handler.py": [],
+    "tests/services/llm/test_tool_handler.py": [],
+    "tests/services/meme/__init__.py": [],
+    "tests/services/meme/test_analyzer.py": [],
+    "tests/services/meme/test_bilibili_collector.py": [],
+    "tests/services/meme/test_bilibili_interaction.py": [],
+    "tests/services/meme/test_danmaku_buffer.py": [],
+    "tests/services/meme/test_danmaku_collector_integration.py": [],
+    "tests/services/meme/test_heuristic_semantic.py": [],
+    "tests/services/test_asr_providers.py": [],
+    "tests/services/test_bilibili_danmaku.py": [],
+    "tests/services/test_glm_message_converter.py": [],
+    "tests/services/test_langchain_adapter.py": [],
+    "tests/services/test_live2d_action_queue.py": [],
+    "tests/services/test_live2d_preset_loader.py": [],
+    "tests/services/test_live2d_viseme_sync.py": [],
+    "tests/services/test_llm_factory.py": [],
+    "tests/services/test_llm_providers.py": [],
+    "tests/services/test_tts_providers.py": [],
+    "tests/services/test_vad_providers.py": []
+  }
+}

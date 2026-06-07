@@ -1,0 +1,182 @@
+{
+  "projectRoot": "C:\\Users\\30262\\Project\\Anima",
+  "batchFiles": [
+    {
+      "path": "frontend/src/components/chat/VoiceButton.vue",
+      "language": "vue",
+      "sizeLines": 34,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/chat/WelcomeScreen.vue",
+      "language": "vue",
+      "sizeLines": 131,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/dashboard/ErrorRateCard.vue",
+      "language": "vue",
+      "sizeLines": 45,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/dashboard/LatencyBreakdown.vue",
+      "language": "vue",
+      "sizeLines": 51,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/dashboard/SessionTimeline.vue",
+      "language": "vue",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/dashboard/StatsKpiCards.vue",
+      "language": "vue",
+      "sizeLines": 27,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/dashboard/TokenUsageChart.vue",
+      "language": "vue",
+      "sizeLines": 59,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/layout/__tests__/AppLayout.test.ts",
+      "language": "typescript",
+      "sizeLines": 57,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/layout/AppLayout.vue",
+      "language": "vue",
+      "sizeLines": 59,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/layout/InteractivePanel.vue",
+      "language": "vue",
+      "sizeLines": 216,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/layout/TitleBar.vue",
+      "language": "vue",
+      "sizeLines": 87,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/live2d/__tests__/Live2DRenderer.test.ts",
+      "language": "typescript",
+      "sizeLines": 233,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/live2d/Live2DRenderer.vue",
+      "language": "vue",
+      "sizeLines": 205,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/live2d/PopOutButton.vue",
+      "language": "vue",
+      "sizeLines": 18,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/live2d/SubtitleOverlay.vue",
+      "language": "vue",
+      "sizeLines": 266,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/live2d/useAudioPlayback.ts",
+      "language": "typescript",
+      "sizeLines": 62,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/live2d/useInteraction.ts",
+      "language": "typescript",
+      "sizeLines": 107,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/live2d/useLipSync.ts",
+      "language": "typescript",
+      "sizeLines": 140,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/live2d/useLive2D.ts",
+      "language": "typescript",
+      "sizeLines": 190,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/live2d/useLive2DModel.ts",
+      "language": "typescript",
+      "sizeLines": 185,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/live2d/useParameterTimeline.ts",
+      "language": "typescript",
+      "sizeLines": 96,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/live2d/usePixiApp.ts",
+      "language": "typescript",
+      "sizeLines": 73,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/meme/MemeCard.vue",
+      "language": "vue",
+      "sizeLines": 85,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/memory/MemoryPanel.vue",
+      "language": "vue",
+      "sizeLines": 201,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/personality/PersonalityPanel.vue",
+      "language": "vue",
+      "sizeLines": 326,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "frontend/src/components/chat/VoiceButton.vue": [],
+    "frontend/src/components/chat/WelcomeScreen.vue": [],
+    "frontend/src/components/dashboard/ErrorRateCard.vue": [],
+    "frontend/src/components/dashboard/LatencyBreakdown.vue": [],
+    "frontend/src/components/dashboard/SessionTimeline.vue": [],
+    "frontend/src/components/dashboard/StatsKpiCards.vue": [],
+    "frontend/src/components/dashboard/TokenUsageChart.vue": [],
+    "frontend/src/components/layout/__tests__/AppLayout.test.ts": [],
+    "frontend/src/components/layout/AppLayout.vue": [],
+    "frontend/src/components/layout/InteractivePanel.vue": [],
+    "frontend/src/components/layout/TitleBar.vue": [],
+    "frontend/src/components/live2d/__tests__/Live2DRenderer.test.ts": [],
+    "frontend/src/components/live2d/Live2DRenderer.vue": [],
+    "frontend/src/components/live2d/PopOutButton.vue": [],
+    "frontend/src/components/live2d/SubtitleOverlay.vue": [],
+    "frontend/src/components/live2d/useAudioPlayback.ts": [],
+    "frontend/src/components/live2d/useInteraction.ts": [],
+    "frontend/src/components/live2d/useLipSync.ts": [],
+    "frontend/src/components/live2d/useLive2D.ts": [],
+    "frontend/src/components/live2d/useLive2DModel.ts": [],
+    "frontend/src/components/live2d/useParameterTimeline.ts": [],
+    "frontend/src/components/live2d/usePixiApp.ts": [],
+    "frontend/src/components/meme/MemeCard.vue": [],
+    "frontend/src/components/memory/MemoryPanel.vue": [],
+    "frontend/src/components/personality/PersonalityPanel.vue": []
+  }
+}

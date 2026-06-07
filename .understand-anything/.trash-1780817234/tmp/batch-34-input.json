@@ -1,0 +1,182 @@
+{
+  "projectRoot": "C:\\Users\\30262\\Project\\Anima",
+  "batchFiles": [
+    {
+      "path": "scripts/transcribe_alice.py",
+      "language": "python",
+      "sizeLines": 78,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/verify_cuda_compat.py",
+      "language": "python",
+      "sizeLines": 146,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/vibe_voice_server.py",
+      "language": "python",
+      "sizeLines": 195,
+      "fileCategory": "code"
+    },
+    {
+      "path": "smoke-test.js",
+      "language": "javascript",
+      "sizeLines": 51,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/__init__.py",
+      "language": "python",
+      "sizeLines": 43,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/AGENTS.md",
+      "language": "markdown",
+      "sizeLines": 77,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "src/animetta/avatar/__init__.py",
+      "language": "python",
+      "sizeLines": 50,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/avatar/AGENTS.md",
+      "language": "markdown",
+      "sizeLines": 53,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "src/animetta/avatar/analyzers/__init__.py",
+      "language": "python",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/avatar/analyzers/audio.py",
+      "language": "python",
+      "sizeLines": 169,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/avatar/analyzers/base.py",
+      "language": "python",
+      "sizeLines": 189,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/avatar/analyzers/keyword.py",
+      "language": "python",
+      "sizeLines": 352,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/avatar/analyzers/llm_tag.py",
+      "language": "python",
+      "sizeLines": 295,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/avatar/factory.py",
+      "language": "python",
+      "sizeLines": 304,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/avatar/mappers/__init__.py",
+      "language": "python",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/avatar/mappers/base.py",
+      "language": "python",
+      "sizeLines": 136,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/avatar/mappers/config/__init__.py",
+      "language": "python",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/avatar/mappers/config/emotion_mappings.yaml",
+      "language": "yaml",
+      "sizeLines": 163,
+      "fileCategory": "config"
+    },
+    {
+      "path": "src/animetta/avatar/mappers/emotion_param_mapper.py",
+      "language": "python",
+      "sizeLines": 349,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/avatar/prompts.py",
+      "language": "python",
+      "sizeLines": 210,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/avatar/strategies/__init__.py",
+      "language": "python",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/avatar/strategies/base.py",
+      "language": "python",
+      "sizeLines": 348,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/avatar/strategies/duration.py",
+      "language": "python",
+      "sizeLines": 375,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/avatar/strategies/intensity.py",
+      "language": "python",
+      "sizeLines": 419,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/avatar/strategies/position.py",
+      "language": "python",
+      "sizeLines": 326,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "scripts/transcribe_alice.py": [],
+    "scripts/verify_cuda_compat.py": [],
+    "scripts/vibe_voice_server.py": [],
+    "smoke-test.js": [],
+    "src/animetta/__init__.py": [],
+    "src/animetta/AGENTS.md": [],
+    "src/animetta/avatar/__init__.py": [],
+    "src/animetta/avatar/AGENTS.md": [],
+    "src/animetta/avatar/analyzers/__init__.py": [],
+    "src/animetta/avatar/analyzers/audio.py": [],
+    "src/animetta/avatar/analyzers/base.py": [],
+    "src/animetta/avatar/analyzers/keyword.py": [],
+    "src/animetta/avatar/analyzers/llm_tag.py": [],
+    "src/animetta/avatar/factory.py": [],
+    "src/animetta/avatar/mappers/__init__.py": [],
+    "src/animetta/avatar/mappers/base.py": [],
+    "src/animetta/avatar/mappers/config/__init__.py": [],
+    "src/animetta/avatar/mappers/config/emotion_mappings.yaml": [],
+    "src/animetta/avatar/mappers/emotion_param_mapper.py": [],
+    "src/animetta/avatar/prompts.py": [],
+    "src/animetta/avatar/strategies/__init__.py": [],
+    "src/animetta/avatar/strategies/base.py": [],
+    "src/animetta/avatar/strategies/duration.py": [],
+    "src/animetta/avatar/strategies/intensity.py": [],
+    "src/animetta/avatar/strategies/position.py": []
+  }
+}

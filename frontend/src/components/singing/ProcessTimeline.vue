@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { PipelineStage } from '@/types/singing'
 
 const props = defineProps<{
   currentStage: PipelineStage
   progress: number
+  compact?: boolean
 }>()
 
 interface TimelineStep {
@@ -33,10 +35,44 @@ function stepStatus(step: TimelineStep): 'done' | 'active' | 'pending' {
   if (step.stage === props.currentStage) return 'active'
   return 'pending'
 }
+
+const overallPct = computed(() => {
+  const currentIdx = stageOrder.indexOf(props.currentStage)
+  if (currentIdx === -1) return 0
+  return Math.round((currentIdx * 100 + props.progress) / stageOrder.length)
+})
 </script>
 
 <template>
-  <div class="flex flex-col gap-2 py-2">
+  <!-- Compact mode: single row with progress bar + icon chain -->
+  <div v-if="compact" class="flex items-center gap-2 px-2 py-1.5">
+    <!-- Overall progress bar -->
+    <div class="flex-1 h-1.5 rounded-full bg-c-accent/20 overflow-hidden">
+      <div
+        class="h-full bg-c-accent rounded-full transition-all duration-500"
+        :style="{ width: `${overallPct}%` }"
+      />
+    </div>
+    <!-- Icon chain -->
+    <div class="flex items-center gap-1">
+      <template v-for="step in steps" :key="step.stage">
+        <span
+          class="text-xs transition-all"
+          :class="{
+            'text-c-accent': stepStatus(step) === 'active',
+            'opacity-40': stepStatus(step) === 'pending',
+          }"
+        >
+          <span v-if="stepStatus(step) === 'done'">✅</span>
+          <span v-else>{{ step.icon }}</span>
+        </span>
+        <span v-if="step.stage !== 'mixing'" class="text-c-text-muted text-xs">→</span>
+      </template>
+    </div>
+  </div>
+
+  <!-- Full mode: vertical list -->
+  <div v-else class="flex flex-col gap-2 py-2">
     <div
       v-for="step in steps"
       :key="step.stage"

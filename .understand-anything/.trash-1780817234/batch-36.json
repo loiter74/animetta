@@ -1,0 +1,816 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 25,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "src/animetta/config/providers/llm/ollama.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 16,
+      "nonEmptyLines": 11,
+      "classes": [
+        {
+          "name": "OllamaLLMConfig",
+          "startLine": 12,
+          "endLine": 16,
+          "methods": [],
+          "properties": [
+            "type",
+            "model",
+            "base_url"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "OllamaLLMConfig",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/llm/openai.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 18,
+      "nonEmptyLines": 13,
+      "classes": [
+        {
+          "name": "OpenAILLMConfig",
+          "startLine": 12,
+          "endLine": 18,
+          "methods": [],
+          "properties": [
+            "type",
+            "model",
+            "base_url",
+            "frequency_penalty",
+            "presence_penalty"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "OpenAILLMConfig",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/separation/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 22,
+      "nonEmptyLines": 17,
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/separation/base.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 17,
+      "nonEmptyLines": 12,
+      "classes": [
+        {
+          "name": "SeparationBaseConfig",
+          "startLine": 8,
+          "endLine": 17,
+          "methods": [],
+          "properties": [
+            "device",
+            "sample_rate"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "SeparationBaseConfig",
+          "line": 8,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/separation/demucs.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 64,
+      "nonEmptyLines": 55,
+      "classes": [
+        {
+          "name": "DemucsSeparationConfig",
+          "startLine": 12,
+          "endLine": 64,
+          "methods": [],
+          "properties": [
+            "type",
+            "model_type",
+            "config_path",
+            "checkpoint_path",
+            "chunk_size",
+            "num_overlap",
+            "batch_size",
+            "normalize",
+            "is_half",
+            "instruments",
+            "primary_stem"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DemucsSeparationConfig",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/separation/mock.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 12,
+      "nonEmptyLines": 8,
+      "classes": [
+        {
+          "name": "MockSeparationConfig",
+          "startLine": 10,
+          "endLine": 12,
+          "methods": [],
+          "properties": [
+            "type"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "MockSeparationConfig",
+          "line": 9,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/tts/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 36,
+      "nonEmptyLines": 31,
+      "metrics": {
+        "importCount": 10,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/tts/base.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 17,
+      "nonEmptyLines": 11,
+      "classes": [
+        {
+          "name": "TTSBaseConfig",
+          "startLine": 9,
+          "endLine": 17,
+          "methods": [],
+          "properties": [
+            "voice",
+            "speed",
+            "api_key"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "TTSBaseConfig",
+          "line": 9,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/tts/chattts.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 42,
+      "nonEmptyLines": 37,
+      "classes": [
+        {
+          "name": "ChatTTSConfig",
+          "startLine": 12,
+          "endLine": 42,
+          "methods": [],
+          "properties": [
+            "type",
+            "model_path",
+            "device",
+            "compile",
+            "speaker_seed",
+            "temperature",
+            "top_p",
+            "top_k"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "ChatTTSConfig",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/tts/edge.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 18,
+      "nonEmptyLines": 13,
+      "classes": [
+        {
+          "name": "EdgeTTSConfig",
+          "startLine": 12,
+          "endLine": 18,
+          "methods": [],
+          "properties": [
+            "type",
+            "voice",
+            "rate",
+            "pitch",
+            "preset"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "EdgeTTSConfig",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/tts/glm.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 18,
+      "nonEmptyLines": 13,
+      "classes": [
+        {
+          "name": "GLMTTSConfig",
+          "startLine": 12,
+          "endLine": 18,
+          "methods": [],
+          "properties": [
+            "type",
+            "model",
+            "voice",
+            "response_format",
+            "volume"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "GLMTTSConfig",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/tts/gpt_sovits.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 94,
+      "nonEmptyLines": 85,
+      "classes": [
+        {
+          "name": "GPTSoVITSConfig",
+          "startLine": 12,
+          "endLine": 94,
+          "methods": [],
+          "properties": [
+            "type",
+            "base_url",
+            "ref_audio_path",
+            "prompt_text",
+            "prompt_lang",
+            "text_lang",
+            "top_k",
+            "top_p",
+            "temperature",
+            "speed",
+            "media_type",
+            "streaming_mode",
+            "text_split_method",
+            "sample_steps",
+            "seed",
+            "aux_ref_audio_paths"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "GPTSoVITSConfig",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/tts/kokoro.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 73,
+      "nonEmptyLines": 65,
+      "classes": [
+        {
+          "name": "KokoroTTSConfig",
+          "startLine": 26,
+          "endLine": 73,
+          "methods": [],
+          "properties": [
+            "type",
+            "voice",
+            "model_repo_id",
+            "model_path",
+            "device",
+            "lang_code",
+            "speed",
+            "glados_effect"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "KokoroTTSConfig",
+          "line": 25,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/tts/mock.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 12,
+      "nonEmptyLines": 8,
+      "classes": [
+        {
+          "name": "MockTTSConfig",
+          "startLine": 10,
+          "endLine": 12,
+          "methods": [],
+          "properties": [
+            "type"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "MockTTSConfig",
+          "line": 9,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/tts/openai.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 17,
+      "nonEmptyLines": 12,
+      "classes": [
+        {
+          "name": "OpenAITTSConfig",
+          "startLine": 12,
+          "endLine": 17,
+          "methods": [],
+          "properties": [
+            "type",
+            "model",
+            "voice",
+            "base_url"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "OpenAITTSConfig",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/tts/qwen3.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 96,
+      "nonEmptyLines": 84,
+      "classes": [
+        {
+          "name": "Qwen3TTSConfig",
+          "startLine": 12,
+          "endLine": 96,
+          "methods": [],
+          "properties": [
+            "type",
+            "model",
+            "device",
+            "dtype",
+            "speaker",
+            "default_instruct",
+            "language",
+            "max_new_tokens",
+            "top_p",
+            "temperature",
+            "repetition_penalty",
+            "use_flash_attn",
+            "ref_audio_path",
+            "ref_text",
+            "x_vector_only"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Qwen3TTSConfig",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/tts/vibe_voice.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 67,
+      "nonEmptyLines": 56,
+      "classes": [
+        {
+          "name": "VibeVoiceTTSConfig",
+          "startLine": 12,
+          "endLine": 67,
+          "methods": [],
+          "properties": [
+            "type",
+            "model",
+            "mode",
+            "base_url",
+            "model_size",
+            "model_path",
+            "device",
+            "voice",
+            "num_speakers",
+            "language"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "VibeVoiceTTSConfig",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/vad/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 22,
+      "nonEmptyLines": 17,
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/vad/base.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 9,
+      "nonEmptyLines": 6,
+      "classes": [
+        {
+          "name": "VADBaseConfig",
+          "startLine": 6,
+          "endLine": 9,
+          "methods": [],
+          "properties": [
+            "type",
+            "sample_rate"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "VADBaseConfig",
+          "line": 6,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/vad/mock.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 18,
+      "nonEmptyLines": 13,
+      "classes": [
+        {
+          "name": "MockVADConfig",
+          "startLine": 12,
+          "endLine": 18,
+          "methods": [],
+          "properties": [
+            "type",
+            "sample_rate",
+            "db_threshold",
+            "min_speech_duration",
+            "min_silence_duration"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "MockVADConfig",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/vad/silero.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 23,
+      "nonEmptyLines": 17,
+      "classes": [
+        {
+          "name": "SileroVADConfig",
+          "startLine": 12,
+          "endLine": 23,
+          "methods": [],
+          "properties": [
+            "type",
+            "sample_rate",
+            "prob_threshold",
+            "db_threshold",
+            "required_hits",
+            "required_misses",
+            "smoothing_window"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "SileroVADConfig",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/vc/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 22,
+      "nonEmptyLines": 17,
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/vc/base.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 17,
+      "nonEmptyLines": 12,
+      "classes": [
+        {
+          "name": "VCBaseConfig",
+          "startLine": 8,
+          "endLine": 17,
+          "methods": [],
+          "properties": [
+            "device",
+            "is_half"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "VCBaseConfig",
+          "line": 8,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/vc/mock.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 12,
+      "nonEmptyLines": 8,
+      "classes": [
+        {
+          "name": "MockVCConfig",
+          "startLine": 10,
+          "endLine": 12,
+          "methods": [],
+          "properties": [
+            "type"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "MockVCConfig",
+          "line": 9,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/vc/rvc.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 80,
+      "nonEmptyLines": 72,
+      "classes": [
+        {
+          "name": "RVCConfig",
+          "startLine": 12,
+          "endLine": 80,
+          "methods": [],
+          "properties": [
+            "type",
+            "model_path",
+            "index_path",
+            "index_rate",
+            "f0_method",
+            "key",
+            "formant",
+            "rms_mix_rate",
+            "protect",
+            "hop_length",
+            "f0_min",
+            "f0_max",
+            "sample_rate"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "RVCConfig",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    }
+  ]
+}

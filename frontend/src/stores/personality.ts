@@ -10,20 +10,91 @@ export const usePersonalityStore = defineStore('personality', () => {
   const mbtiType = ref<string | null>(null)
   const mbtiDimensions = ref<{ ei: number; sn: number; tf: number; jp: number } | null>(null)
 
-  function setPersona(name: string): void {
+  // Loading states
+  const personaLoading = ref(false)
+  const personaSuccess = ref(false)
+  const personaError = ref<string | null>(null)
+  const modeLoading = ref(false)
+
+  async function fetchAvailablePersonas(): Promise<void> {
     const socket = getSocket()
     if (!socket) return
 
-    socket.emit('set_persona', { persona: name })
+    socket.emit('get_available_personas', {}, (response: { personas: string[] }) => {
+      availablePersonas.value = response.personas ?? []
+    })
   }
 
-  function setMode(mode: 'default' | 'streaming'): void {
-    currentMode.value = mode
+  async function setPersona(name: string): Promise<void> {
+    const socket = getSocket()
+    if (!socket) {
+      personaError.value = '连接已断开，请重试'
+      return
+    }
 
+    personaLoading.value = true
+    personaError.value = null
+    personaSuccess.value = false
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('操作超时'))
+        }, 5000)
+
+        socket.emit('set_persona', { persona_name: name }, (response: { error?: string }) => {
+          clearTimeout(timeout)
+          if (response?.error) {
+            reject(new Error(response.error))
+          } else {
+            resolve()
+          }
+        })
+      })
+
+      personaSuccess.value = true
+      setTimeout(() => {
+        personaSuccess.value = false
+      }, 1000)
+    } catch (e) {
+      personaError.value = e instanceof Error ? e.message : '切换失败'
+      setTimeout(() => {
+        personaError.value = null
+      }, 3000)
+    } finally {
+      personaLoading.value = false
+    }
+  }
+
+  async function setMode(mode: 'default' | 'streaming'): Promise<void> {
     const socket = getSocket()
     if (!socket) return
 
-    socket.emit('set_personality_mode', { mode })
+    modeLoading.value = true
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('操作超时'))
+        }, 5000)
+
+        socket.emit('set_personality_mode', { mode }, (response: { error?: string }) => {
+          clearTimeout(timeout)
+          if (response?.error) {
+            reject(new Error(response.error))
+          } else {
+            resolve()
+          }
+        })
+      })
+
+      currentMode.value = mode
+    } catch (e) {
+      // Mode change failed, don't update local state
+      console.error('Failed to set mode:', e)
+    } finally {
+      modeLoading.value = false
+    }
   }
 
   function setMood(mood: string | null): void {
@@ -49,6 +120,11 @@ export const usePersonalityStore = defineStore('personality', () => {
     memoryInfluence,
     mbtiType,
     mbtiDimensions,
+    personaLoading,
+    personaSuccess,
+    personaError,
+    modeLoading,
+    fetchAvailablePersonas,
     setPersona,
     setMode,
     setMood,

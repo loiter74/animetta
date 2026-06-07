@@ -145,10 +145,10 @@ class TestSetupCheckpointer:
         mock_checkpointer = MagicMock()
         with (
             patch(
-                "animetta.orchestration.graph.builder.set_external_checkpointer"
+                "animetta.core.socketio_server.set_external_checkpointer"
             ) as mock_set,
             patch(
-                "animetta.core.redis_checkpoint.AsyncRedisSaver",
+                "animetta.core.socketio_server.AsyncRedisSaver",
                 return_value=mock_checkpointer,
             ),
         ):
@@ -162,7 +162,7 @@ class TestSetupCheckpointer:
         """When --redis-url is None, no external checkpointer is registered."""
         # _server_args.redis_url is None from import-time default
         with patch(
-            "animetta.orchestration.graph.builder.set_external_checkpointer"
+            "animetta.core.socketio_server.set_external_checkpointer"
         ) as mock_set:
             mod._setup_checkpointer()
 
@@ -174,10 +174,10 @@ class TestSetupCheckpointer:
 
         with (
             patch(
-                "animetta.orchestration.graph.builder.set_external_checkpointer"
+                "animetta.core.socketio_server.set_external_checkpointer"
             ) as mock_set,
             patch(
-                "animetta.core.redis_checkpoint.AsyncRedisSaver",
+                "animetta.core.socketio_server.AsyncRedisSaver",
                 side_effect=ConnectionError("redis not available"),
             ),
         ):

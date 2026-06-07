@@ -12,6 +12,7 @@ from pathlib import Path
 
 import pytest
 from animetta.avatar.analyzers.audio import AudioAnalyzer, compute_volume_envelope
+from animetta.orchestration.graph.output_node import _compute_volumes, _trim_leading_silence
 
 
 

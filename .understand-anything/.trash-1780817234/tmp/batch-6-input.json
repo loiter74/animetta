@@ -1,0 +1,35 @@
+{
+  "projectRoot": "C:\\Users\\30262\\Project\\Anima",
+  "batchFiles": [
+    {
+      "path": ".opencode/commands/opsx-apply.md",
+      "language": "markdown",
+      "sizeLines": 149,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".opencode/commands/opsx-archive.md",
+      "language": "markdown",
+      "sizeLines": 154,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".opencode/commands/opsx-explore.md",
+      "language": "markdown",
+      "sizeLines": 170,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".opencode/commands/opsx-propose.md",
+      "language": "markdown",
+      "sizeLines": 103,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    ".opencode/commands/opsx-apply.md": [],
+    ".opencode/commands/opsx-archive.md": [],
+    ".opencode/commands/opsx-explore.md": [],
+    ".opencode/commands/opsx-propose.md": []
+  }
+}

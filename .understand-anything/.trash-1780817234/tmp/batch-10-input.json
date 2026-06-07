@@ -1,0 +1,42 @@
+{
+  "projectRoot": "C:\\Users\\30262\\Project\\Anima",
+  "batchFiles": [
+    {
+      "path": "docs/README.md",
+      "language": "markdown",
+      "sizeLines": 78,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/TOOLS.md",
+      "language": "markdown",
+      "sizeLines": 272,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/docker-deployment.md",
+      "language": "markdown",
+      "sizeLines": 152,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/rag-evaluation-report.md",
+      "language": "markdown",
+      "sizeLines": 301,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/rvc-training-guide.md",
+      "language": "markdown",
+      "sizeLines": 133,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    "docs/README.md": [],
+    "docs/TOOLS.md": [],
+    "docs/docker-deployment.md": [],
+    "docs/rag-evaluation-report.md": [],
+    "docs/rvc-training-guide.md": []
+  }
+}

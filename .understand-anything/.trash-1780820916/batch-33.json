@@ -1,0 +1,1430 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 5,
+  "filesSkipped": [
+    "scripts/process_icons.py",
+    "scripts/rvc_train_alice.py",
+    "scripts/rvc_train.py",
+    "scripts/seed_soujuurou.py",
+    "scripts/setup_env.py",
+    "scripts/setup_vibevoice.py",
+    "scripts/start_mc_bot.py",
+    "scripts/start.py",
+    "scripts/start/__init__.py",
+    "scripts/start/browser.py",
+    "scripts/start/colors.py",
+    "scripts/start/process.py",
+    "scripts/start/services.py",
+    "scripts/stop.py",
+    "scripts/switch_env.py",
+    "scripts/test_meme_collector.py",
+    "scripts/test_singing_pipeline.py",
+    "scripts/train.py",
+    "scripts/train/01_collect_data.py",
+    "scripts/train/deploy_to_anima.py"
+  ],
+  "results": [
+    {
+      "path": "scripts/train/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 1,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "scripts/train/cli.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 310,
+      "nonEmptyLines": 259,
+      "functions": [
+        {
+          "name": "load_config",
+          "startLine": 36,
+          "endLine": 39,
+          "params": []
+        },
+        {
+          "name": "run_step",
+          "startLine": 42,
+          "endLine": 61,
+          "params": [
+            "step_name",
+            "cmd",
+            "cwd"
+          ]
+        },
+        {
+          "name": "step_preprocess_data",
+          "startLine": 67,
+          "endLine": 69,
+          "params": []
+        },
+        {
+          "name": "step_rvc_preprocess",
+          "startLine": 72,
+          "endLine": 82,
+          "params": [
+            "exp_dir",
+            "dataset_dir",
+            "sr",
+            "version"
+          ]
+        },
+        {
+          "name": "step_rvc_extract_f0",
+          "startLine": 85,
+          "endLine": 95,
+          "params": [
+            "exp_dir",
+            "f0_method"
+          ]
+        },
+        {
+          "name": "step_rvc_extract_features",
+          "startLine": 98,
+          "endLine": 117,
+          "params": [
+            "exp_dir",
+            "version"
+          ]
+        },
+        {
+          "name": "step_rvc_train",
+          "startLine": 120,
+          "endLine": 151,
+          "params": [
+            "exp_dir",
+            "sr",
+            "f0",
+            "batch_size",
+            "total_epoch",
+            "save_epoch",
+            "version",
+            "pretrained_g",
+            "pretrained_d",
+            "gpu"
+          ]
+        },
+        {
+          "name": "step_rvc_build_index",
+          "startLine": 154,
+          "endLine": 161,
+          "params": [
+            "exp_dir",
+            "version"
+          ]
+        },
+        {
+          "name": "step_deploy",
+          "startLine": 164,
+          "endLine": 170,
+          "params": [
+            "character_name"
+          ]
+        },
+        {
+          "name": "main",
+          "startLine": 176,
+          "endLine": 306,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "load_config",
+          "line": 36,
+          "isDefault": false
+        },
+        {
+          "name": "run_step",
+          "line": 42,
+          "isDefault": false
+        },
+        {
+          "name": "step_preprocess_data",
+          "line": 67,
+          "isDefault": false
+        },
+        {
+          "name": "step_rvc_preprocess",
+          "line": 72,
+          "isDefault": false
+        },
+        {
+          "name": "step_rvc_extract_f0",
+          "line": 85,
+          "isDefault": false
+        },
+        {
+          "name": "step_rvc_extract_features",
+          "line": 98,
+          "isDefault": false
+        },
+        {
+          "name": "step_rvc_train",
+          "line": 120,
+          "isDefault": false
+        },
+        {
+          "name": "step_rvc_build_index",
+          "line": 154,
+          "isDefault": false
+        },
+        {
+          "name": "step_deploy",
+          "line": 164,
+          "isDefault": false
+        },
+        {
+          "name": "main",
+          "line": 176,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "load_config",
+          "callee": "open",
+          "lineNumber": 38
+        },
+        {
+          "caller": "load_config",
+          "callee": "yaml.safe_load",
+          "lineNumber": 39
+        },
+        {
+          "caller": "run_step",
+          "callee": "print",
+          "lineNumber": 44
+        },
+        {
+          "caller": "run_step",
+          "callee": "print",
+          "lineNumber": 45
+        },
+        {
+          "caller": "run_step",
+          "callee": "print",
+          "lineNumber": 46
+        },
+        {
+          "caller": "run_step",
+          "callee": "' '.join",
+          "lineNumber": 46
+        },
+        {
+          "caller": "run_step",
+          "callee": "print",
+          "lineNumber": 47
+        },
+        {
+          "caller": "run_step",
+          "callee": "time.time",
+          "lineNumber": 48
+        },
+        {
+          "caller": "run_step",
+          "callee": "subprocess.run",
+          "lineNumber": 49
+        },
+        {
+          "caller": "run_step",
+          "callee": "time.time",
+          "lineNumber": 50
+        },
+        {
+          "caller": "run_step",
+          "callee": "print",
+          "lineNumber": 52
+        },
+        {
+          "caller": "run_step",
+          "callee": "print",
+          "lineNumber": 54
+        },
+        {
+          "caller": "run_step",
+          "callee": "print",
+          "lineNumber": 56
+        },
+        {
+          "caller": "run_step",
+          "callee": "result.stdout.strip().split",
+          "lineNumber": 58
+        },
+        {
+          "caller": "run_step",
+          "callee": "result.stdout.strip",
+          "lineNumber": 58
+        },
+        {
+          "caller": "run_step",
+          "callee": "line.strip",
+          "lineNumber": 59
+        },
+        {
+          "caller": "run_step",
+          "callee": "print",
+          "lineNumber": 60
+        },
+        {
+          "caller": "run_step",
+          "callee": "print",
+          "lineNumber": 61
+        },
+        {
+          "caller": "step_preprocess_data",
+          "callee": "run_step",
+          "lineNumber": 69
+        },
+        {
+          "caller": "step_preprocess_data",
+          "callee": "str",
+          "lineNumber": 69
+        },
+        {
+          "caller": "step_preprocess_data",
+          "callee": "str",
+          "lineNumber": 69
+        },
+        {
+          "caller": "step_rvc_preprocess",
+          "callee": "run_step",
+          "lineNumber": 82
+        },
+        {
+          "caller": "step_rvc_extract_f0",
+          "callee": "run_step",
+          "lineNumber": 95
+        },
+        {
+          "caller": "step_rvc_extract_features",
+          "callee": "run_step",
+          "lineNumber": 117
+        },
+        {
+          "caller": "step_rvc_train",
+          "callee": "str",
+          "lineNumber": 137
+        },
+        {
+          "caller": "step_rvc_train",
+          "callee": "str",
+          "lineNumber": 138
+        },
+        {
+          "caller": "step_rvc_train",
+          "callee": "str",
+          "lineNumber": 140
+        },
+        {
+          "caller": "step_rvc_train",
+          "callee": "str",
+          "lineNumber": 141
+        },
+        {
+          "caller": "step_rvc_train",
+          "callee": "cmd.extend",
+          "lineNumber": 148
+        },
+        {
+          "caller": "step_rvc_train",
+          "callee": "cmd.extend",
+          "lineNumber": 150
+        },
+        {
+          "caller": "step_rvc_train",
+          "callee": "run_step",
+          "lineNumber": 151
+        },
+        {
+          "caller": "step_rvc_build_index",
+          "callee": "run_step",
+          "lineNumber": 161
+        },
+        {
+          "caller": "step_deploy",
+          "callee": "run_step",
+          "lineNumber": 166
+        },
+        {
+          "caller": "step_deploy",
+          "callee": "str",
+          "lineNumber": 168
+        },
+        {
+          "caller": "step_deploy",
+          "callee": "str",
+          "lineNumber": 169
+        },
+        {
+          "caller": "main",
+          "callee": "argparse.ArgumentParser",
+          "lineNumber": 177
+        },
+        {
+          "caller": "main",
+          "callee": "parser.add_argument",
+          "lineNumber": 188
+        },
+        {
+          "caller": "main",
+          "callee": "parser.add_argument",
+          "lineNumber": 190
+        },
+        {
+          "caller": "main",
+          "callee": "parser.add_argument",
+          "lineNumber": 192
+        },
+        {
+          "caller": "main",
+          "callee": "parser.add_argument",
+          "lineNumber": 194
+        },
+        {
+          "caller": "main",
+          "callee": "parser.add_argument",
+          "lineNumber": 196
+        },
+        {
+          "caller": "main",
+          "callee": "parser.add_argument",
+          "lineNumber": 198
+        },
+        {
+          "caller": "main",
+          "callee": "parser.add_argument",
+          "lineNumber": 200
+        },
+        {
+          "caller": "main",
+          "callee": "parser.add_argument",
+          "lineNumber": 202
+        },
+        {
+          "caller": "main",
+          "callee": "parser.add_argument",
+          "lineNumber": 204
+        },
+        {
+          "caller": "main",
+          "callee": "parser.add_argument",
+          "lineNumber": 206
+        },
+        {
+          "caller": "main",
+          "callee": "parser.add_argument",
+          "lineNumber": 208
+        },
+        {
+          "caller": "main",
+          "callee": "parser.add_argument",
+          "lineNumber": 210
+        },
+        {
+          "caller": "main",
+          "callee": "parser.add_argument",
+          "lineNumber": 212
+        },
+        {
+          "caller": "main",
+          "callee": "parser.parse_args",
+          "lineNumber": 215
+        },
+        {
+          "caller": "main",
+          "callee": "load_config",
+          "lineNumber": 216
+        },
+        {
+          "caller": "main",
+          "callee": "str",
+          "lineNumber": 220
+        },
+        {
+          "caller": "main",
+          "callee": "config[\"rvc\"].get",
+          "lineNumber": 221
+        },
+        {
+          "caller": "main",
+          "callee": "str",
+          "lineNumber": 225
+        },
+        {
+          "caller": "main",
+          "callee": "Path",
+          "lineNumber": 226
+        },
+        {
+          "caller": "main",
+          "callee": "pg_path.exists",
+          "lineNumber": 237
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 238
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 239
+        },
+        {
+          "caller": "main",
+          "callee": "pd_path.exists",
+          "lineNumber": 241
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 242
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 245
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 246
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 247
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 248
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 249
+        },
+        {
+          "caller": "main",
+          "callee": "step_deploy",
+          "lineNumber": 254
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 258
+        },
+        {
+          "caller": "main",
+          "callee": "step_preprocess_data",
+          "lineNumber": 263
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 265
+        },
+        {
+          "caller": "main",
+          "callee": "step_rvc_preprocess",
+          "lineNumber": 268
+        },
+        {
+          "caller": "main",
+          "callee": "step_rvc_extract_f0",
+          "lineNumber": 271
+        },
+        {
+          "caller": "main",
+          "callee": "step_rvc_extract_features",
+          "lineNumber": 274
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 277
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 278
+        },
+        {
+          "caller": "main",
+          "callee": "step_rvc_train",
+          "lineNumber": 282
+        },
+        {
+          "caller": "main",
+          "callee": "step_rvc_build_index",
+          "lineNumber": 296
+        },
+        {
+          "caller": "main",
+          "callee": "step_deploy",
+          "lineNumber": 299
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 301
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 302
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 303
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 304
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 305
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 306
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 10,
+        "functionCount": 10,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "scripts/train/config.yaml",
+      "language": "yaml",
+      "fileCategory": "config",
+      "totalLines": 39,
+      "nonEmptyLines": 33,
+      "sections": [
+        {
+          "heading": "character",
+          "level": 1,
+          "line": 4
+        },
+        {
+          "heading": "data",
+          "level": 1,
+          "line": 9
+        },
+        {
+          "heading": "audio",
+          "level": 1,
+          "line": 14
+        },
+        {
+          "heading": "augmentation",
+          "level": 1,
+          "line": 21
+        },
+        {
+          "heading": "rvc",
+          "level": 1,
+          "line": 26
+        },
+        {
+          "heading": "anima",
+          "level": 1,
+          "line": 35
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": "scripts/train/prepare_data.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 226,
+      "nonEmptyLines": 184,
+      "functions": [
+        {
+          "name": "load_config",
+          "startLine": 24,
+          "endLine": 27,
+          "params": []
+        },
+        {
+          "name": "_detect_silence",
+          "startLine": 33,
+          "endLine": 52,
+          "params": [
+            "audio",
+            "sr",
+            "threshold_db",
+            "min_silence_s"
+          ]
+        },
+        {
+          "name": "_slice",
+          "startLine": 55,
+          "endLine": 98,
+          "params": [
+            "input_path",
+            "output_dir",
+            "cfg"
+          ]
+        },
+        {
+          "name": "_normalize",
+          "startLine": 104,
+          "endLine": 116,
+          "params": [
+            "input_path",
+            "sr",
+            "target_loudness"
+          ]
+        },
+        {
+          "name": "_pitch_shift",
+          "startLine": 122,
+          "endLine": 131,
+          "params": [
+            "audio",
+            "sr",
+            "semitones"
+          ]
+        },
+        {
+          "name": "_augment",
+          "startLine": 134,
+          "endLine": 159,
+          "params": [
+            "input_dir",
+            "output_dir",
+            "cfg"
+          ]
+        },
+        {
+          "name": "main",
+          "startLine": 165,
+          "endLine": 222,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "load_config",
+          "line": 24,
+          "isDefault": false
+        },
+        {
+          "name": "_detect_silence",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "_slice",
+          "line": 55,
+          "isDefault": false
+        },
+        {
+          "name": "_normalize",
+          "line": 104,
+          "isDefault": false
+        },
+        {
+          "name": "_pitch_shift",
+          "line": 122,
+          "isDefault": false
+        },
+        {
+          "name": "_augment",
+          "line": 134,
+          "isDefault": false
+        },
+        {
+          "name": "main",
+          "line": 165,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "load_config",
+          "callee": "Path",
+          "lineNumber": 25
+        },
+        {
+          "caller": "load_config",
+          "callee": "open",
+          "lineNumber": 26
+        },
+        {
+          "caller": "load_config",
+          "callee": "yaml.safe_load",
+          "lineNumber": 27
+        },
+        {
+          "caller": "_detect_silence",
+          "callee": "int",
+          "lineNumber": 35
+        },
+        {
+          "caller": "_detect_silence",
+          "callee": "librosa.feature.rms",
+          "lineNumber": 37
+        },
+        {
+          "caller": "_detect_silence",
+          "callee": "int",
+          "lineNumber": 40
+        },
+        {
+          "caller": "_detect_silence",
+          "callee": "enumerate",
+          "lineNumber": 43
+        },
+        {
+          "caller": "_detect_silence",
+          "callee": "regions.append",
+          "lineNumber": 48
+        },
+        {
+          "caller": "_detect_silence",
+          "callee": "len",
+          "lineNumber": 50
+        },
+        {
+          "caller": "_detect_silence",
+          "callee": "regions.append",
+          "lineNumber": 51
+        },
+        {
+          "caller": "_detect_silence",
+          "callee": "len",
+          "lineNumber": 51
+        },
+        {
+          "caller": "_slice",
+          "callee": "librosa.load",
+          "lineNumber": 62
+        },
+        {
+          "caller": "_slice",
+          "callee": "str",
+          "lineNumber": 62
+        },
+        {
+          "caller": "_slice",
+          "callee": "librosa.resample",
+          "lineNumber": 64
+        },
+        {
+          "caller": "_slice",
+          "callee": "_detect_silence",
+          "lineNumber": 66
+        },
+        {
+          "caller": "_slice",
+          "callee": "len",
+          "lineNumber": 68
+        },
+        {
+          "caller": "_slice",
+          "callee": "sf.write",
+          "lineNumber": 70
+        },
+        {
+          "caller": "_slice",
+          "callee": "str",
+          "lineNumber": 70
+        },
+        {
+          "caller": "_slice",
+          "callee": "enumerate",
+          "lineNumber": 76
+        },
+        {
+          "caller": "_slice",
+          "callee": "len",
+          "lineNumber": 78
+        },
+        {
+          "caller": "_slice",
+          "callee": "len",
+          "lineNumber": 81
+        },
+        {
+          "caller": "_slice",
+          "callee": "enumerate",
+          "lineNumber": 82
+        },
+        {
+          "caller": "_slice",
+          "callee": "len",
+          "lineNumber": 84
+        },
+        {
+          "caller": "_slice",
+          "callee": "sf.write",
+          "lineNumber": 86
+        },
+        {
+          "caller": "_slice",
+          "callee": "str",
+          "lineNumber": 86
+        },
+        {
+          "caller": "_slice",
+          "callee": "outputs.append",
+          "lineNumber": 87
+        },
+        {
+          "caller": "_slice",
+          "callee": "sf.write",
+          "lineNumber": 90
+        },
+        {
+          "caller": "_slice",
+          "callee": "str",
+          "lineNumber": 90
+        },
+        {
+          "caller": "_slice",
+          "callee": "outputs.append",
+          "lineNumber": 91
+        },
+        {
+          "caller": "_slice",
+          "callee": "len",
+          "lineNumber": 94
+        },
+        {
+          "caller": "_slice",
+          "callee": "sf.write",
+          "lineNumber": 96
+        },
+        {
+          "caller": "_slice",
+          "callee": "str",
+          "lineNumber": 96
+        },
+        {
+          "caller": "_slice",
+          "callee": "outputs.append",
+          "lineNumber": 97
+        },
+        {
+          "caller": "_normalize",
+          "callee": "librosa.load",
+          "lineNumber": 106
+        },
+        {
+          "caller": "_normalize",
+          "callee": "str",
+          "lineNumber": 106
+        },
+        {
+          "caller": "_normalize",
+          "callee": "librosa.resample",
+          "lineNumber": 108
+        },
+        {
+          "caller": "_normalize",
+          "callee": "pyln.Meter",
+          "lineNumber": 109
+        },
+        {
+          "caller": "_normalize",
+          "callee": "meter.integrated_loudness",
+          "lineNumber": 110
+        },
+        {
+          "caller": "_normalize",
+          "callee": "pyln.normalize.loudness",
+          "lineNumber": 111
+        },
+        {
+          "caller": "_normalize",
+          "callee": "np.max",
+          "lineNumber": 112
+        },
+        {
+          "caller": "_normalize",
+          "callee": "np.abs",
+          "lineNumber": 112
+        },
+        {
+          "caller": "_normalize",
+          "callee": "sf.write",
+          "lineNumber": 115
+        },
+        {
+          "caller": "_normalize",
+          "callee": "str",
+          "lineNumber": 115
+        },
+        {
+          "caller": "_normalize",
+          "callee": "float",
+          "lineNumber": 116
+        },
+        {
+          "caller": "_normalize",
+          "callee": "librosa.get_duration",
+          "lineNumber": 116
+        },
+        {
+          "caller": "_pitch_shift",
+          "callee": "pw.harvest",
+          "lineNumber": 124
+        },
+        {
+          "caller": "_pitch_shift",
+          "callee": "audio.astype",
+          "lineNumber": 124
+        },
+        {
+          "caller": "_pitch_shift",
+          "callee": "pw.stonemask",
+          "lineNumber": 125
+        },
+        {
+          "caller": "_pitch_shift",
+          "callee": "audio.astype",
+          "lineNumber": 125
+        },
+        {
+          "caller": "_pitch_shift",
+          "callee": "pw.cheaptrick",
+          "lineNumber": 126
+        },
+        {
+          "caller": "_pitch_shift",
+          "callee": "audio.astype",
+          "lineNumber": 126
+        },
+        {
+          "caller": "_pitch_shift",
+          "callee": "pw.d4c",
+          "lineNumber": 127
+        },
+        {
+          "caller": "_pitch_shift",
+          "callee": "audio.astype",
+          "lineNumber": 127
+        },
+        {
+          "caller": "_pitch_shift",
+          "callee": "f0.copy",
+          "lineNumber": 128
+        },
+        {
+          "caller": "_pitch_shift",
+          "callee": "pw.synthesize(f0_shifted, sp, ap, sr).astype",
+          "lineNumber": 131
+        },
+        {
+          "caller": "_pitch_shift",
+          "callee": "pw.synthesize",
+          "lineNumber": 131
+        },
+        {
+          "caller": "_augment",
+          "callee": "sorted",
+          "lineNumber": 141
+        },
+        {
+          "caller": "_augment",
+          "callee": "input_dir.glob",
+          "lineNumber": 141
+        },
+        {
+          "caller": "_augment",
+          "callee": "librosa.load",
+          "lineNumber": 142
+        },
+        {
+          "caller": "_augment",
+          "callee": "str",
+          "lineNumber": 142
+        },
+        {
+          "caller": "_augment",
+          "callee": "pw.dio",
+          "lineNumber": 143
+        },
+        {
+          "caller": "_augment",
+          "callee": "audio.astype",
+          "lineNumber": 143
+        },
+        {
+          "caller": "_augment",
+          "callee": "float",
+          "lineNumber": 144
+        },
+        {
+          "caller": "_augment",
+          "callee": "np.median",
+          "lineNumber": 144
+        },
+        {
+          "caller": "_augment",
+          "callee": "np.any",
+          "lineNumber": 144
+        },
+        {
+          "caller": "_augment",
+          "callee": "sf.write",
+          "lineNumber": 149
+        },
+        {
+          "caller": "_augment",
+          "callee": "str",
+          "lineNumber": 149
+        },
+        {
+          "caller": "_augment",
+          "callee": "sf.write",
+          "lineNumber": 151
+        },
+        {
+          "caller": "_augment",
+          "callee": "str",
+          "lineNumber": 151
+        },
+        {
+          "caller": "_augment",
+          "callee": "_pitch_shift",
+          "lineNumber": 151
+        },
+        {
+          "caller": "_augment",
+          "callee": "float",
+          "lineNumber": 151
+        },
+        {
+          "caller": "_augment",
+          "callee": "outputs.append",
+          "lineNumber": 152
+        },
+        {
+          "caller": "_augment",
+          "callee": "sf.write",
+          "lineNumber": 156
+        },
+        {
+          "caller": "_augment",
+          "callee": "str",
+          "lineNumber": 156
+        },
+        {
+          "caller": "_augment",
+          "callee": "_pitch_shift",
+          "lineNumber": 156
+        },
+        {
+          "caller": "_augment",
+          "callee": "float",
+          "lineNumber": 156
+        },
+        {
+          "caller": "_augment",
+          "callee": "outputs.append",
+          "lineNumber": 157
+        },
+        {
+          "caller": "main",
+          "callee": "load_config",
+          "lineNumber": 166
+        },
+        {
+          "caller": "main",
+          "callee": "Path",
+          "lineNumber": 167
+        },
+        {
+          "caller": "main",
+          "callee": "Path",
+          "lineNumber": 168
+        },
+        {
+          "caller": "main",
+          "callee": "Path",
+          "lineNumber": 169
+        },
+        {
+          "caller": "main",
+          "callee": "d.mkdir",
+          "lineNumber": 178
+        },
+        {
+          "caller": "main",
+          "callee": "list",
+          "lineNumber": 182
+        },
+        {
+          "caller": "main",
+          "callee": "raw_dir.rglob",
+          "lineNumber": 182
+        },
+        {
+          "caller": "main",
+          "callee": "list",
+          "lineNumber": 183
+        },
+        {
+          "caller": "main",
+          "callee": "raw_dir.rglob",
+          "lineNumber": 183
+        },
+        {
+          "caller": "main",
+          "callee": "list",
+          "lineNumber": 184
+        },
+        {
+          "caller": "main",
+          "callee": "raw_dir.rglob",
+          "lineNumber": 184
+        },
+        {
+          "caller": "main",
+          "callee": "logger.warning",
+          "lineNumber": 187
+        },
+        {
+          "caller": "main",
+          "callee": "logger.info",
+          "lineNumber": 191
+        },
+        {
+          "caller": "main",
+          "callee": "len",
+          "lineNumber": 191
+        },
+        {
+          "caller": "main",
+          "callee": "_slice",
+          "lineNumber": 195
+        },
+        {
+          "caller": "main",
+          "callee": "_normalize",
+          "lineNumber": 197
+        },
+        {
+          "caller": "main",
+          "callee": "all_sliced.extend",
+          "lineNumber": 198
+        },
+        {
+          "caller": "main",
+          "callee": "logger.error",
+          "lineNumber": 200
+        },
+        {
+          "caller": "main",
+          "callee": "sum",
+          "lineNumber": 202
+        },
+        {
+          "caller": "main",
+          "callee": "float",
+          "lineNumber": 203
+        },
+        {
+          "caller": "main",
+          "callee": "librosa.get_duration",
+          "lineNumber": 203
+        },
+        {
+          "caller": "main",
+          "callee": "str",
+          "lineNumber": 203
+        },
+        {
+          "caller": "main",
+          "callee": "logger.info",
+          "lineNumber": 205
+        },
+        {
+          "caller": "main",
+          "callee": "len",
+          "lineNumber": 205
+        },
+        {
+          "caller": "main",
+          "callee": "_augment",
+          "lineNumber": 208
+        },
+        {
+          "caller": "main",
+          "callee": "logger.info",
+          "lineNumber": 209
+        },
+        {
+          "caller": "main",
+          "callee": "len",
+          "lineNumber": 209
+        },
+        {
+          "caller": "main",
+          "callee": "len",
+          "lineNumber": 209
+        },
+        {
+          "caller": "main",
+          "callee": "len",
+          "lineNumber": 209
+        },
+        {
+          "caller": "main",
+          "callee": "list",
+          "lineNumber": 213
+        },
+        {
+          "caller": "main",
+          "callee": "source.glob",
+          "lineNumber": 213
+        },
+        {
+          "caller": "main",
+          "callee": "random.Random(42).shuffle",
+          "lineNumber": 214
+        },
+        {
+          "caller": "main",
+          "callee": "random.Random",
+          "lineNumber": 214
+        },
+        {
+          "caller": "main",
+          "callee": "int",
+          "lineNumber": 215
+        },
+        {
+          "caller": "main",
+          "callee": "len",
+          "lineNumber": 215
+        },
+        {
+          "caller": "main",
+          "callee": "shutil.copy2",
+          "lineNumber": 217
+        },
+        {
+          "caller": "main",
+          "callee": "str",
+          "lineNumber": 217
+        },
+        {
+          "caller": "main",
+          "callee": "str",
+          "lineNumber": 217
+        },
+        {
+          "caller": "main",
+          "callee": "shutil.copy2",
+          "lineNumber": 219
+        },
+        {
+          "caller": "main",
+          "callee": "str",
+          "lineNumber": 219
+        },
+        {
+          "caller": "main",
+          "callee": "str",
+          "lineNumber": 219
+        },
+        {
+          "caller": "main",
+          "callee": "logger.info",
+          "lineNumber": 221
+        },
+        {
+          "caller": "main",
+          "callee": "len",
+          "lineNumber": 221
+        },
+        {
+          "caller": "main",
+          "callee": "logger.info",
+          "lineNumber": 222
+        },
+        {
+          "caller": "main",
+          "callee": "len",
+          "lineNumber": 222
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 7,
+        "functionCount": 7,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "scripts/train/README.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 46,
+      "nonEmptyLines": 37,
+      "sections": [
+        {
+          "heading": "Training Paradigm — Character Singing Voice Model",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Quick Start",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Data Requirements",
+          "level": 2,
+          "line": 17
+        },
+        {
+          "heading": "Directory Layout",
+          "level": 2,
+          "line": 24
+        },
+        {
+          "heading": "CLI Reference",
+          "level": 2,
+          "line": 34
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 5
+      }
+    }
+  ]
+}

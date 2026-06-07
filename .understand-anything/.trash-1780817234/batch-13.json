@@ -1,0 +1,1832 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 20,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "docs/plans/2026-04-29-pipeline-stats-dashboard-design.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 178,
+      "nonEmptyLines": 134,
+      "sections": [
+        {
+          "heading": "Pipeline Stats Dashboard 设计文档",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "目标",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "方案选型",
+          "level": 2,
+          "line": 12
+        },
+        {
+          "heading": "数据模型",
+          "level": 2,
+          "line": 27
+        },
+        {
+          "heading": "模块设计",
+          "level": 2,
+          "line": 42
+        },
+        {
+          "heading": "1. 数据采集 —— StatsCallbackHandler",
+          "level": 3,
+          "line": 44
+        },
+        {
+          "heading": "2. 数据存储 —— SQLite",
+          "level": 3,
+          "line": 58
+        },
+        {
+          "heading": "3. 后端 API —— FastAPI 路由",
+          "level": 3,
+          "line": 93
+        },
+        {
+          "heading": "4. 前端 Dashboard —— 独立 Web 页面",
+          "level": 3,
+          "line": 104
+        },
+        {
+          "heading": "集成方式",
+          "level": 2,
+          "line": 137
+        },
+        {
+          "heading": "多 Agent 扩展预留",
+          "level": 2,
+          "line": 151
+        },
+        {
+          "heading": "文件变更清单",
+          "level": 2,
+          "line": 168
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 12
+      }
+    },
+    {
+      "path": "docs/plans/2026-04-29-pipeline-stats-dashboard.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 1147,
+      "nonEmptyLines": 940,
+      "sections": [
+        {
+          "heading": "Pipeline Stats Dashboard 实施计划",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Task 1: SQLite 存储层 —— StatsStore",
+          "level": 3,
+          "line": 13
+        },
+        {
+          "heading": "Task 2: Callback Handler —— StatsCallbackHandler",
+          "level": 3,
+          "line": 259
+        },
+        {
+          "heading": "Task 3: 集成到 Orchestrator",
+          "level": 3,
+          "line": 482
+        },
+        {
+          "heading": "Task 4: HTTP API 路由",
+          "level": 3,
+          "line": 542
+        },
+        {
+          "heading": "Task 5: 添加 .gitignore 和依赖",
+          "level": 3,
+          "line": 672
+        },
+        {
+          "heading": "Task 6: 前端 Dashboard",
+          "level": 3,
+          "line": 711
+        },
+        {
+          "heading": "Task 7: 端到端验证",
+          "level": 3,
+          "line": 1097
+        },
+        {
+          "heading": "文件变更清单",
+          "level": 2,
+          "line": 1134
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-01-enterprise-upgrade-design.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 248,
+      "nonEmptyLines": 189,
+      "sections": [
+        {
+          "heading": "Enterprise-Grade Upgrade: Anima Project",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Strategic Approach",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "Layer 1: Infrastructure (Weeks 1-2)",
+          "level": 2,
+          "line": 22
+        },
+        {
+          "heading": "1.1 Test Infrastructure (Week 1)",
+          "level": 3,
+          "line": 27
+        },
+        {
+          "heading": "1.2 Type System + Lint (Weeks 1-2)",
+          "level": 3,
+          "line": 45
+        },
+        {
+          "heading": "1.3 CI/CD Pipeline (Week 2)",
+          "level": 3,
+          "line": 63
+        },
+        {
+          "heading": "Layer 1 Exit Criteria",
+          "level": 3,
+          "line": 70
+        },
+        {
+          "heading": "Layer 2: AI Capability (Weeks 3-6)",
+          "level": 2,
+          "line": 80
+        },
+        {
+          "heading": "2.1 LangGraph Node Tests (Weeks 3-4)",
+          "level": 3,
+          "line": 86
+        },
+        {
+          "heading": "2.2 Tool System Hardening (Week 4)",
+          "level": 3,
+          "line": 106
+        },
+        {
+          "heading": "2.3 Memory System Hardening (Week 5)",
+          "level": 3,
+          "line": 119
+        },
+        {
+          "heading": "2.4 Observability (Weeks 5-6)",
+          "level": 3,
+          "line": 136
+        },
+        {
+          "heading": "2.5 Configuration Management (Week 6)",
+          "level": 3,
+          "line": 149
+        },
+        {
+          "heading": "Layer 2 Exit Criteria",
+          "level": 3,
+          "line": 159
+        },
+        {
+          "heading": "Layer 3: Delivery (Weeks 7-8)",
+          "level": 2,
+          "line": 170
+        },
+        {
+          "heading": "3.1 Containerization (Week 7)",
+          "level": 3,
+          "line": 175
+        },
+        {
+          "heading": "3.2 Documentation Overhaul (Weeks 7-8)",
+          "level": 3,
+          "line": 187
+        },
+        {
+          "heading": "3.3 Demo Deployment (Week 8)",
+          "level": 3,
+          "line": 201
+        },
+        {
+          "heading": "3.4 Final Polish (Week 8)",
+          "level": 3,
+          "line": 210
+        },
+        {
+          "heading": "Layer 3 Exit Criteria",
+          "level": 3,
+          "line": 218
+        },
+        {
+          "heading": "Timeline Summary",
+          "level": 2,
+          "line": 229
+        },
+        {
+          "heading": "Pre-existing Technical Debt (Not in Scope)",
+          "level": 2,
+          "line": 242
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 22
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-01-enterprise-upgrade-plan.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 810,
+      "nonEmptyLines": 588,
+      "sections": [
+        {
+          "heading": "Enterprise-Grade Upgrade Implementation Plan",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Layer 1: Infrastructure (Week 1-2)",
+          "level": 2,
+          "line": 13
+        },
+        {
+          "heading": "Task 1.1: Configure pytest with asyncio and coverage",
+          "level": 3,
+          "line": 15
+        },
+        {
+          "heading": "Task 1.2: Create conftest.py with shared mock fixtures",
+          "level": 3,
+          "line": 52
+        },
+        {
+          "heading": "Task 1.3: Create GitHub Actions CI workflow",
+          "level": 3,
+          "line": 140
+        },
+        {
+          "heading": "Task 1.4: Add ruff and mypy configuration",
+          "level": 3,
+          "line": 194
+        },
+        {
+          "heading": "Task 1.5: Fix Pydantic V2 deprecation warnings",
+          "level": 3,
+          "line": 239
+        },
+        {
+          "heading": "Task 1.6: Write TESTING.md",
+          "level": 3,
+          "line": 285
+        },
+        {
+          "heading": "Task 1.7: Add CI badge to README",
+          "level": 3,
+          "line": 316
+        },
+        {
+          "heading": "Layer 2: AI Capability (Week 3-6)",
+          "level": 2,
+          "line": 342
+        },
+        {
+          "heading": "Task 2.1: Write llm_node tests",
+          "level": 3,
+          "line": 344
+        },
+        {
+          "heading": "Task 2.2: Write tts_node tests",
+          "level": 3,
+          "line": 412
+        },
+        {
+          "heading": "Task 2.3: Write emotion_node tests",
+          "level": 3,
+          "line": 425
+        },
+        {
+          "heading": "Task 2.4: Write output_node tests",
+          "level": 3,
+          "line": 437
+        },
+        {
+          "heading": "Task 2.5: Write orchestrator integration tests",
+          "level": 3,
+          "line": 449
+        },
+        {
+          "heading": "Task 2.6: Write MCP bridge graceful degradation",
+          "level": 3,
+          "line": 463
+        },
+        {
+          "heading": "Task 2.7: Write memory chunker tests",
+          "level": 3,
+          "line": 505
+        },
+        {
+          "heading": "Task 2.8: Write hybrid search tests",
+          "level": 3,
+          "line": 518
+        },
+        {
+          "heading": "Task 2.9: Register stats_api routes on main ASGI app",
+          "level": 3,
+          "line": 531
+        },
+        {
+          "heading": "Task 2.10: Add /health endpoint",
+          "level": 3,
+          "line": 556
+        },
+        {
+          "heading": "Task 2.11: Write .env.example",
+          "level": 3,
+          "line": 593
+        },
+        {
+          "heading": "Layer 3: Delivery (Week 7-8)",
+          "level": 2,
+          "line": 625
+        },
+        {
+          "heading": "Task 3.1: Create Dockerfile",
+          "level": 3,
+          "line": 627
+        },
+        {
+          "heading": "Task 3.2: Create docker-compose.yml",
+          "level": 3,
+          "line": 657
+        },
+        {
+          "heading": "Task 3.3: Write ARCHITECTURE.md",
+          "level": 3,
+          "line": 682
+        },
+        {
+          "heading": "Task 3.4: Rewrite README.md",
+          "level": 3,
+          "line": 697
+        },
+        {
+          "heading": "Task 3.5: Deploy demo to Fly.io",
+          "level": 3,
+          "line": 714
+        },
+        {
+          "heading": "Task 3.6: Translate Chinese comments to English",
+          "level": 3,
+          "line": 750
+        },
+        {
+          "heading": "Task 3.7: Clean up stale files",
+          "level": 3,
+          "line": 763
+        },
+        {
+          "heading": "Quick Reference: Full Task List",
+          "level": 2,
+          "line": 773
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 30
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-01-enterprise-upgrade-status.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 83,
+      "nonEmptyLines": 65,
+      "sections": [
+        {
+          "heading": "Enterprise Upgrade — Progress Snapshot",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Overall",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "Layer 1: Infrastructure ✅ DONE",
+          "level": 2,
+          "line": 24
+        },
+        {
+          "heading": "Layer 2: AI Capability ✅ DONE",
+          "level": 2,
+          "line": 36
+        },
+        {
+          "heading": "Layer 3: Delivery ✅ DONE (this session)",
+          "level": 2,
+          "line": 52
+        },
+        {
+          "heading": "Bonus Deliverables",
+          "level": 2,
+          "line": 64
+        },
+        {
+          "heading": "Current Test State",
+          "level": 2,
+          "line": 73
+        },
+        {
+          "heading": "Remaining (lower priority)",
+          "level": 2,
+          "line": 79
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-01-interview-showcase-design.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 276,
+      "nonEmptyLines": 215,
+      "sections": [
+        {
+          "heading": "Interview Showcase: Observability + Demo Enhancements",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Strategic Approach",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "Section 1: Vue3 Dashboard",
+          "level": 2,
+          "line": 27
+        },
+        {
+          "heading": "Data Flow",
+          "level": 3,
+          "line": 29
+        },
+        {
+          "heading": "Components",
+          "level": 3,
+          "line": 51
+        },
+        {
+          "heading": "Tech Stack",
+          "level": 3,
+          "line": 62
+        },
+        {
+          "heading": "Files to Create",
+          "level": 3,
+          "line": 69
+        },
+        {
+          "heading": "Non-Goals",
+          "level": 3,
+          "line": 84
+        },
+        {
+          "heading": "Section 2: Architecture Decision Records (ADRs)",
+          "level": 2,
+          "line": 91
+        },
+        {
+          "heading": "ADR Format",
+          "level": 3,
+          "line": 93
+        },
+        {
+          "heading": "ADR List",
+          "level": 3,
+          "line": 115
+        },
+        {
+          "heading": "Files to Create",
+          "level": 3,
+          "line": 125
+        },
+        {
+          "heading": "Section 3: Enhanced ARCHITECTURE.md Diagrams",
+          "level": 2,
+          "line": 139
+        },
+        {
+          "heading": "New Diagrams",
+          "level": 3,
+          "line": 141
+        },
+        {
+          "heading": "Section 4: Benchmark Script",
+          "level": 2,
+          "line": 195
+        },
+        {
+          "heading": "Script Design",
+          "level": 3,
+          "line": 197
+        },
+        {
+          "heading": "Metrics",
+          "level": 3,
+          "line": 209
+        },
+        {
+          "heading": "Output",
+          "level": 3,
+          "line": 220
+        },
+        {
+          "heading": "Section 5: Interview Demo Script",
+          "level": 2,
+          "line": 236
+        },
+        {
+          "heading": "Demo Walkthrough (15-20 minutes)",
+          "level": 3,
+          "line": 238
+        },
+        {
+          "heading": "Interview Q&A Preparation",
+          "level": 3,
+          "line": 251
+        },
+        {
+          "heading": "Implementation Phasing",
+          "level": 2,
+          "line": 257
+        },
+        {
+          "heading": "Exit Criteria",
+          "level": 2,
+          "line": 269
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 23
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-01-interview-showcase-plan.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 793,
+      "nonEmptyLines": 617,
+      "sections": [
+        {
+          "heading": "Interview Showcase Implementation Plan",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Phase 1: Vue3 Dashboard (6 components + store + route)",
+          "level": 2,
+          "line": 15
+        },
+        {
+          "heading": "Task 1.1: Create dashboard Pinia store",
+          "level": 3,
+          "line": 17
+        },
+        {
+          "heading": "Task 1.2: Create StatsKpiCards component",
+          "level": 3,
+          "line": 128
+        },
+        {
+          "heading": "Task 1.3: Create LatencyBreakdown chart component",
+          "level": 3,
+          "line": 178
+        },
+        {
+          "heading": "Task 1.4: Create TokenUsageChart component",
+          "level": 3,
+          "line": 253
+        },
+        {
+          "heading": "Task 1.5: Create ErrorRateCard and SessionTimeline components",
+          "level": 3,
+          "line": 328
+        },
+        {
+          "heading": "Task 1.6: Create DashboardPage view and route",
+          "level": 3,
+          "line": 420
+        },
+        {
+          "heading": "Phase 2: Architecture Decision Records",
+          "level": 2,
+          "line": 512
+        },
+        {
+          "heading": "Task 2.1: Create ADR index and ADR-001",
+          "level": 3,
+          "line": 514
+        },
+        {
+          "heading": "Task 2.2: Create ADR-002 through ADR-005",
+          "level": 3,
+          "line": 547
+        },
+        {
+          "heading": "Phase 3: Enhanced ARCHITECTURE.md",
+          "level": 2,
+          "line": 572
+        },
+        {
+          "heading": "Task 3.1: Add C4-level Mermaid diagrams",
+          "level": 3,
+          "line": 574
+        },
+        {
+          "heading": "Phase 4: Benchmark Script",
+          "level": 2,
+          "line": 636
+        },
+        {
+          "heading": "Task 4.1: Create benchmark script",
+          "level": 3,
+          "line": 638
+        },
+        {
+          "heading": "Phase 5: Demo Script + Interview Q&A",
+          "level": 2,
+          "line": 746
+        },
+        {
+          "heading": "Task 5.1: Write interview demo script",
+          "level": 3,
+          "line": 748
+        },
+        {
+          "heading": "Task 5.2: Write interview Q&A",
+          "level": 3,
+          "line": 755
+        },
+        {
+          "heading": "Task Master List",
+          "level": 2,
+          "line": 769
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 19
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-01-startup-refactor-design.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 76,
+      "nonEmptyLines": 58,
+      "sections": [
+        {
+          "heading": "Startup Script Refactoring Design",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Problem",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "Solution",
+          "level": 2,
+          "line": 19
+        },
+        {
+          "heading": "Module Details",
+          "level": 2,
+          "line": 35
+        },
+        {
+          "heading": "`colors.py`",
+          "level": 3,
+          "line": 37
+        },
+        {
+          "heading": "`process.py`",
+          "level": 3,
+          "line": 40
+        },
+        {
+          "heading": "`services.py`",
+          "level": 3,
+          "line": 43
+        },
+        {
+          "heading": "`web_config_server.py`",
+          "level": 3,
+          "line": 50
+        },
+        {
+          "heading": "`browser.py`",
+          "level": 3,
+          "line": 53
+        },
+        {
+          "heading": "`start.py` (entry point)",
+          "level": 3,
+          "line": 56
+        },
+        {
+          "heading": "Behavioral Changes",
+          "level": 2,
+          "line": 64
+        },
+        {
+          "heading": "Non-Goals",
+          "level": 2,
+          "line": 72
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 12
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-01-startup-refactor-plan.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 539,
+      "nonEmptyLines": 410,
+      "sections": [
+        {
+          "heading": "Startup Script Refactoring Implementation Plan",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Task 1: Create package directory + colors.py",
+          "level": 3,
+          "line": 15
+        },
+        {
+          "heading": "Task 2: Extract process.py",
+          "level": 3,
+          "line": 45
+        },
+        {
+          "heading": "Task 3: Create web_config_server.py",
+          "level": 3,
+          "line": 68
+        },
+        {
+          "heading": "Task 4: Create services.py",
+          "level": 3,
+          "line": 126
+        },
+        {
+          "heading": "Task 5: Create browser.py",
+          "level": 3,
+          "line": 257
+        },
+        {
+          "heading": "Task 6: Create __init__.py",
+          "level": 3,
+          "line": 300
+        },
+        {
+          "heading": "Task 7: Rewrite start.py as thin entry point",
+          "level": 3,
+          "line": 323
+        },
+        {
+          "heading": "Task 8: Update README references",
+          "level": 3,
+          "line": 525
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-01-unified-model-loading-design.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 184,
+      "nonEmptyLines": 147,
+      "sections": [
+        {
+          "heading": "Unified Model Loading System",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Problem",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Design: ModelLoadingManager",
+          "level": 2,
+          "line": 23
+        },
+        {
+          "heading": "Architecture",
+          "level": 3,
+          "line": 25
+        },
+        {
+          "heading": "ModelLoadingManager API",
+          "level": 3,
+          "line": 41
+        },
+        {
+          "heading": "Event Flow",
+          "level": 3,
+          "line": 104
+        },
+        {
+          "heading": "Socket.IO Events (Frontend Progress)",
+          "level": 3,
+          "line": 134
+        },
+        {
+          "heading": "Implementation Plan",
+          "level": 3,
+          "line": 150
+        },
+        {
+          "heading": "Testing",
+          "level": 3,
+          "line": 172
+        },
+        {
+          "heading": "Non-Goals",
+          "level": 3,
+          "line": 180
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 10
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-01-unified-model-loading-plan.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 834,
+      "nonEmptyLines": 617,
+      "sections": [
+        {
+          "heading": "Unified Model Loading System Implementation Plan",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Task 1: Create ModelLoadingManager class",
+          "level": 3,
+          "line": 15
+        },
+        {
+          "heading": "Task 2: Add preload() to FasterWhisperASR (idempotent)",
+          "level": 3,
+          "line": 312
+        },
+        {
+          "heading": "Task 3: Add preload() to ChatTTSTTS",
+          "level": 3,
+          "line": 378
+        },
+        {
+          "heading": "Task 4: Add preload() to SileroVAD",
+          "level": 3,
+          "line": 432
+        },
+        {
+          "heading": "Task 5: Add preload() to GLMLLM",
+          "level": 3,
+          "line": 482
+        },
+        {
+          "heading": "Task 6: Integrate ModelLoadingManager into WebSocketServer lifecycle",
+          "level": 3,
+          "line": 540
+        },
+        {
+          "heading": "Task 7: Modify ServiceContext to use ModelLoadingManager",
+          "level": 3,
+          "line": 609
+        },
+        {
+          "heading": "Task 8: Register services with ModelLoadingManager at server startup",
+          "level": 3,
+          "line": 675
+        },
+        {
+          "heading": "Task 9: Add warmup call to server startup",
+          "level": 3,
+          "line": 733
+        },
+        {
+          "heading": "Task 10: Remove ad-hoc preload from ServiceContext (cleanup)",
+          "level": 3,
+          "line": 797
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 11
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-10-background-command-design.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 89,
+      "nonEmptyLines": 60,
+      "sections": [
+        {
+          "heading": "Agent 阻塞命令后台执行约定",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "问题",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "解决方案",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "工作命令模板（已验证生效）",
+          "level": 3,
+          "line": 14
+        },
+        {
+          "heading": "Step-by-step 3 步法",
+          "level": 3,
+          "line": 26
+        },
+        {
+          "heading": "如果需要设置环境变量",
+          "level": 3,
+          "line": 42
+        },
+        {
+          "heading": "关指定窗口（通过标题）",
+          "level": 1,
+          "line": 56
+        },
+        {
+          "heading": "或直接杀进程",
+          "level": 1,
+          "line": 59
+        },
+        {
+          "heading": "端口检查",
+          "level": 1,
+          "line": 66
+        },
+        {
+          "heading": "日志检查",
+          "level": 1,
+          "line": 69
+        },
+        {
+          "heading": "启动 MC Bot",
+          "level": 1,
+          "line": 84
+        },
+        {
+          "heading": "启动 Anima 后端",
+          "level": 1,
+          "line": 87
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 12
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-10-interview-enhancements-design.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 327,
+      "nonEmptyLines": 249,
+      "sections": [
+        {
+          "heading": "Interview Enhancements — Detailed Design",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Overview",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "P1: Benchmark Report (Priority 1)",
+          "level": 2,
+          "line": 14
+        },
+        {
+          "heading": "Goal",
+          "level": 3,
+          "line": 16
+        },
+        {
+          "heading": "Design",
+          "level": 3,
+          "line": 21
+        },
+        {
+          "heading": "P2: Error Resilience (Priority 2)",
+          "level": 2,
+          "line": 83
+        },
+        {
+          "heading": "Goal",
+          "level": 3,
+          "line": 85
+        },
+        {
+          "heading": "Design",
+          "level": 3,
+          "line": 91
+        },
+        {
+          "heading": "P3: Redis Session Sharing (Priority 3)",
+          "level": 2,
+          "line": 150
+        },
+        {
+          "heading": "Goal",
+          "level": 3,
+          "line": 152
+        },
+        {
+          "heading": "Design",
+          "level": 3,
+          "line": 158
+        },
+        {
+          "heading": "P4: LLM Evaluation Framework (Priority 4)",
+          "level": 2,
+          "line": 231
+        },
+        {
+          "heading": "Goal",
+          "level": 3,
+          "line": 233
+        },
+        {
+          "heading": "Design",
+          "level": 3,
+          "line": 238
+        },
+        {
+          "heading": "Implementation Order",
+          "level": 2,
+          "line": 293
+        },
+        {
+          "heading": "Dependencies",
+          "level": 2,
+          "line": 304
+        },
+        {
+          "heading": "Testing Strategy",
+          "level": 2,
+          "line": 311
+        },
+        {
+          "heading": "Risks",
+          "level": 2,
+          "line": 320
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 18
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-10-interview-enhancements-plan.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 909,
+      "nonEmptyLines": 684,
+      "sections": [
+        {
+          "heading": "Interview Enhancements — Implementation Plan",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Priority 1: Benchmark Report (7 tasks)",
+          "level": 2,
+          "line": 16
+        },
+        {
+          "heading": "Task 1.1: Add CLI flags to benchmark.py",
+          "level": 3,
+          "line": 18
+        },
+        {
+          "heading": "Task 1.2: Implement mock-mode benchmark with configurable turns",
+          "level": 3,
+          "line": 57
+        },
+        {
+          "heading": "Task 1.3: Implement concurrency support",
+          "level": 3,
+          "line": 101
+        },
+        {
+          "heading": "Task 1.4: Implement real-provider mode",
+          "level": 3,
+          "line": 155
+        },
+        {
+          "heading": "Task 1.5: Output JSON summary to docs/benchmarks/runs/<timestamp>.json",
+          "level": 3,
+          "line": 201
+        },
+        {
+          "heading": "Task 1.6: Generate BENCHMARK.md from results",
+          "level": 3,
+          "line": 232
+        },
+        {
+          "heading": "Task 1.7: Run baseline benchmark and commit results",
+          "level": 3,
+          "line": 266
+        },
+        {
+          "heading": "Priority 2: Error Resilience (7 tasks)",
+          "level": 2,
+          "line": 275
+        },
+        {
+          "heading": "Task 2.1: Add configurable timeout to LLM provider calls",
+          "level": 3,
+          "line": 277
+        },
+        {
+          "heading": "Task 2.2: Implement catch-and-fallback in llm_node.py",
+          "level": 3,
+          "line": 319
+        },
+        {
+          "heading": "Task 2.3: Implement catch-and-fallback in tts_node.py and asr_node.py",
+          "level": 3,
+          "line": 352
+        },
+        {
+          "heading": "Task 2.4: Add error_type field to StatsStore traces/spans",
+          "level": 3,
+          "line": 380
+        },
+        {
+          "heading": "Task 2.5: Add error rate counter to Dashboard KPI cards",
+          "level": 3,
+          "line": 395
+        },
+        {
+          "heading": "Task 2.6: Write test — mock LLM timeout → fallback → Dashboard error count",
+          "level": 3,
+          "line": 436
+        },
+        {
+          "heading": "Task 2.7: Write test — fallback is per-turn",
+          "level": 3,
+          "line": 483
+        },
+        {
+          "heading": "Priority 3: Redis Session Sharing (7 tasks)",
+          "level": 2,
+          "line": 516
+        },
+        {
+          "heading": "Task 3.1: Add redis[hiredis] as optional dependency",
+          "level": 3,
+          "line": 518
+        },
+        {
+          "heading": "Task 3.2: Implement AsyncRedisSaver",
+          "level": 3,
+          "line": 530
+        },
+        {
+          "heading": "Task 3.3: Add --redis-url CLI argument to socketio_server.py",
+          "level": 3,
+          "line": 593
+        },
+        {
+          "heading": "Task 3.4: Wire Redis checkpoint into builder.py",
+          "level": 3,
+          "line": 613
+        },
+        {
+          "heading": "Task 3.5: Implement Redis unavailable fallback",
+          "level": 3,
+          "line": 643
+        },
+        {
+          "heading": "Task 3.6: Write test — session persists across server restart with Redis",
+          "level": 3,
+          "line": 649
+        },
+        {
+          "heading": "Task 3.7: Write test — fallback to MemorySaver when Redis unreachable",
+          "level": 3,
+          "line": 686
+        },
+        {
+          "heading": "Priority 4: LLM Evaluation Framework (8 tasks)",
+          "level": 2,
+          "line": 704
+        },
+        {
+          "heading": "Task 4.1: Add sentence-transformers as optional dependency",
+          "level": 3,
+          "line": 706
+        },
+        {
+          "heading": "Task 4.2: Create scripts/eval_llm.py with CLI",
+          "level": 3,
+          "line": 715
+        },
+        {
+          "heading": "Task 4.3: Implement prompt loading from file",
+          "level": 3,
+          "line": 742
+        },
+        {
+          "heading": "Task 4.4: Implement parallel LLM querying",
+          "level": 3,
+          "line": 758
+        },
+        {
+          "heading": "Task 4.5: Implement semantic similarity scoring",
+          "level": 3,
+          "line": 796
+        },
+        {
+          "heading": "Task 4.6: Generate JSON + Markdown output",
+          "level": 3,
+          "line": 816
+        },
+        {
+          "heading": "Task 4.7: Create sample eval prompt file",
+          "level": 3,
+          "line": 856
+        },
+        {
+          "heading": "Task 4.8: Run initial evaluation and commit results",
+          "level": 3,
+          "line": 872
+        },
+        {
+          "heading": "Summary of Files",
+          "level": 2,
+          "line": 881
+        },
+        {
+          "heading": "Execution Approach",
+          "level": 2,
+          "line": 902
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 36
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-10-interview-flow-design.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 79,
+      "nonEmptyLines": 62,
+      "sections": [
+        {
+          "heading": "Interview Flow Design — AI Orchestration Engine Narrative",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Storyline",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "Flow",
+          "level": 2,
+          "line": 11
+        },
+        {
+          "heading": "Key Talking Points Per Step",
+          "level": 2,
+          "line": 23
+        },
+        {
+          "heading": "Step 1 — Hook",
+          "level": 3,
+          "line": 25
+        },
+        {
+          "heading": "Step 2 — LangGraph Core",
+          "level": 3,
+          "line": 29
+        },
+        {
+          "heading": "Step 3 — Plugin Architecture",
+          "level": 3,
+          "line": 35
+        },
+        {
+          "heading": "Step 4a — Livestream",
+          "level": 3,
+          "line": 41
+        },
+        {
+          "heading": "Step 4b — Minecraft",
+          "level": 3,
+          "line": 45
+        },
+        {
+          "heading": "Step 5 — Memory Depth",
+          "level": 3,
+          "line": 51
+        },
+        {
+          "heading": "Step 6 — Engineering Quality",
+          "level": 3,
+          "line": 57
+        },
+        {
+          "heading": "Backup Q&A Reserve",
+          "level": 2,
+          "line": 64
+        },
+        {
+          "heading": "Demo Preparation Checklist",
+          "level": 2,
+          "line": 72
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 13
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-10-memory-architecture-refactor-design.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 69,
+      "nonEmptyLines": 56,
+      "sections": [
+        {
+          "heading": "记忆模块架构重构设计",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "现状问题",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "目标架构",
+          "level": 2,
+          "line": 21
+        },
+        {
+          "heading": "关键决策",
+          "level": 2,
+          "line": 36
+        },
+        {
+          "heading": "1. Wiki 统一存储",
+          "level": 3,
+          "line": 38
+        },
+        {
+          "heading": "2. Fuzzy 变虚层",
+          "level": 3,
+          "line": 44
+        },
+        {
+          "heading": "3. 去掉搜索按钮",
+          "level": 3,
+          "line": 49
+        },
+        {
+          "heading": "4. 调度任务调整",
+          "level": 3,
+          "line": 54
+        },
+        {
+          "heading": "迁移路径",
+          "level": 2,
+          "line": 61
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-10-memory-architecture-refactor.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 754,
+      "nonEmptyLines": 582,
+      "sections": [
+        {
+          "heading": "记忆模块架构重构 Implementation Plan",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Task 1: PageType 加 MEME + Wiki 目录初始化",
+          "level": 3,
+          "line": 15
+        },
+        {
+          "heading": "Task 2: MemeStore 改为 Wiki 适配层",
+          "level": 3,
+          "line": 73
+        },
+        {
+          "heading": "Task 3: 迁移现有 FuzzyMemory 到 wiki synthesis/",
+          "level": 3,
+          "line": 249
+        },
+        {
+          "heading": "Task 4: 实现 FuzzyLayer 虚层",
+          "level": 3,
+          "line": 313
+        },
+        {
+          "heading": "Task 5: MemoryMiddleware 改用 FuzzyLayer",
+          "level": 3,
+          "line": 445
+        },
+        {
+          "heading": "Task 6: 去掉前端搜索 + 改记忆面板为 wiki 浏览",
+          "level": 3,
+          "line": 534
+        },
+        {
+          "heading": "Task 7: 清理废弃代码 + 删除旧 SQLite 表",
+          "level": 3,
+          "line": 639
+        },
+        {
+          "heading": "Task 8: 调度任务改为写 wiki",
+          "level": 3,
+          "line": 684
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-12-memory-pipeline-tests-design.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 34,
+      "nonEmptyLines": 24,
+      "sections": [
+        {
+          "heading": "Memory Pipeline Integration Tests Design",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Scope",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "Architecture",
+          "level": 2,
+          "line": 15
+        },
+        {
+          "heading": "Implementation",
+          "level": 2,
+          "line": 32
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-17-singing-module-design.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 181,
+      "nonEmptyLines": 147,
+      "sections": [
+        {
+          "heading": "Singing Module Design — AI Cover via GPT-SoVITS SVC",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Overview",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "Pipeline",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "Backend Architecture",
+          "level": 2,
+          "line": 34
+        },
+        {
+          "heading": "Service Package",
+          "level": 3,
+          "line": 36
+        },
+        {
+          "heading": "Socket.IO Events",
+          "level": 3,
+          "line": 51
+        },
+        {
+          "heading": "Pipeline States",
+          "level": 3,
+          "line": 63
+        },
+        {
+          "heading": "GPT-SoVITS SVC Integration",
+          "level": 3,
+          "line": 73
+        },
+        {
+          "heading": "Audio Output",
+          "level": 3,
+          "line": 80
+        },
+        {
+          "heading": "Frontend Architecture",
+          "level": 2,
+          "line": 86
+        },
+        {
+          "heading": "New Files",
+          "level": 3,
+          "line": 88
+        },
+        {
+          "heading": "UI Integration",
+          "level": 3,
+          "line": 102
+        },
+        {
+          "heading": "MusicCard Component Layout",
+          "level": 3,
+          "line": 108
+        },
+        {
+          "heading": "Lyric → Subtitle Flow",
+          "level": 3,
+          "line": 130
+        },
+        {
+          "heading": "Live2D Lip Sync",
+          "level": 3,
+          "line": 139
+        },
+        {
+          "heading": "Configuration",
+          "level": 2,
+          "line": 145
+        },
+        {
+          "heading": "Out of Scope (v1)",
+          "level": 2,
+          "line": 166
+        },
+        {
+          "heading": "Future Iterations",
+          "level": 2,
+          "line": 176
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 18
+      }
+    },
+    {
+      "path": "docs/plans/2026-05-17-singing-module-plan.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 1748,
+      "nonEmptyLines": 1387,
+      "sections": [
+        {
+          "heading": "Singing Module Implementation Plan",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Backend Tasks",
+          "level": 2,
+          "line": 13
+        },
+        {
+          "heading": "Task 1: Create singing config",
+          "level": 3,
+          "line": 15
+        },
+        {
+          "heading": "Task 2: Create singing service package skeleton",
+          "level": 3,
+          "line": 121
+        },
+        {
+          "heading": "Task 3: Implement Bilibili downloader",
+          "level": 3,
+          "line": 236
+        },
+        {
+          "heading": "Task 4: Implement UVR source separator",
+          "level": 3,
+          "line": 328
+        },
+        {
+          "heading": "Task 5: Implement ASR lyrics module",
+          "level": 3,
+          "line": 423
+        },
+        {
+          "heading": "Task 6: Implement GPT-SoVITS SVC bridge",
+          "level": 3,
+          "line": 545
+        },
+        {
+          "heading": "Task 7: Implement audio mixer",
+          "level": 3,
+          "line": 648
+        },
+        {
+          "heading": "Task 8: Implement pipeline orchestrator",
+          "level": 3,
+          "line": 742
+        },
+        {
+          "heading": "Task 9: Add Socket.IO singing handlers",
+          "level": 3,
+          "line": 924
+        },
+        {
+          "heading": "Frontend Tasks",
+          "level": 2,
+          "line": 1078
+        },
+        {
+          "heading": "Task 10: Create singing types and store",
+          "level": 3,
+          "line": 1080
+        },
+        {
+          "heading": "Task 11: Create useSinging composable",
+          "level": 3,
+          "line": 1202
+        },
+        {
+          "heading": "Task 12: Create music card components",
+          "level": 3,
+          "line": 1299
+        },
+        {
+          "heading": "Task 13: Add \"音乐\" tab to InteractivePanel",
+          "level": 3,
+          "line": 1692
+        },
+        {
+          "heading": "Execution Handoff",
+          "level": 2,
+          "line": 1738
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 17
+      }
+    }
+  ]
+}

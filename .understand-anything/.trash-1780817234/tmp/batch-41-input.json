@@ -1,0 +1,182 @@
+{
+  "projectRoot": "C:\\Users\\30262\\Project\\Anima",
+  "batchFiles": [
+    {
+      "path": "src/animetta/services/live2d/viseme_sync.py",
+      "language": "python",
+      "sizeLines": 323,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/llm/__init__.py",
+      "language": "python",
+      "sizeLines": 76,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/llm/factory.py",
+      "language": "python",
+      "sizeLines": 109,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/llm/glm_llm.py",
+      "language": "python",
+      "sizeLines": 311,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/llm/glm_message_converter.py",
+      "language": "python",
+      "sizeLines": 166,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/llm/interface.py",
+      "language": "python",
+      "sizeLines": 128,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/llm/langchain_adapter.py",
+      "language": "python",
+      "sizeLines": 188,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/llm/local_lora_llm.py",
+      "language": "python",
+      "sizeLines": 383,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/llm/mock_llm.py",
+      "language": "python",
+      "sizeLines": 190,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/llm/ollama_llm.py",
+      "language": "python",
+      "sizeLines": 227,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/llm/openai_llm.py",
+      "language": "python",
+      "sizeLines": 394,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/llm/stream_handler.py",
+      "language": "python",
+      "sizeLines": 107,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/llm/tool_handler.py",
+      "language": "python",
+      "sizeLines": 202,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/meme/__init__.py",
+      "language": "python",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/meme/analyzer.py",
+      "language": "python",
+      "sizeLines": 270,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/meme/bilibili_collector.py",
+      "language": "python",
+      "sizeLines": 969,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/meme/bilibili_interaction.py",
+      "language": "python",
+      "sizeLines": 429,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/meme/danmaku_buffer.py",
+      "language": "python",
+      "sizeLines": 226,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/separation/__init__.py",
+      "language": "python",
+      "sizeLines": 11,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/separation/demucs_separation.py",
+      "language": "python",
+      "sizeLines": 299,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/separation/factory.py",
+      "language": "python",
+      "sizeLines": 71,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/separation/interface.py",
+      "language": "python",
+      "sizeLines": 45,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/separation/mock_separation.py",
+      "language": "python",
+      "sizeLines": 59,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/singing/__init__.py",
+      "language": "python",
+      "sizeLines": 13,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/services/singing/bilibili.py",
+      "language": "python",
+      "sizeLines": 186,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "src/animetta/services/live2d/viseme_sync.py": [],
+    "src/animetta/services/llm/__init__.py": [],
+    "src/animetta/services/llm/factory.py": [],
+    "src/animetta/services/llm/glm_llm.py": [],
+    "src/animetta/services/llm/glm_message_converter.py": [],
+    "src/animetta/services/llm/interface.py": [],
+    "src/animetta/services/llm/langchain_adapter.py": [],
+    "src/animetta/services/llm/local_lora_llm.py": [],
+    "src/animetta/services/llm/mock_llm.py": [],
+    "src/animetta/services/llm/ollama_llm.py": [],
+    "src/animetta/services/llm/openai_llm.py": [],
+    "src/animetta/services/llm/stream_handler.py": [],
+    "src/animetta/services/llm/tool_handler.py": [],
+    "src/animetta/services/meme/__init__.py": [],
+    "src/animetta/services/meme/analyzer.py": [],
+    "src/animetta/services/meme/bilibili_collector.py": [],
+    "src/animetta/services/meme/bilibili_interaction.py": [],
+    "src/animetta/services/meme/danmaku_buffer.py": [],
+    "src/animetta/services/separation/__init__.py": [],
+    "src/animetta/services/separation/demucs_separation.py": [],
+    "src/animetta/services/separation/factory.py": [],
+    "src/animetta/services/separation/interface.py": [],
+    "src/animetta/services/separation/mock_separation.py": [],
+    "src/animetta/services/singing/__init__.py": [],
+    "src/animetta/services/singing/bilibili.py": []
+  }
+}

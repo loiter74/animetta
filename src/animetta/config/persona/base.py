@@ -5,7 +5,7 @@ Merged functionality from the original CharacterConfig
 """
 
 
-from pydantic import Field
+from pydantic import Field, field_validator
 
 from ..core.base import BaseConfig
 
@@ -24,6 +24,12 @@ class MBTIDimensions(BaseConfig):
     sn: int = Field(default=50, ge=0, le=100, description="S/N: Sensing(0) ↔ Intuition(100)")
     tf: int = Field(default=50, ge=0, le=100, description="T/F: Feeling(0) ↔ Thinking(100)")
     jp: int = Field(default=50, ge=0, le=100, description="J/P: Perceiving(0) ↔ Judging(100)")
+
+    @field_validator("ei", "sn", "tf", "jp", mode="before")
+    @classmethod
+    def _clamp_dimension(cls, v: int) -> int:
+        """Clamp dimension values to [0, 100] range."""
+        return max(0, min(100, v))
 
     def to_mbti_type(self) -> str:
         """Map dimension scores to a 4-letter MBTI type label."""
@@ -45,6 +51,8 @@ class MBTIDimensions(BaseConfig):
         val = getattr(self, name, 50)
         profile = descriptions.get(name, {})
         # Find closest description key
+        if not profile:
+            return "平衡"
         closest = min(profile.keys(), key=lambda k: abs(k - val))
         return profile.get(closest, "平衡")
 

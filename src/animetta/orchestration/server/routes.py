@@ -227,6 +227,9 @@ class RouteHandlers:
     async def on_translation_configure(self, sid: str, data: dict) -> None:
         return await self.config.on_translation_configure(sid, data)
 
+    async def on_get_available_personas(self, sid: str, data: dict) -> dict:
+        return await self.persona.on_get_available_personas(sid, data)
+
     async def on_set_persona(self, sid: str, data: dict) -> None:
         return await self.persona.on_set_persona(sid, data)
 
@@ -287,15 +290,20 @@ class RouteHandlers:
             atoms = await mem.store.get_all_active(limit=50)
             pages = []
             for a in atoms:
+                # Map layer to page_type for frontend compatibility
+                layer_to_type = {
+                    "RAW": "source",
+                    "EPISODIC": "entity",
+                    "SEMANTIC": "concept",
+                    "EMERGENT": "synthesis",
+                }
                 pages.append({
-                    "id": a.id,
+                    "path": a.id,
                     "title": a.summary or a.content[:80],
                     "content": a.content,
-                    "layer": a.layer.name,
-                    "confidence": a.confidence,
-                    "salience": a.salience,
-                    "retrieval_count": a.retrieval_count,
-                    "emotion": f"V:{a.emotion_valence:.1f} A:{a.emotion_arousal:.1f}",
+                    "page_type": layer_to_type.get(a.layer.name, a.layer.name.lower()),
+                    "tags": a.tags or [],
+                    "updated_at": (a.rewritten_at or a.occurred_at).isoformat() if (a.rewritten_at or a.occurred_at) else "",
                 })
             return {"pages": pages}
         except Exception as e:
@@ -367,6 +375,7 @@ def register_routes(
     sio.on("translation.configure", handlers.on_translation_configure)
 
     # Persona runtime switching
+    sio.on("get_available_personas", handlers.on_get_available_personas)
     sio.on("set_persona", handlers.on_set_persona)
 
     # Personality mode runtime switching

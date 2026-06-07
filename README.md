@@ -235,6 +235,22 @@ python -m animetta.core.socketio_server
 cd frontend && npm run dev
 ```
 
+### Docker Compose 快速启动
+
+需要 Docker 和 Docker Compose。GPU 模式需要 NVIDIA GPU + [nvidia-container-toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html)。
+
+```bash
+# GPU 模式（推荐）
+docker compose up -d
+
+# CPU 模式（无 GPU 环境）
+docker compose -f docker-compose.cpu.yml up -d
+```
+
+服务启动后访问 `http://localhost`（前端）和 `http://localhost:12394/health`（健康检查）。
+
+> 详细部署说明参见 [Docker 部署指南](./docs/docker-deployment.md) 和 [ZEABUR.md](./ZEABUR.md)。
+
 ---
 
 ## 📁 项目结构
@@ -321,7 +337,7 @@ async def my_tool(query: str) -> str:
 | **前端** | Vue 3 · Vite · TypeScript · pixi.js · Live2D Cubism SDK |
 | **记忆** | ChromaDB · SQLite FTS5 · Markdown Wiki |
 | **追踪** | OpenTelemetry · Prometheus · Langfuse |
-| **AI** | OpenAI · 智谱 GLM · Ollama · Whisper · Edge TTS |
+| **AI** | OpenAI · 智谱 GLM · Ollama · Whisper · Kokoro TTS |
 | **音频** | Demucs · GPT-SoVITS · RVC · yt-dlp |
 | **游戏** | Mineflayer (Node.js) |
 

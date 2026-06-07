@@ -110,6 +110,58 @@ to keep them apart in code:
 
 ---
 
+## 7 · GSAP Composable Usage
+
+GSAP animation composables are available in `frontend/src/composables/`:
+
+### useGsap
+```typescript
+import { useGsap } from '@/composables/useGsap'
+
+// Auto-cleans up on unmount, respects prefers-reduced-motion
+const { ctx, prefersReducedMotion } = useGsap((gsap) => {
+  gsap.from('.my-element', { opacity: 0, y: 30, duration: 0.6 })
+})
+```
+
+### useScrollTrigger
+```typescript
+import { useScrollTrigger, useScrollScrub, useScrollPin } from '@/composables/useScrollTrigger'
+
+// Fade in on scroll
+useScrollTrigger(elementRef, { start: 'top 85%' })
+
+// Progress tied to scroll position
+useScrollScrub(elementRef, { scrub: true })
+
+// Pin element during scroll
+useScrollPin(elementRef, { pin: true })
+```
+
+### useHoverPhysics
+```typescript
+import { useHoverPhysics } from '@/composables/useHoverPhysics'
+
+const { onEnter, onLeave, useCssFallback } = useHoverPhysics(cardRef, {
+  scale: 1.05,
+  duration: 0.7,
+  ease: 'power2.out'
+})
+
+// Touch devices auto-fallback to CSS transitions
+```
+
+### Component Usage
+
+| Component | Use Case |
+|---|---|
+| `<ScrollReveal>` | Wrap content for scroll-triggered entrance |
+| `<ScrollProgress>` | Fixed progress bar at top of viewport |
+| `<BentoGrid>` / `<BentoCard>` | Dense grid dashboard layout |
+| `<PinnedSection>` | Left-pinned title + scroll content |
+
+---
+
 ## TL;DR
 
 The design system isn't a separate thing to integrate — it's a readable form of

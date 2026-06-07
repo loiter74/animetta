@@ -17,16 +17,14 @@ AI 虚拟伴侣/VTuber 框架。
 
 | 文档 | 描述 |
 |------|------|
-| [数据流](architecture/data-flow.md) | LangGraph 状态机 + 服务编排 |
-| [事件系统](architecture/event-system.md) | LangGraph 事件驱动（**面试重点**） |
 | [设计模式](architecture/patterns.md) | 6 种设计模式应用 |
-| [可扩展性](architecture/extensibility.md) | 插件化架构 |
+| [ADR 决策记录](adrs/) | 架构决策记录 |
 
 ### 功能模块
 
 | 文档 | 描述 |
 |------|------|
-| [内存系统](modules/memory.md) | Chroma + SQLite 混合检索 |
+| [Docker 部署](docker-deployment.md) | Docker Compose 部署指南 |
 
 ### 实现计划
 

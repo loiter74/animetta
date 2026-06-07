@@ -1,0 +1,3063 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 25,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "src/animetta/config/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 107,
+      "nonEmptyLines": 100,
+      "metrics": {
+        "importCount": 10,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/config/agent.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 16,
+      "nonEmptyLines": 12,
+      "classes": [
+        {
+          "name": "AgentConfig",
+          "startLine": 9,
+          "endLine": 16,
+          "methods": [],
+          "properties": [
+            "llm_config",
+            "system_prompt",
+            "memory_enabled"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "AgentConfig",
+          "line": 9,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/AGENTS.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 57,
+      "nonEmptyLines": 49,
+      "sections": [
+        {
+          "heading": "CONFIG — PYDANTIC CONFIGURATION MODELS",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "OVERVIEW",
+          "level": 2,
+          "line": 8
+        },
+        {
+          "heading": "STRUCTURE",
+          "level": 2,
+          "line": 11
+        },
+        {
+          "heading": "WHERE TO LOOK",
+          "level": 2,
+          "line": 34
+        },
+        {
+          "heading": "KEY PATTERNS",
+          "level": 2,
+          "line": 43
+        },
+        {
+          "heading": "ANTI-PATTERNS",
+          "level": 2,
+          "line": 49
+        },
+        {
+          "heading": "NOTES",
+          "level": 2,
+          "line": 54
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    },
+    {
+      "path": "src/animetta/config/app.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 434,
+      "nonEmptyLines": 350,
+      "functions": [
+        {
+          "name": "_get_agent_adapter",
+          "startLine": 31,
+          "endLine": 37,
+          "params": []
+        },
+        {
+          "name": "expand_env_vars",
+          "startLine": 40,
+          "endLine": 65,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "_load_env_file",
+          "startLine": 68,
+          "endLine": 104,
+          "params": []
+        },
+        {
+          "name": "_load_yaml_file",
+          "startLine": 115,
+          "endLine": 127,
+          "params": [
+            "path"
+          ]
+        },
+        {
+          "name": "_load_service_config",
+          "startLine": 135,
+          "endLine": 170,
+          "params": [
+            "service_type",
+            "service_name"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "ServicesConfig",
+          "startLine": 173,
+          "endLine": 179,
+          "methods": [],
+          "properties": [
+            "asr",
+            "tts",
+            "agent",
+            "local_llm",
+            "vad"
+          ]
+        },
+        {
+          "name": "AppConfig",
+          "startLine": 182,
+          "endLine": 434,
+          "methods": [
+            "get_persona",
+            "get_system_prompt",
+            "from_yaml",
+            "_load_services_mode",
+            "_apply_env_expansion",
+            "_apply_env_overrides",
+            "validate",
+            "load"
+          ],
+          "properties": [
+            "persona",
+            "services",
+            "system",
+            "asr",
+            "tts",
+            "agent",
+            "local_llm",
+            "vad",
+            "_persona"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "_get_agent_adapter",
+          "line": 31,
+          "isDefault": false
+        },
+        {
+          "name": "expand_env_vars",
+          "line": 40,
+          "isDefault": false
+        },
+        {
+          "name": "_load_env_file",
+          "line": 68,
+          "isDefault": false
+        },
+        {
+          "name": "_load_yaml_file",
+          "line": 115,
+          "isDefault": false
+        },
+        {
+          "name": "_load_service_config",
+          "line": 135,
+          "isDefault": false
+        },
+        {
+          "name": "ServicesConfig",
+          "line": 173,
+          "isDefault": false
+        },
+        {
+          "name": "AppConfig",
+          "line": 182,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_get_agent_adapter",
+          "callee": "TypeAdapter",
+          "lineNumber": 36
+        },
+        {
+          "caller": "expand_env_vars",
+          "callee": "isinstance",
+          "lineNumber": 42
+        },
+        {
+          "caller": "replace_var",
+          "callee": "match.group",
+          "lineNumber": 46
+        },
+        {
+          "caller": "replace_var",
+          "callee": "match.group",
+          "lineNumber": 46
+        },
+        {
+          "caller": "replace_var",
+          "callee": "os.getenv",
+          "lineNumber": 47
+        },
+        {
+          "caller": "replace_var",
+          "callee": "hasattr",
+          "lineNumber": 51
+        },
+        {
+          "caller": "replace_var",
+          "callee": "logger.debug",
+          "lineNumber": 52
+        },
+        {
+          "caller": "replace_var",
+          "callee": "hasattr",
+          "lineNumber": 54
+        },
+        {
+          "caller": "replace_var",
+          "callee": "logger.error",
+          "lineNumber": 55
+        },
+        {
+          "caller": "expand_env_vars",
+          "callee": "re.sub",
+          "lineNumber": 60
+        },
+        {
+          "caller": "expand_env_vars",
+          "callee": "isinstance",
+          "lineNumber": 61
+        },
+        {
+          "caller": "expand_env_vars",
+          "callee": "expand_env_vars",
+          "lineNumber": 62
+        },
+        {
+          "caller": "expand_env_vars",
+          "callee": "value.items",
+          "lineNumber": 62
+        },
+        {
+          "caller": "expand_env_vars",
+          "callee": "isinstance",
+          "lineNumber": 63
+        },
+        {
+          "caller": "expand_env_vars",
+          "callee": "expand_env_vars",
+          "lineNumber": 64
+        },
+        {
+          "caller": "_load_env_file",
+          "callee": "hasattr",
+          "lineNumber": 80
+        },
+        {
+          "caller": "_load_env_file",
+          "callee": "Path.cwd",
+          "lineNumber": 86
+        },
+        {
+          "caller": "_load_env_file",
+          "callee": "Path",
+          "lineNumber": 88
+        },
+        {
+          "caller": "_load_env_file",
+          "callee": "os.getenv",
+          "lineNumber": 91
+        },
+        {
+          "caller": "_load_env_file",
+          "callee": "search_paths.insert",
+          "lineNumber": 93
+        },
+        {
+          "caller": "_load_env_file",
+          "callee": "Path",
+          "lineNumber": 93
+        },
+        {
+          "caller": "_load_env_file",
+          "callee": "p.exists",
+          "lineNumber": 97
+        },
+        {
+          "caller": "_load_env_file",
+          "callee": "load_dotenv",
+          "lineNumber": 98
+        },
+        {
+          "caller": "_load_env_file",
+          "callee": "str",
+          "lineNumber": 98
+        },
+        {
+          "caller": "_load_env_file",
+          "callee": "logger.debug",
+          "lineNumber": 100
+        },
+        {
+          "caller": "_load_env_file",
+          "callee": "logger.warning",
+          "lineNumber": 104
+        },
+        {
+          "caller": "_load_yaml_file",
+          "callee": "ImportError",
+          "lineNumber": 120
+        },
+        {
+          "caller": "_load_yaml_file",
+          "callee": "path.exists",
+          "lineNumber": 122
+        },
+        {
+          "caller": "_load_yaml_file",
+          "callee": "open",
+          "lineNumber": 125
+        },
+        {
+          "caller": "_load_yaml_file",
+          "callee": "yaml.safe_load",
+          "lineNumber": 126
+        },
+        {
+          "caller": "_load_service_config",
+          "callee": "unified_services_path.exists",
+          "lineNumber": 152
+        },
+        {
+          "caller": "_load_service_config",
+          "callee": "_load_yaml_file",
+          "lineNumber": 154
+        },
+        {
+          "caller": "_load_service_config",
+          "callee": "logger.debug",
+          "lineNumber": 159
+        },
+        {
+          "caller": "_load_service_config",
+          "callee": "_services_config_logged.add",
+          "lineNumber": 160
+        },
+        {
+          "caller": "_load_service_config",
+          "callee": "service_path.exists",
+          "lineNumber": 165
+        },
+        {
+          "caller": "_load_service_config",
+          "callee": "FileNotFoundError",
+          "lineNumber": 166
+        },
+        {
+          "caller": "_load_service_config",
+          "callee": "logger.debug",
+          "lineNumber": 168
+        },
+        {
+          "caller": "_load_service_config",
+          "callee": "_services_config_logged.add",
+          "lineNumber": 169
+        },
+        {
+          "caller": "_load_service_config",
+          "callee": "_load_yaml_file",
+          "lineNumber": 170
+        },
+        {
+          "caller": "get_persona",
+          "callee": "PersonaConfig.load",
+          "lineNumber": 210
+        },
+        {
+          "caller": "get_system_prompt",
+          "callee": "self.get_persona().build_system_prompt",
+          "lineNumber": 220
+        },
+        {
+          "caller": "get_system_prompt",
+          "callee": "self.get_persona",
+          "lineNumber": 220
+        },
+        {
+          "caller": "from_yaml",
+          "callee": "_load_env_file",
+          "lineNumber": 235
+        },
+        {
+          "caller": "from_yaml",
+          "callee": "Path",
+          "lineNumber": 237
+        },
+        {
+          "caller": "from_yaml",
+          "callee": "path.exists",
+          "lineNumber": 238
+        },
+        {
+          "caller": "from_yaml",
+          "callee": "FileNotFoundError",
+          "lineNumber": 239
+        },
+        {
+          "caller": "from_yaml",
+          "callee": "_load_yaml_file",
+          "lineNumber": 241
+        },
+        {
+          "caller": "from_yaml",
+          "callee": "cls._load_services_mode",
+          "lineNumber": 242
+        },
+        {
+          "caller": "from_yaml",
+          "callee": "config._apply_env_expansion",
+          "lineNumber": 245
+        },
+        {
+          "caller": "from_yaml",
+          "callee": "config._apply_env_overrides",
+          "lineNumber": 248
+        },
+        {
+          "caller": "from_yaml",
+          "callee": "logger.debug",
+          "lineNumber": 250
+        },
+        {
+          "caller": "_load_services_mode",
+          "callee": "main_config.get",
+          "lineNumber": 256
+        },
+        {
+          "caller": "_load_services_mode",
+          "callee": "services_config.get",
+          "lineNumber": 259
+        },
+        {
+          "caller": "_load_services_mode",
+          "callee": "services_config.get",
+          "lineNumber": 260
+        },
+        {
+          "caller": "_load_services_mode",
+          "callee": "services_config.get",
+          "lineNumber": 261
+        },
+        {
+          "caller": "_load_services_mode",
+          "callee": "services_config.get",
+          "lineNumber": 262
+        },
+        {
+          "caller": "_load_services_mode",
+          "callee": "services_config.get",
+          "lineNumber": 263
+        },
+        {
+          "caller": "_load_services_mode",
+          "callee": "_load_service_config",
+          "lineNumber": 265
+        },
+        {
+          "caller": "_load_services_mode",
+          "callee": "_load_service_config",
+          "lineNumber": 266
+        },
+        {
+          "caller": "_load_services_mode",
+          "callee": "_load_service_config",
+          "lineNumber": 267
+        },
+        {
+          "caller": "_load_services_mode",
+          "callee": "_load_service_config",
+          "lineNumber": 272
+        },
+        {
+          "caller": "_load_services_mode",
+          "callee": "local_llm_full.get",
+          "lineNumber": 274
+        },
+        {
+          "caller": "_load_services_mode",
+          "callee": "_load_service_config",
+          "lineNumber": 276
+        },
+        {
+          "caller": "_load_services_mode",
+          "callee": "main_config.items",
+          "lineNumber": 281
+        },
+        {
+          "caller": "_load_services_mode",
+          "callee": "cls",
+          "lineNumber": 291
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "self.asr.model_dump",
+          "lineNumber": 299
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "expand_env_vars",
+          "lineNumber": 300
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "_asr_adapter.validate_python",
+          "lineNumber": 301
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "logger.debug",
+          "lineNumber": 302
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "self.tts.model_dump",
+          "lineNumber": 305
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "expand_env_vars",
+          "lineNumber": 306
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "_tts_adapter.validate_python",
+          "lineNumber": 307
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "logger.debug",
+          "lineNumber": 308
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "self.agent.model_dump",
+          "lineNumber": 311
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "logger.debug",
+          "lineNumber": 312
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "expand_env_vars",
+          "lineNumber": 313
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "logger.debug",
+          "lineNumber": 314
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "AgentConfig.model_validate",
+          "lineNumber": 315
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "logger.debug",
+          "lineNumber": 318
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "logger.debug",
+          "lineNumber": 319
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "type",
+          "lineNumber": 319
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "hasattr",
+          "lineNumber": 325
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "logger.debug",
+          "lineNumber": 328
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "len",
+          "lineNumber": 328
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "logger.error",
+          "lineNumber": 330
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "logger.debug",
+          "lineNumber": 332
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "self.local_llm.model_dump",
+          "lineNumber": 336
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "logger.debug",
+          "lineNumber": 337
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "expand_env_vars",
+          "lineNumber": 338
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "logger.debug",
+          "lineNumber": 339
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "_llm_adapter.validate_python",
+          "lineNumber": 340
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "hasattr",
+          "lineNumber": 343
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "logger.debug",
+          "lineNumber": 346
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "len",
+          "lineNumber": 346
+        },
+        {
+          "caller": "_apply_env_expansion",
+          "callee": "logger.debug",
+          "lineNumber": 348
+        },
+        {
+          "caller": "_apply_env_overrides",
+          "callee": "os.getenv",
+          "lineNumber": 354
+        },
+        {
+          "caller": "_apply_env_overrides",
+          "callee": "os.getenv",
+          "lineNumber": 355
+        },
+        {
+          "caller": "_apply_env_overrides",
+          "callee": "os.getenv",
+          "lineNumber": 356
+        },
+        {
+          "caller": "_apply_env_overrides",
+          "callee": "hasattr",
+          "lineNumber": 356
+        },
+        {
+          "caller": "_apply_env_overrides",
+          "callee": "os.getenv",
+          "lineNumber": 357
+        },
+        {
+          "caller": "_apply_env_overrides",
+          "callee": "hasattr",
+          "lineNumber": 360
+        },
+        {
+          "caller": "_apply_env_overrides",
+          "callee": "os.getenv",
+          "lineNumber": 360
+        },
+        {
+          "caller": "_apply_env_overrides",
+          "callee": "os.getenv",
+          "lineNumber": 361
+        },
+        {
+          "caller": "_apply_env_overrides",
+          "callee": "hasattr",
+          "lineNumber": 364
+        },
+        {
+          "caller": "_apply_env_overrides",
+          "callee": "os.getenv",
+          "lineNumber": 364
+        },
+        {
+          "caller": "_apply_env_overrides",
+          "callee": "os.getenv",
+          "lineNumber": 365
+        },
+        {
+          "caller": "_apply_env_overrides",
+          "callee": "os.getenv",
+          "lineNumber": 368
+        },
+        {
+          "caller": "_apply_env_overrides",
+          "callee": "os.getenv",
+          "lineNumber": 369
+        },
+        {
+          "caller": "_apply_env_overrides",
+          "callee": "os.getenv",
+          "lineNumber": 370
+        },
+        {
+          "caller": "_apply_env_overrides",
+          "callee": "contextlib.suppress",
+          "lineNumber": 371
+        },
+        {
+          "caller": "_apply_env_overrides",
+          "callee": "int",
+          "lineNumber": 372
+        },
+        {
+          "caller": "_apply_env_overrides",
+          "callee": "os.getenv",
+          "lineNumber": 372
+        },
+        {
+          "caller": "validate",
+          "callee": "ProviderRegistry.list_services",
+          "lineNumber": 382
+        },
+        {
+          "caller": "validate",
+          "callee": "warnings.append",
+          "lineNumber": 384
+        },
+        {
+          "caller": "validate",
+          "callee": "ProviderRegistry.list_services",
+          "lineNumber": 388
+        },
+        {
+          "caller": "validate",
+          "callee": "warnings.append",
+          "lineNumber": 390
+        },
+        {
+          "caller": "validate",
+          "callee": "ProviderRegistry.list_services",
+          "lineNumber": 394
+        },
+        {
+          "caller": "validate",
+          "callee": "warnings.append",
+          "lineNumber": 396
+        },
+        {
+          "caller": "validate",
+          "callee": "logger.warning",
+          "lineNumber": 400
+        },
+        {
+          "caller": "load",
+          "callee": "os.getenv",
+          "lineNumber": 414
+        },
+        {
+          "caller": "load",
+          "callee": "os.getenv",
+          "lineNumber": 415
+        },
+        {
+          "caller": "load",
+          "callee": "Path",
+          "lineNumber": 418
+        },
+        {
+          "caller": "load",
+          "callee": "Path",
+          "lineNumber": 419
+        },
+        {
+          "caller": "load",
+          "callee": "Path",
+          "lineNumber": 420
+        },
+        {
+          "caller": "load",
+          "callee": "p.exists",
+          "lineNumber": 424
+        },
+        {
+          "caller": "load",
+          "callee": "str",
+          "lineNumber": 425
+        },
+        {
+          "caller": "load",
+          "callee": "Path(path).exists",
+          "lineNumber": 428
+        },
+        {
+          "caller": "load",
+          "callee": "Path",
+          "lineNumber": 428
+        },
+        {
+          "caller": "load",
+          "callee": "logger.debug",
+          "lineNumber": 429
+        },
+        {
+          "caller": "load",
+          "callee": "cls.from_yaml",
+          "lineNumber": 430
+        },
+        {
+          "caller": "load",
+          "callee": "FileNotFoundError",
+          "lineNumber": 432
+        }
+      ],
+      "metrics": {
+        "importCount": 8,
+        "exportCount": 7,
+        "functionCount": 5,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "src/animetta/config/core/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 6,
+      "nonEmptyLines": 4,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/config/core/base.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 35,
+      "nonEmptyLines": 25,
+      "classes": [
+        {
+          "name": "BaseConfig",
+          "startLine": 6,
+          "endLine": 9,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "ProviderConfig",
+          "startLine": 12,
+          "endLine": 35,
+          "methods": [
+            "get_provider_type"
+          ],
+          "properties": [
+            "type"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "BaseConfig",
+          "line": 6,
+          "isDefault": false
+        },
+        {
+          "name": "ProviderConfig",
+          "line": 12,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "get_provider_type",
+          "callee": "str",
+          "lineNumber": 34
+        },
+        {
+          "caller": "get_provider_type",
+          "callee": "cls.__name__.replace(\"Config\", \"\").lower",
+          "lineNumber": 35
+        },
+        {
+          "caller": "get_provider_type",
+          "callee": "cls.__name__.replace",
+          "lineNumber": 35
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 0,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "src/animetta/config/core/registry.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 233,
+      "nonEmptyLines": 185,
+      "classes": [
+        {
+          "name": "ProviderRegistry",
+          "startLine": 11,
+          "endLine": 233,
+          "methods": [
+            "register_config",
+            "register",
+            "register_service",
+            "get_service_class",
+            "create_service",
+            "list_services",
+            "get",
+            "list_providers",
+            "get_all_providers",
+            "create_union_type",
+            "clear"
+          ],
+          "properties": [
+            "_configs",
+            "_services"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "ProviderRegistry",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "decorator",
+          "callee": "logger.debug",
+          "lineNumber": 68
+        },
+        {
+          "caller": "register",
+          "callee": "cls.register_config",
+          "lineNumber": 75
+        },
+        {
+          "caller": "decorator",
+          "callee": "logger.debug",
+          "lineNumber": 100
+        },
+        {
+          "caller": "get_service_class",
+          "callee": "cls._services.get(category, {}).get",
+          "lineNumber": 116
+        },
+        {
+          "caller": "get_service_class",
+          "callee": "cls._services.get",
+          "lineNumber": 116
+        },
+        {
+          "caller": "create_service",
+          "callee": "cls.get_service_class",
+          "lineNumber": 139
+        },
+        {
+          "caller": "create_service",
+          "callee": "ValueError",
+          "lineNumber": 142
+        },
+        {
+          "caller": "create_service",
+          "callee": "list",
+          "lineNumber": 144
+        },
+        {
+          "caller": "create_service",
+          "callee": "cls._services.get(category, {}).keys",
+          "lineNumber": 144
+        },
+        {
+          "caller": "create_service",
+          "callee": "cls._services.get",
+          "lineNumber": 144
+        },
+        {
+          "caller": "create_service",
+          "callee": "hasattr",
+          "lineNumber": 148
+        },
+        {
+          "caller": "create_service",
+          "callee": "service_class.from_config",
+          "lineNumber": 149
+        },
+        {
+          "caller": "create_service",
+          "callee": "ValueError",
+          "lineNumber": 151
+        },
+        {
+          "caller": "list_services",
+          "callee": "list",
+          "lineNumber": 158
+        },
+        {
+          "caller": "list_services",
+          "callee": "cls._services.get(category, {}).keys",
+          "lineNumber": 158
+        },
+        {
+          "caller": "list_services",
+          "callee": "cls._services.get",
+          "lineNumber": 158
+        },
+        {
+          "caller": "get",
+          "callee": "cls._providers.get(category, {}).get",
+          "lineNumber": 172
+        },
+        {
+          "caller": "get",
+          "callee": "cls._providers.get",
+          "lineNumber": 172
+        },
+        {
+          "caller": "list_providers",
+          "callee": "list",
+          "lineNumber": 185
+        },
+        {
+          "caller": "list_providers",
+          "callee": "cls._providers.get(category, {}).keys",
+          "lineNumber": 185
+        },
+        {
+          "caller": "list_providers",
+          "callee": "cls._providers.get",
+          "lineNumber": 185
+        },
+        {
+          "caller": "get_all_providers",
+          "callee": "cls._providers.copy",
+          "lineNumber": 195
+        },
+        {
+          "caller": "create_union_type",
+          "callee": "list",
+          "lineNumber": 211
+        },
+        {
+          "caller": "create_union_type",
+          "callee": "cls._providers[category].values",
+          "lineNumber": 211
+        },
+        {
+          "caller": "create_union_type",
+          "callee": "ValueError",
+          "lineNumber": 213
+        },
+        {
+          "caller": "create_union_type",
+          "callee": "tuple",
+          "lineNumber": 216
+        },
+        {
+          "caller": "create_union_type",
+          "callee": "Field",
+          "lineNumber": 219
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/live2d.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 147,
+      "nonEmptyLines": 111,
+      "functions": [
+        {
+          "name": "get_live2d_config",
+          "startLine": 123,
+          "endLine": 137,
+          "params": []
+        },
+        {
+          "name": "reset_live2d_config",
+          "startLine": 140,
+          "endLine": 143,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "Live2DModelConfig",
+          "startLine": 13,
+          "endLine": 17,
+          "methods": [],
+          "properties": [
+            "path",
+            "scale",
+            "position"
+          ]
+        },
+        {
+          "name": "Live2DLipSyncConfig",
+          "startLine": 20,
+          "endLine": 24,
+          "methods": [],
+          "properties": [
+            "enabled",
+            "sensitivity",
+            "smoothing"
+          ]
+        },
+        {
+          "name": "Live2DConfig",
+          "startLine": 27,
+          "endLine": 116,
+          "methods": [
+            "from_yaml",
+            "get_emotion_names",
+            "get_motion_index",
+            "is_valid_emotion"
+          ],
+          "properties": [
+            "enabled",
+            "model",
+            "emotion_map",
+            "valid_emotions",
+            "lip_sync",
+            "prompt_template_path"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Live2DModelConfig",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "Live2DLipSyncConfig",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "Live2DConfig",
+          "line": 27,
+          "isDefault": false
+        },
+        {
+          "name": "get_live2d_config",
+          "line": 123,
+          "isDefault": false
+        },
+        {
+          "name": "reset_live2d_config",
+          "line": 140,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "from_yaml",
+          "callee": "Path",
+          "lineNumber": 80
+        },
+        {
+          "caller": "from_yaml",
+          "callee": "path.exists",
+          "lineNumber": 81
+        },
+        {
+          "caller": "from_yaml",
+          "callee": "logger.warning",
+          "lineNumber": 82
+        },
+        {
+          "caller": "from_yaml",
+          "callee": "cls",
+          "lineNumber": 83
+        },
+        {
+          "caller": "from_yaml",
+          "callee": "open",
+          "lineNumber": 85
+        },
+        {
+          "caller": "from_yaml",
+          "callee": "yaml.safe_load",
+          "lineNumber": 86
+        },
+        {
+          "caller": "from_yaml",
+          "callee": "cls",
+          "lineNumber": 88
+        },
+        {
+          "caller": "get_emotion_names",
+          "callee": "list",
+          "lineNumber": 92
+        },
+        {
+          "caller": "get_emotion_names",
+          "callee": "self.emotion_map.keys",
+          "lineNumber": 92
+        },
+        {
+          "caller": "get_motion_index",
+          "callee": "self.emotion_map.get",
+          "lineNumber": 104
+        },
+        {
+          "caller": "get_live2d_config",
+          "callee": "Path",
+          "lineNumber": 132
+        },
+        {
+          "caller": "get_live2d_config",
+          "callee": "config_path.exists",
+          "lineNumber": 133
+        },
+        {
+          "caller": "get_live2d_config",
+          "callee": "Live2DConfig.from_yaml",
+          "lineNumber": 134
+        },
+        {
+          "caller": "get_live2d_config",
+          "callee": "str",
+          "lineNumber": 134
+        },
+        {
+          "caller": "get_live2d_config",
+          "callee": "Live2DConfig",
+          "lineNumber": 136
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 5,
+        "functionCount": 2,
+        "classCount": 3
+      }
+    },
+    {
+      "path": "src/animetta/config/persona/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 29,
+      "nonEmptyLines": 26,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/config/persona/base.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 351,
+      "nonEmptyLines": 289,
+      "classes": [
+        {
+          "name": "MBTIDimensions",
+          "startLine": 13,
+          "endLine": 51,
+          "methods": [
+            "to_mbti_type",
+            "describe_dimension"
+          ],
+          "properties": [
+            "ei",
+            "sn",
+            "tf",
+            "jp"
+          ]
+        },
+        {
+          "name": "MBTIDimensionDelta",
+          "startLine": 54,
+          "endLine": 58,
+          "methods": [],
+          "properties": [
+            "delta",
+            "confidence",
+            "evidence"
+          ]
+        },
+        {
+          "name": "MBTIProfile",
+          "startLine": 61,
+          "endLine": 66,
+          "methods": [],
+          "properties": [
+            "type",
+            "dimensions",
+            "description",
+            "confidence"
+          ]
+        },
+        {
+          "name": "PersonalityTraits",
+          "startLine": 69,
+          "endLine": 86,
+          "methods": [],
+          "properties": [
+            "traits",
+            "speaking_style",
+            "catchphrases",
+            "mbti"
+          ]
+        },
+        {
+          "name": "KnowledgeBoundaries",
+          "startLine": 89,
+          "endLine": 104,
+          "methods": [],
+          "properties": [
+            "known",
+            "unknown"
+          ]
+        },
+        {
+          "name": "BehaviorRules",
+          "startLine": 107,
+          "endLine": 124,
+          "methods": [],
+          "properties": [
+            "forbidden_phrases",
+            "response_to_praise",
+            "response_to_criticism",
+            "special_behaviors"
+          ]
+        },
+        {
+          "name": "PersonaConfig",
+          "startLine": 127,
+          "endLine": 351,
+          "methods": [
+            "build_system_prompt",
+            "from_yaml",
+            "load"
+          ],
+          "properties": [
+            "name",
+            "avatar",
+            "role",
+            "identity",
+            "personality",
+            "behavior",
+            "speaking_style",
+            "examples",
+            "emoji_style",
+            "common_emojis",
+            "language_mix",
+            "slang_words",
+            "live2d_prompt",
+            "knowledge_boundaries"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "MBTIDimensions",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "MBTIDimensionDelta",
+          "line": 54,
+          "isDefault": false
+        },
+        {
+          "name": "MBTIProfile",
+          "line": 61,
+          "isDefault": false
+        },
+        {
+          "name": "PersonalityTraits",
+          "line": 69,
+          "isDefault": false
+        },
+        {
+          "name": "KnowledgeBoundaries",
+          "line": 89,
+          "isDefault": false
+        },
+        {
+          "name": "BehaviorRules",
+          "line": 107,
+          "isDefault": false
+        },
+        {
+          "name": "PersonaConfig",
+          "line": 127,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "describe_dimension",
+          "callee": "getattr",
+          "lineNumber": 45
+        },
+        {
+          "caller": "describe_dimension",
+          "callee": "descriptions.get",
+          "lineNumber": 46
+        },
+        {
+          "caller": "describe_dimension",
+          "callee": "min",
+          "lineNumber": 50
+        },
+        {
+          "caller": "describe_dimension",
+          "callee": "profile.keys",
+          "lineNumber": 50
+        },
+        {
+          "caller": "describe_dimension",
+          "callee": "abs",
+          "lineNumber": 50
+        },
+        {
+          "caller": "describe_dimension",
+          "callee": "profile.get",
+          "lineNumber": 51
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 209
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 222
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 223
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 227
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "enumerate",
+          "lineNumber": 228
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 229
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "mbti_lines.append",
+          "lineNumber": 236
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "dims.describe_dimension",
+          "lineNumber": 238
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "mbti_lines.append",
+          "lineNumber": 239
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "dims.describe_dimension",
+          "lineNumber": 241
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "mbti_lines.append",
+          "lineNumber": 242
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "dims.describe_dimension",
+          "lineNumber": 244
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "mbti_lines.append",
+          "lineNumber": 245
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "dims.describe_dimension",
+          "lineNumber": 247
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "mbti_lines.append",
+          "lineNumber": 248
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "mbti_lines.append",
+          "lineNumber": 250
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 251
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "\"\\n\".join",
+          "lineNumber": 251
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 255
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 259
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "\"、\".join",
+          "lineNumber": 261
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 262
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 264
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 266
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 270
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 272
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 274
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "' '.join",
+          "lineNumber": 274
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 278
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "'、'.join",
+          "lineNumber": 278
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 283
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 288
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 290
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "'、'.join",
+          "lineNumber": 290
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 292
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "'、'.join",
+          "lineNumber": 292
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 293
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 297
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "ex.get",
+          "lineNumber": 299
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "ex.get",
+          "lineNumber": 300
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 302
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "\"\\n\".join",
+          "lineNumber": 304
+        },
+        {
+          "caller": "from_yaml",
+          "callee": "Path",
+          "lineNumber": 313
+        },
+        {
+          "caller": "from_yaml",
+          "callee": "path.exists",
+          "lineNumber": 314
+        },
+        {
+          "caller": "from_yaml",
+          "callee": "FileNotFoundError",
+          "lineNumber": 315
+        },
+        {
+          "caller": "from_yaml",
+          "callee": "open",
+          "lineNumber": 317
+        },
+        {
+          "caller": "from_yaml",
+          "callee": "yaml.safe_load",
+          "lineNumber": 318
+        },
+        {
+          "caller": "from_yaml",
+          "callee": "cls",
+          "lineNumber": 320
+        },
+        {
+          "caller": "load",
+          "callee": "Path",
+          "lineNumber": 338
+        },
+        {
+          "caller": "load",
+          "callee": "Path",
+          "lineNumber": 340
+        },
+        {
+          "caller": "load",
+          "callee": "yaml_path.exists",
+          "lineNumber": 344
+        },
+        {
+          "caller": "load",
+          "callee": "cls.from_yaml",
+          "lineNumber": 345
+        },
+        {
+          "caller": "load",
+          "callee": "str",
+          "lineNumber": 345
+        },
+        {
+          "caller": "load",
+          "callee": "cls",
+          "lineNumber": 349
+        },
+        {
+          "caller": "load",
+          "callee": "FileNotFoundError",
+          "lineNumber": 351
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 7,
+        "functionCount": 0,
+        "classCount": 7
+      }
+    },
+    {
+      "path": "src/animetta/config/persona/enhanced.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 480,
+      "nonEmptyLines": 371,
+      "functions": [
+        {
+          "name": "create_enhanced_system_prompt",
+          "startLine": 463,
+          "endLine": 480,
+          "params": [
+            "persona_name",
+            "user_context",
+            "personas_dir"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "EnhancedPersonaBuilder",
+          "startLine": 12,
+          "endLine": 460,
+          "methods": [
+            "__init__",
+            "_load_persona",
+            "build_system_prompt",
+            "_build_basic_info",
+            "_build_personality",
+            "_build_speaking_style",
+            "_build_emotion_rules",
+            "_build_mood_override",
+            "_build_streaming_mode",
+            "_build_memory_traits",
+            "_build_mbti_profile",
+            "_build_expertise",
+            "_build_interaction_rules",
+            "_build_response_templates",
+            "_build_example_conversations",
+            "_build_restrictions",
+            "_build_user_context",
+            "from_yaml",
+            "get_metadata"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "EnhancedPersonaBuilder",
+          "line": 12,
+          "isDefault": false
+        },
+        {
+          "name": "create_enhanced_system_prompt",
+          "line": 463,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "Path",
+          "lineNumber": 26
+        },
+        {
+          "caller": "__init__",
+          "callee": "self._load_persona",
+          "lineNumber": 27
+        },
+        {
+          "caller": "_load_persona",
+          "callee": "self.persona_path.exists",
+          "lineNumber": 31
+        },
+        {
+          "caller": "_load_persona",
+          "callee": "FileNotFoundError",
+          "lineNumber": 32
+        },
+        {
+          "caller": "_load_persona",
+          "callee": "open",
+          "lineNumber": 34
+        },
+        {
+          "caller": "_load_persona",
+          "callee": "yaml.safe_load",
+          "lineNumber": 35
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 61
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "self._build_basic_info",
+          "lineNumber": 61
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 64
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "self._build_personality",
+          "lineNumber": 64
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 67
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "self._build_speaking_style",
+          "lineNumber": 67
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 70
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "self._build_emotion_rules",
+          "lineNumber": 70
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "self._build_mood_override",
+          "lineNumber": 74
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 76
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "self._build_streaming_mode",
+          "lineNumber": 80
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 82
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "self._build_memory_traits",
+          "lineNumber": 86
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 88
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "self.persona_data.get",
+          "lineNumber": 91
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "self._build_mbti_profile",
+          "lineNumber": 93
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 95
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 98
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "self._build_expertise",
+          "lineNumber": 98
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 101
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "self._build_interaction_rules",
+          "lineNumber": 101
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 104
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "self._build_response_templates",
+          "lineNumber": 104
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 107
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "self._build_example_conversations",
+          "lineNumber": 107
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 110
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "self._build_restrictions",
+          "lineNumber": 110
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "parts.append",
+          "lineNumber": 114
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "self._build_user_context",
+          "lineNumber": 114
+        },
+        {
+          "caller": "build_system_prompt",
+          "callee": "\"\\n\\n\".join",
+          "lineNumber": 116
+        },
+        {
+          "caller": "_build_basic_info",
+          "callee": "self.persona_data.get",
+          "lineNumber": 120
+        },
+        {
+          "caller": "_build_basic_info",
+          "callee": "self.persona_data.get",
+          "lineNumber": 121
+        },
+        {
+          "caller": "_build_basic_info",
+          "callee": "self.persona_data.get",
+          "lineNumber": 122
+        },
+        {
+          "caller": "_build_basic_info",
+          "callee": "parts.append",
+          "lineNumber": 125
+        },
+        {
+          "caller": "_build_basic_info",
+          "callee": "parts.append",
+          "lineNumber": 128
+        },
+        {
+          "caller": "_build_basic_info",
+          "callee": "basic_info.items",
+          "lineNumber": 129
+        },
+        {
+          "caller": "_build_basic_info",
+          "callee": "isinstance",
+          "lineNumber": 130
+        },
+        {
+          "caller": "_build_basic_info",
+          "callee": "parts.append",
+          "lineNumber": 131
+        },
+        {
+          "caller": "_build_basic_info",
+          "callee": "', '.join",
+          "lineNumber": 131
+        },
+        {
+          "caller": "_build_basic_info",
+          "callee": "str",
+          "lineNumber": 131
+        },
+        {
+          "caller": "_build_basic_info",
+          "callee": "parts.append",
+          "lineNumber": 133
+        },
+        {
+          "caller": "_build_basic_info",
+          "callee": "\"\\n\".join",
+          "lineNumber": 135
+        },
+        {
+          "caller": "_build_personality",
+          "callee": "self.persona_data.get",
+          "lineNumber": 139
+        },
+        {
+          "caller": "_build_personality",
+          "callee": "parts.append",
+          "lineNumber": 145
+        },
+        {
+          "caller": "_build_personality",
+          "callee": "\"\\n\".join",
+          "lineNumber": 147
+        },
+        {
+          "caller": "_build_speaking_style",
+          "callee": "self.persona_data.get",
+          "lineNumber": 151
+        },
+        {
+          "caller": "_build_speaking_style",
+          "callee": "parts.append",
+          "lineNumber": 158
+        },
+        {
+          "caller": "_build_speaking_style",
+          "callee": "parts.append",
+          "lineNumber": 160
+        },
+        {
+          "caller": "_build_speaking_style",
+          "callee": "parts.append",
+          "lineNumber": 163
+        },
+        {
+          "caller": "_build_speaking_style",
+          "callee": "parts.append",
+          "lineNumber": 164
+        },
+        {
+          "caller": "_build_speaking_style",
+          "callee": "', '.join",
+          "lineNumber": 164
+        },
+        {
+          "caller": "_build_speaking_style",
+          "callee": "parts.append",
+          "lineNumber": 167
+        },
+        {
+          "caller": "_build_speaking_style",
+          "callee": "parts.append",
+          "lineNumber": 169
+        },
+        {
+          "caller": "_build_speaking_style",
+          "callee": "\"\\n\".join",
+          "lineNumber": 171
+        },
+        {
+          "caller": "_build_emotion_rules",
+          "callee": "self.persona_data.get",
+          "lineNumber": 175
+        },
+        {
+          "caller": "_build_emotion_rules",
+          "callee": "parts.append",
+          "lineNumber": 180
+        },
+        {
+          "caller": "_build_emotion_rules",
+          "callee": "emotion_rules.items",
+          "lineNumber": 182
+        },
+        {
+          "caller": "_build_emotion_rules",
+          "callee": "parts.append",
+          "lineNumber": 183
+        },
+        {
+          "caller": "_build_emotion_rules",
+          "callee": "emotion.upper",
+          "lineNumber": 183
+        },
+        {
+          "caller": "_build_emotion_rules",
+          "callee": "parts.append",
+          "lineNumber": 185
+        },
+        {
+          "caller": "_build_emotion_rules",
+          "callee": "', '.join",
+          "lineNumber": 185
+        },
+        {
+          "caller": "_build_emotion_rules",
+          "callee": "parts.append",
+          "lineNumber": 187
+        },
+        {
+          "caller": "_build_emotion_rules",
+          "callee": "parts.append",
+          "lineNumber": 189
+        },
+        {
+          "caller": "_build_emotion_rules",
+          "callee": "parts.append",
+          "lineNumber": 191
+        },
+        {
+          "caller": "_build_emotion_rules",
+          "callee": "\", \".join",
+          "lineNumber": 191
+        },
+        {
+          "caller": "_build_emotion_rules",
+          "callee": "\"\\n\".join",
+          "lineNumber": 193
+        },
+        {
+          "caller": "_build_mood_override",
+          "callee": "self.persona_data.get",
+          "lineNumber": 199
+        },
+        {
+          "caller": "_build_mood_override",
+          "callee": "mood_states.get",
+          "lineNumber": 200
+        },
+        {
+          "caller": "_build_mood_override",
+          "callee": "mood_names.get",
+          "lineNumber": 207
+        },
+        {
+          "caller": "_build_mood_override",
+          "callee": "parts.append",
+          "lineNumber": 208
+        },
+        {
+          "caller": "_build_mood_override",
+          "callee": "mood_config.get",
+          "lineNumber": 210
+        },
+        {
+          "caller": "_build_mood_override",
+          "callee": "parts.append",
+          "lineNumber": 211
+        },
+        {
+          "caller": "_build_mood_override",
+          "callee": "mood_config.get",
+          "lineNumber": 212
+        },
+        {
+          "caller": "_build_mood_override",
+          "callee": "parts.append",
+          "lineNumber": 213
+        },
+        {
+          "caller": "_build_mood_override",
+          "callee": "\"\\n\".join",
+          "lineNumber": 215
+        },
+        {
+          "caller": "_build_streaming_mode",
+          "callee": "self.persona_data.get",
+          "lineNumber": 221
+        },
+        {
+          "caller": "_build_streaming_mode",
+          "callee": "parts.append",
+          "lineNumber": 224
+        },
+        {
+          "caller": "_build_streaming_mode",
+          "callee": "streaming.get",
+          "lineNumber": 226
+        },
+        {
+          "caller": "_build_streaming_mode",
+          "callee": "parts.append",
+          "lineNumber": 227
+        },
+        {
+          "caller": "_build_streaming_mode",
+          "callee": "streaming.get",
+          "lineNumber": 228
+        },
+        {
+          "caller": "_build_streaming_mode",
+          "callee": "parts.append",
+          "lineNumber": 229
+        },
+        {
+          "caller": "_build_streaming_mode",
+          "callee": "streaming.get",
+          "lineNumber": 230
+        },
+        {
+          "caller": "_build_streaming_mode",
+          "callee": "int",
+          "lineNumber": 231
+        },
+        {
+          "caller": "_build_streaming_mode",
+          "callee": "parts.append",
+          "lineNumber": 232
+        },
+        {
+          "caller": "_build_streaming_mode",
+          "callee": "parts.append",
+          "lineNumber": 234
+        },
+        {
+          "caller": "_build_streaming_mode",
+          "callee": "\"\\n\".join",
+          "lineNumber": 235
+        },
+        {
+          "caller": "_build_memory_traits",
+          "callee": "parts.append",
+          "lineNumber": 245
+        },
+        {
+          "caller": "_build_memory_traits",
+          "callee": "parts.append",
+          "lineNumber": 247
+        },
+        {
+          "caller": "_build_memory_traits",
+          "callee": "self.persona_data.get",
+          "lineNumber": 249
+        },
+        {
+          "caller": "_build_memory_traits",
+          "callee": "memory_influence.get",
+          "lineNumber": 250
+        },
+        {
+          "caller": "_build_memory_traits",
+          "callee": "parts.append",
+          "lineNumber": 252
+        },
+        {
+          "caller": "_build_memory_traits",
+          "callee": "int",
+          "lineNumber": 252
+        },
+        {
+          "caller": "_build_memory_traits",
+          "callee": "\"\\n\".join",
+          "lineNumber": 254
+        },
+        {
+          "caller": "_build_mbti_profile",
+          "callee": "mbti_data.get",
+          "lineNumber": 269
+        },
+        {
+          "caller": "_build_mbti_profile",
+          "callee": "mbti_data.get",
+          "lineNumber": 270
+        },
+        {
+          "caller": "_build_mbti_profile",
+          "callee": "mbti_data.get",
+          "lineNumber": 271
+        },
+        {
+          "caller": "_build_mbti_profile",
+          "callee": "lines.append",
+          "lineNumber": 276
+        },
+        {
+          "caller": "_build_mbti_profile",
+          "callee": "dims.get",
+          "lineNumber": 279
+        },
+        {
+          "caller": "_build_mbti_profile",
+          "callee": "dims.get",
+          "lineNumber": 280
+        },
+        {
+          "caller": "_build_mbti_profile",
+          "callee": "dims.get",
+          "lineNumber": 281
+        },
+        {
+          "caller": "_build_mbti_profile",
+          "callee": "dims.get",
+          "lineNumber": 282
+        },
+        {
+          "caller": "_build_mbti_profile",
+          "callee": "lines.append",
+          "lineNumber": 332
+        },
+        {
+          "caller": "_build_mbti_profile",
+          "callee": "lines.append",
+          "lineNumber": 333
+        },
+        {
+          "caller": "_build_mbti_profile",
+          "callee": "lines.append",
+          "lineNumber": 334
+        },
+        {
+          "caller": "_build_mbti_profile",
+          "callee": "lines.append",
+          "lineNumber": 335
+        },
+        {
+          "caller": "_build_mbti_profile",
+          "callee": "lines.append",
+          "lineNumber": 338
+        },
+        {
+          "caller": "_build_mbti_profile",
+          "callee": "lines.append",
+          "lineNumber": 340
+        },
+        {
+          "caller": "_build_mbti_profile",
+          "callee": "\"\\n\".join",
+          "lineNumber": 342
+        },
+        {
+          "caller": "_build_expertise",
+          "callee": "self.persona_data.get",
+          "lineNumber": 346
+        },
+        {
+          "caller": "_build_expertise",
+          "callee": "self.persona_data.get",
+          "lineNumber": 347
+        },
+        {
+          "caller": "_build_expertise",
+          "callee": "parts.append",
+          "lineNumber": 352
+        },
+        {
+          "caller": "_build_expertise",
+          "callee": "parts.append",
+          "lineNumber": 354
+        },
+        {
+          "caller": "_build_expertise",
+          "callee": "parts.append",
+          "lineNumber": 357
+        },
+        {
+          "caller": "_build_expertise",
+          "callee": "parts.append",
+          "lineNumber": 359
+        },
+        {
+          "caller": "_build_expertise",
+          "callee": "parts.append",
+          "lineNumber": 360
+        },
+        {
+          "caller": "_build_expertise",
+          "callee": "\"\\n\".join",
+          "lineNumber": 362
+        },
+        {
+          "caller": "_build_interaction_rules",
+          "callee": "self.persona_data.get",
+          "lineNumber": 366
+        },
+        {
+          "caller": "_build_interaction_rules",
+          "callee": "parts.append",
+          "lineNumber": 372
+        },
+        {
+          "caller": "_build_interaction_rules",
+          "callee": "\"\\n\".join",
+          "lineNumber": 374
+        },
+        {
+          "caller": "_build_response_templates",
+          "callee": "self.persona_data.get",
+          "lineNumber": 378
+        },
+        {
+          "caller": "_build_response_templates",
+          "callee": "parts.append",
+          "lineNumber": 383
+        },
+        {
+          "caller": "_build_response_templates",
+          "callee": "response_templates.items",
+          "lineNumber": 385
+        },
+        {
+          "caller": "_build_response_templates",
+          "callee": "parts.append",
+          "lineNumber": 386
+        },
+        {
+          "caller": "_build_response_templates",
+          "callee": "scenario.capitalize",
+          "lineNumber": 386
+        },
+        {
+          "caller": "_build_response_templates",
+          "callee": "enumerate",
+          "lineNumber": 387
+        },
+        {
+          "caller": "_build_response_templates",
+          "callee": "parts.append",
+          "lineNumber": 388
+        },
+        {
+          "caller": "_build_response_templates",
+          "callee": "\"\\n\".join",
+          "lineNumber": 390
+        },
+        {
+          "caller": "_build_example_conversations",
+          "callee": "self.persona_data.get",
+          "lineNumber": 394
+        },
+        {
+          "caller": "_build_example_conversations",
+          "callee": "parts.append",
+          "lineNumber": 399
+        },
+        {
+          "caller": "_build_example_conversations",
+          "callee": "ex.get",
+          "lineNumber": 402
+        },
+        {
+          "caller": "_build_example_conversations",
+          "callee": "ex.get",
+          "lineNumber": 403
+        },
+        {
+          "caller": "_build_example_conversations",
+          "callee": "parts.append",
+          "lineNumber": 404
+        },
+        {
+          "caller": "_build_example_conversations",
+          "callee": "parts.append",
+          "lineNumber": 405
+        },
+        {
+          "caller": "_build_example_conversations",
+          "callee": "self.persona_data.get",
+          "lineNumber": 405
+        },
+        {
+          "caller": "_build_example_conversations",
+          "callee": "\"\\n\".join",
+          "lineNumber": 407
+        },
+        {
+          "caller": "_build_restrictions",
+          "callee": "self.persona_data.get",
+          "lineNumber": 411
+        },
+        {
+          "caller": "_build_restrictions",
+          "callee": "parts.append",
+          "lineNumber": 416
+        },
+        {
+          "caller": "_build_restrictions",
+          "callee": "parts.append",
+          "lineNumber": 418
+        },
+        {
+          "caller": "_build_restrictions",
+          "callee": "\"\\n\".join",
+          "lineNumber": 420
+        },
+        {
+          "caller": "_build_user_context",
+          "callee": "parts.append",
+          "lineNumber": 427
+        },
+        {
+          "caller": "_build_user_context",
+          "callee": "parts.append",
+          "lineNumber": 430
+        },
+        {
+          "caller": "_build_user_context",
+          "callee": "', '.join",
+          "lineNumber": 430
+        },
+        {
+          "caller": "_build_user_context",
+          "callee": "parts.append",
+          "lineNumber": 433
+        },
+        {
+          "caller": "_build_user_context",
+          "callee": "\"\\n\".join",
+          "lineNumber": 435
+        },
+        {
+          "caller": "from_yaml",
+          "callee": "Path",
+          "lineNumber": 450
+        },
+        {
+          "caller": "from_yaml",
+          "callee": "Path",
+          "lineNumber": 452
+        },
+        {
+          "caller": "from_yaml",
+          "callee": "cls",
+          "lineNumber": 456
+        },
+        {
+          "caller": "from_yaml",
+          "callee": "str",
+          "lineNumber": 456
+        },
+        {
+          "caller": "get_metadata",
+          "callee": "self.persona_data.get",
+          "lineNumber": 460
+        },
+        {
+          "caller": "create_enhanced_system_prompt",
+          "callee": "EnhancedPersonaBuilder.from_yaml",
+          "lineNumber": 479
+        },
+        {
+          "caller": "create_enhanced_system_prompt",
+          "callee": "builder.build_system_prompt",
+          "lineNumber": 480
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 17,
+      "nonEmptyLines": 15,
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/asr/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 28,
+      "nonEmptyLines": 23,
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/asr/base.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 16,
+      "nonEmptyLines": 10,
+      "classes": [
+        {
+          "name": "ASRBaseConfig",
+          "startLine": 9,
+          "endLine": 16,
+          "methods": [],
+          "properties": [
+            "language",
+            "api_key"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "ASRBaseConfig",
+          "line": 9,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/asr/faster_whisper.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 62,
+      "nonEmptyLines": 49,
+      "classes": [
+        {
+          "name": "FasterWhisperASRConfig",
+          "startLine": 12,
+          "endLine": 62,
+          "methods": [],
+          "properties": [
+            "type",
+            "model",
+            "language",
+            "device",
+            "compute_type",
+            "download_root",
+            "beam_size",
+            "vad_filter",
+            "vad_parameters"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "FasterWhisperASRConfig",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/asr/funasr.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 82,
+      "nonEmptyLines": 65,
+      "classes": [
+        {
+          "name": "FunASRConfig",
+          "startLine": 12,
+          "endLine": 82,
+          "methods": [],
+          "properties": [
+            "type",
+            "model",
+            "vad_model",
+            "punc_model",
+            "spk_model",
+            "device",
+            "ncpu",
+            "chunk_size",
+            "hotword",
+            "model_hub",
+            "disable_update"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "FunASRConfig",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/asr/glm.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 16,
+      "nonEmptyLines": 11,
+      "classes": [
+        {
+          "name": "GLMASRConfig",
+          "startLine": 12,
+          "endLine": 16,
+          "methods": [],
+          "properties": [
+            "type",
+            "model",
+            "stream"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "GLMASRConfig",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/asr/mock.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 12,
+      "nonEmptyLines": 8,
+      "classes": [
+        {
+          "name": "MockASRConfig",
+          "startLine": 10,
+          "endLine": 12,
+          "methods": [],
+          "properties": [
+            "type"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "MockASRConfig",
+          "line": 9,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/asr/openai.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 16,
+      "nonEmptyLines": 11,
+      "classes": [
+        {
+          "name": "OpenAIASRConfig",
+          "startLine": 12,
+          "endLine": 16,
+          "methods": [],
+          "properties": [
+            "type",
+            "model",
+            "base_url"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "OpenAIASRConfig",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/llm/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 31,
+      "nonEmptyLines": 26,
+      "metrics": {
+        "importCount": 7,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/llm/base.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 17,
+      "nonEmptyLines": 11,
+      "classes": [
+        {
+          "name": "LLMBaseConfig",
+          "startLine": 9,
+          "endLine": 17,
+          "methods": [],
+          "properties": [
+            "api_key",
+            "temperature",
+            "max_tokens"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "LLMBaseConfig",
+          "line": 9,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/llm/deepseek.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 16,
+      "nonEmptyLines": 11,
+      "classes": [
+        {
+          "name": "DeepSeekLLMConfig",
+          "startLine": 12,
+          "endLine": 16,
+          "methods": [],
+          "properties": [
+            "type",
+            "model",
+            "base_url"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DeepSeekLLMConfig",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/llm/glm.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 19,
+      "nonEmptyLines": 14,
+      "classes": [
+        {
+          "name": "GLMLLMConfig",
+          "startLine": 12,
+          "endLine": 19,
+          "methods": [],
+          "properties": [
+            "type",
+            "model",
+            "enable_thinking",
+            "max_retries",
+            "retry_delay",
+            "timeout"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "GLMLLMConfig",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/llm/local_lora_llm.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 69,
+      "nonEmptyLines": 55,
+      "classes": [
+        {
+          "name": "LocalLoraLLMConfig",
+          "startLine": 13,
+          "endLine": 69,
+          "methods": [],
+          "properties": [
+            "type",
+            "model",
+            "base_model_name",
+            "lora_path",
+            "device",
+            "max_new_tokens",
+            "temperature",
+            "top_p"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "LocalLoraLLMConfig",
+          "line": 13,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/providers/llm/mock.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 12,
+      "nonEmptyLines": 8,
+      "classes": [
+        {
+          "name": "MockLLMConfig",
+          "startLine": 10,
+          "endLine": 12,
+          "methods": [],
+          "properties": [
+            "type"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "MockLLMConfig",
+          "line": 9,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    }
+  ]
+}

@@ -8,7 +8,7 @@ app = "animetta-demo"
 primary_region = "hkg"
 
 [build]
-  dockerfile = "Dockerfile"
+  dockerfile = "Dockerfile.cuda"
 
 [http_service]
   internal_port = 12394
@@ -35,13 +35,27 @@ primary_region = "hkg"
   ANIMETTA_HOST = "0.0.0.0"
   ANIMETTA_PORT = "12394"
   ANIMETTA_LOG_LEVEL = "INFO"
+  ANIMETTA_TTS = "kokoro"
+  ANIMETTA_DEVICE = "cuda"
   PYTHONPATH = "/app/src"
 
-[mounts]
+[[mounts]]
   source = "animetta_data"
   destination = "/app/data"
 
+[[mounts]]
+  source = "animetta_memory_db"
+  destination = "/app/memory_db"
+
+# GPU machines (uncomment for GPU-accelerated TTS/ASR):
+# [[vm]]
+#   cpu_kind = "performance"
+#   cpus = 2
+#   memory_mb = 4096
+#   gpu_kind = "a100-pcie-40gb"
+#   gpus = 1
+
 [[vm]]
   cpu_kind = "shared"
-  cpus = 1
-  memory_mb = 512
+  cpus = 2
+  memory_mb = 2048

@@ -6,6 +6,8 @@ import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from animetta.inspection.checks.pipeline import check_conversation_pipeline, EXPECTED_EVENTS
+from animetta.inspection.models import CheckResult
 
 
 
@@ -71,10 +73,10 @@ class TestSuccessfulPipeline:
 
         with (
             patch(
-                "anima.inspection.checks.pipeline.socketio.AsyncClient",
+                "animetta.inspection.checks.pipeline.socketio.AsyncClient",
                 return_value=mock_client,
             ),
-            patch("anima.inspection.checks.pipeline.asyncio.sleep", _mock_sleep),
+            patch("animetta.inspection.checks.pipeline.asyncio.sleep", _mock_sleep),
         ):
             result = await check_conversation_pipeline()
 
@@ -91,7 +93,7 @@ class TestSuccessfulPipeline:
         # Verify the test message was emitted
         mock_client.emit.assert_called_once()
         call_args = mock_client.emit.call_args
-        assert call_args[0][0] == "user_message"
+        assert call_args[0][0] == "text_input"
         assert call_args[0][1]["text"] == "[inspection] ping"
         assert call_args[0][1]["mode"] == "text"
 
@@ -116,10 +118,10 @@ class TestSuccessfulPipeline:
 
         with (
             patch(
-                "anima.inspection.checks.pipeline.socketio.AsyncClient",
+                "animetta.inspection.checks.pipeline.socketio.AsyncClient",
                 return_value=mock_client,
             ),
-            patch("anima.inspection.checks.pipeline.asyncio.sleep", _mock_sleep),
+            patch("animetta.inspection.checks.pipeline.asyncio.sleep", _mock_sleep),
         ):
             result = await check_conversation_pipeline()
 
@@ -138,7 +140,7 @@ class TestConnectionTimeout:
         )
 
         with patch(
-            "anima.inspection.checks.pipeline.socketio.AsyncClient",
+            "animetta.inspection.checks.pipeline.socketio.AsyncClient",
             return_value=mock_client,
         ):
             result = await check_conversation_pipeline()
@@ -158,11 +160,11 @@ class TestConnectionTimeout:
 
         with (
             patch(
-                "anima.inspection.checks.pipeline.socketio.AsyncClient",
+                "animetta.inspection.checks.pipeline.socketio.AsyncClient",
                 return_value=mock_client,
             ),
             patch(
-                "anima.inspection.checks.pipeline.asyncio.wait_for",
+                "animetta.inspection.checks.pipeline.asyncio.wait_for",
                 side_effect=timeout_error,
             ),
         ):
@@ -195,10 +197,10 @@ class TestMissingEvents:
 
         with (
             patch(
-                "anima.inspection.checks.pipeline.socketio.AsyncClient",
+                "animetta.inspection.checks.pipeline.socketio.AsyncClient",
                 return_value=mock_client,
             ),
-            patch("anima.inspection.checks.pipeline.asyncio.sleep", _mock_sleep),
+            patch("animetta.inspection.checks.pipeline.asyncio.sleep", _mock_sleep),
         ):
             result = await check_conversation_pipeline()
 
@@ -232,10 +234,10 @@ class TestMissingEvents:
 
         with (
             patch(
-                "anima.inspection.checks.pipeline.socketio.AsyncClient",
+                "animetta.inspection.checks.pipeline.socketio.AsyncClient",
                 return_value=mock_client,
             ),
-            patch("anima.inspection.checks.pipeline.asyncio.sleep", _mock_sleep),
+            patch("animetta.inspection.checks.pipeline.asyncio.sleep", _mock_sleep),
         ):
             result = await check_conversation_pipeline()
 
@@ -255,7 +257,7 @@ class TestExceptionDuringConnection:
         )
 
         with patch(
-            "anima.inspection.checks.pipeline.socketio.AsyncClient",
+            "animetta.inspection.checks.pipeline.socketio.AsyncClient",
             return_value=mock_client,
         ):
             result = await check_conversation_pipeline()
@@ -286,10 +288,10 @@ class TestExceptionDuringConnection:
 
         with (
             patch(
-                "anima.inspection.checks.pipeline.socketio.AsyncClient",
+                "animetta.inspection.checks.pipeline.socketio.AsyncClient",
                 return_value=mock_client,
             ),
-            patch("anima.inspection.checks.pipeline.asyncio.sleep", _mock_sleep),
+            patch("animetta.inspection.checks.pipeline.asyncio.sleep", _mock_sleep),
         ):
             result = await check_conversation_pipeline()
 
@@ -345,10 +347,10 @@ class TestCheckResultShape:
 
         with (
             patch(
-                "anima.inspection.checks.pipeline.socketio.AsyncClient",
+                "animetta.inspection.checks.pipeline.socketio.AsyncClient",
                 return_value=mock_client,
             ),
-            patch("anima.inspection.checks.pipeline.asyncio.sleep", _mock_sleep),
+            patch("animetta.inspection.checks.pipeline.asyncio.sleep", _mock_sleep),
         ):
             result = await check_conversation_pipeline()
 
@@ -381,10 +383,10 @@ class TestCheckResultShape:
 
         with (
             patch(
-                "anima.inspection.checks.pipeline.socketio.AsyncClient",
+                "animetta.inspection.checks.pipeline.socketio.AsyncClient",
                 return_value=mock_client,
             ),
-            patch("anima.inspection.checks.pipeline.asyncio.sleep", _mock_sleep),
+            patch("animetta.inspection.checks.pipeline.asyncio.sleep", _mock_sleep),
         ):
             result = await check_conversation_pipeline()
 

@@ -1,0 +1,4294 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 25,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "src/animetta/config/singing.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 62,
+      "nonEmptyLines": 47,
+      "classes": [
+        {
+          "name": "GPTSoVITSConfig",
+          "startLine": 6,
+          "endLine": 15,
+          "methods": [],
+          "properties": [
+            "base_url",
+            "svc_endpoint",
+            "ref_audio_path",
+            "prompt_text",
+            "text_lang",
+            "top_k",
+            "top_p",
+            "temperature",
+            "speed"
+          ]
+        },
+        {
+          "name": "BilibiliConfig",
+          "startLine": 18,
+          "endLine": 20,
+          "methods": [],
+          "properties": [
+            "downloader",
+            "output_dir"
+          ]
+        },
+        {
+          "name": "SeparationConfig",
+          "startLine": 23,
+          "endLine": 26,
+          "methods": [],
+          "properties": [
+            "engine",
+            "model",
+            "output_dir"
+          ]
+        },
+        {
+          "name": "ASRConfig",
+          "startLine": 29,
+          "endLine": 33,
+          "methods": [],
+          "properties": [
+            "model_size",
+            "language",
+            "output_dir",
+            "download_root"
+          ]
+        },
+        {
+          "name": "SVCConfig",
+          "startLine": 36,
+          "endLine": 37,
+          "methods": [],
+          "properties": [
+            "output_dir"
+          ]
+        },
+        {
+          "name": "RVCConfig",
+          "startLine": 40,
+          "endLine": 51,
+          "methods": [],
+          "properties": [
+            "enabled",
+            "rvc_path",
+            "python_exe",
+            "model_name",
+            "index_path",
+            "f0_method",
+            "f0_up_key",
+            "index_rate",
+            "filter_radius",
+            "rms_mix_rate",
+            "protect"
+          ]
+        },
+        {
+          "name": "SingingConfig",
+          "startLine": 54,
+          "endLine": 62,
+          "methods": [],
+          "properties": [
+            "gpt_sovits",
+            "bilibili",
+            "separation",
+            "asr",
+            "svc",
+            "rvc",
+            "output_dir",
+            "max_file_age_days"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "GPTSoVITSConfig",
+          "line": 6,
+          "isDefault": false
+        },
+        {
+          "name": "BilibiliConfig",
+          "line": 18,
+          "isDefault": false
+        },
+        {
+          "name": "SeparationConfig",
+          "line": 23,
+          "isDefault": false
+        },
+        {
+          "name": "ASRConfig",
+          "line": 29,
+          "isDefault": false
+        },
+        {
+          "name": "SVCConfig",
+          "line": 36,
+          "isDefault": false
+        },
+        {
+          "name": "RVCConfig",
+          "line": 40,
+          "isDefault": false
+        },
+        {
+          "name": "SingingConfig",
+          "line": 54,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 7,
+        "functionCount": 0,
+        "classCount": 7
+      }
+    },
+    {
+      "path": "src/animetta/config/system.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 14,
+      "nonEmptyLines": 10,
+      "classes": [
+        {
+          "name": "SystemConfig",
+          "startLine": 8,
+          "endLine": 14,
+          "methods": [],
+          "properties": [
+            "host",
+            "port",
+            "debug",
+            "log_level",
+            "gpt_sovits"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "SystemConfig",
+          "line": 8,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/config/user.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 50,
+      "nonEmptyLines": 39,
+      "classes": [
+        {
+          "name": "UserSettings",
+          "startLine": 12,
+          "endLine": 50,
+          "methods": [
+            "__init__",
+            "_load",
+            "_create_default",
+            "save",
+            "get_log_level",
+            "set_log_level"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "UserSettings",
+          "line": 12,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "self._load",
+          "lineNumber": 17
+        },
+        {
+          "caller": "_load",
+          "callee": "self.config_file.exists",
+          "lineNumber": 21
+        },
+        {
+          "caller": "_load",
+          "callee": "self._create_default",
+          "lineNumber": 22
+        },
+        {
+          "caller": "_load",
+          "callee": "open",
+          "lineNumber": 25
+        },
+        {
+          "caller": "_load",
+          "callee": "yaml.safe_load",
+          "lineNumber": 26
+        },
+        {
+          "caller": "_load",
+          "callee": "logger.warning",
+          "lineNumber": 28
+        },
+        {
+          "caller": "_load",
+          "callee": "self._create_default",
+          "lineNumber": 29
+        },
+        {
+          "caller": "save",
+          "callee": "open",
+          "lineNumber": 40
+        },
+        {
+          "caller": "save",
+          "callee": "yaml.safe_dump",
+          "lineNumber": 41
+        },
+        {
+          "caller": "save",
+          "callee": "logger.error",
+          "lineNumber": 43
+        },
+        {
+          "caller": "get_log_level",
+          "callee": "self.settings.get",
+          "lineNumber": 46
+        },
+        {
+          "caller": "set_log_level",
+          "callee": "self.save",
+          "lineNumber": 50
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/core/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 0,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/core/model_loading_manager.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 290,
+      "nonEmptyLines": 236,
+      "classes": [
+        {
+          "name": "ModelLoadState",
+          "startLine": 17,
+          "endLine": 23,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "ModelSlot",
+          "startLine": 26,
+          "endLine": 62,
+          "methods": [
+            "__init__",
+            "set_loaded",
+            "set_error",
+            "wait"
+          ],
+          "properties": []
+        },
+        {
+          "name": "ModelLoadingManager",
+          "startLine": 65,
+          "endLine": 290,
+          "methods": [
+            "__init__",
+            "register",
+            "warmup",
+            "_load_one",
+            "get",
+            "get_status",
+            "wait_all",
+            "_emit_status"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "ModelLoadState",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "ModelSlot",
+          "line": 26,
+          "isDefault": false
+        },
+        {
+          "name": "ModelLoadingManager",
+          "line": 65,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "asyncio.Event",
+          "lineNumber": 39
+        },
+        {
+          "caller": "set_loaded",
+          "callee": "self._event.set",
+          "lineNumber": 45
+        },
+        {
+          "caller": "set_error",
+          "callee": "self._event.set",
+          "lineNumber": 51
+        },
+        {
+          "caller": "wait",
+          "callee": "asyncio.wait_for",
+          "lineNumber": 59
+        },
+        {
+          "caller": "wait",
+          "callee": "self._event.wait",
+          "lineNumber": 59
+        },
+        {
+          "caller": "register",
+          "callee": "logger.info",
+          "lineNumber": 108
+        },
+        {
+          "caller": "register",
+          "callee": "ModelSlot",
+          "lineNumber": 110
+        },
+        {
+          "caller": "register",
+          "callee": "asyncio.iscoroutinefunction",
+          "lineNumber": 115
+        },
+        {
+          "caller": "register",
+          "callee": "loader_fn",
+          "lineNumber": 121
+        },
+        {
+          "caller": "register",
+          "callee": "slot.set_loaded",
+          "lineNumber": 122
+        },
+        {
+          "caller": "register",
+          "callee": "self._emit_status",
+          "lineNumber": 123
+        },
+        {
+          "caller": "register",
+          "callee": "logger.info",
+          "lineNumber": 124
+        },
+        {
+          "caller": "register",
+          "callee": "slot.set_error",
+          "lineNumber": 127
+        },
+        {
+          "caller": "register",
+          "callee": "self._emit_status",
+          "lineNumber": 128
+        },
+        {
+          "caller": "register",
+          "callee": "str",
+          "lineNumber": 128
+        },
+        {
+          "caller": "register",
+          "callee": "logger.error",
+          "lineNumber": 129
+        },
+        {
+          "caller": "warmup",
+          "callee": "logger.info",
+          "lineNumber": 144
+        },
+        {
+          "caller": "warmup",
+          "callee": "len",
+          "lineNumber": 144
+        },
+        {
+          "caller": "warmup",
+          "callee": "self._loaders.items",
+          "lineNumber": 147
+        },
+        {
+          "caller": "warmup",
+          "callee": "tasks.append",
+          "lineNumber": 151
+        },
+        {
+          "caller": "warmup",
+          "callee": "self._load_one",
+          "lineNumber": 151
+        },
+        {
+          "caller": "warmup",
+          "callee": "asyncio.gather",
+          "lineNumber": 156
+        },
+        {
+          "caller": "warmup",
+          "callee": "zip",
+          "lineNumber": 157
+        },
+        {
+          "caller": "warmup",
+          "callee": "self._loaders.items",
+          "lineNumber": 158
+        },
+        {
+          "caller": "warmup",
+          "callee": "isinstance",
+          "lineNumber": 162
+        },
+        {
+          "caller": "warmup",
+          "callee": "logger.error",
+          "lineNumber": 163
+        },
+        {
+          "caller": "warmup",
+          "callee": "logger.info",
+          "lineNumber": 165
+        },
+        {
+          "caller": "_load_one",
+          "callee": "self._service_names.get",
+          "lineNumber": 178
+        },
+        {
+          "caller": "_load_one",
+          "callee": "self._emit_status",
+          "lineNumber": 181
+        },
+        {
+          "caller": "_load_one",
+          "callee": "logger.info",
+          "lineNumber": 182
+        },
+        {
+          "caller": "_load_one",
+          "callee": "asyncio.iscoroutinefunction",
+          "lineNumber": 185
+        },
+        {
+          "caller": "_load_one",
+          "callee": "loader_fn",
+          "lineNumber": 186
+        },
+        {
+          "caller": "_load_one",
+          "callee": "asyncio.to_thread",
+          "lineNumber": 188
+        },
+        {
+          "caller": "_load_one",
+          "callee": "slot.set_loaded",
+          "lineNumber": 190
+        },
+        {
+          "caller": "_load_one",
+          "callee": "self._emit_status",
+          "lineNumber": 191
+        },
+        {
+          "caller": "_load_one",
+          "callee": "logger.info",
+          "lineNumber": 192
+        },
+        {
+          "caller": "_load_one",
+          "callee": "slot.set_error",
+          "lineNumber": 195
+        },
+        {
+          "caller": "_load_one",
+          "callee": "self._emit_status",
+          "lineNumber": 196
+        },
+        {
+          "caller": "_load_one",
+          "callee": "str",
+          "lineNumber": 196
+        },
+        {
+          "caller": "_load_one",
+          "callee": "logger.error",
+          "lineNumber": 197
+        },
+        {
+          "caller": "get",
+          "callee": "KeyError",
+          "lineNumber": 212
+        },
+        {
+          "caller": "get",
+          "callee": "logger.info",
+          "lineNumber": 222
+        },
+        {
+          "caller": "get",
+          "callee": "self._load_one",
+          "lineNumber": 223
+        },
+        {
+          "caller": "get",
+          "callee": "slot.wait",
+          "lineNumber": 225
+        },
+        {
+          "caller": "get_status",
+          "callee": "self._slots.items",
+          "lineNumber": 235
+        },
+        {
+          "caller": "wait_all",
+          "callee": "self._slots.items",
+          "lineNumber": 250
+        },
+        {
+          "caller": "wait_all",
+          "callee": "asyncio.wait_for",
+          "lineNumber": 253
+        },
+        {
+          "caller": "wait_all",
+          "callee": "slot._event.wait",
+          "lineNumber": 253
+        },
+        {
+          "caller": "wait_all",
+          "callee": "logger.warning",
+          "lineNumber": 255
+        },
+        {
+          "caller": "wait_all",
+          "callee": "all",
+          "lineNumber": 258
+        },
+        {
+          "caller": "wait_all",
+          "callee": "self._slots.values",
+          "lineNumber": 260
+        },
+        {
+          "caller": "_emit_status",
+          "callee": "self._service_names.get",
+          "lineNumber": 277
+        },
+        {
+          "caller": "_emit_status",
+          "callee": "asyncio.ensure_future",
+          "lineNumber": 287
+        },
+        {
+          "caller": "_emit_status",
+          "callee": "self._socketio.emit",
+          "lineNumber": 287
+        },
+        {
+          "caller": "_emit_status",
+          "callee": "logger.debug",
+          "lineNumber": 290
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 0,
+        "classCount": 3
+      }
+    },
+    {
+      "path": "src/animetta/core/redis_checkpoint.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 166,
+      "nonEmptyLines": 142,
+      "classes": [
+        {
+          "name": "AsyncRedisSaver",
+          "startLine": 22,
+          "endLine": 166,
+          "methods": [
+            "__init__",
+            "_serialize",
+            "_deserialize",
+            "_make_key",
+            "_make_writes_key",
+            "aget_tuple",
+            "aput",
+            "aput_writes",
+            "alist",
+            "adelete_thread",
+            "close"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "AsyncRedisSaver",
+          "line": 22,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "super().__init__",
+          "lineNumber": 33
+        },
+        {
+          "caller": "__init__",
+          "callee": "super",
+          "lineNumber": 33
+        },
+        {
+          "caller": "__init__",
+          "callee": "aioredis.from_url",
+          "lineNumber": 39
+        },
+        {
+          "caller": "_serialize",
+          "callee": "json.dumps",
+          "lineNumber": 49
+        },
+        {
+          "caller": "_deserialize",
+          "callee": "json.loads",
+          "lineNumber": 53
+        },
+        {
+          "caller": "aget_tuple",
+          "callee": "self._make_key",
+          "lineNumber": 65
+        },
+        {
+          "caller": "aget_tuple",
+          "callee": "self.redis.get",
+          "lineNumber": 67
+        },
+        {
+          "caller": "aget_tuple",
+          "callee": "self._deserialize",
+          "lineNumber": 70
+        },
+        {
+          "caller": "aget_tuple",
+          "callee": "stored.get",
+          "lineNumber": 72
+        },
+        {
+          "caller": "aget_tuple",
+          "callee": "checkpoint.get",
+          "lineNumber": 73
+        },
+        {
+          "caller": "aget_tuple",
+          "callee": "self._make_writes_key",
+          "lineNumber": 77
+        },
+        {
+          "caller": "aget_tuple",
+          "callee": "self.redis.get",
+          "lineNumber": 78
+        },
+        {
+          "caller": "aget_tuple",
+          "callee": "self._deserialize",
+          "lineNumber": 80
+        },
+        {
+          "caller": "aget_tuple",
+          "callee": "CheckpointTuple",
+          "lineNumber": 82
+        },
+        {
+          "caller": "aget_tuple",
+          "callee": "config[\"configurable\"].get",
+          "lineNumber": 86
+        },
+        {
+          "caller": "aget_tuple",
+          "callee": "logger.warning",
+          "lineNumber": 95
+        },
+        {
+          "caller": "aput",
+          "callee": "self._make_key",
+          "lineNumber": 106
+        },
+        {
+          "caller": "aput",
+          "callee": "self.redis.set",
+          "lineNumber": 113
+        },
+        {
+          "caller": "aput",
+          "callee": "self._serialize",
+          "lineNumber": 113
+        },
+        {
+          "caller": "aput",
+          "callee": "logger.warning",
+          "lineNumber": 115
+        },
+        {
+          "caller": "aput",
+          "callee": "config[\"configurable\"].get",
+          "lineNumber": 119
+        },
+        {
+          "caller": "aput_writes",
+          "callee": "self._make_writes_key",
+          "lineNumber": 132
+        },
+        {
+          "caller": "aput_writes",
+          "callee": "self.redis.set",
+          "lineNumber": 134
+        },
+        {
+          "caller": "aput_writes",
+          "callee": "self._serialize",
+          "lineNumber": 134
+        },
+        {
+          "caller": "aput_writes",
+          "callee": "logger.warning",
+          "lineNumber": 136
+        },
+        {
+          "caller": "alist",
+          "callee": "self.aget_tuple",
+          "lineNumber": 148
+        },
+        {
+          "caller": "adelete_thread",
+          "callee": "self.redis.delete",
+          "lineNumber": 154
+        },
+        {
+          "caller": "adelete_thread",
+          "callee": "self._make_key",
+          "lineNumber": 154
+        },
+        {
+          "caller": "adelete_thread",
+          "callee": "self.redis.delete",
+          "lineNumber": 155
+        },
+        {
+          "caller": "adelete_thread",
+          "callee": "self._make_writes_key",
+          "lineNumber": 155
+        },
+        {
+          "caller": "adelete_thread",
+          "callee": "logger.warning",
+          "lineNumber": 157
+        },
+        {
+          "caller": "close",
+          "callee": "self.redis.aclose",
+          "lineNumber": 164
+        },
+        {
+          "caller": "close",
+          "callee": "logger.warning",
+          "lineNumber": 166
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/core/service_context.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 454,
+      "nonEmptyLines": 384,
+      "classes": [
+        {
+          "name": "ServiceContext",
+          "startLine": 29,
+          "endLine": 454,
+          "methods": [
+            "__init__",
+            "__str__",
+            "load_from_config",
+            "load_cache",
+            "init_asr",
+            "_preload_tokenizers",
+            "init_tts",
+            "init_llm",
+            "init_local_llm",
+            "_get_live2d_prompt",
+            "_build_system_prompt",
+            "init_vad",
+            "init_audio_processor",
+            "init_memory",
+            "init_emotion_analyzer",
+            "close",
+            "_verify_llm_connectivity",
+            "process_text_input",
+            "handle_config_switch"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "ServiceContext",
+          "line": 29,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__str__",
+          "callee": "type",
+          "lineNumber": 62
+        },
+        {
+          "caller": "__str__",
+          "callee": "type",
+          "lineNumber": 63
+        },
+        {
+          "caller": "__str__",
+          "callee": "type",
+          "lineNumber": 64
+        },
+        {
+          "caller": "load_from_config",
+          "callee": "logger.info",
+          "lineNumber": 74
+        },
+        {
+          "caller": "load_from_config",
+          "callee": "self.init_asr",
+          "lineNumber": 76
+        },
+        {
+          "caller": "load_from_config",
+          "callee": "self.init_tts",
+          "lineNumber": 77
+        },
+        {
+          "caller": "load_from_config",
+          "callee": "self.init_llm",
+          "lineNumber": 78
+        },
+        {
+          "caller": "load_from_config",
+          "callee": "config.get_persona",
+          "lineNumber": 78
+        },
+        {
+          "caller": "load_from_config",
+          "callee": "self.init_local_llm",
+          "lineNumber": 79
+        },
+        {
+          "caller": "load_from_config",
+          "callee": "self.init_vad",
+          "lineNumber": 80
+        },
+        {
+          "caller": "load_from_config",
+          "callee": "self.init_audio_processor",
+          "lineNumber": 81
+        },
+        {
+          "caller": "load_from_config",
+          "callee": "self.init_memory",
+          "lineNumber": 82
+        },
+        {
+          "caller": "load_from_config",
+          "callee": "self.init_emotion_analyzer",
+          "lineNumber": 83
+        },
+        {
+          "caller": "load_from_config",
+          "callee": "self._preload_tokenizers",
+          "lineNumber": 86
+        },
+        {
+          "caller": "load_from_config",
+          "callee": "asyncio.create_task",
+          "lineNumber": 90
+        },
+        {
+          "caller": "load_from_config",
+          "callee": "self.model_manager.warmup",
+          "lineNumber": 90
+        },
+        {
+          "caller": "load_from_config",
+          "callee": "logger.info",
+          "lineNumber": 92
+        },
+        {
+          "caller": "load_from_config",
+          "callee": "logger.info",
+          "lineNumber": 93
+        },
+        {
+          "caller": "load_from_config",
+          "callee": "get_availability_summary",
+          "lineNumber": 93
+        },
+        {
+          "caller": "load_from_config",
+          "callee": "asyncio.create_task",
+          "lineNumber": 96
+        },
+        {
+          "caller": "load_from_config",
+          "callee": "self._verify_llm_connectivity",
+          "lineNumber": 96
+        },
+        {
+          "caller": "load_cache",
+          "callee": "logger.debug",
+          "lineNumber": 112
+        },
+        {
+          "caller": "init_asr",
+          "callee": "logger.debug",
+          "lineNumber": 117
+        },
+        {
+          "caller": "init_asr",
+          "callee": "getattr",
+          "lineNumber": 121
+        },
+        {
+          "caller": "init_asr",
+          "callee": "logger.info",
+          "lineNumber": 122
+        },
+        {
+          "caller": "init_asr",
+          "callee": "ASRFactory.create",
+          "lineNumber": 124
+        },
+        {
+          "caller": "init_asr",
+          "callee": "getattr",
+          "lineNumber": 126
+        },
+        {
+          "caller": "init_asr",
+          "callee": "getattr",
+          "lineNumber": 127
+        },
+        {
+          "caller": "init_asr",
+          "callee": "getattr",
+          "lineNumber": 129
+        },
+        {
+          "caller": "init_asr",
+          "callee": "getattr",
+          "lineNumber": 130
+        },
+        {
+          "caller": "init_asr",
+          "callee": "getattr",
+          "lineNumber": 131
+        },
+        {
+          "caller": "init_asr",
+          "callee": "getattr",
+          "lineNumber": 132
+        },
+        {
+          "caller": "init_asr",
+          "callee": "getattr",
+          "lineNumber": 133
+        },
+        {
+          "caller": "init_asr",
+          "callee": "getattr",
+          "lineNumber": 134
+        },
+        {
+          "caller": "init_asr",
+          "callee": "getattr",
+          "lineNumber": 135
+        },
+        {
+          "caller": "init_asr",
+          "callee": "getattr",
+          "lineNumber": 136
+        },
+        {
+          "caller": "init_asr",
+          "callee": "getattr",
+          "lineNumber": 137
+        },
+        {
+          "caller": "init_asr",
+          "callee": "getattr",
+          "lineNumber": 138
+        },
+        {
+          "caller": "init_asr",
+          "callee": "getattr",
+          "lineNumber": 139
+        },
+        {
+          "caller": "init_asr",
+          "callee": "getattr",
+          "lineNumber": 140
+        },
+        {
+          "caller": "init_asr",
+          "callee": "getattr",
+          "lineNumber": 141
+        },
+        {
+          "caller": "init_asr",
+          "callee": "getattr",
+          "lineNumber": 142
+        },
+        {
+          "caller": "init_asr",
+          "callee": "getattr",
+          "lineNumber": 143
+        },
+        {
+          "caller": "init_asr",
+          "callee": "hasattr",
+          "lineNumber": 146
+        },
+        {
+          "caller": "init_asr",
+          "callee": "self.model_manager.register",
+          "lineNumber": 147
+        },
+        {
+          "caller": "_preload_tokenizers",
+          "callee": "asyncio.get_event_loop",
+          "lineNumber": 155
+        },
+        {
+          "caller": "_preload_tokenizers",
+          "callee": "loop.run_in_executor",
+          "lineNumber": 156
+        },
+        {
+          "caller": "_preload_tokenizers",
+          "callee": "tiktoken.get_encoding",
+          "lineNumber": 156
+        },
+        {
+          "caller": "_preload_tokenizers",
+          "callee": "logger.info",
+          "lineNumber": 157
+        },
+        {
+          "caller": "_preload_tokenizers",
+          "callee": "logger.debug",
+          "lineNumber": 159
+        },
+        {
+          "caller": "_preload_tokenizers",
+          "callee": "logger.warning",
+          "lineNumber": 161
+        },
+        {
+          "caller": "init_tts",
+          "callee": "logger.debug",
+          "lineNumber": 166
+        },
+        {
+          "caller": "init_tts",
+          "callee": "getattr",
+          "lineNumber": 170
+        },
+        {
+          "caller": "init_tts",
+          "callee": "logger.info",
+          "lineNumber": 171
+        },
+        {
+          "caller": "init_tts",
+          "callee": "hasattr",
+          "lineNumber": 175
+        },
+        {
+          "caller": "init_tts",
+          "callee": "tts_config.model_dump",
+          "lineNumber": 176
+        },
+        {
+          "caller": "init_tts",
+          "callee": "tts_kwargs.update",
+          "lineNumber": 177
+        },
+        {
+          "caller": "init_tts",
+          "callee": "getattr",
+          "lineNumber": 184
+        },
+        {
+          "caller": "init_tts",
+          "callee": "TTSFactory.create",
+          "lineNumber": 190
+        },
+        {
+          "caller": "init_tts",
+          "callee": "tts_kwargs.get",
+          "lineNumber": 193
+        },
+        {
+          "caller": "init_tts",
+          "callee": "str(device).lower",
+          "lineNumber": 194
+        },
+        {
+          "caller": "init_tts",
+          "callee": "str",
+          "lineNumber": 194
+        },
+        {
+          "caller": "init_tts",
+          "callee": "getattr",
+          "lineNumber": 197
+        },
+        {
+          "caller": "init_tts",
+          "callee": "isinstance",
+          "lineNumber": 198
+        },
+        {
+          "caller": "init_tts",
+          "callee": "logger.warning",
+          "lineNumber": 199
+        },
+        {
+          "caller": "init_tts",
+          "callee": "TTSFactory.create",
+          "lineNumber": 204
+        },
+        {
+          "caller": "init_tts",
+          "callee": "getattr",
+          "lineNumber": 208
+        },
+        {
+          "caller": "init_tts",
+          "callee": "isinstance",
+          "lineNumber": 209
+        },
+        {
+          "caller": "init_tts",
+          "callee": "logger.warning",
+          "lineNumber": 210
+        },
+        {
+          "caller": "init_tts",
+          "callee": "hasattr",
+          "lineNumber": 214
+        },
+        {
+          "caller": "init_tts",
+          "callee": "self.model_manager.register",
+          "lineNumber": 215
+        },
+        {
+          "caller": "init_llm",
+          "callee": "logger.debug",
+          "lineNumber": 220
+        },
+        {
+          "caller": "init_llm",
+          "callee": "logger.info",
+          "lineNumber": 224
+        },
+        {
+          "caller": "init_llm",
+          "callee": "self._get_live2d_prompt",
+          "lineNumber": 227
+        },
+        {
+          "caller": "init_llm",
+          "callee": "app_config.get_system_prompt",
+          "lineNumber": 228
+        },
+        {
+          "caller": "init_llm",
+          "callee": "logger.info",
+          "lineNumber": 230
+        },
+        {
+          "caller": "init_llm",
+          "callee": "self._build_system_prompt",
+          "lineNumber": 232
+        },
+        {
+          "caller": "init_llm",
+          "callee": "LLMFactory.create_from_config",
+          "lineNumber": 234
+        },
+        {
+          "caller": "init_llm",
+          "callee": "logger.info",
+          "lineNumber": 235
+        },
+        {
+          "caller": "init_llm",
+          "callee": "type",
+          "lineNumber": 235
+        },
+        {
+          "caller": "init_llm",
+          "callee": "hasattr",
+          "lineNumber": 237
+        },
+        {
+          "caller": "init_llm",
+          "callee": "self.model_manager.register",
+          "lineNumber": 238
+        },
+        {
+          "caller": "init_local_llm",
+          "callee": "logger.debug",
+          "lineNumber": 243
+        },
+        {
+          "caller": "init_local_llm",
+          "callee": "logger.info",
+          "lineNumber": 247
+        },
+        {
+          "caller": "init_local_llm",
+          "callee": "logger.info",
+          "lineNumber": 250
+        },
+        {
+          "caller": "init_local_llm",
+          "callee": "LLMFactory.create_from_config",
+          "lineNumber": 251
+        },
+        {
+          "caller": "init_local_llm",
+          "callee": "logger.info",
+          "lineNumber": 252
+        },
+        {
+          "caller": "init_local_llm",
+          "callee": "type",
+          "lineNumber": 252
+        },
+        {
+          "caller": "_get_live2d_prompt",
+          "callee": "get_live2d_config",
+          "lineNumber": 257
+        },
+        {
+          "caller": "_get_live2d_prompt",
+          "callee": "EmotionPromptBuilder.from_config",
+          "lineNumber": 261
+        },
+        {
+          "caller": "_get_live2d_prompt",
+          "callee": "builder.build_prompt",
+          "lineNumber": 262
+        },
+        {
+          "caller": "_get_live2d_prompt",
+          "callee": "logger.warning",
+          "lineNumber": 264
+        },
+        {
+          "caller": "_build_system_prompt",
+          "callee": "persona_config.build_system_prompt",
+          "lineNumber": 269
+        },
+        {
+          "caller": "init_vad",
+          "callee": "logger.debug",
+          "lineNumber": 274
+        },
+        {
+          "caller": "init_vad",
+          "callee": "logger.info",
+          "lineNumber": 278
+        },
+        {
+          "caller": "init_vad",
+          "callee": "VADFactory.create_from_config",
+          "lineNumber": 281
+        },
+        {
+          "caller": "init_vad",
+          "callee": "logger.info",
+          "lineNumber": 282
+        },
+        {
+          "caller": "init_vad",
+          "callee": "type",
+          "lineNumber": 282
+        },
+        {
+          "caller": "init_vad",
+          "callee": "hasattr",
+          "lineNumber": 284
+        },
+        {
+          "caller": "init_vad",
+          "callee": "self.model_manager.register",
+          "lineNumber": 285
+        },
+        {
+          "caller": "init_vad",
+          "callee": "hasattr",
+          "lineNumber": 287
+        },
+        {
+          "caller": "init_vad",
+          "callee": "logger.info",
+          "lineNumber": 288
+        },
+        {
+          "caller": "init_vad",
+          "callee": "logger.error",
+          "lineNumber": 294
+        },
+        {
+          "caller": "init_audio_processor",
+          "callee": "hasattr",
+          "lineNumber": 299
+        },
+        {
+          "caller": "init_audio_processor",
+          "callee": "logger.debug",
+          "lineNumber": 300
+        },
+        {
+          "caller": "init_audio_processor",
+          "callee": "logger.debug",
+          "lineNumber": 303
+        },
+        {
+          "caller": "init_audio_processor",
+          "callee": "logger.debug",
+          "lineNumber": 305
+        },
+        {
+          "caller": "init_memory",
+          "callee": "LivingMemorySystem",
+          "lineNumber": 311
+        },
+        {
+          "caller": "init_memory",
+          "callee": "self.memory_system.initialize",
+          "lineNumber": 314
+        },
+        {
+          "caller": "init_memory",
+          "callee": "logger.info",
+          "lineNumber": 315
+        },
+        {
+          "caller": "init_memory",
+          "callee": "logger.warning",
+          "lineNumber": 317
+        },
+        {
+          "caller": "init_emotion_analyzer",
+          "callee": "get_live2d_config",
+          "lineNumber": 323
+        },
+        {
+          "caller": "init_emotion_analyzer",
+          "callee": "logger.info",
+          "lineNumber": 325
+        },
+        {
+          "caller": "init_emotion_analyzer",
+          "callee": "EmotionAnalyzerFactory.create",
+          "lineNumber": 328
+        },
+        {
+          "caller": "init_emotion_analyzer",
+          "callee": "logger.info",
+          "lineNumber": 332
+        },
+        {
+          "caller": "init_emotion_analyzer",
+          "callee": "logger.warning",
+          "lineNumber": 335
+        },
+        {
+          "caller": "close",
+          "callee": "logger.info",
+          "lineNumber": 345
+        },
+        {
+          "caller": "close",
+          "callee": "self.memory_system.shutdown",
+          "lineNumber": 349
+        },
+        {
+          "caller": "close",
+          "callee": "logger.info",
+          "lineNumber": 351
+        },
+        {
+          "caller": "close",
+          "callee": "logger.warning",
+          "lineNumber": 353
+        },
+        {
+          "caller": "close",
+          "callee": "self.vad_engine.close",
+          "lineNumber": 358
+        },
+        {
+          "caller": "close",
+          "callee": "hasattr",
+          "lineNumber": 360
+        },
+        {
+          "caller": "close",
+          "callee": "hasattr",
+          "lineNumber": 361
+        },
+        {
+          "caller": "close",
+          "callee": "self.audio_processor.reset",
+          "lineNumber": 362
+        },
+        {
+          "caller": "close",
+          "callee": "logger.info",
+          "lineNumber": 365
+        },
+        {
+          "caller": "_verify_llm_connectivity",
+          "callee": "hasattr",
+          "lineNumber": 386
+        },
+        {
+          "caller": "_verify_llm_connectivity",
+          "callee": "logger.info",
+          "lineNumber": 390
+        },
+        {
+          "caller": "_verify_llm_connectivity",
+          "callee": "getattr",
+          "lineNumber": 393
+        },
+        {
+          "caller": "_verify_llm_connectivity",
+          "callee": "llm.base_url.rstrip",
+          "lineNumber": 394
+        },
+        {
+          "caller": "_verify_llm_connectivity",
+          "callee": "logger.error",
+          "lineNumber": 400
+        },
+        {
+          "caller": "_verify_llm_connectivity",
+          "callee": "time_mod.perf_counter",
+          "lineNumber": 405
+        },
+        {
+          "caller": "_verify_llm_connectivity",
+          "callee": "httpx.AsyncClient",
+          "lineNumber": 406
+        },
+        {
+          "caller": "_verify_llm_connectivity",
+          "callee": "client.get",
+          "lineNumber": 407
+        },
+        {
+          "caller": "_verify_llm_connectivity",
+          "callee": "time_mod.perf_counter",
+          "lineNumber": 411
+        },
+        {
+          "caller": "_verify_llm_connectivity",
+          "callee": "round",
+          "lineNumber": 415
+        },
+        {
+          "caller": "_verify_llm_connectivity",
+          "callee": "logger.info",
+          "lineNumber": 417
+        },
+        {
+          "caller": "_verify_llm_connectivity",
+          "callee": "logger.error",
+          "lineNumber": 422
+        },
+        {
+          "caller": "_verify_llm_connectivity",
+          "callee": "logger.warning",
+          "lineNumber": 427
+        },
+        {
+          "caller": "_verify_llm_connectivity",
+          "callee": "logger.error",
+          "lineNumber": 434
+        },
+        {
+          "caller": "process_text_input",
+          "callee": "RuntimeError",
+          "lineNumber": 440
+        },
+        {
+          "caller": "process_text_input",
+          "callee": "self.llm_engine.chat",
+          "lineNumber": 443
+        },
+        {
+          "caller": "handle_config_switch",
+          "callee": "logger.info",
+          "lineNumber": 451
+        },
+        {
+          "caller": "handle_config_switch",
+          "callee": "self.close",
+          "lineNumber": 452
+        },
+        {
+          "caller": "handle_config_switch",
+          "callee": "self.load_from_config",
+          "lineNumber": 453
+        },
+        {
+          "caller": "handle_config_switch",
+          "callee": "logger.info",
+          "lineNumber": 454
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/core/service_pool.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 123,
+      "nonEmptyLines": 99,
+      "classes": [
+        {
+          "name": "ServicePool",
+          "startLine": 24,
+          "endLine": 123,
+          "methods": [
+            "init",
+            "get_context",
+            "shutdown",
+            "is_ready"
+          ],
+          "properties": [
+            "_llm",
+            "_tts",
+            "_asr",
+            "_ready"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "ServicePool",
+          "line": 24,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "init",
+          "callee": "logger.debug",
+          "lineNumber": 43
+        },
+        {
+          "caller": "init",
+          "callee": "_time.perf_counter",
+          "lineNumber": 47
+        },
+        {
+          "caller": "init",
+          "callee": "logger.info",
+          "lineNumber": 48
+        },
+        {
+          "caller": "init",
+          "callee": "ServiceContext",
+          "lineNumber": 52
+        },
+        {
+          "caller": "init",
+          "callee": "ctx.load_from_config",
+          "lineNumber": 55
+        },
+        {
+          "caller": "init",
+          "callee": "logger.error",
+          "lineNumber": 57
+        },
+        {
+          "caller": "init",
+          "callee": "ctx.close",
+          "lineNumber": 59
+        },
+        {
+          "caller": "init",
+          "callee": "ctx.vad_engine.close",
+          "lineNumber": 69
+        },
+        {
+          "caller": "init",
+          "callee": "ctx.memory_system.stop",
+          "lineNumber": 72
+        },
+        {
+          "caller": "init",
+          "callee": "ctx.memory_system.close",
+          "lineNumber": 73
+        },
+        {
+          "caller": "init",
+          "callee": "_time.perf_counter",
+          "lineNumber": 84
+        },
+        {
+          "caller": "init",
+          "callee": "logger.info",
+          "lineNumber": 85
+        },
+        {
+          "caller": "shutdown",
+          "callee": "logger.info",
+          "lineNumber": 107
+        },
+        {
+          "caller": "shutdown",
+          "callee": "cls._llm.close",
+          "lineNumber": 110
+        },
+        {
+          "caller": "shutdown",
+          "callee": "cls._tts.close",
+          "lineNumber": 112
+        },
+        {
+          "caller": "shutdown",
+          "callee": "cls._asr.close",
+          "lineNumber": 114
+        },
+        {
+          "caller": "shutdown",
+          "callee": "logger.info",
+          "lineNumber": 119
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/core/socketio_server.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 307,
+      "nonEmptyLines": 237,
+      "functions": [
+        {
+          "name": "parse_server_args",
+          "startLine": 45,
+          "endLine": 54,
+          "params": []
+        },
+        {
+          "name": "init_config",
+          "startLine": 72,
+          "endLine": 86,
+          "params": [
+            "config_path"
+          ]
+        },
+        {
+          "name": "run_server",
+          "startLine": 89,
+          "endLine": 129,
+          "params": []
+        },
+        {
+          "name": "get_asgi_app",
+          "startLine": 144,
+          "endLine": 214,
+          "params": []
+        },
+        {
+          "name": "_wrap_with_frontend_serving",
+          "startLine": 217,
+          "endLine": 279,
+          "params": [
+            "app"
+          ]
+        },
+        {
+          "name": "_setup_checkpointer",
+          "startLine": 282,
+          "endLine": 303,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "parse_server_args",
+          "line": 45,
+          "isDefault": false
+        },
+        {
+          "name": "init_config",
+          "line": 72,
+          "isDefault": false
+        },
+        {
+          "name": "run_server",
+          "line": 89,
+          "isDefault": false
+        },
+        {
+          "name": "get_asgi_app",
+          "line": 144,
+          "isDefault": false
+        },
+        {
+          "name": "_wrap_with_frontend_serving",
+          "line": 217,
+          "isDefault": false
+        },
+        {
+          "name": "_setup_checkpointer",
+          "line": 282,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "parse_server_args",
+          "callee": "argparse.ArgumentParser",
+          "lineNumber": 47
+        },
+        {
+          "caller": "parse_server_args",
+          "callee": "parser.add_argument",
+          "lineNumber": 48
+        },
+        {
+          "caller": "parse_server_args",
+          "callee": "parser.parse_args",
+          "lineNumber": 54
+        },
+        {
+          "caller": "init_config",
+          "callee": "AppConfig.from_yaml",
+          "lineNumber": 82
+        },
+        {
+          "caller": "init_config",
+          "callee": "AppConfig.load",
+          "lineNumber": 84
+        },
+        {
+          "caller": "init_config",
+          "callee": "logger.info",
+          "lineNumber": 86
+        },
+        {
+          "caller": "run_server",
+          "callee": "init_config",
+          "lineNumber": 94
+        },
+        {
+          "caller": "run_server",
+          "callee": "create_server",
+          "lineNumber": 97
+        },
+        {
+          "caller": "run_server",
+          "callee": "_server.set_user_settings",
+          "lineNumber": 98
+        },
+        {
+          "caller": "cleanup_on_exit",
+          "callee": "logger.info",
+          "lineNumber": 102
+        },
+        {
+          "caller": "cleanup_on_exit",
+          "callee": "asyncio.run",
+          "lineNumber": 104
+        },
+        {
+          "caller": "cleanup_on_exit",
+          "callee": "_server.stop",
+          "lineNumber": 104
+        },
+        {
+          "caller": "cleanup_on_exit",
+          "callee": "logger.error",
+          "lineNumber": 108
+        },
+        {
+          "caller": "cleanup_on_exit",
+          "callee": "logger.info",
+          "lineNumber": 109
+        },
+        {
+          "caller": "run_server",
+          "callee": "atexit.register",
+          "lineNumber": 111
+        },
+        {
+          "caller": "run_server",
+          "callee": "logger.info",
+          "lineNumber": 113
+        },
+        {
+          "caller": "run_server",
+          "callee": "logger.info",
+          "lineNumber": 114
+        },
+        {
+          "caller": "run_server",
+          "callee": "logger.info",
+          "lineNumber": 115
+        },
+        {
+          "caller": "run_server",
+          "callee": "logger.info",
+          "lineNumber": 116
+        },
+        {
+          "caller": "run_server",
+          "callee": "logger.info",
+          "lineNumber": 117
+        },
+        {
+          "caller": "run_server",
+          "callee": "logger.info",
+          "lineNumber": 118
+        },
+        {
+          "caller": "run_server",
+          "callee": "logger.info",
+          "lineNumber": 119
+        },
+        {
+          "caller": "run_server",
+          "callee": "logger.info",
+          "lineNumber": 120
+        },
+        {
+          "caller": "run_server",
+          "callee": "uvicorn.run",
+          "lineNumber": 123
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "_INIT_DONE.is_set",
+          "lineNumber": 148
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "t.done",
+          "lineNumber": 154
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "t.cancel",
+          "lineNumber": 155
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "_INIT_TASKS.clear",
+          "lineNumber": 156
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "init_config",
+          "lineNumber": 161
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "init_tracing",
+          "lineNumber": 165
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "logger.info",
+          "lineNumber": 166
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "logger.warning",
+          "lineNumber": 168
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "Path",
+          "lineNumber": 171
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "logs_dir.mkdir",
+          "lineNumber": 172
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "logger.add",
+          "lineNumber": 173
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "str",
+          "lineNumber": 174
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "_setup_checkpointer",
+          "lineNumber": 184
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "create_server",
+          "lineNumber": 187
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "_server.set_user_settings",
+          "lineNumber": 188
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "logger.info",
+          "lineNumber": 192
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "_INIT_TASKS.append",
+          "lineNumber": 193
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "asyncio.ensure_future",
+          "lineNumber": 193
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "_server.model_manager.warmup",
+          "lineNumber": 193
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "logger.info",
+          "lineNumber": 197
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "_INIT_TASKS.append",
+          "lineNumber": 198
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "asyncio.ensure_future",
+          "lineNumber": 198
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "_server.prewarm_services",
+          "lineNumber": 198
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "InspectionScheduler",
+          "lineNumber": 203
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "_INIT_TASKS.append",
+          "lineNumber": 204
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "asyncio.ensure_future",
+          "lineNumber": 204
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "_inspection_scheduler.start",
+          "lineNumber": 204
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "logger.info",
+          "lineNumber": 205
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "logger.warning",
+          "lineNumber": 207
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "_server.get_app",
+          "lineNumber": 211
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "_INIT_DONE.set",
+          "lineNumber": 212
+        },
+        {
+          "caller": "get_asgi_app",
+          "callee": "_wrap_with_frontend_serving",
+          "lineNumber": 214
+        },
+        {
+          "caller": "_wrap_with_frontend_serving",
+          "callee": "Path(__file__).resolve",
+          "lineNumber": 233
+        },
+        {
+          "caller": "_wrap_with_frontend_serving",
+          "callee": "Path",
+          "lineNumber": 233
+        },
+        {
+          "caller": "_wrap_with_frontend_serving",
+          "callee": "_FRONTEND_DIST.is_dir",
+          "lineNumber": 236
+        },
+        {
+          "caller": "_wrap_with_frontend_serving",
+          "callee": "logger.warning",
+          "lineNumber": 237
+        },
+        {
+          "caller": "_wrap_with_frontend_serving",
+          "callee": "logger.warning",
+          "lineNumber": 238
+        },
+        {
+          "caller": "_wrap_with_frontend_serving",
+          "callee": "logger.info",
+          "lineNumber": 241
+        },
+        {
+          "caller": "dispatch",
+          "callee": "path.startswith",
+          "lineNumber": 257
+        },
+        {
+          "caller": "dispatch",
+          "callee": "path.startswith",
+          "lineNumber": 257
+        },
+        {
+          "caller": "dispatch",
+          "callee": "call_next",
+          "lineNumber": 258
+        },
+        {
+          "caller": "dispatch",
+          "callee": "path.lstrip",
+          "lineNumber": 261
+        },
+        {
+          "caller": "dispatch",
+          "callee": "file_path.is_file",
+          "lineNumber": 262
+        },
+        {
+          "caller": "dispatch",
+          "callee": "mimetypes.guess_type",
+          "lineNumber": 263
+        },
+        {
+          "caller": "dispatch",
+          "callee": "str",
+          "lineNumber": 263
+        },
+        {
+          "caller": "dispatch",
+          "callee": "FileResponse",
+          "lineNumber": 264
+        },
+        {
+          "caller": "dispatch",
+          "callee": "str",
+          "lineNumber": 265
+        },
+        {
+          "caller": "dispatch",
+          "callee": "_INDEX_HTML.is_file",
+          "lineNumber": 271
+        },
+        {
+          "caller": "dispatch",
+          "callee": "FileResponse",
+          "lineNumber": 272
+        },
+        {
+          "caller": "dispatch",
+          "callee": "str",
+          "lineNumber": 272
+        },
+        {
+          "caller": "dispatch",
+          "callee": "call_next",
+          "lineNumber": 275
+        },
+        {
+          "caller": "_wrap_with_frontend_serving",
+          "callee": "app.add_middleware",
+          "lineNumber": 277
+        },
+        {
+          "caller": "_wrap_with_frontend_serving",
+          "callee": "logger.info",
+          "lineNumber": 278
+        },
+        {
+          "caller": "_setup_checkpointer",
+          "callee": "logger.info",
+          "lineNumber": 292
+        },
+        {
+          "caller": "_setup_checkpointer",
+          "callee": "AsyncRedisSaver",
+          "lineNumber": 296
+        },
+        {
+          "caller": "_setup_checkpointer",
+          "callee": "set_external_checkpointer",
+          "lineNumber": 297
+        },
+        {
+          "caller": "_setup_checkpointer",
+          "callee": "logger.info",
+          "lineNumber": 298
+        },
+        {
+          "caller": "_setup_checkpointer",
+          "callee": "logger.warning",
+          "lineNumber": 300
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 6,
+        "functionCount": 6,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/inspection/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 15,
+      "nonEmptyLines": 12,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/inspection/AGENTS.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 60,
+      "nonEmptyLines": 46,
+      "sections": [
+        {
+          "heading": "INSPECTION — DAILY SYSTEM VERIFICATION",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "OVERVIEW",
+          "level": 2,
+          "line": 8
+        },
+        {
+          "heading": "STRUCTURE",
+          "level": 2,
+          "line": 12
+        },
+        {
+          "heading": "WHERE TO LOOK",
+          "level": 2,
+          "line": 28
+        },
+        {
+          "heading": "KEY PATTERNS",
+          "level": 2,
+          "line": 38
+        },
+        {
+          "heading": "ANTI-PATTERNS",
+          "level": 2,
+          "line": 47
+        },
+        {
+          "heading": "NOTES",
+          "level": 2,
+          "line": 55
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    },
+    {
+      "path": "src/animetta/inspection/checks/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 20,
+      "nonEmptyLines": 17,
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/inspection/checks/consistency.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 153,
+      "nonEmptyLines": 122,
+      "functions": [
+        {
+          "name": "has_trace_in_last",
+          "startLine": 25,
+          "endLine": 50,
+          "params": [
+            "minutes"
+          ]
+        },
+        {
+          "name": "chroma_responds",
+          "startLine": 53,
+          "endLine": 73,
+          "params": []
+        },
+        {
+          "name": "log_file_stale",
+          "startLine": 76,
+          "endLine": 102,
+          "params": [
+            "minutes"
+          ]
+        },
+        {
+          "name": "check_data_consistency",
+          "startLine": 105,
+          "endLine": 153,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "has_trace_in_last",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "chroma_responds",
+          "line": 53,
+          "isDefault": false
+        },
+        {
+          "name": "log_file_stale",
+          "line": 76,
+          "isDefault": false
+        },
+        {
+          "name": "check_data_consistency",
+          "line": 105,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "has_trace_in_last",
+          "callee": "get_stats_store",
+          "lineNumber": 38
+        },
+        {
+          "caller": "has_trace_in_last",
+          "callee": "logger.warning",
+          "lineNumber": 40
+        },
+        {
+          "caller": "has_trace_in_last",
+          "callee": "store._db.execute",
+          "lineNumber": 42
+        },
+        {
+          "caller": "has_trace_in_last",
+          "callee": "str",
+          "lineNumber": 44
+        },
+        {
+          "caller": "has_trace_in_last",
+          "callee": "cursor.fetchone",
+          "lineNumber": 46
+        },
+        {
+          "caller": "has_trace_in_last",
+          "callee": "logger.error",
+          "lineNumber": 49
+        },
+        {
+          "caller": "chroma_responds",
+          "callee": "str",
+          "lineNumber": 65
+        },
+        {
+          "caller": "chroma_responds",
+          "callee": "chromadb.PersistentClient",
+          "lineNumber": 66
+        },
+        {
+          "caller": "chroma_responds",
+          "callee": "client.list_collections",
+          "lineNumber": 67
+        },
+        {
+          "caller": "chroma_responds",
+          "callee": "logger.info",
+          "lineNumber": 68
+        },
+        {
+          "caller": "chroma_responds",
+          "callee": "len",
+          "lineNumber": 68
+        },
+        {
+          "caller": "chroma_responds",
+          "callee": "logger.debug",
+          "lineNumber": 69
+        },
+        {
+          "caller": "chroma_responds",
+          "callee": "len",
+          "lineNumber": 69
+        },
+        {
+          "caller": "chroma_responds",
+          "callee": "logger.warning",
+          "lineNumber": 72
+        },
+        {
+          "caller": "log_file_stale",
+          "callee": "log_path.exists",
+          "lineNumber": 89
+        },
+        {
+          "caller": "log_file_stale",
+          "callee": "logger.warning",
+          "lineNumber": 90
+        },
+        {
+          "caller": "log_file_stale",
+          "callee": "log_path.stat",
+          "lineNumber": 92
+        },
+        {
+          "caller": "log_file_stale",
+          "callee": "time.time",
+          "lineNumber": 93
+        },
+        {
+          "caller": "log_file_stale",
+          "callee": "logger.warning",
+          "lineNumber": 96
+        },
+        {
+          "caller": "log_file_stale",
+          "callee": "logger.error",
+          "lineNumber": 101
+        },
+        {
+          "caller": "check_data_consistency",
+          "callee": "time.perf_counter",
+          "lineNumber": 117
+        },
+        {
+          "caller": "check_data_consistency",
+          "callee": "has_trace_in_last",
+          "lineNumber": 122
+        },
+        {
+          "caller": "check_data_consistency",
+          "callee": "issues.append",
+          "lineNumber": 125
+        },
+        {
+          "caller": "check_data_consistency",
+          "callee": "chroma_responds",
+          "lineNumber": 128
+        },
+        {
+          "caller": "check_data_consistency",
+          "callee": "issues.append",
+          "lineNumber": 131
+        },
+        {
+          "caller": "check_data_consistency",
+          "callee": "log_file_stale",
+          "lineNumber": 134
+        },
+        {
+          "caller": "check_data_consistency",
+          "callee": "issues.append",
+          "lineNumber": 137
+        },
+        {
+          "caller": "check_data_consistency",
+          "callee": "time.perf_counter",
+          "lineNumber": 139
+        },
+        {
+          "caller": "check_data_consistency",
+          "callee": "CheckResult.failed",
+          "lineNumber": 143
+        },
+        {
+          "caller": "check_data_consistency",
+          "callee": "round",
+          "lineNumber": 145
+        },
+        {
+          "caller": "check_data_consistency",
+          "callee": "\"; \".join",
+          "lineNumber": 146
+        },
+        {
+          "caller": "check_data_consistency",
+          "callee": "CheckResult.passed",
+          "lineNumber": 149
+        },
+        {
+          "caller": "check_data_consistency",
+          "callee": "round",
+          "lineNumber": 151
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 4,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/inspection/checks/health.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 397,
+      "nonEmptyLines": 329,
+      "functions": [
+        {
+          "name": "_probe_stats_store",
+          "startLine": 68,
+          "endLine": 78,
+          "params": []
+        },
+        {
+          "name": "_probe_chroma",
+          "startLine": 81,
+          "endLine": 101,
+          "params": []
+        },
+        {
+          "name": "_probe_llm_available",
+          "startLine": 104,
+          "endLine": 114,
+          "params": []
+        },
+        {
+          "name": "_probe_tts_available",
+          "startLine": 117,
+          "endLine": 127,
+          "params": []
+        },
+        {
+          "name": "_probe_asr_available",
+          "startLine": 130,
+          "endLine": 140,
+          "params": []
+        },
+        {
+          "name": "_probe_memory_read",
+          "startLine": 143,
+          "endLine": 169,
+          "params": []
+        },
+        {
+          "name": "_probe_metrics_endpoint",
+          "startLine": 172,
+          "endLine": 202,
+          "params": []
+        },
+        {
+          "name": "_probe_llm_connectivity",
+          "startLine": 205,
+          "endLine": 221,
+          "params": []
+        },
+        {
+          "name": "_run_single_probe",
+          "startLine": 281,
+          "endLine": 315,
+          "params": [
+            "check"
+          ]
+        },
+        {
+          "name": "check_all_components",
+          "startLine": 318,
+          "endLine": 342,
+          "params": []
+        },
+        {
+          "name": "refresh_llm_connectivity_cache",
+          "startLine": 345,
+          "endLine": 397,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "ComponentCheck",
+          "startLine": 49,
+          "endLine": 62,
+          "methods": [],
+          "properties": [
+            "name",
+            "probe",
+            "timeout",
+            "description"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "ComponentCheck",
+          "line": 48,
+          "isDefault": false
+        },
+        {
+          "name": "_probe_stats_store",
+          "line": 68,
+          "isDefault": false
+        },
+        {
+          "name": "_probe_chroma",
+          "line": 81,
+          "isDefault": false
+        },
+        {
+          "name": "_probe_llm_available",
+          "line": 104,
+          "isDefault": false
+        },
+        {
+          "name": "_probe_tts_available",
+          "line": 117,
+          "isDefault": false
+        },
+        {
+          "name": "_probe_asr_available",
+          "line": 130,
+          "isDefault": false
+        },
+        {
+          "name": "_probe_memory_read",
+          "line": 143,
+          "isDefault": false
+        },
+        {
+          "name": "_probe_metrics_endpoint",
+          "line": 172,
+          "isDefault": false
+        },
+        {
+          "name": "_probe_llm_connectivity",
+          "line": 205,
+          "isDefault": false
+        },
+        {
+          "name": "_run_single_probe",
+          "line": 281,
+          "isDefault": false
+        },
+        {
+          "name": "check_all_components",
+          "line": 318,
+          "isDefault": false
+        },
+        {
+          "name": "refresh_llm_connectivity_cache",
+          "line": 345,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_probe_stats_store",
+          "callee": "get_stats_store",
+          "lineNumber": 72
+        },
+        {
+          "caller": "_probe_stats_store",
+          "callee": "store._db.execute",
+          "lineNumber": 73
+        },
+        {
+          "caller": "_probe_stats_store",
+          "callee": "cursor.fetchone",
+          "lineNumber": 74
+        },
+        {
+          "caller": "_probe_stats_store",
+          "callee": "logger.warning",
+          "lineNumber": 77
+        },
+        {
+          "caller": "_probe_chroma",
+          "callee": "logger.debug",
+          "lineNumber": 87
+        },
+        {
+          "caller": "_probe_chroma",
+          "callee": "str",
+          "lineNumber": 91
+        },
+        {
+          "caller": "_probe_chroma",
+          "callee": "Path(\"~/.myagent/workspace/chroma_db\").expanduser",
+          "lineNumber": 91
+        },
+        {
+          "caller": "_probe_chroma",
+          "callee": "Path",
+          "lineNumber": 91
+        },
+        {
+          "caller": "_probe_chroma",
+          "callee": "chromadb.PersistentClient",
+          "lineNumber": 92
+        },
+        {
+          "caller": "_probe_chroma",
+          "callee": "Settings",
+          "lineNumber": 94
+        },
+        {
+          "caller": "_probe_chroma",
+          "callee": "client.list_collections",
+          "lineNumber": 97
+        },
+        {
+          "caller": "_probe_chroma",
+          "callee": "logger.warning",
+          "lineNumber": 100
+        },
+        {
+          "caller": "_probe_llm_available",
+          "callee": "logger.debug",
+          "lineNumber": 109
+        },
+        {
+          "caller": "_probe_llm_available",
+          "callee": "logger.warning",
+          "lineNumber": 113
+        },
+        {
+          "caller": "_probe_tts_available",
+          "callee": "logger.debug",
+          "lineNumber": 122
+        },
+        {
+          "caller": "_probe_tts_available",
+          "callee": "logger.warning",
+          "lineNumber": 126
+        },
+        {
+          "caller": "_probe_asr_available",
+          "callee": "logger.debug",
+          "lineNumber": 135
+        },
+        {
+          "caller": "_probe_asr_available",
+          "callee": "logger.warning",
+          "lineNumber": 139
+        },
+        {
+          "caller": "_probe_memory_read",
+          "callee": "logger.debug",
+          "lineNumber": 149
+        },
+        {
+          "caller": "_probe_memory_read",
+          "callee": "str",
+          "lineNumber": 153
+        },
+        {
+          "caller": "_probe_memory_read",
+          "callee": "Path(\"~/.myagent/workspace/chroma_db\").expanduser",
+          "lineNumber": 153
+        },
+        {
+          "caller": "_probe_memory_read",
+          "callee": "Path",
+          "lineNumber": 153
+        },
+        {
+          "caller": "_probe_memory_read",
+          "callee": "chromadb.PersistentClient",
+          "lineNumber": 154
+        },
+        {
+          "caller": "_probe_memory_read",
+          "callee": "Settings",
+          "lineNumber": 156
+        },
+        {
+          "caller": "_probe_memory_read",
+          "callee": "client.list_collections",
+          "lineNumber": 158
+        },
+        {
+          "caller": "_probe_memory_read",
+          "callee": "logger.debug",
+          "lineNumber": 160
+        },
+        {
+          "caller": "_probe_memory_read",
+          "callee": "client.get_collection",
+          "lineNumber": 164
+        },
+        {
+          "caller": "_probe_memory_read",
+          "callee": "col.count",
+          "lineNumber": 165
+        },
+        {
+          "caller": "_probe_memory_read",
+          "callee": "logger.warning",
+          "lineNumber": 168
+        },
+        {
+          "caller": "_probe_metrics_endpoint",
+          "callee": "logger.debug",
+          "lineNumber": 177
+        },
+        {
+          "caller": "_probe_metrics_endpoint",
+          "callee": "aiohttp.ClientSession",
+          "lineNumber": 182
+        },
+        {
+          "caller": "_probe_metrics_endpoint",
+          "callee": "session.get",
+          "lineNumber": 183
+        },
+        {
+          "caller": "_probe_metrics_endpoint",
+          "callee": "aiohttp.ClientTimeout",
+          "lineNumber": 183
+        },
+        {
+          "caller": "_probe_metrics_endpoint",
+          "callee": "logger.warning",
+          "lineNumber": 185
+        },
+        {
+          "caller": "_probe_metrics_endpoint",
+          "callee": "resp.text",
+          "lineNumber": 187
+        },
+        {
+          "caller": "_probe_metrics_endpoint",
+          "callee": "any",
+          "lineNumber": 190
+        },
+        {
+          "caller": "_probe_metrics_endpoint",
+          "callee": "logger.debug",
+          "lineNumber": 192
+        },
+        {
+          "caller": "_probe_metrics_endpoint",
+          "callee": "logger.debug",
+          "lineNumber": 195
+        },
+        {
+          "caller": "_probe_metrics_endpoint",
+          "callee": "logger.warning",
+          "lineNumber": 198
+        },
+        {
+          "caller": "_probe_metrics_endpoint",
+          "callee": "logger.warning",
+          "lineNumber": 201
+        },
+        {
+          "caller": "_probe_llm_connectivity",
+          "callee": "_llm_connectivity_cache.get",
+          "lineNumber": 213
+        },
+        {
+          "caller": "_probe_llm_connectivity",
+          "callee": "logger.debug",
+          "lineNumber": 215
+        },
+        {
+          "caller": "_run_single_probe",
+          "callee": "time.perf_counter",
+          "lineNumber": 290
+        },
+        {
+          "caller": "_run_single_probe",
+          "callee": "asyncio.wait_for",
+          "lineNumber": 292
+        },
+        {
+          "caller": "_run_single_probe",
+          "callee": "check.probe",
+          "lineNumber": 292
+        },
+        {
+          "caller": "_run_single_probe",
+          "callee": "time.perf_counter",
+          "lineNumber": 293
+        },
+        {
+          "caller": "_run_single_probe",
+          "callee": "CheckResult.passed",
+          "lineNumber": 295
+        },
+        {
+          "caller": "_run_single_probe",
+          "callee": "CheckResult.failed",
+          "lineNumber": 297
+        },
+        {
+          "caller": "_run_single_probe",
+          "callee": "time.perf_counter",
+          "lineNumber": 301
+        },
+        {
+          "caller": "_run_single_probe",
+          "callee": "logger.warning",
+          "lineNumber": 302
+        },
+        {
+          "caller": "_run_single_probe",
+          "callee": "CheckResult.failed",
+          "lineNumber": 303
+        },
+        {
+          "caller": "_run_single_probe",
+          "callee": "time.perf_counter",
+          "lineNumber": 309
+        },
+        {
+          "caller": "_run_single_probe",
+          "callee": "logger.error",
+          "lineNumber": 310
+        },
+        {
+          "caller": "_run_single_probe",
+          "callee": "type",
+          "lineNumber": 310
+        },
+        {
+          "caller": "_run_single_probe",
+          "callee": "CheckResult.failed",
+          "lineNumber": 311
+        },
+        {
+          "caller": "_run_single_probe",
+          "callee": "type",
+          "lineNumber": 314
+        },
+        {
+          "caller": "check_all_components",
+          "callee": "_run_single_probe",
+          "lineNumber": 328
+        },
+        {
+          "caller": "check_all_components",
+          "callee": "asyncio.gather",
+          "lineNumber": 329
+        },
+        {
+          "caller": "check_all_components",
+          "callee": "zip",
+          "lineNumber": 332
+        },
+        {
+          "caller": "check_all_components",
+          "callee": "isinstance",
+          "lineNumber": 333
+        },
+        {
+          "caller": "check_all_components",
+          "callee": "CheckResult.failed",
+          "lineNumber": 337
+        },
+        {
+          "caller": "check_all_components",
+          "callee": "type",
+          "lineNumber": 339
+        },
+        {
+          "caller": "refresh_llm_connectivity_cache",
+          "callee": "_llm_connectivity_cache.update",
+          "lineNumber": 357
+        },
+        {
+          "caller": "refresh_llm_connectivity_cache",
+          "callee": "hasattr",
+          "lineNumber": 362
+        },
+        {
+          "caller": "refresh_llm_connectivity_cache",
+          "callee": "_llm_connectivity_cache.update",
+          "lineNumber": 363
+        },
+        {
+          "caller": "refresh_llm_connectivity_cache",
+          "callee": "getattr",
+          "lineNumber": 366
+        },
+        {
+          "caller": "refresh_llm_connectivity_cache",
+          "callee": "llm.base_url.rstrip",
+          "lineNumber": 367
+        },
+        {
+          "caller": "refresh_llm_connectivity_cache",
+          "callee": "_llm_connectivity_cache.update",
+          "lineNumber": 370
+        },
+        {
+          "caller": "refresh_llm_connectivity_cache",
+          "callee": "time_mod.perf_counter",
+          "lineNumber": 374
+        },
+        {
+          "caller": "refresh_llm_connectivity_cache",
+          "callee": "httpx.AsyncClient",
+          "lineNumber": 375
+        },
+        {
+          "caller": "refresh_llm_connectivity_cache",
+          "callee": "client.get",
+          "lineNumber": 376
+        },
+        {
+          "caller": "refresh_llm_connectivity_cache",
+          "callee": "time_mod.perf_counter",
+          "lineNumber": 380
+        },
+        {
+          "caller": "refresh_llm_connectivity_cache",
+          "callee": "_llm_connectivity_cache.update",
+          "lineNumber": 383
+        },
+        {
+          "caller": "refresh_llm_connectivity_cache",
+          "callee": "round",
+          "lineNumber": 384
+        },
+        {
+          "caller": "refresh_llm_connectivity_cache",
+          "callee": "_llm_connectivity_cache.update",
+          "lineNumber": 387
+        },
+        {
+          "caller": "refresh_llm_connectivity_cache",
+          "callee": "_llm_connectivity_cache.update",
+          "lineNumber": 389
+        },
+        {
+          "caller": "refresh_llm_connectivity_cache",
+          "callee": "_llm_connectivity_cache.update",
+          "lineNumber": 393
+        },
+        {
+          "caller": "refresh_llm_connectivity_cache",
+          "callee": "_llm_connectivity_cache.update",
+          "lineNumber": 395
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 12,
+        "functionCount": 11,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/inspection/checks/metrics.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 92,
+      "nonEmptyLines": 76,
+      "functions": [
+        {
+          "name": "check_metrics_pipeline",
+          "startLine": 26,
+          "endLine": 92,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "check_metrics_pipeline",
+          "line": 26,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "check_metrics_pipeline",
+          "callee": "time.perf_counter",
+          "lineNumber": 37
+        },
+        {
+          "caller": "check_metrics_pipeline",
+          "callee": "httpx.AsyncClient",
+          "lineNumber": 42
+        },
+        {
+          "caller": "check_metrics_pipeline",
+          "callee": "client.get",
+          "lineNumber": 43
+        },
+        {
+          "caller": "check_metrics_pipeline",
+          "callee": "issues.append",
+          "lineNumber": 47
+        },
+        {
+          "caller": "check_metrics_pipeline",
+          "callee": "logger.warning",
+          "lineNumber": 48
+        },
+        {
+          "caller": "check_metrics_pipeline",
+          "callee": "len",
+          "lineNumber": 53
+        },
+        {
+          "caller": "check_metrics_pipeline",
+          "callee": "issues.append",
+          "lineNumber": 61
+        },
+        {
+          "caller": "check_metrics_pipeline",
+          "callee": "logger.warning",
+          "lineNumber": 62
+        },
+        {
+          "caller": "check_metrics_pipeline",
+          "callee": "issues.append",
+          "lineNumber": 67
+        },
+        {
+          "caller": "check_metrics_pipeline",
+          "callee": "str",
+          "lineNumber": 68
+        },
+        {
+          "caller": "check_metrics_pipeline",
+          "callee": "logger.warning",
+          "lineNumber": 69
+        },
+        {
+          "caller": "check_metrics_pipeline",
+          "callee": "issues.append",
+          "lineNumber": 71
+        },
+        {
+          "caller": "check_metrics_pipeline",
+          "callee": "str",
+          "lineNumber": 72
+        },
+        {
+          "caller": "check_metrics_pipeline",
+          "callee": "logger.warning",
+          "lineNumber": 73
+        },
+        {
+          "caller": "check_metrics_pipeline",
+          "callee": "issues.append",
+          "lineNumber": 75
+        },
+        {
+          "caller": "check_metrics_pipeline",
+          "callee": "str",
+          "lineNumber": 76
+        },
+        {
+          "caller": "check_metrics_pipeline",
+          "callee": "logger.error",
+          "lineNumber": 77
+        },
+        {
+          "caller": "check_metrics_pipeline",
+          "callee": "time.perf_counter",
+          "lineNumber": 79
+        },
+        {
+          "caller": "check_metrics_pipeline",
+          "callee": "CheckResult.failed",
+          "lineNumber": 82
+        },
+        {
+          "caller": "check_metrics_pipeline",
+          "callee": "round",
+          "lineNumber": 84
+        },
+        {
+          "caller": "check_metrics_pipeline",
+          "callee": "\"; \".join",
+          "lineNumber": 85
+        },
+        {
+          "caller": "check_metrics_pipeline",
+          "callee": "CheckResult.passed",
+          "lineNumber": 88
+        },
+        {
+          "caller": "check_metrics_pipeline",
+          "callee": "round",
+          "lineNumber": 90
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/inspection/checks/pipeline.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 127,
+      "nonEmptyLines": 102,
+      "functions": [
+        {
+          "name": "check_conversation_pipeline",
+          "startLine": 41,
+          "endLine": 127,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "check_conversation_pipeline",
+          "line": 41,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "time.perf_counter",
+          "lineNumber": 52
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "set",
+          "lineNumber": 54
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "socketio.AsyncClient",
+          "lineNumber": 55
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "sio.on",
+          "lineNumber": 58
+        },
+        {
+          "caller": "catch_all",
+          "callee": "received_events.add",
+          "lineNumber": 60
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "asyncio.wait_for",
+          "lineNumber": 65
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "sio.connect",
+          "lineNumber": 66
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "logger.info",
+          "lineNumber": 69
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "time.perf_counter",
+          "lineNumber": 71
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "logger.error",
+          "lineNumber": 72
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "CheckResult.failed",
+          "lineNumber": 73
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "round",
+          "lineNumber": 75
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "sio.emit",
+          "lineNumber": 80
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "logger.info",
+          "lineNumber": 81
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "asyncio.sleep",
+          "lineNumber": 84
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "sio.disconnect",
+          "lineNumber": 87
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "logger.info",
+          "lineNumber": 88
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "time.perf_counter",
+          "lineNumber": 92
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "logger.info",
+          "lineNumber": 95
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "len",
+          "lineNumber": 96
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "sorted",
+          "lineNumber": 97
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "CheckResult.passed",
+          "lineNumber": 99
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "round",
+          "lineNumber": 101
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "sorted",
+          "lineNumber": 102
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "logger.warning",
+          "lineNumber": 106
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "sorted",
+          "lineNumber": 107
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "sorted",
+          "lineNumber": 108
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "CheckResult.failed",
+          "lineNumber": 110
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "round",
+          "lineNumber": 112
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "sorted",
+          "lineNumber": 113
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "sorted",
+          "lineNumber": 114
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "sorted",
+          "lineNumber": 115
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "time.perf_counter",
+          "lineNumber": 119
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "logger.error",
+          "lineNumber": 120
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "CheckResult.failed",
+          "lineNumber": 121
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "round",
+          "lineNumber": 123
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "sorted",
+          "lineNumber": 125
+        },
+        {
+          "caller": "check_conversation_pipeline",
+          "callee": "sorted",
+          "lineNumber": 126
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/inspection/inspector.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 106,
+      "nonEmptyLines": 83,
+      "functions": [
+        {
+          "name": "run_full_inspection",
+          "startLine": 19,
+          "endLine": 106,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "run_full_inspection",
+          "line": 19,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "run_full_inspection",
+          "callee": "datetime.now(UTC).timestamp",
+          "lineNumber": 37
+        },
+        {
+          "caller": "run_full_inspection",
+          "callee": "datetime.now",
+          "lineNumber": 37
+        },
+        {
+          "caller": "run_full_inspection",
+          "callee": "time.perf_counter",
+          "lineNumber": 39
+        },
+        {
+          "caller": "run_full_inspection",
+          "callee": "logger.info",
+          "lineNumber": 41
+        },
+        {
+          "caller": "run_full_inspection",
+          "callee": "check_all_components",
+          "lineNumber": 46
+        },
+        {
+          "caller": "run_full_inspection",
+          "callee": "checks.update",
+          "lineNumber": 47
+        },
+        {
+          "caller": "run_full_inspection",
+          "callee": "logger.error",
+          "lineNumber": 49
+        },
+        {
+          "caller": "run_full_inspection",
+          "callee": "CheckResult.failed",
+          "lineNumber": 50
+        },
+        {
+          "caller": "run_full_inspection",
+          "callee": "check_conversation_pipeline",
+          "lineNumber": 58
+        },
+        {
+          "caller": "run_full_inspection",
+          "callee": "logger.error",
+          "lineNumber": 61
+        },
+        {
+          "caller": "run_full_inspection",
+          "callee": "CheckResult.failed",
+          "lineNumber": 62
+        },
+        {
+          "caller": "run_full_inspection",
+          "callee": "check_data_consistency",
+          "lineNumber": 70
+        },
+        {
+          "caller": "run_full_inspection",
+          "callee": "logger.error",
+          "lineNumber": 73
+        },
+        {
+          "caller": "run_full_inspection",
+          "callee": "CheckResult.failed",
+          "lineNumber": 74
+        },
+        {
+          "caller": "run_full_inspection",
+          "callee": "check_metrics_pipeline",
+          "lineNumber": 82
+        },
+        {
+          "caller": "run_full_inspection",
+          "callee": "logger.error",
+          "lineNumber": 85
+        },
+        {
+          "caller": "run_full_inspection",
+          "callee": "CheckResult.failed",
+          "lineNumber": 86
+        },
+        {
+          "caller": "run_full_inspection",
+          "callee": "datetime.now(UTC).timestamp",
+          "lineNumber": 92
+        },
+        {
+          "caller": "run_full_inspection",
+          "callee": "datetime.now",
+          "lineNumber": 92
+        },
+        {
+          "caller": "run_full_inspection",
+          "callee": "time.perf_counter",
+          "lineNumber": 93
+        },
+        {
+          "caller": "run_full_inspection",
+          "callee": "InspectionReport",
+          "lineNumber": 95
+        },
+        {
+          "caller": "run_full_inspection",
+          "callee": "logger.info",
+          "lineNumber": 101
+        },
+        {
+          "caller": "run_full_inspection",
+          "callee": "logger.info",
+          "lineNumber": 104
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/inspection/models.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 90,
+      "nonEmptyLines": 72,
+      "classes": [
+        {
+          "name": "CheckResult",
+          "startLine": 16,
+          "endLine": 51,
+          "methods": [
+            "passed",
+            "failed"
+          ],
+          "properties": [
+            "name",
+            "ok",
+            "duration_ms",
+            "detail",
+            "error"
+          ]
+        },
+        {
+          "name": "InspectionReport",
+          "startLine": 54,
+          "endLine": 90,
+          "methods": [
+            "overall_ok",
+            "summary"
+          ],
+          "properties": [
+            "run_id",
+            "started_at",
+            "finished_at",
+            "checks"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "CheckResult",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "InspectionReport",
+          "line": 54,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "passed",
+          "callee": "cls",
+          "lineNumber": 38
+        },
+        {
+          "caller": "passed",
+          "callee": "dict",
+          "lineNumber": 38
+        },
+        {
+          "caller": "failed",
+          "callee": "cls",
+          "lineNumber": 45
+        },
+        {
+          "caller": "failed",
+          "callee": "dict",
+          "lineNumber": 49
+        },
+        {
+          "caller": "overall_ok",
+          "callee": "all",
+          "lineNumber": 77
+        },
+        {
+          "caller": "overall_ok",
+          "callee": "self.checks.values",
+          "lineNumber": 77
+        },
+        {
+          "caller": "summary",
+          "callee": "len",
+          "lineNumber": 82
+        },
+        {
+          "caller": "summary",
+          "callee": "sum",
+          "lineNumber": 83
+        },
+        {
+          "caller": "summary",
+          "callee": "self.checks.values",
+          "lineNumber": 83
+        },
+        {
+          "caller": "summary",
+          "callee": "\", \".join",
+          "lineNumber": 87
+        },
+        {
+          "caller": "summary",
+          "callee": "self.checks.items",
+          "lineNumber": 88
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 0,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "src/animetta/inspection/reporter.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 105,
+      "nonEmptyLines": 84,
+      "functions": [
+        {
+          "name": "store_report",
+          "startLine": 19,
+          "endLine": 40,
+          "params": [
+            "report"
+          ]
+        },
+        {
+          "name": "send_alert",
+          "startLine": 43,
+          "endLine": 105,
+          "params": [
+            "report"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "store_report",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "send_alert",
+          "line": 43,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "store_report",
+          "callee": "json.dumps",
+          "lineNumber": 28
+        },
+        {
+          "caller": "store_report",
+          "callee": "c.model_dump",
+          "lineNumber": 29
+        },
+        {
+          "caller": "store_report",
+          "callee": "report.checks.items",
+          "lineNumber": 29
+        },
+        {
+          "caller": "store_report",
+          "callee": "get_stats_store",
+          "lineNumber": 32
+        },
+        {
+          "caller": "store_report",
+          "callee": "store.store_inspection_report",
+          "lineNumber": 33
+        },
+        {
+          "caller": "store_report",
+          "callee": "logger.info",
+          "lineNumber": 40
+        },
+        {
+          "caller": "send_alert",
+          "callee": "report.checks.items",
+          "lineNumber": 60
+        },
+        {
+          "caller": "send_alert",
+          "callee": "failed_details.append",
+          "lineNumber": 63
+        },
+        {
+          "caller": "send_alert",
+          "callee": "\"\\n\".join",
+          "lineNumber": 69
+        },
+        {
+          "caller": "send_alert",
+          "callee": "NotifierManager",
+          "lineNumber": 91
+        },
+        {
+          "caller": "send_alert",
+          "callee": "logger.debug",
+          "lineNumber": 93
+        },
+        {
+          "caller": "send_alert",
+          "callee": "notifier.handle",
+          "lineNumber": 99
+        },
+        {
+          "caller": "send_alert",
+          "callee": "logger.info",
+          "lineNumber": 100
+        },
+        {
+          "caller": "send_alert",
+          "callee": "logger.warning",
+          "lineNumber": 102
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/inspection/scheduler.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 123,
+      "nonEmptyLines": 98,
+      "classes": [
+        {
+          "name": "InspectionScheduler",
+          "startLine": 14,
+          "endLine": 123,
+          "methods": [
+            "__init__",
+            "start",
+            "stop",
+            "_loop"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "InspectionScheduler",
+          "line": 14,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "asyncio.Event",
+          "lineNumber": 36
+        },
+        {
+          "caller": "start",
+          "callee": "self._task.done",
+          "lineNumber": 44
+        },
+        {
+          "caller": "start",
+          "callee": "logger.warning",
+          "lineNumber": 45
+        },
+        {
+          "caller": "start",
+          "callee": "self._stop_event.clear",
+          "lineNumber": 48
+        },
+        {
+          "caller": "start",
+          "callee": "asyncio.ensure_future",
+          "lineNumber": 49
+        },
+        {
+          "caller": "start",
+          "callee": "self._loop",
+          "lineNumber": 49
+        },
+        {
+          "caller": "start",
+          "callee": "logger.info",
+          "lineNumber": 50
+        },
+        {
+          "caller": "stop",
+          "callee": "self._task.done",
+          "lineNumber": 60
+        },
+        {
+          "caller": "stop",
+          "callee": "logger.info",
+          "lineNumber": 63
+        },
+        {
+          "caller": "stop",
+          "callee": "self._stop_event.set",
+          "lineNumber": 64
+        },
+        {
+          "caller": "stop",
+          "callee": "asyncio.wait_for",
+          "lineNumber": 66
+        },
+        {
+          "caller": "stop",
+          "callee": "logger.warning",
+          "lineNumber": 68
+        },
+        {
+          "caller": "stop",
+          "callee": "self._task.cancel",
+          "lineNumber": 71
+        },
+        {
+          "caller": "stop",
+          "callee": "logger.info",
+          "lineNumber": 72
+        },
+        {
+          "caller": "_loop",
+          "callee": "asyncio.sleep",
+          "lineNumber": 87
+        },
+        {
+          "caller": "_loop",
+          "callee": "logger.info",
+          "lineNumber": 88
+        },
+        {
+          "caller": "_loop",
+          "callee": "self._stop_event.is_set",
+          "lineNumber": 90
+        },
+        {
+          "caller": "_loop",
+          "callee": "asyncio.get_event_loop().time",
+          "lineNumber": 91
+        },
+        {
+          "caller": "_loop",
+          "callee": "asyncio.get_event_loop",
+          "lineNumber": 91
+        },
+        {
+          "caller": "_loop",
+          "callee": "refresh_llm_connectivity_cache",
+          "lineNumber": 96
+        },
+        {
+          "caller": "_loop",
+          "callee": "logger.warning",
+          "lineNumber": 99
+        },
+        {
+          "caller": "_loop",
+          "callee": "run_full_inspection",
+          "lineNumber": 105
+        },
+        {
+          "caller": "_loop",
+          "callee": "store_report",
+          "lineNumber": 106
+        },
+        {
+          "caller": "_loop",
+          "callee": "send_alert",
+          "lineNumber": 109
+        },
+        {
+          "caller": "_loop",
+          "callee": "logger.error",
+          "lineNumber": 112
+        },
+        {
+          "caller": "_loop",
+          "callee": "min",
+          "lineNumber": 119
+        },
+        {
+          "caller": "_loop",
+          "callee": "self._stop_event.is_set",
+          "lineNumber": 121
+        },
+        {
+          "caller": "_loop",
+          "callee": "asyncio.sleep",
+          "lineNumber": 122
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/animetta/memory/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 23,
+      "nonEmptyLines": 20,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/memory/AGENTS.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 63,
+      "nonEmptyLines": 49,
+      "sections": [
+        {
+          "heading": "MEMORY — V2 ATOM-BASED MEMORY SYSTEM",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "OVERVIEW",
+          "level": 2,
+          "line": 8
+        },
+        {
+          "heading": "STRUCTURE",
+          "level": 2,
+          "line": 12
+        },
+        {
+          "heading": "WHERE TO LOOK",
+          "level": 2,
+          "line": 28
+        },
+        {
+          "heading": "KEY PATTERNS",
+          "level": 2,
+          "line": 41
+        },
+        {
+          "heading": "ANTI-PATTERNS",
+          "level": 2,
+          "line": 49
+        },
+        {
+          "heading": "NOTES",
+          "level": 2,
+          "line": 56
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    },
+    {
+      "path": "src/animetta/memory/v2/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 26,
+      "nonEmptyLines": 23,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/animetta/memory/v2/atom.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 107,
+      "nonEmptyLines": 84,
+      "classes": [
+        {
+          "name": "Layer",
+          "startLine": 14,
+          "endLine": 19,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "RelationType",
+          "startLine": 22,
+          "endLine": 29,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "Relation",
+          "startLine": 33,
+          "endLine": 39,
+          "methods": [],
+          "properties": [
+            "source_id",
+            "target_id",
+            "relation_type",
+            "created_at",
+            "metadata"
+          ]
+        },
+        {
+          "name": "MemoryAtom",
+          "startLine": 43,
+          "endLine": 107,
+          "methods": [
+            "__post_init__",
+            "is_recalled",
+            "recall_age_hours"
+          ],
+          "properties": [
+            "id",
+            "layer",
+            "content",
+            "occurred_at",
+            "summary",
+            "rewritten_at",
+            "version",
+            "version_chain",
+            "confidence",
+            "salience",
+            "retrieval_count",
+            "last_accessed_at",
+            "emotion_valence",
+            "emotion_arousal",
+            "emotion_dominance",
+            "source_ids",
+            "relations",
+            "tags",
+            "decay_rate",
+            "forget_at",
+            "is_archived"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Layer",
+          "line": 14,
+          "isDefault": false
+        },
+        {
+          "name": "RelationType",
+          "line": 22,
+          "isDefault": false
+        },
+        {
+          "name": "Relation",
+          "line": 32,
+          "isDefault": false
+        },
+        {
+          "name": "MemoryAtom",
+          "line": 42,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "recall_age_hours",
+          "callee": "datetime.now",
+          "lineNumber": 106
+        },
+        {
+          "caller": "recall_age_hours",
+          "callee": "(now - self.last_accessed_at).total_seconds",
+          "lineNumber": 107
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 4,
+        "functionCount": 0,
+        "classCount": 4
+      }
+    },
+    {
+      "path": "src/animetta/memory/v2/character_filter.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 137,
+      "nonEmptyLines": 114,
+      "classes": [
+        {
+          "name": "CharacterMemoryFilter",
+          "startLine": 13,
+          "endLine": 137,
+          "methods": [
+            "filter_by_boundaries",
+            "rank_by_persona",
+            "apply"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "CharacterMemoryFilter",
+          "line": 13,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "filter_by_boundaries",
+          "callee": "domain.lower",
+          "lineNumber": 50
+        },
+        {
+          "caller": "filter_by_boundaries",
+          "callee": "text.lower",
+          "lineNumber": 50
+        },
+        {
+          "caller": "filter_by_boundaries",
+          "callee": "filtered.append",
+          "lineNumber": 54
+        },
+        {
+          "caller": "rank_by_persona",
+          "callee": "abs",
+          "lineNumber": 91
+        },
+        {
+          "caller": "rank_by_persona",
+          "callee": "abs",
+          "lineNumber": 94
+        },
+        {
+          "caller": "rank_by_persona",
+          "callee": "scored.append",
+          "lineNumber": 102
+        },
+        {
+          "caller": "rank_by_persona",
+          "callee": "scored.sort",
+          "lineNumber": 104
+        },
+        {
+          "caller": "apply",
+          "callee": "CharacterMemoryFilter.filter_by_boundaries",
+          "lineNumber": 128
+        },
+        {
+          "caller": "apply",
+          "callee": "CharacterMemoryFilter.rank_by_persona",
+          "lineNumber": 131
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    }
+  ]
+}

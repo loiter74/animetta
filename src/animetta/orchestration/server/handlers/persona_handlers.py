@@ -2,6 +2,7 @@
 Persona event handlers — persona switching, personality mode.
 """
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from loguru import logger
@@ -14,6 +15,9 @@ if TYPE_CHECKING:
     from ..desktop import DesktopClientManager
     from ..live2d import Live2DManager
     from ..session import SessionManager
+
+# Default personas directory
+_PERSONAS_DIR = Path(__file__).parent.parent.parent.parent.parent.parent / "config" / "personas"
 
 
 class PersonaHandlers(BaseSocketHandler):
@@ -33,6 +37,23 @@ class PersonaHandlers(BaseSocketHandler):
 
     # ── Persona Runtime Switching ──────────────────────────────────────
 
+    async def on_get_available_personas(self, sid: str, data: dict) -> dict:
+        """获取可用的人设列表"""
+        try:
+            personas = []
+            if _PERSONAS_DIR.is_dir():
+                for yaml_file in sorted(_PERSONAS_DIR.glob("*.yaml")):
+                    personas.append(yaml_file.stem)
+
+            # If no personas found, return default
+            if not personas:
+                personas = ["default"]
+
+            return {"personas": personas}
+        except Exception as e:
+            logger.error(f"[{sid}] 获取人设列表失败: {e}")
+            return {"personas": ["default"], "error": str(e)}
+
     async def on_set_persona(self, sid: str, data: dict) -> None:
         """运行时切换人设"""
         persona_name = data.get("persona_name", "")
@@ -48,6 +69,8 @@ class PersonaHandlers(BaseSocketHandler):
         logger.info(f"[{sid}] 切换人设: {persona_name}")
 
         try:
+            from animetta.config.persona import PersonaConfig
+
             ctx = self.session_manager.get_context(sid)
             if not ctx:
                 await self.sio.emit(
@@ -56,7 +79,6 @@ class PersonaHandlers(BaseSocketHandler):
                     to=sid,
                 )
                 return
-
 
             new_persona = PersonaConfig.load(persona_name)
             if not new_persona:
@@ -74,6 +96,8 @@ class PersonaHandlers(BaseSocketHandler):
             if ctx.llm_engine and ctx.config:
                 live2d_prompt = None
                 try:
+                    from animetta.config.live2d import get_live2d_config
+                    from animetta.avatar.prompts import EmotionPromptBuilder
 
                     live2d_cfg = get_live2d_config()
                     if live2d_cfg and live2d_cfg.enabled:

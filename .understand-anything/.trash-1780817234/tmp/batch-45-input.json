@@ -1,0 +1,182 @@
+{
+  "projectRoot": "C:\\Users\\30262\\Project\\Anima",
+  "batchFiles": [
+    {
+      "path": "tests/avatar/test_position_strategy.py",
+      "language": "python",
+      "sizeLines": 265,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/avatar/test_prompts.py",
+      "language": "python",
+      "sizeLines": 212,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/config/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/config/test_app_config.py",
+      "language": "python",
+      "sizeLines": 887,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/config/test_knowledge_boundaries.py",
+      "language": "python",
+      "sizeLines": 109,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/config/test_live2d_config.py",
+      "language": "python",
+      "sizeLines": 364,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/config/test_mbti_models.py",
+      "language": "python",
+      "sizeLines": 342,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/config/test_persona.py",
+      "language": "python",
+      "sizeLines": 474,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/config/test_registry.py",
+      "language": "python",
+      "sizeLines": 428,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/config/test_user_settings.py",
+      "language": "python",
+      "sizeLines": 217,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/conftest.py",
+      "language": "python",
+      "sizeLines": 154,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/core/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/core/test_model_loading_manager.py",
+      "language": "python",
+      "sizeLines": 461,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/core/test_redis_checkpoint.py",
+      "language": "python",
+      "sizeLines": 389,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/core/test_service_context.py",
+      "language": "python",
+      "sizeLines": 1202,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/core/test_service_pool.py",
+      "language": "python",
+      "sizeLines": 487,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/core/test_socketio_server.py",
+      "language": "python",
+      "sizeLines": 319,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/eval/__init__.py",
+      "language": "python",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/eval/conftest.py",
+      "language": "python",
+      "sizeLines": 52,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/eval/test_metrics.py",
+      "language": "python",
+      "sizeLines": 302,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/eval/test_rag_quality.py",
+      "language": "python",
+      "sizeLines": 247,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/inspection/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/inspection/test_consistency.py",
+      "language": "python",
+      "sizeLines": 289,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/inspection/test_health.py",
+      "language": "python",
+      "sizeLines": 707,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/inspection/test_metrics.py",
+      "language": "python",
+      "sizeLines": 184,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "tests/avatar/test_position_strategy.py": [],
+    "tests/avatar/test_prompts.py": [],
+    "tests/config/__init__.py": [],
+    "tests/config/test_app_config.py": [],
+    "tests/config/test_knowledge_boundaries.py": [],
+    "tests/config/test_live2d_config.py": [],
+    "tests/config/test_mbti_models.py": [],
+    "tests/config/test_persona.py": [],
+    "tests/config/test_registry.py": [],
+    "tests/config/test_user_settings.py": [],
+    "tests/conftest.py": [],
+    "tests/core/__init__.py": [],
+    "tests/core/test_model_loading_manager.py": [],
+    "tests/core/test_redis_checkpoint.py": [],
+    "tests/core/test_service_context.py": [],
+    "tests/core/test_service_pool.py": [],
+    "tests/core/test_socketio_server.py": [],
+    "tests/eval/__init__.py": [],
+    "tests/eval/conftest.py": [],
+    "tests/eval/test_metrics.py": [],
+    "tests/eval/test_rag_quality.py": [],
+    "tests/inspection/__init__.py": [],
+    "tests/inspection/test_consistency.py": [],
+    "tests/inspection/test_health.py": [],
+    "tests/inspection/test_metrics.py": []
+  }
+}

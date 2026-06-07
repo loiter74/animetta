@@ -1,0 +1,182 @@
+{
+  "projectRoot": "C:\\Users\\30262\\Project\\Anima",
+  "batchFiles": [
+    {
+      "path": "src/animetta/config/__init__.py",
+      "language": "python",
+      "sizeLines": 107,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/config/agent.py",
+      "language": "python",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/config/AGENTS.md",
+      "language": "markdown",
+      "sizeLines": 57,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "src/animetta/config/app.py",
+      "language": "python",
+      "sizeLines": 434,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/config/core/__init__.py",
+      "language": "python",
+      "sizeLines": 6,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/config/core/base.py",
+      "language": "python",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/config/core/registry.py",
+      "language": "python",
+      "sizeLines": 233,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/config/live2d.py",
+      "language": "python",
+      "sizeLines": 147,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/config/persona/__init__.py",
+      "language": "python",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/config/persona/base.py",
+      "language": "python",
+      "sizeLines": 351,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/config/persona/enhanced.py",
+      "language": "python",
+      "sizeLines": 480,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/config/providers/__init__.py",
+      "language": "python",
+      "sizeLines": 17,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/config/providers/asr/__init__.py",
+      "language": "python",
+      "sizeLines": 28,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/config/providers/asr/base.py",
+      "language": "python",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/config/providers/asr/faster_whisper.py",
+      "language": "python",
+      "sizeLines": 62,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/config/providers/asr/funasr.py",
+      "language": "python",
+      "sizeLines": 82,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/config/providers/asr/glm.py",
+      "language": "python",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/config/providers/asr/mock.py",
+      "language": "python",
+      "sizeLines": 12,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/config/providers/asr/openai.py",
+      "language": "python",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/config/providers/llm/__init__.py",
+      "language": "python",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/config/providers/llm/base.py",
+      "language": "python",
+      "sizeLines": 17,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/config/providers/llm/deepseek.py",
+      "language": "python",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/config/providers/llm/glm.py",
+      "language": "python",
+      "sizeLines": 19,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/config/providers/llm/local_lora_llm.py",
+      "language": "python",
+      "sizeLines": 69,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/animetta/config/providers/llm/mock.py",
+      "language": "python",
+      "sizeLines": 12,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "src/animetta/config/__init__.py": [],
+    "src/animetta/config/agent.py": [],
+    "src/animetta/config/AGENTS.md": [],
+    "src/animetta/config/app.py": [],
+    "src/animetta/config/core/__init__.py": [],
+    "src/animetta/config/core/base.py": [],
+    "src/animetta/config/core/registry.py": [],
+    "src/animetta/config/live2d.py": [],
+    "src/animetta/config/persona/__init__.py": [],
+    "src/animetta/config/persona/base.py": [],
+    "src/animetta/config/persona/enhanced.py": [],
+    "src/animetta/config/providers/__init__.py": [],
+    "src/animetta/config/providers/asr/__init__.py": [],
+    "src/animetta/config/providers/asr/base.py": [],
+    "src/animetta/config/providers/asr/faster_whisper.py": [],
+    "src/animetta/config/providers/asr/funasr.py": [],
+    "src/animetta/config/providers/asr/glm.py": [],
+    "src/animetta/config/providers/asr/mock.py": [],
+    "src/animetta/config/providers/asr/openai.py": [],
+    "src/animetta/config/providers/llm/__init__.py": [],
+    "src/animetta/config/providers/llm/base.py": [],
+    "src/animetta/config/providers/llm/deepseek.py": [],
+    "src/animetta/config/providers/llm/glm.py": [],
+    "src/animetta/config/providers/llm/local_lora_llm.py": [],
+    "src/animetta/config/providers/llm/mock.py": []
+  }
+}

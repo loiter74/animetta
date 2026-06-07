@@ -1,0 +1,167 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 5,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "frontend/public/live2d/haru/motion/haru_g_idle.motion3.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 2266,
+      "nonEmptyLines": 2266,
+      "sections": [
+        {
+          "heading": "Version",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "Meta",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "UserData",
+          "level": 1,
+          "line": 14
+        },
+        {
+          "heading": "Curves",
+          "level": 1,
+          "line": 20
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "path": "frontend/public/live2d/haru/motion/haru_g_m05.motion3.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 1443,
+      "nonEmptyLines": 1443,
+      "sections": [
+        {
+          "heading": "Version",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "Meta",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "Curves",
+          "level": 1,
+          "line": 16
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "path": "frontend/public/live2d/haru/motion/haru_g_m07.motion3.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 1497,
+      "nonEmptyLines": 1497,
+      "sections": [
+        {
+          "heading": "Version",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "Meta",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "Curves",
+          "level": 1,
+          "line": 14
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "path": "frontend/public/live2d/haru/motion/haru_g_m14.motion3.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 2176,
+      "nonEmptyLines": 2176,
+      "sections": [
+        {
+          "heading": "Version",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "Meta",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "Curves",
+          "level": 1,
+          "line": 14
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "path": "frontend/public/live2d/haru/motion/haru_g_m15.motion3.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 1357,
+      "nonEmptyLines": 1357,
+      "sections": [
+        {
+          "heading": "Version",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "Meta",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "Curves",
+          "level": 1,
+          "line": 14
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    }
+  ]
+}

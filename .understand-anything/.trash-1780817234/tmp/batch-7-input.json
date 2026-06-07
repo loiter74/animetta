@@ -1,0 +1,49 @@
+{
+  "projectRoot": "C:\\Users\\30262\\Project\\Anima",
+  "batchFiles": [
+    {
+      "path": "config/config.yaml",
+      "language": "yaml",
+      "sizeLines": 43,
+      "fileCategory": "config"
+    },
+    {
+      "path": "config/observability.yaml",
+      "language": "yaml",
+      "sizeLines": 44,
+      "fileCategory": "config"
+    },
+    {
+      "path": "config/services.yaml",
+      "language": "yaml",
+      "sizeLines": 253,
+      "fileCategory": "config"
+    },
+    {
+      "path": "config/singing.yaml",
+      "language": "yaml",
+      "sizeLines": 39,
+      "fileCategory": "config"
+    },
+    {
+      "path": "config/tools.yaml",
+      "language": "yaml",
+      "sizeLines": 83,
+      "fileCategory": "config"
+    },
+    {
+      "path": "config/wikirules.template.md",
+      "language": "markdown",
+      "sizeLines": 164,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    "config/config.yaml": [],
+    "config/observability.yaml": [],
+    "config/services.yaml": [],
+    "config/singing.yaml": [],
+    "config/tools.yaml": [],
+    "config/wikirules.template.md": []
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "projectRoot": "C:\\Users\\30262\\Project\\Anima",
+  "batchFiles": [
+    {
+      "path": "docs/adrs/ADR-001-langgraph-over-eventbus.md",
+      "language": "markdown",
+      "sizeLines": 60,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/adrs/ADR-002-hybrid-search.md",
+      "language": "markdown",
+      "sizeLines": 54,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/adrs/ADR-003-plugin-architecture.md",
+      "language": "markdown",
+      "sizeLines": 65,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/adrs/ADR-004-streaming-response.md",
+      "language": "markdown",
+      "sizeLines": 61,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/adrs/ADR-005-wiki-memory.md",
+      "language": "markdown",
+      "sizeLines": 73,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/adrs/ADR-006-observability-stack.md",
+      "language": "markdown",
+      "sizeLines": 57,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/adrs/ADR-007-wiki-memory-extensions.md",
+      "language": "markdown",
+      "sizeLines": 35,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/adrs/ADR-008-mcp-bridge.md",
+      "language": "markdown",
+      "sizeLines": 48,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/adrs/ADR-009-live2d-expression.md",
+      "language": "markdown",
+      "sizeLines": 43,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/adrs/ADR-010-bilibili-meme-collection.md",
+      "language": "markdown",
+      "sizeLines": 41,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/adrs/ADR-011-realtime-audio-pipeline.md",
+      "language": "markdown",
+      "sizeLines": 41,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/adrs/README.md",
+      "language": "markdown",
+      "sizeLines": 9,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    "docs/adrs/ADR-001-langgraph-over-eventbus.md": [],
+    "docs/adrs/ADR-002-hybrid-search.md": [],
+    "docs/adrs/ADR-003-plugin-architecture.md": [],
+    "docs/adrs/ADR-004-streaming-response.md": [],
+    "docs/adrs/ADR-005-wiki-memory.md": [],
+    "docs/adrs/ADR-006-observability-stack.md": [],
+    "docs/adrs/ADR-007-wiki-memory-extensions.md": [],
+    "docs/adrs/ADR-008-mcp-bridge.md": [],
+    "docs/adrs/ADR-009-live2d-expression.md": [],
+    "docs/adrs/ADR-010-bilibili-meme-collection.md": [],
+    "docs/adrs/ADR-011-realtime-audio-pipeline.md": [],
+    "docs/adrs/README.md": []
+  }
+}

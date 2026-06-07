@@ -1,0 +1,1772 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 25,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "frontend/src/components/chat/VoiceButton.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 34,
+      "nonEmptyLines": 31,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/components/chat/WelcomeScreen.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 131,
+      "nonEmptyLines": 113,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/components/dashboard/ErrorRateCard.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 45,
+      "nonEmptyLines": 40,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/components/dashboard/LatencyBreakdown.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 51,
+      "nonEmptyLines": 46,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/components/dashboard/SessionTimeline.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 40,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/components/dashboard/StatsKpiCards.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 27,
+      "nonEmptyLines": 24,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/components/dashboard/TokenUsageChart.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 59,
+      "nonEmptyLines": 53,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/components/layout/__tests__/AppLayout.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 57,
+      "nonEmptyLines": 49,
+      "functions": [
+        {
+          "name": "createWrapper",
+          "startLine": 10,
+          "endLine": 20,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "createWrapper",
+          "callee": "mount",
+          "lineNumber": 11
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/components/layout/AppLayout.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 59,
+      "nonEmptyLines": 51,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/components/layout/InteractivePanel.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 216,
+      "nonEmptyLines": 198,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/components/layout/TitleBar.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 87,
+      "nonEmptyLines": 79,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/components/live2d/__tests__/Live2DRenderer.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 233,
+      "nonEmptyLines": 201,
+      "functions": [
+        {
+          "name": "createWrapper",
+          "startLine": 36,
+          "endLine": 45,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "createWrapper",
+          "callee": "mount",
+          "lineNumber": 37
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/components/live2d/Live2DRenderer.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 205,
+      "nonEmptyLines": 180,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/components/live2d/PopOutButton.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 18,
+      "nonEmptyLines": 17,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/components/live2d/SubtitleOverlay.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 266,
+      "nonEmptyLines": 234,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/components/live2d/useAudioPlayback.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 62,
+      "nonEmptyLines": 50,
+      "functions": [
+        {
+          "name": "cleanup",
+          "startLine": 11,
+          "endLine": 18,
+          "params": []
+        },
+        {
+          "name": "playAudio",
+          "startLine": 20,
+          "endLine": 49,
+          "params": [
+            "data"
+          ]
+        },
+        {
+          "name": "stopAudio",
+          "startLine": 51,
+          "endLine": 58,
+          "params": []
+        },
+        {
+          "name": "cleanupAudio",
+          "startLine": 60,
+          "endLine": 62,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "playAudio",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "stopAudio",
+          "line": 51,
+          "isDefault": false
+        },
+        {
+          "name": "cleanupAudio",
+          "line": 60,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "cleanup",
+          "callee": "currentAudio.pause",
+          "lineNumber": 13
+        },
+        {
+          "caller": "cleanup",
+          "callee": "URL.revokeObjectURL",
+          "lineNumber": 17
+        },
+        {
+          "caller": "playAudio",
+          "callee": "cleanup",
+          "lineNumber": 28
+        },
+        {
+          "caller": "playAudio",
+          "callee": "atob",
+          "lineNumber": 30
+        },
+        {
+          "caller": "playAudio",
+          "callee": "binary.charCodeAt",
+          "lineNumber": 32
+        },
+        {
+          "caller": "playAudio",
+          "callee": "URL.createObjectURL",
+          "lineNumber": 35
+        },
+        {
+          "caller": "playAudio",
+          "callee": "startLipSync",
+          "lineNumber": 40
+        },
+        {
+          "caller": "playAudio",
+          "callee": "stopLipSync",
+          "lineNumber": 43
+        },
+        {
+          "caller": "playAudio",
+          "callee": "setExpression",
+          "lineNumber": 44
+        },
+        {
+          "caller": "playAudio",
+          "callee": "cleanup",
+          "lineNumber": 45
+        },
+        {
+          "caller": "playAudio",
+          "callee": "audio.play().catch",
+          "lineNumber": 48
+        },
+        {
+          "caller": "playAudio",
+          "callee": "audio.play",
+          "lineNumber": 48
+        },
+        {
+          "caller": "playAudio",
+          "callee": "cleanup",
+          "lineNumber": 48
+        },
+        {
+          "caller": "stopAudio",
+          "callee": "currentAudio.pause",
+          "lineNumber": 53
+        },
+        {
+          "caller": "stopAudio",
+          "callee": "stopLipSync",
+          "lineNumber": 56
+        },
+        {
+          "caller": "stopAudio",
+          "callee": "cleanup",
+          "lineNumber": 57
+        },
+        {
+          "caller": "cleanupAudio",
+          "callee": "cleanup",
+          "lineNumber": 61
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 3,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/components/live2d/useInteraction.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 107,
+      "nonEmptyLines": 89,
+      "functions": [
+        {
+          "name": "startDrag",
+          "startLine": 27,
+          "endLine": 35,
+          "params": [
+            "clientX",
+            "clientY"
+          ]
+        },
+        {
+          "name": "onDrag",
+          "startLine": 37,
+          "endLine": 45,
+          "params": [
+            "clientX",
+            "clientY"
+          ]
+        },
+        {
+          "name": "stopDrag",
+          "startLine": 47,
+          "endLine": 50,
+          "params": []
+        },
+        {
+          "name": "focus",
+          "startLine": 55,
+          "endLine": 59,
+          "params": [
+            "x",
+            "y"
+          ]
+        },
+        {
+          "name": "zoom",
+          "startLine": 64,
+          "endLine": 68,
+          "params": [
+            "delta"
+          ]
+        },
+        {
+          "name": "resetView",
+          "startLine": 73,
+          "endLine": 83,
+          "params": []
+        },
+        {
+          "name": "setScaleStrategy",
+          "startLine": 87,
+          "endLine": 93,
+          "params": [
+            "s"
+          ]
+        },
+        {
+          "name": "updateModelInfo",
+          "startLine": 97,
+          "endLine": 107,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "isLoaded",
+          "line": 12,
+          "isDefault": false
+        },
+        {
+          "name": "isLoading",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "loadError",
+          "line": 14,
+          "isDefault": false
+        },
+        {
+          "name": "modelInfo",
+          "line": 15,
+          "isDefault": false
+        },
+        {
+          "name": "isDragging",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "startDrag",
+          "line": 27,
+          "isDefault": false
+        },
+        {
+          "name": "onDrag",
+          "line": 37,
+          "isDefault": false
+        },
+        {
+          "name": "stopDrag",
+          "line": 47,
+          "isDefault": false
+        },
+        {
+          "name": "focus",
+          "line": 55,
+          "isDefault": false
+        },
+        {
+          "name": "zoom",
+          "line": 64,
+          "isDefault": false
+        },
+        {
+          "name": "resetView",
+          "line": 73,
+          "isDefault": false
+        },
+        {
+          "name": "setScaleStrategy",
+          "line": 87,
+          "isDefault": false
+        },
+        {
+          "name": "updateModelInfo",
+          "line": 97,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "startDrag",
+          "callee": "getModel",
+          "lineNumber": 28
+        },
+        {
+          "caller": "onDrag",
+          "callee": "getModel",
+          "lineNumber": 38
+        },
+        {
+          "caller": "onDrag",
+          "callee": "updateModelInfo",
+          "lineNumber": 44
+        },
+        {
+          "caller": "focus",
+          "callee": "getModel",
+          "lineNumber": 56
+        },
+        {
+          "caller": "focus",
+          "callee": "model.focus",
+          "lineNumber": 58
+        },
+        {
+          "caller": "zoom",
+          "callee": "setUserScale",
+          "lineNumber": 65
+        },
+        {
+          "caller": "zoom",
+          "callee": "Math.max",
+          "lineNumber": 65
+        },
+        {
+          "caller": "zoom",
+          "callee": "Math.min",
+          "lineNumber": 65
+        },
+        {
+          "caller": "zoom",
+          "callee": "getUserScale",
+          "lineNumber": 65
+        },
+        {
+          "caller": "zoom",
+          "callee": "Math.exp",
+          "lineNumber": 65
+        },
+        {
+          "caller": "zoom",
+          "callee": "applyScale",
+          "lineNumber": 66
+        },
+        {
+          "caller": "zoom",
+          "callee": "updateModelInfo",
+          "lineNumber": 67
+        },
+        {
+          "caller": "resetView",
+          "callee": "getApp",
+          "lineNumber": 74
+        },
+        {
+          "caller": "resetView",
+          "callee": "getModel",
+          "lineNumber": 75
+        },
+        {
+          "caller": "resetView",
+          "callee": "setUserScale",
+          "lineNumber": 76
+        },
+        {
+          "caller": "resetView",
+          "callee": "applyScale",
+          "lineNumber": 77
+        },
+        {
+          "caller": "resetView",
+          "callee": "updateModelInfo",
+          "lineNumber": 82
+        },
+        {
+          "caller": "setScaleStrategy",
+          "callee": "setStrategy",
+          "lineNumber": 89
+        },
+        {
+          "caller": "setScaleStrategy",
+          "callee": "applyScale",
+          "lineNumber": 90
+        },
+        {
+          "caller": "setScaleStrategy",
+          "callee": "updateModelInfo",
+          "lineNumber": 91
+        },
+        {
+          "caller": "updateModelInfo",
+          "callee": "getApp",
+          "lineNumber": 98
+        },
+        {
+          "caller": "updateModelInfo",
+          "callee": "getModel",
+          "lineNumber": 99
+        },
+        {
+          "caller": "updateModelInfo",
+          "callee": "getStrategy",
+          "lineNumber": 102
+        },
+        {
+          "caller": "updateModelInfo",
+          "callee": "getUserScale().toFixed",
+          "lineNumber": 103
+        },
+        {
+          "caller": "updateModelInfo",
+          "callee": "getUserScale",
+          "lineNumber": 103
+        },
+        {
+          "caller": "updateModelInfo",
+          "callee": "model.x.toFixed",
+          "lineNumber": 104
+        },
+        {
+          "caller": "updateModelInfo",
+          "callee": "model.y.toFixed",
+          "lineNumber": 104
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 13,
+        "functionCount": 8,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/components/live2d/useLipSync.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 140,
+      "nonEmptyLines": 117,
+      "functions": [
+        {
+          "name": "getIsLipSyncRafActive",
+          "startLine": 15,
+          "endLine": 15,
+          "params": []
+        },
+        {
+          "name": "setMouthTarget",
+          "startLine": 19,
+          "endLine": 21,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "tickLipSync",
+          "startLine": 25,
+          "endLine": 46,
+          "params": []
+        },
+        {
+          "name": "startLipSync",
+          "startLine": 50,
+          "endLine": 120,
+          "params": [
+            "audio",
+            "volumes"
+          ]
+        },
+        {
+          "name": "stopLipSync",
+          "startLine": 122,
+          "endLine": 130,
+          "params": []
+        },
+        {
+          "name": "resetLipSyncState",
+          "startLine": 134,
+          "endLine": 140,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "MOUTH_PARAMS",
+          "line": 5,
+          "isDefault": false
+        },
+        {
+          "name": "getIsLipSyncRafActive",
+          "line": 15,
+          "isDefault": false
+        },
+        {
+          "name": "setMouthTarget",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "tickLipSync",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "startLipSync",
+          "line": 50,
+          "isDefault": false
+        },
+        {
+          "name": "stopLipSync",
+          "line": 122,
+          "isDefault": false
+        },
+        {
+          "name": "resetLipSyncState",
+          "line": 134,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "setMouthTarget",
+          "callee": "Math.max",
+          "lineNumber": 20
+        },
+        {
+          "caller": "setMouthTarget",
+          "callee": "Math.min",
+          "lineNumber": 20
+        },
+        {
+          "caller": "tickLipSync",
+          "callee": "getModel",
+          "lineNumber": 28
+        },
+        {
+          "caller": "tickLipSync",
+          "callee": "Math.abs",
+          "lineNumber": 31
+        },
+        {
+          "caller": "tickLipSync",
+          "callee": "Math.min",
+          "lineNumber": 32
+        },
+        {
+          "caller": "tickLipSync",
+          "callee": "model.internalModel?.coreModel?.getParameterIndex",
+          "lineNumber": 37
+        },
+        {
+          "caller": "tickLipSync",
+          "callee": "model.internalModel.coreModel.getParameterIndex",
+          "lineNumber": 43
+        },
+        {
+          "caller": "tickLipSync",
+          "callee": "model.internalModel.coreModel.setParameterValueByIndex",
+          "lineNumber": 44
+        },
+        {
+          "caller": "startLipSync",
+          "callee": "stopLipSync",
+          "lineNumber": 51
+        },
+        {
+          "caller": "startLipSync",
+          "callee": "getModel",
+          "lineNumber": 53
+        },
+        {
+          "caller": "startLipSync",
+          "callee": "model?.internalModel?.motionManager?.stopAllMotions",
+          "lineNumber": 57
+        },
+        {
+          "caller": "setLipSyncParam",
+          "callee": "Math.max",
+          "lineNumber": 70
+        },
+        {
+          "caller": "setLipSyncParam",
+          "callee": "Math.min",
+          "lineNumber": 70
+        },
+        {
+          "caller": "setLipSyncParam",
+          "callee": "Math.abs",
+          "lineNumber": 72
+        },
+        {
+          "caller": "setLipSyncParam",
+          "callee": "Math.min",
+          "lineNumber": 73
+        },
+        {
+          "caller": "setLipSyncParam",
+          "callee": "getModel",
+          "lineNumber": 75
+        },
+        {
+          "caller": "setLipSyncParam",
+          "callee": "m?.internalModel?.coreModel?.getParameterIndex",
+          "lineNumber": 78
+        },
+        {
+          "caller": "setLipSyncParam",
+          "callee": "m.internalModel.coreModel.getParameterIndex",
+          "lineNumber": 83
+        },
+        {
+          "caller": "setLipSyncParam",
+          "callee": "m.internalModel.coreModel.setParameterValueByIndex",
+          "lineNumber": 84
+        },
+        {
+          "caller": "tick",
+          "callee": "setLipSyncParam",
+          "lineNumber": 90
+        },
+        {
+          "caller": "tick",
+          "callee": "setLipSyncParam",
+          "lineNumber": 97
+        },
+        {
+          "caller": "tick",
+          "callee": "requestAnimationFrame",
+          "lineNumber": 100
+        },
+        {
+          "caller": "tick",
+          "callee": "Math.floor",
+          "lineNumber": 106
+        },
+        {
+          "caller": "tick",
+          "callee": "setLipSyncParam",
+          "lineNumber": 109
+        },
+        {
+          "caller": "tick",
+          "callee": "setLipSyncParam",
+          "lineNumber": 113
+        },
+        {
+          "caller": "tick",
+          "callee": "requestAnimationFrame",
+          "lineNumber": 115
+        },
+        {
+          "caller": "startLipSync",
+          "callee": "requestAnimationFrame",
+          "lineNumber": 117
+        },
+        {
+          "caller": "startLipSync",
+          "callee": "setLipSyncParam",
+          "lineNumber": 119
+        },
+        {
+          "caller": "stopLipSync",
+          "callee": "lipSyncCancel",
+          "lineNumber": 123
+        },
+        {
+          "caller": "stopLipSync",
+          "callee": "setMouthTarget",
+          "lineNumber": 126
+        },
+        {
+          "caller": "stopLipSync",
+          "callee": "getModel",
+          "lineNumber": 127
+        },
+        {
+          "caller": "stopLipSync",
+          "callee": "model?.motion",
+          "lineNumber": 129
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 7,
+        "functionCount": 6,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/components/live2d/useLive2D.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 190,
+      "nonEmptyLines": 163,
+      "functions": [
+        {
+          "name": "useLive2D",
+          "startLine": 27,
+          "endLine": 190,
+          "params": [
+            "canvasRef"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "MODEL_PATH",
+          "line": 6,
+          "isDefault": false
+        },
+        {
+          "name": "ScaleStrategy",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "useLive2D",
+          "line": 27,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "init",
+          "callee": "console.log",
+          "lineNumber": 31
+        },
+        {
+          "caller": "init",
+          "callee": "console.error",
+          "lineNumber": 33
+        },
+        {
+          "caller": "init",
+          "callee": "initPixiApp",
+          "lineNumber": 38
+        },
+        {
+          "caller": "init",
+          "callee": "getApp",
+          "lineNumber": 40
+        },
+        {
+          "caller": "init",
+          "callee": "app.ticker.add",
+          "lineNumber": 48
+        },
+        {
+          "caller": "init",
+          "callee": "setupSocketListeners",
+          "lineNumber": 49
+        },
+        {
+          "caller": "handleResize",
+          "callee": "handlePixiResize",
+          "lineNumber": 66
+        },
+        {
+          "caller": "handleResize",
+          "callee": "getModel",
+          "lineNumber": 69
+        },
+        {
+          "caller": "handleResize",
+          "callee": "getApp",
+          "lineNumber": 70
+        },
+        {
+          "caller": "executeAction",
+          "callee": "setExpression",
+          "lineNumber": 81
+        },
+        {
+          "caller": "executeAction",
+          "callee": "playMotion",
+          "lineNumber": 82
+        },
+        {
+          "caller": "executeAction",
+          "callee": "setParam",
+          "lineNumber": 83
+        },
+        {
+          "caller": "executeAction",
+          "callee": "setTimeout",
+          "lineNumber": 88
+        },
+        {
+          "caller": "executeAction",
+          "callee": "executeAction",
+          "lineNumber": 88
+        },
+        {
+          "caller": "setupSocketListeners",
+          "callee": "getSocket",
+          "lineNumber": 97
+        },
+        {
+          "caller": "setupSocketListeners",
+          "callee": "socket.on",
+          "lineNumber": 100
+        },
+        {
+          "caller": "setupSocketListeners",
+          "callee": "executeAction",
+          "lineNumber": 101
+        },
+        {
+          "caller": "setupSocketListeners",
+          "callee": "socket.on",
+          "lineNumber": 104
+        },
+        {
+          "caller": "setupSocketListeners",
+          "callee": "playParameterTimeline",
+          "lineNumber": 107
+        },
+        {
+          "caller": "setupSocketListeners",
+          "callee": "playAudio",
+          "lineNumber": 109
+        },
+        {
+          "caller": "setupSocketListeners",
+          "callee": "socket.on",
+          "lineNumber": 113
+        },
+        {
+          "caller": "setupSocketListeners",
+          "callee": "stopAudio",
+          "lineNumber": 114
+        },
+        {
+          "caller": "teardownSocketListeners",
+          "callee": "getSocket",
+          "lineNumber": 119
+        },
+        {
+          "caller": "teardownSocketListeners",
+          "callee": "socket.off",
+          "lineNumber": 121
+        },
+        {
+          "caller": "teardownSocketListeners",
+          "callee": "socket.off",
+          "lineNumber": 122
+        },
+        {
+          "caller": "teardownSocketListeners",
+          "callee": "socket.off",
+          "lineNumber": 123
+        },
+        {
+          "caller": "destroy",
+          "callee": "stopAudio",
+          "lineNumber": 129
+        },
+        {
+          "caller": "destroy",
+          "callee": "cancelTimeline",
+          "lineNumber": 130
+        },
+        {
+          "caller": "destroy",
+          "callee": "teardownSocketListeners",
+          "lineNumber": 131
+        },
+        {
+          "caller": "destroy",
+          "callee": "getApp",
+          "lineNumber": 133
+        },
+        {
+          "caller": "destroy",
+          "callee": "app.ticker.remove",
+          "lineNumber": 135
+        },
+        {
+          "caller": "destroy",
+          "callee": "unloadModel",
+          "lineNumber": 136
+        },
+        {
+          "caller": "destroy",
+          "callee": "destroyPixiApp",
+          "lineNumber": 138
+        },
+        {
+          "caller": "destroy",
+          "callee": "window.removeEventListener",
+          "lineNumber": 140
+        },
+        {
+          "caller": "useLive2D",
+          "callee": "onMounted",
+          "lineNumber": 145
+        },
+        {
+          "caller": "useLive2D",
+          "callee": "window.addEventListener",
+          "lineNumber": 146
+        },
+        {
+          "caller": "useLive2D",
+          "callee": "onUnmounted",
+          "lineNumber": 149
+        },
+        {
+          "caller": "useLive2D",
+          "callee": "destroy",
+          "lineNumber": 150
+        },
+        {
+          "caller": "zoom",
+          "callee": "zoomFn",
+          "lineNumber": 175
+        },
+        {
+          "caller": "resetView",
+          "callee": "resetViewFn",
+          "lineNumber": 179
+        },
+        {
+          "caller": "setScaleStrategy",
+          "callee": "setScaleStrategyFn",
+          "lineNumber": 182
+        },
+        {
+          "caller": "focus",
+          "callee": "focusFn",
+          "lineNumber": 186
+        }
+      ],
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 3,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/components/live2d/useLive2DModel.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 185,
+      "nonEmptyLines": 154,
+      "functions": [
+        {
+          "name": "getModel",
+          "startLine": 33,
+          "endLine": 33,
+          "params": []
+        },
+        {
+          "name": "getUserScale",
+          "startLine": 34,
+          "endLine": 34,
+          "params": []
+        },
+        {
+          "name": "getStrategy",
+          "startLine": 35,
+          "endLine": 35,
+          "params": []
+        },
+        {
+          "name": "setUserScale",
+          "startLine": 36,
+          "endLine": 36,
+          "params": [
+            "s"
+          ]
+        },
+        {
+          "name": "setStrategy",
+          "startLine": 37,
+          "endLine": 37,
+          "params": [
+            "s"
+          ]
+        },
+        {
+          "name": "unloadModel",
+          "startLine": 41,
+          "endLine": 49,
+          "params": []
+        },
+        {
+          "name": "loadModel",
+          "startLine": 51,
+          "endLine": 127,
+          "params": [
+            "modelPath"
+          ]
+        },
+        {
+          "name": "applyScale",
+          "startLine": 135,
+          "endLine": 152,
+          "params": []
+        },
+        {
+          "name": "centerModel",
+          "startLine": 157,
+          "endLine": 164,
+          "params": []
+        },
+        {
+          "name": "setExpression",
+          "startLine": 168,
+          "endLine": 172,
+          "params": [
+            "name"
+          ]
+        },
+        {
+          "name": "playMotion",
+          "startLine": 174,
+          "endLine": 176,
+          "params": [
+            "group",
+            "index"
+          ]
+        },
+        {
+          "name": "retryLoad",
+          "startLine": 181,
+          "endLine": 185,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "MODEL_PATH",
+          "line": 6,
+          "isDefault": false
+        },
+        {
+          "name": "POS_X_RATIO",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "POS_Y_RATIO",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "INITIAL_SCALE",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "STRATEGIES",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "getModel",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "getUserScale",
+          "line": 34,
+          "isDefault": false
+        },
+        {
+          "name": "getStrategy",
+          "line": 35,
+          "isDefault": false
+        },
+        {
+          "name": "setUserScale",
+          "line": 36,
+          "isDefault": false
+        },
+        {
+          "name": "setStrategy",
+          "line": 37,
+          "isDefault": false
+        },
+        {
+          "name": "unloadModel",
+          "line": 41,
+          "isDefault": false
+        },
+        {
+          "name": "loadModel",
+          "line": 51,
+          "isDefault": false
+        },
+        {
+          "name": "applyScale",
+          "line": 135,
+          "isDefault": false
+        },
+        {
+          "name": "centerModel",
+          "line": 157,
+          "isDefault": false
+        },
+        {
+          "name": "setExpression",
+          "line": 168,
+          "isDefault": false
+        },
+        {
+          "name": "playMotion",
+          "line": 174,
+          "isDefault": false
+        },
+        {
+          "name": "retryLoad",
+          "line": 181,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "unloadModel",
+          "callee": "getApp",
+          "lineNumber": 42
+        },
+        {
+          "caller": "unloadModel",
+          "callee": "app?.stage.removeChild",
+          "lineNumber": 44
+        },
+        {
+          "caller": "unloadModel",
+          "callee": "model.destroy",
+          "lineNumber": 45
+        },
+        {
+          "caller": "loadModel",
+          "callee": "getApp",
+          "lineNumber": 52
+        },
+        {
+          "caller": "loadModel",
+          "callee": "unloadModel",
+          "lineNumber": 65
+        },
+        {
+          "caller": "loadModel",
+          "callee": "import",
+          "lineNumber": 68
+        },
+        {
+          "caller": "loadModel",
+          "callee": "Promise.race",
+          "lineNumber": 71
+        },
+        {
+          "caller": "loadModel",
+          "callee": "Live2DModel.from",
+          "lineNumber": 72
+        },
+        {
+          "caller": "loadModel",
+          "callee": "setTimeout",
+          "lineNumber": 74
+        },
+        {
+          "caller": "loadModel",
+          "callee": "reject",
+          "lineNumber": 74
+        },
+        {
+          "caller": "loadModel",
+          "callee": "model.internalModel?.motionManager?.stopAllMotions",
+          "lineNumber": 82
+        },
+        {
+          "caller": "loadModel",
+          "callee": "model.motion",
+          "lineNumber": 88
+        },
+        {
+          "caller": "loadModel",
+          "callee": "model.anchor.set",
+          "lineNumber": 89
+        },
+        {
+          "caller": "loadModel",
+          "callee": "app.stage.addChild",
+          "lineNumber": 93
+        },
+        {
+          "caller": "loadModel",
+          "callee": "Promise.race",
+          "lineNumber": 96
+        },
+        {
+          "caller": "check",
+          "callee": "model.getBounds",
+          "lineNumber": 99
+        },
+        {
+          "caller": "check",
+          "callee": "resolve",
+          "lineNumber": 100
+        },
+        {
+          "caller": "check",
+          "callee": "requestAnimationFrame",
+          "lineNumber": 101
+        },
+        {
+          "caller": "loadModel",
+          "callee": "check",
+          "lineNumber": 103
+        },
+        {
+          "caller": "loadModel",
+          "callee": "setTimeout",
+          "lineNumber": 106
+        },
+        {
+          "caller": "loadModel",
+          "callee": "reject",
+          "lineNumber": 106
+        },
+        {
+          "caller": "loadModel",
+          "callee": "model.getBounds",
+          "lineNumber": 111
+        },
+        {
+          "caller": "loadModel",
+          "callee": "applyScale",
+          "lineNumber": 114
+        },
+        {
+          "caller": "loadModel",
+          "callee": "applyScale",
+          "lineNumber": 119
+        },
+        {
+          "caller": "loadModel",
+          "callee": "updateModelInfo",
+          "lineNumber": 122
+        },
+        {
+          "caller": "applyScale",
+          "callee": "getApp",
+          "lineNumber": 136
+        },
+        {
+          "caller": "applyScale",
+          "callee": "Math.min",
+          "lineNumber": 144
+        },
+        {
+          "caller": "applyScale",
+          "callee": "Math.max",
+          "lineNumber": 146
+        },
+        {
+          "caller": "applyScale",
+          "callee": "model.scale.set",
+          "lineNumber": 149
+        },
+        {
+          "caller": "centerModel",
+          "callee": "getApp",
+          "lineNumber": 158
+        },
+        {
+          "caller": "centerModel",
+          "callee": "updateModelInfo",
+          "lineNumber": 163
+        },
+        {
+          "caller": "setExpression",
+          "callee": "model.internalModel.motionManager.expressionNames.indexOf",
+          "lineNumber": 170
+        },
+        {
+          "caller": "setExpression",
+          "callee": "model.expression",
+          "lineNumber": 171
+        },
+        {
+          "caller": "playMotion",
+          "callee": "model?.motion",
+          "lineNumber": 175
+        },
+        {
+          "caller": "retryLoad",
+          "callee": "loadModel",
+          "lineNumber": 184
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 17,
+        "functionCount": 12,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/components/live2d/useParameterTimeline.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 96,
+      "nonEmptyLines": 83,
+      "functions": [
+        {
+          "name": "getIsTimelinePlaying",
+          "startLine": 20,
+          "endLine": 20,
+          "params": []
+        },
+        {
+          "name": "setParam",
+          "startLine": 24,
+          "endLine": 29,
+          "params": [
+            "name",
+            "value"
+          ]
+        },
+        {
+          "name": "tickTimeline",
+          "startLine": 33,
+          "endLine": 67,
+          "params": []
+        },
+        {
+          "name": "playParameterTimeline",
+          "startLine": 69,
+          "endLine": 88,
+          "params": [
+            "data"
+          ]
+        },
+        {
+          "name": "cancelTimeline",
+          "startLine": 90,
+          "endLine": 96,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "getIsTimelinePlaying",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "setParam",
+          "line": 24,
+          "isDefault": false
+        },
+        {
+          "name": "playParameterTimeline",
+          "line": 69,
+          "isDefault": false
+        },
+        {
+          "name": "cancelTimeline",
+          "line": 90,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "setParam",
+          "callee": "getModel",
+          "lineNumber": 25
+        },
+        {
+          "caller": "setParam",
+          "callee": "model.internalModel.coreModel.getParameterIndex",
+          "lineNumber": 27
+        },
+        {
+          "caller": "setParam",
+          "callee": "model.internalModel.coreModel.setParameterValueByIndex",
+          "lineNumber": 28
+        },
+        {
+          "caller": "tickTimeline",
+          "callee": "performance.now",
+          "lineNumber": 35
+        },
+        {
+          "caller": "tickTimeline",
+          "callee": "currentParams.set",
+          "lineNumber": 46
+        },
+        {
+          "caller": "tickTimeline",
+          "callee": "currentParams.get",
+          "lineNumber": 50
+        },
+        {
+          "caller": "tickTimeline",
+          "callee": "currentParams.get",
+          "lineNumber": 51
+        },
+        {
+          "caller": "tickTimeline",
+          "callee": "Math.min",
+          "lineNumber": 59
+        },
+        {
+          "caller": "tickTimeline",
+          "callee": "setParam",
+          "lineNumber": 62
+        },
+        {
+          "caller": "tickTimeline",
+          "callee": "currentParams.delete",
+          "lineNumber": 63
+        },
+        {
+          "caller": "tickTimeline",
+          "callee": "requestAnimationFrame",
+          "lineNumber": 66
+        },
+        {
+          "caller": "playParameterTimeline",
+          "callee": "playAudio",
+          "lineNumber": 76
+        },
+        {
+          "caller": "playParameterTimeline",
+          "callee": "setTimeout",
+          "lineNumber": 78
+        },
+        {
+          "caller": "playParameterTimeline",
+          "callee": "performance.now",
+          "lineNumber": 81
+        },
+        {
+          "caller": "playParameterTimeline",
+          "callee": "currentParams.clear",
+          "lineNumber": 84
+        },
+        {
+          "caller": "playParameterTimeline",
+          "callee": "tickTimeline",
+          "lineNumber": 85
+        },
+        {
+          "caller": "cancelTimeline",
+          "callee": "cancelAnimationFrame",
+          "lineNumber": 93
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 4,
+        "functionCount": 5,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/components/live2d/usePixiApp.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 73,
+      "nonEmptyLines": 60,
+      "functions": [
+        {
+          "name": "getApp",
+          "startLine": 10,
+          "endLine": 10,
+          "params": []
+        },
+        {
+          "name": "getContainer",
+          "startLine": 11,
+          "endLine": 11,
+          "params": []
+        },
+        {
+          "name": "getLastCanvasW",
+          "startLine": 12,
+          "endLine": 12,
+          "params": []
+        },
+        {
+          "name": "getLastCanvasH",
+          "startLine": 13,
+          "endLine": 13,
+          "params": []
+        },
+        {
+          "name": "initPixiApp",
+          "startLine": 17,
+          "endLine": 47,
+          "params": [
+            "canvasRef"
+          ]
+        },
+        {
+          "name": "handlePixiResize",
+          "startLine": 55,
+          "endLine": 63,
+          "params": []
+        },
+        {
+          "name": "destroyPixiApp",
+          "startLine": 67,
+          "endLine": 73,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "getApp",
+          "line": 10,
+          "isDefault": false
+        },
+        {
+          "name": "getContainer",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "getLastCanvasW",
+          "line": 12,
+          "isDefault": false
+        },
+        {
+          "name": "getLastCanvasH",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "initPixiApp",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "handlePixiResize",
+          "line": 55,
+          "isDefault": false
+        },
+        {
+          "name": "destroyPixiApp",
+          "line": 67,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "initPixiApp",
+          "callee": "console.log",
+          "lineNumber": 20
+        },
+        {
+          "caller": "initPixiApp",
+          "callee": "console.error",
+          "lineNumber": 22
+        },
+        {
+          "caller": "initPixiApp",
+          "callee": "console.log",
+          "lineNumber": 26
+        },
+        {
+          "caller": "initPixiApp",
+          "callee": "import",
+          "lineNumber": 28
+        },
+        {
+          "caller": "handlePixiResize",
+          "callee": "app.renderer.resize",
+          "lineNumber": 59
+        },
+        {
+          "caller": "destroyPixiApp",
+          "callee": "app.destroy",
+          "lineNumber": 69
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 7,
+        "functionCount": 7,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/components/meme/MemeCard.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 85,
+      "nonEmptyLines": 78,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/components/memory/MemoryPanel.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 201,
+      "nonEmptyLines": 185,
+      "metrics": {}
+    },
+    {
+      "path": "frontend/src/components/personality/PersonalityPanel.vue",
+      "language": "vue",
+      "fileCategory": "code",
+      "totalLines": 326,
+      "nonEmptyLines": 300,
+      "metrics": {}
+    }
+  ]
+}
