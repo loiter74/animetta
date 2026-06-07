@@ -5,7 +5,7 @@ Supports:
   - YouTube / Bilibili video download (via yt-dlp)
   - Vocal separation (via Demucs)
   - Silence trimming and segmentation
-  - Output: clean vocal WAV files ready for rvc_train.py
+  - Output: clean vocal WAV files ready for train/cli.py
 
 Usage:
     # From a URL
@@ -196,7 +196,7 @@ Examples:
   python scripts/collect_voice_data.py my_voice --source-dir clean_vocals/ --no-separate
 
 Output goes to: C:/Users/30262/RVC20240604Nvidia/dataset/{name}/
-Ready for: python scripts/rvc_train.py {name} --dataset {name}
+Ready for: python -m scripts.train.cli --character {name}
         """
     )
     parser.add_argument("name", help="Voice name (creates dataset/{name})")
@@ -320,7 +320,7 @@ Ready for: python scripts/rvc_train.py {name} --dataset {name}
   ║  Duration: {duration/60:>28.1f} min ║
   ╠══════════════════════════════════════════╣
   ║  Next:                                  ║
-  ║  python scripts/rvc_train.py {args.name} --dataset {args.name} ║
+  ║  python -m scripts.train.cli --character {args.name} ║
   ╚══════════════════════════════════════════╝
   """)
 
