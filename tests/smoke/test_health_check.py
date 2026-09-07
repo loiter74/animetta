@@ -6,6 +6,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+from packaging.requirements import Requirement
 
 import scripts.health_check as health_check
 from scripts.health_check import _python_command, build_gates, redact_output
@@ -30,7 +31,16 @@ def test_requirements_entrypoints_have_one_way_dependency_layers() -> None:
 
     assert "starlette" in runtime
     assert not any(line.startswith("-r ") for line in runtime_entries)
-    assert "-r requirements.txt" in dev
+
+    def specifications(content: str) -> set[tuple[str, str]]:
+        entries = (line.strip() for line in content.splitlines())
+        requirements = (Requirement(line) for line in entries if line and not line.startswith("#"))
+        return {(requirement.name, str(requirement.specifier)) for requirement in requirements}
+
+    assert specifications(runtime) <= specifications(dev)
+    assert not {"torch", "torchaudio", "transformers", "demucs"} & {
+        name for name, _version in specifications(runtime)
+    }
     assert "-r requirements.txt" in local_ai
 
 

@@ -59,7 +59,7 @@ ENV PIP_TRUSTED_HOST=mirrors.aliyun.com
 
 COPY requirements.txt .
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --user -r requirements.txt
+    pip install --user -r requirements.txt && pip check
 
 # ---------------------------------------------------------------------------
 # Stage 3: Runtime

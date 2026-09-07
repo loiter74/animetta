@@ -1,19 +1,448 @@
-# Runtime plus development, test, and evaluation tools.
--r requirements.txt
-
-ruff>=0.4.0
-mypy>=1.10.0
-vulture>=2.11
-pre-commit>=4.0.0
-pytest>=8.0.0
-pytest-asyncio>=0.23.0
-pytest-cov>=5.0.0
-pytest-xdist>=3.5.0
-pytest-timeout>=2.3.0
-websocket-client>=1.8.0
-pydub>=0.25.1
-audioop-lts>=0.2.1; python_version >= "3.13"
-
-# Livestream capture and replay evaluation
+# Generated from pyproject.toml and uv.lock; do not edit.
+# Update with: py -3.13 scripts/check_python_lock.py --write
+aiohappyeyeballs==2.6.1
+    # via aiohttp
 aiohttp==3.13.3
+    # via langchain-community
+aiosignal==1.4.0
+    # via aiohttp
+aiosqlite==0.22.1
+    # via animetta
+annotated-types==0.7.0
+    # via pydantic
+anyio==4.12.1
+    # via
+    #   httpx
+    #   mcp
+    #   openai
+    #   sse-starlette
+    #   starlette
+    #   watchfiles
+apscheduler==3.11.3
+    # via bilibili-api-python
+attrs==26.1.0
+    # via
+    #   aiohttp
+    #   jsonschema
+    #   referencing
+audioop-lts==0.2.2
+beautifulsoup4==4.15.0
+    # via bilibili-api-python
+bidict==0.23.1
+    # via python-socketio
+bilibili-api-python==17.4.1
+    # via animetta
+brotli==1.2.0
+    # via bilibili-api-python
+certifi==2026.2.25
+    # via
+    #   httpcore
+    #   httpx
+    #   requests
+cffi==2.0.0 ; platform_python_implementation != 'PyPy'
+    # via cryptography
+cfgv==3.5.0
+    # via pre-commit
+charset-normalizer==3.4.6
+    # via requests
+click==8.3.1
+    # via uvicorn
+colorama==0.4.6
+    # via
+    #   bilibili-api-python
+    #   click
+    #   loguru
+    #   pytest
+    #   qrcode
+    #   tqdm
+    #   uvicorn
+coverage==7.13.5
+    # via pytest-cov
+cryptography==46.0.5
+    # via pyjwt
+dataclasses-json==0.6.7
+    # via langchain-community
+distlib==0.4.3
+    # via virtualenv
+distro==1.9.0
+    # via openai
+execnet==2.1.2
+    # via pytest-xdist
+filelock==3.25.2
+    # via
+    #   python-discovery
+    #   virtualenv
+frozenlist==1.8.0
+    # via
+    #   aiohttp
+    #   aiosignal
+greenlet==3.3.2 ; platform_machine == 'AMD64' or platform_machine == 'WIN32' or platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'ppc64le' or platform_machine == 'win32' or platform_machine == 'x86_64'
+    # via sqlalchemy
+h11==0.16.0
+    # via
+    #   httpcore
+    #   uvicorn
+    #   wsproto
+hiredis==3.4.1
+    # via redis
+httpcore==1.0.9
+    # via httpx
+httptools==0.7.1
+    # via uvicorn
+httpx==0.28.1
+    # via
+    #   animetta
+    #   langgraph-sdk
+    #   langsmith
+    #   mcp
+    #   openai
+httpx-sse==0.4.3
+    # via
+    #   langchain-community
+    #   mcp
+identify==2.6.19
+    # via pre-commit
+idna==3.11
+    # via
+    #   anyio
+    #   httpx
+    #   requests
+    #   yarl
+importlib-metadata==8.7.1
+    # via opentelemetry-api
+iniconfig==2.3.0
+    # via pytest
+jieba==0.42.1
+    # via animetta
+jinja2==3.1.6
+    # via animetta
+jiter==0.13.0
+    # via openai
+jsonpatch==1.33
+    # via langchain-core
+jsonpath-ng==1.8.0
+    # via redisvl
+jsonpointer==3.1.0
+    # via jsonpatch
+jsonschema==4.26.0
+    # via mcp
+jsonschema-specifications==2025.9.1
+    # via jsonschema
+langchain==1.2.13
+    # via animetta
+langchain-classic==1.0.3
+    # via langchain-community
+langchain-community==0.4.1
+    # via animetta
+langchain-core==1.2.20
+    # via
+    #   animetta
+    #   langchain
+    #   langchain-classic
+    #   langchain-community
+    #   langchain-openai
+    #   langchain-text-splitters
+    #   langgraph
+    #   langgraph-checkpoint
+    #   langgraph-prebuilt
+langchain-openai==1.1.11
+    # via animetta
+langchain-text-splitters==1.1.1
+    # via langchain-classic
+langgraph==1.1.3
+    # via
+    #   animetta
+    #   langchain
+langgraph-checkpoint==4.2.0
+    # via
+    #   animetta
+    #   langgraph
+    #   langgraph-checkpoint-redis
+    #   langgraph-prebuilt
+langgraph-checkpoint-redis==0.5.1
+    # via animetta
+langgraph-prebuilt==1.0.8
+    # via langgraph
+langgraph-sdk==0.3.12
+    # via langgraph
+langsmith==0.7.22
+    # via
+    #   langchain-classic
+    #   langchain-community
+    #   langchain-core
+librt==0.13.0 ; platform_python_implementation != 'PyPy'
+    # via mypy
+loguru==0.7.3
+    # via animetta
+lxml==6.0.2
+    # via bilibili-api-python
+markupsafe==3.0.3
+    # via jinja2
+marshmallow==3.26.2
+    # via dataclasses-json
+mcp==1.26.0
+    # via animetta
+ml-dtypes==0.6.0
+    # via redisvl
+multidict==6.7.1
+    # via
+    #   aiohttp
+    #   yarl
+mypy==1.20.2
+mypy-extensions==1.1.0
+    # via
+    #   mypy
+    #   typing-inspect
+nodeenv==1.10.0
+    # via pre-commit
+numpy==2.4.3
+    # via
+    #   animetta
+    #   langchain-community
+    #   ml-dtypes
+    #   redisvl
+openai==2.29.0
+    # via langchain-openai
+opencc-python-reimplemented==0.1.7
+    # via animetta
+opentelemetry-api==1.40.0
+    # via
+    #   animetta
+    #   opentelemetry-sdk
+    #   opentelemetry-semantic-conventions
+opentelemetry-sdk==1.40.0
+    # via animetta
+opentelemetry-semantic-conventions==0.61b0
+    # via opentelemetry-sdk
+orjson==3.11.7
+    # via
+    #   langgraph-checkpoint-redis
+    #   langgraph-sdk
+    #   langsmith
+ormsgpack==1.12.2
+    # via langgraph-checkpoint
+packaging==26.0
+    # via
+    #   langchain-core
+    #   langsmith
+    #   marshmallow
+    #   pytest
+pathspec==1.1.1
+    # via mypy
+pillow==12.1.1
+    # via
+    #   bilibili-api-python
+    #   qrcode-terminal
+platformdirs==4.9.6
+    # via
+    #   python-discovery
+    #   virtualenv
+pluggy==1.6.0
+    # via
+    #   pytest
+    #   pytest-cov
+pre-commit==4.6.0
+prometheus-client==0.25.0
+    # via animetta
+propcache==0.4.1
+    # via
+    #   aiohttp
+    #   yarl
 psutil==7.2.2
+pycparser==3.0 ; implementation_name != 'PyPy' and platform_python_implementation != 'PyPy'
+    # via cffi
+pycryptodomex==3.23.0
+    # via bilibili-api-python
+pydantic==2.12.5
+    # via
+    #   animetta
+    #   langchain
+    #   langchain-classic
+    #   langchain-core
+    #   langgraph
+    #   langsmith
+    #   mcp
+    #   openai
+    #   pydantic-settings
+    #   redisvl
+pydantic-core==2.41.5
+    # via pydantic
+pydantic-settings==2.13.1
+    # via
+    #   langchain-community
+    #   mcp
+pydub==0.25.1
+pygments==2.19.2
+    # via pytest
+pyjwt==2.10.1
+    # via
+    #   animetta
+    #   bilibili-api-python
+    #   mcp
+pytest==9.0.3
+    # via
+    #   pytest-asyncio
+    #   pytest-cov
+    #   pytest-timeout
+    #   pytest-xdist
+pytest-asyncio==1.3.0
+pytest-cov==7.1.0
+pytest-timeout==2.4.0
+pytest-xdist==3.8.0
+python-discovery==1.4.4
+    # via virtualenv
+python-dotenv==1.2.2
+    # via
+    #   animetta
+    #   pydantic-settings
+    #   uvicorn
+python-engineio==4.13.1
+    # via
+    #   animetta
+    #   python-socketio
+python-multipart==0.0.22
+    # via mcp
+python-socketio==5.16.1
+    # via animetta
+python-ulid==4.0.1
+    # via redisvl
+pywin32==311 ; sys_platform == 'win32'
+    # via mcp
+pyyaml==6.0.3
+    # via
+    #   animetta
+    #   bilibili-api-python
+    #   langchain-classic
+    #   langchain-community
+    #   langchain-core
+    #   pre-commit
+    #   redisvl
+    #   uvicorn
+qrcode==8.2
+    # via
+    #   bilibili-api-python
+    #   qrcode-terminal
+qrcode-terminal==0.8
+    # via bilibili-api-python
+redis==7.4.1
+    # via
+    #   animetta
+    #   langgraph-checkpoint-redis
+    #   redisvl
+redisvl==0.25.1
+    # via langgraph-checkpoint-redis
+referencing==0.37.0
+    # via
+    #   jsonschema
+    #   jsonschema-specifications
+regex==2026.2.28
+    # via tiktoken
+requests==2.32.5
+    # via
+    #   langchain-classic
+    #   langchain-community
+    #   langsmith
+    #   requests-toolbelt
+    #   tiktoken
+requests-toolbelt==1.0.0
+    # via langsmith
+rpds-py==0.30.0
+    # via
+    #   jsonschema
+    #   referencing
+ruff==0.15.21
+simple-websocket==1.1.0
+    # via python-engineio
+sniffio==1.3.1
+    # via openai
+socksio==1.0.0
+    # via httpx
+soupsieve==2.8.4
+    # via beautifulsoup4
+sqlalchemy==2.0.48
+    # via
+    #   langchain-classic
+    #   langchain-community
+sse-starlette==3.3.3
+    # via mcp
+starlette==0.52.1
+    # via
+    #   animetta
+    #   mcp
+    #   sse-starlette
+tenacity==9.1.4
+    # via
+    #   langchain-community
+    #   langchain-core
+    #   redisvl
+tiktoken==0.12.0
+    # via langchain-openai
+tqdm==4.67.3
+    # via openai
+typing-extensions==4.15.0
+    # via
+    #   beautifulsoup4
+    #   langchain-core
+    #   mcp
+    #   mypy
+    #   openai
+    #   opentelemetry-api
+    #   opentelemetry-sdk
+    #   opentelemetry-semantic-conventions
+    #   pydantic
+    #   pydantic-core
+    #   sqlalchemy
+    #   typing-inspect
+    #   typing-inspection
+typing-inspect==0.9.0
+    # via dataclasses-json
+typing-inspection==0.4.2
+    # via
+    #   mcp
+    #   pydantic
+    #   pydantic-settings
+tzdata==2026.2 ; sys_platform == 'win32'
+    # via
+    #   animetta
+    #   tzlocal
+tzlocal==5.4.4
+    # via apscheduler
+urllib3==2.6.3
+    # via requests
+uuid-utils==0.14.1
+    # via
+    #   langchain-core
+    #   langsmith
+uv==0.11.19
+uvicorn==0.42.0
+    # via
+    #   animetta
+    #   mcp
+uvloop==0.22.1 ; platform_python_implementation != 'PyPy' and sys_platform != 'cygwin' and sys_platform != 'win32'
+    # via uvicorn
+virtualenv==21.6.1
+    # via pre-commit
+vulture==2.16
+watchfiles==1.1.1
+    # via uvicorn
+websocket-client==1.9.0
+websockets==16.0
+    # via
+    #   animetta
+    #   uvicorn
+win32-setctime==1.2.0 ; sys_platform == 'win32'
+    # via loguru
+wsproto==1.3.2
+    # via simple-websocket
+xxhash==3.6.0
+    # via
+    #   langgraph
+    #   langsmith
+yarl==1.23.0
+    # via
+    #   aiohttp
+    #   bilibili-api-python
+zipp==3.23.0
+    # via importlib-metadata
+zstandard==0.25.0
+    # via langsmith

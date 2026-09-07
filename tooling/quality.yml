@@ -11,7 +11,11 @@ input_sets:
   python-toolchain:
     paths:
       - pyproject.toml
+      - uv.lock
       - requirements*.txt
+  python-lock-export:
+    paths:
+      - scripts/check_python_lock.py
   python-runtime:
     paths:
       - src/**/*.py
@@ -110,6 +114,8 @@ docker_watch_paths:
   - docker/entrypoint.sh
   - docker/nginx.conf
   - requirements.txt
+  - pyproject.toml
+  - uv.lock
   - frontend/package.json
   - frontend/pnpm-lock.yaml
   - frontend/src/**
@@ -139,12 +145,27 @@ docker_scopes:
       - docker/entrypoint.sh
       - docker/nginx.conf
       - requirements.txt
+      - pyproject.toml
+      - uv.lock
       - frontend/**
       - src/animetta/**
       - config/**
       - scripts/**
       - .env.example
 groups:
+  python-lock-contract:
+    domain: repository
+    kind: contract
+    runner: python
+    entrypoint: scripts/check_python_lock.py
+    timeout_seconds: 120
+    include_in_full: true
+    isolation: hermetic
+    cacheable: true
+    resource_class: light
+    resource_weight: 1
+    input_sets: [python-toolchain, python-lock-export]
+
   python-format:
     domain: repository
     kind: lint
@@ -1891,10 +1912,13 @@ components:
     domain: repository
     paths:
       - pyproject.toml
+      - uv.lock
       - requirements.txt
       - requirements-dev.txt
+      - scripts/check_python_lock.py
+      - tests/scripts/test_python_lock.py
       - tests/conftest.py
-    direct_groups: [backend-full]
+    direct_groups: [backend-full, python-lock-contract]
     impacts: []
     risk: global
 

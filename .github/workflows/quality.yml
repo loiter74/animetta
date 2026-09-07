@@ -47,11 +47,15 @@ jobs:
           python-version-file: ${{ env.PYTHON_VERSION_FILE }}
           cache: pip
           cache-dependency-path: |
+            pyproject.toml
+            uv.lock
             requirements.txt
             requirements-dev.txt
 
       - name: Install Python verification dependencies
-        run: python -m pip install -r requirements-dev.txt
+        run: |
+          python -m pip install -r requirements-dev.txt
+          python scripts/check_python_lock.py
 
       - uses: pnpm/action-setup@v6
         with:
@@ -141,11 +145,15 @@ jobs:
           python-version-file: ${{ env.PYTHON_VERSION_FILE }}
           cache: pip
           cache-dependency-path: |
+            pyproject.toml
+            uv.lock
             requirements.txt
             requirements-dev.txt
 
       - name: Install Python verification dependencies
-        run: python -m pip install -r requirements-dev.txt
+        run: |
+          python -m pip install -r requirements-dev.txt
+          python scripts/check_python_lock.py
 
       - name: Download frozen plan
         uses: actions/download-artifact@v8
@@ -196,7 +204,7 @@ jobs:
           python-version-file: ${{ env.PYTHON_VERSION_FILE }}
 
       - name: Install quality runner dependencies
-        run: python -m pip install pydantic pyyaml
+        run: python -m pip install -c requirements.txt pydantic pyyaml
 
       - name: Set up Node for npm
         if: matrix.runner == 'npm'
@@ -272,11 +280,15 @@ jobs:
           python-version-file: ${{ env.PYTHON_VERSION_FILE }}
           cache: pip
           cache-dependency-path: |
+            pyproject.toml
+            uv.lock
             requirements.txt
             requirements-dev.txt
 
       - name: Install Python verification dependencies
-        run: python -m pip install -r requirements-dev.txt
+        run: |
+          python -m pip install -r requirements-dev.txt
+          python scripts/check_python_lock.py
 
       - uses: pnpm/action-setup@v6
         with:
@@ -343,7 +355,7 @@ jobs:
           python-version-file: ${{ env.PYTHON_VERSION_FILE }}
 
       - name: Install quality runner dependencies
-        run: python -m pip install pydantic pyyaml
+        run: python -m pip install -c requirements.txt pydantic pyyaml
 
       - uses: docker/setup-buildx-action@v4
 
@@ -393,7 +405,7 @@ jobs:
           python-version-file: ${{ env.PYTHON_VERSION_FILE }}
 
       - name: Install quality aggregator dependencies
-        run: python -m pip install pydantic pyyaml
+        run: python -m pip install -c requirements.txt pydantic pyyaml
 
       - name: Download frozen plan
         uses: actions/download-artifact@v8
@@ -493,7 +505,7 @@ jobs:
           python-version-file: ${{ env.PYTHON_VERSION_FILE }}
 
       - name: Install quality planner dependencies
-        run: python -m pip install pydantic pyyaml
+        run: python -m pip install -c requirements.txt pydantic pyyaml
 
       - uses: docker/setup-buildx-action@v4
 
