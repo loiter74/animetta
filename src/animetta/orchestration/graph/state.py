@@ -7,11 +7,12 @@ from uuid import uuid4
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 from langgraph.graph.message import add_messages
 
+from animetta.services.dialogue.response_processing import AFFINITY_MAX as AFFINITY_MAX
+from animetta.services.dialogue.response_processing import AFFINITY_MIN as AFFINITY_MIN
+
 # Affinity defaults — borrowed from the Galgame/VTuber "好感度" convention.
 # Initial 50 = neutral first impression. Range [0, 100].
 DEFAULT_AFFINITY: int = 50
-AFFINITY_MIN: int = 0
-AFFINITY_MAX: int = 100
 
 
 class AgentState(TypedDict):
@@ -83,7 +84,7 @@ class AgentState(TypedDict):
 
     # Affinity — Galgame-style affection counter for the current 旅人.
     # Per-turn overlay: parsed from the LLM's `[affinity:N]` marker on the
-    # previous turn (see llm_node._extract_and_update_affinity). Not persisted
+    # previous turn (see dialogue.response_processing.extract_affinity). Not persisted
     # across sessions; resets to DEFAULT_AFFINITY on a fresh conversation.
     affinity: int
 

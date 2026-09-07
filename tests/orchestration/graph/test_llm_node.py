@@ -22,6 +22,7 @@ from animetta.orchestration.graph.llm_node import (
     _retrieve_memory_context,
 )
 from animetta.orchestration.graph.state import create_initial_state
+from animetta.services.dialogue.response_processing import extract_affinity
 from animetta.services.humor import HumorConfig
 
 
@@ -52,6 +53,47 @@ def _humor_json(candidate: str, *, risk: str = "safe") -> str:
         },
         ensure_ascii=False,
     )
+
+
+@pytest.mark.parametrize("tools_enabled", [False, True])
+@pytest.mark.parametrize(
+    "raw,debug,expected_affinity,expected_text",
+    [
+        ("Hello [affinity:20][affinity:120]", False, 100, "Hello"),
+        ("Hello [affinity:-8]", True, 0, "Hello [affinity:-8]"),
+        ("Hello", False, None, "Hello"),
+    ],
+)
+async def test_reply_returns_affinity_delta_without_mutating_input(
+    mock_service_context, tools_enabled, raw, debug, expected_affinity, expected_text
+):
+    async def stream(user_text, system_prompt=""):
+        yield raw
+
+    mock_service_context.llm_engine.chat_stream = stream
+    mock_service_context.llm_engine.chat_with_tools = AsyncMock(return_value={"content": raw})
+    chat_model = MagicMock()
+    chat_model.bound_tools = []
+    state = create_initial_state(
+        session_id="test-session", user_text="【debug】hi" if debug else "hi"
+    )
+    state["affinity"] = 50
+    state["metadata"]["affinity"] = 50
+    metadata_before = dict(state["metadata"])
+
+    result = await llm_node(
+        state,
+        _make_config(mock_service_context, enable_tools=tools_enabled, chat_model=chat_model),
+    )
+
+    assert result["response_text"] == expected_text
+    assert state["affinity"] == 50
+    assert state["metadata"] == metadata_before
+    assert result.get("affinity") == expected_affinity
+    assert result["metadata"]["affinity"] == (
+        50 if expected_affinity is None else expected_affinity
+    )
+    assert "messages" not in result
 
 
 def test_delivery_policy_keeps_ordinary_live_reply_at_eighteen_characters() -> None:
@@ -1432,11 +1474,11 @@ class TestLLMTimeout:
 
 
 class TestAffinityMarkerParsing:
-    """Tests for the [affinity:N] marker parser in llm_node.
+    """Tests for the pure dialogue affinity marker parser.
 
     The LLM emits this marker at the end of each reply (per the
     AffinityPromptSource contract). The parser must:
-    - extract the value into state["affinity"] + metadata
+    - return the parsed value for the node state update
     - strip the marker from user-visible text
     - leave previous affinity untouched when no marker is present
     - clamp out-of-range values
@@ -1444,12 +1486,12 @@ class TestAffinityMarkerParsing:
 
     def test_marker_parsed_and_stripped(self):
         """A valid [affinity:N] marker is parsed and removed from text."""
-        from animetta.orchestration.graph.llm_node import _extract_and_update_affinity
 
         state = {"metadata": {}}
-        cleaned = _extract_and_update_affinity(state, "老朋友来了 [affinity:82]")
-        assert state["affinity"] == 82
-        assert state["metadata"]["affinity"] == 82
+        cleaned, affinity = extract_affinity(
+            "老朋友来了 [affinity:82]", user_text=state.get("user_text", "")
+        )
+        assert affinity == 82
         assert "[affinity:" not in cleaned
         assert "老朋友来了" in cleaned
 
@@ -1477,10 +1519,12 @@ class TestPersonaVerbalTicEnforcement:
 
     def test_no_marker_keeps_previous_affinity(self):
         """When no marker is present, the prior affinity value carries over."""
-        from animetta.orchestration.graph.llm_node import _extract_and_update_affinity
 
         state = {"affinity": 50, "metadata": {"affinity": 50}}
-        cleaned = _extract_and_update_affinity(state, "Just a normal reply.")
+        cleaned, affinity = extract_affinity(
+            "Just a normal reply.", user_text=state.get("user_text", "")
+        )
+        assert affinity is None
         # Value untouched
         assert state["affinity"] == 50
         assert state["metadata"]["affinity"] == 50
@@ -1489,31 +1533,33 @@ class TestPersonaVerbalTicEnforcement:
 
     def test_high_value_clamped_to_max(self):
         """Out-of-range high values are clamped to AFFINITY_MAX (100)."""
-        from animetta.orchestration.graph.llm_node import _extract_and_update_affinity
 
         state = {"metadata": {}}
-        _extract_and_update_affinity(state, "[affinity:500]")
-        assert state["affinity"] == 100
+        _cleaned, affinity = extract_affinity(
+            "[affinity:500]", user_text=state.get("user_text", "")
+        )
+        assert affinity == 100
 
     def test_negative_value_clamped_to_min(self):
         """Negative values are clamped to AFFINITY_MIN (0)."""
-        from animetta.orchestration.graph.llm_node import _extract_and_update_affinity
 
         state = {"metadata": {}}
-        _extract_and_update_affinity(state, "[affinity:-30]")
-        assert state["affinity"] == 0
+        _cleaned, affinity = extract_affinity(
+            "[affinity:-30]", user_text=state.get("user_text", "")
+        )
+        assert affinity == 0
 
     def test_multiple_markers_last_wins(self):
         """When multiple markers appear, the last one is canonical."""
-        from animetta.orchestration.graph.llm_node import _extract_and_update_affinity
 
         state = {"metadata": {}}
-        _extract_and_update_affinity(state, "First [affinity:30] then [affinity:60]")
-        assert state["affinity"] == 60
+        _cleaned, affinity = extract_affinity(
+            "First [affinity:30] then [affinity:60]", user_text=state.get("user_text", "")
+        )
+        assert affinity == 60
 
     def test_marker_anywhere_in_text(self):
         """Marker can appear at start, middle, or end of the response."""
-        from animetta.orchestration.graph.llm_node import _extract_and_update_affinity
 
         for text in [
             "[affinity:55] Hello",
@@ -1521,46 +1567,45 @@ class TestPersonaVerbalTicEnforcement:
             "Hello world [affinity:55]",
         ]:
             state = {"metadata": {}}
-            cleaned = _extract_and_update_affinity(state, text)
-            assert state["affinity"] == 55
+            cleaned, affinity = extract_affinity(text, user_text=state.get("user_text", ""))
+            assert affinity == 55
             assert "[affinity:" not in cleaned
 
     def test_empty_response_no_crash(self):
         """Empty/None response does not crash; returns empty/unchanged."""
-        from animetta.orchestration.graph.llm_node import _extract_and_update_affinity
 
         state = {"metadata": {}}
         # Empty string
-        cleaned = _extract_and_update_affinity(state, "")
+        cleaned, affinity = extract_affinity("", user_text=state.get("user_text", ""))
         assert cleaned == ""
         # None
-        cleaned_none = _extract_and_update_affinity(state, None)
+        cleaned_none, affinity = extract_affinity(None, user_text=state.get("user_text", ""))
         assert cleaned_none is None or cleaned_none == ""
 
     def test_debug_turn_keeps_marker_visible(self):
         """When user_text contains 【debug】, the marker is preserved.
 
-        This is the visibility switch: the value is still parsed and written
-        to state, but the marker stays in the returned text so the user can
+        This is the visibility switch: the value is still returned separately, but the marker stays in the returned text so the user can
         see the raw number.
         """
-        from animetta.orchestration.graph.llm_node import _extract_and_update_affinity
 
         state = {"user_text": "【debug】显示好感度", "metadata": {}}
-        cleaned = _extract_and_update_affinity(state, "你对我有 65 分。[affinity:65]")
+        cleaned, affinity = extract_affinity(
+            "你对我有 65 分。[affinity:65]", user_text=state.get("user_text", "")
+        )
         # State still updated
-        assert state["affinity"] == 65
-        assert state["metadata"]["affinity"] == 65
+        assert affinity == 65
         # Marker kept visible
         assert "[affinity:65]" in cleaned
 
     def test_normal_turn_strips_marker(self):
         """Without 【debug】, the marker is stripped from visible text."""
-        from animetta.orchestration.graph.llm_node import _extract_and_update_affinity
 
         state = {"user_text": "你好啊", "metadata": {}}
-        cleaned = _extract_and_update_affinity(state, "你好。[affinity:55]")
-        assert state["affinity"] == 55
+        cleaned, affinity = extract_affinity(
+            "你好。[affinity:55]", user_text=state.get("user_text", "")
+        )
+        assert affinity == 55
         assert "[affinity:" not in cleaned
 
     def test_debug_detection_case_sensitive(self):
@@ -1569,21 +1614,26 @@ class TestPersonaVerbalTicEnforcement:
         Half-width [debug] or upper 【DEBUG】 should NOT trigger the switch —
         we follow the exact contract from the persona spec.
         """
-        from animetta.orchestration.graph.llm_node import _extract_and_update_affinity
 
         # Half-width [debug] → stripped (not a debug turn)
         state1 = {"user_text": "[debug] show me", "metadata": {}}
-        cleaned1 = _extract_and_update_affinity(state1, "hi [affinity:50]")
+        cleaned1, affinity = extract_affinity(
+            "hi [affinity:50]", user_text=state1.get("user_text", "")
+        )
         assert "[affinity:" not in cleaned1, "half-width [debug] should NOT keep marker"
 
         # Full-width 【DEBUG】 (uppercase) → stripped (case-sensitive)
         state2 = {"user_text": "【DEBUG】", "metadata": {}}
-        cleaned2 = _extract_and_update_affinity(state2, "hi [affinity:50]")
+        cleaned2, affinity = extract_affinity(
+            "hi [affinity:50]", user_text=state2.get("user_text", "")
+        )
         assert "[affinity:" not in cleaned2, "【DEBUG】 uppercase should NOT keep marker"
 
         # Exact 【debug】 → kept
         state3 = {"user_text": "【debug】", "metadata": {}}
-        cleaned3 = _extract_and_update_affinity(state3, "hi [affinity:50]")
+        cleaned3, affinity = extract_affinity(
+            "hi [affinity:50]", user_text=state3.get("user_text", "")
+        )
         assert "[affinity:50]" in cleaned3, "exact 【debug】 should keep marker"
 
 
@@ -1638,14 +1688,13 @@ class TestEmotionRegexAndAffinityMarker:
         then _strip_emotion_tags runs but doesn't add it back.
         """
         from animetta.orchestration.graph.llm_node import (
-            _extract_and_update_affinity,
             _strip_emotion_tags,
         )
 
         # No 【debug】 in user_text → marker stripped
         state = {"user_text": "今晚特调不错。", "metadata": {}}
         full = "今晚特调不错。[affinity:72]"
-        cleaned = _extract_and_update_affinity(state, full)
+        cleaned, affinity = extract_affinity(full, user_text=state.get("user_text", ""))
         final = _strip_emotion_tags(cleaned)
         assert "[affinity:" not in final
         assert "今晚特调不错" in final
@@ -1657,13 +1706,12 @@ class TestEmotionRegexAndAffinityMarker:
         【debug】 in user_text and returns the text with marker intact.
         """
         from animetta.orchestration.graph.llm_node import (
-            _extract_and_update_affinity,
             _strip_emotion_tags,
         )
 
         state = {"user_text": "【debug】让我看看好感度", "metadata": {}}
         full = "你对我是 65 分的好感。[affinity:65]"
-        cleaned = _extract_and_update_affinity(state, full)
+        cleaned, affinity = extract_affinity(full, user_text=state.get("user_text", ""))
         final = _strip_emotion_tags(cleaned)
         # Marker must survive BOTH the affinity parser AND the emotion stripper
         assert "[affinity:65]" in final, (

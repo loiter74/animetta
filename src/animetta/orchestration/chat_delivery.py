@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import time
 import uuid
 from collections.abc import Mapping, Sequence
@@ -146,6 +147,30 @@ class ChatDelivery:
             raise
         self._mark_evidence(action, payload, delivered=True)
         await self._record_event(event, "delivered", correlated)
+
+    async def emit_tts_stream(
+        self,
+        event: str,
+        payload: dict[str, Any],
+        *,
+        emotion: str,
+        performance: dict[str, Any] | None = None,
+        to: str | None = None,
+    ) -> None:
+        """Adapt internal PCM stream events to the existing correlated wire contract."""
+        wire = dict(payload)
+        if event == "start":
+            wire["emotion"] = emotion
+            if performance is not None:
+                wire["performance"] = performance
+        elif event == "chunk":
+            wire["audio_data"] = base64.b64encode(wire.pop("pcm")).decode("ascii")
+        action = {
+            "start": "audio_stream_start",
+            "chunk": "audio_stream_chunk",
+            "end": "audio_stream_end",
+        }[event]
+        await self.emit("chat", action, wire, to=to)
 
     @staticmethod
     def _mark_evidence(

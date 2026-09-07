@@ -2,7 +2,6 @@
 
 import asyncio
 import json
-import re
 import time as time_module
 from typing import Any
 
@@ -23,18 +22,33 @@ from animetta.services.bilibili.response_policy import (
     is_minecraft_narration_turn,
     is_proactive_topic_turn,
 )
-from animetta.services.dialogue.reasoning_classifier import is_english_meta_reasoning
+from animetta.services.dialogue.response_processing import (
+    FALLBACK_RESPONSE as FALLBACK_RESPONSE,
+)
+from animetta.services.dialogue.response_processing import (
+    _enforce_persona_verbal_tics as _enforce_persona_verbal_tics,
+)
+from animetta.services.dialogue.response_processing import (
+    _has_user_visible_response,
+    _visible_response_or_fallback,
+    process_reply,
+)
+from animetta.services.dialogue.response_processing import (
+    _strip_emotion_tags as _strip_emotion_tags,
+)
+from animetta.services.dialogue.response_processing import (
+    _strip_model_thinking as _strip_model_thinking,
+)
 from animetta.services.llm.token_counting import make_trim_token_counter
 
 from .conversation_session import ConversationSessionState
 from .interrupt_handler import get_interrupt_handler
 from .memory_middleware import MemoryMiddleware
 from .node_error import log_node_error
-from .state import AFFINITY_MAX, AFFINITY_MIN, AgentState, log_timing
+from .state import AgentState, log_timing
 
 # Configurable timeout for LLM provider calls (default: 30 seconds)
 TIMEOUT_SECONDS = 30
-FALLBACK_RESPONSE = "I need a moment to think about that."
 
 # Default token budget for the graph ``messages`` window (context-bloat guard).
 DEFAULT_CONTEXT_TOKEN_BUDGET = 6000
@@ -151,36 +165,6 @@ def _has_completed_connection_call(messages: list[Any]) -> bool:
     )
 
 
-# Regex for emotion tags like [happy], [neutral], [sad]. Does NOT match
-# ``[affinity:N]`` — affinity marker stripping is handled exclusively by
-# ``_extract_and_update_affinity`` (which respects the 【debug】 visibility
-# switch). Keeping these regexes separate prevents the emotion stripper from
-# clobbering a marker that the affinity parser deliberately preserved.
-_EMOTION_TAG_RE = re.compile(r"\s*\[[\w-]+\]\s*")
-_THINKING_BLOCK_RE = re.compile(
-    r"(?is)<(?:think|thinking)\b[^>]*>.*?</(?:think|thinking)>"
-    r"|\[(?:think|thinking)\].*?\[/(?:think|thinking)\]"
-)
-_ORPHAN_THINKING_PREFIX_RE = re.compile(
-    r"(?is)^.*?(?:</(?:think|thinking)>|\[/(?:think|thinking)\])\s*"
-)
-_LEADING_RESPONSE_TAG_RE = re.compile(
-    r"(?is)^\s*(?:(?:<(?:think|thinking)\b[^>]*>)|"
-    r"\[(?:think|thinking|happy|sad|angry|neutral|surprised)\])\s*"
-)
-_UNTAGGED_REASONING_PREFIX_RE = re.compile(
-    r"(?is)^\s*"
-    r"(?=(?:the user\s+(?:just\s+)?(?:says|said|asks|asked|wants|is)\b|"
-    r"user\s+(?:says|said|asks|asked|wants|is)\b|"
-    r"as an?\b|i should\b|let me\b))"
-    r"(?=.*\b(?:i should|let me|actually|respond in character|"
-    r"not a minecraft command|usual style)\b)"
-    r".*[.!?](?:\s+|(?=[\"“]))"
-    r"(?P<answer>(?:[\u4e00-\u9fff]|[\"“][^\"”\r\n]{1,64}[\"”]\s*"
-    r"(?:[-—–:：]+\s*)?[\u4e00-\u9fff])[\s\S]*)$"
-)
-
-
 def _response_for_delivery(state: AgentState, text: str) -> str:
     """Apply the service-owned delivery policy selected by graph state."""
     visible = _strip_emotion_tags(text)
@@ -202,203 +186,6 @@ def _response_for_delivery(state: AgentState, text: str) -> str:
     if state.get("personality_mode") == "streaming":
         return constrain_livestream_response(visible)
     return visible
-
-
-_CHINESE_UNTAGGED_REASONING_PREFIX_RE = re.compile(
-    r"(?s)^\s*"
-    r"(?=(?:用户(?:问|说|想|要|发|在)|作为AI|作为Anima|我(?:需要|应该|知道|可以|得)|这个问题|实际上))"
-    r"(?=.*(?:作为AI|作为Anima|符合人设|对话历史|方式来回应|假装记得|保持神秘感|这是个测试|实际上))"
-    r".*?[。！？]\s*"
-    r"(?P<answer>(?:上一个话题|我的数据库告诉你|你(?:刚才|上次|刚刚)|哎呀|这就|赛博酒馆|后厨|牛到了|欢迎光临|来都来了)[\s\S]*)$"
-)
-_CHINESE_REASONING_START_RE = re.compile(
-    r"^\s*(?:用户|旅人(?:问|说|想|要|发|在|继续|再次|测试|表示|让)|"
-    r"作为(?:AI|Anima)|我(?:需要|应该|知道|可以|得)|"
-    r"用[^。！？]{0,60}世界观[^。！？]{0,30}(?:包装|回答|回应)|这个问题|"
-    r"保持[^。！？]{0,80}风格)"
-)
-_CHINESE_SENTENCE_RE = re.compile(r"[^。！？]*[。！？]\s*")
-_CHINESE_REASONING_SIGNAL_RE = re.compile(
-    r"(?:用户|旅人(?:问|说|想|要|发|在|继续|再次|测试|表示|让)|"
-    r"作为AI|作为Anima|作为[^。！？]{0,20}AI|AI VTuber|我是Anima|让我想想|"
-    r"我(?:需要|应该|知道|可以|得)|符合人设|对话历史|方式来回应|方式回应|"
-    r"假装记得|保持神秘感|这是(?:个)?测试|实际上|弹幕|轻吐槽|自然收住|"
-    r"调用工具|不要解释|不要写分析|不要跳出角色|角色内|保持[^。！？]{0,30}语气|"
-    r"好感(?:度|值)?[^。！？\d]{0,16}\d*|亲密度[^。！？\d]{0,16}\d*|"
-    r"风格\s*[:：]|表情标签|用[^。！？]{0,60}世界观[^。！？]{0,30}(?:包装|回答|回应)|"
-    r"适合用[^。！？]{0,80}来处理|身份接住|先[^。！？]{0,40}再[^。！？]{0,40}(?:最后|收尾)|"
-    r"连续对话检查|承认上下文|保持角色感|这个问题(?:有点意思|偏[^。！？]{0,40}类)|"
-    r"不需要搜索|直接用自己的知识回答|每条回复必须|保持[^。！？]{0,80}风格)"
-)
-_CHINESE_INLINE_PLANNING_SENTENCE_RE = re.compile(
-    r"\s*(?:然后|再)套(?:一下)?世界观"
-    r"(?:（[^。！？）]{0,40}）|\([^.!?)]{0,40}\))?，?\s*"
-    r"最后(?:再)?(?:轻轻)?接住[。！？]\s*"
-)
-_CHINESE_INCOMPLETE_REASONING_RE = re.compile(
-    r"^(?:好感(?:度|值)?|亲密度|情绪(?:标签)?|表情(?:标签)?)\s*(?::|：)?\s*\d*\s*$"
-)
-_INVISIBLE_FORMATTING_RE = re.compile(r"[\u200b\u200c\u200d\u2060\ufeff]")
-
-# Affinity marker — ``[affinity:N]`` where N is a signed int (clamped later).
-# The LLM emits this at the end of each reply per the AffinityPromptSource
-# contract. Parsed value flows into state["affinity"] + metadata for the next
-# turn's prompt overlay.
-_AFFINITY_MARKER_RE = re.compile(r"\[affinity:(-?\d+)\]")
-_SENTENCE_END_RE = re.compile(r"([^。！？!?]+)([。！？!?])")
-
-
-def _strip_emotion_tags(text: str) -> str:
-    """Remove bounded performance and legacy emotion tags from visible text."""
-    from animetta.avatar.performance import parse_performance_plan
-
-    return parse_performance_plan(text).cleaned_text
-
-
-def _strip_model_thinking(text: str) -> str:
-    """Remove provider-emitted thinking blocks before exposing visible replies."""
-    if not text:
-        return text
-
-    text = _INVISIBLE_FORMATTING_RE.sub("", text)
-    stripped = _THINKING_BLOCK_RE.sub("", text)
-    stripped = _ORPHAN_THINKING_PREFIX_RE.sub("", stripped, count=1)
-    # Providers occasionally emit an unclosed leading ``[thinking]`` or
-    # ``<think>`` tag. Remove only the leading tag, then classify the body;
-    # in-character emotion-tagged replies keep their visible text.
-    stripped = _LEADING_RESPONSE_TAG_RE.sub("", stripped, count=1)
-    match = _UNTAGGED_REASONING_PREFIX_RE.match(stripped)
-    if match:
-        stripped = match.group("answer")
-    else:
-        stripped = _strip_chinese_untagged_reasoning_prefix(stripped)
-        if is_english_meta_reasoning(_AFFINITY_MARKER_RE.sub("", stripped)):
-            return ""
-    stripped = _CHINESE_INLINE_PLANNING_SENTENCE_RE.sub("", stripped)
-    return stripped.strip()
-
-
-def _visible_response_or_fallback(text: str) -> str:
-    """Return a user-visible response, never an empty stripped reasoning trace."""
-    return _strip_model_thinking(text) or FALLBACK_RESPONSE
-
-
-def _has_user_visible_response(text: str | None) -> bool:
-    """Return whether provider output contains text after all delivery markers are removed."""
-    if not text:
-        return False
-    stripped = _strip_model_thinking(text)
-    stripped = _AFFINITY_MARKER_RE.sub("", stripped)
-    return bool(_strip_emotion_tags(stripped))
-
-
-def _strip_chinese_untagged_reasoning_prefix(text: str) -> str:
-    """Strip Chinese meta-reasoning sentences before the visible character reply."""
-    if not _CHINESE_REASONING_START_RE.match(text):
-        return text
-
-    unambiguous_user_prefix = text.lstrip().startswith("用户")
-    pos = 0
-    reasoning_sentence_count = 0
-    while match := _CHINESE_SENTENCE_RE.match(text, pos):
-        sentence = match.group(0)
-        if not _CHINESE_REASONING_SIGNAL_RE.search(sentence):
-            break
-        reasoning_sentence_count += 1
-        pos = match.end()
-
-    if reasoning_sentence_count >= 2 or (reasoning_sentence_count >= 1 and unambiguous_user_prefix):
-        remainder = text[pos:].lstrip()
-        if not remainder or _CHINESE_INCOMPLETE_REASONING_RE.fullmatch(remainder):
-            return ""
-        return remainder
-
-    fallback_match = _CHINESE_UNTAGGED_REASONING_PREFIX_RE.match(text)
-    if fallback_match:
-        return fallback_match.group("answer")
-    return text
-
-
-def _enforce_persona_verbal_tics(response_text: str, system_prompt: str | None) -> str:
-    """Apply explicit persona verbal-tic hard rules to visible replies.
-
-    This is intentionally narrow: it only handles the Anima v0.1-style
-    "每一句话后面都要加上喵" rule when it appears in the compiled prompt.
-    """
-    if not response_text or not system_prompt:
-        return response_text
-    if "每一句话后面都要加上喵" not in system_prompt:
-        return response_text
-
-    def _add_nya(match: re.Match[str]) -> str:
-        body = match.group(1).rstrip()
-        punct = match.group(2)
-        if body.endswith("喵"):
-            return f"{body}{punct}"
-        return f"{body}喵{punct}"
-
-    rewritten = _SENTENCE_END_RE.sub(_add_nya, response_text)
-    if (
-        rewritten == response_text
-        and response_text.strip()
-        and not response_text.rstrip().endswith("喵")
-    ):
-        return f"{response_text.rstrip()}喵"
-    return rewritten
-
-
-def _extract_and_update_affinity(
-    state: AgentState | dict[str, Any],
-    response_text: str,
-) -> str:
-    """Parse the LLM's ``[affinity:N]`` marker, write the value back to state.
-
-    The marker is Galgame-style self-report: the LLM emits its updated
-    affection toward the 旅人 at the end of each reply (per
-    AffinityPromptSource contract). We:
-    1. Find the last ``[affinity:N]`` occurrence (in case of repetition).
-    2. Clamp to ``[AFFINITY_MIN, AFFINITY_MAX]``.
-    3. Write to ``state["affinity"]`` and ``state["metadata"]["affinity"]``
-       so the next turn's build_context() picks it up.
-    4. Return the response text with the marker stripped — UNLESS the user
-       sent ``【debug】`` on this turn, in which case the marker is kept
-       visible (per the affinity_marker special_behavior contract).
-
-    If no marker is present, ``state["affinity"]`` is left untouched (the
-    previous turn's value carries over via metadata) and the text is
-    returned unchanged.
-
-    Args:
-        state: AgentState dict (mutated in place — affinity + metadata).
-        response_text: Raw LLM response (may contain ``[affinity:N]``).
-
-    Returns:
-        The response text; marker stripped unless this is a 【debug】 turn.
-    """
-    matches = _AFFINITY_MARKER_RE.findall(response_text or "")
-    if not matches:
-        return response_text
-
-    # Last match wins (LLM sometimes double-emits; final value is canonical).
-    raw_value = int(matches[-1])
-    clamped = max(AFFINITY_MIN, min(AFFINITY_MAX, raw_value))
-    if clamped != raw_value:
-        logger.debug(f"[affinity] LLM emitted out-of-range value {raw_value}; clamped to {clamped}")
-
-    state["affinity"] = clamped
-    metadata = state.setdefault("metadata", {})
-    metadata["affinity"] = clamped
-    logger.info(f"[affinity] Updated to {clamped}/100")
-
-    # 【debug】 visibility switch: if the user asked for debug this turn,
-    # keep the marker so they can see the raw value. Otherwise strip it.
-    user_text = state.get("user_text", "") or ""
-    if "【debug】" in user_text:
-        logger.debug("[affinity] 【debug】 turn — keeping marker visible")
-        return response_text
-
-    # Strip ALL affinity markers from the visible text.
-    return _AFFINITY_MARKER_RE.sub("", response_text)
 
 
 # ========================================
@@ -784,13 +571,14 @@ async def _llm_with_tools(
                 full_response = _visible_response_or_fallback(raw_content)
                 logger.info(f"[{session_id}] [LLMNode] LLM response: {full_response[:100]}...")
 
-                # ── Affinity marker parsing ── (same as streaming path)
-                full_response = _extract_and_update_affinity(state, full_response)
-                original_response = full_response
-                full_response = _enforce_persona_verbal_tics(full_response, enriched_prompt)
-                response_chunks = [
-                    full_response if full_response != original_response else original_response
-                ]
+                processed = process_reply(
+                    raw_content, user_text=user_text, system_prompt=enriched_prompt
+                )
+                full_response = processed.text
+                response_chunks = list(processed.chunks)
+                affinity_update = (
+                    {"affinity": processed.affinity} if processed.affinity is not None else {}
+                )
                 # after_llm_call notification (non-blocking)
                 _notify_middleware_after(session_id, user_text, full_response, config)
 
@@ -801,7 +589,12 @@ async def _llm_with_tools(
                     "response_text": delivery_response,
                     "response_chunks": response_chunks,
                     "tool_calls": None,
-                    "metadata": {**state.get("metadata", {}), "dialogue_status": "direct"},
+                    **affinity_update,
+                    "metadata": {
+                        **state.get("metadata", {}),
+                        **affinity_update,
+                        "dialogue_status": "direct",
+                    },
                 }
 
         logger.warning(
@@ -916,24 +709,13 @@ async def _llm_without_tools(
         f"chat_stream | chunks={len(chunks)} | ttfb_first_chunk=<see llm_engine.log>",
     )
 
-    # ── Affinity marker parsing ──
-    # Extract [affinity:N] (mutates state + metadata) and strip the marker
-    # from the visible text. Done before AIMessage construction so the chat
-    # history (used for roleplay-guard drift detection next turn) doesn't
-    # carry stale markers.
-    raw_response = full_response
-    response_fallback = not _has_user_visible_response(raw_response)
-    full_response = _visible_response_or_fallback(full_response)
-    full_response = _extract_and_update_affinity(state, full_response)
-    original_response = full_response
-    full_response = _enforce_persona_verbal_tics(full_response, enriched_prompt)
-    # Also strip any chunks that may contain the marker (defensive — the
-    # streaming chunks accumulate the raw marker).
-    chunks = (
-        [full_response]
-        if full_response != raw_response or full_response != original_response
-        else [_AFFINITY_MARKER_RE.sub("", c) for c in chunks]
+    processed = process_reply(
+        full_response, user_text=user_text, system_prompt=enriched_prompt, chunks=chunks
     )
+    full_response = processed.text
+    response_fallback = processed.fallback
+    chunks = list(processed.chunks)
+    affinity_update = {"affinity": processed.affinity} if processed.affinity is not None else {}
 
     # after_llm_call notification (non-blocking)
     if not is_proactive_topic_turn(state.get("metadata", {})):
@@ -950,8 +732,10 @@ async def _llm_without_tools(
         "response_text": delivery_response,
         "response_chunks": chunks,
         "tool_calls": None,
+        **affinity_update,
         "metadata": {
             **state.get("metadata", {}),
+            **affinity_update,
             "dialogue_status": "direct",
             "interrupted": interrupted,
             "response_fallback": response_fallback,
