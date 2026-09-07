@@ -13,6 +13,7 @@ import subprocess
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 import uuid
 from collections.abc import Sequence
@@ -45,6 +46,13 @@ HOST_RVC_IDENTITY = HOST_RVC_CONTRACT.identity()
 LOCAL_ANIMETTA_IMAGE = "animetta:local"
 GHCR_ANIMETTA_IMAGE = "ghcr.io/loiter74/animetta"
 _ANIMETTA_BUILD_COMMAND = ("docker", "compose", "build", "animetta")
+_COMPOSE_TARGET_KEYS = (
+    "COMPOSE_PROJECT_NAME",
+    "COMPOSE_FILE",
+    "COMPOSE_ENV_FILES",
+    "ANIMETTA_HTTP_PORT",
+    "ANIMETTA_PORT",
+)
 _DEPLOY_IMAGE_PATTERN = re.compile(
     rf"^(?:{re.escape(GHCR_ANIMETTA_IMAGE)}:"
     r"(?:main|sha-[0-9a-f]{40})|"
@@ -507,11 +515,36 @@ def _prepare_host_runtimes(*, wait: bool) -> None:
     _run(_rvc_preflight(wait=wait))
 
 
-def _compose_environment(*, image: str, profile: str | None = None) -> dict[str, str]:
-    return {
-        "ANIMETTA_IMAGE": image,
-        "ANIMETTA_PROFILE": profile or os.getenv("ANIMETTA_PROFILE") or "production",
-    }
+def _compose_environment(*, image: str | None = None, profile: str | None = None) -> dict[str, str]:
+    """Freeze the public Compose target without copying credentials into fingerprints."""
+    dotenv = dotenv_values(ROOT / ".env")
+
+    def value(name: str) -> str:
+        return (os.getenv(name, dotenv.get(name)) or "").strip()
+
+    environment = {name: value(name) for name in _COMPOSE_TARGET_KEYS if value(name)}
+    for name in ("ANIMETTA_HTTP_PORT", "ANIMETTA_PORT"):
+        if name in environment:
+            port = int(environment[name])
+            if not 1 <= port <= 65535:
+                raise ValueError(f"{name} must be between 1 and 65535")
+            environment[name] = str(port)
+    project = environment.get("COMPOSE_PROJECT_NAME", "")
+    isolated = bool(project and project != ROOT.name.lower())
+    default_image = f"animetta:{project}" if isolated else LOCAL_ANIMETTA_IMAGE
+    selected_image = image or value("ANIMETTA_IMAGE") or default_image
+    if isolated and selected_image == LOCAL_ANIMETTA_IMAGE:
+        raise ValueError("an isolated Compose project must use its own ANIMETTA_IMAGE")
+    environment.update(
+        ANIMETTA_IMAGE=selected_image,
+        ANIMETTA_PROFILE=profile or value("ANIMETTA_PROFILE") or "production",
+    )
+    return environment
+
+
+def _http_base_url(environment: dict[str, str]) -> str:
+    port = environment.get("ANIMETTA_HTTP_PORT", "80")
+    return "http://localhost" if port == "80" else f"http://localhost:{port}"
 
 
 def run_operation(operation: str, *, image: str | None = None) -> None:
@@ -532,7 +565,7 @@ def run_operation(operation: str, *, image: str | None = None) -> None:
         _host_rvc_stop()
     elif operation == "anima-up":
         _prepare_host_runtimes(wait=False)
-        runtime_environment = _compose_environment(image=LOCAL_ANIMETTA_IMAGE)
+        runtime_environment = _compose_environment()
         _run(
             list(_ANIMETTA_BUILD_COMMAND),
             environment=runtime_environment,
@@ -567,7 +600,6 @@ def run_operation(operation: str, *, image: str | None = None) -> None:
     elif operation == "anima-selftest-up":
         _prepare_host_runtimes(wait=True)
         selftest_environment = _compose_environment(
-            image=LOCAL_ANIMETTA_IMAGE,
             profile="selftest",
         )
         _run(
@@ -581,7 +613,7 @@ def run_operation(operation: str, *, image: str | None = None) -> None:
     elif operation == "anima-down":
         _run(
             ["docker", "compose", "down", "--remove-orphans"],
-            environment=_compose_environment(image=LOCAL_ANIMETTA_IMAGE),
+            environment=_compose_environment(),
         )
     else:
         raise ValueError(f"Unknown lifecycle operation: {operation}")
@@ -741,7 +773,7 @@ class _SystemLifecycleDriver:
             )
 
     def check_http(self, target: str, *, timeout_seconds: float):
-        requires_authentication = target == "http://localhost/ready"
+        requires_authentication = urllib.parse.urlsplit(target).path == "/ready"
         invalid_access_token = any(character in self._access_token for character in "\r\n")
         if requires_authentication and (not self._access_token or invalid_access_token):
             reference = self._evidence(
@@ -819,8 +851,9 @@ def _build_command_digest(
         {
             "command": command,
             "environment": {
-                "ANIMETTA_IMAGE": environment["ANIMETTA_IMAGE"],
-                "ANIMETTA_PROFILE": environment["ANIMETTA_PROFILE"],
+                name: environment[name]
+                for name in (*_COMPOSE_TARGET_KEYS, "ANIMETTA_IMAGE", "ANIMETTA_PROFILE")
+                if name in environment
             },
             "input_fingerprint": input_fingerprint,
         },
@@ -836,10 +869,18 @@ def _bounded_input_fingerprint(
     *,
     image: str | None,
     profile: str,
+    environment: dict[str, str] | None = None,
 ) -> str:
+    target_environment = environment or _compose_environment(image=image, profile=profile)
     parts = [
         operation.encode(),
         profile.encode(),
+        str(ROOT.resolve()).encode(),
+        _build_command_digest(
+            _ANIMETTA_BUILD_COMMAND,
+            environment=target_environment,
+            input_fingerprint="",
+        ).encode(),
         Path(__file__).read_bytes(),
         (ROOT / "tooling" / "execution_feedback" / "lifecycle.py").read_bytes(),
     ]
@@ -891,12 +932,13 @@ async def run_bounded_operation(
         raise ValueError("--image is only valid with anima-deploy")
     selected_image = _validate_deploy_image(image or "") if operation == "anima-deploy" else None
     runtime_environment = _compose_environment(
-        image=selected_image or LOCAL_ANIMETTA_IMAGE,
+        image=selected_image,
     )
     input_fingerprint = _bounded_input_fingerprint(
         operation,
         image=selected_image,
         profile=runtime_environment["ANIMETTA_PROFILE"],
+        environment=runtime_environment,
     )
     build_command_digest = _build_command_digest(
         _ANIMETTA_BUILD_COMMAND,
@@ -909,6 +951,7 @@ async def run_bounded_operation(
         input_fingerprint=input_fingerprint,
         run_id=run_id,
         image=selected_image,
+        http_base_url=_http_base_url(runtime_environment),
     )
     store = IterationPlanStore(artifacts_root)
     store.write_plan(frozen.plan)
@@ -934,7 +977,9 @@ async def run_bounded_operation(
         driver=_SystemLifecycleDriver(
             evidence_root=run_root / "evidence",
             environment=runtime_environment,
-            access_token=_animetta_access_token() if operation == "anima-deploy" else None,
+            access_token=_animetta_access_token()
+            if operation in {"anima-up", "anima-deploy"}
+            else None,
         ),
         build_controller=build_controller,
     )

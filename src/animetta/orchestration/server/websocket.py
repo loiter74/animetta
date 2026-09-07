@@ -64,12 +64,6 @@ from .security import AuthenticationMiddleware, SecurityRuntime, get_auth_routes
 from .session import SessionManager
 from .stats_api import (
     get_stats_routes,
-    set_auth_session_readiness,
-    set_auth_user_readiness,
-    set_checkpoint_readiness,
-    set_component_readiness_cache,
-    set_model_manager,
-    set_runtime_readiness_context,
 )
 
 SINGING_SOCKET_MAX_BUFFER_BYTES = 96 * 1024 * 1024
@@ -274,13 +268,30 @@ class WebSocketServer:
             ]
             logger.info(f"[Socket.IO] Frontend static files mounted at /app from {frontend_dist}")
 
+        self.checkpoint_readiness: dict[str, object | None] = {
+            "state": "degraded",
+            "ready": False,
+            "degraded": True,
+            "reason": "not_started",
+        }
+        self.auth_session_readiness: dict[str, object | None] = {
+            "state": "failed",
+            "ready": False,
+            "reason": "not_started",
+        }
+        self.auth_user_readiness: dict[str, object | None] = {
+            "state": "failed",
+            "ready": False,
+            "reason": "not_started",
+        }
+
         @asynccontextmanager
         async def lifespan(_app: Starlette) -> AsyncIterator[None]:
             auth_session_health, auth_user_health = await self.security.start()
-            set_auth_session_readiness(auth_session_health.public_dict())
-            set_auth_user_readiness(auth_user_health.public_dict())
+            self.auth_session_readiness = auth_session_health.public_dict()
+            self.auth_user_readiness = auth_user_health.public_dict()
             checkpoint_health = await self.checkpoint_runtime.start()
-            set_checkpoint_readiness(checkpoint_health.public_dict())
+            self.checkpoint_readiness = checkpoint_health.public_dict()
             await self._start_observability()
             recovered = await self.command_inbox.start()
             if recovered:
@@ -320,7 +331,8 @@ class WebSocketServer:
                 self._auth_user_health_loop(),
                 name="auth_user_health",
             )
-            await self.component_readiness_cache.start()
+            if self.component_readiness_cache is not None:
+                await self.component_readiness_cache.start()
             if self.route_handlers:
                 await self.route_handlers.start_runtime()
             try:
@@ -353,12 +365,13 @@ class WebSocketServer:
         self.asgi_app.state.program_replay = self.program_replay
         self.asgi_app.state.command_inbox = self.command_inbox
         self.asgi_app.state.provider_pool = self.provider_pool
+        # The same application object owns reloads, background probes and HTTP readiness.
+        self.asgi_app.state.runtime_context = self
         self.model_manager = ModelLoadingManager()
-        set_model_manager(self.model_manager)
         self.provider_pool.configure_runtime(self.config, self.model_manager)
-        set_runtime_readiness_context(self.config, self.frontend_readiness)
-        self.component_readiness_cache = ComponentReadinessCache(self.inspection_runtime())
-        set_component_readiness_cache(self.component_readiness_cache)
+        self.component_readiness_cache: ComponentReadinessCache | None = ComponentReadinessCache(
+            self.inspection_runtime()
+        )
         self._unsubscribe_memory_revision = self.memory_runtime.subscribe_revision(
             lambda payload: self.supervise_background(
                 self.sio.emit(EVENTS["memory"]["changed"]["name"], payload),
@@ -500,7 +513,6 @@ class WebSocketServer:
         translation_state.apply_runtime_config(config)
         self.runtime_reloader = RuntimeConfigReloader(config)
         self.provider_pool.configure_runtime(config, self.model_manager)
-        set_runtime_readiness_context(config, self.frontend_readiness)
         if self.route_handlers:
             self.route_handlers.set_global_config(config)
 
@@ -518,7 +530,6 @@ class WebSocketServer:
         if self.route_handlers:
             self.route_handlers.set_global_config(config)
         self.provider_pool.configure_runtime(config, self.model_manager)
-        set_runtime_readiness_context(config, self.frontend_readiness)
 
         llm_config = config.agent.llm_config if config.agent else None
         runtime_prompt = build_runtime_system_prompt(config)
@@ -561,7 +572,8 @@ class WebSocketServer:
             model_manager=self.model_manager,
             observation_recorder=self.observation_recorder,
         )
-        await self.component_readiness_cache.refresh()
+        if self.component_readiness_cache is not None:
+            await self.component_readiness_cache.refresh()
 
     def _load_bilibili_config(self) -> dict[str, Any] | None:
         """Return Bilibili configuration from the active app config."""
@@ -711,19 +723,19 @@ class WebSocketServer:
         while True:
             await asyncio.sleep(5)
             health = await self.checkpoint_runtime.check_health()
-            set_checkpoint_readiness(health.public_dict())
+            self.checkpoint_readiness = health.public_dict()
 
     async def _auth_session_health_loop(self) -> None:
         while True:
             await asyncio.sleep(5)
             health = await self.security.check_session_health()
-            set_auth_session_readiness(health.public_dict())
+            self.auth_session_readiness = health.public_dict()
 
     async def _auth_user_health_loop(self) -> None:
         while True:
             await asyncio.sleep(5)
             health = await self.security.check_user_health()
-            set_auth_user_readiness(health.public_dict())
+            self.auth_user_readiness = health.public_dict()
 
     async def _stop_background_tasks(self) -> None:
         tasks = tuple(self._background_tasks)
@@ -748,7 +760,8 @@ class WebSocketServer:
         await self._stop_background_tasks()
         await self.program_replay.shutdown()
         await self.program_runner.shutdown()
-        await self.component_readiness_cache.stop()
+        if self.component_readiness_cache is not None:
+            await self.component_readiness_cache.stop()
 
         if self.route_handlers:
             try:
@@ -770,15 +783,15 @@ class WebSocketServer:
         await self.memory_runtime.shutdown()
         await self.command_inbox.close()
         await self.security.close()
-        set_auth_session_readiness(self.security.session_health.public_dict())
-        set_auth_user_readiness(self.security.user_health.public_dict())
+        self.auth_session_readiness = self.security.session_health.public_dict()
+        self.auth_user_readiness = self.security.user_health.public_dict()
         await self.checkpoint_runtime.close()
-        set_checkpoint_readiness(self.checkpoint_runtime.health.public_dict())
+        self.checkpoint_readiness = self.checkpoint_runtime.health.public_dict()
         await self.provider_pool.shutdown()
         if self.observation_ledger is not None:
             await self.observation_ledger.close()
             self.cached_observation_health = await self.observation_ledger.health()
-        set_component_readiness_cache(None)
+        self.component_readiness_cache = None
         logger.info("All resources cleaned up")
 
     def get_app(self) -> Starlette:

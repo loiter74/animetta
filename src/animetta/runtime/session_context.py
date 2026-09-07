@@ -559,6 +559,10 @@ class ServiceContext:
 
     # Lifecycle management
     async def close(self) -> None:
+        """Release this session's resources; pooled engines retain application ownership."""
+        await self.close_session_resources()
+
+    async def close_session_resources(self) -> None:
         """Close and clean up per-session resources.
 
         Shared engines (LLM/TTS/ASR from ServicePool) are NOT closed here

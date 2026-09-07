@@ -7,6 +7,18 @@ import pytest
 from scripts import runtime_lifecycle
 
 
+@pytest.fixture(autouse=True)
+def isolated_compose_environment(monkeypatch) -> None:
+    """Only explicitly configured test inputs may select a lifecycle target."""
+    for name in (
+        *runtime_lifecycle._COMPOSE_TARGET_KEYS,
+        "ANIMETTA_IMAGE",
+        "ANIMETTA_PROFILE",
+    ):
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setattr(runtime_lifecycle, "dotenv_values", lambda _path: {})
+
+
 def test_animetta_up_requires_host_tts_before_build(monkeypatch) -> None:
     commands: list[tuple[list[str], dict[str, str] | None]] = []
     host_calls: list[bool] = []

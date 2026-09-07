@@ -7,11 +7,11 @@ from unittest.mock import AsyncMock
 import pytest
 
 from animetta.core.service_context import ServiceContext
-from animetta.core.service_pool import ServicePool
 from animetta.core.shared_memory_runtime import ConversationTurn, SharedMemoryRuntime
 from animetta.memory.v2.atom import MemoryScope, MemoryVisibility
 from animetta.memory.v2.context import MemoryContext
 from animetta.orchestration.server.session import SessionManager
+from animetta.runtime.provider_pool import ProviderPool
 
 
 class FakeMemorySystem:
@@ -197,15 +197,16 @@ async def test_session_contexts_share_runtime_across_disconnect(
     runtime = SharedMemoryRuntime(system_factory=lambda: system, worker_interval=0.01)
     await runtime.initialize()
 
+    pool = ProviderPool()
     monkeypatch.setattr(
-        ServicePool,
+        pool,
         "get_context",
-        classmethod(lambda cls: {"llm_engine": object(), "tts_engine": None, "asr_engine": None}),
+        lambda: {"llm_engine": object(), "tts_engine": None, "asr_engine": None},
     )
     monkeypatch.setattr(ServiceContext, "init_vad", AsyncMock())
     monkeypatch.setattr(ServiceContext, "init_emotion_analyzer", AsyncMock())
 
-    manager = SessionManager(memory_runtime=runtime)
+    manager = SessionManager(memory_runtime=runtime, provider_pool=pool)
     config = SimpleNamespace(vad=object())
     send = AsyncMock()
 

@@ -17,78 +17,7 @@ from animetta.observability.dto import (
 )
 from animetta.observability.live_dashboard import live_overview, live_turn_detail
 from animetta.observability.ports import ObservationQuery
-from animetta.runtime.provider_pool import default_provider_pool
 from animetta.tools.minecraft.core.tools import read_minecraft_command_activity
-
-# One-release test/import compatibility. Real applications inject their own
-# ProviderPool through Starlette state.
-ServicePool = default_provider_pool
-
-# ── Module-level references for health check enrichment ──────
-_model_manager: Any | None = None
-_runtime_config: Any | None = None
-_component_readiness_cache: Any | None = None
-_checkpoint_readiness: dict[str, object | None] = {
-    "state": "degraded",
-    "ready": False,
-    "degraded": True,
-    "reason": "not_started",
-}
-_auth_session_readiness: dict[str, object | None] = {
-    "state": "failed",
-    "ready": False,
-    "reason": "not_started",
-}
-_auth_user_readiness: dict[str, object | None] = {
-    "state": "failed",
-    "ready": False,
-    "reason": "not_started",
-}
-_frontend_readiness: dict[str, str | bool | None] = {
-    "state": "failed",
-    "ready": False,
-    "reason": "frontend_state_unavailable",
-}
-
-
-def set_model_manager(manager: Any) -> None:
-    """Register the ModelLoadingManager so /health can report model states."""
-    global _model_manager
-    _model_manager = manager
-
-
-def set_runtime_readiness_context(
-    config: Any,
-    frontend: dict[str, str | bool | None],
-) -> None:
-    """Cache lightweight runtime inputs consumed by the /ready endpoint."""
-    global _runtime_config, _frontend_readiness
-    _runtime_config = config
-    _frontend_readiness = dict(frontend)
-
-
-def set_component_readiness_cache(cache: Any | None) -> None:
-    """Register the background-owned local component readiness cache."""
-    global _component_readiness_cache
-    _component_readiness_cache = cache
-
-
-def set_checkpoint_readiness(value: dict[str, object | None]) -> None:
-    """Cache the content-free durable execution status."""
-    global _checkpoint_readiness
-    _checkpoint_readiness = dict(value)
-
-
-def set_auth_session_readiness(value: dict[str, object | None]) -> None:
-    """Cache the dedicated browser-session store status."""
-    global _auth_session_readiness
-    _auth_session_readiness = dict(value)
-
-
-def set_auth_user_readiness(value: dict[str, object | None]) -> None:
-    """Cache the persistent browser-user store status."""
-    global _auth_user_readiness
-    _auth_user_readiness = dict(value)
 
 
 async def stats_overview(request: Request) -> JSONResponse:
@@ -223,14 +152,14 @@ async def health_check(request: Request) -> JSONResponse:
 async def readiness_check(request: Request) -> JSONResponse:
     """Return the cached runtime snapshot without performing network/model I/O."""
     try:
-        provider_pool = getattr(request.app.state, "provider_pool", ServicePool)
-        snapshot = provider_pool.get_readiness_snapshot(
-            config=_runtime_config,
-            model_manager=_model_manager,
-            frontend=_frontend_readiness,
+        runtime = request.app.state.runtime_context
+        snapshot = runtime.provider_pool.get_readiness_snapshot(
+            config=runtime.config,
+            model_manager=runtime.model_manager,
+            frontend=runtime.frontend_readiness,
         )
         payload = snapshot.to_dict()
-        _merge_component_readiness(payload)
+        _merge_component_readiness(payload, runtime)
         return JSONResponse(payload, status_code=200 if payload["ready"] else 503)
     except Exception as exc:
         logger.warning(
@@ -248,22 +177,22 @@ async def readiness_check(request: Request) -> JSONResponse:
         )
 
 
-def _merge_component_readiness(payload: dict[str, Any]) -> None:
+def _merge_component_readiness(payload: dict[str, Any], runtime: Any) -> None:
     """Merge cached local checks into canonical-profile readiness without I/O."""
     if payload.get("profile") not in {"test", "smoke", "selftest", "production"}:
         return
     required = {"memory_runtime"}
-    observation = getattr(_runtime_config, "observability", None)
+    observation = getattr(runtime.config, "observability", None)
     if getattr(observation, "enabled", False):
         required.add("observation_ledger")
         if getattr(getattr(observation, "prometheus", None), "enabled", False):
             required.add("metrics_projection")
-    providers = getattr(_runtime_config, "providers", None)
+    providers = getattr(runtime.config, "providers", None)
     configured_tts = providers.get("tts") if hasattr(providers, "get") else None
     if getattr(configured_tts, "type", None) == "remote":
         required.add("remote_tts")
 
-    if _component_readiness_cache is None:
+    if runtime.component_readiness_cache is None:
         local_snapshot = {
             "age_seconds": None,
             "components": {
@@ -276,13 +205,13 @@ def _merge_component_readiness(payload: dict[str, Any]) -> None:
             },
         }
     else:
-        local_snapshot = _component_readiness_cache.snapshot()
+        local_snapshot = runtime.component_readiness_cache.snapshot()
 
     components = payload.setdefault("components", {})
-    components["checkpoint"] = {**_checkpoint_readiness, "required": False}
-    components["auth_session"] = {**_auth_session_readiness, "required": True}
-    components["auth_user"] = {**_auth_user_readiness, "required": True}
-    payload["degraded"] = _checkpoint_readiness.get("degraded") is True
+    components["checkpoint"] = {**runtime.checkpoint_readiness, "required": False}
+    components["auth_session"] = {**runtime.auth_session_readiness, "required": True}
+    components["auth_user"] = {**runtime.auth_user_readiness, "required": True}
+    payload["degraded"] = runtime.checkpoint_readiness.get("degraded") is True
     local_components = local_snapshot.get("components", {})
     local_ready = True
     for name in required:
@@ -299,8 +228,8 @@ def _merge_component_readiness(payload: dict[str, Any]) -> None:
     payload["ready"] = bool(
         payload.get("ready")
         and local_ready
-        and _auth_session_readiness.get("ready") is True
-        and _auth_user_readiness.get("ready") is True
+        and runtime.auth_session_readiness.get("ready") is True
+        and runtime.auth_user_readiness.get("ready") is True
     )
     payload["status"] = "ready" if payload["ready"] else "not_ready"
 

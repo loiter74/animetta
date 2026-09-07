@@ -13,29 +13,102 @@ from starlette.testclient import TestClient
 from animetta.orchestration.server.stats_api import (
     _get_gpu_info,
     get_stats_routes,
-    set_auth_session_readiness,
-    set_auth_user_readiness,
-    set_component_readiness_cache,
-    set_runtime_readiness_context,
 )
+from animetta.runtime.provider_pool import ProviderPool
 
 # ── Helpers ────────────────────────────────────────────────────────
 
 
-@pytest.fixture(autouse=True)
-def _ready_auth_session_store():
-    set_auth_session_readiness({"state": "ready", "ready": True, "reason": None})
-    set_auth_user_readiness({"state": "ready", "ready": True, "reason": None})
-    yield
+def _runtime_context():
+    return SimpleNamespace(
+        provider_pool=ProviderPool(),
+        config=None,
+        model_manager=None,
+        frontend_readiness={"state": "ready", "ready": True, "reason": None},
+        component_readiness_cache=None,
+        checkpoint_readiness={
+            "state": "degraded",
+            "ready": False,
+            "degraded": True,
+            "reason": "not_started",
+        },
+        auth_session_readiness={"state": "ready", "ready": True, "reason": None},
+        auth_user_readiness={"state": "ready", "ready": True, "reason": None},
+    )
 
 
-def _build_test_app(store_mock=None):
+@pytest.fixture
+def runtime():
+    return _runtime_context()
+
+
+def _build_test_app(runtime, store_mock=None):
     """Build a Starlette app with an injected ObservationQuery."""
     routes = get_stats_routes()
     app = Starlette(routes=routes)
+    app.state.runtime_context = runtime
     if store_mock is not None:
         app.state.observation_query = store_mock
     return app
+
+
+async def test_apps_keep_engines_config_and_readiness_independent():
+    first = _runtime_context()
+    second = _runtime_context()
+    contexts = []
+
+    def context_factory(**_kwargs):
+        context = SimpleNamespace(
+            load_from_config=AsyncMock(),
+            close_session_resources=AsyncMock(),
+            llm_engine=SimpleNamespace(close=AsyncMock()),
+            tts_engine=SimpleNamespace(close=AsyncMock()),
+            asr_engine=SimpleNamespace(close=AsyncMock()),
+            vad_engine=None,
+            memory_system=None,
+            emotion_analyzer=None,
+            audio_processor=None,
+            llm_connectivity_status={"state": "ready", "ready": True, "reason": None},
+        )
+        contexts.append(context)
+        return context
+
+    first.config = SimpleNamespace(system=SimpleNamespace(runtime_profile="development"))
+    second.config = SimpleNamespace(system=SimpleNamespace(runtime_profile="development"))
+    with patch("animetta.runtime.provider_pool.ServiceContext", side_effect=context_factory):
+        await first.provider_pool.init(first.config)
+        await second.provider_pool.init(second.config)
+    first_app, second_app = _build_test_app(first), _build_test_app(second)
+    try:
+        assert first.provider_pool.get_context()["llm_engine"] is contexts[0].llm_engine
+        assert second.provider_pool.get_context()["llm_engine"] is contexts[1].llm_engine
+        assert first.provider_pool._runtime_config is first.config
+        assert second.provider_pool._runtime_config is second.config
+        with TestClient(first_app) as a, TestClient(second_app) as b:
+            assert a.get("/ready").status_code == 200
+            assert b.get("/ready").status_code == 200
+            await first.provider_pool.shutdown()
+            assert a.get("/ready").status_code == 503
+            assert b.get("/ready").status_code == 200
+            contexts[0].llm_engine.close.assert_awaited_once()
+            contexts[1].llm_engine.close.assert_not_awaited()
+            assert second.provider_pool._runtime_config is second.config
+    finally:
+        await first.provider_pool.shutdown()
+        await second.provider_pool.shutdown()
+
+
+def test_ready_without_application_context_remains_unavailable():
+    with TestClient(Starlette(routes=get_stats_routes())) as client:
+        assert client.get("/health").status_code == 200
+        response = client.get("/ready")
+    assert response.status_code == 503
+    assert response.json() == {
+        "status": "not_ready",
+        "ready": False,
+        "service": "anima",
+        "reason": "snapshot_unavailable",
+    }
 
 
 class TestLiveStatsEndpoints:
@@ -241,9 +314,9 @@ def mock_store():
 
 
 @pytest.fixture
-def client(mock_store):
+def client(runtime, mock_store):
     """TestClient with mocked stats store."""
-    app = _build_test_app(mock_store)
+    app = _build_test_app(runtime, mock_store)
     with TestClient(app) as c:
         yield c
 
@@ -269,13 +342,14 @@ class TestHealthEndpoint:
         data = resp.json()
         assert data["service"] == "anima"
 
-    def test_health_does_not_run_component_or_model_probes(self):
+    def test_health_does_not_run_component_or_model_probes(self, runtime):
         """Liveness remains cheap even while readiness work is failing."""
-        with patch(
-            "animetta.orchestration.server.stats_api.ServicePool.get_readiness_snapshot",
+        with patch.object(
+            runtime.provider_pool,
+            "get_readiness_snapshot",
             side_effect=RuntimeError("model readiness must not run"),
         ) as readiness:
-            app = _build_test_app()
+            app = _build_test_app(runtime)
             with TestClient(app) as c:
                 resp = c.get("/health")
 
@@ -285,7 +359,7 @@ class TestHealthEndpoint:
         assert data["service"] == "anima"
         readiness.assert_not_called()
 
-    def test_ready_returns_503_for_pending_preload(self):
+    def test_ready_returns_503_for_pending_preload(self, runtime):
         """Readiness is non-success while the real Qwen preload is pending."""
         snapshot = MagicMock()
         snapshot.to_dict.return_value = {
@@ -297,12 +371,13 @@ class TestHealthEndpoint:
                 "tts": {"state": "loading", "ready": False, "reason": None},
             },
         }
-        with patch(
-            "animetta.orchestration.server.stats_api.ServicePool.get_readiness_snapshot",
+        with patch.object(
+            runtime.provider_pool,
+            "get_readiness_snapshot",
             return_value=snapshot,
             create=True,
         ):
-            app = _build_test_app()
+            app = _build_test_app(runtime)
             with TestClient(app) as c:
                 resp = c.get("/ready")
 
@@ -311,7 +386,7 @@ class TestHealthEndpoint:
         assert data["status"] == "not_ready"
         assert data["components"]["tts"]["state"] == "loading"
 
-    def test_ready_returns_200_for_complete_real_runtime(self):
+    def test_ready_returns_200_for_complete_real_runtime(self, runtime):
         snapshot = MagicMock()
         snapshot.to_dict.return_value = {
             "status": "ready",
@@ -320,12 +395,13 @@ class TestHealthEndpoint:
             "acceptance_eligible": True,
             "components": {},
         }
-        with patch(
-            "animetta.orchestration.server.stats_api.ServicePool.get_readiness_snapshot",
+        with patch.object(
+            runtime.provider_pool,
+            "get_readiness_snapshot",
             return_value=snapshot,
             create=True,
         ):
-            app = _build_test_app()
+            app = _build_test_app(runtime)
             with TestClient(app) as c:
                 resp = c.get("/ready")
 
@@ -338,6 +414,7 @@ class TestHealthEndpoint:
     )
     def test_ready_merges_cached_required_local_component_degradation(
         self,
+        runtime,
         failed_component: str,
     ):
         snapshot = MagicMock()
@@ -370,22 +447,21 @@ class TestHealthEndpoint:
                 prometheus=SimpleNamespace(enabled=True),
             ),
         )
-        set_runtime_readiness_context(
-            config,
-            {"state": "ready", "ready": True, "reason": None},
-        )
-        set_component_readiness_cache(cache)
-        set_auth_session_readiness({"state": "ready", "ready": True, "reason": None})
+        runtime.config = config
+        runtime.frontend_readiness = {"state": "ready", "ready": True, "reason": None}
+        runtime.component_readiness_cache = cache
+        runtime.auth_session_readiness = {"state": "ready", "ready": True, "reason": None}
         try:
-            with patch(
-                "animetta.orchestration.server.stats_api.ServicePool.get_readiness_snapshot",
+            with patch.object(
+                runtime.provider_pool,
+                "get_readiness_snapshot",
                 return_value=snapshot,
             ):
-                app = _build_test_app()
+                app = _build_test_app(runtime)
                 with TestClient(app) as client:
                     response = client.get("/ready")
         finally:
-            set_component_readiness_cache(None)
+            runtime.component_readiness_cache = None
 
         assert response.status_code == 503
         payload = response.json()
@@ -393,7 +469,7 @@ class TestHealthEndpoint:
         assert payload["components"][failed_component]["ready"] is False
 
     @pytest.mark.parametrize("failed_component", ["auth_session", "auth_user"])
-    def test_ready_requires_auth_stores(self, failed_component: str):
+    def test_ready_requires_auth_stores(self, runtime, failed_component: str):
         snapshot = MagicMock()
         snapshot.to_dict.return_value = {
             "status": "ready",
@@ -415,34 +491,33 @@ class TestHealthEndpoint:
                 "age_seconds": 0.1,
             }
         )
-        set_runtime_readiness_context(
-            SimpleNamespace(
-                profile="production",
-                observability=SimpleNamespace(enabled=False),
-                providers={},
-            ),
-            {"state": "ready", "ready": True, "reason": None},
+        runtime.config = SimpleNamespace(
+            profile="production",
+            observability=SimpleNamespace(enabled=False),
+            providers={},
         )
-        set_component_readiness_cache(cache)
+        runtime.frontend_readiness = {"state": "ready", "ready": True, "reason": None}
+        runtime.component_readiness_cache = cache
         failed_readiness = {
             "state": "failed",
             "ready": False,
             "reason": f"{failed_component}_unavailable",
         }
         if failed_component == "auth_session":
-            set_auth_session_readiness(failed_readiness)
+            runtime.auth_session_readiness = failed_readiness
         else:
-            set_auth_user_readiness(failed_readiness)
+            runtime.auth_user_readiness = failed_readiness
         try:
-            with patch(
-                "animetta.orchestration.server.stats_api.ServicePool.get_readiness_snapshot",
+            with patch.object(
+                runtime.provider_pool,
+                "get_readiness_snapshot",
                 return_value=snapshot,
             ):
-                app = _build_test_app()
+                app = _build_test_app(runtime)
                 with TestClient(app) as client:
                     response = client.get("/ready")
         finally:
-            set_component_readiness_cache(None)
+            runtime.component_readiness_cache = None
 
         assert response.status_code == 503
         component = response.json()["components"][failed_component]
@@ -453,13 +528,14 @@ class TestHealthEndpoint:
             "required": True,
         }
 
-    def test_ready_fails_closed_and_redacts_snapshot_errors(self):
-        with patch(
-            "animetta.orchestration.server.stats_api.ServicePool.get_readiness_snapshot",
+    def test_ready_fails_closed_and_redacts_snapshot_errors(self, runtime):
+        with patch.object(
+            runtime.provider_pool,
+            "get_readiness_snapshot",
             side_effect=RuntimeError("https://user:password@example.invalid?api_key=secret"),
             create=True,
         ):
-            app = _build_test_app()
+            app = _build_test_app(runtime)
             with TestClient(app) as c:
                 resp = c.get("/ready")
 
@@ -514,11 +590,11 @@ class TestStatsOverview:
         client.get("/api/stats/overview")
         mock_store.overview.assert_awaited_once()
 
-    def test_overview_returns_500_on_error(self):
+    def test_overview_returns_500_on_error(self, runtime):
         """Overview returns 500 when store raises."""
         failing_store = MagicMock()
         failing_store.overview = AsyncMock(side_effect=RuntimeError("db fail"))
-        app = _build_test_app(failing_store)
+        app = _build_test_app(runtime, failing_store)
         with TestClient(app) as c:
             resp = c.get("/api/stats/overview")
         assert resp.status_code == 500
@@ -570,11 +646,11 @@ class TestStatsTraces:
         client.get("/api/stats/traces")
         mock_store.recent_traces.assert_awaited_once_with(50, 0)
 
-    def test_traces_returns_500_on_error(self):
+    def test_traces_returns_500_on_error(self, runtime):
         """Traces returns 500 when store raises."""
         failing_store = MagicMock()
         failing_store.recent_traces = AsyncMock(side_effect=RuntimeError("db fail"))
-        app = _build_test_app(failing_store)
+        app = _build_test_app(runtime, failing_store)
         with TestClient(app) as c:
             resp = c.get("/api/stats/traces")
         assert resp.status_code == 500
@@ -595,11 +671,11 @@ class TestStatsTraceDetail:
         assert data["trace_id"] == "abc"
         assert data["outcome"] == "success"
 
-    def test_trace_detail_404_when_not_found(self):
+    def test_trace_detail_404_when_not_found(self, runtime):
         """Missing trace returns 404."""
         store = MagicMock()
         store.trace_detail = AsyncMock(return_value=None)
-        app = _build_test_app(store)
+        app = _build_test_app(runtime, store)
         with TestClient(app) as c:
             resp = c.get("/api/stats/traces/missing")
         assert resp.status_code == 404
@@ -622,11 +698,11 @@ class TestStatsTraceTree:
         assert data["content"]["user"]["text"] == "full user text"
         assert data["content"]["assistant"]["text"] == "full assistant text"
 
-    def test_trace_tree_returns_404_when_not_found(self):
+    def test_trace_tree_returns_404_when_not_found(self, runtime):
         """Missing trace tree returns 404."""
         store = MagicMock()
         store.trace_detail = AsyncMock(return_value=None)
-        app = _build_test_app(store)
+        app = _build_test_app(runtime, store)
         with TestClient(app) as c:
             resp = c.get("/api/stats/traces/missing/tree")
         assert resp.status_code == 404
@@ -649,22 +725,22 @@ class TestStatsInspectionLatest:
         assert data["checks"]["observation_ledger"]["ok"] is True
         mock_store.inspection_reports.assert_awaited_once_with(1, 0)
 
-    def test_inspection_latest_returns_404_when_no_report(self):
+    def test_inspection_latest_returns_404_when_no_report(self, runtime):
         """Missing inspection reports return a stable 404 payload."""
         store = MagicMock()
         store.inspection_reports = AsyncMock(return_value=[])
-        app = _build_test_app(store)
+        app = _build_test_app(runtime, store)
         with TestClient(app) as c:
             resp = c.get("/api/stats/inspection/latest")
 
         assert resp.status_code == 404
         assert resp.json() == {"error": "No inspection reports yet"}
 
-    def test_inspection_latest_returns_500_on_store_error(self):
+    def test_inspection_latest_returns_500_on_store_error(self, runtime):
         """Store failures are surfaced as HTTP 500."""
         store = MagicMock()
         store.inspection_reports = AsyncMock(side_effect=RuntimeError("db fail"))
-        app = _build_test_app(store)
+        app = _build_test_app(runtime, store)
         with TestClient(app) as c:
             resp = c.get("/api/stats/inspection/latest")
 

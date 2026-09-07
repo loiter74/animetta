@@ -411,6 +411,7 @@ def _contracts(
     operation: str,
     *,
     image: str | None = None,
+    http_base_url: str = "http://localhost",
 ) -> tuple[LifecycleStepContract, ...]:
     definitions: tuple[_LifecycleStepDefinition, ...]
     if operation == "anima-up":
@@ -428,8 +429,9 @@ def _contracts(
                 ("docker", "compose", "up", "-d", "--no-build", "animetta"),
                 None,
             ),
-            ("animetta-health", LifecycleStepKind.HTTP_CHECK, (), "http://localhost/health"),
-            ("frontend-readiness", LifecycleStepKind.HTTP_CHECK, (), "http://localhost"),
+            ("animetta-health", LifecycleStepKind.HTTP_CHECK, (), f"{http_base_url}/health"),
+            ("animetta-ready", LifecycleStepKind.HTTP_CHECK, (), f"{http_base_url}/ready"),
+            ("frontend-readiness", LifecycleStepKind.HTTP_CHECK, (), http_base_url),
             (
                 "default-log-check",
                 LifecycleStepKind.LOG_CHECK,
@@ -460,9 +462,9 @@ def _contracts(
                 ("docker", "compose", "up", "-d", "--no-build", "animetta"),
                 None,
             ),
-            ("animetta-health", LifecycleStepKind.HTTP_CHECK, (), "http://localhost/health"),
-            ("animetta-ready", LifecycleStepKind.HTTP_CHECK, (), "http://localhost/ready"),
-            ("frontend-readiness", LifecycleStepKind.HTTP_CHECK, (), "http://localhost"),
+            ("animetta-health", LifecycleStepKind.HTTP_CHECK, (), f"{http_base_url}/health"),
+            ("animetta-ready", LifecycleStepKind.HTTP_CHECK, (), f"{http_base_url}/ready"),
+            ("frontend-readiness", LifecycleStepKind.HTTP_CHECK, (), http_base_url),
             (
                 "default-log-check",
                 LifecycleStepKind.LOG_CHECK,
@@ -530,8 +532,9 @@ def freeze_lifecycle_plan(
     input_fingerprint: str,
     run_id: str | None = None,
     image: str | None = None,
+    http_base_url: str = "http://localhost",
 ) -> FrozenLifecyclePlan:
-    steps = _contracts(operation, image=image)
+    steps = _contracts(operation, image=image, http_base_url=http_base_url)
     plan = ExecutionPlanManifest(
         run_id=run_id or f"{operation}-plan",
         input_fingerprint=input_fingerprint,

@@ -6,10 +6,9 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 from animetta.config.manifest import EffectiveConfig, load_effective_config
-from animetta.core.service_pool import ServicePool
-from animetta.orchestration.server import stats_api
 from animetta.orchestration.server.session import SessionManager
 from animetta.orchestration.server.websocket import create_server
+from animetta.runtime.provider_pool import ProviderPool
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
@@ -44,16 +43,32 @@ def test_run_002_server_holders_share_one_effective_config_object(
     assert server.runtime_reloader.config is effective_config
     assert server.route_handlers is not None
     assert server.route_handlers.global_config is effective_config
-    assert server.provider_pool._state._runtime_config is effective_config
-    assert stats_api._runtime_config is effective_config
+    assert server.provider_pool._runtime_config is effective_config
+    assert server.asgi_app.state.runtime_context.config is effective_config
     assert server.inspection_runtime().readiness_snapshot().profile == "test"
+
+
+def test_two_servers_reload_only_their_own_application_context(effective_config):
+    first, second = create_server(effective_config), create_server(effective_config)
+    changed = effective_config.model_copy(deep=True)
+    first.set_config(changed)
+    assert first.asgi_app.state.runtime_context is first
+    assert second.asgi_app.state.runtime_context is second
+    assert first.provider_pool is not second.provider_pool
+    assert first.config is changed
+    assert first.provider_pool._runtime_config is changed
+    assert second.config is effective_config
+    assert second.provider_pool._runtime_config is effective_config
+    first.auth_session_readiness["ready"] = True
+    assert second.auth_session_readiness["ready"] is False
 
 
 @pytest.mark.asyncio
 async def test_run_003_new_session_inherits_config_version_and_hash(
     effective_config: EffectiveConfig,
 ) -> None:
-    manager = SessionManager()
+    pool = ProviderPool()
+    manager = SessionManager(provider_pool=pool)
     pooled = {
         "llm_engine": object(),
         "tts_engine": object(),
@@ -61,7 +76,7 @@ async def test_run_003_new_session_inherits_config_version_and_hash(
     }
 
     with (
-        patch.object(ServicePool, "get_context", return_value=pooled),
+        patch.object(pool, "get_context", return_value=pooled),
         patch(
             "animetta.runtime.session_context.ServiceContext.init_vad",
             new=AsyncMock(),

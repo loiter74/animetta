@@ -27,6 +27,24 @@ from tooling.execution_feedback.lifecycle import (
 NOW = datetime(2026, 8, 8, tzinfo=UTC)
 
 
+@pytest.fixture(autouse=True)
+def isolated_compose_environment(monkeypatch) -> None:
+    """Ignore the workspace dotenv while retaining explicit temporary dotenv tests."""
+    for name in (
+        *runtime_lifecycle._COMPOSE_TARGET_KEYS,
+        "ANIMETTA_IMAGE",
+        "ANIMETTA_PROFILE",
+    ):
+        monkeypatch.delenv(name, raising=False)
+    workspace_dotenv = runtime_lifecycle.ROOT / ".env"
+    read_dotenv = runtime_lifecycle.dotenv_values
+    monkeypatch.setattr(
+        runtime_lifecycle,
+        "dotenv_values",
+        lambda path: {} if path == workspace_dotenv else read_dotenv(path),
+    )
+
+
 class FakeBuildDriver:
     def __init__(self) -> None:
         self.launches = 0
@@ -101,6 +119,7 @@ def test_anima_feedback_plan_contains_every_protocol_stage_under_its_own_step() 
         "animetta-build",
         "animetta-start",
         "animetta-health",
+        "animetta-ready",
         "frontend-readiness",
         "default-log-check",
     )
@@ -111,6 +130,7 @@ def test_anima_feedback_plan_contains_every_protocol_stage_under_its_own_step() 
         LifecycleStepKind.COMMAND,
         LifecycleStepKind.BUILD,
         LifecycleStepKind.COMMAND,
+        LifecycleStepKind.HTTP_CHECK,
         LifecycleStepKind.HTTP_CHECK,
         LifecycleStepKind.HTTP_CHECK,
         LifecycleStepKind.LOG_CHECK,
@@ -351,6 +371,122 @@ def test_cleanup_is_one_bounded_animetta_action() -> None:
     assert cleanup.budget.action_seconds == 240
 
 
+async def test_isolated_lifecycle_keeps_compose_http_and_image_on_one_target(
+    monkeypatch, tmp_path
+) -> None:
+    monkeypatch.setenv("COMPOSE_PROJECT_NAME", "anima-core-opt-test")
+    monkeypatch.setenv("ANIMETTA_HTTP_PORT", "18080")
+    monkeypatch.setenv("ANIMETTA_PORT", "22394")
+    monkeypatch.setenv("ANIMETTA_PROFILE", "smoke")
+    monkeypatch.delenv("ANIMETTA_IMAGE", raising=False)
+    monkeypatch.setattr(runtime_lifecycle, "dotenv_values", lambda _path: {})
+    monkeypatch.setattr(runtime_lifecycle, "_animetta_access_token", lambda: "runtime-secret")
+    driver = FakeLifecycleDriver()
+    build = FakeBuildDriver()
+    build.running = False
+    build.exit_code = 0
+    environments = []
+
+    def make_build_driver(**kwargs):
+        environments.append(kwargs["environment"])
+        return build
+
+    def make_lifecycle_driver(**kwargs):
+        environments.append(kwargs["environment"])
+        assert kwargs["access_token"] == "runtime-secret"
+        return driver
+
+    monkeypatch.setattr(runtime_lifecycle, "_SystemLifecycleDriver", make_lifecycle_driver)
+    monkeypatch.setattr(
+        "tooling.execution_feedback.lifecycle.LeasedSubprocessBuildDriver", make_build_driver
+    )
+    for _attempt in range(2):
+        status = await runtime_lifecycle.run_bounded_operation(
+            "anima-up", run_id="isolated-start", artifacts_root=tmp_path
+        )
+        if status == 0:
+            break
+        assert status == 2
+    assert status == 0
+    assert build.launches == 1
+    assert driver.http_targets == [
+        "http://localhost:18080/health",
+        "http://localhost:18080/ready",
+        "http://localhost:18080",
+    ]
+    assert environments
+    for environment in environments:
+        assert environment == {
+            "COMPOSE_PROJECT_NAME": "anima-core-opt-test",
+            "ANIMETTA_HTTP_PORT": "18080",
+            "ANIMETTA_PORT": "22394",
+            "ANIMETTA_IMAGE": "animetta:anima-core-opt-test",
+            "ANIMETTA_PROFILE": "smoke",
+        }
+
+
+@pytest.mark.parametrize(
+    ("name", "value"),
+    [
+        ("COMPOSE_PROJECT_NAME", "another-project"),
+        ("ANIMETTA_HTTP_PORT", "18081"),
+        ("ANIMETTA_PORT", "22395"),
+        ("ANIMETTA_IMAGE", "animetta:another-isolated-build"),
+    ],
+)
+def test_target_change_invalidates_lifecycle_and_build_reuse(monkeypatch, name, value) -> None:
+    monkeypatch.setattr(runtime_lifecycle, "dotenv_values", lambda _path: {})
+    monkeypatch.setenv("COMPOSE_PROJECT_NAME", "anima-core-opt-test")
+    monkeypatch.setenv("ANIMETTA_HTTP_PORT", "18080")
+    monkeypatch.setenv("ANIMETTA_PORT", "22394")
+    monkeypatch.setenv("ANIMETTA_IMAGE", "animetta:isolated-build")
+    before = runtime_lifecycle._compose_environment(profile="smoke")
+    before_fingerprint = _bounded_fingerprint("anima-up", image=None, profile="smoke")
+    monkeypatch.setenv(name, value)
+    after = runtime_lifecycle._compose_environment(profile="smoke")
+    assert _bounded_fingerprint("anima-up", image=None, profile="smoke") != before_fingerprint
+    assert runtime_lifecycle._build_command_digest(
+        runtime_lifecycle._ANIMETTA_BUILD_COMMAND,
+        environment=before,
+        input_fingerprint="a" * 64,
+    ) != runtime_lifecycle._build_command_digest(
+        runtime_lifecycle._ANIMETTA_BUILD_COMMAND,
+        environment=after,
+        input_fingerprint="a" * 64,
+    )
+
+
+def test_isolated_project_rejects_retagging_the_formal_image(monkeypatch) -> None:
+    monkeypatch.setenv("COMPOSE_PROJECT_NAME", "anima-core-opt-test")
+    monkeypatch.setenv("ANIMETTA_IMAGE", "animetta:local")
+    with pytest.raises(ValueError, match="own ANIMETTA_IMAGE"):
+        runtime_lifecycle._compose_environment()
+
+
+def test_compose_dotenv_target_is_frozen_with_process_values_taking_precedence(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        runtime_lifecycle,
+        "dotenv_values",
+        lambda _path: {
+            "COMPOSE_PROJECT_NAME": "anima-core-opt-test",
+            "ANIMETTA_HTTP_PORT": "18080",
+            "ANIMETTA_PORT": "22394",
+            "ANIMETTA_ACCESS_TOKEN": "must-not-be-copied",
+        },
+    )
+    for name in (*runtime_lifecycle._COMPOSE_TARGET_KEYS, "ANIMETTA_IMAGE"):
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setenv("ANIMETTA_HTTP_PORT", "18081")
+    environment = runtime_lifecycle._compose_environment()
+    assert environment["ANIMETTA_HTTP_PORT"] == "18081"
+    assert environment["COMPOSE_PROJECT_NAME"] == "anima-core-opt-test"
+    assert environment["ANIMETTA_IMAGE"] == "animetta:anima-core-opt-test"
+    assert "ANIMETTA_ACCESS_TOKEN" not in environment
+    assert runtime_lifecycle._http_base_url(environment) == "http://localhost:18081"
+
+
 def test_host_ai_operations_have_bounded_plans() -> None:
     expected_steps = {
         "host-tts-up": ("host-tts-start", "host-tts-preflight"),
@@ -385,7 +521,11 @@ def test_injected_lifecycle_executor_checks_start_http_and_app_logs(
 
     assert all(result.status is FeedbackStatus.PASSED for result in results)
     assert ("docker", "compose", "up", "-d", "--no-build", "animetta") in driver.commands
-    assert driver.http_targets == ["http://localhost/health", "http://localhost"]
+    assert driver.http_targets == [
+        "http://localhost/health",
+        "http://localhost/ready",
+        "http://localhost",
+    ]
     assert driver.log_commands == [("docker", "compose", "logs", "animetta")]
 
 
@@ -607,16 +747,18 @@ def test_http_body_contract_distinguishes_health_and_readiness() -> None:
     )
 
 
+@pytest.mark.parametrize("base_url", ["http://localhost", "http://localhost:18080"])
 def test_system_lifecycle_authenticates_only_the_protected_readiness_check(
     monkeypatch,
     tmp_path,
+    base_url: str,
 ) -> None:
     access_token = "runtime-secret"
     requests: list[tuple[str, str | None]] = []
     bodies = {
-        "http://localhost/health": '{"status":"ok"}',
-        "http://localhost/ready": (f'{{"ready":true,"unexpected_echo":"{access_token}"}}'),
-        "http://localhost": "<!doctype html><title>Animetta</title>",
+        f"{base_url}/health": '{"status":"ok"}',
+        f"{base_url}/ready": (f'{{"ready":true,"unexpected_echo":"{access_token}"}}'),
+        base_url: "<!doctype html><title>Animetta</title>",
     }
 
     class FakeResponse:
@@ -650,9 +792,9 @@ def test_system_lifecycle_authenticates_only_the_protected_readiness_check(
         assert result.succeeded is True
 
     assert requests == [
-        ("http://localhost/health", None),
-        ("http://localhost/ready", f"Bearer {access_token}"),
-        ("http://localhost", None),
+        (f"{base_url}/health", None),
+        (f"{base_url}/ready", f"Bearer {access_token}"),
+        (base_url, None),
     ]
     assert all(access_token not in path.read_text(encoding="utf-8") for path in tmp_path.iterdir())
     assert "[REDACTED]" in "\n".join(

@@ -9,8 +9,8 @@ import pytest
 
 from animetta.core.model_loading_manager import ModelLoadingManager
 from animetta.core.service_context import ServiceContext
-from animetta.core.service_pool import ServicePool
 from animetta.observability.service_proxy import InstrumentedServiceProxy
+from animetta.runtime.provider_pool import ProviderPool
 from animetta.services.llm.mock_llm import MockLLM
 from animetta.services.llm.openai_llm import OpenAILLM
 from animetta.services.tts.mock_tts import MockTTS
@@ -95,42 +95,20 @@ def _manager(tts_state: str = "loaded") -> SimpleNamespace:
     return SimpleNamespace(get_status=lambda: {"tts": tts_state})
 
 
+@pytest.fixture
+def pool():
+    return ProviderPool()
+
+
 @pytest.fixture(autouse=True)
-def _reset_pool_state() -> None:
+def _reset_connectivity_cache(monkeypatch):
     from animetta.inspection.checks import health as health_checks
 
-    previous_connectivity_cache = dict(health_checks._llm_connectivity_cache)
-    health_checks._llm_connectivity_cache = {"ok": None, "status": "pending"}
-    ServicePool._llm = None
-    ServicePool._tts = None
-    ServicePool._asr = None
-    ServicePool._ready = False
-    ServicePool._ctx = None
-    for name, value in (
-        ("_runtime_config", None),
-        ("_model_manager", None),
-        ("_init_state", "pending"),
-        ("_init_error", None),
-        ("_initializing_task", None),
-        ("_shutdown_task", None),
-        ("_shutdown_requested", False),
-        ("_shutdown_errors", ()),
-        (
-            "_llm_connectivity",
-            {"state": "pending", "ready": False, "reason": None},
-        ),
-    ):
-        setattr(ServicePool, name, value)
-    yield
-    ServicePool._llm = None
-    ServicePool._tts = None
-    ServicePool._asr = None
-    ServicePool._ready = False
-    ServicePool._ctx = None
-    health_checks._llm_connectivity_cache = previous_connectivity_cache
+    monkeypatch.setattr(health_checks, "_llm_connectivity_cache", {"ok": None, "status": "pending"})
 
 
 def _seed_pool(
+    pool,
     *,
     config: SimpleNamespace | None = None,
     llm: object | None = None,
@@ -140,12 +118,12 @@ def _seed_pool(
 ) -> tuple[SimpleNamespace, object]:
     active_config = config or _config()
     active_manager = manager or _manager()
-    ServicePool._runtime_config = active_config
-    ServicePool._model_manager = active_manager
-    ServicePool._init_state = "ready"
-    ServicePool._llm = llm or _DeepSeek()
-    ServicePool._tts = tts or _AliceQwen()
-    ServicePool._llm_connectivity = connectivity or {
+    pool._runtime_config = active_config
+    pool._model_manager = active_manager
+    pool._init_state = "ready"
+    pool._llm = llm or _DeepSeek()
+    pool._tts = tts or _AliceQwen()
+    pool._llm_connectivity = connectivity or {
         "state": "ready",
         "ready": True,
         "reason": None,
@@ -155,12 +133,13 @@ def _seed_pool(
 
 
 def _snapshot(
+    pool,
     *,
     config: SimpleNamespace | None = None,
     manager: object | None = None,
     frontend_ready: bool = True,
 ) -> dict[str, object]:
-    snapshot = ServicePool.get_readiness_snapshot(
+    snapshot = pool.get_readiness_snapshot(
         config=config,
         model_manager=manager,
         frontend=_frontend(frontend_ready),
@@ -168,10 +147,10 @@ def _snapshot(
     return snapshot.to_dict()
 
 
-def test_golden_snapshot_is_ready_only_for_real_deepseek_and_alice() -> None:
-    config, manager = _seed_pool()
+def test_golden_snapshot_is_ready_only_for_real_deepseek_and_alice(pool) -> None:
+    config, manager = _seed_pool(pool)
 
-    payload = _snapshot(config=config, manager=manager)
+    payload = _snapshot(pool, config=config, manager=manager)
 
     assert payload["ready"] is True
     assert payload["status"] == "ready"
@@ -202,25 +181,26 @@ def test_golden_snapshot_is_ready_only_for_real_deepseek_and_alice() -> None:
 
 
 @pytest.mark.parametrize("state", ["pending", "loading", "closing", "closed"])
-def test_golden_snapshot_rejects_non_ready_qwen_lifecycle(state: str) -> None:
-    config, manager = _seed_pool(tts=_AliceQwen(state))
+def test_golden_snapshot_rejects_non_ready_qwen_lifecycle(pool, state: str) -> None:
+    config, manager = _seed_pool(pool, tts=_AliceQwen(state))
 
-    payload = _snapshot(config=config, manager=manager)
+    payload = _snapshot(pool, config=config, manager=manager)
 
     assert payload["ready"] is False
     assert payload["components"]["tts"]["state"] == state
     assert payload["components"]["tts"]["ready"] is False
 
 
-def test_golden_snapshot_rejects_failed_preload_without_leaking_error() -> None:
+def test_golden_snapshot_rejects_failed_preload_without_leaking_error(pool) -> None:
     config, manager = _seed_pool(
+        pool,
         tts=_AliceQwen(
             "failed",
             error="https://user:password@example.invalid?api_key=secret",
-        )
+        ),
     )
 
-    payload = _snapshot(config=config, manager=manager)
+    payload = _snapshot(pool, config=config, manager=manager)
 
     assert payload["ready"] is False
     assert payload["components"]["tts"]["reason"] == "preload_failed"
@@ -229,16 +209,17 @@ def test_golden_snapshot_rejects_failed_preload_without_leaking_error() -> None:
     assert "api_key" not in serialized
 
 
-def test_golden_snapshot_rejects_connectivity_failure() -> None:
+def test_golden_snapshot_rejects_connectivity_failure(pool) -> None:
     config, manager = _seed_pool(
+        pool,
         connectivity={
             "state": "failed",
             "ready": False,
             "reason": "request_failed",
-        }
+        },
     )
 
-    payload = _snapshot(config=config, manager=manager)
+    payload = _snapshot(pool, config=config, manager=manager)
 
     assert payload["ready"] is False
     assert payload["components"]["llm"]["reason"] == "request_failed"
@@ -253,26 +234,27 @@ def test_golden_snapshot_rejects_connectivity_failure() -> None:
     ],
 )
 def test_golden_snapshot_rejects_missing_or_non_deepseek_endpoint(
+    pool,
     endpoint: str | None,
     reason: str,
 ) -> None:
     llm = _DeepSeek()
     llm.base_url = endpoint
-    config, manager = _seed_pool(llm=llm)
+    config, manager = _seed_pool(pool, llm=llm)
 
-    payload = _snapshot(config=config, manager=manager)
+    payload = _snapshot(pool, config=config, manager=manager)
 
     assert payload["ready"] is False
     assert payload["components"]["llm"]["reason"] == reason
     assert "api.openai.com" not in json.dumps(payload)
 
 
-def test_golden_snapshot_rejects_configured_and_engine_endpoint_mismatch() -> None:
+def test_golden_snapshot_rejects_configured_and_engine_endpoint_mismatch(pool) -> None:
     llm = _DeepSeek()
     llm.base_url = "https://api.deepseek.com"
-    config, manager = _seed_pool(llm=llm)
+    config, manager = _seed_pool(pool, llm=llm)
 
-    payload = _snapshot(config=config, manager=manager)
+    payload = _snapshot(pool, config=config, manager=manager)
 
     assert payload["ready"] is False
     assert payload["components"]["llm"]["reason"] == "endpoint_mismatch"
@@ -280,23 +262,26 @@ def test_golden_snapshot_rejects_configured_and_engine_endpoint_mismatch() -> No
 
 @pytest.mark.parametrize("identity", [None, "openai"])
 def test_golden_snapshot_requires_factory_bound_deepseek_identity(
+    pool,
     identity: str | None,
 ) -> None:
     llm = _DeepSeek()
     llm._provider_identity = identity
-    config, manager = _seed_pool(llm=llm)
+    config, manager = _seed_pool(pool, llm=llm)
 
-    payload = _snapshot(config=config, manager=manager)
+    payload = _snapshot(pool, config=config, manager=manager)
 
     assert payload["ready"] is False
     assert payload["components"]["llm"]["reason"] == "provider_identity"
 
 
 @pytest.mark.parametrize("state", ["pending", "loading"])
-def test_golden_snapshot_preserves_pending_connectivity_state(state: str) -> None:
-    config, manager = _seed_pool(connectivity={"state": state, "ready": False, "reason": None})
+def test_golden_snapshot_preserves_pending_connectivity_state(pool, state: str) -> None:
+    config, manager = _seed_pool(
+        pool, connectivity={"state": state, "ready": False, "reason": None}
+    )
 
-    payload = _snapshot(config=config, manager=manager)
+    payload = _snapshot(pool, config=config, manager=manager)
 
     assert payload["ready"] is False
     assert payload["components"]["llm"]["state"] == state
@@ -311,13 +296,14 @@ def test_golden_snapshot_preserves_pending_connectivity_state(state: str) -> Non
     ],
 )
 def test_golden_snapshot_rejects_wrong_concrete_provider_type(
+    pool,
     llm: object,
     tts: object,
     component: str,
 ) -> None:
-    config, manager = _seed_pool(llm=llm, tts=tts)
+    config, manager = _seed_pool(pool, llm=llm, tts=tts)
 
-    payload = _snapshot(config=config, manager=manager)
+    payload = _snapshot(pool, config=config, manager=manager)
 
     assert payload["ready"] is False
     assert payload["components"][component]["reason"] == "unexpected_provider"
@@ -345,22 +331,23 @@ def test_golden_snapshot_rejects_wrong_concrete_provider_type(
     ],
 )
 def test_golden_snapshot_rejects_nested_tracing_mock(
+    pool,
     llm: object,
     tts: object,
     component: str,
 ) -> None:
-    config, manager = _seed_pool(llm=llm, tts=tts)
+    config, manager = _seed_pool(pool, llm=llm, tts=tts)
 
-    payload = _snapshot(config=config, manager=manager)
+    payload = _snapshot(pool, config=config, manager=manager)
 
     assert payload["ready"] is False
     assert payload["components"][component]["reason"] == "unexpected_mock"
 
 
-def test_golden_snapshot_fails_closed_when_preload_status_raises() -> None:
-    config, manager = _seed_pool(tts=_BrokenAliceQwen())
+def test_golden_snapshot_fails_closed_when_preload_status_raises(pool) -> None:
+    config, manager = _seed_pool(pool, tts=_BrokenAliceQwen())
 
-    payload = _snapshot(config=config, manager=manager)
+    payload = _snapshot(pool, config=config, manager=manager)
 
     assert payload["ready"] is False
     assert payload["components"]["tts"]["reason"] == "preload_status_unavailable"
@@ -368,7 +355,7 @@ def test_golden_snapshot_fails_closed_when_preload_status_raises() -> None:
 
 
 @pytest.mark.parametrize("field", ["ref_audio_path", "ref_text"])
-def test_golden_snapshot_rejects_alice_asset_binding_drift(field: str) -> None:
+def test_golden_snapshot_rejects_alice_asset_binding_drift(pool, field: str) -> None:
     tts = _AliceQwen()
     setattr(
         tts,
@@ -379,9 +366,9 @@ def test_golden_snapshot_rejects_alice_asset_binding_drift(field: str) -> None:
             else "a different transcript that must never be serialized"
         ),
     )
-    config, manager = _seed_pool(tts=tts)
+    config, manager = _seed_pool(pool, tts=tts)
 
-    payload = _snapshot(config=config, manager=manager)
+    payload = _snapshot(pool, config=config, manager=manager)
 
     assert payload["ready"] is False
     assert payload["components"]["tts"]["reason"] == "alice_asset_mismatch"
@@ -390,21 +377,21 @@ def test_golden_snapshot_rejects_alice_asset_binding_drift(field: str) -> None:
     assert "different transcript" not in serialized
 
 
-def test_golden_snapshot_accepts_normalized_equivalent_alice_path() -> None:
+def test_golden_snapshot_accepts_normalized_equivalent_alice_path(pool) -> None:
     tts = _AliceQwen()
     tts.ref_audio_path = "config/personas/voices/alice_ref.wav"
-    config, manager = _seed_pool(tts=tts)
+    config, manager = _seed_pool(pool, tts=tts)
     config.tts.ref_audio_path = "config/personas/voices/../voices/alice_ref.wav"
 
-    payload = _snapshot(config=config, manager=manager)
+    payload = _snapshot(pool, config=config, manager=manager)
 
     assert payload["ready"] is True
 
 
-def test_golden_snapshot_requires_cached_frontend_assets() -> None:
-    config, manager = _seed_pool()
+def test_golden_snapshot_requires_cached_frontend_assets(pool) -> None:
+    config, manager = _seed_pool(pool)
 
-    payload = _snapshot(config=config, manager=manager, frontend_ready=False)
+    payload = _snapshot(pool, config=config, manager=manager, frontend_ready=False)
 
     assert payload["ready"] is False
     assert payload["components"]["frontend"] == {
@@ -415,14 +402,14 @@ def test_golden_snapshot_requires_cached_frontend_assets() -> None:
     }
 
 
-def test_golden_snapshot_is_pending_before_pool_initialization() -> None:
+def test_golden_snapshot_is_pending_before_pool_initialization(pool) -> None:
     config = _config()
     manager = _manager("unloaded")
-    ServicePool._runtime_config = config
-    ServicePool._model_manager = manager
-    ServicePool._init_state = "pending"
+    pool._runtime_config = config
+    pool._model_manager = manager
+    pool._init_state = "pending"
 
-    payload = _snapshot(config=config, manager=manager)
+    payload = _snapshot(pool, config=config, manager=manager)
 
     assert payload["ready"] is False
     assert payload["components"]["pool"] == {
@@ -432,12 +419,12 @@ def test_golden_snapshot_is_pending_before_pool_initialization() -> None:
     }
 
 
-def test_golden_snapshot_sanitizes_arbitrary_initialization_error() -> None:
-    config, manager = _seed_pool()
-    ServicePool._init_state = "failed"
-    ServicePool._init_error = "https://user:password@example.invalid?api_key=super-secret"
+def test_golden_snapshot_sanitizes_arbitrary_initialization_error(pool) -> None:
+    config, manager = _seed_pool(pool)
+    pool._init_state = "failed"
+    pool._init_error = "https://user:password@example.invalid?api_key=super-secret"
 
-    payload = _snapshot(config=config, manager=manager)
+    payload = _snapshot(pool, config=config, manager=manager)
 
     assert payload["components"]["pool"]["reason"] == "initialization_failed"
     serialized = json.dumps(payload)
@@ -445,15 +432,16 @@ def test_golden_snapshot_sanitizes_arbitrary_initialization_error() -> None:
     assert "super-secret" not in serialized
 
 
-def test_development_snapshot_allows_explicit_mocks_but_is_not_acceptance_evidence() -> None:
+def test_development_snapshot_allows_explicit_mocks_but_is_not_acceptance_evidence(pool) -> None:
     config = _config(profile="development")
     config.services.agent = "mock"
     config.services.tts = "mock"
     manager = _manager("unloaded")
-    _seed_pool(config=config, llm=MockLLM(), tts=MockTTS(), manager=manager)
-    ServicePool._ready = True
+    _seed_pool(pool, config=config, llm=MockLLM(), tts=MockTTS(), manager=manager)
+    pool._ready = True
 
     payload = _snapshot(
+        pool,
         config=config,
         manager=manager,
         frontend_ready=False,
@@ -465,7 +453,7 @@ def test_development_snapshot_allows_explicit_mocks_but_is_not_acceptance_eviden
     assert payload["components"]["frontend"]["required"] is False
 
 
-def test_development_snapshot_exposes_instrumented_provider_identity() -> None:
+def test_development_snapshot_exposes_instrumented_provider_identity(pool) -> None:
     config = _config(profile="development")
     config.services.agent = "deepseek"
     config.services.tts = "mimo"
@@ -484,10 +472,10 @@ def test_development_snapshot_exposes_instrumented_provider_identity() -> None:
         model="mimo-v2.5-tts",
     )
     manager = _manager("unloaded")
-    _seed_pool(config=config, llm=llm, tts=tts, manager=manager)
-    ServicePool._ready = True
+    _seed_pool(pool, config=config, llm=llm, tts=tts, manager=manager)
+    pool._ready = True
 
-    payload = _snapshot(config=config, manager=manager, frontend_ready=False)
+    payload = _snapshot(pool, config=config, manager=manager, frontend_ready=False)
 
     assert payload["components"]["llm"] == {
         "state": "ready",
@@ -620,7 +608,7 @@ async def test_service_context_close_cancels_inflight_connectivity_probe() -> No
     task = asyncio.create_task(blocker.wait())
     context._llm_connectivity_task = task
 
-    await context.close()
+    await context.close_session_resources()
 
     assert task.cancelled()
     assert context._llm_connectivity_task is None
@@ -632,7 +620,7 @@ async def test_service_context_close_cancels_inflight_model_warmup() -> None:
     task = asyncio.create_task(blocker.wait())
     context._model_warmup_task = task
 
-    await context.close()
+    await context.close_session_resources()
 
     assert task.cancelled()
     assert context._model_warmup_task is None
@@ -663,7 +651,7 @@ async def test_concurrent_model_warmups_run_each_loader_once() -> None:
     assert manager.get_status() == {"tts": "loaded"}
 
 
-async def test_golden_pool_awaits_warmup_and_connectivity_before_ready() -> None:
+async def test_golden_pool_awaits_warmup_and_connectivity_before_ready(pool) -> None:
     config = _config()
     llm = _DeepSeek()
     tts = _AliceQwen()
@@ -692,14 +680,14 @@ async def test_golden_pool_awaits_warmup_and_connectivity_before_ready() -> None
         "animetta.runtime.provider_pool.ServiceContext",
         return_value=context,
     ):
-        await ServicePool.init(config, model_manager=manager)
+        await pool.init(config, model_manager=manager)
 
     manager.warmup.assert_awaited_once_with()
     context.wait_for_llm_connectivity.assert_awaited_once_with()
-    assert ServicePool.is_ready() is True
+    assert pool.is_ready() is True
 
 
-async def test_golden_pool_retains_failed_connectivity_as_not_ready() -> None:
+async def test_golden_pool_retains_failed_connectivity_as_not_ready(pool) -> None:
     config = _config()
     context = MagicMock()
     context.llm_engine = _DeepSeek()
@@ -725,14 +713,14 @@ async def test_golden_pool_retains_failed_connectivity_as_not_ready() -> None:
         "animetta.runtime.provider_pool.ServiceContext",
         return_value=context,
     ):
-        await ServicePool.init(config, model_manager=manager)
+        await pool.init(config, model_manager=manager)
 
-    assert ServicePool.is_ready() is False
-    payload = _snapshot(config=config, manager=manager)
+    assert pool.is_ready() is False
+    payload = _snapshot(pool, config=config, manager=manager)
     assert payload["components"]["llm"]["reason"] == "request_failed"
 
 
-async def test_repeated_init_does_not_replace_initialized_but_unready_golden_pool() -> None:
+async def test_repeated_init_does_not_replace_initialized_but_unready_golden_pool(pool) -> None:
     config = _config()
     context = MagicMock()
     context.llm_engine = _DeepSeek()
@@ -758,17 +746,17 @@ async def test_repeated_init_does_not_replace_initialized_but_unready_golden_poo
         "animetta.runtime.provider_pool.ServiceContext",
         return_value=context,
     ) as context_class:
-        await ServicePool.init(config, model_manager=manager)
-        first_llm = ServicePool._llm
-        await ServicePool.init(config, model_manager=manager)
+        await pool.init(config, model_manager=manager)
+        first_llm = pool._llm
+        await pool.init(config, model_manager=manager)
 
     context_class.assert_called_once_with(model_manager=manager)
     context.load_from_config.assert_awaited_once_with(config, initialize_memory=False)
-    assert ServicePool._llm is first_llm
-    assert ServicePool.is_ready() is False
+    assert pool._llm is first_llm
+    assert pool.is_ready() is False
 
 
-async def test_concurrent_pool_init_shares_one_initialization_task() -> None:
+async def test_concurrent_pool_init_shares_one_initialization_task(pool) -> None:
     config = _config(profile="development")
     entered = asyncio.Event()
     release = asyncio.Event()
@@ -797,9 +785,9 @@ async def test_concurrent_pool_init_shares_one_initialization_task() -> None:
         "animetta.runtime.provider_pool.ServiceContext",
         return_value=context,
     ) as context_class:
-        first = asyncio.create_task(ServicePool.init(config))
+        first = asyncio.create_task(pool.init(config))
         await entered.wait()
-        second = asyncio.create_task(ServicePool.init(config))
+        second = asyncio.create_task(pool.init(config))
         await asyncio.sleep(0)
         release.set()
         await asyncio.gather(first, second)
@@ -809,7 +797,7 @@ async def test_concurrent_pool_init_shares_one_initialization_task() -> None:
 
 
 @pytest.mark.parametrize("stage", ["load", "warmup", "connectivity"])
-async def test_cancelled_golden_init_cleans_every_partial_stage(stage: str) -> None:
+async def test_cancelled_golden_init_cleans_every_partial_stage(pool, stage: str) -> None:
     config = _config()
     entered = asyncio.Event()
     blocker = asyncio.Event()
@@ -827,7 +815,7 @@ async def test_cancelled_golden_init_cleans_every_partial_stage(stage: str) -> N
     context.memory_system = None
     context.emotion_analyzer = None
     context.audio_processor = None
-    context.close = AsyncMock()
+    context.close_session_resources = AsyncMock()
 
     async def load(_config: object, *, initialize_memory: bool) -> None:
         assert initialize_memory is False
@@ -856,26 +844,26 @@ async def test_cancelled_golden_init_cleans_every_partial_stage(stage: str) -> N
         "animetta.runtime.provider_pool.ServiceContext",
         return_value=context,
     ):
-        init_task = asyncio.create_task(ServicePool.init(config, model_manager=manager))
+        init_task = asyncio.create_task(pool.init(config, model_manager=manager))
         await entered.wait()
         init_task.cancel()
         with pytest.raises(asyncio.CancelledError):
             await init_task
 
-    context.close.assert_awaited_once_with()
+    context.close_session_resources.assert_awaited_once_with()
     llm.close.assert_awaited_once_with()
     tts.close.assert_awaited_once_with()
     asr.close.assert_awaited_once_with()
-    assert ServicePool._llm is None
-    assert ServicePool._tts is None
-    assert ServicePool._asr is None
-    assert ServicePool._ctx is None
-    assert ServicePool._init_state == "failed"
-    assert ServicePool._init_error == "initialization_cancelled"
-    assert ServicePool._initializing_task is None
+    assert pool._llm is None
+    assert pool._tts is None
+    assert pool._asr is None
+    assert pool._ctx is None
+    assert pool._init_state == "failed"
+    assert pool._init_error == "initialization_cancelled"
+    assert pool._initializing_task is None
 
 
-async def test_shutdown_waits_for_inflight_init_before_final_cleanup() -> None:
+async def test_shutdown_waits_for_inflight_init_before_final_cleanup(pool) -> None:
     config = _config(profile="development")
     entered = asyncio.Event()
     cancellation_seen = asyncio.Event()
@@ -892,7 +880,7 @@ async def test_shutdown_waits_for_inflight_init_before_final_cleanup() -> None:
     context.memory_system = None
     context.emotion_analyzer = None
     context.audio_processor = None
-    context.close = AsyncMock()
+    context.close_session_resources = AsyncMock()
     context.llm_connectivity_status = {
         "state": "pending",
         "ready": False,
@@ -914,25 +902,25 @@ async def test_shutdown_waits_for_inflight_init_before_final_cleanup() -> None:
         "animetta.runtime.provider_pool.ServiceContext",
         return_value=context,
     ):
-        init_task = asyncio.create_task(ServicePool.init(config))
+        init_task = asyncio.create_task(pool.init(config))
         await entered.wait()
-        shutdown_task = asyncio.create_task(ServicePool.shutdown())
+        shutdown_task = asyncio.create_task(pool.shutdown())
         await cancellation_seen.wait()
         assert shutdown_task.done() is False
         release.set()
         await shutdown_task
         await asyncio.gather(init_task, return_exceptions=True)
 
-    assert ServicePool._llm is None
-    assert ServicePool._tts is None
-    assert ServicePool._ctx is None
-    assert ServicePool._runtime_config is None
-    assert ServicePool._model_manager is None
-    assert ServicePool._init_state == "closed"
-    assert ServicePool._initializing_task is None
+    assert pool._llm is None
+    assert pool._tts is None
+    assert pool._ctx is None
+    assert pool._runtime_config is None
+    assert pool._model_manager is None
+    assert pool._init_state == "closed"
+    assert pool._initializing_task is None
 
 
-async def test_shutdown_marks_every_readiness_signal_nonready_before_await() -> None:
+async def test_shutdown_marks_every_readiness_signal_nonready_before_await(pool) -> None:
     entered = asyncio.Event()
     release = asyncio.Event()
     llm = MagicMock()
@@ -942,22 +930,22 @@ async def test_shutdown_marks_every_readiness_signal_nonready_before_await() -> 
         await release.wait()
 
     llm.close = AsyncMock(side_effect=close)
-    ServicePool._llm = llm
-    ServicePool._ready = True
-    ServicePool._init_state = "ready"
-    ServicePool._llm_connectivity = {
+    pool._llm = llm
+    pool._ready = True
+    pool._init_state = "ready"
+    pool._llm_connectivity = {
         "state": "ready",
         "ready": True,
         "reason": None,
     }
 
-    shutdown = asyncio.create_task(ServicePool.shutdown())
+    shutdown = asyncio.create_task(pool.shutdown())
     await entered.wait()
 
     observed = (
-        ServicePool._ready,
-        ServicePool._init_state,
-        ServicePool._llm_connectivity["ready"],
+        pool._ready,
+        pool._init_state,
+        pool._llm_connectivity["ready"],
     )
 
     release.set()
@@ -965,7 +953,7 @@ async def test_shutdown_marks_every_readiness_signal_nonready_before_await() -> 
     assert observed == (False, "closing", False)
 
 
-async def test_concurrent_shutdown_callers_close_each_engine_once() -> None:
+async def test_concurrent_shutdown_callers_close_each_engine_once(pool) -> None:
     entered = asyncio.Event()
     release = asyncio.Event()
     llm = MagicMock()
@@ -975,22 +963,22 @@ async def test_concurrent_shutdown_callers_close_each_engine_once() -> None:
         await release.wait()
 
     llm.close = AsyncMock(side_effect=close)
-    ServicePool._llm = llm
-    ServicePool._ready = True
-    ServicePool._init_state = "ready"
+    pool._llm = llm
+    pool._ready = True
+    pool._init_state = "ready"
 
-    first = asyncio.create_task(ServicePool.shutdown())
+    first = asyncio.create_task(pool.shutdown())
     await entered.wait()
-    second = asyncio.create_task(ServicePool.shutdown())
+    second = asyncio.create_task(pool.shutdown())
     await asyncio.sleep(0)
     release.set()
     await asyncio.gather(first, second)
 
     llm.close.assert_awaited_once_with()
-    assert ServicePool._init_state == "closed"
+    assert pool._init_state == "closed"
 
 
-async def test_cancelling_shutdown_waiter_does_not_cancel_shared_cleanup() -> None:
+async def test_cancelling_shutdown_waiter_does_not_cancel_shared_cleanup(pool) -> None:
     entered = asyncio.Event()
     release = asyncio.Event()
     llm = MagicMock()
@@ -1000,17 +988,17 @@ async def test_cancelling_shutdown_waiter_does_not_cancel_shared_cleanup() -> No
         await release.wait()
 
     llm.close = AsyncMock(side_effect=close)
-    ServicePool._llm = llm
-    ServicePool._ready = True
-    ServicePool._init_state = "ready"
+    pool._llm = llm
+    pool._ready = True
+    pool._init_state = "ready"
 
-    waiter = asyncio.create_task(ServicePool.shutdown())
+    waiter = asyncio.create_task(pool.shutdown())
     await entered.wait()
     waiter.cancel()
     with pytest.raises(asyncio.CancelledError):
         await waiter
 
-    shared = ServicePool._shutdown_task
+    shared = pool._shutdown_task
     shared_was_running = shared is not None and not shared.done()
     release.set()
     if shared is not None:
@@ -1018,11 +1006,11 @@ async def test_cancelling_shutdown_waiter_does_not_cancel_shared_cleanup() -> No
 
     assert shared_was_running is True
     llm.close.assert_awaited_once_with()
-    assert ServicePool._init_state == "closed"
-    assert ServicePool._llm is None
+    assert pool._init_state == "closed"
+    assert pool._llm is None
 
 
-async def test_shutdown_gate_prevents_cancellation_resistant_init_ready_writeback() -> None:
+async def test_shutdown_gate_prevents_cancellation_resistant_init_ready_writeback(pool) -> None:
     config = _config(profile="development")
     entered = asyncio.Event()
     cancellation_seen = asyncio.Event()
@@ -1046,7 +1034,7 @@ async def test_shutdown_gate_prevents_cancellation_resistant_init_ready_writebac
     context.memory_system = None
     context.emotion_analyzer = None
     context.audio_processor = None
-    context.close = AsyncMock()
+    context.close_session_resources = AsyncMock()
     context.llm_connectivity_status = {
         "state": "pending",
         "ready": False,
@@ -1068,15 +1056,15 @@ async def test_shutdown_gate_prevents_cancellation_resistant_init_ready_writebac
         "animetta.runtime.provider_pool.ServiceContext",
         return_value=context,
     ):
-        init_task = asyncio.create_task(ServicePool.init(config))
+        init_task = asyncio.create_task(pool.init(config))
         await entered.wait()
-        shutdown_task = asyncio.create_task(ServicePool.shutdown())
+        shutdown_task = asyncio.create_task(pool.shutdown())
         await cancellation_seen.wait()
-        state_after_cancel = (ServicePool._init_state, ServicePool._ready)
+        state_after_cancel = (pool._init_state, pool._ready)
 
         release_init.set()
         await close_entered.wait()
-        state_during_close = (ServicePool._init_state, ServicePool._ready)
+        state_during_close = (pool._init_state, pool._ready)
 
         release_close.set()
         await shutdown_task
@@ -1084,18 +1072,18 @@ async def test_shutdown_gate_prevents_cancellation_resistant_init_ready_writebac
 
     assert state_after_cancel == ("closing", False)
     assert state_during_close == ("closing", False)
-    assert ServicePool._init_state == "closed"
-    assert ServicePool._llm is None
-    assert ServicePool._tts is None
+    assert pool._init_state == "closed"
+    assert pool._llm is None
+    assert pool._tts is None
 
 
-async def test_failed_initialization_requires_shutdown_before_retry() -> None:
+async def test_failed_initialization_requires_shutdown_before_retry(pool) -> None:
     config = _config(profile="development")
     context = MagicMock()
     context.llm_engine = None
     context.tts_engine = None
     context.asr_engine = None
-    context.close = AsyncMock()
+    context.close_session_resources = AsyncMock()
     context.load_from_config = AsyncMock(side_effect=RuntimeError("secret failure"))
 
     with patch(
@@ -1103,42 +1091,44 @@ async def test_failed_initialization_requires_shutdown_before_retry() -> None:
         return_value=context,
     ) as context_class:
         with pytest.raises(RuntimeError, match="secret failure"):
-            await ServicePool.init(config)
+            await pool.init(config)
         with pytest.raises(RuntimeError, match="explicit shutdown"):
-            await ServicePool.init(config)
+            await pool.init(config)
 
     context_class.assert_called_once_with(model_manager=None)
-    await ServicePool.shutdown()
-    assert ServicePool._init_state == "closed"
+    await pool.shutdown()
+    assert pool._init_state == "closed"
 
 
-def test_golden_get_context_rejects_unready_pool_instead_of_triggering_full_init() -> None:
+def test_golden_get_context_rejects_unready_pool_instead_of_triggering_full_init(pool) -> None:
     config, manager = _seed_pool(
+        pool,
         connectivity={
             "state": "failed",
             "ready": False,
             "reason": "request_failed",
-        }
+        },
     )
-    ServicePool._runtime_config = config
-    ServicePool._model_manager = manager
+    pool._runtime_config = config
+    pool._model_manager = manager
 
     with pytest.raises(RuntimeError, match="not ready"):
-        ServicePool.get_context()
+        pool.get_context()
 
 
-async def test_golden_session_does_not_fallback_to_second_engine_set() -> None:
+async def test_golden_session_does_not_fallback_to_second_engine_set(pool) -> None:
     from animetta.orchestration.server.session import SessionManager
 
     config, manager = _seed_pool(
+        pool,
         connectivity={
             "state": "failed",
             "ready": False,
             "reason": "request_failed",
-        }
+        },
     )
-    ServicePool._runtime_config = config
-    ServicePool._model_manager = manager
+    pool._runtime_config = config
+    pool._model_manager = manager
     context = MagicMock()
     context.load_from_config = AsyncMock()
 
@@ -1146,7 +1136,7 @@ async def test_golden_session_does_not_fallback_to_second_engine_set() -> None:
         "animetta.orchestration.server.session.ServiceContext",
         return_value=context,
     ):
-        session_manager = SessionManager(model_manager=manager)
+        session_manager = SessionManager(model_manager=manager, provider_pool=pool)
         with pytest.raises(RuntimeError, match="not ready"):
             await session_manager.get_or_create_context(
                 "sid",
@@ -1158,25 +1148,25 @@ async def test_golden_session_does_not_fallback_to_second_engine_set() -> None:
     assert "sid" not in session_manager.contexts
 
 
-async def test_shutdown_closes_engines_even_when_readiness_never_succeeded() -> None:
+async def test_shutdown_closes_engines_even_when_readiness_never_succeeded(pool) -> None:
     llm = MagicMock()
     llm.close = AsyncMock()
     tts = MagicMock()
     tts.close = AsyncMock()
-    ServicePool._llm = llm
-    ServicePool._tts = tts
-    ServicePool._ready = False
-    ServicePool._init_state = "failed"
+    pool._llm = llm
+    pool._tts = tts
+    pool._ready = False
+    pool._init_state = "failed"
 
-    await ServicePool.shutdown()
+    await pool.shutdown()
 
     llm.close.assert_awaited_once_with()
     tts.close.assert_awaited_once_with()
-    assert ServicePool._llm is None
-    assert ServicePool._tts is None
+    assert pool._llm is None
+    assert pool._tts is None
 
 
-async def test_shutdown_is_best_effort_and_clears_runtime_references() -> None:
+async def test_shutdown_is_best_effort_and_clears_runtime_references(pool) -> None:
     llm = MagicMock()
     llm.close = AsyncMock(
         side_effect=RuntimeError("https://user:password@example.invalid?key=secret")
@@ -1185,26 +1175,26 @@ async def test_shutdown_is_best_effort_and_clears_runtime_references() -> None:
     tts.close = AsyncMock()
     asr = MagicMock()
     asr.close = AsyncMock()
-    ServicePool._llm = llm
-    ServicePool._tts = tts
-    ServicePool._asr = asr
-    ServicePool._runtime_config = _config()
-    ServicePool._model_manager = _manager()
-    ServicePool._init_state = "ready"
+    pool._llm = llm
+    pool._tts = tts
+    pool._asr = asr
+    pool._runtime_config = _config()
+    pool._model_manager = _manager()
+    pool._init_state = "ready"
 
-    await ServicePool.shutdown()
+    await pool.shutdown()
 
     llm.close.assert_awaited_once_with()
     tts.close.assert_awaited_once_with()
     asr.close.assert_awaited_once_with()
-    assert ServicePool._llm is None
-    assert ServicePool._tts is None
-    assert ServicePool._asr is None
-    assert ServicePool._runtime_config is None
-    assert ServicePool._model_manager is None
-    assert ServicePool._init_state == "closed"
-    assert ServicePool._shutdown_errors == ("llm:RuntimeError",)
-    assert "password" not in repr(ServicePool._shutdown_errors)
+    assert pool._llm is None
+    assert pool._tts is None
+    assert pool._asr is None
+    assert pool._runtime_config is None
+    assert pool._model_manager is None
+    assert pool._init_state == "closed"
+    assert pool._shutdown_errors == ("llm:RuntimeError",)
+    assert "password" not in repr(pool._shutdown_errors)
 
 
 async def test_late_registration_after_empty_warmup_is_loaded_by_next_warmup() -> None:

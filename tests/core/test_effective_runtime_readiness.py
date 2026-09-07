@@ -7,8 +7,8 @@ import pytest
 
 from animetta.config.manifest import EffectiveConfig, load_effective_config
 from animetta.core.readiness import resolve_service_identity
-from animetta.core.service_pool import ServicePool
 from animetta.orchestration.server.stats_api import health_check
+from animetta.runtime.provider_pool import ProviderPool
 from animetta.services.tts.mock_tts import MockTTS
 
 
@@ -92,40 +92,9 @@ def effective_config(monkeypatch: pytest.MonkeyPatch) -> callable:
     return _load
 
 
-@pytest.fixture(autouse=True)
-def reset_pool() -> None:
-    previous = {
-        name: getattr(ServicePool, name, None)
-        for name in (
-            "_runtime_config",
-            "_model_manager",
-            "_init_state",
-            "_init_error",
-            "_ready",
-            "_llm",
-            "_tts",
-            "_asr",
-            "_resolved_identities",
-            "_llm_connectivity",
-        )
-    }
-    ServicePool._runtime_config = None
-    ServicePool._model_manager = None
-    ServicePool._init_state = "pending"
-    ServicePool._init_error = None
-    ServicePool._ready = False
-    ServicePool._llm = None
-    ServicePool._tts = None
-    ServicePool._asr = None
-    ServicePool._resolved_identities = {}
-    ServicePool._llm_connectivity = {
-        "state": "pending",
-        "ready": False,
-        "reason": None,
-    }
-    yield
-    for name, value in previous.items():
-        setattr(ServicePool, name, value)
+@pytest.fixture
+def pool():
+    return ProviderPool()
 
 
 def _frontend(ready: bool = True) -> dict[str, str | bool | None]:
@@ -148,18 +117,16 @@ def _resolved(config: EffectiveConfig) -> dict[str, dict[str, str | None]]:
     }
 
 
-def _seed_ready(config: EffectiveConfig) -> None:
-    ServicePool._runtime_config = config
-    ServicePool._init_state = "ready"
-    ServicePool._ready = True
-    ServicePool._llm = object()
-    ServicePool._tts = (
-        _StaticFailoverTTS() if config.providers["tts"].type == "failover" else object()
-    )
-    ServicePool._asr = object()
-    ServicePool._model_manager = _StaticModelManager(tts="loaded")
-    ServicePool._resolved_identities = _resolved(config)
-    ServicePool._llm_connectivity = {
+def _seed_ready(pool, config: EffectiveConfig) -> None:
+    pool._runtime_config = config
+    pool._init_state = "ready"
+    pool._ready = True
+    pool._llm = object()
+    pool._tts = _StaticFailoverTTS() if config.providers["tts"].type == "failover" else object()
+    pool._asr = object()
+    pool._model_manager = _StaticModelManager(tts="loaded")
+    pool._resolved_identities = _resolved(config)
+    pool._llm_connectivity = {
         "state": "ready",
         "ready": True,
         "reason": None,
@@ -167,12 +134,13 @@ def _seed_ready(config: EffectiveConfig) -> None:
 
 
 def test_smoke_snapshot_publishes_one_config_identity_and_distinct_asr_tts_rows(
+    pool,
     effective_config,
 ) -> None:
     config = effective_config("smoke")
-    _seed_ready(config)
+    _seed_ready(pool, config)
 
-    payload = ServicePool.get_readiness_snapshot(
+    payload = pool.get_readiness_snapshot(
         config=config,
         frontend=_frontend(),
     ).to_dict()
@@ -188,12 +156,13 @@ def test_smoke_snapshot_publishes_one_config_identity_and_distinct_asr_tts_rows(
 
 
 def test_production_tts_exposes_exact_composite_and_child_status(
+    pool,
     effective_config,
 ) -> None:
     config = effective_config("production")
-    _seed_ready(config)
+    _seed_ready(pool, config)
 
-    payload = ServicePool.get_readiness_snapshot(
+    payload = pool.get_readiness_snapshot(
         config=config,
         frontend=_frontend(),
     ).to_dict()
@@ -226,6 +195,7 @@ def test_production_tts_exposes_exact_composite_and_child_status(
     ],
 )
 def test_production_composite_readiness_accepts_any_single_route(
+    pool,
     effective_config,
     primary_ready: bool,
     fallback_ready: bool,
@@ -233,13 +203,13 @@ def test_production_composite_readiness_accepts_any_single_route(
     active_backend: str | None,
 ) -> None:
     config = effective_config("production")
-    _seed_ready(config)
-    ServicePool._tts = _StaticFailoverTTS(
+    _seed_ready(pool, config)
+    pool._tts = _StaticFailoverTTS(
         primary_ready=primary_ready,
         fallback_ready=fallback_ready,
     )
 
-    payload = ServicePool.get_readiness_snapshot(
+    payload = pool.get_readiness_snapshot(
         config=config,
         frontend=_frontend(),
     ).to_dict()
@@ -251,16 +221,16 @@ def test_production_composite_readiness_accepts_any_single_route(
     assert payload["ready"] is expected_ready
 
 
-def test_selftest_requires_deepseek_connectivity(effective_config) -> None:
+def test_selftest_requires_deepseek_connectivity(pool, effective_config) -> None:
     config = effective_config("selftest")
-    _seed_ready(config)
-    ServicePool._llm_connectivity = {
+    _seed_ready(pool, config)
+    pool._llm_connectivity = {
         "state": "failed",
         "ready": False,
         "reason": "request_failed",
     }
 
-    payload = ServicePool.get_readiness_snapshot(
+    payload = pool.get_readiness_snapshot(
         config=config,
         frontend=_frontend(),
     ).to_dict()
@@ -270,11 +240,11 @@ def test_selftest_requires_deepseek_connectivity(effective_config) -> None:
     assert payload["components"]["llm"]["reason"] == "request_failed"
 
 
-def test_selftest_requires_frontend_assets(effective_config) -> None:
+def test_selftest_requires_frontend_assets(pool, effective_config) -> None:
     config = effective_config("selftest")
-    _seed_ready(config)
+    _seed_ready(pool, config)
 
-    payload = ServicePool.get_readiness_snapshot(
+    payload = pool.get_readiness_snapshot(
         config=config,
         frontend=_frontend(False),
     ).to_dict()
@@ -285,13 +255,14 @@ def test_selftest_requires_frontend_assets(effective_config) -> None:
 
 
 def test_remote_identity_mismatch_fails_readiness_with_sanitized_cause(
+    pool,
     effective_config,
 ) -> None:
     config = effective_config("production")
-    _seed_ready(config)
-    ServicePool._resolved_identities["tts"]["voice"] = "wrong-voice"
+    _seed_ready(pool, config)
+    pool._resolved_identities["tts"]["voice"] = "wrong-voice"
 
-    payload = ServicePool.get_readiness_snapshot(
+    payload = pool.get_readiness_snapshot(
         config=config,
         frontend=_frontend(),
     ).to_dict()
@@ -304,13 +275,14 @@ def test_remote_identity_mismatch_fails_readiness_with_sanitized_cause(
 
 
 def test_production_dashscope_preload_failure_fails_pool_readiness(
+    pool,
     effective_config,
 ) -> None:
     config = effective_config("production")
-    _seed_ready(config)
-    ServicePool._model_manager = _StaticModelManager(tts="error")
+    _seed_ready(pool, config)
+    pool._model_manager = _StaticModelManager(tts="error")
 
-    payload = ServicePool.get_readiness_snapshot(
+    payload = pool.get_readiness_snapshot(
         config=config,
         frontend=_frontend(),
     ).to_dict()
@@ -325,12 +297,12 @@ def test_production_dashscope_preload_failure_fails_pool_readiness(
     assert "dashscope.aliyuncs.com" not in serialized
 
 
-def test_stale_config_snapshot_fails_closed(effective_config) -> None:
+def test_stale_config_snapshot_fails_closed(pool, effective_config) -> None:
     active = effective_config("smoke")
-    _seed_ready(active)
+    _seed_ready(pool, active)
     stale_view = active.model_copy(update={"version": active.version + 1})
 
-    payload = ServicePool.get_readiness_snapshot(
+    payload = pool.get_readiness_snapshot(
         config=stale_view,
         frontend=_frontend(),
     ).to_dict()
@@ -339,10 +311,10 @@ def test_stale_config_snapshot_fails_closed(effective_config) -> None:
     assert payload["components"]["pool"]["reason"] == "stale_config_snapshot"
 
 
-def test_missing_service_pool_snapshot_fails_closed(effective_config) -> None:
+def test_missing_service_pool_snapshot_fails_closed(pool, effective_config) -> None:
     config = effective_config("smoke")
 
-    payload = ServicePool.get_readiness_snapshot(
+    payload = pool.get_readiness_snapshot(
         config=config,
         frontend=_frontend(),
     ).to_dict()
@@ -352,9 +324,9 @@ def test_missing_service_pool_snapshot_fails_closed(effective_config) -> None:
 
 
 @pytest.mark.asyncio
-async def test_health_is_cheap_and_never_reads_provider_readiness() -> None:
+async def test_health_is_cheap_and_never_reads_provider_readiness(pool) -> None:
     with patch.object(
-        ServicePool,
+        pool,
         "get_readiness_snapshot",
         side_effect=AssertionError("health must not read readiness"),
     ):
@@ -365,16 +337,17 @@ async def test_health_is_cheap_and_never_reads_provider_readiness() -> None:
 
 
 def test_ready_snapshot_uses_cached_remote_identity_without_network_call(
+    pool,
     effective_config,
 ) -> None:
     config = effective_config("production")
-    _seed_ready(config)
+    _seed_ready(pool, config)
 
     with patch(
         "animetta.services.tts.dashscope_tts._default_connector",
         side_effect=AssertionError("/ready must not perform network I/O"),
     ) as check:
-        payload = ServicePool.get_readiness_snapshot(
+        payload = pool.get_readiness_snapshot(
             config=config,
             frontend=_frontend(),
         ).to_dict()

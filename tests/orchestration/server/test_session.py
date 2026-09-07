@@ -9,6 +9,7 @@ import pytest
 
 from animetta.orchestration.graph.conversation_session import ConversationScope
 from animetta.orchestration.server.session import SessionManager
+from animetta.runtime.provider_pool import ProviderPool
 
 # ── Fixtures ───────────────────────────────────────────────────────
 
@@ -17,7 +18,7 @@ from animetta.orchestration.server.session import SessionManager
 def session_manager():
     """SessionManager with mocked model_manager."""
     mm = MagicMock()
-    return SessionManager(model_manager=mm)
+    return SessionManager(model_manager=mm, provider_pool=ProviderPool())
 
 
 @pytest.fixture
@@ -82,7 +83,8 @@ class TestGetOrCreateContext:
             return_value=mock_ctx,
         ):
             monkeypatch.setattr(
-                "animetta.core.service_pool.ServicePool.get_context",
+                session_manager.provider_pool,
+                "get_context",
                 lambda: mock_service_pool,
             )
 
@@ -108,7 +110,8 @@ class TestGetOrCreateContext:
             return_value=mock_ctx,
         ):
             monkeypatch.setattr(
-                "animetta.core.service_pool.ServicePool.get_context",
+                session_manager.provider_pool,
+                "get_context",
                 lambda: None,
             )
 
@@ -156,7 +159,8 @@ class TestGetOrCreateContext:
             side_effect=_make_ctx,
         ):
             monkeypatch.setattr(
-                "animetta.core.service_pool.ServicePool.get_context",
+                session_manager.provider_pool,
+                "get_context",
                 lambda: mock_service_pool,
             )
 
