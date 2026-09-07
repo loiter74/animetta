@@ -202,8 +202,8 @@ async def test_rebuild_indexes_restores_fts_and_completes_outbox(tmp_path) -> No
             )
         )
         assert store._conn is not None
-        store._conn.execute("DELETE FROM memory_fts")
-        store._conn.commit()
+        async with store._database(write=True):
+            await store._execute("DELETE FROM memory_fts")
         assert await store.search_fts("jasmine") == []
 
         recording = _RecordingCollection()

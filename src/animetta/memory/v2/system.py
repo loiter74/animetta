@@ -88,6 +88,9 @@ class LivingMemorySystem:
     def __init__(self, db_path: str = "memory_db/living_memory.sqlite"):
         self.store = AtomStore(db_path=db_path)
         self._initialized = False
+        self._closing = False
+        self._shutdown_task: asyncio.Task | None = None
+        self._reconsolidation_tasks: set[asyncio.Task] = set()
         self._metabolism_task: asyncio.Task | None = None
         self._metabolism_interval = 6 * 3600  # 6 hours in seconds
         self.compile_engine = CompileEngine()
@@ -98,6 +101,8 @@ class LivingMemorySystem:
 
     async def start_metabolism(self) -> None:
         """Start the background metabolism loop (decay + consolidation + compile)."""
+        if self._closing:
+            raise RuntimeError("Memory system is closing")
         if self._metabolism_task and not self._metabolism_task.done():
             return
         self._metabolism_task = asyncio.create_task(self._metabolism_loop())
@@ -370,7 +375,19 @@ class LivingMemorySystem:
                     return  # One privacy partition per tick
 
     async def shutdown(self) -> None:
+        if self._shutdown_task is None:
+            self._closing = True
+            self._initialized = False
+            self._shutdown_task = asyncio.create_task(self._shutdown())
+        await asyncio.shield(self._shutdown_task)
+
+    async def _shutdown(self) -> None:
         await self.stop_metabolism()
+        tasks = list(self._reconsolidation_tasks)
+        for task in tasks:
+            task.cancel()
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)
         await self.store.close()
 
     # ── Encode ──
@@ -392,6 +409,8 @@ class LivingMemorySystem:
         Confidence is computed from emotion intensity (flashbulb memory effect).
         High-arousal events get higher initial confidence.
         """
+        if self._closing:
+            raise RuntimeError("Memory system is closing")
         if emotion_vad is None:
             emotion_vad = VADVector(0.0, 0.0, 0.0)
 
@@ -471,6 +490,8 @@ class LivingMemorySystem:
         Returns RecallResult with emotion-ranked atoms, user profile, and memes.
         Asynchronously triggers reconsolidation for high-salience recalled atoms.
         """
+        if self._closing:
+            raise RuntimeError("Memory system is closing")
         if current_emotion is None:
             current_emotion = VADVector(0.0, 0.0, 0.0)
 
@@ -524,10 +545,17 @@ class LivingMemorySystem:
             },
         )
 
-        # Trigger async reconsolidation (fire-and-forget)
-        asyncio.create_task(self._reconsolidate(top_atoms, current_emotion, query))
+        if not self._closing:
+            task = asyncio.create_task(self._reconsolidate(top_atoms, current_emotion, query))
+            self._reconsolidation_tasks.add(task)
+            task.add_done_callback(self._reconsolidation_finished)
 
         return result
+
+    def _reconsolidation_finished(self, task: asyncio.Task) -> None:
+        self._reconsolidation_tasks.discard(task)
+        if not task.cancelled() and (error := task.exception()) is not None:
+            logger.warning("Memory reconsolidation failed: %s", error)
 
     @staticmethod
     def _is_visible_in_context(
