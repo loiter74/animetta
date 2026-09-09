@@ -10,6 +10,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from pathlib import Path
+from traceback import walk_tb
 from typing import Any, Protocol
 from uuid import uuid4
 
@@ -21,6 +22,22 @@ from starlette.routing import Route
 from animetta.services.tts.audio_validation import is_valid_audio_payload
 
 logger = logging.getLogger(__name__)
+
+
+def _log_generation_failure(error: Exception, *, phase: str) -> None:
+    """Keep failure locations without request text, absolute paths or exception values."""
+    frames = [
+        f"{Path(frame.f_code.co_filename).name}:{line}:{frame.f_code.co_name}"
+        for frame, line in walk_tb(error.__traceback__)
+    ]
+    logger.warning(
+        "Qwen TTS synthesis degraded: category=generation_failed, phase=%s, "
+        "error_type=%s, frames=%s",
+        phase,
+        type(error).__name__,
+        " > ".join(frames[-8:]),
+    )
+
 
 _CJK_CHARACTER = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff\u3040-\u30ff\uac00-\ud7af]")
 _NON_CJK_WORD = re.compile(r"[^\W_]+(?:['’-][^\W_]+)*", re.UNICODE)
@@ -256,8 +273,8 @@ class QwenTTSService:
                 "until inference completes"
             )
             raise
-        except Exception:
-            logger.warning("Qwen TTS synthesis degraded: category=generation_failed")
+        except Exception as error:
+            _log_generation_failure(error, phase="synthesis")
             return JSONResponse(
                 {"category": "generation_failed", "request_id": request_id},
                 status_code=502,
@@ -345,7 +362,8 @@ class QwenTTSService:
                 {"category": "timeout", "request_id": request_id},
                 status_code=504,
             )
-        except Exception:
+        except Exception as error:
+            _log_generation_failure(error, phase="stream_start")
             await stream.aclose()
             self._capacity.release()
             return JSONResponse(

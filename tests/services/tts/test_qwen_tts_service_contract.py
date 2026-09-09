@@ -494,6 +494,36 @@ async def test_generation_failure_is_typed_and_sanitized(
     assert "private model failure" not in response.text
 
 
+@pytest.mark.parametrize("stream", [False, True])
+async def test_generation_failure_logs_location_without_private_content(
+    caplog: pytest.LogCaptureFixture, stream: bool
+) -> None:
+    engine = FakeQwenEngine()
+    error = ValueError("worker-secret C:/private/reference.wav confidential text")
+    engine.error = error
+    engine.stream_chunks = []
+    engine.stream_error = error
+    app, service = app_for(engine)
+    await service.preload()
+
+    response = await request(
+        app,
+        "POST",
+        "/v1/audio/speech",
+        headers=auth_headers(),
+        json=speech_payload(stream=stream),
+    )
+
+    assert response.status_code == 502
+    assert response.json() == {"category": "generation_failed", "request_id": "turn-7"}
+    assert "error_type=ValueError" in caplog.text
+    assert "test_qwen_tts_service_contract.py:" in caplog.text
+    method = "synthesize_stream" if stream else "synthesize"
+    assert f":{method}" in caplog.text
+    for private in ("worker-secret", "C:/private", "confidential text"):
+        assert private not in caplog.text + response.text
+
+
 async def test_empty_generated_audio_is_a_typed_failure() -> None:
     engine = FakeQwenEngine(audio=b"")
     app, service = app_for(engine)
