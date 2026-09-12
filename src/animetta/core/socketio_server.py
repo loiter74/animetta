@@ -100,27 +100,9 @@ def init_config(config_path: str | None = None) -> EffectiveConfig:
 
 def run_server() -> None:
     """Run the server using uvicorn (ASGI mode)"""
-    import atexit
-
     # Initialize configuration
     init_config()
-
-    # Create server
-    _server = create_server(global_config)
-    _server.set_user_settings(user_settings)
-
-    # Register cleanup function on exit
-    def cleanup_on_exit():
-        logger.info("Server shutting down...")
-        try:
-            asyncio.run(_server.stop())
-        except NameError:
-            pass  # server not initialized
-        except Exception as e:
-            logger.error(f"Error cleaning up resources: {e}")
-        logger.info("Server shut down")
-
-    atexit.register(cleanup_on_exit)
+    # The ASGI factory creates the single server; its lifespan owns shutdown.
 
     logger.info("=" * 50)
     logger.info("Starting Socket.IO server...")

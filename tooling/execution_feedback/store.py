@@ -212,7 +212,7 @@ class IterationPlanStore:
     @staticmethod
     def _atomic_write(path: Path, payload: dict[str, object]) -> Path:
         path.parent.mkdir(parents=True, exist_ok=True)
-        temporary = path.with_suffix(f"{path.suffix}.{uuid.uuid4().hex}.tmp")
+        temporary = path.with_name(f".{uuid.uuid4().hex}.tmp")
         try:
             with temporary.open("w", encoding="utf-8", newline="\n") as handle:
                 json.dump(payload, handle, ensure_ascii=False, indent=2, sort_keys=True)

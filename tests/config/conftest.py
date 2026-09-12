@@ -33,6 +33,7 @@ def isolated_manifest_env(monkeypatch: pytest.MonkeyPatch) -> pytest.MonkeyPatch
         "ANIMETTA_HOST",
         "ANIMETTA_PORT",
         "ANIMETTA_BACKEND_URL",
+        "ANIMETTA_DEV_ORIGINS",
         "QWEN_TTS_API_KEY",
         "QWEN_HOST_TTS_URL",
         "DASHSCOPE_API_KEY",

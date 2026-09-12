@@ -529,6 +529,34 @@ class TestBackgroundTaskSupervisor:
     """Tracked startup tasks are drained and stopped deterministically."""
 
     @pytest.mark.asyncio
+    async def test_frontend_monitor_recovers_and_closes_client(self, websocket_server):
+        websocket_server.frontend_url = "http://frontend:3000"
+        failed = {"state": "failed", "ready": False, "reason": "assets_unavailable"}
+        ready = {"state": "ready", "ready": True, "reason": None}
+        states = []
+        client = AsyncMock()
+
+        async def next_probe(_seconds):
+            states.append(websocket_server.frontend_readiness["ready"])
+            if len(states) == 3:
+                raise asyncio.CancelledError
+
+        with (
+            patch("animetta.orchestration.server.websocket.httpx.AsyncClient", return_value=client),
+            patch(
+                "animetta.orchestration.server.websocket.probe_development_frontend",
+                new=AsyncMock(side_effect=[failed, ready, failed]),
+            ),
+            patch("animetta.orchestration.server.websocket.asyncio.sleep", side_effect=next_probe),
+            pytest.raises(asyncio.CancelledError),
+        ):
+            await websocket_server._frontend_health_loop()
+
+        assert states == [False, True, False]
+        assert websocket_server.frontend_readiness == failed
+        client.__aexit__.assert_awaited_once()
+
+    @pytest.mark.asyncio
     async def test_background_failure_is_drained_with_type_only_log(
         self,
         websocket_server,

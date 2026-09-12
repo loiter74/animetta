@@ -1,0 +1,1314 @@
+﻿phase,scenario,sample,run_id,kind,target,seconds,succeeded
+before,repeat,1,b-a5f558efbccf,wall,,55.770293700000366,True
+before,repeat,1,b-a5f558efbccf,build,,10.861706599999707,True
+before,repeat,1,b-a5f558efbccf,continuation_wait_overlaps_build,,8.070031199998994,
+before,repeat,1,b-a5f558efbccf,run_command,"[""host-tts-start""]",1.0630263000002742,True
+before,repeat,1,b-a5f558efbccf,run_command,"[""host-tts-preflight""]",0.33935699999983626,True
+before,repeat,1,b-a5f558efbccf,run_command,"[""host-rvc-start""]",0.5032909000001382,True
+before,repeat,1,b-a5f558efbccf,run_command,"[""host-rvc-preflight""]",0.29614569999921514,True
+before,repeat,1,b-a5f558efbccf,run_command,"[""docker"", ""compose"", ""up"", ""-d"", ""--no-build"", ""animetta""]",16.67088579999927,True
+before,repeat,1,b-a5f558efbccf,check_http,"""http://localhost/health""",15.607583100000738,True
+before,repeat,1,b-a5f558efbccf,check_http,"""http://localhost/ready""",5.065819599999486,True
+before,repeat,1,b-a5f558efbccf,check_http,"""http://localhost""",0.02733540000008361,True
+before,repeat,1,b-a5f558efbccf,run_command,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.2235725000009552,True
+before,repeat,1,b-a5f558efbccf,check_logs,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.22533850000036182,True
+before,repeat,1,b-a5f558efbccf,browser,"""http://localhost""",2.2646402999998827,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[internal] load local bake definitions,0.0,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[internal] load build definition from Dockerfile,0.3,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[internal] load metadata for docker.io/library/python:3.13-slim-bookworm,1.8,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[internal] load metadata for docker.io/library/node:22-bookworm-slim,1.8,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[internal] load .dockerignore,0.3,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[internal] load build context,0.5,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[python-builder 1/5] FROM docker.io/library/python:3.13-slim-bookworm@sha256:ed86c82274b3c69b52fb5820f358f0bd7df0b603332063cb5c6e32bd220c3e6e,0.9,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[frontend-builder 1/8] FROM docker.io/library/node:22-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5,1.0,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[runtime  5/13] COPY src/animetta/ src/animetta/,0.0,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[runtime  6/13] COPY config/ config/,0.0,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[runtime 10/13] COPY --from=frontend-builder /build/frontend/dist /app/frontend/dist,0.0,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[frontend-builder 8/8] RUN pnpm exec vite build,0.0,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,"[python-builder 3/5] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends     gcc     && rm -rf /var/lib/apt/lists/*",0.0,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[runtime  2/13] WORKDIR /app,0.0,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[python-builder 4/5] COPY requirements.txt .,0.0,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[runtime  8/13] COPY .env.example .env.example,0.0,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[runtime  7/13] COPY scripts/ scripts/,0.0,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[runtime 12/13] COPY docker/entrypoint.sh /app/entrypoint.sh,0.0,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[frontend-builder 4/8] COPY frontend/.npmrc frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./,0.0,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,"[runtime  3/13] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends ffmpeg nginx curl     && rm -rf /var/lib/apt/lists/*",0.0,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[frontend-builder 5/8] RUN pnpm install --frozen-lockfile,0.0,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[frontend-builder 6/8] COPY frontend/ .,0.0,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[python-builder 2/5] WORKDIR /build,0.0,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[runtime 11/13] COPY docker/nginx.conf /etc/nginx/nginx.conf,0.0,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[frontend-builder 2/8] RUN corepack enable     && corepack prepare pnpm@11.7.0 --activate     && pnpm config set registry https://registry.npmmirror.com,0.0,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,"[python-builder 5/5] RUN --mount=type=cache,target=/root/.cache/pip     pip install --user -r requirements.txt && pip check",0.0,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[frontend-builder 3/8] WORKDIR /build/frontend,0.0,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[frontend-builder 7/8] COPY config/socket-events.json /build/config/socket-events.json,0.0,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[runtime  9/13] RUN python scripts/validate-events.py,0.0,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[runtime  4/13] COPY --from=python-builder /root/.local /root/.local,0.0,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,[runtime 13/13] RUN chmod +x /app/entrypoint.sh,0.0,True
+before,repeat,1,b-a5f558efbccf,build_step_may_overlap,exporting to image,2.3,True
+before,repeat,2,b-dd9482c2313e,wall,,43.848115900000266,True
+before,repeat,2,b-dd9482c2313e,build,,10.33869390000109,True
+before,repeat,2,b-dd9482c2313e,continuation_wait_overlaps_build,,7.046210600001359,
+before,repeat,2,b-dd9482c2313e,run_command,"[""host-tts-start""]",1.2732704999998532,True
+before,repeat,2,b-dd9482c2313e,run_command,"[""host-tts-preflight""]",0.4002774999989924,True
+before,repeat,2,b-dd9482c2313e,run_command,"[""host-rvc-start""]",0.5460762000002433,True
+before,repeat,2,b-dd9482c2313e,run_command,"[""host-rvc-preflight""]",0.3438237999998819,True
+before,repeat,2,b-dd9482c2313e,run_command,"[""docker"", ""compose"", ""up"", ""-d"", ""--no-build"", ""animetta""]",16.107007600001452,True
+before,repeat,2,b-dd9482c2313e,check_http,"""http://localhost/health""",5.03302210000038,True
+before,repeat,2,b-dd9482c2313e,check_http,"""http://localhost/ready""",5.033071699999709,True
+before,repeat,2,b-dd9482c2313e,check_http,"""http://localhost""",0.007994800000233226,True
+before,repeat,2,b-dd9482c2313e,run_command,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.24006420000114304,True
+before,repeat,2,b-dd9482c2313e,check_logs,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.24224130000038713,True
+before,repeat,2,b-dd9482c2313e,browser,"""http://localhost""",2.0578599000000395,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[internal] load local bake definitions,0.0,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[internal] load build definition from Dockerfile,0.3,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[internal] load metadata for docker.io/library/python:3.13-slim-bookworm,1.7,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[internal] load metadata for docker.io/library/node:22-bookworm-slim,1.8,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[internal] load .dockerignore,0.2,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[internal] load build context,0.4,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[frontend-builder 1/8] FROM docker.io/library/node:22-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5,0.9,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[python-builder 1/5] FROM docker.io/library/python:3.13-slim-bookworm@sha256:ed86c82274b3c69b52fb5820f358f0bd7df0b603332063cb5c6e32bd220c3e6e,1.0,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[python-builder 2/5] WORKDIR /build,0.0,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[runtime  7/13] COPY scripts/ scripts/,0.0,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[frontend-builder 3/8] WORKDIR /build/frontend,0.0,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[runtime  8/13] COPY .env.example .env.example,0.0,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[runtime  6/13] COPY config/ config/,0.0,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,"[python-builder 3/5] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends     gcc     && rm -rf /var/lib/apt/lists/*",0.0,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[frontend-builder 4/8] COPY frontend/.npmrc frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./,0.0,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[frontend-builder 5/8] RUN pnpm install --frozen-lockfile,0.0,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,"[python-builder 5/5] RUN --mount=type=cache,target=/root/.cache/pip     pip install --user -r requirements.txt && pip check",0.0,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[runtime 12/13] COPY docker/entrypoint.sh /app/entrypoint.sh,0.0,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[python-builder 4/5] COPY requirements.txt .,0.0,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,"[runtime  3/13] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends ffmpeg nginx curl     && rm -rf /var/lib/apt/lists/*",0.0,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[frontend-builder 8/8] RUN pnpm exec vite build,0.0,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[frontend-builder 7/8] COPY config/socket-events.json /build/config/socket-events.json,0.0,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[runtime  5/13] COPY src/animetta/ src/animetta/,0.0,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[runtime 11/13] COPY docker/nginx.conf /etc/nginx/nginx.conf,0.0,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[frontend-builder 2/8] RUN corepack enable     && corepack prepare pnpm@11.7.0 --activate     && pnpm config set registry https://registry.npmmirror.com,0.0,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[runtime  2/13] WORKDIR /app,0.0,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[runtime  4/13] COPY --from=python-builder /root/.local /root/.local,0.0,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[frontend-builder 6/8] COPY frontend/ .,0.0,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[runtime  9/13] RUN python scripts/validate-events.py,0.0,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[runtime 10/13] COPY --from=frontend-builder /build/frontend/dist /app/frontend/dist,0.0,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,[runtime 13/13] RUN chmod +x /app/entrypoint.sh,0.0,True
+before,repeat,2,b-dd9482c2313e,build_step_may_overlap,exporting to image,2.5,True
+before,repeat,3,b-4ea9b17dbd3f,wall,,42.072314999999435,True
+before,repeat,3,b-4ea9b17dbd3f,build,,9.452625899999475,True
+before,repeat,3,b-4ea9b17dbd3f,continuation_wait_overlaps_build,,6.044817600000897,
+before,repeat,3,b-4ea9b17dbd3f,run_command,"[""host-tts-start""]",1.2056489999995392,True
+before,repeat,3,b-4ea9b17dbd3f,run_command,"[""host-tts-preflight""]",0.33730199999990873,True
+before,repeat,3,b-4ea9b17dbd3f,run_command,"[""host-rvc-start""]",0.5729998000006162,True
+before,repeat,3,b-4ea9b17dbd3f,run_command,"[""host-rvc-preflight""]",0.32097430000067106,True
+before,repeat,3,b-4ea9b17dbd3f,run_command,"[""docker"", ""compose"", ""up"", ""-d"", ""--no-build"", ""animetta""]",16.148090099999536,True
+before,repeat,3,b-4ea9b17dbd3f,check_http,"""http://localhost/health""",5.027199699999983,True
+before,repeat,3,b-4ea9b17dbd3f,check_http,"""http://localhost/ready""",5.018652300001122,True
+before,repeat,3,b-4ea9b17dbd3f,check_http,"""http://localhost""",0.012887099999716156,True
+before,repeat,3,b-4ea9b17dbd3f,run_command,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.27888529999836464,True
+before,repeat,3,b-4ea9b17dbd3f,check_logs,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.2814771000012115,True
+before,repeat,3,b-4ea9b17dbd3f,browser,"""http://localhost""",2.0325747999995656,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[internal] load local bake definitions,0.0,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[internal] load build definition from Dockerfile,0.3,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[internal] load metadata for docker.io/library/python:3.13-slim-bookworm,1.7,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[internal] load metadata for docker.io/library/node:22-bookworm-slim,1.7,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[internal] load .dockerignore,0.2,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[internal] load build context,0.4,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[python-builder 1/5] FROM docker.io/library/python:3.13-slim-bookworm@sha256:ed86c82274b3c69b52fb5820f358f0bd7df0b603332063cb5c6e32bd220c3e6e,0.9,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[frontend-builder 1/8] FROM docker.io/library/node:22-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5,1.0,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[frontend-builder 6/8] COPY frontend/ .,0.0,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[runtime 11/13] COPY docker/nginx.conf /etc/nginx/nginx.conf,0.0,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[runtime  4/13] COPY --from=python-builder /root/.local /root/.local,0.0,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[runtime  5/13] COPY src/animetta/ src/animetta/,0.0,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[runtime 10/13] COPY --from=frontend-builder /build/frontend/dist /app/frontend/dist,0.0,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,"[runtime  3/13] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends ffmpeg nginx curl     && rm -rf /var/lib/apt/lists/*",0.0,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[runtime  9/13] RUN python scripts/validate-events.py,0.0,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[frontend-builder 3/8] WORKDIR /build/frontend,0.0,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[frontend-builder 7/8] COPY config/socket-events.json /build/config/socket-events.json,0.0,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[runtime 12/13] COPY docker/entrypoint.sh /app/entrypoint.sh,0.0,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[runtime  7/13] COPY scripts/ scripts/,0.0,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[frontend-builder 2/8] RUN corepack enable     && corepack prepare pnpm@11.7.0 --activate     && pnpm config set registry https://registry.npmmirror.com,0.0,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[frontend-builder 5/8] RUN pnpm install --frozen-lockfile,0.0,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[python-builder 2/5] WORKDIR /build,0.0,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,"[python-builder 5/5] RUN --mount=type=cache,target=/root/.cache/pip     pip install --user -r requirements.txt && pip check",0.0,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[runtime  8/13] COPY .env.example .env.example,0.0,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[python-builder 4/5] COPY requirements.txt .,0.0,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[runtime  6/13] COPY config/ config/,0.0,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[frontend-builder 8/8] RUN pnpm exec vite build,0.0,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[runtime  2/13] WORKDIR /app,0.0,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[frontend-builder 4/8] COPY frontend/.npmrc frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./,0.0,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,"[python-builder 3/5] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends     gcc     && rm -rf /var/lib/apt/lists/*",0.0,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,[runtime 13/13] RUN chmod +x /app/entrypoint.sh,0.0,True
+before,repeat,3,b-4ea9b17dbd3f,build_step_may_overlap,exporting to image,2.1,True
+before,repeat,4,b-d6a5a3be12ae,wall,,43.320754399999714,True
+before,repeat,4,b-d6a5a3be12ae,build,,9.973285200001555,True
+before,repeat,4,b-d6a5a3be12ae,continuation_wait_overlaps_build,,7.060109500000181,
+before,repeat,4,b-d6a5a3be12ae,run_command,"[""host-tts-start""]",1.1781465999993088,True
+before,repeat,4,b-d6a5a3be12ae,run_command,"[""host-tts-preflight""]",0.36512799999945855,True
+before,repeat,4,b-d6a5a3be12ae,run_command,"[""host-rvc-start""]",0.5659568999999465,True
+before,repeat,4,b-d6a5a3be12ae,run_command,"[""host-rvc-preflight""]",0.35345439999946393,True
+before,repeat,4,b-d6a5a3be12ae,run_command,"[""docker"", ""compose"", ""up"", ""-d"", ""--no-build"", ""animetta""]",15.920837700001357,True
+before,repeat,4,b-d6a5a3be12ae,check_http,"""http://localhost/health""",5.021602000000712,True
+before,repeat,4,b-d6a5a3be12ae,check_http,"""http://localhost/ready""",5.0279976000001625,True
+before,repeat,4,b-d6a5a3be12ae,check_http,"""http://localhost""",0.015508299999055453,True
+before,repeat,4,b-d6a5a3be12ae,run_command,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.2211647999993147,True
+before,repeat,4,b-d6a5a3be12ae,check_logs,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.22403490000033344,True
+before,repeat,4,b-d6a5a3be12ae,browser,"""http://localhost""",1.9893059999994875,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[internal] load local bake definitions,0.0,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[internal] load build definition from Dockerfile,0.3,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[internal] load metadata for docker.io/library/python:3.13-slim-bookworm,2.3,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[internal] load metadata for docker.io/library/node:22-bookworm-slim,2.1,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[internal] load .dockerignore,0.2,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[internal] load build context,0.4,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[frontend-builder 1/8] FROM docker.io/library/node:22-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5,0.9,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[python-builder 1/5] FROM docker.io/library/python:3.13-slim-bookworm@sha256:ed86c82274b3c69b52fb5820f358f0bd7df0b603332063cb5c6e32bd220c3e6e,1.0,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[frontend-builder 6/8] COPY frontend/ .,0.0,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[runtime  9/13] RUN python scripts/validate-events.py,0.0,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[runtime  4/13] COPY --from=python-builder /root/.local /root/.local,0.0,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[python-builder 4/5] COPY requirements.txt .,0.0,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[frontend-builder 8/8] RUN pnpm exec vite build,0.0,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[frontend-builder 3/8] WORKDIR /build/frontend,0.0,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[runtime 11/13] COPY docker/nginx.conf /etc/nginx/nginx.conf,0.0,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[runtime  8/13] COPY .env.example .env.example,0.0,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[python-builder 2/5] WORKDIR /build,0.0,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[runtime  7/13] COPY scripts/ scripts/,0.0,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,"[runtime  3/13] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends ffmpeg nginx curl     && rm -rf /var/lib/apt/lists/*",0.0,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[frontend-builder 7/8] COPY config/socket-events.json /build/config/socket-events.json,0.0,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[runtime  2/13] WORKDIR /app,0.0,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[runtime  5/13] COPY src/animetta/ src/animetta/,0.0,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[frontend-builder 2/8] RUN corepack enable     && corepack prepare pnpm@11.7.0 --activate     && pnpm config set registry https://registry.npmmirror.com,0.0,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[runtime  6/13] COPY config/ config/,0.0,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[frontend-builder 5/8] RUN pnpm install --frozen-lockfile,0.0,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[runtime 10/13] COPY --from=frontend-builder /build/frontend/dist /app/frontend/dist,0.0,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[runtime 12/13] COPY docker/entrypoint.sh /app/entrypoint.sh,0.0,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,"[python-builder 3/5] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends     gcc     && rm -rf /var/lib/apt/lists/*",0.0,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,"[python-builder 5/5] RUN --mount=type=cache,target=/root/.cache/pip     pip install --user -r requirements.txt && pip check",0.0,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[frontend-builder 4/8] COPY frontend/.npmrc frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./,0.0,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,[runtime 13/13] RUN chmod +x /app/entrypoint.sh,0.0,True
+before,repeat,4,b-d6a5a3be12ae,build_step_may_overlap,exporting to image,2.2,True
+before,repeat,5,b-d96706d137a2,wall,,41.00248610000017,True
+before,repeat,5,b-d96706d137a2,build,,8.84647109999969,True
+before,repeat,5,b-d96706d137a2,continuation_wait_overlaps_build,,6.033270200001425,
+before,repeat,5,b-d96706d137a2,run_command,"[""host-tts-start""]",1.0261050000008254,True
+before,repeat,5,b-d96706d137a2,run_command,"[""host-tts-preflight""]",0.3056680999998207,True
+before,repeat,5,b-d96706d137a2,run_command,"[""host-rvc-start""]",0.4890856000001804,True
+before,repeat,5,b-d96706d137a2,run_command,"[""host-rvc-preflight""]",0.3049274000004516,True
+before,repeat,5,b-d96706d137a2,run_command,"[""docker"", ""compose"", ""up"", ""-d"", ""--no-build"", ""animetta""]",15.809140699999261,True
+before,repeat,5,b-d96706d137a2,check_http,"""http://localhost/health""",5.025808599999436,True
+before,repeat,5,b-d96706d137a2,check_http,"""http://localhost/ready""",5.032040999998571,True
+before,repeat,5,b-d96706d137a2,check_http,"""http://localhost""",0.017797099999370403,True
+before,repeat,5,b-d96706d137a2,run_command,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.22871959999974933,True
+before,repeat,5,b-d96706d137a2,check_logs,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.23090439999941736,True
+before,repeat,5,b-d96706d137a2,browser,"""http://localhost""",2.1593656000004557,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[internal] load local bake definitions,0.0,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[internal] load build definition from Dockerfile,0.2,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[internal] load metadata for docker.io/library/python:3.13-slim-bookworm,1.6,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[internal] load metadata for docker.io/library/node:22-bookworm-slim,1.6,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[internal] load .dockerignore,0.2,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[internal] load build context,0.4,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[frontend-builder 1/8] FROM docker.io/library/node:22-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5,1.0,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[python-builder 1/5] FROM docker.io/library/python:3.13-slim-bookworm@sha256:ed86c82274b3c69b52fb5820f358f0bd7df0b603332063cb5c6e32bd220c3e6e,0.9,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[runtime  2/13] WORKDIR /app,0.0,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[frontend-builder 2/8] RUN corepack enable     && corepack prepare pnpm@11.7.0 --activate     && pnpm config set registry https://registry.npmmirror.com,0.0,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,"[python-builder 5/5] RUN --mount=type=cache,target=/root/.cache/pip     pip install --user -r requirements.txt && pip check",0.0,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[runtime  7/13] COPY scripts/ scripts/,0.0,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,"[runtime  3/13] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends ffmpeg nginx curl     && rm -rf /var/lib/apt/lists/*",0.0,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[python-builder 2/5] WORKDIR /build,0.0,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[frontend-builder 8/8] RUN pnpm exec vite build,0.0,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[runtime 12/13] COPY docker/entrypoint.sh /app/entrypoint.sh,0.0,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,"[python-builder 3/5] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends     gcc     && rm -rf /var/lib/apt/lists/*",0.0,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[frontend-builder 4/8] COPY frontend/.npmrc frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./,0.0,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[runtime  9/13] RUN python scripts/validate-events.py,0.0,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[runtime  4/13] COPY --from=python-builder /root/.local /root/.local,0.0,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[frontend-builder 6/8] COPY frontend/ .,0.0,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[runtime 10/13] COPY --from=frontend-builder /build/frontend/dist /app/frontend/dist,0.0,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[python-builder 4/5] COPY requirements.txt .,0.0,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[frontend-builder 5/8] RUN pnpm install --frozen-lockfile,0.0,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[runtime  6/13] COPY config/ config/,0.0,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[frontend-builder 3/8] WORKDIR /build/frontend,0.0,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[runtime  8/13] COPY .env.example .env.example,0.0,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[runtime 11/13] COPY docker/nginx.conf /etc/nginx/nginx.conf,0.0,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[frontend-builder 7/8] COPY config/socket-events.json /build/config/socket-events.json,0.0,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[runtime  5/13] COPY src/animetta/ src/animetta/,0.0,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,[runtime 13/13] RUN chmod +x /app/entrypoint.sh,0.0,True
+before,repeat,5,b-d96706d137a2,build_step_may_overlap,exporting to image,2.0,True
+after,repeat,1,b-760759581ec9,wall,,23.13273620000109,True
+after,repeat,1,b-760759581ec9,continuation_wait_overlaps_build,,0.0,
+after,repeat,1,b-760759581ec9,run_command,"[""host-tts-start""]",1.225129200000083,True
+after,repeat,1,b-760759581ec9,run_command,"[""host-tts-preflight""]",0.31172180000066874,True
+after,repeat,1,b-760759581ec9,run_command,"[""host-rvc-start""]",0.5274035000002186,True
+after,repeat,1,b-760759581ec9,run_command,"[""host-rvc-preflight""]",0.294072500000766,True
+after,repeat,1,b-760759581ec9,run_command,"[""docker"", ""compose"", ""up"", ""-d"", ""--no-build"", ""animetta""]",1.4645105999989028,True
+after,repeat,1,b-760759581ec9,check_http,"""http://localhost/health""",0.013296500001160894,True
+after,repeat,1,b-760759581ec9,check_http,"""http://localhost/ready""",0.009659000001192908,True
+after,repeat,1,b-760759581ec9,check_http,"""http://localhost""",0.019212499999412103,True
+after,repeat,1,b-760759581ec9,run_command,"[""docker"", ""compose"", ""logs"", ""--since"", ""2026-09-12T14:40:06.658619+00:00"", ""--tail"", ""200"", ""animetta""]",0.30587220000052184,True
+after,repeat,1,b-760759581ec9,check_logs,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.3063122999992629,True
+after,repeat,1,b-760759581ec9,browser,"""http://localhost""",14.728176099999473,True
+after,repeat,2,b-9f1ec649cec0,wall,,10.747954599999503,True
+after,repeat,2,b-9f1ec649cec0,continuation_wait_overlaps_build,,0.0,
+after,repeat,2,b-9f1ec649cec0,run_command,"[""host-tts-start""]",1.232274599999073,True
+after,repeat,2,b-9f1ec649cec0,run_command,"[""host-tts-preflight""]",0.35359929999867745,True
+after,repeat,2,b-9f1ec649cec0,run_command,"[""host-rvc-start""]",0.5741660999992746,True
+after,repeat,2,b-9f1ec649cec0,run_command,"[""host-rvc-preflight""]",0.3368007999997644,True
+after,repeat,2,b-9f1ec649cec0,run_command,"[""docker"", ""compose"", ""up"", ""-d"", ""--no-build"", ""animetta""]",1.5463452999993024,True
+after,repeat,2,b-9f1ec649cec0,check_http,"""http://localhost/health""",0.0141684999998688,True
+after,repeat,2,b-9f1ec649cec0,check_http,"""http://localhost/ready""",0.0067674000001716195,True
+after,repeat,2,b-9f1ec649cec0,check_http,"""http://localhost""",0.005156999999599066,True
+after,repeat,2,b-9f1ec649cec0,run_command,"[""docker"", ""compose"", ""logs"", ""--since"", ""2026-09-12T14:40:29.850291+00:00"", ""--tail"", ""200"", ""animetta""]",0.23862540000118315,True
+after,repeat,2,b-9f1ec649cec0,check_logs,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.23908080000001064,True
+after,repeat,2,b-9f1ec649cec0,browser,"""http://localhost""",2.104255499998544,True
+after,repeat,3,b-a15783dfc680,wall,,10.87529429999995,True
+after,repeat,3,b-a15783dfc680,continuation_wait_overlaps_build,,0.0,
+after,repeat,3,b-a15783dfc680,run_command,"[""host-tts-start""]",1.237628400000176,True
+after,repeat,3,b-a15783dfc680,run_command,"[""host-tts-preflight""]",0.3635892000002059,True
+after,repeat,3,b-a15783dfc680,run_command,"[""host-rvc-start""]",0.6035945999992691,True
+after,repeat,3,b-a15783dfc680,run_command,"[""host-rvc-preflight""]",0.3831879999997909,True
+after,repeat,3,b-a15783dfc680,run_command,"[""docker"", ""compose"", ""up"", ""-d"", ""--no-build"", ""animetta""]",1.3755337999991752,True
+after,repeat,3,b-a15783dfc680,check_http,"""http://localhost/health""",0.012399500001265551,True
+after,repeat,3,b-a15783dfc680,check_http,"""http://localhost/ready""",0.006270500000027823,True
+after,repeat,3,b-a15783dfc680,check_http,"""http://localhost""",0.016841099999510334,True
+after,repeat,3,b-a15783dfc680,run_command,"[""docker"", ""compose"", ""logs"", ""--since"", ""2026-09-12T14:40:40.676174+00:00"", ""--tail"", ""200"", ""animetta""]",0.24361660000067786,True
+after,repeat,3,b-a15783dfc680,check_logs,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.2441753000002791,True
+after,repeat,3,b-a15783dfc680,browser,"""http://localhost""",2.283295699999144,True
+after,repeat,4,b-da3a2bb491b4,wall,,10.114913500001421,True
+after,repeat,4,b-da3a2bb491b4,continuation_wait_overlaps_build,,0.0,
+after,repeat,4,b-da3a2bb491b4,run_command,"[""host-tts-start""]",1.16251899999952,True
+after,repeat,4,b-da3a2bb491b4,run_command,"[""host-tts-preflight""]",0.3768363000017416,True
+after,repeat,4,b-da3a2bb491b4,run_command,"[""host-rvc-start""]",0.5878408000007767,True
+after,repeat,4,b-da3a2bb491b4,run_command,"[""host-rvc-preflight""]",0.296772300000157,True
+after,repeat,4,b-da3a2bb491b4,run_command,"[""docker"", ""compose"", ""up"", ""-d"", ""--no-build"", ""animetta""]",1.447005399999398,True
+after,repeat,4,b-da3a2bb491b4,check_http,"""http://localhost/health""",0.01219429999946442,True
+after,repeat,4,b-da3a2bb491b4,check_http,"""http://localhost/ready""",0.021203100001002895,True
+after,repeat,4,b-da3a2bb491b4,check_http,"""http://localhost""",0.019779999998718267,True
+after,repeat,4,b-da3a2bb491b4,run_command,"[""docker"", ""compose"", ""logs"", ""--since"", ""2026-09-12T14:40:51.352384+00:00"", ""--tail"", ""200"", ""animetta""]",0.22063519999937853,True
+after,repeat,4,b-da3a2bb491b4,check_logs,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.22115909999956784,True
+after,repeat,4,b-da3a2bb491b4,browser,"""http://localhost""",1.9425828999992518,True
+after,repeat,5,b-3ce481ac4765,wall,,10.450131799998417,True
+after,repeat,5,b-3ce481ac4765,continuation_wait_overlaps_build,,0.0,
+after,repeat,5,b-3ce481ac4765,run_command,"[""host-tts-start""]",1.2438999000005424,True
+after,repeat,5,b-3ce481ac4765,run_command,"[""host-tts-preflight""]",0.3846315000009781,True
+after,repeat,5,b-3ce481ac4765,run_command,"[""host-rvc-start""]",0.5439543000011327,True
+after,repeat,5,b-3ce481ac4765,run_command,"[""host-rvc-preflight""]",0.3026922999997623,True
+after,repeat,5,b-3ce481ac4765,run_command,"[""docker"", ""compose"", ""up"", ""-d"", ""--no-build"", ""animetta""]",1.3649306000006618,True
+after,repeat,5,b-3ce481ac4765,check_http,"""http://localhost/health""",0.013141300001734635,True
+after,repeat,5,b-3ce481ac4765,check_http,"""http://localhost/ready""",0.007157900001402595,True
+after,repeat,5,b-3ce481ac4765,check_http,"""http://localhost""",0.005696500000340166,True
+after,repeat,5,b-3ce481ac4765,run_command,"[""docker"", ""compose"", ""logs"", ""--since"", ""2026-09-12T14:41:01.668470+00:00"", ""--tail"", ""200"", ""animetta""]",0.27331170000070415,True
+after,repeat,5,b-3ce481ac4765,check_logs,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.2738188999992417,True
+after,repeat,5,b-3ce481ac4765,browser,"""http://localhost""",2.0694022999996378,True
+before,application,1,b-0e9179debb7d,wall,,38.93197590000091,True
+before,application,1,b-0e9179debb7d,build,,9.264396399999896,True
+before,application,1,b-0e9179debb7d,continuation_wait_overlaps_build,,7.047683500002677,
+before,application,1,b-0e9179debb7d,run_command,"[""host-tts-start""]",1.1274568999997427,True
+before,application,1,b-0e9179debb7d,run_command,"[""host-tts-preflight""]",0.37214490000042133,True
+before,application,1,b-0e9179debb7d,run_command,"[""host-rvc-start""]",0.4880476999987877,True
+before,application,1,b-0e9179debb7d,run_command,"[""host-rvc-preflight""]",0.2942721999988862,True
+before,application,1,b-0e9179debb7d,run_command,"[""docker"", ""compose"", ""up"", ""-d"", ""--no-build"", ""animetta""]",12.052946900001189,True
+before,application,1,b-0e9179debb7d,check_http,"""http://localhost/health""",5.021834700000909,True
+before,application,1,b-0e9179debb7d,check_http,"""http://localhost/ready""",5.022899599998709,True
+before,application,1,b-0e9179debb7d,check_http,"""http://localhost""",0.00703579999935755,True
+before,application,1,b-0e9179debb7d,run_command,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.22405539999999746,True
+before,application,1,b-0e9179debb7d,check_logs,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.22680749999926775,True
+before,application,1,b-0e9179debb7d,browser,"""http://localhost""",2.1410381000005145,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[internal] load local bake definitions,0.0,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[internal] load build definition from Dockerfile,0.4,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[internal] load metadata for docker.io/library/python:3.13-slim-bookworm,1.7,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[internal] load metadata for docker.io/library/node:22-bookworm-slim,1.7,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[internal] load .dockerignore,0.2,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[internal] load build context,0.4,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[python-builder 1/5] FROM docker.io/library/python:3.13-slim-bookworm@sha256:ed86c82274b3c69b52fb5820f358f0bd7df0b603332063cb5c6e32bd220c3e6e,0.9,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[frontend-builder 1/8] FROM docker.io/library/node:22-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5,1.0,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,"[python-builder 5/5] RUN --mount=type=cache,target=/root/.cache/pip     pip install --user -r requirements.txt && pip check",0.0,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[runtime  7/13] COPY scripts/ scripts/,0.0,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[runtime  6/13] COPY config/ config/,0.0,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,"[python-builder 3/5] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends     gcc     && rm -rf /var/lib/apt/lists/*",0.0,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[runtime  4/13] COPY --from=python-builder /root/.local /root/.local,0.0,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[runtime  2/13] WORKDIR /app,0.0,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[python-builder 2/5] WORKDIR /build,0.0,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[frontend-builder 4/8] COPY frontend/.npmrc frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./,0.0,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,"[runtime  3/13] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends ffmpeg nginx curl     && rm -rf /var/lib/apt/lists/*",0.0,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[frontend-builder 6/8] COPY frontend/ .,0.0,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[frontend-builder 7/8] COPY config/socket-events.json /build/config/socket-events.json,0.0,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[runtime  8/13] COPY .env.example .env.example,0.0,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[runtime  5/13] COPY src/animetta/ src/animetta/,0.0,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[frontend-builder 5/8] RUN pnpm install --frozen-lockfile,0.0,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[python-builder 4/5] COPY requirements.txt .,0.0,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[frontend-builder 2/8] RUN corepack enable     && corepack prepare pnpm@11.7.0 --activate     && pnpm config set registry https://registry.npmmirror.com,0.0,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[runtime 10/13] COPY --from=frontend-builder /build/frontend/dist /app/frontend/dist,0.0,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[runtime 11/13] COPY docker/nginx.conf /etc/nginx/nginx.conf,0.0,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[runtime  9/13] RUN python scripts/validate-events.py,0.0,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[frontend-builder 3/8] WORKDIR /build/frontend,0.0,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[frontend-builder 8/8] RUN pnpm exec vite build,0.0,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[runtime 12/13] COPY docker/entrypoint.sh /app/entrypoint.sh,0.0,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,[runtime 13/13] RUN chmod +x /app/entrypoint.sh,0.0,True
+before,application,1,b-0e9179debb7d,build_step_may_overlap,exporting to image,2.1,True
+before,application,2,b-ded78c61f4c8,wall,,39.20135889999983,True
+before,application,2,b-ded78c61f4c8,build,,9.405841400001009,True
+before,application,2,b-ded78c61f4c8,continuation_wait_overlaps_build,,7.048210900000413,
+before,application,2,b-ded78c61f4c8,run_command,"[""host-tts-start""]",1.0701946999997745,True
+before,application,2,b-ded78c61f4c8,run_command,"[""host-tts-preflight""]",0.32388800000080664,True
+before,application,2,b-ded78c61f4c8,run_command,"[""host-rvc-start""]",0.5163503000003402,True
+before,application,2,b-ded78c61f4c8,run_command,"[""host-rvc-preflight""]",0.29834200000004785,True
+before,application,2,b-ded78c61f4c8,run_command,"[""docker"", ""compose"", ""up"", ""-d"", ""--no-build"", ""animetta""]",12.192088899999362,True
+before,application,2,b-ded78c61f4c8,check_http,"""http://localhost/health""",5.080072400000063,True
+before,application,2,b-ded78c61f4c8,check_http,"""http://localhost/ready""",5.0164620999985345,True
+before,application,2,b-ded78c61f4c8,check_http,"""http://localhost""",0.008618500000011409,True
+before,application,2,b-ded78c61f4c8,run_command,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.28019510000012815,True
+before,application,2,b-ded78c61f4c8,check_logs,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.2823790000002191,True
+before,application,2,b-ded78c61f4c8,browser,"""http://localhost""",2.1403162000005977,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[internal] load local bake definitions,0.0,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[internal] load build definition from Dockerfile,0.2,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[internal] load metadata for docker.io/library/node:22-bookworm-slim,1.5,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[internal] load metadata for docker.io/library/python:3.13-slim-bookworm,1.6,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[internal] load .dockerignore,0.2,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[internal] load build context,0.4,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[frontend-builder 1/8] FROM docker.io/library/node:22-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5,0.8,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[python-builder 1/5] FROM docker.io/library/python:3.13-slim-bookworm@sha256:ed86c82274b3c69b52fb5820f358f0bd7df0b603332063cb5c6e32bd220c3e6e,0.9,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[frontend-builder 5/8] RUN pnpm install --frozen-lockfile,0.0,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[runtime  8/13] COPY .env.example .env.example,0.0,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[runtime  2/13] WORKDIR /app,0.0,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[frontend-builder 8/8] RUN pnpm exec vite build,0.0,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[runtime  4/13] COPY --from=python-builder /root/.local /root/.local,0.0,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[frontend-builder 6/8] COPY frontend/ .,0.0,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[runtime  9/13] RUN python scripts/validate-events.py,0.0,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[runtime  6/13] COPY config/ config/,0.0,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,"[python-builder 3/5] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends     gcc     && rm -rf /var/lib/apt/lists/*",0.0,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[frontend-builder 7/8] COPY config/socket-events.json /build/config/socket-events.json,0.0,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[runtime 11/13] COPY docker/nginx.conf /etc/nginx/nginx.conf,0.0,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[python-builder 4/5] COPY requirements.txt .,0.0,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[runtime  7/13] COPY scripts/ scripts/,0.0,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[runtime 12/13] COPY docker/entrypoint.sh /app/entrypoint.sh,0.0,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,"[python-builder 5/5] RUN --mount=type=cache,target=/root/.cache/pip     pip install --user -r requirements.txt && pip check",0.0,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[frontend-builder 2/8] RUN corepack enable     && corepack prepare pnpm@11.7.0 --activate     && pnpm config set registry https://registry.npmmirror.com,0.0,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,"[runtime  3/13] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends ffmpeg nginx curl     && rm -rf /var/lib/apt/lists/*",0.0,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[frontend-builder 4/8] COPY frontend/.npmrc frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./,0.0,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[python-builder 2/5] WORKDIR /build,0.0,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[frontend-builder 3/8] WORKDIR /build/frontend,0.0,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[runtime 10/13] COPY --from=frontend-builder /build/frontend/dist /app/frontend/dist,0.0,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[runtime  5/13] COPY src/animetta/ src/animetta/,0.0,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,[runtime 13/13] RUN chmod +x /app/entrypoint.sh,0.0,True
+before,application,2,b-ded78c61f4c8,build_step_may_overlap,exporting to image,2.0,True
+before,application,3,b-b0a9b9a8d423,wall,,38.803366000000096,True
+before,application,3,b-b0a9b9a8d423,build,,9.549086300001363,True
+before,application,3,b-b0a9b9a8d423,continuation_wait_overlaps_build,,6.0328974000003655,
+before,application,3,b-b0a9b9a8d423,run_command,"[""host-tts-start""]",1.1896022000000812,True
+before,application,3,b-b0a9b9a8d423,run_command,"[""host-tts-preflight""]",0.3174741000002541,True
+before,application,3,b-b0a9b9a8d423,run_command,"[""host-rvc-start""]",0.6003515000011248,True
+before,application,3,b-b0a9b9a8d423,run_command,"[""host-rvc-preflight""]",0.3360776999998052,True
+before,application,3,b-b0a9b9a8d423,run_command,"[""docker"", ""compose"", ""up"", ""-d"", ""--no-build"", ""animetta""]",12.699618900000132,True
+before,application,3,b-b0a9b9a8d423,check_http,"""http://localhost/health""",10.050070299999788,True
+before,application,3,b-b0a9b9a8d423,check_http,"""http://localhost/ready""",0.008806399999230052,True
+before,application,3,b-b0a9b9a8d423,check_http,"""http://localhost""",0.017360499999995227,True
+before,application,3,b-b0a9b9a8d423,run_command,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.2691935000002559,True
+before,application,3,b-b0a9b9a8d423,check_logs,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.27409780000016326,True
+before,application,3,b-b0a9b9a8d423,browser,"""http://localhost""",2.163126600000396,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[internal] load local bake definitions,0.0,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[internal] load build definition from Dockerfile,0.2,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[internal] load metadata for docker.io/library/node:22-bookworm-slim,1.6,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[internal] load metadata for docker.io/library/python:3.13-slim-bookworm,1.7,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[internal] load .dockerignore,0.3,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[internal] load build context,0.4,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[python-builder 1/5] FROM docker.io/library/python:3.13-slim-bookworm@sha256:ed86c82274b3c69b52fb5820f358f0bd7df0b603332063cb5c6e32bd220c3e6e,0.9,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[frontend-builder 1/8] FROM docker.io/library/node:22-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5,1.0,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[runtime 10/13] COPY --from=frontend-builder /build/frontend/dist /app/frontend/dist,0.0,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[runtime 12/13] COPY docker/entrypoint.sh /app/entrypoint.sh,0.0,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[frontend-builder 7/8] COPY config/socket-events.json /build/config/socket-events.json,0.0,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[frontend-builder 2/8] RUN corepack enable     && corepack prepare pnpm@11.7.0 --activate     && pnpm config set registry https://registry.npmmirror.com,0.0,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[runtime 11/13] COPY docker/nginx.conf /etc/nginx/nginx.conf,0.0,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[runtime  2/13] WORKDIR /app,0.0,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,"[python-builder 5/5] RUN --mount=type=cache,target=/root/.cache/pip     pip install --user -r requirements.txt && pip check",0.0,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,"[runtime  3/13] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends ffmpeg nginx curl     && rm -rf /var/lib/apt/lists/*",0.0,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[python-builder 2/5] WORKDIR /build,0.0,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[frontend-builder 5/8] RUN pnpm install --frozen-lockfile,0.0,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[frontend-builder 4/8] COPY frontend/.npmrc frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./,0.0,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,"[python-builder 3/5] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends     gcc     && rm -rf /var/lib/apt/lists/*",0.0,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[runtime  8/13] COPY .env.example .env.example,0.0,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[runtime  4/13] COPY --from=python-builder /root/.local /root/.local,0.0,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[frontend-builder 3/8] WORKDIR /build/frontend,0.0,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[frontend-builder 8/8] RUN pnpm exec vite build,0.0,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[python-builder 4/5] COPY requirements.txt .,0.0,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[runtime  7/13] COPY scripts/ scripts/,0.0,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[runtime  5/13] COPY src/animetta/ src/animetta/,0.0,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[runtime  9/13] RUN python scripts/validate-events.py,0.0,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[frontend-builder 6/8] COPY frontend/ .,0.0,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[runtime  6/13] COPY config/ config/,0.0,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,[runtime 13/13] RUN chmod +x /app/entrypoint.sh,0.0,True
+before,application,3,b-b0a9b9a8d423,build_step_may_overlap,exporting to image,2.1,True
+before,application,4,b-4c1630901d8f,wall,,37.816666700000496,True
+before,application,4,b-4c1630901d8f,build,,9.268166500000007,True
+before,application,4,b-4c1630901d8f,continuation_wait_overlaps_build,,6.041153199999826,
+before,application,4,b-4c1630901d8f,run_command,"[""host-tts-start""]",1.148158500000136,True
+before,application,4,b-4c1630901d8f,run_command,"[""host-tts-preflight""]",0.30644590000156313,True
+before,application,4,b-4c1630901d8f,run_command,"[""host-rvc-start""]",0.5327032000004692,True
+before,application,4,b-4c1630901d8f,run_command,"[""host-rvc-preflight""]",0.3011763000013161,True
+before,application,4,b-4c1630901d8f,run_command,"[""docker"", ""compose"", ""up"", ""-d"", ""--no-build"", ""animetta""]",12.09894279999935,True
+before,application,4,b-4c1630901d8f,check_http,"""http://localhost/health""",10.032069499999125,True
+before,application,4,b-4c1630901d8f,check_http,"""http://localhost/ready""",0.008101800000076764,True
+before,application,4,b-4c1630901d8f,check_http,"""http://localhost""",0.00596409999889147,True
+before,application,4,b-4c1630901d8f,run_command,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.2609986999996181,True
+before,application,4,b-4c1630901d8f,check_logs,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.26326549999976123,True
+before,application,4,b-4c1630901d8f,browser,"""http://localhost""",2.2051277999999,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[internal] load local bake definitions,0.0,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[internal] load build definition from Dockerfile,0.2,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[internal] load metadata for docker.io/library/python:3.13-slim-bookworm,1.7,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[internal] load metadata for docker.io/library/node:22-bookworm-slim,1.8,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[internal] load .dockerignore,0.3,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[internal] load build context,0.3,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[frontend-builder 1/8] FROM docker.io/library/node:22-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5,1.0,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[python-builder 1/5] FROM docker.io/library/python:3.13-slim-bookworm@sha256:ed86c82274b3c69b52fb5820f358f0bd7df0b603332063cb5c6e32bd220c3e6e,1.1,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[runtime 11/13] COPY docker/nginx.conf /etc/nginx/nginx.conf,0.0,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,"[python-builder 3/5] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends     gcc     && rm -rf /var/lib/apt/lists/*",0.0,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[frontend-builder 4/8] COPY frontend/.npmrc frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./,0.0,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[runtime  8/13] COPY .env.example .env.example,0.0,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[frontend-builder 5/8] RUN pnpm install --frozen-lockfile,0.0,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[frontend-builder 7/8] COPY config/socket-events.json /build/config/socket-events.json,0.0,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[frontend-builder 8/8] RUN pnpm exec vite build,0.0,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[runtime  7/13] COPY scripts/ scripts/,0.0,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[runtime  4/13] COPY --from=python-builder /root/.local /root/.local,0.0,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[runtime  6/13] COPY config/ config/,0.0,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[runtime  9/13] RUN python scripts/validate-events.py,0.0,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[runtime 12/13] COPY docker/entrypoint.sh /app/entrypoint.sh,0.0,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[python-builder 2/5] WORKDIR /build,0.0,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[frontend-builder 3/8] WORKDIR /build/frontend,0.0,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[python-builder 4/5] COPY requirements.txt .,0.0,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,"[runtime  3/13] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends ffmpeg nginx curl     && rm -rf /var/lib/apt/lists/*",0.0,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[frontend-builder 6/8] COPY frontend/ .,0.0,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[runtime  2/13] WORKDIR /app,0.0,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,"[python-builder 5/5] RUN --mount=type=cache,target=/root/.cache/pip     pip install --user -r requirements.txt && pip check",0.0,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[runtime  5/13] COPY src/animetta/ src/animetta/,0.0,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[frontend-builder 2/8] RUN corepack enable     && corepack prepare pnpm@11.7.0 --activate     && pnpm config set registry https://registry.npmmirror.com,0.0,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[runtime 10/13] COPY --from=frontend-builder /build/frontend/dist /app/frontend/dist,0.0,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,[runtime 13/13] RUN chmod +x /app/entrypoint.sh,0.0,True
+before,application,4,b-4c1630901d8f,build_step_may_overlap,exporting to image,2.0,True
+before,application,5,b-3b7d9397d6fd,wall,,40.44658899999922,True
+before,application,5,b-3b7d9397d6fd,build,,9.89314639999975,True
+before,application,5,b-3b7d9397d6fd,continuation_wait_overlaps_build,,7.050638800001252,
+before,application,5,b-3b7d9397d6fd,run_command,"[""host-tts-start""]",1.2089150000010704,True
+before,application,5,b-3b7d9397d6fd,run_command,"[""host-tts-preflight""]",0.35178500000074564,True
+before,application,5,b-3b7d9397d6fd,run_command,"[""host-rvc-start""]",0.580724100000225,True
+before,application,5,b-3b7d9397d6fd,run_command,"[""host-rvc-preflight""]",0.3347615999991831,True
+before,application,5,b-3b7d9397d6fd,run_command,"[""docker"", ""compose"", ""up"", ""-d"", ""--no-build"", ""animetta""]",12.320125199999893,True
+before,application,5,b-3b7d9397d6fd,check_http,"""http://localhost/health""",10.031773499998963,True
+before,application,5,b-3b7d9397d6fd,check_http,"""http://localhost/ready""",0.017311999999947147,True
+before,application,5,b-3b7d9397d6fd,check_http,"""http://localhost""",0.006589799999346724,True
+before,application,5,b-3b7d9397d6fd,run_command,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.27843339999890304,True
+before,application,5,b-3b7d9397d6fd,check_logs,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.2799319000005198,True
+before,application,5,b-3b7d9397d6fd,browser,"""http://localhost""",2.2510431999999128,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[internal] load local bake definitions,0.0,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[internal] load build definition from Dockerfile,0.2,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[internal] load metadata for docker.io/library/python:3.13-slim-bookworm,2.4,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[internal] load metadata for docker.io/library/node:22-bookworm-slim,2.2,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[internal] load .dockerignore,0.3,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[internal] load build context,0.5,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[python-builder 1/5] FROM docker.io/library/python:3.13-slim-bookworm@sha256:ed86c82274b3c69b52fb5820f358f0bd7df0b603332063cb5c6e32bd220c3e6e,0.8,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[frontend-builder 1/8] FROM docker.io/library/node:22-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5,1.0,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[runtime  6/13] COPY config/ config/,0.0,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[runtime  8/13] COPY .env.example .env.example,0.0,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[runtime 10/13] COPY --from=frontend-builder /build/frontend/dist /app/frontend/dist,0.0,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[frontend-builder 4/8] COPY frontend/.npmrc frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./,0.0,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[python-builder 2/5] WORKDIR /build,0.0,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[frontend-builder 7/8] COPY config/socket-events.json /build/config/socket-events.json,0.0,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,"[runtime  3/13] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends ffmpeg nginx curl     && rm -rf /var/lib/apt/lists/*",0.0,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[runtime 11/13] COPY docker/nginx.conf /etc/nginx/nginx.conf,0.0,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,"[python-builder 5/5] RUN --mount=type=cache,target=/root/.cache/pip     pip install --user -r requirements.txt && pip check",0.0,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[runtime  2/13] WORKDIR /app,0.0,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,"[python-builder 3/5] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends     gcc     && rm -rf /var/lib/apt/lists/*",0.0,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[python-builder 4/5] COPY requirements.txt .,0.0,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[runtime  7/13] COPY scripts/ scripts/,0.0,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[runtime  9/13] RUN python scripts/validate-events.py,0.0,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[frontend-builder 2/8] RUN corepack enable     && corepack prepare pnpm@11.7.0 --activate     && pnpm config set registry https://registry.npmmirror.com,0.0,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[frontend-builder 5/8] RUN pnpm install --frozen-lockfile,0.0,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[frontend-builder 6/8] COPY frontend/ .,0.0,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[runtime  4/13] COPY --from=python-builder /root/.local /root/.local,0.0,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[frontend-builder 3/8] WORKDIR /build/frontend,0.0,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[runtime  5/13] COPY src/animetta/ src/animetta/,0.0,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[frontend-builder 8/8] RUN pnpm exec vite build,0.0,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[runtime 12/13] COPY docker/entrypoint.sh /app/entrypoint.sh,0.0,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,[runtime 13/13] RUN chmod +x /app/entrypoint.sh,0.0,True
+before,application,5,b-3b7d9397d6fd,build_step_may_overlap,exporting to image,2.1,True
+after,application,1,b-0f8720258322,wall,,30.85483000000022,True
+after,application,1,b-0f8720258322,continuation_wait_overlaps_build,,0.0,
+after,application,1,b-0f8720258322,run_command,"[""host-tts-start""]",1.200242299999445,True
+after,application,1,b-0f8720258322,run_command,"[""host-tts-preflight""]",0.33497580000039306,True
+after,application,1,b-0f8720258322,run_command,"[""host-rvc-start""]",0.5810803000003943,True
+after,application,1,b-0f8720258322,run_command,"[""host-rvc-preflight""]",0.30186739999953716,True
+after,application,1,b-0f8720258322,run_command,"[""docker"", ""compose"", ""up"", ""-d"", ""--no-build"", ""animetta""]",12.838172000001578,True
+after,application,1,b-0f8720258322,check_http,"""http://localhost/health""",5.115512899999885,True
+after,application,1,b-0f8720258322,check_http,"""http://localhost/ready""",3.646668999999747,True
+after,application,1,b-0f8720258322,check_http,"""http://localhost""",0.007760500000586035,True
+after,application,1,b-0f8720258322,run_command,"[""docker"", ""compose"", ""logs"", ""--since"", ""2026-09-12T14:41:30.857389+00:00"", ""--tail"", ""200"", ""animetta""]",0.29482330000064394,True
+after,application,1,b-0f8720258322,check_logs,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.297169200001008,True
+after,application,1,b-0f8720258322,browser,"""http://localhost""",2.0156544000001304,True
+after,application,2,b-e45e2aa9455a,wall,,29.685277900000074,True
+after,application,2,b-e45e2aa9455a,continuation_wait_overlaps_build,,0.0,
+after,application,2,b-e45e2aa9455a,run_command,"[""host-tts-start""]",1.1248493000002782,True
+after,application,2,b-e45e2aa9455a,run_command,"[""host-tts-preflight""]",0.3143395999995846,True
+after,application,2,b-e45e2aa9455a,run_command,"[""host-rvc-start""]",0.5513115999983711,True
+after,application,2,b-e45e2aa9455a,run_command,"[""host-rvc-preflight""]",0.30451150000044436,True
+after,application,2,b-e45e2aa9455a,run_command,"[""docker"", ""compose"", ""up"", ""-d"", ""--no-build"", ""animetta""]",12.498160699999062,True
+after,application,2,b-e45e2aa9455a,check_http,"""http://localhost/health""",4.58514649999961,True
+after,application,2,b-e45e2aa9455a,check_http,"""http://localhost/ready""",3.6773749999993015,True
+after,application,2,b-e45e2aa9455a,check_http,"""http://localhost""",0.008015000001250883,True
+after,application,2,b-e45e2aa9455a,run_command,"[""docker"", ""compose"", ""logs"", ""--since"", ""2026-09-12T14:42:16.929245+00:00"", ""--tail"", ""200"", ""animetta""]",0.3178771999992023,True
+after,application,2,b-e45e2aa9455a,check_logs,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.3212256000006164,True
+after,application,2,b-e45e2aa9455a,browser,"""http://localhost""",2.2537618999995175,True
+after,application,3,b-6cefe5bd91fc,wall,,30.46871960000135,True
+after,application,3,b-6cefe5bd91fc,continuation_wait_overlaps_build,,0.0,
+after,application,3,b-6cefe5bd91fc,run_command,"[""host-tts-start""]",1.1283571000003576,True
+after,application,3,b-6cefe5bd91fc,run_command,"[""host-tts-preflight""]",0.31232749999981024,True
+after,application,3,b-6cefe5bd91fc,run_command,"[""host-rvc-start""]",0.5531628999997338,True
+after,application,3,b-6cefe5bd91fc,run_command,"[""host-rvc-preflight""]",0.3234243000006245,True
+after,application,3,b-6cefe5bd91fc,run_command,"[""docker"", ""compose"", ""up"", ""-d"", ""--no-build"", ""animetta""]",12.563195500000802,True
+after,application,3,b-6cefe5bd91fc,check_http,"""http://localhost/health""",4.607428400000572,True
+after,application,3,b-6cefe5bd91fc,check_http,"""http://localhost/ready""",3.858501000000615,True
+after,application,3,b-6cefe5bd91fc,check_http,"""http://localhost""",0.009715199999845936,True
+after,application,3,b-6cefe5bd91fc,run_command,"[""docker"", ""compose"", ""logs"", ""--since"", ""2026-09-12T14:43:02.824078+00:00"", ""--tail"", ""200"", ""animetta""]",0.3585579999999027,True
+after,application,3,b-6cefe5bd91fc,check_logs,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.3627359999991313,True
+after,application,3,b-6cefe5bd91fc,browser,"""http://localhost""",2.1430397999993147,True
+after,application,4,b-be450087497b,wall,,30.40319660000023,True
+after,application,4,b-be450087497b,continuation_wait_overlaps_build,,0.0,
+after,application,4,b-be450087497b,run_command,"[""host-tts-start""]",1.1464259999993374,True
+after,application,4,b-be450087497b,run_command,"[""host-tts-preflight""]",0.34480939999957627,True
+after,application,4,b-be450087497b,run_command,"[""host-rvc-start""]",0.5641036000015447,True
+after,application,4,b-be450087497b,run_command,"[""host-rvc-preflight""]",0.33052740000130143,True
+after,application,4,b-be450087497b,run_command,"[""docker"", ""compose"", ""up"", ""-d"", ""--no-build"", ""animetta""]",12.510020599998825,True
+after,application,4,b-be450087497b,check_http,"""http://localhost/health""",4.581144000001586,True
+after,application,4,b-be450087497b,check_http,"""http://localhost/ready""",4.143403699999908,True
+after,application,4,b-be450087497b,check_http,"""http://localhost""",0.00791659999958938,True
+after,application,4,b-be450087497b,run_command,"[""docker"", ""compose"", ""logs"", ""--since"", ""2026-09-12T14:43:48.766981+00:00"", ""--tail"", ""200"", ""animetta""]",0.3097892000005231,True
+after,application,4,b-be450087497b,check_logs,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.31241559999944,True
+after,application,4,b-be450087497b,browser,"""http://localhost""",2.0838769000001776,True
+after,application,5,b-d0cbe8cc0d03,wall,,32.906354900000224,True
+after,application,5,b-d0cbe8cc0d03,continuation_wait_overlaps_build,,0.0,
+after,application,5,b-d0cbe8cc0d03,run_command,"[""host-tts-start""]",1.2148083000010956,True
+after,application,5,b-d0cbe8cc0d03,run_command,"[""host-tts-preflight""]",0.3379202999985864,True
+after,application,5,b-d0cbe8cc0d03,run_command,"[""host-rvc-start""]",0.6285876000001736,True
+after,application,5,b-d0cbe8cc0d03,run_command,"[""host-rvc-preflight""]",0.30162340000060794,True
+after,application,5,b-d0cbe8cc0d03,run_command,"[""docker"", ""compose"", ""up"", ""-d"", ""--no-build"", ""animetta""]",12.457293199999185,True
+after,application,5,b-d0cbe8cc0d03,check_http,"""http://localhost/health""",4.583908700000393,True
+after,application,5,b-d0cbe8cc0d03,check_http,"""http://localhost/ready""",6.697089100000085,True
+after,application,5,b-d0cbe8cc0d03,check_http,"""http://localhost""",0.011520400001245434,True
+after,application,5,b-d0cbe8cc0d03,run_command,"[""docker"", ""compose"", ""logs"", ""--since"", ""2026-09-12T14:44:34.919650+00:00"", ""--tail"", ""200"", ""animetta""]",0.30788980000033916,True
+after,application,5,b-d0cbe8cc0d03,check_logs,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.3112535000000207,True
+after,application,5,b-d0cbe8cc0d03,browser,"""http://localhost""",1.9834000000009837,True
+before,model-cold,1,b-0a994db381a7,wall,,127.68622909999976,True
+before,model-cold,1,b-0a994db381a7,build,,51.21944369999983,True
+before,model-cold,1,b-0a994db381a7,continuation_wait_overlaps_build,,31.25879569999961,
+before,model-cold,1,b-0a994db381a7,run_command,"[""host-tts-start""]",16.543413999999757,True
+before,model-cold,1,b-0a994db381a7,run_command,"[""host-tts-preflight""]",0.3577628000002733,True
+before,model-cold,1,b-0a994db381a7,run_command,"[""host-rvc-start""]",19.338473399999202,True
+before,model-cold,1,b-0a994db381a7,run_command,"[""host-rvc-preflight""]",0.3458787999988999,True
+before,model-cold,1,b-0a994db381a7,run_command,"[""docker"", ""compose"", ""up"", ""-d"", ""--no-build"", ""animetta""]",15.528977899999518,True
+before,model-cold,1,b-0a994db381a7,check_http,"""http://localhost/health""",15.05221359999996,True
+before,model-cold,1,b-0a994db381a7,check_http,"""http://localhost/ready""",5.013538300001528,True
+before,model-cold,1,b-0a994db381a7,check_http,"""http://localhost""",0.019838499998513726,True
+before,model-cold,1,b-0a994db381a7,run_command,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.23836329999903683,True
+before,model-cold,1,b-0a994db381a7,check_logs,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.2406014000007417,True
+before,model-cold,1,b-0a994db381a7,browser,"""http://localhost""",2.0034494000010454,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[internal] load local bake definitions,0.0,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[internal] load build definition from Dockerfile,0.3,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[internal] load metadata for docker.io/library/python:3.13-slim-bookworm,2.8,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[internal] load metadata for docker.io/library/node:22-bookworm-slim,2.7,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[internal] load .dockerignore,0.3,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[internal] load build context,0.7,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[python-builder 1/5] FROM docker.io/library/python:3.13-slim-bookworm@sha256:ed86c82274b3c69b52fb5820f358f0bd7df0b603332063cb5c6e32bd220c3e6e,1.0,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[frontend-builder 1/8] FROM docker.io/library/node:22-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5,1.2,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[frontend-builder 3/8] WORKDIR /build/frontend,0.0,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[frontend-builder 4/8] COPY frontend/.npmrc frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./,0.0,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[frontend-builder 5/8] RUN pnpm install --frozen-lockfile,0.0,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[frontend-builder 6/8] COPY frontend/ .,0.0,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[frontend-builder 7/8] COPY config/socket-events.json /build/config/socket-events.json,0.0,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[frontend-builder 2/8] RUN corepack enable     && corepack prepare pnpm@11.7.0 --activate     && pnpm config set registry https://registry.npmmirror.com,0.0,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[frontend-builder 8/8] RUN pnpm exec vite build,0.0,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[runtime  2/13] WORKDIR /app,0.0,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,"[runtime  3/13] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends ffmpeg nginx curl     && rm -rf /var/lib/apt/lists/*",0.0,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[python-builder 2/5] WORKDIR /build,0.0,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,"[python-builder 3/5] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends     gcc     && rm -rf /var/lib/apt/lists/*",0.0,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[python-builder 4/5] COPY requirements.txt .,0.0,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,"[python-builder 5/5] RUN --mount=type=cache,target=/root/.cache/pip     pip install --user -r requirements.txt && pip check",0.0,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[runtime  4/13] COPY --from=python-builder /root/.local /root/.local,0.0,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[runtime  5/13] COPY src/animetta/ src/animetta/,1.6,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[runtime  6/13] COPY config/ config/,1.6,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[runtime  7/13] COPY scripts/ scripts/,1.8,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[runtime  8/13] COPY .env.example .env.example,1.4,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[runtime  9/13] RUN python scripts/validate-events.py,3.3,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[runtime 10/13] COPY --from=frontend-builder /build/frontend/dist /app/frontend/dist,2.4,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[runtime 11/13] COPY docker/nginx.conf /etc/nginx/nginx.conf,1.4,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[runtime 12/13] COPY docker/entrypoint.sh /app/entrypoint.sh,1.6,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,[runtime 13/13] RUN chmod +x /app/entrypoint.sh,2.5,True
+before,model-cold,1,b-0a994db381a7,build_step_may_overlap,exporting to image,23.2,True
+after,model-cold,1,b-4127bc676444,wall,,66.64671129999988,True
+after,model-cold,1,b-4127bc676444,continuation_wait_overlaps_build,,0.0,
+after,model-cold,1,b-4127bc676444,run_command,"[""host-tts-start""]",14.652734399998735,True
+after,model-cold,1,b-4127bc676444,run_command,"[""host-tts-preflight""]",0.3350652999979502,True
+after,model-cold,1,b-4127bc676444,run_command,"[""host-rvc-start""]",10.451282400001219,True
+after,model-cold,1,b-4127bc676444,run_command,"[""host-rvc-preflight""]",0.34180230000129086,True
+after,model-cold,1,b-4127bc676444,run_command,"[""docker"", ""compose"", ""up"", ""-d"", ""--no-build"", ""animetta""]",12.822952300000907,True
+after,model-cold,1,b-4127bc676444,check_http,"""http://localhost/health""",17.344175899997936,True
+after,model-cold,1,b-4127bc676444,check_http,"""http://localhost/ready""",4.415436600000248,True
+after,model-cold,1,b-4127bc676444,check_http,"""http://localhost""",0.021704200000385754,True
+after,model-cold,1,b-4127bc676444,run_command,"[""docker"", ""compose"", ""logs"", ""--since"", ""2026-09-12T16:18:05.540087+00:00"", ""--tail"", ""200"", ""animetta""]",0.30063890000019455,True
+after,model-cold,1,b-4127bc676444,check_logs,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.3041754000005312,True
+after,model-cold,1,b-4127bc676444,browser,"""http://localhost""",2.133973199997854,True
+after,cold-build,1,b-d03267e3e63a,end_to_end_wall,,839.7840282,True
+after,cold-build,1,b-d03267e3e63a,build,,796.6847329999998,True
+after,cold-build,1,b-d03267e3e63a,continuation_wait_overlaps_build,,138.15185710000173,
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",1.0083193999998912,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3484811999999238,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.46476179999990563,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.39403939999988324,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.975431399999934,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.31872900000007576,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4494449999999688,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3572558000000754,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9566769000000477,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3147850999998809,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.463271099999929,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3127299000000221,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9747445999998945,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3501920000001064,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4806734999999662,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3265309000000798,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9637491000000864,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.32682999999997264,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4403113000000758,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.30779539999980443,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.919336899999962,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3078226000000086,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.44652270000005956,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.31780129999992823,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9133352999999715,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.32799369999997907,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.5142679000000498,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3705966999998509,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9990519000000404,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3812969000000521,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.5040380999998888,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.35694889999990664,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",1.0138782999999876,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3093498000000636,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.5059679999999389,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.2917605000000094,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9830406999999468,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3161993999999595,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.439822999999933,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3132355000000189,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.889033100000006,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.320481799999925,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.5328935999998521,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.2984455999999227,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9517629999998007,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3102292999999463,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4890966999998909,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3361257999999907,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8771148000000721,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3266890999998395,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4662232999999105,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3220234000000346,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9081149999999525,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.36123320000001513,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.46315370000002076,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.28816850000021077,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8069906999999148,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.31540270000004966,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4454475000000002,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.36271560000000136,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9736301000000367,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3710227000001396,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4976118999998107,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.346701400000029,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9874705999998241,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.34496680000006563,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.48550699999987046,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.30643579999991744,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.997640199999978,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.331474500000013,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.5088301000000683,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3283421000000999,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9968506999998681,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3211045999998987,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4224045999999362,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3035729999999148,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9374691999998959,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.31432169999993675,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.44512799999984054,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.2975547999999435,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8761026000001948,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.2913623000001735,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.46833479999986594,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.30996219999997265,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8362520999999106,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.29589749999991,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4127148000000034,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.29713409999999385,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9695289000001139,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.331729199999927,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.46792389999995976,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.33999649999987014,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9080347999999958,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3590893999999025,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4576991999999791,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3833802999999989,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.916181300000062,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.33179119999999784,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.490782500000023,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3377464999998665,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9596696000000975,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3496557999999368,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.45153430000004846,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.2854096999999456,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9875311000000693,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3483777999999802,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.425884300000007,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.33513909999987845,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9647181999998793,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.31402969999999186,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.42615950000003977,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3393002999998771,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9740358000001379,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.33153729999980897,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4548081000000366,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3324436999998852,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",1.0057070999998814,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3222230999999738,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.467484499999955,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3568166000000019,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9170406000000639,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.33151060000000143,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4556195000000116,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.30909479999991163,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9407373999999891,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.36721220000003996,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4362596000000849,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3060224000000744,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9680241999999453,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3490905000001021,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.44737899999995534,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.32253130000003694,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9597383000000264,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.31777899999997317,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4350635999999213,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.316233499999953,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9742452000000412,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.347748700000011,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.45805970000014895,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.36231549999979507,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8295639000000392,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3029978000001847,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.43560790000015004,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3343627000001561,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8576098999999431,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.29348300000015115,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4072969999999714,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.32627260000003844,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8452617000000373,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.30767290000017056,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4287693000001127,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3383860999999797,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.86123879999991,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.33065659999988384,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4134586999998646,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.31444969999984096,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8256369999999151,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3585295000000315,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.43895900000006804,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.34454230000005737,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9561427000001004,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.34629100000006474,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.46282799999994495,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.31199560000004567,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9335074999999051,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3342542999998841,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.41201269999987744,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3509985000000597,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9278600999998616,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.307941000000028,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.45736749999991844,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.32181340000011005,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8818555999998807,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3674724999998489,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.45240060000014637,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.33287560000007943,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9686621000000741,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3297783000000436,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.44848739999997633,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.29908320000004096,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9471955999999864,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3649856000001819,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4790378000000146,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.30443669999999656,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9011914000000161,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.35939410000014504,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.44133499999998094,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3631494000001112,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9309876999998323,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3717827999998917,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.39506809999988945,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.35145749999992404,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9322295000001759,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3197061999999278,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.43438960000003135,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.35553200000003926,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9657591000000139,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3212186999999176,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.44415430000003653,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.32498439999994844,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8796460000000934,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.34259659999997893,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.43627070000002277,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3239426000000094,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9006408000000192,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.35456699999986085,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.506369199999881,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3090932000000066,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8573300999998992,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.27608009999994465,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.42601509999985865,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3666468999999779,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9081181999999899,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3295209000000341,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.42698479999990013,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.37819169999988844,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.914808100000073,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3517917000001489,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.41544580000004316,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.32903559999999743,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8980209000001196,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3514487999998437,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.49703870000007555,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.33127429999990454,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9730641999999534,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.37134070000001884,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.44118520000006356,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3433732000000873,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.883562799999936,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.32113719999983914,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4106811999999991,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3071632999999565,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.919521899999836,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.36685780000016166,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4323437999998987,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.32170799999994415,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8834411000000273,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.31688519999988785,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.46260830000005626,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3118503000000601,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.7989617000000635,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.2744431999999506,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4104133000000729,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.30114350000008017,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8844507000001158,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3333181999998942,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.43187379999994846,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.29113219999999274,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8698345999998764,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.2839398999999503,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.40504650000002584,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3316130000000612,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8091858999998749,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.29659049999986564,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.3951811000001726,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.28094999999984793,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8216006000000107,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3039756999999099,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4172134000000369,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.27910789999987173,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9388811999999689,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.296349599999985,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.48296099999993203,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.2991959000000861,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.892290100000082,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.2862287999998898,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.45112909999988915,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.32840059999989535,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8663335999999617,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.2920656000001145,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4392841999999746,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.2889897000000019,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.897149600000148,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3490343999999368,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.48252240000010715,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.30526510000004237,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8660575999999764,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3368384000000333,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4349243999999999,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3656710000000203,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8573938999998063,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.33204939999995986,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.435515500000065,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3352284999998574,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9199946999999611,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.37273430000004737,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.5040752999998404,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3254773999999543,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8682170000001861,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3062316999998984,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4604337000000669,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3183089999999993,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9270943999999872,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.2985702000000856,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.44348839999997836,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.34584509999990587,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9825379000001249,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3493426999998519,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4350282000000334,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3207462000000305,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9237247999999454,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.32660839999994096,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.46121579999999085,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3266264000001229,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9620884999999362,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3245037000001503,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.43496639999989384,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3099263000001429,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9285935000000336,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.36896980000005897,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.439933099999962,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3433310000000347,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9449268000000757,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3077018000001317,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4875243000001319,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.34320290000005116,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",1.0152960999998868,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.360776800000167,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.46983750000003965,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3062343999999939,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8384890999998333,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3128552000000582,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4700012999999217,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.35185709999996106,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9899935999999343,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3030825000000732,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.43792899999994006,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.32248180000010507,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9499124999999822,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3065129999999954,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.46976870000003146,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.28910849999988386,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9943155000000843,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.2931191000000126,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.448875100000123,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3207485000000361,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9285070000000815,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3628383999998732,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.47687729999984185,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.31682610000007116,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9514509000000544,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3034973000001173,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4567638999999417,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3628246000000672,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9527151999998296,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3275674000001345,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.48072210000009363,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.34180069999979423,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9473384999998871,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3395709999999781,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.48586839999984477,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.30910419999986516,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9638332999998056,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.314177299999983,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.48535789999982626,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.32477560000006633,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9808958000000985,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3149450999999317,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.43682460000013634,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.356762099999969,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9453923999999461,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3620683999999983,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.42456109999989167,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3207270000000335,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9324040999999852,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.33496519999994234,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4318026999999347,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.33629259999997885,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8080483999999615,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.29376479999996263,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.44852030000015475,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.2839996999998675,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8441345000001093,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.2857733000000735,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.3964743000001363,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.2991380000000845,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8451253000000634,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.2774968999999601,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4002424999998766,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.27847840000004,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8298280999999861,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.28545279999980266,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4376085999999759,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.2973385000000235,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8161898999999266,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3061574999999266,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4181654999999864,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.278467800000044,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8950932000000194,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3022337999998399,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.43472449999990204,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.2985711999999694,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8391166999999768,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3072320999999647,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4092102000001887,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.30442679999987377,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8774444000000585,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3023166000000401,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4263418000000456,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.31182570000009946,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9547718000001169,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.31651979999992363,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.40189490000011574,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.2942563000001428,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9605105999999068,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3339815000001636,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.49930749999998625,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.34064119999993636,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9929947999999058,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.31431659999998374,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.47273440000003575,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3045039999999517,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9625459000001229,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3119203999999627,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4394532999999683,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.33948430000009466,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9191865000000234,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3703192000000399,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4532408999998552,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3758570999998483,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.934974400000101,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.32499700000016674,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4261765999999625,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3436414000000241,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8762050999998792,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.34671370000000934,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4428316000000905,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3283011999999417,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9295314999999391,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.34872470000004796,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4824786000001495,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3474547999999231,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8896194999999807,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3329642999999578,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4626777000000857,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3402743999999984,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9752906000001076,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.35691339999993943,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4437918000000991,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3026939000001221,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8385057000000415,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.28413290000003144,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4566740000000209,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.34373299999992923,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9460348000000067,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.36901130000001103,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4587824999998702,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3635159999998905,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.890401299999894,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3666975999999522,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.43912199999999757,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3211347999999816,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9633868999999322,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.36487639999995736,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4655688000000282,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.30812270000001263,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8649930999999924,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.32892820000006395,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4727147999999488,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.31410509999977876,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9514101000002029,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.2830748000001222,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.44868210000004183,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.34443210000017643,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9297060999999758,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3068268000001808,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4645057000000179,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3129672000000028,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8027968000001238,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.28120880000005855,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.39368430000013177,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.28095299999995405,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8654953999998725,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.2932705000000624,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4268219999999019,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3076521000000412,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9330476999998609,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.32872180000003937,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.5056562999998278,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3473972999997841,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8951196000000436,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3054267999998501,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.41704060000006393,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.28426630000012665,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9804718000000321,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.36390639999990526,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4535905000002458,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.2979136999997536,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",1.0541309999998703,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3326489000000947,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4809472000001733,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3399274000003061,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8969139999999243,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.27643150000039896,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.441987600000175,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3638754000003246,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9378007999998772,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.35984919999964404,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4544664999998531,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.315844300000208,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",1.0532084999999825,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3432836000001771,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4544791000002988,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.33705520000012257,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8166466000002401,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.2963299999996707,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.40083610000010594,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.29985209999995277,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.7764587000001484,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.29778529999975945,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.3975427000000309,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.27446699999973134,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.7841330000001108,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.30992360000027475,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.40317670000013095,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.28092570000035266,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.789364199999909,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.2719655999999304,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.40694859999985056,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.28668040000002293,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",1.0349991999996746,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3410844999998517,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.5227439999998751,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.4492736000001969,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.9221286000001783,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.2937861000000339,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.42889850000028673,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.283911900000021,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8411566999998286,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.2850802000002659,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.46027930000036577,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.32793489999994563,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8468785999998545,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.29067880000002333,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4390078999999787,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3145456000002014,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.7940647999998873,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.2746247999998559,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.38770990000011807,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.27592690000028597,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.7926867999999558,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.27126829999997426,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.38376700000026176,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.2763976000001094,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.8584210999997595,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3675754999999299,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.4252381000001151,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.3342712000003303,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-start""]",0.973806599999989,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-tts-preflight""]",0.3563328999998703,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-start""]",0.493714700000055,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""host-rvc-preflight""]",0.31181259999993927,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""docker"", ""compose"", ""up"", ""-d"", ""--no-build"", ""animetta""]",26.337980100000095,True
+after,cold-build,1,b-d03267e3e63a,check_http,"""http://localhost/health""",5.690668800000367,True
+after,cold-build,1,b-d03267e3e63a,check_http,"""http://localhost/ready""",3.6607316999998147,True
+after,cold-build,1,b-d03267e3e63a,check_http,"""http://localhost""",0.004386999999951513,True
+after,cold-build,1,b-d03267e3e63a,run_command,"[""docker"", ""compose"", ""logs"", ""--since"", ""2026-09-12T23:11:02.516873+00:00"", ""--tail"", ""200"", ""animetta""]",0.18296449999979814,True
+after,cold-build,1,b-d03267e3e63a,check_logs,"[""docker"", ""compose"", ""logs"", ""animetta""]",0.1852288000000044,True
+after,cold-build,1,b-d03267e3e63a,browser,"""http://localhost""",2.4445583000001534,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[internal] load local bake definitions,0.0,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[internal] load build definition from Dockerfile,1.3,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[internal] load metadata for ghcr.io/astral-sh/uv:0.11.19,6.0,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[internal] load metadata for docker.io/library/python:3.13-slim-bookworm,4.4,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[internal] load metadata for docker.io/library/node:22-bookworm-slim,5.1,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[internal] load .dockerignore,0.8,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[internal] load build context,3.9,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[uv 1/1] FROM ghcr.io/astral-sh/uv:0.11.19@sha256:b46b03ddfcfbf8f547af7e9eaefdf8a39c8cebcba7c98858d3162bd28cf536f6,27.2,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[python-builder 1/6] FROM docker.io/library/python:3.13-slim-bookworm@sha256:ed86c82274b3c69b52fb5820f358f0bd7df0b603332063cb5c6e32bd220c3e6e,37.8,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[frontend-deps 1/5] FROM docker.io/library/node:22-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5,52.0,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[python-builder 2/6] COPY --from=uv /uv /usr/local/bin/uv,7.5,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[backend-base 2/8] WORKDIR /app,7.2,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,"[backend-base 3/8] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     rm -f /etc/apt/apt.conf.d/docker-clean     && sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends ffmpeg nginx curl",512.9,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[python-builder 3/6] WORKDIR /build,5.0,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,"[python-builder 4/6] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     rm -f /etc/apt/apt.conf.d/docker-clean     && sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends gcc",597.4,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[frontend-deps 2/5] RUN corepack enable     && corepack prepare pnpm@11.7.0 --activate     && pnpm config set registry https://registry.npmmirror.com     && pnpm config set store-dir /pnpm/store,6.4,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[frontend-deps 3/5] WORKDIR /build/frontend,2.1,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[frontend-deps 4/5] COPY frontend/.npmrc frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./,2.2,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,"[frontend-deps 5/5] RUN --mount=type=cache,id=animetta-pnpm-11,target=/pnpm/store     pnpm install --frozen-lockfile --prefer-offline",22.0,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[frontend-source 1/4] COPY frontend/*.html frontend/vite.config.ts frontend/uno.config.ts frontend/tsconfig.json ./,2.9,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[frontend-source 2/4] COPY frontend/src/ ./src/,1.6,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[frontend-source 3/4] COPY frontend/public/ ./public/,1.9,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[frontend-source 4/4] COPY config/socket-events.json /build/config/socket-events.json,1.6,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[frontend-builder 1/1] RUN pnpm exec vite build,9.0,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[python-builder 5/6] COPY requirements.txt ./,1.6,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,"[python-builder 6/6] RUN --mount=type=cache,id=animetta-uv-013,target=/root/.cache/uv     uv venv --python /usr/local/bin/python /opt/venv     && uv pip sync --python /opt/venv/bin/python --compile-bytecode requirements.txt     && uv pip check --python /opt/venv/bin/python",24.0,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[backend-base 4/8] COPY --from=python-builder /opt/venv /opt/venv,8.2,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[backend-base 5/8] COPY src/animetta/ src/animetta/,1.7,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[backend-base 6/8] COPY config/ config/,1.4,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[backend-base 7/8] COPY .env.example .env.example,1.2,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[backend-base 8/8] RUN python -m compileall -q --invalidation-mode checked-hash src/animetta,2.7,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[runtime 1/6] COPY scripts/validate-events.py scripts/validate-events.py,1.3,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,"[runtime 2/6] RUN --mount=type=bind,from=frontend-source,source=/build/frontend,target=/app/frontend     python scripts/validate-events.py",1.8,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[runtime 3/6] COPY --from=frontend-builder /build/frontend/dist /app/frontend/dist,1.5,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[runtime 4/6] COPY docker/nginx.conf /etc/nginx/nginx.conf,1.2,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[runtime 5/6] COPY docker/entrypoint.sh /app/entrypoint.sh,1.3,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap,[runtime 6/6] RUN chmod +x /app/entrypoint.sh,1.3,True
+after,frontend,1,,wall,,0.8413492000000006,True
+after,frontend,2,,wall,,0.6058805999999995,True
+after,frontend,3,,wall,,0.6118822,True
+after,frontend,4,,wall,,0.6087267000000011,True
+after,frontend,5,,wall,,0.5660982000000003,True
+after,backend,1,,wall,,20.9337354,True
+after,backend,2,,wall,,20.418482299999997,True
+after,backend,3,,wall,,19.0875079,True
+after,backend,4,,wall,,20.470622300000002,True
+after,backend,5,,wall,,20.74784300000002,True
+after,backend,1,,log_timestamp_interval,sigterm_to_started_seconds,11.715671,True
+after,backend,1,,log_timestamp_interval,started_to_server_seconds,4.228879,True
+after,backend,1,,log_timestamp_interval,server_to_pool_ready_seconds,2.216174,True
+after,backend,1,,log_timestamp_interval,pool_ready_to_http_ready_seconds,0.256278,True
+after,backend,2,,log_timestamp_interval,sigterm_to_started_seconds,11.596757,True
+after,backend,2,,log_timestamp_interval,started_to_server_seconds,4.294753,True
+after,backend,2,,log_timestamp_interval,server_to_pool_ready_seconds,2.255542,True
+after,backend,2,,log_timestamp_interval,pool_ready_to_http_ready_seconds,0.265877,True
+after,backend,3,,log_timestamp_interval,sigterm_to_started_seconds,11.472598,True
+after,backend,3,,log_timestamp_interval,started_to_server_seconds,4.193145,True
+after,backend,3,,log_timestamp_interval,server_to_pool_ready_seconds,2.134912,True
+after,backend,3,,log_timestamp_interval,pool_ready_to_http_ready_seconds,0.175567,True
+after,backend,4,,log_timestamp_interval,sigterm_to_started_seconds,11.651805,True
+after,backend,4,,log_timestamp_interval,started_to_server_seconds,4.782339,True
+after,backend,4,,log_timestamp_interval,server_to_pool_ready_seconds,2.480472,True
+after,backend,4,,log_timestamp_interval,pool_ready_to_http_ready_seconds,0.274347,True
+after,backend,5,,log_timestamp_interval,sigterm_to_started_seconds,11.6531,True
+after,backend,5,,log_timestamp_interval,started_to_server_seconds,5.285301,True
+after,backend,5,,log_timestamp_interval,server_to_pool_ready_seconds,2.398105,True
+after,backend,5,,log_timestamp_interval,pool_ready_to_http_ready_seconds,0.260002,True
+before,cold-build,1,,image_build_receipt_primary_metric,,804.2908991000004,True
+before,cold-build,1,,build_step_may_overlap,[internal] load local bake definitions,0.0,True
+before,cold-build,1,,build_step_may_overlap,[internal] load build definition from Dockerfile,1.5,True
+before,cold-build,1,,build_step_may_overlap,[internal] load metadata for docker.io/library/node:22-bookworm-slim,5.6,True
+before,cold-build,1,,build_step_may_overlap,[internal] load metadata for docker.io/library/python:3.13-slim-bookworm,5.3,True
+before,cold-build,1,,build_step_may_overlap,[internal] load .dockerignore,0.9,True
+before,cold-build,1,,build_step_may_overlap,[internal] load build context,5.1,True
+before,cold-build,1,,build_step_may_overlap,[frontend-builder 1/8] FROM docker.io/library/node:22-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5,42.7,True
+before,cold-build,1,,build_step_may_overlap,[python-builder 1/5] FROM docker.io/library/python:3.13-slim-bookworm@sha256:ed86c82274b3c69b52fb5820f358f0bd7df0b603332063cb5c6e32bd220c3e6e,26.4,True
+before,cold-build,1,,build_step_may_overlap,[python-builder 2/5] WORKDIR /build,6.7,True
+before,cold-build,1,,build_step_may_overlap,[runtime  2/13] WORKDIR /app,6.9,True
+before,cold-build,1,,build_step_may_overlap,"[runtime  3/13] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends ffmpeg nginx curl     && rm -rf /var/lib/apt/lists/*",644.9,True
+before,cold-build,1,,build_step_may_overlap,"[python-builder 3/5] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends     gcc     && rm -rf /var/lib/apt/lists/*",84.8,True
+before,cold-build,1,,build_step_may_overlap,[frontend-builder 2/8] RUN corepack enable     && corepack prepare pnpm@11.7.0 --activate     && pnpm config set registry https://registry.npmmirror.com,8.7,True
+before,cold-build,1,,build_step_may_overlap,[frontend-builder 3/8] WORKDIR /build/frontend,1.9,True
+before,cold-build,1,,build_step_may_overlap,[frontend-builder 4/8] COPY frontend/.npmrc frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./,2.6,True
+before,cold-build,1,,build_step_may_overlap,[frontend-builder 5/8] RUN pnpm install --frozen-lockfile,21.9,True
+before,cold-build,1,,build_step_may_overlap,[frontend-builder 6/8] COPY frontend/ .,3.4,True
+before,cold-build,1,,build_step_may_overlap,[frontend-builder 7/8] COPY config/socket-events.json /build/config/socket-events.json,2.5,True
+before,cold-build,1,,build_step_may_overlap,[frontend-builder 8/8] RUN pnpm exec vite build,9.4,True
+before,cold-build,1,,build_step_may_overlap,[python-builder 4/5] COPY requirements.txt .,1.8,True
+before,cold-build,1,,build_step_may_overlap,"[python-builder 5/5] RUN --mount=type=cache,target=/root/.cache/pip     pip install --user -r requirements.txt && pip check",305.5,True
+before,cold-build,1,,build_step_may_overlap,[runtime  4/13] COPY --from=python-builder /root/.local /root/.local,10.3,True
+before,cold-build,1,,build_step_may_overlap,[runtime  5/13] COPY src/animetta/ src/animetta/,2.1,True
+before,cold-build,1,,build_step_may_overlap,[runtime  6/13] COPY config/ config/,1.5,True
+before,cold-build,1,,build_step_may_overlap,[runtime  7/13] COPY scripts/ scripts/,1.6,True
+before,cold-build,1,,build_step_may_overlap,[runtime  8/13] COPY .env.example .env.example,1.9,True
+before,cold-build,1,,build_step_may_overlap,[runtime  9/13] RUN python scripts/validate-events.py,2.5,True
+before,cold-build,1,,build_step_may_overlap,[runtime 10/13] COPY --from=frontend-builder /build/frontend/dist /app/frontend/dist,2.1,True
+before,cold-build,1,,build_step_may_overlap,[runtime 11/13] COPY docker/nginx.conf /etc/nginx/nginx.conf,1.7,True
+before,cold-build,1,,build_step_may_overlap,[runtime 12/13] COPY docker/entrypoint.sh /app/entrypoint.sh,1.8,True
+before,cold-build,1,,build_step_may_overlap,[runtime 13/13] RUN chmod +x /app/entrypoint.sh,2.0,True
+before,cold-build,1,,end_to_end_unavailable,missing_on_resume_termination_cause_unknown,,
+after,cold-build,1,,image_build_receipt_primary_metric,,796.6847329999998,True
+after,cold-build,1,b-d03267e3e63a,build_step_may_overlap_derived_oci_export,#40 exporting to oci image format,70.8,True

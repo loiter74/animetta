@@ -1,6 +1,8 @@
 services:
   redis:
     image: redis:8.8.1-alpine
+    labels:
+      org.animetta.runtime-fingerprint: ${ANIMETTA_REDIS_FINGERPRINT:-untracked}
     environment:
       REDIS_PASSWORD: ${ANIMETTA_REDIS_PASSWORD:?ANIMETTA_REDIS_PASSWORD is required}
     command:
@@ -18,9 +20,12 @@ services:
 
   animetta:
     image: ${ANIMETTA_IMAGE:-animetta:local}
+    labels:
+      org.animetta.runtime-fingerprint: ${ANIMETTA_RUNTIME_FINGERPRINT:-untracked}
     build:
       context: .
       dockerfile: Dockerfile
+      platforms: [linux/amd64]
       args:
         ANIMETTA_BUILD_FINGERPRINT: ${ANIMETTA_BUILD_FINGERPRINT:-untracked}
     ports:
@@ -53,6 +58,7 @@ services:
     healthcheck:
       test: ["CMD", "curl", "--fail", "--silent", "http://localhost:80/health"]
       interval: 30s
+      start_interval: 1s
       timeout: 10s
       retries: 3
       start_period: 360s

@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "calibration": "原版宿主阶段实测后的增量预测；保留原始预测文件不变",
+  "frozen_before_optimized_measurement": true,
+  "baseline_host_stage_sum_seconds": 53.723681399998895,
+  "baseline_host_samples_each": 1,
+  "scenarios": {
+    "model-cold": {
+      "target_seconds": [80, 100],
+      "assumptions": ["镜像与依赖已缓存", "宿主进程停止但模型文件已经存在", "功能配置与验收条件一致"],
+      "basis": "宿主顺序加载实测约53.7秒，加原计划应用启动25–40秒，得到78.7–93.7秒，再以工程粒度取80–100秒区间",
+      "limitations": "应用启动25–40秒仍是预测，含部分重叠检查；宿主各仅一个进程冷启动样本，OS文件缓存未清空。这不是统计置信区间或实际总启动耗时。"
+    }
+  }
+}

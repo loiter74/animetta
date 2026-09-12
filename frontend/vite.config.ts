@@ -5,7 +5,8 @@ import unocss from 'unocss/vite'
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
-  const backendUrl = env.ANIMETTA_BACKEND_URL || 'http://127.0.0.1:12394'
+  const backendUrl =
+    process.env.ANIMETTA_BACKEND_URL || env.ANIMETTA_BACKEND_URL || 'http://127.0.0.1:12394'
 
   return {
     root: resolve(__dirname),
@@ -13,7 +14,7 @@ export default defineConfig(({ mode }) => {
       port: 3000,
       strictPort: true,
       // Allow ngrok tunnels to access dev server
-      allowedHosts: ['.ngrok-free.dev', '.ngrok.io'],
+      allowedHosts: ['frontend', '.ngrok-free.dev', '.ngrok.io'],
       proxy: {
         '/socket.io': {
           target: backendUrl,
@@ -26,6 +27,9 @@ export default defineConfig(({ mode }) => {
           target: backendUrl,
         },
         '/ready': {
+          target: backendUrl,
+        },
+        '/metrics': {
           target: backendUrl,
         },
       },

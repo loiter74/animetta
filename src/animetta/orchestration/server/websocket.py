@@ -2,11 +2,13 @@
 
 import asyncio
 import datetime
+import os
 from collections.abc import AsyncIterator, Callable, Coroutine
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
+import httpx
 import socketio
 from loguru import logger
 from prometheus_client import CollectorRegistry, generate_latest
@@ -56,6 +58,7 @@ from animetta.services.runtime_config import (
 from animetta.utils.env_helper import get_data_dir
 
 from .desktop import DesktopClientManager
+from .frontend_health import probe_development_frontend
 from .lifecycle import LifecycleManager
 from .live2d import Live2DManager
 from .program_script_api import get_program_script_routes
@@ -258,7 +261,12 @@ class WebSocketServer:
 
         # Frontend static files (production build)
         frontend_dist = Path(__file__).parent.parent.parent.parent.parent / "frontend" / "dist"
-        self.frontend_readiness = frontend_asset_readiness(frontend_dist)
+        self.frontend_url = os.environ.get("ANIMETTA_FRONTEND_URL", "").strip()
+        self.frontend_readiness = (
+            {"state": "failed", "ready": False, "reason": "assets_unavailable"}
+            if self.frontend_url
+            else frontend_asset_readiness(frontend_dist)
+        )
         frontend_routes = []
         if frontend_dist.is_dir():
             from starlette.staticfiles import StaticFiles
@@ -331,6 +339,11 @@ class WebSocketServer:
                 self._auth_user_health_loop(),
                 name="auth_user_health",
             )
+            if self.frontend_url:
+                self.supervise_background(
+                    self._frontend_health_loop(),
+                    name="frontend_health",
+                )
             if self.component_readiness_cache is not None:
                 await self.component_readiness_cache.start()
             if self.route_handlers:
@@ -745,6 +758,24 @@ class WebSocketServer:
         if tasks:
             await asyncio.gather(*tasks, return_exceptions=True)
         self._background_tasks.clear()
+
+    async def _frontend_health_loop(self) -> None:
+        try:
+            async with httpx.AsyncClient(
+                base_url=self.frontend_url,
+                timeout=3,
+                follow_redirects=False,
+                trust_env=False,
+            ) as client:
+                while True:
+                    self.frontend_readiness = await probe_development_frontend(client)
+                    await asyncio.sleep(2)
+        finally:
+            self.frontend_readiness = {
+                "state": "failed",
+                "ready": False,
+                "reason": "assets_unavailable",
+            }
 
     async def _cleanup_all_resources(self) -> None:
         """Clean up all resources"""

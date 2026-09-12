@@ -1,0 +1,92 @@
+# Explicitly selected by anima-dev; no automatic override of the live project.
+services:
+  redis:
+    extends:
+      file: docker-compose.yml
+      service: redis
+  animetta:
+    extends:
+      file: docker-compose.yml
+      service: animetta
+    build:
+      target: backend-dev
+    ports: !override
+      - "127.0.0.1:${ANIMETTA_DEV_BACKEND_PORT:-12395}:12394"
+    environment:
+      ANIMETTA_REDIS_URL: redis://:${ANIMETTA_REDIS_PASSWORD}@redis:6379/0
+      ANIMETTA_FRONTEND_URL: http://frontend:3000
+      ANIMETTA_DEV_ORIGINS: http://localhost:${ANIMETTA_DEV_PORT:-3000},http://127.0.0.1:${ANIMETTA_DEV_PORT:-3000}
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:12394/health"]
+      interval: 5s
+      start_interval: 1s
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./src/animetta
+          target: /app/src/animetta
+          initial_sync: true
+          ignore: ["**/__pycache__/", "**/*.pyc"]
+        - action: sync+restart
+          path: ./config
+          target: /app/config
+          initial_sync: true
+          ignore: ["personas/voices/", "**/*.md"]
+        - action: rebuild
+          path: ./requirements.txt
+        - action: rebuild
+          path: ./uv.lock
+        - action: rebuild
+          path: ./pyproject.toml
+        - action: rebuild
+          path: ./Dockerfile
+  frontend:
+    image: ${ANIMETTA_FRONTEND_IMAGE:-animetta:dev-frontend}
+    labels:
+      org.animetta.runtime-fingerprint: ${ANIMETTA_FRONTEND_FINGERPRINT:-untracked}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: frontend-dev
+      platforms: [linux/amd64]
+      args:
+        ANIMETTA_BUILD_FINGERPRINT: ${ANIMETTA_FRONTEND_BUILD_FINGERPRINT:-untracked}
+    environment:
+      ANIMETTA_BACKEND_URL: http://animetta:12394
+    ports:
+      - "127.0.0.1:${ANIMETTA_DEV_PORT:-3000}:3000"
+    depends_on:
+      animetta:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 30s
+      start_interval: 1s
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend
+          target: /build/frontend
+          initial_sync: true
+          ignore: ["node_modules/", "dist/", ".vite/", "electron/", "scripts/", "tests/", "**/__tests__/", "**/*.test.ts", "**/*.spec.ts", "package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml", ".npmrc"]
+        - action: sync
+          path: ./config/socket-events.json
+          target: /build/config/socket-events.json
+          initial_sync: true
+        - action: rebuild
+          path: ./frontend/package.json
+        - action: rebuild
+          path: ./frontend/pnpm-lock.yaml
+        - action: rebuild
+          path: ./frontend/pnpm-workspace.yaml
+        - action: rebuild
+          path: ./frontend/.npmrc
+        - action: rebuild
+          path: ./Dockerfile
+volumes:
+  animetta-memory-db:
+  animetta-data:
+  animetta-redis:

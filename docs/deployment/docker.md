@@ -6,7 +6,7 @@ not built, started, or stopped by Docker.
 
 ## Prerequisites
 
-- Docker 24.0+ with Docker Compose v2
+- A working Linux Docker engine and Docker Compose 2.32+ (Compose Watch)
 - Python 3.13 available through `py -3.13`
 - The configured host Qwen and RVC runtimes and model files
 - API keys required by the selected Animetta profile
@@ -19,14 +19,65 @@ Copy `.env.example` to `.env`, then set at least the selected provider keys and
 ### Build the current source
 
 ```powershell
-# Start or reuse the host runtimes, verify them, build animetta:local, and start it.
-py -3.13 scripts/runtime_lifecycle.py anima-up
+# One click: wait for readiness, then open /live.html.
+.\start-anima.cmd
+# Equivalent lifecycle command (omit --open on headless machines).
+py -3.13 scripts/runtime_lifecycle.py anima-up --wait --open
 ```
 
 Use `anima-up` while developing or when the running service must include the
-current checkout. It always builds the local application image before starting
-it. The lifecycle fails closed if either host runtime fails its readiness and
-identity preflight.
+current checkout. Matching source content reuses the image; matching images,
+configuration and healthy containers reuse the running instance. BuildKit and
+host preparation overlap, while Qwen and RVC cold loading remains sequential.
+Every invocation checks current model identities, HTTP readiness and logs.
+`--rebuild` runs BuildKit explicitly, retaining its dependency caches.
+
+The lifecycle passes the existing system proxy to Docker CLI subprocesses, so
+Windows Buildx authentication uses the same network path as the desktop. Explicit
+proxy environment variables take precedence, including empty values. Existing
+proxy bypass entries are retained, with loopback and `host.docker.internal` added
+for local services. No system proxy or DNS setting is changed.
+
+`--wait` automatically continues the same run ID after an in-progress response.
+Without it, exit code 2 still means in progress; repeat the same command and run
+ID to resume. Concurrent clicks serialize through an OS lock and share the active
+result. Terminal failures stop automatic continuation. Evidence is stored in
+`artifacts/iteration-plans/`; reuse/Watch ownership is in `artifacts/runtime-targets/`.
+
+### Container development with Compose Watch
+
+```powershell
+.\dev-anima.cmd
+# Equivalent:
+py -3.13 scripts/runtime_lifecycle.py anima-dev --wait --open
+# Stop the watcher and development containers, retaining host models and volumes:
+py -3.13 scripts/runtime_lifecycle.py anima-dev-down --wait
+```
+
+Development uses an independent Compose project (`<project>-dev`), images and
+named data volumes. Vite is at `http://localhost:3000`, with the backend at
+`http://localhost:12395`; formal ports remain 80 and 12394. The selected profile
+and providers are unchanged. Set `ANIMETTA_DEV_PORT` or
+`ANIMETTA_DEV_BACKEND_PORT` to override the development ports.
+The development backend probes the actual Vite pages and transformed entry
+modules through `ANIMETTA_FRONTEND_URL=http://frontend:3000`. This runs in its
+existing background supervisor; `/ready` reads the cached result and fails when
+Vite is unavailable. Production continues to check its bundled frontend assets.
+Compose supplies `ANIMETTA_DEV_ORIGINS` for localhost and 127.0.0.1 at the selected
+Vite port. The canonical configuration validates these as loopback origins and
+includes them in its identity. This setting is absent from the formal service.
+
+Ordinary Vue/TypeScript changes synchronize to Vite and use HMR. Python source
+and configuration synchronize and restart the backend. Dependency files trigger
+image rebuilds. Host models are shared, so development and production should
+avoid competing GPU jobs. Run lifecycle commands to own/clean the Watch process;
+manual Compose operations cannot establish the source/configuration attestation.
+
+Build inputs are declared once in `tooling/quality.yml`. Adding a Docker `COPY`
+source requires updating that scope and its invalidation tests. Package versions
+remain pinned by pnpm and the exported Python requirements/uv lock contract.
+See [startup performance](../performance/startup-2026-09-12.md) for the frozen
+targets, measurement commands, and current validation limitations.
 
 ### Deploy a CI-verified image
 

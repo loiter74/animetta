@@ -412,6 +412,43 @@ def test_cfg_011_hashes_are_stable_and_exclude_secret_values(
         assert secret not in first.semantic_hash
 
 
+def test_development_origins_are_explicit_local_and_part_of_config_identity(
+    manifest_data, write_manifest, manifest_secrets
+):
+    path = write_manifest(manifest_data)
+    formal = load_effective_config(path, profile="production")
+    manifest_secrets.setenv("ANIMETTA_DEV_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
+    development = load_effective_config(path, profile="production")
+    assert set(development.security.allowed_origins) == {
+        *formal.security.allowed_origins,
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    }
+    assert development.effective_hash != formal.effective_hash
+    assert development.services == formal.services
+    assert development.policy == formal.policy
+    manifest_secrets.delenv("ANIMETTA_DEV_ORIGINS")
+    assert load_effective_config(path, profile="production").effective_hash == formal.effective_hash
+
+
+@pytest.mark.parametrize(
+    "origin",
+    [
+        "*",
+        "https://example.com:3000",
+        "http://localhost",
+        "http://user:secret@localhost:3000",
+        "http://localhost:99999",
+    ],
+)
+def test_development_origins_reject_nonlocal_or_ambiguous_values(
+    origin, manifest_data, write_manifest, manifest_secrets
+):
+    manifest_secrets.setenv("ANIMETTA_DEV_ORIGINS", origin)
+    with pytest.raises(ManifestValidationError, match="requires loopback"):
+        load_effective_config(write_manifest(manifest_data), profile="production")
+
+
 def test_cfg_011_semantic_hash_excludes_endpoints_but_effective_hash_includes_them(
     manifest_data: dict[str, Any],
     write_manifest,

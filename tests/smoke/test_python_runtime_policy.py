@@ -30,7 +30,9 @@ def test_active_python_version_configuration_matches_canonical_pin() -> None:
         "uv.lock": ('requires-python = ">=3.13"',),
         "Dockerfile": (
             "FROM python:3.13-slim-bookworm AS python-builder",
-            "FROM python:3.13-slim-bookworm AS runtime",
+            "FROM python:3.13-slim-bookworm AS backend-base",
+            "FROM backend-base AS backend-dev",
+            "FROM backend-base AS runtime",
         ),
         "docker-compose.yml": ("dockerfile: Dockerfile",),
         "observability/Dockerfile.notifier": ("FROM python:3.13-slim-bookworm",),

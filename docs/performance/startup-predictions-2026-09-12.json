@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "origin": "用户批准的一键启动优化计划",
+  "baseline_revision": "a016e6c2fa7926bf94b2e7aa849d6f4fcc1ddaf9",
+  "frozen_before_measurement": true,
+  "calibration_status": "blocked_by_docker_engine",
+  "scenarios": {
+    "repeat": {
+      "target_seconds": [8, 15],
+      "samples_required": 5,
+      "basis": "复用一致的镜像和健康实例，只支付源码指纹、宿主身份与当前就绪检查成本"
+    },
+    "application": {
+      "target_seconds": [25, 40],
+      "samples_required": 5,
+      "basis": "依赖和镜像已缓存，宿主模型健康；容器启动、完整预热和就绪仍需支付"
+    },
+    "frontend": {
+      "target_seconds": [1, 3],
+      "samples_required": 5,
+      "comparison": "新增 Compose Watch 能力；不得计算不存在的旧 HMR 降幅"
+    },
+    "backend": {
+      "target_seconds": [5, 15],
+      "samples_required": 5,
+      "comparison": "新增 Compose Watch 能力；同步并重启后必须重新完整就绪"
+    },
+    "model-cold": {
+      "target_seconds": null,
+      "samples_required": 1,
+      "basis": "等待同机原版模型冷加载实测后校准；历史 Qwen 54.7 秒只作定位线索"
+    },
+    "cold-build": {
+      "target_seconds": null,
+      "samples_required": 1,
+      "basis": "等待隔离空缓存基线后分别预测下载、安装、编译；不能使用热缓存替代"
+    }
+  }
+}

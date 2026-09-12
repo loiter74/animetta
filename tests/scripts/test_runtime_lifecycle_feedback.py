@@ -30,6 +30,7 @@ NOW = datetime(2026, 8, 8, tzinfo=UTC)
 @pytest.fixture(autouse=True)
 def isolated_compose_environment(monkeypatch) -> None:
     """Ignore the workspace dotenv while retaining explicit temporary dotenv tests."""
+    monkeypatch.setattr(runtime_lifecycle, "proxy_environment", lambda: {})
     for name in (
         *runtime_lifecycle._COMPOSE_TARGET_KEYS,
         "ANIMETTA_IMAGE",
@@ -42,6 +43,20 @@ def isolated_compose_environment(monkeypatch) -> None:
         runtime_lifecycle,
         "dotenv_values",
         lambda path: {} if path == workspace_dotenv else read_dotenv(path),
+    )
+    # Protocol tests simulate Docker at the context boundary. Cache behavior is
+    # exercised separately with real fingerprinting and image/config fixtures.
+    monkeypatch.setattr(runtime_lifecycle.StartupContext, "prepare", lambda self: None)
+    monkeypatch.setattr(
+        runtime_lifecycle.StartupContext,
+        "current_fingerprints",
+        lambda self: {"animetta": "b" * 64},
+    )
+    monkeypatch.setattr(
+        runtime_lifecycle.StartupContext, "images_match", lambda self, **kwargs: False
+    )
+    monkeypatch.setattr(
+        runtime_lifecycle.StartupContext, "assert_current_images", lambda self, **kwargs: None
     )
 
 
@@ -334,7 +349,7 @@ async def test_main_deploy_does_not_reuse_passed_checkpoints(
         "ghcr.io/loiter74/animetta@sha256:" + "d" * 64,
     ],
 )
-async def test_immutable_deploy_reuses_passed_checkpoints(
+async def test_immutable_deploy_reuses_image_steps_but_refreshes_runtime_checks(
     monkeypatch,
     tmp_path,
     image: str,
@@ -357,9 +372,9 @@ async def test_immutable_deploy_reuses_passed_checkpoints(
             == 0
         )
 
-    assert len(driver.commands) == 7
-    assert len(driver.http_targets) == 3
-    assert len(driver.log_commands) == 1
+    assert len(driver.commands) == 12
+    assert len(driver.http_targets) == 6
+    assert len(driver.log_commands) == 2
 
 
 def test_cleanup_is_one_bounded_animetta_action() -> None:
@@ -546,7 +561,7 @@ def test_buildkit_work_is_resumed_from_exact_process_lease_without_duplicate_lau
     )
 
     started = controller.run(now=NOW)
-    resumed = controller.run(now=NOW + timedelta(seconds=30))
+    resumed = controller.run(now=NOW + timedelta(seconds=600))
 
     assert started.status is FeedbackStatus.IN_PROGRESS
     assert resumed.status is FeedbackStatus.IN_PROGRESS
@@ -565,6 +580,39 @@ def test_buildkit_lease_id_is_unique_to_each_lifecycle_run() -> None:
     assert first == f"anima-up-first-animetta-build-{'a' * 64}"
     assert second == f"anima-up-second-animetta-build-{'a' * 64}"
     assert first != second
+
+
+def test_failed_lease_write_stops_only_the_just_launched_process(tmp_path, monkeypatch) -> None:
+    store = IterationPlanStore(tmp_path)
+    fake = FakeBuildDriver()
+    driver = LeasedSubprocessBuildDriver(
+        workspace_root=tmp_path,
+        artifacts_root=tmp_path,
+        receipt_path=tmp_path / "receipt.json",
+    )
+    stopped = []
+    monkeypatch.setattr(driver, "launch", fake.launch)
+    monkeypatch.setattr(driver, "terminate", stopped.append)
+
+    def failed_write(_lease):
+        raise OSError("lease persistence failed")
+
+    monkeypatch.setattr(store, "write_lease", failed_write)
+    controller = BuildStepController(
+        lease_manager=LeaseManager(store),
+        driver=driver,
+        run_id="run-build",
+        owner="lifecycle-worker",
+        lease_id="animetta-build",
+        command=("docker", "compose", "build", "animetta"),
+        command_digest="b" * 64,
+        log_path="animetta-build.log",
+    )
+    with pytest.raises(OSError, match="lease persistence failed"):
+        controller.run(now=NOW)
+    assert fake.launches == 1
+    assert stopped == [fake.identity]
+    assert not controller.has_lease()
 
 
 def test_completed_build_lease_becomes_terminal_evidence(tmp_path) -> None:
@@ -610,9 +658,11 @@ def test_default_command_routes_to_resumable_bounded_operation(
         run_id: str,
         artifacts_root,
         image: str | None,
+        rebuild: bool = False,
     ) -> int:
         assert artifacts_root == tmp_path
         assert image is None
+        assert rebuild is False
         calls.append((operation, run_id))
         return 2
 

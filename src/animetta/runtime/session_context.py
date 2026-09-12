@@ -738,6 +738,39 @@ class ServiceContext:
                 list_models(),
                 timeout=timeout,
             )
+            model_available = not golden or self._model_catalog_contains(
+                model_catalog, expected_model
+            )
+            if (
+                not model_available
+                and expected_model == "deepseek-v4-flash"
+                and self._model_catalog_contains(model_catalog, "deepseek-flash")
+            ):
+                # The official catalog can expose a canonical ID while the
+                # configured API alias remains valid. Prove that exact request
+                # works; never accept a catalog alias alone or change the model.
+                response = await asyncio.wait_for(
+                    llm.client.chat.completions.create(
+                        model=expected_model,
+                        messages=[{"role": "user", "content": "Reply OK"}],
+                        max_tokens=1,
+                        extra_body={"thinking": {"type": "disabled"}},
+                    ),
+                    timeout=max(0.0, timeout - (time_mod.perf_counter() - started)),
+                )
+                choices = getattr(response, "choices", None)
+                content = (
+                    getattr(getattr(choices[0], "message", None), "content", None)
+                    if isinstance(choices, list) and choices
+                    else None
+                )
+                model_available = (
+                    getattr(response, "model", None) in {expected_model, "deepseek-flash"}
+                    and isinstance(content, str)
+                    and bool(content.strip())
+                )
+                if model_available:
+                    logger.info("[health] LLM catalog alias verified by configured-model request")
         except TimeoutError:
             logger.warning("[health] LLM connectivity timed out")
             return self._set_llm_connectivity_status(
@@ -756,10 +789,7 @@ class ServiceContext:
                 reason=reason,
             )
 
-        if golden and not self._model_catalog_contains(
-            model_catalog,
-            expected_model,
-        ):
+        if not model_available:
             logger.warning("[health] LLM configured model unavailable")
             return self._set_llm_connectivity_status(
                 state="failed",

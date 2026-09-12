@@ -196,11 +196,26 @@ class SchedulerPolicy(FrozenModel):
     max_exclusive: int = Field(default=1, ge=1, le=64)
 
 
+class DockerImageInputs(FrozenModel):
+    paths: tuple[str, ...] = Field(min_length=1)
+    exclude_paths: tuple[str, ...] = ()
+    target: str = "runtime"
+
+    @field_validator("paths", "exclude_paths", mode="before")
+    @classmethod
+    def validate_paths(cls, value: object) -> object:
+        if not isinstance(value, (list, tuple)):
+            raise ValueError("image paths must be a list or tuple")
+        return tuple(_validate_fingerprint_pattern(str(item)) for item in value)
+
+
 class DockerBuildScope(FrozenModel):
     service: str
     compose_file: str
     paths: tuple[str, ...] = Field(min_length=1)
     environment_identity_fields: tuple[str, ...] = Field(min_length=1)
+    image_inputs: DockerImageInputs | None = None
+    development_inputs: dict[str, DockerImageInputs] = {}
 
     @field_validator("paths", mode="before")
     @classmethod

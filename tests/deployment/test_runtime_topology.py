@@ -153,6 +153,7 @@ def test_animetta_compose_selects_local_or_verified_image_from_one_definition() 
     assert app["build"] == {
         "context": ".",
         "dockerfile": "Dockerfile",
+        "platforms": ["linux/amd64"],
         "args": {"ANIMETTA_BUILD_FINGERPRINT": "${ANIMETTA_BUILD_FINGERPRINT:-untracked}"},
     }
 

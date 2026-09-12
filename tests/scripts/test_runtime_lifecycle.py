@@ -10,6 +10,7 @@ from scripts import runtime_lifecycle
 @pytest.fixture(autouse=True)
 def isolated_compose_environment(monkeypatch) -> None:
     """Only explicitly configured test inputs may select a lifecycle target."""
+    monkeypatch.setattr(runtime_lifecycle, "proxy_environment", lambda: {})
     for name in (
         *runtime_lifecycle._COMPOSE_TARGET_KEYS,
         "ANIMETTA_IMAGE",

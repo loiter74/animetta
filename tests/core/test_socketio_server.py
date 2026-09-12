@@ -109,10 +109,12 @@ def test_run_server_uses_the_bounded_singing_websocket_frame_limit(mod, monkeypa
     with (
         patch("atexit.register"),
         patch.object(mod, "init_config"),
-        patch.object(mod, "create_server", return_value=server),
+        patch.object(mod, "create_server", return_value=server) as create,
         patch.object(mod.uvicorn, "run") as run,
     ):
         mod.run_server()
+
+    create.assert_not_called()
 
     run.assert_called_once_with(
         "animetta.core.socketio_server:get_asgi_app",

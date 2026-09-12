@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-09-12T22:45:23.931404+00:00",
+  "calibration": "严格空缓存原版build receipt完成后的增量预测；代码实现已完成，优化版严格冷构建尚未开始。原预测文件保持不变。",
+  "frozen_after_implementation": true,
+  "frozen_before_optimized_measurement": true,
+  "baseline_receipt": {
+    "path": "artifacts/runtime-recovery-20260912/b-cold/sample-01-build.json",
+    "sha256": "5df76eaf43f4e3c57f3c6d03e2aaac780a1c29c090c519e6abf06c5e0728b5ee",
+    "measurement": {
+      "started_at": "2026-09-12T16:21:16.936653+00:00",
+      "finished_at": "2026-09-12T16:34:41.227550+00:00",
+      "elapsed_seconds": 804.2908991000004,
+      "exit_code": 0
+    }
+  },
+  "scenarios": {
+    "cold-build": {
+      "metric": "image_build_receipt_elapsed_seconds",
+      "target_seconds": [
+        650,
+        950
+      ],
+      "samples_per_phase": 1,
+      "assumptions": [
+        "两个不同的0B初始缓存docker-container builder",
+        "同一BuildKit v0.32.2镜像digest、Windows主机与E盘Docker存储",
+        "相同production配置和依赖版本，宿主模型已暖",
+        "网络与磁盘吞吐允许波动，阶段重叠不相加"
+      ],
+      "basis": "原版实际build804.291秒，runtime apt644.9秒（含约84秒共享锁等待）是关键路径；pip305.5秒大部分与系统包并行。uv预计降低Python阶段耗时，但不能把这一差值全部从总构建时间中扣除。考虑apt缓存布局、字节码编译和导出成本后预测650–950秒。",
+      "stage_targets_seconds": {
+        "base_image_pull_and_unpack_overlapping": [
+          30,
+          90
+        ],
+        "apt_index_and_package_download_total": [
+          70,
+          150
+        ],
+        "apt_layers_critical_path_including_unpack_and_lock": [
+          540,
+          760
+        ],
+        "python_resolution_and_download": [
+          30,
+          120
+        ],
+        "python_install_and_dependency_bytecode": [
+          10,
+          60
+        ],
+        "frontend_dependency_install": [
+          15,
+          40
+        ],
+        "frontend_compile": [
+          7,
+          18
+        ],
+        "application_bytecode_compile": [
+          2,
+          10
+        ],
+        "image_export_and_local_load": [
+          65,
+          120
+        ]
+      },
+      "secondary_end_to_end_target_seconds": [
+        680,
+        1000
+      ],
+      "limitations": [
+        "原版完整启动父进程中断，之后机器重启，端到端单调总墙钟缺测；主比较只使用双方真实build receipt，不与优化版端到端总时间相除。",
+        "原版pip的242.2秒包含解析、下载等，不能称作纯下载；apt层同时包含下载、解包、安装与锁等待。",
+        "这些是工程区间，不是置信区间；原版与优化版之间经过主机重启与数小时空档，无法隔离网络及OS缓存影响。"
+      ]
+    }
+  }
+}

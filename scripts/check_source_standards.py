@@ -161,8 +161,24 @@ def _validate_batch(path: PurePosixPath, content: str) -> list[SourceViolation]:
 
 
 def _validate_yaml(path: PurePosixPath, content: str) -> list[SourceViolation]:
+    class ComposeLoader(yaml.SafeLoader):
+        pass
+
+    def compose_override(loader: yaml.SafeLoader, node: yaml.Node) -> object:
+        if isinstance(node, yaml.SequenceNode):
+            return loader.construct_sequence(node)
+        if isinstance(node, yaml.MappingNode):
+            return loader.construct_mapping(node)
+        if isinstance(node, yaml.ScalarNode):
+            return loader.construct_scalar(node)
+        raise ValueError("unsupported Compose YAML node")
+
+    # Standard Compose merge tags do not execute code. Keep other YAML strict.
+    if path.name.startswith("docker-compose"):
+        for tag in ("!override", "!reset"):
+            ComposeLoader.add_constructor(tag, compose_override)
     try:
-        list(yaml.safe_load_all(content))
+        list(yaml.load_all(content, Loader=ComposeLoader))
     except yaml.YAMLError as exc:
         return [_violation(path, f"invalid YAML: {exc}")]
     return []

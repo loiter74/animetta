@@ -30,6 +30,14 @@ if str(ROOT / "src") not in sys.path:
 
 from animetta.host_rvc_contract import HOST_RVC_CONTRACT  # noqa: E402
 from animetta.host_tts_contract import HOST_TTS_CONTRACT  # noqa: E402
+from tooling.runtime_startup import (  # noqa: E402
+    CachedBuildController,
+    StartupContext,
+    development_environment,
+    operation_lock,
+    proxy_environment,
+    write_state,
+)
 
 HOST_TTS_RUNTIME_ROOT = Path(r"D:\AnimaModelAuditions\qwen3-tts-1.7b-streaming-20260726")
 HOST_TTS_PYTHON = HOST_TTS_RUNTIME_ROOT / "venv" / "Scripts" / "python.exe"
@@ -52,6 +60,8 @@ _COMPOSE_TARGET_KEYS = (
     "COMPOSE_ENV_FILES",
     "ANIMETTA_HTTP_PORT",
     "ANIMETTA_PORT",
+    "ANIMETTA_DEV_PORT",
+    "ANIMETTA_DEV_BACKEND_PORT",
 )
 _DEPLOY_IMAGE_PATTERN = re.compile(
     rf"^(?:{re.escape(GHCR_ANIMETTA_IMAGE)}:"
@@ -67,6 +77,8 @@ OPERATIONS = (
     "host-rvc-status",
     "host-rvc-stop",
     "anima-up",
+    "anima-dev",
+    "anima-dev-down",
     "anima-deploy",
     "anima-selftest-up",
     "anima-down",
@@ -522,8 +534,14 @@ def _compose_environment(*, image: str | None = None, profile: str | None = None
     def value(name: str) -> str:
         return (os.getenv(name, dotenv.get(name)) or "").strip()
 
-    environment = {name: value(name) for name in _COMPOSE_TARGET_KEYS if value(name)}
-    for name in ("ANIMETTA_HTTP_PORT", "ANIMETTA_PORT"):
+    environment = proxy_environment()
+    environment.update({name: value(name) for name in _COMPOSE_TARGET_KEYS if value(name)})
+    for name in (
+        "ANIMETTA_HTTP_PORT",
+        "ANIMETTA_PORT",
+        "ANIMETTA_DEV_PORT",
+        "ANIMETTA_DEV_BACKEND_PORT",
+    ):
         if name in environment:
             port = int(environment[name])
             if not 1 <= port <= 65535:
@@ -630,6 +648,8 @@ def _valid_http_body(target: str, body: str) -> bool:
         return False
     if target.endswith("/health"):
         return payload.get("status") == "ok"
+    if "ready" in payload:
+        return payload["ready"] is True
     return payload.get("ready") is True or payload.get("status") in {"ok", "ready"}
 
 
@@ -640,6 +660,7 @@ class _SystemLifecycleDriver:
         evidence_root: Path,
         environment: dict[str, str] | None = None,
         access_token: str | None = None,
+        startup: StartupContext | None = None,
     ) -> None:
         from tooling.execution_feedback.lifecycle import LifecycleDriverObservation
 
@@ -648,6 +669,8 @@ class _SystemLifecycleDriver:
         self._evidence_root.mkdir(parents=True, exist_ok=True)
         self._environment = dict(environment or {})
         self._access_token = access_token or ""
+        self._startup = startup
+        self._log_since = datetime.now(UTC).isoformat()
 
     def _redact(self, contents: str) -> str:
         if self._access_token:
@@ -661,6 +684,24 @@ class _SystemLifecycleDriver:
         return path.resolve().as_posix()
 
     def run_command(self, command: tuple[str, ...], *, timeout_seconds: float):
+        if self._startup is not None:
+            summary = None
+            if command[:3] == ("docker", "compose", "up"):
+                self._startup.assert_current_images()
+                if self._startup.containers_match():
+                    summary = "Reused healthy containers with matching images and configuration"
+            elif command == ("development-watch",):
+                summary = f"Compose Watch {self._startup.start_watch()}"
+            elif command == ("development-watch-stop",):
+                self._startup.stop_watch()
+                summary = "Compose Watch stopped"
+            if summary is not None:
+                return self._observation_type(
+                    succeeded=True,
+                    summary=summary,
+                    exit_code=0,
+                    evidence_refs=(self._evidence("runtime-reuse", summary),),
+                )
         if command == ("host-tts-start",):
             ready = _host_tts_up(best_effort=False)
             return self._observation_type(
@@ -815,7 +856,7 @@ class _SystemLifecycleDriver:
                     break
             except (OSError, TimeoutError, urllib.error.URLError, ValueError) as exc:
                 last_error = type(exc).__name__
-            time.sleep(5)
+            time.sleep(0.5)
         reference = self._evidence("http-timeout", last_error)
         return self._observation_type(
             succeeded=False,
@@ -824,6 +865,8 @@ class _SystemLifecycleDriver:
         )
 
     def check_logs(self, command: tuple[str, ...], *, timeout_seconds: float):
+        if command[:3] == ("docker", "compose", "logs"):
+            command = (*command[:3], "--since", self._log_since, "--tail", "200", *command[3:])
         observation = self.run_command(command, timeout_seconds=timeout_seconds)
         output = "\n".join(
             Path(reference).read_text(encoding="utf-8", errors="replace")
@@ -886,6 +929,13 @@ def _bounded_input_fingerprint(
     ]
     if image is not None:
         parts.append(image.encode())
+    if operation in {"anima-up", "anima-dev"}:
+        context = StartupContext(ROOT, target_environment, development=operation == "anima-dev")
+        parts.append(json.dumps(context.current_fingerprints(), sort_keys=True).encode())
+        parts.append(json.dumps(target_environment, sort_keys=True).encode())
+        parts.append(json.dumps(dict(os.environ), sort_keys=True).encode())
+        # Values are only hashed, never persisted in plans or log output.
+        parts.append(json.dumps(dict(dotenv_values(ROOT / ".env")), sort_keys=True).encode())
     material = b"\0".join(parts)
     return hashlib.sha256(material).hexdigest()
 
@@ -910,6 +960,7 @@ async def run_bounded_operation(
     run_id: str,
     artifacts_root: Path,
     image: str | None = None,
+    rebuild: bool = False,
 ) -> int:
     from tooling.execution_feedback import (
         ActionResult,
@@ -934,6 +985,17 @@ async def run_bounded_operation(
     runtime_environment = _compose_environment(
         image=selected_image,
     )
+    development = operation in {"anima-dev", "anima-dev-down"}
+    if development:
+        runtime_environment = development_environment(ROOT, runtime_environment)
+    startup = None
+    if operation in {"anima-up", "anima-dev", "anima-dev-down"}:
+        startup = StartupContext(
+            ROOT, runtime_environment, development=development, force_build=rebuild
+        )
+        if operation != "anima-dev-down":
+            await asyncio.to_thread(startup.prepare)
+    build_command = startup.build_command if startup else _ANIMETTA_BUILD_COMMAND
     input_fingerprint = _bounded_input_fingerprint(
         operation,
         image=selected_image,
@@ -941,7 +1003,7 @@ async def run_bounded_operation(
         environment=runtime_environment,
     )
     build_command_digest = _build_command_digest(
-        _ANIMETTA_BUILD_COMMAND,
+        build_command,
         environment=runtime_environment,
         input_fingerprint=input_fingerprint,
     )
@@ -963,23 +1025,38 @@ async def run_bounded_operation(
         receipt_path=run_root / "animetta-build-receipt.json",
         environment=runtime_environment,
     )
-    build_controller = BuildStepController(
+    leased_build_controller = BuildStepController(
         lease_manager=LeaseManager(store),
         driver=build_driver,
         run_id=run_id,
         owner="lifecycle-worker",
         lease_id=build_lease_id,
-        command=_ANIMETTA_BUILD_COMMAND,
+        command=build_command,
         command_digest=build_command_digest,
         log_path=build_log,
     )
+    build_controller = (
+        CachedBuildController(startup, leased_build_controller)
+        if startup and operation != "anima-dev-down"
+        else leased_build_controller
+    )
+    if startup and operation != "anima-dev-down":
+        if development and (rebuild or not await asyncio.to_thread(startup.images_match)):
+            # Never run a Watch rebuild concurrently with the explicit build.
+            await asyncio.to_thread(startup.stop_watch)
+        # BuildKit uses CPU/network while host model loads remain sequential.
+        initial_build = await asyncio.to_thread(build_controller.run, now=datetime.now(UTC))
+        if initial_build.status in {FeedbackStatus.FAILED, FeedbackStatus.BLOCKED}:
+            print(initial_build.model_dump_json())
+            return 1
     executor = LifecycleStepExecutor(
         driver=_SystemLifecycleDriver(
             evidence_root=run_root / "evidence",
             environment=runtime_environment,
             access_token=_animetta_access_token()
-            if operation in {"anima-up", "anima-deploy"}
+            if operation in {"anima-up", "anima-dev", "anima-deploy"}
             else None,
+            startup=startup,
         ),
         build_controller=build_controller,
     )
@@ -993,6 +1070,7 @@ async def run_bounded_operation(
         checkpoint = store.read_checkpoint(run_id, step_contract.id)
         if (
             _allows_passed_checkpoint_reuse(operation, image=selected_image)
+            and step_contract.id in {"animetta-build", "animetta-pull", "animetta-image-status"}
             and recovered.result is not None
             and recovered.result.status is FeedbackStatus.PASSED
             and checkpoint is not None
@@ -1042,7 +1120,13 @@ async def run_bounded_operation(
                 )
             )
             continue
-        return 2 if result.status is FeedbackStatus.IN_PROGRESS else 1
+        if result.status is FeedbackStatus.IN_PROGRESS:
+            return 2
+        if startup and operation != "anima-dev-down":
+            await asyncio.to_thread(build_controller.cancel)
+            if development:
+                await asyncio.to_thread(startup.stop_watch)
+        return 1
     return 0
 
 
@@ -1051,6 +1135,15 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("operation", choices=OPERATIONS)
     parser.add_argument("--image", type=_image_argument)
     parser.add_argument("--run-id")
+    parser.add_argument(
+        "--wait", action="store_true", help="Continue the same run until ready or failed"
+    )
+    parser.add_argument(
+        "--rebuild", action="store_true", help="Run BuildKit even when image inputs match"
+    )
+    parser.add_argument(
+        "--open", action="store_true", help="Open the live page after readiness succeeds"
+    )
     parser.add_argument(
         "--artifacts-root",
         type=Path,
@@ -1066,19 +1159,106 @@ def main(argv: Sequence[str] | None = None) -> int:
         parser.error("anima-deploy requires --image")
     if args.operation != "anima-deploy" and args.image is not None:
         parser.error("--image is only valid with anima-deploy")
-    run_id = args.run_id or f"{args.operation}-{uuid.uuid4().hex[:12]}"
+    if args.rebuild and args.operation not in {"anima-up", "anima-dev"}:
+        parser.error("--rebuild requires anima-up or anima-dev")
+    requested_at = time.time()
+    # Serializes launch/stop and shared host preparation across formal/dev targets.
+    # The OS releases this lock after interruption, allowing the next click to resume.
+    with operation_lock(ROOT / "artifacts/runtime-targets/lifecycle.lock"):
+        result = _run_cli(args, requested_at=requested_at)
+    if result == 0 and args.open:
+        import webbrowser
+
+        environment = _compose_environment(image=args.image)
+        if args.operation == "anima-dev":
+            environment = development_environment(ROOT, environment)
+        webbrowser.open(f"{_http_base_url(environment)}/live.html")
+    return result
+
+
+def _run_cli(args: argparse.Namespace, *, requested_at: float) -> int:
+    environment = _compose_environment(image=args.image)
+    if args.operation in {"anima-dev", "anima-dev-down"}:
+        environment = development_environment(ROOT, environment)
+    fingerprint = _bounded_input_fingerprint(
+        args.operation,
+        image=args.image,
+        profile=environment["ANIMETTA_PROFILE"],
+        environment=environment,
+    )
+    state_path = args.artifacts_root.resolve() / "pending" / f"{args.operation}.json"
+    if args.operation in {"anima-down", "anima-dev-down"}:
+        start_operation = "anima-up" if args.operation == "anima-down" else "anima-dev"
+        start_path = state_path.with_name(f"{start_operation}.json")
+        if start_path.exists():
+            pending = json.loads(start_path.read_text(encoding="utf-8"))
+            if pending.get("exit_code") == 2:
+                _cancel_pending_build(pending, args.artifacts_root)
+                write_state(start_path, {**pending, "exit_code": 1, "finished_at": time.time()})
+    previous = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else {}
+    same_request = (
+        previous.get("fingerprint") == fingerprint and previous.get("rebuild") == args.rebuild
+    )
+    if same_request and previous.get("finished_at", 0) >= requested_at and not args.run_id:
+        return int(previous["exit_code"])
+    if previous.get("exit_code") == 2 and not same_request:
+        # Do not orphan an old build when the source or target changes mid-run.
+        _cancel_pending_build(previous, args.artifacts_root)
+    resume = same_request and previous.get("exit_code") == 2
+    run_id = args.run_id or (
+        previous["run_id"] if resume else f"{args.operation}-{uuid.uuid4().hex[:12]}"
+    )
+    state = {
+        "run_id": run_id,
+        "fingerprint": fingerprint,
+        "rebuild": args.rebuild,
+        "exit_code": 2,
+        "artifacts_root": str(args.artifacts_root.resolve()),
+    }
+    write_state(state_path, state)
     invocation = {"run_id": run_id, "mode": "bounded-feedback"}
     if args.image is not None:
         invocation["image"] = args.image
     print(json.dumps(invocation, sort_keys=True))
-    return asyncio.run(
-        run_bounded_operation(
-            args.operation,
-            run_id=run_id,
-            artifacts_root=args.artifacts_root,
-            image=args.image,
-        )
+    while True:
+        try:
+            result = asyncio.run(
+                run_bounded_operation(
+                    args.operation,
+                    run_id=run_id,
+                    artifacts_root=args.artifacts_root,
+                    image=args.image,
+                    rebuild=args.rebuild,
+                )
+            )
+        except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as exc:
+            result = 1
+            print(json.dumps({"run_id": run_id, "status": "failed", "error": str(exc)}))
+            _cancel_pending_build(state, args.artifacts_root)
+        state["exit_code"] = result
+        if result != 2:
+            state["finished_at"] = time.time()
+        write_state(state_path, state)
+        if result != 2 or not args.wait:
+            break
+        time.sleep(1)
+    return result
+
+
+def _cancel_pending_build(state: dict, artifacts_root: Path) -> None:
+    from tooling.execution_feedback import IterationPlanStore, ResourceOwnership
+    from tooling.execution_feedback.lifecycle import LeasedSubprocessBuildDriver
+
+    root = Path(state.get("artifacts_root", artifacts_root)).resolve()
+    run_id = state["run_id"]
+    driver = LeasedSubprocessBuildDriver(
+        workspace_root=ROOT,
+        artifacts_root=root,
+        receipt_path=root / run_id / "animetta-build-receipt.json",
     )
+    for lease in IterationPlanStore(root).list_leases(run_id):
+        if lease.owner == "lifecycle-worker" and lease.ownership is ResourceOwnership.OWNED:
+            driver.terminate(lease.identity)
 
 
 if __name__ == "__main__":

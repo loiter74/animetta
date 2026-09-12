@@ -25,6 +25,31 @@ from tooling.execution_feedback import (
 NOW = datetime(2026, 8, 8, tzinfo=UTC)
 
 
+@pytest.mark.parametrize("writer", ["store", "receipt"])
+def test_atomic_write_accepts_valid_windows_path_near_limit(tmp_path, monkeypatch, writer):
+    from tooling.execution_feedback.process_runner import _write_receipt
+
+    # The observed lease path was valid at 224 characters; appending a UUID
+    # made its temporary path 261 characters and prevented lease persistence.
+    path = tmp_path / ("l" * (224 - len(str(tmp_path)) - 6) + ".json")
+    assert len(str(path)) == 224
+    original_open = Path.open
+
+    def windows_open(candidate, *args, **kwargs):
+        if len(str(candidate)) >= 260:
+            raise OSError(2, "Windows path exceeds MAX_PATH")
+        return original_open(candidate, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "open", windows_open)
+    if writer == "store":
+        IterationPlanStore._atomic_write(path, {"exit_code": 0})
+    else:
+        _write_receipt(path, exit_code=0, started_at=NOW.isoformat(), elapsed_seconds=1.0)
+
+    assert json.loads(path.read_text(encoding="utf-8"))["exit_code"] == 0
+    assert not list(tmp_path.glob("*.tmp"))
+
+
 def _result(*, window_sequence: int = 1) -> FeedbackWindowResult:
     return FeedbackWindowResult(
         run_id="run-1",

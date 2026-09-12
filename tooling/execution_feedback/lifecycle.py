@@ -5,6 +5,7 @@ import json
 import os
 import subprocess
 import sys
+import time
 from datetime import datetime
 from enum import StrEnum
 from pathlib import Path
@@ -227,6 +228,31 @@ class LeasedSubprocessBuildDriver:
             pass
         return ResourceObservation(identity=identity, running=False, exit_code=exit_code)
 
+    def terminate(self, identity: ResourceIdentity) -> None:
+        observation = self.inspect(identity)
+        if not observation.running:
+            return
+        if observation.identity != identity:
+            raise RuntimeError("process identity changed; refusing to terminate it")
+        if sys.platform == "win32":
+            subprocess.run(
+                ("taskkill", "/PID", identity.resource_id, "/T", "/F"),
+                capture_output=True,
+                check=True,
+                timeout=15,
+            )
+        else:
+            import signal
+
+            os.killpg(int(identity.resource_id), signal.SIGTERM)
+        deadline = time.monotonic() + 15
+        while time.monotonic() < deadline:
+            current = self.inspect(identity)
+            if not current.running or current.identity != identity:
+                return
+            time.sleep(0.2)
+        raise RuntimeError("owned process group did not terminate")
+
 
 class LifecycleDriverObservation(FrozenModel):
     succeeded: bool
@@ -258,12 +284,16 @@ class LifecycleDriver(Protocol):
     ) -> LifecycleDriverObservation: ...
 
 
+class LifecycleBuildController(Protocol):
+    def run(self, *, now: datetime) -> ActionResult: ...
+
+
 class LifecycleStepExecutor:
     def __init__(
         self,
         *,
         driver: LifecycleDriver,
-        build_controller: BuildStepController | None = None,
+        build_controller: LifecycleBuildController | None = None,
     ) -> None:
         self._driver = driver
         self._build_controller = build_controller
@@ -337,28 +367,59 @@ class BuildStepController:
         self._command_digest = command_digest
         self._log_path = log_path
 
+    def has_lease(self) -> bool:
+        try:
+            self._leases.read(self._run_id, self._lease_id)
+        except FileNotFoundError:
+            return False
+        return True
+
+    def cancel(self) -> None:
+        try:
+            lease = self._leases.read(self._run_id, self._lease_id)
+        except FileNotFoundError:
+            return
+        if lease.ownership is not ResourceOwnership.OWNED or lease.owner != self._owner:
+            raise RuntimeError("cannot cancel a build owned by another worker")
+        if isinstance(self._driver, LeasedSubprocessBuildDriver):
+            self._driver.terminate(lease.identity)
+
     def run(self, *, now: datetime) -> ActionResult:
         try:
             lease = self._leases.read(self._run_id, self._lease_id)
         except FileNotFoundError:
             launch = self._driver.launch(self._command, log_path=self._log_path)
-            lease = self._leases.register(
-                ResourceLease(
-                    lease_id=self._lease_id,
-                    run_id=self._run_id,
-                    owner=self._owner,
-                    identity=launch.identity,
-                    command_digest=self._command_digest,
-                    log_path=launch.log_path,
-                    created_at=now,
-                    heartbeat_at=now,
-                    ttl_seconds=300,
-                    cleanup_strategy=CleanupStrategy.TERMINATE_PROCESS_GROUP,
-                    ownership=ResourceOwnership.OWNED,
+            try:
+                lease = self._leases.register(
+                    ResourceLease(
+                        lease_id=self._lease_id,
+                        run_id=self._run_id,
+                        owner=self._owner,
+                        identity=launch.identity,
+                        command_digest=self._command_digest,
+                        log_path=launch.log_path,
+                        created_at=now,
+                        heartbeat_at=now,
+                        ttl_seconds=300,
+                        cleanup_strategy=CleanupStrategy.TERMINATE_PROCESS_GROUP,
+                        ownership=ResourceOwnership.OWNED,
+                    )
                 )
-            )
+            except Exception:
+                if isinstance(self._driver, LeasedSubprocessBuildDriver):
+                    self._driver.terminate(launch.identity)
+                raise
             return self._in_progress(lease, "BuildKit process started with an exact lease")
 
+        # A continuation may arrive after the feedback TTL. Reconcile only an
+        # exact matching owned process; a recycled PID never authorizes reuse.
+        if (now - lease.heartbeat_at).total_seconds() >= lease.ttl_seconds:
+            self._leases.reconcile(
+                run_id=self._run_id,
+                inspector=self._driver,
+                new_owner=self._owner,
+                now=now,
+            )
         inspection = self._leases.inspect(
             self._lease_id,
             inspector=self._driver,
@@ -414,20 +475,27 @@ def _contracts(
     http_base_url: str = "http://localhost",
 ) -> tuple[LifecycleStepContract, ...]:
     definitions: tuple[_LifecycleStepDefinition, ...]
-    if operation == "anima-up":
+    if operation in {"anima-up", "anima-dev"}:
+        development = operation == "anima-dev"
+        services = ("animetta", "frontend") if development else ("animetta",)
         definitions = (
             *_HOST_RUNTIME_DEFINITIONS,
             (
                 "animetta-build",
                 LifecycleStepKind.BUILD,
-                ("docker", "compose", "build", "animetta"),
+                ("docker", "compose", "build", *services),
                 None,
             ),
             (
                 "animetta-start",
                 LifecycleStepKind.COMMAND,
-                ("docker", "compose", "up", "-d", "--no-build", "animetta"),
+                ("docker", "compose", "up", "-d", "--no-build", *services),
                 None,
+            ),
+            *(
+                (("development-watch", LifecycleStepKind.COMMAND, ("development-watch",), None),)
+                if development
+                else ()
             ),
             ("animetta-health", LifecycleStepKind.HTTP_CHECK, (), f"{http_base_url}/health"),
             ("animetta-ready", LifecycleStepKind.HTTP_CHECK, (), f"{http_base_url}/ready"),
@@ -472,8 +540,20 @@ def _contracts(
                 None,
             ),
         )
-    elif operation == "anima-down":
+    elif operation in {"anima-down", "anima-dev-down"}:
         definitions = (
+            *(
+                (
+                    (
+                        "development-watch-stop",
+                        LifecycleStepKind.COMMAND,
+                        ("development-watch-stop",),
+                        None,
+                    ),
+                )
+                if operation == "anima-dev-down"
+                else ()
+            ),
             (
                 "animetta-cleanup",
                 LifecycleStepKind.COMMAND,

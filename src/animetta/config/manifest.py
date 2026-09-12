@@ -10,6 +10,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Literal, cast
+from urllib.parse import urlsplit
 
 import yaml
 from pydantic import (
@@ -634,7 +635,30 @@ def _resolve_application(application: ApplicationManifest) -> ApplicationManifes
         raise ManifestValidationError("application.system.port must resolve to an integer") from exc
     if not 1 <= port <= 65535:
         raise ManifestValidationError("application.system.port must be between 1 and 65535")
-    return application.model_copy(update={"system": ApplicationSystem(host=str(host), port=port)})
+    updates: dict[str, Any] = {"system": ApplicationSystem(host=str(host), port=port)}
+    if development_origins := os.getenv("ANIMETTA_DEV_ORIGINS"):
+        origins = [value.strip() for value in development_origins.split(",")]
+        for origin in origins:
+            try:
+                parsed = urlsplit(origin)
+                local = (
+                    parsed.hostname in {"localhost", "127.0.0.1", "::1"}
+                    and parsed.username is None
+                    and parsed.password is None
+                    and parsed.port is not None
+                )
+            except ValueError:
+                local = False
+            if not local:
+                raise ManifestValidationError(
+                    "ANIMETTA_DEV_ORIGINS requires loopback origins with ports"
+                )
+        security = dict(application.security)
+        security["allowed_origins"] = list(dict.fromkeys([*security["allowed_origins"], *origins]))
+        updates["security_snapshot_json"] = _canonical_model_json(
+            SecurityConfig.model_validate(security)
+        )
+    return application.model_copy(update=updates)
 
 
 def _select_profile(

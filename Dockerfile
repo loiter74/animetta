@@ -1,116 +1,85 @@
-# ============================================================================
-# Animetta — Core Dockerfile (Lightweight)
-# ============================================================================
-# Minimal image for remote/mock provider deployments.
-# No CUDA, no local AI inference packages.
-#
-# Build and run the personal edition:
-#   py -3.13 scripts/runtime_lifecycle.py anima-up
-#
-# GPU inference runs in the host-local Qwen runtime on port 8767.
-# ============================================================================
+# syntax=docker/dockerfile:1
+# Shared dependency stages for the web runtime and Compose Watch development.
+# Qwen and RVC remain Windows host services; no GPU packages enter this image.
 
-# ---------------------------------------------------------------------------
-# Stage 1: Frontend builder
-# ---------------------------------------------------------------------------
-FROM node:22-bookworm-slim AS frontend-builder
-
+FROM node:22-bookworm-slim AS frontend-deps
 RUN corepack enable \
     && corepack prepare pnpm@11.7.0 --activate \
-    && pnpm config set registry https://registry.npmmirror.com
-
+    && pnpm config set registry https://registry.npmmirror.com \
+    && pnpm config set store-dir /pnpm/store
 WORKDIR /build/frontend
-
-# Docker only needs the Vite web bundle; the Electron desktop binary is not
-# used in the nginx runtime image and is large/flaky to fetch during builds.
-ENV ELECTRON_SKIP_BINARY_DOWNLOAD=1
-ENV npm_config_electron_skip_binary_download=true
-
+ENV ELECTRON_SKIP_BINARY_DOWNLOAD=1 npm_config_electron_skip_binary_download=true
 COPY frontend/.npmrc frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./
+RUN --mount=type=cache,id=animetta-pnpm-11,target=/pnpm/store \
+    pnpm install --frozen-lockfile --prefer-offline
 
-RUN pnpm install --frozen-lockfile
-
-COPY frontend/ .
-
-# Copy config needed by socket-events.ts import
+FROM frontend-deps AS frontend-source
+COPY frontend/*.html frontend/vite.config.ts frontend/uno.config.ts frontend/tsconfig.json ./
+COPY frontend/src/ ./src/
+COPY frontend/public/ ./public/
 COPY config/socket-events.json /build/config/socket-events.json
 
-# Skip TypeScript check in Docker build (run vite build directly)
-RUN pnpm exec vite build
-
-# ---------------------------------------------------------------------------
-# Stage 2: Python dependency builder
-# ---------------------------------------------------------------------------
-FROM python:3.13-slim-bookworm AS python-builder
-
-WORKDIR /build
-
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources \
-    && apt-get -o Acquire::Retries=5 update \
-    && apt-get install -y --no-install-recommends \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
-
-# Use Chinese pip mirror for faster downloads
-ENV PIP_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/
-ENV PIP_TRUSTED_HOST=mirrors.aliyun.com
-
-COPY requirements.txt .
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --user -r requirements.txt && pip check
-
-# ---------------------------------------------------------------------------
-# Stage 3: Runtime
-# ---------------------------------------------------------------------------
-FROM python:3.13-slim-bookworm AS runtime
-
+FROM frontend-source AS frontend-dev
 ARG ANIMETTA_BUILD_FINGERPRINT=untracked
 LABEL org.animetta.build-fingerprint="${ANIMETTA_BUILD_FINGERPRINT}"
+EXPOSE 3000
+CMD ["pnpm", "exec", "vite", "--host", "0.0.0.0"]
 
-WORKDIR /app
+FROM frontend-source AS frontend-builder
+# The affected quality gate runs the full typecheck and build contract.
+RUN pnpm exec vite build
 
-# Install runtime system deps
+FROM ghcr.io/astral-sh/uv:0.11.19 AS uv
+FROM python:3.13-slim-bookworm AS python-builder
+COPY --from=uv /uv /usr/local/bin/uv
+WORKDIR /build
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources \
+    rm -f /etc/apt/apt.conf.d/docker-clean \
+    && sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources \
     && apt-get -o Acquire::Retries=5 update \
-    && apt-get install -y --no-install-recommends ffmpeg nginx curl \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get install -y --no-install-recommends gcc
+ENV UV_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/ UV_LINK_MODE=copy
+COPY requirements.txt ./
+RUN --mount=type=cache,id=animetta-uv-013,target=/root/.cache/uv \
+    uv venv --python /usr/local/bin/python /opt/venv \
+    && uv pip sync --python /opt/venv/bin/python --compile-bytecode requirements.txt \
+    && uv pip check --python /opt/venv/bin/python
 
-# Copy installed Python packages from builder
-COPY --from=python-builder /root/.local /root/.local
-ENV PATH=/root/.local/bin:$PATH
-
-# Copy backend source
+FROM python:3.13-slim-bookworm AS backend-base
+WORKDIR /app
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    rm -f /etc/apt/apt.conf.d/docker-clean \
+    && sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources \
+    && apt-get -o Acquire::Retries=5 update \
+    && apt-get install -y --no-install-recommends ffmpeg nginx curl
+COPY --from=python-builder /opt/venv /opt/venv
+ENV PATH=/opt/venv/bin:$PATH PYTHONPATH=/app/src PYTHONUNBUFFERED=1
+ENV ANIMETTA_HOST=0.0.0.0 ANIMETTA_PORT=12394 ANIMETTA_PROFILE=test
 COPY src/animetta/ src/animetta/
 COPY config/ config/
-COPY scripts/ scripts/
 COPY .env.example .env.example
+RUN python -m compileall -q --invalidation-mode checked-hash src/animetta
 
-# Validate Socket.IO event name consistency
-RUN python scripts/validate-events.py
+FROM backend-base AS backend-dev
+ARG ANIMETTA_BUILD_FINGERPRINT=untracked
+LABEL org.animetta.build-fingerprint="${ANIMETTA_BUILD_FINGERPRINT}"
+EXPOSE 12394
+CMD ["python", "-m", "animetta.core.socketio_server"]
 
-# Copy frontend build
+FROM backend-base AS runtime
+COPY scripts/validate-events.py scripts/validate-events.py
+RUN --mount=type=bind,from=frontend-source,source=/build/frontend,target=/app/frontend \
+    python scripts/validate-events.py
 COPY --from=frontend-builder /build/frontend/dist /app/frontend/dist
-
-# Copy Docker config files
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY docker/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
-
-# Environment variables
-ENV PYTHONPATH=/app/src
-ENV ANIMETTA_HOST=0.0.0.0
-ENV ANIMETTA_PORT=12394
-ENV ANIMETTA_PROFILE=test
-
-# Expose nginx (80) and backend (12394)
 EXPOSE 80 12394
-
-# Health check via nginx
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
     CMD curl -f http://localhost:80/health || exit 1
-
+# Volatile build identity belongs after every expensive layer.
+ARG ANIMETTA_BUILD_FINGERPRINT=untracked
+LABEL org.animetta.build-fingerprint="${ANIMETTA_BUILD_FINGERPRINT}"
 ENTRYPOINT ["/app/entrypoint.sh"]

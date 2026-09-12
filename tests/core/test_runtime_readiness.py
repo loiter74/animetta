@@ -602,6 +602,86 @@ async def test_golden_connectivity_accepts_nested_proxy_and_target_model() -> No
     assert "private-model" not in json.dumps(context.llm_connectivity_status)
 
 
+@pytest.mark.parametrize("returned_model", ["deepseek-flash", "deepseek-v4-flash"])
+async def test_golden_catalog_alias_requires_the_configured_model_to_generate(
+    returned_model: str,
+) -> None:
+    llm = _DeepSeek()
+    completion = AsyncMock(
+        return_value=SimpleNamespace(
+            model=returned_model,
+            choices=[SimpleNamespace(message=SimpleNamespace(content="O"))],
+        )
+    )
+    llm.client = SimpleNamespace(
+        models=SimpleNamespace(
+            list=AsyncMock(
+                return_value=SimpleNamespace(data=[SimpleNamespace(id="deepseek-flash")])
+            )
+        ),
+        chat=SimpleNamespace(completions=SimpleNamespace(create=completion)),
+    )
+    context = ServiceContext()
+    context.config = _config()
+    context.llm_engine = llm
+
+    result = await context.verify_llm_connectivity(timeout=0.5)
+
+    assert result["ready"] is True
+    assert llm.model == context.config.agent.llm_config.model == "deepseek-v4-flash"
+    completion.assert_awaited_once_with(
+        model="deepseek-v4-flash",
+        messages=[{"role": "user", "content": "Reply OK"}],
+        max_tokens=1,
+        extra_body={"thinking": {"type": "disabled"}},
+    )
+    assert "super-secret-api-key" not in json.dumps(result)
+
+
+@pytest.mark.parametrize(
+    ("response", "error", "reason"),
+    [
+        (SimpleNamespace(model="deepseek-flash", choices=[]), None, "model_unavailable"),
+        (
+            SimpleNamespace(
+                model="deepseek-v4-pro",
+                choices=[SimpleNamespace(message=SimpleNamespace(content="private response"))],
+            ),
+            None,
+            "model_unavailable",
+        ),
+        (
+            SimpleNamespace(
+                model="deepseek-flash",
+                choices=[SimpleNamespace(message=SimpleNamespace(content=" "))],
+            ),
+            None,
+            "model_unavailable",
+        ),
+        (None, TimeoutError("private response"), "timeout"),
+        (None, RuntimeError("private response"), "request_failed"),
+    ],
+)
+async def test_golden_catalog_alias_fails_closed(
+    response: object, error: Exception | None, reason: str
+) -> None:
+    llm = _DeepSeek()
+    completion = AsyncMock(return_value=response, side_effect=error)
+    llm.client = SimpleNamespace(
+        models=SimpleNamespace(list=AsyncMock(return_value={"data": [{"id": "deepseek-flash"}]})),
+        chat=SimpleNamespace(completions=SimpleNamespace(create=completion)),
+    )
+    context = ServiceContext()
+    context.config = _config()
+    context.llm_engine = llm
+
+    result = await context.verify_llm_connectivity(timeout=0.5)
+
+    assert result == {"state": "failed", "ready": False, "reason": reason}
+    completion.assert_awaited_once()
+    assert "private response" not in json.dumps(context.llm_connectivity_status)
+
+
 async def test_service_context_close_cancels_inflight_connectivity_probe() -> None:
     context = ServiceContext()
     blocker = asyncio.Event()

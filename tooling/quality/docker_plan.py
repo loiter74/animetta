@@ -4,6 +4,7 @@ import hashlib
 import json
 
 from .fingerprint import FingerprintContext, fingerprint_patterns
+from .image_fingerprint import image_fingerprint
 from .models import (
     Catalog,
     Change,
@@ -73,6 +74,20 @@ def plan_docker_actions(
     actions: list[DockerBuildAction] = []
     for selected in select_docker_scopes(catalog, change_set, tier):
         scope = catalog.docker_scopes[selected.scope_id]
+        if scope.image_inputs is not None:
+            fingerprint, count = image_fingerprint(context.root, scope.image_inputs)
+            actions.append(
+                DockerBuildAction(
+                    scope_id=selected.scope_id,
+                    service=scope.service,
+                    compose_file=scope.compose_file,
+                    input_fingerprint=fingerprint,
+                    input_file_count=count,
+                    input_patterns=scope.image_inputs.paths,
+                    reasons=selected.reasons,
+                )
+            )
+            continue
         files = fingerprint_patterns(context.root, scope.paths, context=context)
         toolchain = context.toolchain_identity(Runner.DOCKER)
         payload = {
@@ -112,6 +127,9 @@ def fingerprint_docker_scopes(
     toolchain = context.toolchain_identity(Runner.DOCKER)
     fingerprints: dict[str, str] = {}
     for scope_id, scope in sorted(catalog.docker_scopes.items()):
+        if scope.image_inputs is not None:
+            fingerprints[scope_id] = image_fingerprint(context.root, scope.image_inputs)[0]
+            continue
         files = fingerprint_patterns(context.root, scope.paths, context=context)
         payload = {
             "schema_version": 1,

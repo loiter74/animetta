@@ -127,6 +127,68 @@ docker_scopes:
   animetta:
     service: animetta
     compose_file: docker-compose.yml
+    image_inputs:
+      paths:
+        - Dockerfile
+        - .dockerignore
+        - requirements.txt
+        - docker/entrypoint.sh
+        - docker/nginx.conf
+        - scripts/validate-events.py
+        - src/animetta/**
+        - config/**
+        - .env.example
+        - frontend/.npmrc
+        - frontend/package.json
+        - frontend/pnpm-lock.yaml
+        - frontend/pnpm-workspace.yaml
+        - frontend/*.html
+        - frontend/vite.config.ts
+        - frontend/uno.config.ts
+        - frontend/tsconfig.json
+        - frontend/src/**
+        - frontend/public/**
+      exclude_paths: &image-excludes
+        - '**/__pycache__/**'
+        - '**/*.pyc'
+        - '**/*.md'
+        - '**/*.log'
+        - '**/*.db'
+        - '**/.gitkeep'
+        - '**/node_modules/**'
+        - 'config/personas/voices/**'
+        - 'frontend/src/**/__tests__/**'
+        - 'frontend/src/**/*.test.ts'
+        - 'frontend/src/**/*.spec.ts'
+        - 'frontend/public/backgrounds/vertical/README.md'
+    development_inputs:
+      animetta:
+        target: backend-dev
+        paths:
+          - Dockerfile
+          - .dockerignore
+          - requirements.txt
+          - src/animetta/**
+          - config/**
+          - .env.example
+        exclude_paths: *image-excludes
+      frontend:
+        target: frontend-dev
+        paths:
+          - Dockerfile
+          - .dockerignore
+          - frontend/.npmrc
+          - frontend/package.json
+          - frontend/pnpm-lock.yaml
+          - frontend/pnpm-workspace.yaml
+          - frontend/*.html
+          - frontend/vite.config.ts
+          - frontend/uno.config.ts
+          - frontend/tsconfig.json
+          - frontend/src/**
+          - frontend/public/**
+          - config/socket-events.json
+        exclude_paths: *image-excludes
     environment_identity_fields:
       - ANIMETTA_IMAGE
       - ANIMETTA_PROFILE
@@ -142,6 +204,7 @@ docker_scopes:
       - Dockerfile
       - .dockerignore
       - docker-compose.yml
+      - docker-compose.dev.yml
       - docker/entrypoint.sh
       - docker/nginx.conf
       - requirements.txt
@@ -298,10 +361,13 @@ groups:
     targets:
       - tests/scripts/test_runtime_lifecycle.py
       - tests/scripts/test_runtime_lifecycle_feedback.py
+      - tests/scripts/test_startup_cache.py
+      - tests/scripts/test_benchmark_startup.py
       - tests/scripts/test_qwen_preflight.py
       - tests/scripts/test_rvc_preflight.py
       - tests/scripts/test_benchmark_host_tts.py
       - tests/scripts/test_release_runtime_gate.py
+      - tests/smoke/test_python_runtime_policy.py
     args: [-q, -o, addopts=]
     timeout_seconds: 240
     include_in_full: true
@@ -1829,7 +1895,15 @@ components:
       - scripts/rvc_preflight.py
       - scripts/benchmark_host_tts.py
       - scripts/runtime_lifecycle.py
+      - scripts/benchmark_startup.py
+      - tooling/runtime_startup.py
+      - tests/scripts/test_startup_cache.py
+      - tests/scripts/test_benchmark_startup.py
+      - .dockerignore
+      - start-anima.cmd
+      - dev-anima.cmd
       - tests/deployment/**
+      - tests/smoke/test_python_runtime_policy.py
       - tests/scripts/test_qwen_preflight.py
       - tests/scripts/test_rvc_preflight.py
       - tests/scripts/test_benchmark_host_tts.py
