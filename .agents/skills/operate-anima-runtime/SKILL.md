@@ -13,8 +13,8 @@ description: 安全操作和验收 Animetta 运行时、宿主机 Qwen TTS、宿
 2. Windows 首次运行前断言 Python 3.13。
 3. 只读状态可直接查询；任何会改变服务状态的操作必须交给唯一专用子智能体。
 4. 按 [commands.md](references/commands.md) 使用 `scripts/runtime_lifecycle.py` 的现有动作。
-5. 命令返回 `status=in_progress` 时，从输出读取 `run_id`，以相同 profile 和相同 run ID 续跑；不得创建第二个 run。
-6. 任一步终态失败立即停止，保留宿主机 Qwen 与 RVC，并报告失败证据和最小恢复动作。
+5. 命令返回 `status=in_progress` 时，从输出读取 `run_id`，以相同 profile 和相同 run ID 续跑；中断后先核对原任务与落盘结果，不重做已完成步骤。
+6. 终态失败停止该动作，保留宿主机 Qwen 与 RVC。出现无进展、进程残留或外部环境阻塞时，按 [阻塞与恢复](references/recovery.md) 诊断；已有授权覆盖的恢复继续执行，需要新授权时只询问具体动作，不重复询问整个任务是否继续。
 7. 只有协议全部通过后才报告运行时健康结论。
 8. 请求还包含打开或显示直播页面时，运行时 ready 后把页面解析与打开交给 `$review-anima-live`；组合顺序固定为运行时就绪、用户要求的 Anima 后台动作、直播页面交接。
 
@@ -22,7 +22,7 @@ description: 安全操作和验收 Animetta 运行时、宿主机 Qwen TTS、宿
 
 只有明确要求 production 发布、恢复或持久化验收时执行以下顺序：
 
-1. 先用目标测试和最小能力探针消除已知风险，再冻结待部署差异；冻结前不得运行 affected、full 或正式生命周期。
+1. 先用目标测试和最小能力探针消除已知风险，再冻结待部署差异；最终部署验收前不重复运行 affected 或 full。用户明确要求性能基线时，先按根 `AGENTS.md` 在原实现上测量，不能以最终部署门禁阻止基线复现。
 2. Redis 或外部镜像能力异常时，先复现 Compose 的实际启动命令并检查官方 entrypoint；替换镜像或自建镜像前，必须验证 `FT.CREATE`、`JSON.SET` 和官方 `AsyncRedisSaver` 初始化。不得从 `PING` 或绕过 entrypoint 的容器推断模块缺失。
 3. 在 affected 前覆盖正式入口的静态代理契约，至少包含 `/health`、`/ready`、`/metrics`、`/api/**` 和 Socket.IO，避免只验证直连后端。
 4. 差异冻结后只运行一次 affected 门禁；通过后才执行一次 production 生命周期和一次 interrupt → restart → `Command(resume=...)` 恢复验收。

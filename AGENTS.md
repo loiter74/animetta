@@ -132,7 +132,7 @@ LangGraph Redis checkpointer 依赖 RediSearch 与 RedisJSON。Redis 8 官方镜
 修改过程中优先运行最相关的目标测试。最终差异冻结后，运行一次影响感知验证：
 
 ```powershell
-py -3.13 -m tooling.quality verify --tier affected --paths <本次任务路径...> --cache read-write
+py -3.13 -m tooling.quality verify --tier affected --paths <本次任务精确文件...> --cache read-write
 ```
 
 组件映射只定义在 `tooling/quality.yml`，不得手工绕过规划器要求的测试组。仅修改质量模型、该文件或目录映射时先运行 `py -3.13 -m tooling.quality validate`。
@@ -149,6 +149,7 @@ py -3.13 -m tooling.quality verify --tier affected --paths <本次任务路径..
 * 使用 `apply_patch` 落地大型多文件成果时，先分离旧文件替换与新文件创建；包含旧上下文匹配的修改不得与大量新文件捆成一个原子补丁，避免单点失配回滚整批；
 * 默认不启动子 Agent、Docker、Playwright、full、发布门禁、基准测试或依赖安装；
 * 目标测试或 quick 仅用于诊断；最终按上述规则验证一次，不重复已覆盖测试；
+* 长运行任务在现有任务记录中保留当前 run ID、证据路径、已完成步骤、待恢复状态和下一动作；中断续作先读原任务结果，不重跑成功步骤。运行时阻塞按 `operate-anima-runtime` 的恢复分支处理，不靠重复“继续”或创建新 run 推进；
 * 预计超时就停止扩大范围，及时报告结果、阻塞和最短下一步；只有用户明确要求的运行时、E2E、发布、基准测试或大型改造可超时。
 
 ## 修改边界
@@ -174,6 +175,8 @@ py -3.13 -m tooling.quality verify --tier affected --paths <本次任务路径..
 完成用户要求且验证通过后，默认自动提交本任务修改并安全推送 `origin/main`，无需等待额外指令；用户明确要求不提交或不推送时除外。禁止使用破坏混合工作区的 `git clean`、`git reset --hard`、`git checkout --`。
 
 普通推送采用单次远端刷新路径：确认 `status` / 目标差异 → `fetch origin main` 一次并验证可快进 → 精确暂存 → 提交 → `push origin main`。提交后不得为同一推送重复 fetch；若远端随后变化，由普通 push 的非快进拒绝安全终止并报告。
+
+精确暂存后用 `git diff --cached --name-only` 核对交付清单，并执行 `git diff --cached --check`，覆盖工作区 diff 看不到的新文件。被忽略的必需交付物先用 `git check-ignore` 确认原因，再只对已审查的确切文件显式纳入，不扩大忽略规则或批量强制暂存。
 
 对混合行尾文件做部分暂存或构造 blob 时，用 Python 二进制读写生成目标内容，再 `git hash-object -w --no-filters` + `git update-index --cacheinfo` 入库；不得用 sed 管道改写 blob，也不得信任 MSYS 管道（`sed` / `od` / `cat -A`）显示的行尾。
 
