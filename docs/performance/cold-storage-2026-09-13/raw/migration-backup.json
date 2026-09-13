@@ -1,0 +1,12 @@
+{
+  "started_at": "2026-09-13T01:57:18.179059+00:00",
+  "source": "E:\\DockerDesktop\\wsl\\disk\\docker_data.vhdx",
+  "destination": "E:\\DockerDesktop\\backups\\cold-storage-20260913\\docker_data.vhdx",
+  "bytes": 62765662208,
+  "docker_status": "Could not retrieve status. Is Docker Desktop running?\nYou can start Docker Desktop by running 'docker desktop start'.\n",
+  "copy_seconds": 1614.5409273999994,
+  "source_sha256": "dd018fc3c268779091a81126a6c0002c34012081be98420d9238b0bf27ed70b2",
+  "backup_sha256": "dd018fc3c268779091a81126a6c0002c34012081be98420d9238b0bf27ed70b2",
+  "total_seconds": 2404.1422693000004,
+  "finished_at": "2026-09-13T02:37:22.321323+00:00"
+}

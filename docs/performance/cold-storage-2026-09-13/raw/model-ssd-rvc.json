@@ -1,0 +1,54 @@
+{
+  "source": "artifacts\\cold-storage-20260913\\model-ssd-rvc\\summary.json",
+  "source_sha256": "5feb0a73c83e41b8160306c3c71a5fe85314b1efdc2a5b687e05e0a62b363a61",
+  "measurement": {
+    "schema_version": 1,
+    "model": "rvc",
+    "medium": "ssd",
+    "samples_requested": 3,
+    "script_sha256": "3044a63f96d281e2e9d208e03d312d0dff95496ae61a6938d5efd37d916614e4",
+    "driver_sha256": "d7812e7f005a562e0b13e4a1e53601175eb1e4f480f85341e09367be2c9548b7",
+    "text": "你好，今天也请多关照。我们一起把这件事情做好吧。",
+    "reference_sha256": "46f6cfedc05b9e6ac5f2c1bde232bc61173821dd9a020ad615d561bb9c264245",
+    "rvc_input_sha256": "22853e3b2dd360e61193f4ec172595d3f0969a1edd030f68b944d6f7bcd087ce",
+    "rvc_input_slice_seconds": [
+      1,
+      3
+    ],
+    "model_dir_override": null,
+    "cache_contract": "Process stopped between samples. Windows and device caches are not cleared. Existing service identity hashing and warmup are included.",
+    "samples": [
+      {
+        "sample": 1,
+        "started_at": "2026-09-13T12:18:24.635362+00:00",
+        "boot_time": 1789300467.0150106,
+        "tracked_processes_exited": {},
+        "gpu_before_start": "name, memory.total [MiB], memory.used [MiB], memory.free [MiB]\nNVIDIA GeForce RTX 5090 D v2, 24455 MiB, 3614 MiB, 20422 MiB\n",
+        "host_up_seconds": 22.111636699999963,
+        "host_up_command_wall_seconds": 22.785737100000006,
+        "first_inference_seconds": 21.597730899999988,
+        "first_audio_seconds": null,
+        "combined_seconds": 44.88215519999994,
+        "accounted_stage_sum_seconds": 43.70936759999995,
+        "audio_bytes": 190124,
+        "audio_seconds": 1.98,
+        "audio_sha256": "20b156c5df9355828fde2697281c369ac27b7e28ba5e5e7d3d283613174bd7cf",
+        "identity": {
+          "ready": true,
+          "separation_ready": true,
+          "separation_model": "htdemucs",
+          "service": "rvc",
+          "api_version": "v1",
+          "provider": "rvc-webui-host",
+          "model": "tosaka_rin_tts_v1.pth",
+          "revision": "e2714bf076547117a24352943cb67d7766d6b512a163c4ecd26bd1e6abb54536",
+          "voice": "tosaka-rin-cn",
+          "sample_rate": 48000,
+          "index": "added_IVF2143_Flat_nprobe_1_tosaka_rin_tts_v1_v2.index",
+          "index_revision": "0E158DE97F5EF766D4991F80E94C954E4351A88D096B7850BFEB03D3A7864E79"
+        },
+        "exit_code": 0
+      }
+    ]
+  }
+}

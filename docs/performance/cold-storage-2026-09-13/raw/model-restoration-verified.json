@@ -1,0 +1,277 @@
+{
+  "restored_at": "2026-09-13T13:02:03.558929+00:00",
+  "original_files_verified": [
+    {
+      "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\qwen3_tts_codec_encoder.fp16.onnx",
+      "resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\qwen3_tts_codec_encoder.fp16.onnx",
+      "bytes": 113998920,
+      "sha256": "bc381cb2664699d66de7d28367afb1124f11542b38f28db8551bb937173e9f8f"
+    },
+    {
+      "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\qwen3_tts_decoder.fp16.onnx",
+      "resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\qwen3_tts_decoder.fp16.onnx",
+      "bytes": 229914656,
+      "sha256": "98fc6cd579fe57144ccd6792930e0ca8e7ca97aac3d8f0a7b35f60d97961a793"
+    },
+    {
+      "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\qwen3_tts_predictor.q8_0.gguf",
+      "resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\qwen3_tts_predictor.q8_0.gguf",
+      "bytes": 151124320,
+      "sha256": "945c8fc1565484fa1d1228cdadeeabee24899903ac917a971807b0e0fb51acb7"
+    },
+    {
+      "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\qwen3_tts_speaker_encoder.fp16.onnx",
+      "resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\qwen3_tts_speaker_encoder.fp16.onnx",
+      "bytes": 24423582,
+      "sha256": "421c0b8c09a0cee29742e141a76621ab3eaf98f68ca96403f00396b250cb3aac"
+    },
+    {
+      "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\qwen3_tts_talker.q5_k.gguf",
+      "resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\qwen3_tts_talker.q5_k.gguf",
+      "bytes": 1006245120,
+      "sha256": "569a72350d93e87b6b4d8dc968ccd9c4d54cda818e20878f4c7db1eefb6ecaf5"
+    },
+    {
+      "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\tokenizer.json",
+      "resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\tokenizer.json",
+      "bytes": 11423986,
+      "sha256": "09267689b8362020b9763b65dd5be7e086b31e28d72e02837a9e781de9a91bc7"
+    },
+    {
+      "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_0.npy",
+      "resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_0.npy",
+      "bytes": 25165952,
+      "sha256": "c85fd9a94229fef07cd21830880a609f194efec85d0f3809822b2198275e4e40"
+    },
+    {
+      "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_1.npy",
+      "resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_1.npy",
+      "bytes": 16777344,
+      "sha256": "6eeefb93b59d80ae3203c96357b5e22d0c9f6a99340623c504c9ef3845d165cc"
+    },
+    {
+      "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_10.npy",
+      "resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_10.npy",
+      "bytes": 16777344,
+      "sha256": "c8d3ce993a0504b3d4a0d6b4f83d6465ce7f65ed724f7df4902c0c3a91ea47ae"
+    },
+    {
+      "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_11.npy",
+      "resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_11.npy",
+      "bytes": 16777344,
+      "sha256": "fbcc5014e96f26af5025cfcbf899794b88298b57d7d4b9d54649cae75959fa64"
+    },
+    {
+      "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_12.npy",
+      "resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_12.npy",
+      "bytes": 16777344,
+      "sha256": "e5c18d6ab0f21327765524735e79a62a70a80f18c10095a69e0b9baaef0ec5b9"
+    },
+    {
+      "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_13.npy",
+      "resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_13.npy",
+      "bytes": 16777344,
+      "sha256": "72319019affd8ac13917389d6eb634585c10b1d74e9b4ef3c68d94616a780eca"
+    },
+    {
+      "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_14.npy",
+      "resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_14.npy",
+      "bytes": 16777344,
+      "sha256": "c33a61e607f7b4a2dbfc729fc3302a1fb8fbd5a4c9128ea2e1a57538f93110e2"
+    },
+    {
+      "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_15.npy",
+      "resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_15.npy",
+      "bytes": 16777344,
+      "sha256": "3fde9e115b374feb2142104b74260a04269994e45d2f3bf5077a83bf16a828d7"
+    },
+    {
+      "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_2.npy",
+      "resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_2.npy",
+      "bytes": 16777344,
+      "sha256": "f59acdcf7459abef2b8b8817da6716eba70dd296bdedfe9e897aba8e332ae893"
+    },
+    {
+      "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_3.npy",
+      "resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_3.npy",
+      "bytes": 16777344,
+      "sha256": "4fea12991c0386fe08d6ddeb8e674a68247cba0370c0b761e27b02478a3f8dd2"
+    },
+    {
+      "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_4.npy",
+      "resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_4.npy",
+      "bytes": 16777344,
+      "sha256": "41627b3302b53258a25e55329eda4297a150eb96ecb21d933a2d0def50a4d87e"
+    },
+    {
+      "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_5.npy",
+      "resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_5.npy",
+      "bytes": 16777344,
+      "sha256": "857cd908438894fb9130b3527941f3d1cb91055d3a99eaddde81c2c630921504"
+    },
+    {
+      "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_6.npy",
+      "resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_6.npy",
+      "bytes": 16777344,
+      "sha256": "ab1e8aed58d3773113263cba5040f9bbc055f2e947995eda6dd24a8c50d15177"
+    },
+    {
+      "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_7.npy",
+      "resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_7.npy",
+      "bytes": 16777344,
+      "sha256": "e4c576b938facec624a57f9bf2500f64805df56a4c06817b3e4bd90a3f0c34db"
+    },
+    {
+      "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_8.npy",
+      "resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_8.npy",
+      "bytes": 16777344,
+      "sha256": "bb5e9150e032351ae7a9a7f42648846d86c9162c57bfc2bcc7cb4838fbae4bd5"
+    },
+    {
+      "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_9.npy",
+      "resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_9.npy",
+      "bytes": 16777344,
+      "sha256": "ccdfbae0f5d706c539d17c28ccc1267f3c76cf001e4c593af38ec44d9ac6f464"
+    },
+    {
+      "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\proj_bias.npy",
+      "resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\proj_bias.npy",
+      "bytes": 4224,
+      "sha256": "6c9534469070a22f1a46cedfbe13ded62f2f97a6d8715b7a505ddbd20023421a"
+    },
+    {
+      "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\proj_weight.npy",
+      "resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\proj_weight.npy",
+      "bytes": 8388736,
+      "sha256": "7fa5850687d66da23e911f5cfd6eac96003c4b95cbbf7db7eb7a4d334bfdee81"
+    },
+    {
+      "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\text_embedding_projected.npy",
+      "resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\text_embedding_projected.npy",
+      "bytes": 622329984,
+      "sha256": "3122f93be9a2a5aa65d2611f50c99626a0b94bf299c314b4575ba867cd376ad5"
+    },
+    {
+      "path": "C:\\Users\\30262\\RVC20240604Nvidia\\assets\\weights\\tosaka_rin_tts_v1.pth",
+      "resolved": "C:\\Users\\30262\\RVC20240604Nvidia\\assets\\weights\\tosaka_rin_tts_v1.pth",
+      "bytes": 57588035,
+      "sha256": "c033c49457043ed9fd95d60fff61ab98760a5516c7e79331ed7876d1f407d734"
+    },
+    {
+      "path": "C:\\Users\\30262\\RVC20240604Nvidia\\assets\\rmvpe\\rmvpe.pt",
+      "resolved": "C:\\Users\\30262\\RVC20240604Nvidia\\assets\\rmvpe\\rmvpe.pt",
+      "bytes": 181184272,
+      "sha256": "6d62215f4306e3ca278246188607209f09af3dc77ed4232efdd069798c4ec193"
+    },
+    {
+      "path": "C:\\Users\\30262\\RVC20240604Nvidia\\assets\\hubert\\hubert_base\\config.json",
+      "resolved": "C:\\Users\\30262\\RVC20240604Nvidia\\assets\\hubert\\hubert_base\\config.json",
+      "bytes": 1492,
+      "sha256": "0346950779dfb7f9316fa74ed846e2b8a22a08eedfdc5387b73f327cb1a4a7cf"
+    },
+    {
+      "path": "C:\\Users\\30262\\RVC20240604Nvidia\\assets\\hubert\\hubert_base\\preprocessor_config.json",
+      "resolved": "C:\\Users\\30262\\RVC20240604Nvidia\\assets\\hubert\\hubert_base\\preprocessor_config.json",
+      "bytes": 225,
+      "sha256": "7c1976a680fb7acc757cd36fb08eef878fa36c70b4c9d2d595df9c608bbbbf0e"
+    },
+    {
+      "path": "C:\\Users\\30262\\RVC20240604Nvidia\\assets\\hubert\\hubert_base\\pytorch_model.bin",
+      "resolved": "C:\\Users\\30262\\RVC20240604Nvidia\\assets\\hubert\\hubert_base\\pytorch_model.bin",
+      "bytes": 189206711,
+      "sha256": "cc8c20f4b90a520757260197a3ff2505705a7adbd20ad9eeaa4e1a9b38442ef5"
+    },
+    {
+      "path": "C:\\Users\\30262\\RVC20240604Nvidia\\logs\\tosaka_rin_tts_v1\\added_IVF2143_Flat_nprobe_1_tosaka_rin_tts_v1_v2.index",
+      "resolved": "C:\\Users\\30262\\RVC20240604Nvidia\\logs\\tosaka_rin_tts_v1\\added_IVF2143_Flat_nprobe_1_tosaka_rin_tts_v1_v2.index",
+      "bytes": 264128619,
+      "sha256": "0e158de97f5ef766d4991f80e94c954e4351a88d096b7850bfeb03d3a7864e79"
+    }
+  ],
+  "configuration_and_driver_checks": {
+    "Dockerfile": "8b3cce3a040c26cfe21a2f14f2094cb274ef03277a12d34102772a510e7a698f",
+    "scripts/benchmark_startup.py": "d7812e7f005a562e0b13e4a1e53601175eb1e4f480f85341e09367be2c9548b7",
+    "config/host-tts.yaml": "e31131c7451c73595ef556fa66ba926e5160c62ee72cbee4375883d7bb733a53",
+    "config/host-rvc.yaml": "98017fe5936464627d3beccf92f37af5707f6cb95eaa70d78ee1cf89d3833b03"
+  },
+  "processes": [
+    {
+      "pid": 25868,
+      "command": [
+        "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\venv\\Scripts\\python.exe",
+        "-m",
+        "animetta_qwen_tts"
+      ],
+      "path_overrides": {
+        "QWEN_HOST_TTS_MODEL_DIR": null,
+        "RVC_HOST_HUBERT_MODEL_DIR": null
+      }
+    },
+    {
+      "pid": 25916,
+      "command": [
+        "C:\\Users\\30262\\RVC20240604Nvidia\\runtime\\Scripts\\python.exe",
+        "-m",
+        "animetta_rvc_host"
+      ],
+      "path_overrides": {
+        "QWEN_HOST_TTS_MODEL_DIR": null,
+        "RVC_HOST_HUBERT_MODEL_DIR": null
+      }
+    },
+    {
+      "pid": 27968,
+      "command": [
+        "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\venv\\Scripts\\python.exe",
+        "-m",
+        "animetta_qwen_tts"
+      ],
+      "path_overrides": {
+        "QWEN_HOST_TTS_MODEL_DIR": null,
+        "RVC_HOST_HUBERT_MODEL_DIR": null
+      }
+    },
+    {
+      "pid": 28284,
+      "command": [
+        "C:\\Users\\30262\\RVC20240604Nvidia\\runtime\\Scripts\\python.exe",
+        "-m",
+        "animetta_rvc_host"
+      ],
+      "path_overrides": {
+        "QWEN_HOST_TTS_MODEL_DIR": null,
+        "RVC_HOST_HUBERT_MODEL_DIR": null
+      }
+    }
+  ],
+  "identities": {
+    "qwen": {
+      "ready": true,
+      "service": "qwen-tts",
+      "api_version": "v1",
+      "provider": "qwen3-tts-gguf-host",
+      "model": "Qwen3-TTS-1.7B-Base",
+      "revision": "0eb32e283ee46b86820c67843abb04cf12bc58d7",
+      "voice": "tosaka-rin-cn",
+      "sample_rate": 24000,
+      "quantization": "talker=Q5_K,predictor=Q8_0,onnx=FP16",
+      "runtime_commit": "0eb32e283ee46b86820c67843abb04cf12bc58d7"
+    },
+    "rvc": {
+      "ready": true,
+      "separation_ready": true,
+      "separation_model": "htdemucs",
+      "service": "rvc",
+      "api_version": "v1",
+      "provider": "rvc-webui-host",
+      "model": "tosaka_rin_tts_v1.pth",
+      "revision": "e2714bf076547117a24352943cb67d7766d6b512a163c4ecd26bd1e6abb54536",
+      "voice": "tosaka-rin-cn",
+      "sample_rate": 48000,
+      "index": "added_IVF2143_Flat_nprobe_1_tosaka_rin_tts_v1_v2.index",
+      "index_revision": "0E158DE97F5EF766D4991F80E94C954E4351A88D096B7850BFEB03D3A7864E79"
+    }
+  },
+  "temporary_junctions_removed": true,
+  "docker_location_unchanged": "E:\\DockerDesktop\\wsl"
+}

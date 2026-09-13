@@ -1,0 +1,15 @@
+{
+  "observed_at": "2026-09-13T03:58:14.5821594Z",
+  "status": "failed_settings_rolled_back",
+  "trigger": "uncertain: Computer Use returned user input detected; refreshed UI showed applying settings without agent confirming Yes move a second time",
+  "copy_started_at": "2026-09-13T03:57:23.8407617Z",
+  "robocopy_pid": 20160,
+  "source": "E:\\DockerDesktop\\wsl\\disk\\docker_data.vhdx",
+  "target": "C:\\DockerDesktop\\wsl\\DockerDesktopWSL\\disk\\docker_data.vhdx",
+  "ui_inputs_paused": true,
+  "copy_finished_at": "2026-09-13T04:02:24.5057491Z",
+  "copy_seconds": 300.6649874,
+  "error": "robocopy exit status 1; New setting not applied",
+  "settings_applied_at": "2026-09-13T04:02:48.4110331Z",
+  "actual_data_root": "E:\\DockerDesktop\\wsl"
+}

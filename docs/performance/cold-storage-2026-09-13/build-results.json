@@ -1,0 +1,142 @@
+{
+  "schema_version": 1,
+  "primary_metric": "image_build_receipt_elapsed_seconds",
+  "groups": [
+    {
+      "group": "hdd-before",
+      "attempted_samples": 3,
+      "successful_samples": 3,
+      "median_seconds": 800.1600553999997,
+      "min_seconds": 749.2571441,
+      "max_seconds": 810.9077411999997,
+      "all_successful_build_receipts": {
+        "count": 3,
+        "median_seconds": 800.1600553999997,
+        "min_seconds": 749.2571441,
+        "max_seconds": 810.9077411999997
+      },
+      "original_triplet_build_median_seconds": 800.1600553999997
+    },
+    {
+      "group": "hdd-candidate",
+      "attempted_samples": 4,
+      "successful_samples": 3,
+      "median_seconds": 719.8195992999999,
+      "min_seconds": 713.1864906999999,
+      "max_seconds": 733.8815921000005,
+      "all_successful_build_receipts": {
+        "count": 4,
+        "median_seconds": 726.8505957000002,
+        "min_seconds": 713.1864906999999,
+        "max_seconds": 747.0866117999994
+      },
+      "original_triplet_build_median_seconds": 719.8195992999999
+    },
+    {
+      "group": "ssd-final",
+      "attempted_samples": 0,
+      "successful_samples": 0,
+      "median_seconds": null,
+      "min_seconds": null,
+      "max_seconds": null,
+      "all_successful_build_receipts": {
+        "count": 0,
+        "median_seconds": null,
+        "min_seconds": null,
+        "max_seconds": null
+      },
+      "original_triplet_build_median_seconds": null
+    }
+  ],
+  "samples": [
+    {
+      "group": "hdd-before",
+      "sample": 1,
+      "build_seconds": 749.2571441,
+      "build_exit_code": 0,
+      "complete_success": true,
+      "end_to_end_seconds": 816.0834464,
+      "raw": "raw/b1.json"
+    },
+    {
+      "group": "hdd-before",
+      "sample": 2,
+      "build_seconds": 810.9077411999997,
+      "build_exit_code": 0,
+      "complete_success": true,
+      "end_to_end_seconds": 859.3086581000007,
+      "raw": "raw/b2.json"
+    },
+    {
+      "group": "hdd-before",
+      "sample": 3,
+      "build_seconds": 800.1600553999997,
+      "build_exit_code": 0,
+      "complete_success": true,
+      "end_to_end_seconds": 871.6906450999995,
+      "raw": "raw/b3.json"
+    },
+    {
+      "group": "hdd-candidate",
+      "sample": 1,
+      "build_seconds": 719.8195992999999,
+      "build_exit_code": 0,
+      "complete_success": true,
+      "end_to_end_seconds": 793.2858961999991,
+      "raw": "raw/c1.json"
+    },
+    {
+      "group": "hdd-candidate",
+      "sample": 2,
+      "build_seconds": 713.1864906999999,
+      "build_exit_code": 0,
+      "complete_success": true,
+      "end_to_end_seconds": 753.9643421000001,
+      "raw": "raw/c2.json"
+    },
+    {
+      "group": "hdd-candidate",
+      "sample": 3,
+      "build_seconds": 747.0866117999994,
+      "build_exit_code": 0,
+      "complete_success": false,
+      "end_to_end_seconds": null,
+      "raw": "raw/c3.json"
+    },
+    {
+      "group": "hdd-candidate",
+      "sample": 4,
+      "build_seconds": 733.8815921000005,
+      "build_exit_code": 0,
+      "complete_success": true,
+      "end_to_end_seconds": 786.5344747999989,
+      "raw": "raw/c4.json"
+    }
+  ],
+  "candidate_timing_threshold_met": true,
+  "comparisons": [
+    {
+      "comparison": "code",
+      "before_group": "hdd-before",
+      "after_group": "hdd-candidate",
+      "seconds_saved": 80.34045609999976,
+      "reduction_percent": 10.040548207550499,
+      "speedup": 1.1116119319036717
+    }
+  ],
+  "forecast_errors": [
+    {
+      "group": "hdd-candidate",
+      "frozen_interval_seconds": [
+        650,
+        780
+      ],
+      "actual_median_seconds": 719.8195992999999,
+      "within_interval": true,
+      "signed_distance_to_interval_seconds": 0,
+      "midpoint_error_seconds": 4.819599299999936,
+      "midpoint_error_percent": 0.6740698321678232
+    }
+  ],
+  "selection_note": "Timing alone does not approve SSD retention; input equality, all functional checks, free space, storage errors and Desktop stop/start must also pass."
+}

@@ -1,0 +1,693 @@
+{
+  "schema_version": 1,
+  "metric": "windows_unbuffered_file_read",
+  "recorded_at": "2026-09-13T12:35:28.700829+00:00",
+  "cache_contract": "FILE_FLAG_NO_BUFFERING bypasses Windows file cache; device cache is not flushed. Hashing occurs before timing. This is not model loading or guaranteed physical cold reading.",
+  "manifest": [
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_codec_encoder.fp16.onnx",
+      "bytes": 113998920,
+      "mtime_ns": 1785028883687385100,
+      "sha256": "bc381cb2664699d66de7d28367afb1124f11542b38f28db8551bb937173e9f8f"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_decoder.fp16.onnx",
+      "bytes": 229914656,
+      "mtime_ns": 1785028901465862300,
+      "sha256": "98fc6cd579fe57144ccd6792930e0ca8e7ca97aac3d8f0a7b35f60d97961a793"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_predictor.q8_0.gguf",
+      "bytes": 151124320,
+      "mtime_ns": 1785028905618480200,
+      "sha256": "945c8fc1565484fa1d1228cdadeeabee24899903ac917a971807b0e0fb51acb7"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_speaker_encoder.fp16.onnx",
+      "bytes": 24423582,
+      "mtime_ns": 1785028873416766500,
+      "sha256": "421c0b8c09a0cee29742e141a76621ab3eaf98f68ca96403f00396b250cb3aac"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_talker.q5_k.gguf",
+      "bytes": 1006245120,
+      "mtime_ns": 1785028962400663600,
+      "sha256": "569a72350d93e87b6b4d8dc968ccd9c4d54cda818e20878f4c7db1eefb6ecaf5"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\tokenizer.json",
+      "bytes": 11423986,
+      "mtime_ns": 1785028886907542500,
+      "sha256": "09267689b8362020b9763b65dd5be7e086b31e28d72e02837a9e781de9a91bc7"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_0.npy",
+      "bytes": 25165952,
+      "mtime_ns": 1785029011089078200,
+      "sha256": "c85fd9a94229fef07cd21830880a609f194efec85d0f3809822b2198275e4e40"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_1.npy",
+      "bytes": 16777344,
+      "mtime_ns": 1785029010611165300,
+      "sha256": "6eeefb93b59d80ae3203c96357b5e22d0c9f6a99340623c504c9ef3845d165cc"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_10.npy",
+      "bytes": 16777344,
+      "mtime_ns": 1785029009663364400,
+      "sha256": "c8d3ce993a0504b3d4a0d6b4f83d6465ce7f65ed724f7df4902c0c3a91ea47ae"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_11.npy",
+      "bytes": 16777344,
+      "mtime_ns": 1785029010387974500,
+      "sha256": "fbcc5014e96f26af5025cfcbf899794b88298b57d7d4b9d54649cae75959fa64"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_12.npy",
+      "bytes": 16777344,
+      "mtime_ns": 1785029011879006100,
+      "sha256": "e5c18d6ab0f21327765524735e79a62a70a80f18c10095a69e0b9baaef0ec5b9"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_13.npy",
+      "bytes": 16777344,
+      "mtime_ns": 1785029012851294300,
+      "sha256": "72319019affd8ac13917389d6eb634585c10b1d74e9b4ef3c68d94616a780eca"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_14.npy",
+      "bytes": 16777344,
+      "mtime_ns": 1785029013163191800,
+      "sha256": "c33a61e607f7b4a2dbfc729fc3302a1fb8fbd5a4c9128ea2e1a57538f93110e2"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_15.npy",
+      "bytes": 16777344,
+      "mtime_ns": 1785029013745105500,
+      "sha256": "3fde9e115b374feb2142104b74260a04269994e45d2f3bf5077a83bf16a828d7"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_2.npy",
+      "bytes": 16777344,
+      "mtime_ns": 1785029014177962000,
+      "sha256": "f59acdcf7459abef2b8b8817da6716eba70dd296bdedfe9e897aba8e332ae893"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_3.npy",
+      "bytes": 16777344,
+      "mtime_ns": 1785029014779174300,
+      "sha256": "4fea12991c0386fe08d6ddeb8e674a68247cba0370c0b761e27b02478a3f8dd2"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_4.npy",
+      "bytes": 16777344,
+      "mtime_ns": 1785029015983993900,
+      "sha256": "41627b3302b53258a25e55329eda4297a150eb96ecb21d933a2d0def50a4d87e"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_5.npy",
+      "bytes": 16777344,
+      "mtime_ns": 1785029016034558200,
+      "sha256": "857cd908438894fb9130b3527941f3d1cb91055d3a99eaddde81c2c630921504"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_6.npy",
+      "bytes": 16777344,
+      "mtime_ns": 1785029016548211700,
+      "sha256": "ab1e8aed58d3773113263cba5040f9bbc055f2e947995eda6dd24a8c50d15177"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_7.npy",
+      "bytes": 16777344,
+      "mtime_ns": 1785029017285914900,
+      "sha256": "e4c576b938facec624a57f9bf2500f64805df56a4c06817b3e4bd90a3f0c34db"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_8.npy",
+      "bytes": 16777344,
+      "mtime_ns": 1785029017930183000,
+      "sha256": "bb5e9150e032351ae7a9a7f42648846d86c9162c57bfc2bcc7cb4838fbae4bd5"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_9.npy",
+      "bytes": 16777344,
+      "mtime_ns": 1785029018355577900,
+      "sha256": "ccdfbae0f5d706c539d17c28ccc1267f3c76cf001e4c593af38ec44d9ac6f464"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\proj_bias.npy",
+      "bytes": 4224,
+      "mtime_ns": 1785029017513871800,
+      "sha256": "6c9534469070a22f1a46cedfbe13ded62f2f97a6d8715b7a505ddbd20023421a"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\proj_weight.npy",
+      "bytes": 8388736,
+      "mtime_ns": 1785029018757479000,
+      "sha256": "7fa5850687d66da23e911f5cfd6eac96003c4b95cbbf7db7eb7a4d334bfdee81"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\text_embedding_projected.npy",
+      "bytes": 622329984,
+      "mtime_ns": 1785029069324124300,
+      "sha256": "3122f93be9a2a5aa65d2611f50c99626a0b94bf299c314b4575ba867cd376ad5"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_weights\\tosaka_rin_tts_v1.pth",
+      "bytes": 57588035,
+      "mtime_ns": 1786989034853048600,
+      "sha256": "c033c49457043ed9fd95d60fff61ab98760a5516c7e79331ed7876d1f407d734"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_rmvpe\\rmvpe.pt",
+      "bytes": 181184272,
+      "mtime_ns": 1695031634000000000,
+      "sha256": "6d62215f4306e3ca278246188607209f09af3dc77ed4232efdd069798c4ec193"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_hubert\\config.json",
+      "bytes": 1492,
+      "mtime_ns": 1786454089926985400,
+      "sha256": "0346950779dfb7f9316fa74ed846e2b8a22a08eedfdc5387b73f327cb1a4a7cf"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_hubert\\preprocessor_config.json",
+      "bytes": 225,
+      "mtime_ns": 1786454089923652900,
+      "sha256": "7c1976a680fb7acc757cd36fb08eef878fa36c70b4c9d2d595df9c608bbbbf0e"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_hubert\\pytorch_model.bin",
+      "bytes": 189206711,
+      "mtime_ns": 1786454148863297800,
+      "sha256": "cc8c20f4b90a520757260197a3ff2505705a7adbd20ad9eeaa4e1a9b38442ef5"
+    },
+    {
+      "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_index\\added_IVF2143_Flat_nprobe_1_tosaka_rin_tts_v1_v2.index",
+      "bytes": 264128619,
+      "mtime_ns": 1786989052052224600,
+      "sha256": "0e158de97f5ef766d4991f80e94c954e4351a88d096b7850bfeb03d3a7864e79"
+    }
+  ],
+  "samples_requested": 3,
+  "samples": [
+    {
+      "sample": 1,
+      "files": [
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_codec_encoder.fp16.onnx",
+          "bytes": 113998920,
+          "seconds": 1.5363280999999915
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_decoder.fp16.onnx",
+          "bytes": 229914656,
+          "seconds": 3.049672399999963
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_predictor.q8_0.gguf",
+          "bytes": 151124320,
+          "seconds": 2.004138199999943
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_speaker_encoder.fp16.onnx",
+          "bytes": 24423582,
+          "seconds": 0.281181800000013
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_talker.q5_k.gguf",
+          "bytes": 1006245120,
+          "seconds": 13.847099000000071
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\tokenizer.json",
+          "bytes": 11423986,
+          "seconds": 0.13196419999985665
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_0.npy",
+          "bytes": 25165952,
+          "seconds": 0.2773642000001928
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_1.npy",
+          "bytes": 16777344,
+          "seconds": 0.1877622000001793
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_10.npy",
+          "bytes": 16777344,
+          "seconds": 0.1900231999998141
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_11.npy",
+          "bytes": 16777344,
+          "seconds": 0.18104879999964396
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_12.npy",
+          "bytes": 16777344,
+          "seconds": 0.18680300000005445
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_13.npy",
+          "bytes": 16777344,
+          "seconds": 0.19728659999964293
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_14.npy",
+          "bytes": 16777344,
+          "seconds": 0.19133069999998042
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_15.npy",
+          "bytes": 16777344,
+          "seconds": 0.18843969999988985
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_2.npy",
+          "bytes": 16777344,
+          "seconds": 0.19153259999984584
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_3.npy",
+          "bytes": 16777344,
+          "seconds": 0.19009630000027755
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_4.npy",
+          "bytes": 16777344,
+          "seconds": 0.18788080000012997
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_5.npy",
+          "bytes": 16777344,
+          "seconds": 0.25399789999983113
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_6.npy",
+          "bytes": 16777344,
+          "seconds": 0.2293747999997322
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_7.npy",
+          "bytes": 16777344,
+          "seconds": 0.22786570000016582
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_8.npy",
+          "bytes": 16777344,
+          "seconds": 0.22799170000007507
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_9.npy",
+          "bytes": 16777344,
+          "seconds": 0.2272875000003296
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\proj_bias.npy",
+          "bytes": 4224,
+          "seconds": 0.01767969999991692
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\proj_weight.npy",
+          "bytes": 8388736,
+          "seconds": 0.1073804000002383
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\text_embedding_projected.npy",
+          "bytes": 622329984,
+          "seconds": 8.577862800000275
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_weights\\tosaka_rin_tts_v1.pth",
+          "bytes": 57588035,
+          "seconds": 0.7815525000000889
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_rmvpe\\rmvpe.pt",
+          "bytes": 181184272,
+          "seconds": 2.4808223999998518
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_hubert\\config.json",
+          "bytes": 1492,
+          "seconds": 0.019225200000164477
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_hubert\\preprocessor_config.json",
+          "bytes": 225,
+          "seconds": 0.001811699999962002
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_hubert\\pytorch_model.bin",
+          "bytes": 189206711,
+          "seconds": 2.625832199999877
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_index\\added_IVF2143_Flat_nprobe_1_tosaka_rin_tts_v1_v2.index",
+          "bytes": 264128619,
+          "seconds": 3.6345117999999275
+        }
+      ],
+      "succeeded": true,
+      "seconds": 42.44370690000005,
+      "bytes": 3136788994,
+      "mib_per_second": 70.48100456003279
+    },
+    {
+      "sample": 2,
+      "files": [
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_codec_encoder.fp16.onnx",
+          "bytes": 113998920,
+          "seconds": 1.4991833999997652
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_decoder.fp16.onnx",
+          "bytes": 229914656,
+          "seconds": 3.0079592000001867
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_predictor.q8_0.gguf",
+          "bytes": 151124320,
+          "seconds": 1.9787513999999646
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_speaker_encoder.fp16.onnx",
+          "bytes": 24423582,
+          "seconds": 0.2728759000001446
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_talker.q5_k.gguf",
+          "bytes": 1006245120,
+          "seconds": 13.671719699999812
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\tokenizer.json",
+          "bytes": 11423986,
+          "seconds": 0.12363460000005944
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_0.npy",
+          "bytes": 25165952,
+          "seconds": 0.2766845999999532
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_1.npy",
+          "bytes": 16777344,
+          "seconds": 0.1887391000000207
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_10.npy",
+          "bytes": 16777344,
+          "seconds": 0.1905413999998018
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_11.npy",
+          "bytes": 16777344,
+          "seconds": 0.18086130000028788
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_12.npy",
+          "bytes": 16777344,
+          "seconds": 0.19550840000010794
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_13.npy",
+          "bytes": 16777344,
+          "seconds": 0.18872940000028393
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_14.npy",
+          "bytes": 16777344,
+          "seconds": 0.18332310000005236
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_15.npy",
+          "bytes": 16777344,
+          "seconds": 0.1797194999999192
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_2.npy",
+          "bytes": 16777344,
+          "seconds": 0.18323039999995672
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_3.npy",
+          "bytes": 16777344,
+          "seconds": 0.18233069999996587
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_4.npy",
+          "bytes": 16777344,
+          "seconds": 0.18777090000003227
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_5.npy",
+          "bytes": 16777344,
+          "seconds": 0.24593499999991764
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_6.npy",
+          "bytes": 16777344,
+          "seconds": 0.2292928000001666
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_7.npy",
+          "bytes": 16777344,
+          "seconds": 0.22792669999989812
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_8.npy",
+          "bytes": 16777344,
+          "seconds": 0.22764120000010735
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_9.npy",
+          "bytes": 16777344,
+          "seconds": 0.22773999999981243
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\proj_bias.npy",
+          "bytes": 4224,
+          "seconds": 0.017544399999678717
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\proj_weight.npy",
+          "bytes": 8388736,
+          "seconds": 0.10734099999990576
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\text_embedding_projected.npy",
+          "bytes": 622329984,
+          "seconds": 8.47741410000026
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_weights\\tosaka_rin_tts_v1.pth",
+          "bytes": 57588035,
+          "seconds": 0.7818215000002056
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_rmvpe\\rmvpe.pt",
+          "bytes": 181184272,
+          "seconds": 2.4643498000000363
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_hubert\\config.json",
+          "bytes": 1492,
+          "seconds": 0.01916750000009415
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_hubert\\preprocessor_config.json",
+          "bytes": 225,
+          "seconds": 0.0011767999999392487
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_hubert\\pytorch_model.bin",
+          "bytes": 189206711,
+          "seconds": 2.5934472999997524
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_index\\added_IVF2143_Flat_nprobe_1_tosaka_rin_tts_v1_v2.index",
+          "bytes": 264128619,
+          "seconds": 3.5926570000001448
+        }
+      ],
+      "succeeded": true,
+      "seconds": 41.9144253000004,
+      "bytes": 3136788994,
+      "mib_per_second": 71.37101554303239
+    },
+    {
+      "sample": 3,
+      "files": [
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_codec_encoder.fp16.onnx",
+          "bytes": 113998920,
+          "seconds": 1.4991564000001745
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_decoder.fp16.onnx",
+          "bytes": 229914656,
+          "seconds": 3.0080809000000954
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_predictor.q8_0.gguf",
+          "bytes": 151124320,
+          "seconds": 1.9798531000001276
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_speaker_encoder.fp16.onnx",
+          "bytes": 24423582,
+          "seconds": 0.2724302000001444
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_talker.q5_k.gguf",
+          "bytes": 1006245120,
+          "seconds": 13.671703099999831
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\tokenizer.json",
+          "bytes": 11423986,
+          "seconds": 0.12407140000004802
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_0.npy",
+          "bytes": 25165952,
+          "seconds": 0.27649150000024747
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_1.npy",
+          "bytes": 16777344,
+          "seconds": 0.18846819999998843
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_10.npy",
+          "bytes": 16777344,
+          "seconds": 0.18228189999990718
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_11.npy",
+          "bytes": 16777344,
+          "seconds": 0.18889009999975315
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_12.npy",
+          "bytes": 16777344,
+          "seconds": 0.18698689999973794
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_13.npy",
+          "bytes": 16777344,
+          "seconds": 0.18813259999978982
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_14.npy",
+          "bytes": 16777344,
+          "seconds": 0.18316660000027696
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_15.npy",
+          "bytes": 16777344,
+          "seconds": 0.17930529999966893
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_2.npy",
+          "bytes": 16777344,
+          "seconds": 0.18362660000002506
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_3.npy",
+          "bytes": 16777344,
+          "seconds": 0.18289550000008603
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_4.npy",
+          "bytes": 16777344,
+          "seconds": 0.18711730000040916
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_5.npy",
+          "bytes": 16777344,
+          "seconds": 0.24590790000002016
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_6.npy",
+          "bytes": 16777344,
+          "seconds": 0.22996760000023642
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_7.npy",
+          "bytes": 16777344,
+          "seconds": 0.2277179000002434
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_8.npy",
+          "bytes": 16777344,
+          "seconds": 0.22768280000036611
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_9.npy",
+          "bytes": 16777344,
+          "seconds": 0.22738879999997152
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\proj_bias.npy",
+          "bytes": 4224,
+          "seconds": 0.018044999999801803
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\proj_weight.npy",
+          "bytes": 8388736,
+          "seconds": 0.10680110000021159
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\text_embedding_projected.npy",
+          "bytes": 622329984,
+          "seconds": 8.477740300000278
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_weights\\tosaka_rin_tts_v1.pth",
+          "bytes": 57588035,
+          "seconds": 0.7817701000003581
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_rmvpe\\rmvpe.pt",
+          "bytes": 181184272,
+          "seconds": 2.464502799999991
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_hubert\\config.json",
+          "bytes": 1492,
+          "seconds": 0.019320500000048924
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_hubert\\preprocessor_config.json",
+          "bytes": 225,
+          "seconds": 0.0012726999998449173
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_hubert\\pytorch_model.bin",
+          "bytes": 189206711,
+          "seconds": 2.5933850000001257
+        },
+        {
+          "path": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_index\\added_IVF2143_Flat_nprobe_1_tosaka_rin_tts_v1_v2.index",
+          "bytes": 264128619,
+          "seconds": 3.5923060999998597
+        }
+      ],
+      "succeeded": true,
+      "seconds": 41.90628599999991,
+      "bytes": 3136788994,
+      "mib_per_second": 71.38487766641036
+    }
+  ],
+  "successful_samples": 3,
+  "median_seconds": 41.9144253000004,
+  "min_seconds": 41.90628599999991,
+  "max_seconds": 42.44370690000005
+}

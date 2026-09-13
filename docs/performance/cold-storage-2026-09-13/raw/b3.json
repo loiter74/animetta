@@ -1,0 +1,4480 @@
+{
+  "group": "hdd-before",
+  "sample": 3,
+  "measurement": {
+    "schema_version": 1,
+    "phase": "before",
+    "scenario": "cold-build",
+    "revision": "407a64874cfc991407e3572f1517153f75f03291",
+    "root": "C:\\Users\\30262\\Project\\Anima",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.14",
+    "started_at": "2026-09-13T00:16:07.662622+00:00",
+    "driver_sha256": "d7812e7f005a562e0b13e4a1e53601175eb1e4f480f85341e09367be2c9548b7",
+    "profile": "production",
+    "project": "anima-storage-b3",
+    "samples_requested": 1,
+    "cold_builder": "storage-hdd-b3-0913",
+    "source_snapshot": {
+      "file_count": 1974,
+      "sha256": "67316d1233be8c6a2738de27be76e2ffe7b1d03809228930a6c0579e552bffb5",
+      "scope": "tracked and non-ignored untracked files, secrets excluded"
+    },
+    "browser_driver_sha256": "9e49a22efcfd461c451c36fa4080911506cb01db8366663fe1eefad81af2dd27",
+    "working_diff_sha256": "3c87baa73a53fc5db107013ad953870be308857808f59bb7df1af52fd0f7ef46",
+    "configuration_file_sha256": "66d4ad7e31d2596374c115e3dbe47b0690a89b98513f6b7fd0e181161e977084",
+    "samples": [
+      {
+        "schema_version": 1,
+        "run_id": "b-e0faf137a688",
+        "operation": "anima-up",
+        "exit_code": 0,
+        "elapsed_seconds": 871.0629643000002,
+        "feedback_windows": 127,
+        "continuation_wait_seconds": 127.03021329999956,
+        "observations": [
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0530940999997256,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3375648999999612,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4624370000001363,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.34147829999983514,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.982817499999328,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.325615700000526,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5066554000004544,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3217105999992782,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9795035999995889,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.31401110000024346,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5079600999997638,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.2975777999999991,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0004668000001402,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.32622450000053504,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5028556999995999,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.322420599999532,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.982704900000499,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.349884899999779,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5136034000006475,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3040129999999408,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.1461774999997942,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3448582000000897,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5627397999996901,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.38960259999930713,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0979858000000604,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3450097000004462,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5584270999997898,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.308967500000108,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.17180129999997,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3121983999999429,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5753269000006185,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.37049890000071173,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0736903999995775,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.35711800000080984,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.559850099999494,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.393663299999389,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0198839000004227,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3363153999998758,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.602608400000463,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3813221999998859,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9162421000000904,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.32304970000041067,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.47944079999979294,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.36796250000043074,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0165087999994284,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3136197000003449,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5043314000004102,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3568963999996413,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.8813676999998279,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.28800540000065666,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4305626999994274,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.31685659999948257,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0372707999995328,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3878514999996696,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5199744000001374,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.33775389999937033,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.1154736999997112,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.33478419999937614,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5288417000001573,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3413669999999911,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0084403999999267,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3081607999993139,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5497321000002557,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.32205209999938234,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9917054999996253,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.32428780000009283,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5316553000002386,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3242727000006198,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0671264000002338,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3309875999993892,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4665736000006291,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3122370000000956,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.987460800000008,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3412546999998085,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4785671999998158,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.31477470000027097,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.8962830999998914,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3123859999996057,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.460837999999967,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3120951000000787,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.988781499999277,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.33550130000003264,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4838476000004448,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.34846489999927144,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.022526800000378,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3521928999998636,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.48965379999935976,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.30090519999976095,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9775926000002073,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.366430400000354,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5019464999995762,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3368403999993461,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9290074999998978,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.32615420000001905,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5682091999997283,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3310200000005352,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0946468000001914,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3051722999998674,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5401066000003993,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3736098999997921,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0802518000000418,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.349352799999906,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5033361999994668,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3470732000005228,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9994298000001436,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3487285000001066,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.6323896000003515,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3245233999996344,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.030314399999952,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.364832799999931,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4766013999997085,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3233732999997301,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0108770000006189,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.37260759999935544,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5249856000000364,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3748454999995374,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0206951999998637,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3078790999998091,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5391853999999512,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.340283399999862,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9937806000007186,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3358678000004147,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.47234279999975115,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.36528219999945577,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9912956999996823,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.31775199999992765,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.48401230000035866,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3138878999998269,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0463134999999966,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.33074870000018564,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.45399079999970127,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.316627499999413,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9132953999996971,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.2962422000000515,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.44630379999944125,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3101186999992933,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0213029000005918,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3465868000002956,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.44306239999968966,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3243326000001616,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0620162000004711,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.348035400000299,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5133544999998776,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3460382000002937,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.032120599999871,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.369110599999658,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5514418000002479,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.32869860000027984,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0199853000003714,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.2920230999998239,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4498777999997401,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.2872576999998273,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0870155000002342,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.33281540000007226,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4898343000004388,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3256950000004508,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0631638000004386,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3765058000008139,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4585959999994884,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.29922910000004777,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9817980999996507,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.29859959999976127,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4825109000003067,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.2884565999993356,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0318711999998413,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.30503330000010465,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4741191999992225,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3502302000006239,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0261774000000514,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.35448340000039025,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.46869299999980285,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3218145999999251,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.973516699999891,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3052744000005987,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.489172999999937,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3292356000001746,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.8575174999996307,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.31130430000030174,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.47077510000053735,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.34509840000009717,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9845824000003631,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3135765999995783,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5112107999993896,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3811126000000513,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9973473999998532,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.33197979999931704,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.49182050000035815,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.32979059999979654,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9784443000007741,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3410136999991664,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.519897299999684,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.37146389999998064,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0548318000001018,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.37312850000034814,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.49972669999988284,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3355342999993809,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9910054000001765,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.32420139999976527,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4743195000000924,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3427787000000535,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0781702999993286,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3422952000000805,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4951928999998927,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.337658399999782,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.031968400000551,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.32002529999954277,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5162245999999868,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3131973999998081,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9046294999998281,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.35783469999933004,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.47034160000021075,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3400000999999975,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9525125000000116,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3082079000005251,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.49160719999963476,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3236338999995496,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9638119999999617,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.38469609999992826,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.45995850000053906,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.29332350000004226,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.8638419000008071,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.33466909999970085,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4649268999992273,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3219203999997262,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9245640999997704,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3087385999997423,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4839185999999245,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.33868710000024294,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.940741700000217,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3425147999996625,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.45788379999976314,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3633819999995467,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9325828000000911,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.30241709999972954,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4643434999998135,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3757955999999467,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9984629000000496,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3701162999996086,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.461187300000347,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3367510999996739,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9487067000000025,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3064734999998109,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5069112999999561,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.36132890000044426,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9273772999995344,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3248978999999963,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.47209730000031414,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3285311999998157,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9375559000000067,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.35165149999920686,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.44402590000026976,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3548571000001175,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9810313999996652,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3289801000000807,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.44040960000074847,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.32673440000053233,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9613664999997127,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3051847999995516,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5025171999996019,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.31870679999974527,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.92955129999973,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.32074939999984053,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.44608049999988,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3618294000007154,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9395364000001791,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3308100000003833,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.46762909999961266,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.298143699999855,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9233919999996942,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3404402999995,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5009405000000697,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3480356000000029,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9502572999999757,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3748603000003641,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4651259000002028,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3249926999997115,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9630816999997478,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.34374790000038047,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4988868000000366,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3841332000001785,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9058697999998913,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3403638999998293,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4810019000005923,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3174993999991784,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9759882999996989,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.30559100000027684,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4399782000000414,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.32131939999999304,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9046915999997509,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.29921420000027865,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4608691000003091,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.363231000000269,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.954347100000632,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3018415000005916,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4883069000006799,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.35509170000023005,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9838575000003402,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3670938000004753,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.46212350000041624,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3446751999999833,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9539443000003303,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.34036160000050586,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4659519000006185,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3468741999995473,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.8940845000006448,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.34826649999922665,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4805705000007947,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3166914999992514,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9351650999997219,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.30863439999939146,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.41925330000049144,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.33059899999989284,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9424810999998954,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.35590440000032686,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4508064999999988,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3396352999998271,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9506782999997085,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.2961414999999761,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4285119999995004,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.33325690000037866,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9411296000007496,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.33678800000052433,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.43976480000037554,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.33518980000008014,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9654573999996501,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3377591000007669,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4478779000000941,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.32069700000010926,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0281095999998797,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.35003750000032596,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.501781499999197,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3664795000004233,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9911081999998714,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.35595629999988887,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.44736869999997,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.2911223000000973,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9293655000001309,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.31003710000004503,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.43360409999968397,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.28362899999956426,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0180970000001253,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3464968000007502,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5681332000003749,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3166077999994741,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.021858200000679,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3523870999997598,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.49611149999964255,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3152652999997372,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0316291999997702,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3580144999996264,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4621950000000652,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.37038899999970454,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0315460000001622,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.35111439999946015,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.49862579999989975,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.30337390000022424,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.8653487000001405,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3031481999996686,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.48025349999988975,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3768556000004537,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9598611000001256,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3178373000000647,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4488157999994655,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.2991884000002756,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9711607999997796,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.2836639999995896,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4890980000000127,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3350313000000824,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0029374999994616,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3687946000000011,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.46390279999923223,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.2983864000007088,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.007028099999843,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.37982060000013007,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4397977999997238,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.35964179999973567,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9149022000001423,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.2831837000003361,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.45558319999963715,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.32743500000015047,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.8870687999997244,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.30423120000068593,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.46004870000069786,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3126511999998911,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9680381000007401,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3184798000002047,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.49065690000043105,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3092599000001428,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9751105000004827,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.35119810000014695,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5604961999997613,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3543203999997786,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9586482000004253,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3141410000007454,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5388077999996312,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.35283679999974993,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.931135799999538,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.2973570000003747,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4806945000000269,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.31087900000056834,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9930560000002515,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3791701000000103,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.6176559999994424,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.37756200000058016,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 2.5168704999996407,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.5684215999999651,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 1.4093094999998357,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.5115520999997898,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0405566999997973,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.4105556999993496,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4775798999999097,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.31517489999987447,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.188748300000043,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3127797000006467,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.534716600000138,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3303338999994594,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.1020358000005217,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.35262090000014723,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5907031999995525,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.34433700000045064,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 2.946487000000161,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3308947999994416,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4811871000001702,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.30956289999994624,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0416707000003953,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.2933302999999796,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.519192199999452,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3499797000004037,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.085219199999301,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.36531990000003134,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.6189045000000988,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3409830000000511,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0726776000001337,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3440838000005897,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5018725999998424,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3316350000004604,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0796406999997998,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.34551140000075975,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5500477000005048,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3565497999998115,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0414212000005136,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3021484999999302,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5297640999997384,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.33423620000030496,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0768760999999358,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3437678999998752,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5059366999994381,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.33042250000016793,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.1290249000003314,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3487823000004937,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5149629000006826,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3482574999998178,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.04202290000012,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3187230000003183,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5001197999999931,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.34513000000060856,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9763794000000416,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3018299000004845,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.46974950000003446,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3037730999994892,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9638782000001811,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3092150999991645,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.47663310000007186,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.29062030000022787,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9057596000002377,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.28407939999942755,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.44405659999938507,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.282760999999482,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9064264999997249,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.2899502999998731,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.4410782000004474,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.36480070000015985,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9128233000001273,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.2941579999996975,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.44788489999973535,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.299901399999726,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 0.9978244000003542,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.2945800000006784,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5132327000001169,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3168863999999303,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.20563889999994,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.374985899999956,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5828596000001198,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.41114110000035,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0434070000001157,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3128598000002967,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5174196999996639,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3539109000003009,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0605599999998958,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.32644519999939803,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5564713999992819,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3509315000001152,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.026553800000329,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3383593999997174,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5271249000006719,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3209070000002612,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0384615000002668,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.30120420000002923,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5434512000001632,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.43032990000028803,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0462304000002405,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.3052324000000226,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.5112353000004077,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.3046349000005648,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-start"
+            ],
+            "elapsed_seconds": 1.0632532999998148,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-tts-preflight"
+            ],
+            "elapsed_seconds": 0.35027760000048147,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-start"
+            ],
+            "elapsed_seconds": 0.535831600000165,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "host-rvc-preflight"
+            ],
+            "elapsed_seconds": 0.33632330000000366,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "docker",
+              "compose",
+              "up",
+              "-d",
+              "--no-build",
+              "animetta"
+            ],
+            "elapsed_seconds": 25.56804000000011,
+            "succeeded": true
+          },
+          {
+            "kind": "check_http",
+            "target": "http://localhost/health",
+            "elapsed_seconds": 9.140347600000496,
+            "succeeded": true
+          },
+          {
+            "kind": "check_http",
+            "target": "http://localhost/ready",
+            "elapsed_seconds": 4.63196489999973,
+            "succeeded": true
+          },
+          {
+            "kind": "check_http",
+            "target": "http://localhost",
+            "elapsed_seconds": 0.036235499999747844,
+            "succeeded": true
+          },
+          {
+            "kind": "run_command",
+            "target": [
+              "docker",
+              "compose",
+              "logs",
+              "--since",
+              "2026-09-13T00:29:32.423332+00:00",
+              "--tail",
+              "200",
+              "animetta"
+            ],
+            "elapsed_seconds": 0.2289717000003293,
+            "succeeded": true
+          },
+          {
+            "kind": "check_logs",
+            "target": [
+              "docker",
+              "compose",
+              "logs",
+              "animetta"
+            ],
+            "elapsed_seconds": 0.23147490000064863,
+            "succeeded": true
+          },
+          {
+            "kind": "browser",
+            "target": "http://localhost",
+            "succeeded": true,
+            "elapsed_seconds": 24.77990359999967
+          }
+        ],
+        "error": null,
+        "build": {
+          "started_at": "2026-09-13T00:16:12.116295+00:00",
+          "finished_at": "2026-09-13T00:29:32.276347+00:00",
+          "elapsed_seconds": 800.1600553999997,
+          "exit_code": 0
+        },
+        "build_phases": [
+          {
+            "id": "1",
+            "description": "[internal] load local bake definitions",
+            "seconds": 0.0,
+            "cached": false
+          },
+          {
+            "id": "2",
+            "description": "[internal] load build definition from Dockerfile",
+            "seconds": 1.3,
+            "cached": false
+          },
+          {
+            "id": "5",
+            "description": "[internal] load metadata for docker.io/library/python:3.13-slim-bookworm",
+            "seconds": 4.7,
+            "cached": false
+          },
+          {
+            "id": "6",
+            "description": "[internal] load metadata for docker.io/library/node:22-bookworm-slim",
+            "seconds": 5.4,
+            "cached": false
+          },
+          {
+            "id": "7",
+            "description": "[internal] load metadata for ghcr.io/astral-sh/uv:0.11.19",
+            "seconds": 6.5,
+            "cached": false
+          },
+          {
+            "id": "8",
+            "description": "[internal] load .dockerignore",
+            "seconds": 0.7,
+            "cached": false
+          },
+          {
+            "id": "9",
+            "description": "[internal] load build context",
+            "seconds": 6.6,
+            "cached": false
+          },
+          {
+            "id": "10",
+            "description": "[uv 1/1] FROM ghcr.io/astral-sh/uv:0.11.19@sha256:b46b03ddfcfbf8f547af7e9eaefdf8a39c8cebcba7c98858d3162bd28cf536f6",
+            "seconds": 18.2,
+            "cached": false
+          },
+          {
+            "id": "11",
+            "description": "[frontend-deps 1/5] FROM docker.io/library/node:22-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5",
+            "seconds": 48.1,
+            "cached": false
+          },
+          {
+            "id": "12",
+            "description": "[python-builder 1/6] FROM docker.io/library/python:3.13-slim-bookworm@sha256:ed86c82274b3c69b52fb5820f358f0bd7df0b603332063cb5c6e32bd220c3e6e",
+            "seconds": 34.0,
+            "cached": false
+          },
+          {
+            "id": "13",
+            "description": "[backend-base 2/8] WORKDIR /app",
+            "seconds": 5.9,
+            "cached": false
+          },
+          {
+            "id": "14",
+            "description": "[python-builder 2/6] COPY --from=uv /uv /usr/local/bin/uv",
+            "seconds": 6.1,
+            "cached": false
+          },
+          {
+            "id": "15",
+            "description": "[python-builder 3/6] WORKDIR /build",
+            "seconds": 4.8,
+            "cached": false
+          },
+          {
+            "id": "16",
+            "description": "[python-builder 4/6] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     rm -f /etc/apt/apt.conf.d/docker-clean     && sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends gcc",
+            "seconds": 515.6,
+            "cached": false
+          },
+          {
+            "id": "17",
+            "description": "[backend-base 3/8] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     rm -f /etc/apt/apt.conf.d/docker-clean     && sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends ffmpeg nginx curl",
+            "seconds": 460.8,
+            "cached": false
+          },
+          {
+            "id": "18",
+            "description": "[frontend-deps 2/5] RUN corepack enable     && corepack prepare pnpm@11.7.0 --activate     && pnpm config set registry https://registry.npmmirror.com     && pnpm config set store-dir /pnpm/store",
+            "seconds": 6.8,
+            "cached": false
+          },
+          {
+            "id": "19",
+            "description": "[frontend-deps 3/5] WORKDIR /build/frontend",
+            "seconds": 2.3,
+            "cached": false
+          },
+          {
+            "id": "20",
+            "description": "[frontend-deps 4/5] COPY frontend/.npmrc frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./",
+            "seconds": 2.4,
+            "cached": false
+          },
+          {
+            "id": "21",
+            "description": "[frontend-deps 5/5] RUN --mount=type=cache,id=animetta-pnpm-11,target=/pnpm/store     pnpm install --frozen-lockfile --prefer-offline",
+            "seconds": 23.6,
+            "cached": false
+          },
+          {
+            "id": "22",
+            "description": "[frontend-source 1/4] COPY frontend/*.html frontend/vite.config.ts frontend/uno.config.ts frontend/tsconfig.json ./",
+            "seconds": 3.1,
+            "cached": false
+          },
+          {
+            "id": "23",
+            "description": "[frontend-source 2/4] COPY frontend/src/ ./src/",
+            "seconds": 1.7,
+            "cached": false
+          },
+          {
+            "id": "24",
+            "description": "[frontend-source 3/4] COPY frontend/public/ ./public/",
+            "seconds": 2.1,
+            "cached": false
+          },
+          {
+            "id": "25",
+            "description": "[frontend-source 4/4] COPY config/socket-events.json /build/config/socket-events.json",
+            "seconds": 2.0,
+            "cached": false
+          },
+          {
+            "id": "26",
+            "description": "[frontend-builder 1/1] RUN pnpm exec vite build",
+            "seconds": 9.6,
+            "cached": false
+          },
+          {
+            "id": "27",
+            "description": "[python-builder 5/6] COPY requirements.txt ./",
+            "seconds": 1.7,
+            "cached": false
+          },
+          {
+            "id": "28",
+            "description": "[python-builder 6/6] RUN --mount=type=cache,id=animetta-uv-013,target=/root/.cache/uv     uv venv --python /usr/local/bin/python /opt/venv     && uv pip sync --python /opt/venv/bin/python --compile-bytecode requirements.txt     && uv pip check --python /opt/venv/bin/python",
+            "seconds": 26.1,
+            "cached": false
+          },
+          {
+            "id": "29",
+            "description": "[backend-base 4/8] COPY --from=python-builder /opt/venv /opt/venv",
+            "seconds": 9.6,
+            "cached": false
+          },
+          {
+            "id": "30",
+            "description": "[backend-base 5/8] COPY src/animetta/ src/animetta/",
+            "seconds": 9.7,
+            "cached": false
+          },
+          {
+            "id": "31",
+            "description": "[backend-base 6/8] COPY config/ config/",
+            "seconds": 5.2,
+            "cached": false
+          },
+          {
+            "id": "32",
+            "description": "[backend-base 7/8] COPY .env.example .env.example",
+            "seconds": 3.5,
+            "cached": false
+          },
+          {
+            "id": "33",
+            "description": "[backend-base 8/8] RUN python -m compileall -q --invalidation-mode checked-hash src/animetta",
+            "seconds": 5.0,
+            "cached": false
+          },
+          {
+            "id": "34",
+            "description": "[runtime 1/6] COPY scripts/validate-events.py scripts/validate-events.py",
+            "seconds": 3.0,
+            "cached": false
+          },
+          {
+            "id": "35",
+            "description": "[runtime 2/6] RUN --mount=type=bind,from=frontend-source,source=/build/frontend,target=/app/frontend     python scripts/validate-events.py",
+            "seconds": 3.7,
+            "cached": false
+          },
+          {
+            "id": "36",
+            "description": "[runtime 3/6] COPY --from=frontend-builder /build/frontend/dist /app/frontend/dist",
+            "seconds": 3.8,
+            "cached": false
+          },
+          {
+            "id": "37",
+            "description": "[runtime 4/6] COPY docker/nginx.conf /etc/nginx/nginx.conf",
+            "seconds": 13.5,
+            "cached": false
+          },
+          {
+            "id": "38",
+            "description": "[runtime 5/6] COPY docker/entrypoint.sh /app/entrypoint.sh",
+            "seconds": 10.4,
+            "cached": false
+          },
+          {
+            "id": "39",
+            "description": "[runtime 6/6] RUN chmod +x /app/entrypoint.sh",
+            "seconds": 8.8,
+            "cached": false
+          }
+        ],
+        "build_completion_to_finish_seconds": 68.441528,
+        "wall_seconds": 871.6906450999995,
+        "sample": "sample-01"
+      }
+    ],
+    "successful_samples": 1,
+    "median_seconds": 871.6906450999995,
+    "min_seconds": 871.6906450999995,
+    "max_seconds": 871.6906450999995
+  },
+  "build_receipt": {
+    "started_at": "2026-09-13T00:16:12.116295+00:00",
+    "finished_at": "2026-09-13T00:29:32.276347+00:00",
+    "elapsed_seconds": 800.1600553999997,
+    "exit_code": 0
+  },
+  "telemetry_summary": {
+    "sample_count": 335,
+    "covered_seconds": 797.8438119888306,
+    "max_sample_interval_seconds": 2.674485921859741,
+    "cpu_weighted_mean_percent": 28.68304962496689,
+    "cpu_peak_percent": 99,
+    "disks": {
+      "0 E:": {
+        "read_bytes_estimate": 499563413.01206326,
+        "write_bytes_estimate": 6567485058.533441,
+        "active_seconds_estimate": 655.8489968442915,
+        "over_90_percent_seconds_estimate": 608.7856559753418,
+        "queue_time_integral": 2614.9747426509857
+      },
+      "1 D: C:": {
+        "read_bytes_estimate": 2992990759.3995924,
+        "write_bytes_estimate": 4911258174.001221,
+        "active_seconds_estimate": 37.89025795698167,
+        "over_90_percent_seconds_estimate": 7.746626138687134,
+        "queue_time_integral": 104.29681873321533
+      }
+    },
+    "note": "Time-weighted approximations from formatted whole-disk counters, not process-attributed byte accounting. Intervals use UTC receipt boundaries; wall time remains the monotonic receipt."
+  },
+  "source_sha256": {
+    "artifacts\\cold-storage-20260913\\b3\\summary.json": "9d2776c1da6389c1e6cddfcde71a93aad4979ed4cd537dda216e5710f39ff588",
+    "artifacts\\cold-storage-20260913\\b3\\sample-01-build.json": "c152622a87cd712f7a0d43f3451ec645c30b23e9a955e8c91f7ee456dce1d24d",
+    "artifacts\\cold-storage-20260913\\b3-telemetry.jsonl": "414fce3cf04c7cb50ad9299ddae2dd01a40e088ce75034061b171f922641ac85",
+    "artifacts\\cold-storage-20260913\\b3\\sample-01-surfaces.json": "2ba22bfa6bbc580ec670bcac4ad378c403cf426399104abf4b53e6f36b2dff41",
+    "artifacts\\cold-storage-20260913\\b3\\lifecycle\\b-e0faf137a688\\animetta-build.log": "608e0cd25a0755968b0c7930e40ececa4ba4cf55b75db0637561f42a74757d21"
+  },
+  "surfaces": {
+    "schema_version": 1,
+    "scenario": "surfaces",
+    "phase": "before",
+    "samples": [],
+    "samples_requested": 1,
+    "started_at": "2026-09-13T00:30:32.605Z",
+    "root": "C:\\Users\\30262\\Project\\Anima",
+    "url": "http://localhost/",
+    "authentication": "existing_machine_token",
+    "surface_errors": [],
+    "surface_seconds": 7.7584612,
+    "resources": [
+      {
+        "url": "http://localhost/live2d/live2dcubismcore.min.js",
+        "sha256": "25ae938cb4fe282ce189b357bcc97e603d1e1f7ec78bf04150d401c23cdc792f"
+      },
+      {
+        "url": "http://localhost/assets/app-DfjfTlZG.js",
+        "sha256": "89c7cd9665112a75bf841eaf326b827e9438a035cd114178b8a4d673ad9c8018"
+      },
+      {
+        "url": "http://localhost/live2d/live2dcubismcore.min.js",
+        "sha256": "25ae938cb4fe282ce189b357bcc97e603d1e1f7ec78bf04150d401c23cdc792f"
+      },
+      {
+        "url": "http://localhost/assets/live-CJ-4DTXu.js",
+        "sha256": "afd785bb74cba7653af8aefdb22f940f90446b473f91dad5cdf124ab7347ca43"
+      }
+    ],
+    "socket_connected": true,
+    "exit_code": 0,
+    "successful_samples": 0,
+    "median_seconds": null,
+    "min_seconds": null,
+    "max_seconds": null
+  },
+  "derived_oci_export_seconds": 102.6
+}

@@ -1,0 +1,381 @@
+{
+  "schema_version": 1,
+  "formal_driver_sha256": "c357f20a9104b0ab70967becee936e97b59b94cbdda6254edc7e06b95b09bbde",
+  "groups": [
+    {
+      "model": "qwen",
+      "medium": "ssd",
+      "host_up_seconds": {
+        "count": 3,
+        "median": 14.89332760000002,
+        "min": 14.823630500000036,
+        "max": 14.929167900000039
+      },
+      "first_inference_seconds": {
+        "count": 3,
+        "median": 1.159028600000056,
+        "min": 1.1409565999999813,
+        "max": 1.3303456999999526
+      },
+      "combined_seconds": {
+        "count": 3,
+        "median": 17.19468729999994,
+        "min": 17.109748999999965,
+        "max": 17.32433909999986
+      }
+    },
+    {
+      "model": "qwen",
+      "medium": "hdd",
+      "host_up_seconds": {
+        "count": 3,
+        "median": 14.469197800000074,
+        "min": 14.341922300000078,
+        "max": 46.70683750000035
+      },
+      "first_inference_seconds": {
+        "count": 3,
+        "median": 1.163343000000168,
+        "min": 1.1233715999997003,
+        "max": 1.5210141000002295
+      },
+      "combined_seconds": {
+        "count": 3,
+        "median": 16.632624399999713,
+        "min": 16.61612009999999,
+        "max": 49.37455480000017
+      }
+    },
+    {
+      "model": "rvc",
+      "medium": "ssd",
+      "host_up_seconds": {
+        "count": 3,
+        "median": 10.17346879999991,
+        "min": 10.063565899999958,
+        "max": 10.601996299999882
+      },
+      "first_inference_seconds": {
+        "count": 3,
+        "median": 10.799575799999957,
+        "min": 10.624844899999971,
+        "max": 11.4909447
+      },
+      "combined_seconds": {
+        "count": 3,
+        "median": 22.07327669999995,
+        "min": 21.73879020000004,
+        "max": 23.248465299999907
+      }
+    },
+    {
+      "model": "rvc",
+      "medium": "hdd",
+      "host_up_seconds": {
+        "count": 3,
+        "median": 10.698791599999822,
+        "min": 9.591388900000311,
+        "max": 22.038831800000025
+      },
+      "first_inference_seconds": {
+        "count": 3,
+        "median": 13.065615200000138,
+        "min": 11.92458140000008,
+        "max": 15.093421900000067
+      },
+      "combined_seconds": {
+        "count": 3,
+        "median": 24.943934999999783,
+        "min": 22.579832800000077,
+        "max": 38.416654299999664
+      }
+    }
+  ],
+  "samples": [
+    {
+      "model": "qwen",
+      "medium": "ssd",
+      "call": "model-ssd-qwen-v2",
+      "sample_in_call": 1,
+      "started_at": "2026-09-13T12:23:00.561645+00:00",
+      "driver_sha256": "c357f20a9104b0ab70967becee936e97b59b94cbdda6254edc7e06b95b09bbde",
+      "host_up_seconds": 14.823630500000036,
+      "first_inference_seconds": 1.159028600000056,
+      "combined_seconds": 17.109748999999965,
+      "audio_bytes": 188160,
+      "audio_seconds": 3.92,
+      "audio_sha256": "50c66d69923c2701edacdb2f890cfada82863fd5a16f25c8d207cd9f08b69966",
+      "exit_code": 0
+    },
+    {
+      "model": "qwen",
+      "medium": "ssd",
+      "call": "model-ssd-qwen-v2",
+      "sample_in_call": 2,
+      "started_at": "2026-09-13T12:23:30.848515+00:00",
+      "driver_sha256": "c357f20a9104b0ab70967becee936e97b59b94cbdda6254edc7e06b95b09bbde",
+      "host_up_seconds": 14.929167900000039,
+      "first_inference_seconds": 1.1409565999999813,
+      "combined_seconds": 17.19468729999994,
+      "audio_bytes": 188160,
+      "audio_seconds": 3.92,
+      "audio_sha256": "50c66d69923c2701edacdb2f890cfada82863fd5a16f25c8d207cd9f08b69966",
+      "exit_code": 0
+    },
+    {
+      "model": "qwen",
+      "medium": "ssd",
+      "call": "model-ssd-qwen-v2",
+      "sample_in_call": 3,
+      "started_at": "2026-09-13T12:24:01.591993+00:00",
+      "driver_sha256": "c357f20a9104b0ab70967becee936e97b59b94cbdda6254edc7e06b95b09bbde",
+      "host_up_seconds": 14.89332760000002,
+      "first_inference_seconds": 1.3303456999999526,
+      "combined_seconds": 17.32433909999986,
+      "audio_bytes": 188160,
+      "audio_seconds": 3.92,
+      "audio_sha256": "50c66d69923c2701edacdb2f890cfada82863fd5a16f25c8d207cd9f08b69966",
+      "exit_code": 0
+    },
+    {
+      "model": "rvc",
+      "medium": "ssd",
+      "call": "model-ssd-rvc-v2",
+      "sample_in_call": 1,
+      "started_at": "2026-09-13T12:24:52.241587+00:00",
+      "driver_sha256": "c357f20a9104b0ab70967becee936e97b59b94cbdda6254edc7e06b95b09bbde",
+      "host_up_seconds": 10.601996299999882,
+      "first_inference_seconds": 11.4909447,
+      "combined_seconds": 23.248465299999907,
+      "audio_bytes": 190124,
+      "audio_seconds": 1.98,
+      "audio_sha256": "277a8d5bcdd500c17e0dae0c8b62961bc4aca5731dd9929c16a38c2378dd8cbb",
+      "exit_code": 0
+    },
+    {
+      "model": "rvc",
+      "medium": "ssd",
+      "call": "model-ssd-rvc-v2-continuation",
+      "sample_in_call": 1,
+      "started_at": "2026-09-13T12:27:12.570743+00:00",
+      "driver_sha256": "c357f20a9104b0ab70967becee936e97b59b94cbdda6254edc7e06b95b09bbde",
+      "host_up_seconds": 10.17346879999991,
+      "first_inference_seconds": 10.799575799999957,
+      "combined_seconds": 22.07327669999995,
+      "audio_bytes": 190124,
+      "audio_seconds": 1.98,
+      "audio_sha256": "b5038525e4b993be4d2b0d270eab95c2ebfbf0a17e16d8e42d06f6800fdd1cb5",
+      "exit_code": 0
+    },
+    {
+      "model": "rvc",
+      "medium": "ssd",
+      "call": "model-ssd-rvc-v2-continuation",
+      "sample_in_call": 2,
+      "started_at": "2026-09-13T12:27:37.670422+00:00",
+      "driver_sha256": "c357f20a9104b0ab70967becee936e97b59b94cbdda6254edc7e06b95b09bbde",
+      "host_up_seconds": 10.063565899999958,
+      "first_inference_seconds": 10.624844899999971,
+      "combined_seconds": 21.73879020000004,
+      "audio_bytes": 190124,
+      "audio_seconds": 1.98,
+      "audio_sha256": "a1f07224ae75488578acddb4cfc74e01a3c791dd463944981ae73cd273d2447a",
+      "exit_code": 0
+    },
+    {
+      "model": "qwen",
+      "medium": "hdd",
+      "call": "model-hdd-qwen",
+      "sample_in_call": 1,
+      "started_at": "2026-09-13T12:50:48.983445+00:00",
+      "driver_sha256": "c357f20a9104b0ab70967becee936e97b59b94cbdda6254edc7e06b95b09bbde",
+      "host_up_seconds": 46.70683750000035,
+      "first_inference_seconds": 1.5210141000002295,
+      "combined_seconds": 49.37455480000017,
+      "audio_bytes": 188160,
+      "audio_seconds": 3.92,
+      "audio_sha256": "50c66d69923c2701edacdb2f890cfada82863fd5a16f25c8d207cd9f08b69966",
+      "exit_code": 0
+    },
+    {
+      "model": "qwen",
+      "medium": "hdd",
+      "call": "model-hdd-qwen",
+      "sample_in_call": 2,
+      "started_at": "2026-09-13T12:51:51.837856+00:00",
+      "driver_sha256": "c357f20a9104b0ab70967becee936e97b59b94cbdda6254edc7e06b95b09bbde",
+      "host_up_seconds": 14.469197800000074,
+      "first_inference_seconds": 1.1233715999997003,
+      "combined_seconds": 16.632624399999713,
+      "audio_bytes": 188160,
+      "audio_seconds": 3.92,
+      "audio_sha256": "50c66d69923c2701edacdb2f890cfada82863fd5a16f25c8d207cd9f08b69966",
+      "exit_code": 0
+    },
+    {
+      "model": "qwen",
+      "medium": "hdd",
+      "call": "model-hdd-qwen",
+      "sample_in_call": 3,
+      "started_at": "2026-09-13T12:52:21.136926+00:00",
+      "driver_sha256": "c357f20a9104b0ab70967becee936e97b59b94cbdda6254edc7e06b95b09bbde",
+      "host_up_seconds": 14.341922300000078,
+      "first_inference_seconds": 1.163343000000168,
+      "combined_seconds": 16.61612009999999,
+      "audio_bytes": 188160,
+      "audio_seconds": 3.92,
+      "audio_sha256": "50c66d69923c2701edacdb2f890cfada82863fd5a16f25c8d207cd9f08b69966",
+      "exit_code": 0
+    },
+    {
+      "model": "rvc",
+      "medium": "hdd",
+      "call": "model-hdd-rvc",
+      "sample_in_call": 1,
+      "started_at": "2026-09-13T12:58:00.680449+00:00",
+      "driver_sha256": "c357f20a9104b0ab70967becee936e97b59b94cbdda6254edc7e06b95b09bbde",
+      "host_up_seconds": 22.038831800000025,
+      "first_inference_seconds": 15.093421900000067,
+      "combined_seconds": 38.416654299999664,
+      "audio_bytes": 190124,
+      "audio_seconds": 1.98,
+      "audio_sha256": "acb502690b73e5b53bfc41f66e881f14534d6e3e971187d8e6604c4f3066c581",
+      "exit_code": 0
+    },
+    {
+      "model": "rvc",
+      "medium": "hdd",
+      "call": "model-hdd-rvc",
+      "sample_in_call": 2,
+      "started_at": "2026-09-13T12:58:42.229728+00:00",
+      "driver_sha256": "c357f20a9104b0ab70967becee936e97b59b94cbdda6254edc7e06b95b09bbde",
+      "host_up_seconds": 10.698791599999822,
+      "first_inference_seconds": 13.065615200000138,
+      "combined_seconds": 24.943934999999783,
+      "audio_bytes": 190124,
+      "audio_seconds": 1.98,
+      "audio_sha256": "0e05fe64053e2f858088e5a8a433848ba1b408b9534355ed66b9c953682ce2b6",
+      "exit_code": 0
+    },
+    {
+      "model": "rvc",
+      "medium": "hdd",
+      "call": "model-hdd-rvc",
+      "sample_in_call": 3,
+      "started_at": "2026-09-13T12:59:10.174682+00:00",
+      "driver_sha256": "c357f20a9104b0ab70967becee936e97b59b94cbdda6254edc7e06b95b09bbde",
+      "host_up_seconds": 9.591388900000311,
+      "first_inference_seconds": 11.92458140000008,
+      "combined_seconds": 22.579832800000077,
+      "audio_bytes": 190124,
+      "audio_seconds": 1.98,
+      "audio_sha256": "eb1f4276628524aa2362058446f78f7a2a73fb142042870a0c33c1b65b9789a9",
+      "exit_code": 0
+    }
+  ],
+  "pilot_samples": [
+    {
+      "model": "qwen",
+      "medium": "ssd",
+      "call": "model-ssd-qwen",
+      "sample_in_call": 1,
+      "started_at": "2026-09-13T12:16:26.802839+00:00",
+      "driver_sha256": "3044a63f96d281e2e9d208e03d312d0dff95496ae61a6938d5efd37d916614e4",
+      "host_up_seconds": 30.917371700000103,
+      "first_inference_seconds": 1.2048005999999987,
+      "combined_seconds": 33.480787700000064,
+      "audio_bytes": 188160,
+      "audio_seconds": 3.92,
+      "audio_sha256": "50c66d69923c2701edacdb2f890cfada82863fd5a16f25c8d207cd9f08b69966",
+      "exit_code": 0
+    },
+    {
+      "model": "qwen",
+      "medium": "ssd",
+      "call": "model-ssd-qwen",
+      "sample_in_call": 2,
+      "started_at": "2026-09-13T12:17:13.208016+00:00",
+      "driver_sha256": "3044a63f96d281e2e9d208e03d312d0dff95496ae61a6938d5efd37d916614e4",
+      "host_up_seconds": 14.591311700000006,
+      "first_inference_seconds": 1.2147595999999794,
+      "combined_seconds": 16.866250000000036,
+      "audio_bytes": 188160,
+      "audio_seconds": 3.92,
+      "audio_sha256": "50c66d69923c2701edacdb2f890cfada82863fd5a16f25c8d207cd9f08b69966",
+      "exit_code": 0
+    },
+    {
+      "model": "qwen",
+      "medium": "ssd",
+      "call": "model-ssd-qwen",
+      "sample_in_call": 3,
+      "started_at": "2026-09-13T12:17:42.861049+00:00",
+      "driver_sha256": "3044a63f96d281e2e9d208e03d312d0dff95496ae61a6938d5efd37d916614e4",
+      "host_up_seconds": 14.49061340000003,
+      "first_inference_seconds": 1.1199624000000767,
+      "combined_seconds": 16.656201499999952,
+      "audio_bytes": 188160,
+      "audio_seconds": 3.92,
+      "audio_sha256": "50c66d69923c2701edacdb2f890cfada82863fd5a16f25c8d207cd9f08b69966",
+      "exit_code": 0
+    },
+    {
+      "model": "rvc",
+      "medium": "ssd",
+      "call": "model-ssd-rvc",
+      "sample_in_call": 1,
+      "started_at": "2026-09-13T12:18:24.635362+00:00",
+      "driver_sha256": "3044a63f96d281e2e9d208e03d312d0dff95496ae61a6938d5efd37d916614e4",
+      "host_up_seconds": 22.111636699999963,
+      "first_inference_seconds": 21.597730899999988,
+      "combined_seconds": 44.88215519999994,
+      "audio_bytes": 190124,
+      "audio_seconds": 1.98,
+      "audio_sha256": "20b156c5df9355828fde2697281c369ac27b7e28ba5e5e7d3d283613174bd7cf",
+      "exit_code": 0
+    }
+  ],
+  "comparisons": [
+    {
+      "model": "qwen",
+      "comparison": "HDD to SSD",
+      "seconds_saved": -0.5620629000002282,
+      "reduction_percent": -3.379279700443653,
+      "speedup": 0.9673118277643682
+    },
+    {
+      "model": "rvc",
+      "comparison": "HDD to SSD",
+      "seconds_saved": 2.870658299999832,
+      "reduction_percent": 11.508442032100616,
+      "speedup": 1.1300512986365925
+    }
+  ],
+  "forecast_errors": [
+    {
+      "model": "qwen",
+      "frozen_interval": [
+        15,
+        28
+      ],
+      "hdd_median": 16.632624399999713,
+      "within_interval": true,
+      "signed_distance_to_interval_seconds": 0,
+      "midpoint_error_seconds": -4.867375600000287,
+      "midpoint_error_percent": -22.638956279071103
+    },
+    {
+      "model": "rvc",
+      "frozen_interval": [
+        20,
+        38
+      ],
+      "hdd_median": 24.943934999999783,
+      "within_interval": true,
+      "signed_distance_to_interval_seconds": 0,
+      "midpoint_error_seconds": -4.056065000000217,
+      "midpoint_error_percent": -13.986431034483507
+    }
+  ],
+  "note": "Formal groups use the same frozen exit-wait driver; pilot observations are separate. Clocked combined time includes orchestration gaps. No OS cache flush; sequential media order limits attribution."
+}

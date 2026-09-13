@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "run_id": "final-formal-restore",
+  "operation": "anima-up",
+  "exit_code": 0,
+  "elapsed_seconds": 258.3991803000008,
+  "feedback_windows": 1,
+  "continuation_wait_seconds": 0.0,
+  "observations": [
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-start"
+      ],
+      "elapsed_seconds": 2.9292894000009255,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-preflight"
+      ],
+      "elapsed_seconds": 0.3275584000002709,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-start"
+      ],
+      "elapsed_seconds": 1.4753012000001036,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-preflight"
+      ],
+      "elapsed_seconds": 0.37756460000127845,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "docker",
+        "compose",
+        "up",
+        "-d",
+        "--no-build",
+        "animetta"
+      ],
+      "elapsed_seconds": 28.844225099999676,
+      "succeeded": true
+    },
+    {
+      "kind": "check_http",
+      "target": "http://localhost/health",
+      "elapsed_seconds": 195.23006689999966,
+      "succeeded": true
+    },
+    {
+      "kind": "check_http",
+      "target": "http://localhost/ready",
+      "elapsed_seconds": 21.234377299999323,
+      "succeeded": true
+    },
+    {
+      "kind": "check_http",
+      "target": "http://localhost",
+      "elapsed_seconds": 0.10567959999934828,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "docker",
+        "compose",
+        "logs",
+        "--since",
+        "2026-09-13T15:16:43.903816+00:00",
+        "--tail",
+        "200",
+        "animetta"
+      ],
+      "elapsed_seconds": 0.22004659999947762,
+      "succeeded": true
+    },
+    {
+      "kind": "check_logs",
+      "target": [
+        "docker",
+        "compose",
+        "logs",
+        "animetta"
+      ],
+      "elapsed_seconds": 0.22193259999949078,
+      "succeeded": true
+    },
+    {
+      "kind": "browser",
+      "target": "http://localhost",
+      "succeeded": true,
+      "elapsed_seconds": 4.201503399999638
+    }
+  ],
+  "error": null,
+  "build": null
+}

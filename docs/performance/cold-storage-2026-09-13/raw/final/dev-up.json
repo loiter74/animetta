@@ -1,0 +1,789 @@
+{
+  "schema_version": 1,
+  "run_id": "final-dev-up",
+  "operation": "anima-dev",
+  "exit_code": 0,
+  "elapsed_seconds": 254.15756540000075,
+  "feedback_windows": 15,
+  "continuation_wait_seconds": 14.00858000000153,
+  "observations": [
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-start"
+      ],
+      "elapsed_seconds": 2.9784870999992563,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-preflight"
+      ],
+      "elapsed_seconds": 0.2978932000005443,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-start"
+      ],
+      "elapsed_seconds": 1.4242479000004096,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-preflight"
+      ],
+      "elapsed_seconds": 0.29983999999967637,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-start"
+      ],
+      "elapsed_seconds": 2.8705654999994294,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-preflight"
+      ],
+      "elapsed_seconds": 0.3039131000005,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-start"
+      ],
+      "elapsed_seconds": 1.3831178000000364,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-preflight"
+      ],
+      "elapsed_seconds": 0.3052886999994371,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-start"
+      ],
+      "elapsed_seconds": 2.904438999999911,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-preflight"
+      ],
+      "elapsed_seconds": 0.2993600999998307,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-start"
+      ],
+      "elapsed_seconds": 1.4200182000004133,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-preflight"
+      ],
+      "elapsed_seconds": 0.29865959999915503,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-start"
+      ],
+      "elapsed_seconds": 2.855419499999698,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-preflight"
+      ],
+      "elapsed_seconds": 0.3048843999986275,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-start"
+      ],
+      "elapsed_seconds": 1.4378309000003355,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-preflight"
+      ],
+      "elapsed_seconds": 0.29686729999957606,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-start"
+      ],
+      "elapsed_seconds": 2.9112100999991526,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-preflight"
+      ],
+      "elapsed_seconds": 0.3177060000016354,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-start"
+      ],
+      "elapsed_seconds": 1.4991757000007055,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-preflight"
+      ],
+      "elapsed_seconds": 0.3126105000010284,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-start"
+      ],
+      "elapsed_seconds": 2.8409634999989066,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-preflight"
+      ],
+      "elapsed_seconds": 0.30738879999989877,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-start"
+      ],
+      "elapsed_seconds": 1.4199846000010439,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-preflight"
+      ],
+      "elapsed_seconds": 0.2928955000006681,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-start"
+      ],
+      "elapsed_seconds": 2.9017987999995967,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-preflight"
+      ],
+      "elapsed_seconds": 0.2968063999996957,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-start"
+      ],
+      "elapsed_seconds": 1.4153241000003618,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-preflight"
+      ],
+      "elapsed_seconds": 0.3558823000003031,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-start"
+      ],
+      "elapsed_seconds": 2.9694412000008015,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-preflight"
+      ],
+      "elapsed_seconds": 0.32387070000004314,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-start"
+      ],
+      "elapsed_seconds": 1.4577580000004673,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-preflight"
+      ],
+      "elapsed_seconds": 0.3012516999988293,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-start"
+      ],
+      "elapsed_seconds": 3.0549124000008305,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-preflight"
+      ],
+      "elapsed_seconds": 0.357609800001228,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-start"
+      ],
+      "elapsed_seconds": 1.5569424999994226,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-preflight"
+      ],
+      "elapsed_seconds": 0.3389287999998487,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-start"
+      ],
+      "elapsed_seconds": 2.965018200000486,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-preflight"
+      ],
+      "elapsed_seconds": 0.2983800000001793,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-start"
+      ],
+      "elapsed_seconds": 1.3914607999995496,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-preflight"
+      ],
+      "elapsed_seconds": 0.29890250000062224,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-start"
+      ],
+      "elapsed_seconds": 2.8220823999999993,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-preflight"
+      ],
+      "elapsed_seconds": 0.2956012999984523,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-start"
+      ],
+      "elapsed_seconds": 1.4143992000008438,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-preflight"
+      ],
+      "elapsed_seconds": 0.30774680000104127,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-start"
+      ],
+      "elapsed_seconds": 2.9260153000013815,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-preflight"
+      ],
+      "elapsed_seconds": 0.3128314000005048,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-start"
+      ],
+      "elapsed_seconds": 1.4567581999999675,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-preflight"
+      ],
+      "elapsed_seconds": 0.31830970000009984,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-start"
+      ],
+      "elapsed_seconds": 2.890368500000477,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-preflight"
+      ],
+      "elapsed_seconds": 0.30530800000087766,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-start"
+      ],
+      "elapsed_seconds": 1.4086418999995658,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-preflight"
+      ],
+      "elapsed_seconds": 0.30571120000058727,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-start"
+      ],
+      "elapsed_seconds": 3.0644152000004397,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-preflight"
+      ],
+      "elapsed_seconds": 0.3117726999989827,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-start"
+      ],
+      "elapsed_seconds": 1.516069500001322,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-preflight"
+      ],
+      "elapsed_seconds": 0.3197880999996414,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-start"
+      ],
+      "elapsed_seconds": 3.0021443999994517,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-tts-preflight"
+      ],
+      "elapsed_seconds": 0.2999637000011717,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-start"
+      ],
+      "elapsed_seconds": 1.4599851000002673,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "host-rvc-preflight"
+      ],
+      "elapsed_seconds": 0.3102884999989328,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "docker",
+        "compose",
+        "up",
+        "-d",
+        "--no-build",
+        "animetta",
+        "frontend"
+      ],
+      "elapsed_seconds": 30.373700799998915,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "development-watch"
+      ],
+      "elapsed_seconds": 3.2221496000001935,
+      "succeeded": true
+    },
+    {
+      "kind": "check_http",
+      "target": "http://localhost:3000/health",
+      "elapsed_seconds": 10.247703400000319,
+      "succeeded": true
+    },
+    {
+      "kind": "check_http",
+      "target": "http://localhost:3000/ready",
+      "elapsed_seconds": 2.290369500000452,
+      "succeeded": true
+    },
+    {
+      "kind": "check_http",
+      "target": "http://localhost:3000",
+      "elapsed_seconds": 2.0112967000004573,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "docker",
+        "compose",
+        "logs",
+        "--since",
+        "2026-09-13T15:09:21.405227+00:00",
+        "--tail",
+        "200",
+        "animetta"
+      ],
+      "elapsed_seconds": 0.21680500000002212,
+      "succeeded": true
+    },
+    {
+      "kind": "check_logs",
+      "target": [
+        "docker",
+        "compose",
+        "logs",
+        "animetta"
+      ],
+      "elapsed_seconds": 0.2190000999999029,
+      "succeeded": true
+    },
+    {
+      "kind": "browser",
+      "target": "http://localhost:3000",
+      "succeeded": true,
+      "elapsed_seconds": 32.586584000000585
+    }
+  ],
+  "error": null,
+  "build": {
+    "started_at": "2026-09-13T15:06:40.555387+00:00",
+    "finished_at": "2026-09-13T15:09:20.332191+00:00",
+    "elapsed_seconds": 159.7768032999993,
+    "exit_code": 0
+  },
+  "build_phases": [
+    {
+      "id": "1",
+      "description": "[internal] load local bake definitions",
+      "seconds": 0.0,
+      "cached": false
+    },
+    {
+      "id": "2",
+      "description": "[frontend internal] load build definition from Dockerfile",
+      "seconds": 0.5,
+      "cached": false
+    },
+    {
+      "id": "3",
+      "description": "[animetta] resolve image config for docker-image://docker.io/docker/dockerfile:1",
+      "seconds": 3.6,
+      "cached": false
+    },
+    {
+      "id": "4",
+      "description": "[frontend] docker-image://docker.io/docker/dockerfile:1@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32",
+      "seconds": 0.0,
+      "cached": true
+    },
+    {
+      "id": "5",
+      "description": "[frontend internal] load metadata for docker.io/library/node:22-bookworm-slim",
+      "seconds": 2.4,
+      "cached": false
+    },
+    {
+      "id": "6",
+      "description": "[animetta internal] load metadata for docker.io/library/python:3.13-slim-bookworm",
+      "seconds": 2.9,
+      "cached": false
+    },
+    {
+      "id": "7",
+      "description": "[frontend internal] load .dockerignore",
+      "seconds": 0.7,
+      "cached": false
+    },
+    {
+      "id": "8",
+      "description": "[animetta internal] load metadata for ghcr.io/astral-sh/uv:0.11.19",
+      "seconds": 3.4,
+      "cached": false
+    },
+    {
+      "id": "9",
+      "description": "[animetta internal] load build context",
+      "seconds": 2.2,
+      "cached": false
+    },
+    {
+      "id": "10",
+      "description": "[animetta python-builder 1/5] FROM docker.io/library/python:3.13-slim-bookworm@sha256:ed86c82274b3c69b52fb5820f358f0bd7df0b603332063cb5c6e32bd220c3e6e",
+      "seconds": 1.9,
+      "cached": false
+    },
+    {
+      "id": "11",
+      "description": "[frontend internal] load build context",
+      "seconds": 3.6,
+      "cached": false
+    },
+    {
+      "id": "12",
+      "description": "[animetta uv 1/1] FROM ghcr.io/astral-sh/uv:0.11.19@sha256:b46b03ddfcfbf8f547af7e9eaefdf8a39c8cebcba7c98858d3162bd28cf536f6",
+      "seconds": 2.1,
+      "cached": false
+    },
+    {
+      "id": "13",
+      "description": "[animetta python-builder 2/5] COPY --from=uv /uv /usr/local/bin/uv",
+      "seconds": 0.0,
+      "cached": true
+    },
+    {
+      "id": "14",
+      "description": "[animetta python-builder 3/5] WORKDIR /build",
+      "seconds": 0.0,
+      "cached": true
+    },
+    {
+      "id": "15",
+      "description": "[frontend frontend-deps 1/5] FROM docker.io/library/node:22-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5",
+      "seconds": 2.0,
+      "cached": false
+    },
+    {
+      "id": "16",
+      "description": "[frontend frontend-deps 3/5] WORKDIR /build/frontend",
+      "seconds": 0.0,
+      "cached": true
+    },
+    {
+      "id": "17",
+      "description": "[frontend frontend-deps 4/5] COPY frontend/.npmrc frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./",
+      "seconds": 0.0,
+      "cached": true
+    },
+    {
+      "id": "18",
+      "description": "[frontend frontend-deps 5/5] RUN --mount=type=cache,id=animetta-pnpm-11,target=/pnpm/store     pnpm install --frozen-lockfile --prefer-offline",
+      "seconds": 0.0,
+      "cached": true
+    },
+    {
+      "id": "19",
+      "description": "[frontend frontend-source 1/4] COPY frontend/*.html frontend/vite.config.ts frontend/uno.config.ts frontend/tsconfig.json ./",
+      "seconds": 0.0,
+      "cached": true
+    },
+    {
+      "id": "20",
+      "description": "[frontend frontend-source 2/4] COPY frontend/src/ ./src/",
+      "seconds": 0.0,
+      "cached": true
+    },
+    {
+      "id": "21",
+      "description": "[frontend frontend-source 3/4] COPY frontend/public/ ./public/",
+      "seconds": 0.0,
+      "cached": true
+    },
+    {
+      "id": "22",
+      "description": "[frontend frontend-deps 2/5] RUN corepack enable     && corepack prepare pnpm@11.7.0 --activate     && pnpm config set registry https://registry.npmmirror.com     && pnpm config set store-dir /pnpm/store",
+      "seconds": 0.0,
+      "cached": true
+    },
+    {
+      "id": "23",
+      "description": "[frontend frontend-source 4/4] COPY config/socket-events.json /build/config/socket-events.json",
+      "seconds": 0.0,
+      "cached": true
+    },
+    {
+      "id": "24",
+      "description": "[animetta python-builder 4/5] COPY requirements.txt ./",
+      "seconds": 2.7,
+      "cached": false
+    },
+    {
+      "id": "25",
+      "description": "[frontend] exporting to image",
+      "seconds": 6.3,
+      "cached": false
+    },
+    {
+      "id": "26",
+      "description": "[animetta python-builder 5/5] RUN --mount=type=cache,id=animetta-uv-013,target=/root/.cache/uv     uv venv --python /usr/local/bin/python /opt/venv     && uv pip sync --python /opt/venv/bin/python --compile-bytecode requirements.txt     && uv pip check --python /opt/venv/bin/python",
+      "seconds": 69.4,
+      "cached": false
+    },
+    {
+      "id": "27",
+      "description": "[frontend] resolving provenance for metadata file",
+      "seconds": 0.0,
+      "cached": false
+    },
+    {
+      "id": "28",
+      "description": "[animetta backend-base 2/8] WORKDIR /app",
+      "seconds": 0.0,
+      "cached": true
+    },
+    {
+      "id": "29",
+      "description": "[animetta backend-base 3/8] RUN --mount=type=cache,target=/var/cache/apt,sharing=locked     --mount=type=cache,target=/var/lib/apt,sharing=locked     rm -f /etc/apt/apt.conf.d/docker-clean     && sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources     && apt-get -o Acquire::Retries=5 update     && apt-get install -y --no-install-recommends ffmpeg nginx curl",
+      "seconds": 0.0,
+      "cached": true
+    },
+    {
+      "id": "30",
+      "description": "[animetta backend-base 4/8] COPY --from=python-builder /opt/venv /opt/venv",
+      "seconds": 14.5,
+      "cached": false
+    },
+    {
+      "id": "31",
+      "description": "[animetta backend-base 5/8] COPY src/animetta/ src/animetta/",
+      "seconds": 3.3,
+      "cached": false
+    },
+    {
+      "id": "32",
+      "description": "[animetta backend-base 6/8] COPY config/ config/",
+      "seconds": 1.7,
+      "cached": false
+    },
+    {
+      "id": "33",
+      "description": "[animetta backend-base 7/8] COPY .env.example .env.example",
+      "seconds": 2.0,
+      "cached": false
+    },
+    {
+      "id": "34",
+      "description": "[animetta backend-base 8/8] RUN python -m compileall -q --invalidation-mode checked-hash src/animetta",
+      "seconds": 4.9,
+      "cached": false
+    },
+    {
+      "id": "35",
+      "description": "[animetta] exporting to image",
+      "seconds": 35.0,
+      "cached": false
+    },
+    {
+      "id": "36",
+      "description": "[animetta] resolving provenance for metadata file",
+      "seconds": 0.0,
+      "cached": false
+    }
+  ],
+  "build_completion_to_finish_seconds": 89.601873
+}

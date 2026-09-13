@@ -1,0 +1,89 @@
+{
+  "groups": [
+    {
+      "medium": "ssd",
+      "seconds": {
+        "count": 3,
+        "median": 2.6548736999998255,
+        "min": 2.489555499999824,
+        "max": 2.7144113000003927
+      },
+      "decimal_MB_per_second": {
+        "count": 3,
+        "median": 1181.5209868553093,
+        "min": 1155.6056350043732,
+        "max": 1259.979540122814
+      }
+    },
+    {
+      "medium": "hdd",
+      "seconds": {
+        "count": 3,
+        "median": 41.9144253000004,
+        "min": 41.90628599999991,
+        "max": 42.44370690000005
+      },
+      "decimal_MB_per_second": {
+        "count": 3,
+        "median": 74.83793399405073,
+        "min": 73.90468983754094,
+        "max": 74.85246948393392
+      }
+    }
+  ],
+  "samples": [
+    {
+      "medium": "ssd",
+      "sample": 1,
+      "bytes": 3136788994,
+      "seconds": 2.6548736999998255,
+      "decimal_MB_per_second": 1181.5209868553093,
+      "succeeded": true
+    },
+    {
+      "medium": "ssd",
+      "sample": 2,
+      "bytes": 3136788994,
+      "seconds": 2.489555499999824,
+      "decimal_MB_per_second": 1259.979540122814,
+      "succeeded": true
+    },
+    {
+      "medium": "ssd",
+      "sample": 3,
+      "bytes": 3136788994,
+      "seconds": 2.7144113000003927,
+      "decimal_MB_per_second": 1155.6056350043732,
+      "succeeded": true
+    },
+    {
+      "medium": "hdd",
+      "sample": 1,
+      "bytes": 3136788994,
+      "seconds": 42.44370690000005,
+      "decimal_MB_per_second": 73.90468983754094,
+      "succeeded": true
+    },
+    {
+      "medium": "hdd",
+      "sample": 2,
+      "bytes": 3136788994,
+      "seconds": 41.9144253000004,
+      "decimal_MB_per_second": 74.83793399405073,
+      "succeeded": true
+    },
+    {
+      "medium": "hdd",
+      "sample": 3,
+      "bytes": 3136788994,
+      "seconds": 41.90628599999991,
+      "decimal_MB_per_second": 74.85246948393392,
+      "succeeded": true
+    }
+  ],
+  "comparison_hdd_to_ssd": {
+    "seconds_saved": 39.25955160000058,
+    "reduction_percent": 93.66596659503811,
+    "speedup": 15.787728546184008
+  }
+}

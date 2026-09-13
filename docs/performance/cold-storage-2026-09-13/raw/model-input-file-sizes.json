@@ -1,0 +1,161 @@
+{
+  "qwen": {
+    "root": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base",
+    "resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base",
+    "bytes": 2444679640,
+    "files": [
+      {
+        "relative": "qwen3_tts_codec_encoder.fp16.onnx",
+        "bytes": 113998920
+      },
+      {
+        "relative": "qwen3_tts_decoder.fp16.onnx",
+        "bytes": 229914656
+      },
+      {
+        "relative": "qwen3_tts_predictor.q8_0.gguf",
+        "bytes": 151124320
+      },
+      {
+        "relative": "qwen3_tts_speaker_encoder.fp16.onnx",
+        "bytes": 24423582
+      },
+      {
+        "relative": "qwen3_tts_talker.q5_k.gguf",
+        "bytes": 1006245120
+      },
+      {
+        "relative": "tokenizer.json",
+        "bytes": 11423986
+      },
+      {
+        "relative": "embeddings\\codec_embedding_0.npy",
+        "bytes": 25165952
+      },
+      {
+        "relative": "embeddings\\codec_embedding_1.npy",
+        "bytes": 16777344
+      },
+      {
+        "relative": "embeddings\\codec_embedding_10.npy",
+        "bytes": 16777344
+      },
+      {
+        "relative": "embeddings\\codec_embedding_11.npy",
+        "bytes": 16777344
+      },
+      {
+        "relative": "embeddings\\codec_embedding_12.npy",
+        "bytes": 16777344
+      },
+      {
+        "relative": "embeddings\\codec_embedding_13.npy",
+        "bytes": 16777344
+      },
+      {
+        "relative": "embeddings\\codec_embedding_14.npy",
+        "bytes": 16777344
+      },
+      {
+        "relative": "embeddings\\codec_embedding_15.npy",
+        "bytes": 16777344
+      },
+      {
+        "relative": "embeddings\\codec_embedding_2.npy",
+        "bytes": 16777344
+      },
+      {
+        "relative": "embeddings\\codec_embedding_3.npy",
+        "bytes": 16777344
+      },
+      {
+        "relative": "embeddings\\codec_embedding_4.npy",
+        "bytes": 16777344
+      },
+      {
+        "relative": "embeddings\\codec_embedding_5.npy",
+        "bytes": 16777344
+      },
+      {
+        "relative": "embeddings\\codec_embedding_6.npy",
+        "bytes": 16777344
+      },
+      {
+        "relative": "embeddings\\codec_embedding_7.npy",
+        "bytes": 16777344
+      },
+      {
+        "relative": "embeddings\\codec_embedding_8.npy",
+        "bytes": 16777344
+      },
+      {
+        "relative": "embeddings\\codec_embedding_9.npy",
+        "bytes": 16777344
+      },
+      {
+        "relative": "embeddings\\proj_bias.npy",
+        "bytes": 4224
+      },
+      {
+        "relative": "embeddings\\proj_weight.npy",
+        "bytes": 8388736
+      },
+      {
+        "relative": "embeddings\\text_embedding_projected.npy",
+        "bytes": 622329984
+      }
+    ]
+  },
+  "rvc_weights": {
+    "root": "C:\\Users\\30262\\RVC20240604Nvidia\\assets\\weights",
+    "resolved": "C:\\Users\\30262\\RVC20240604Nvidia\\assets\\weights",
+    "bytes": 57588035,
+    "files": [
+      {
+        "relative": "tosaka_rin_tts_v1.pth",
+        "bytes": 57588035
+      }
+    ]
+  },
+  "rvc_rmvpe": {
+    "root": "C:\\Users\\30262\\RVC20240604Nvidia\\assets\\rmvpe",
+    "resolved": "C:\\Users\\30262\\RVC20240604Nvidia\\assets\\rmvpe",
+    "bytes": 181184272,
+    "files": [
+      {
+        "relative": "rmvpe.pt",
+        "bytes": 181184272
+      }
+    ]
+  },
+  "rvc_hubert": {
+    "root": "C:\\Users\\30262\\RVC20240604Nvidia\\assets\\hubert\\hubert_base",
+    "resolved": "C:\\Users\\30262\\RVC20240604Nvidia\\assets\\hubert\\hubert_base",
+    "bytes": 189208428,
+    "files": [
+      {
+        "relative": "config.json",
+        "bytes": 1492
+      },
+      {
+        "relative": "preprocessor_config.json",
+        "bytes": 225
+      },
+      {
+        "relative": "pytorch_model.bin",
+        "bytes": 189206711
+      }
+    ]
+  },
+  "rvc_index": {
+    "root": "C:\\Users\\30262\\RVC20240604Nvidia\\logs\\tosaka_rin_tts_v1",
+    "resolved": "C:\\Users\\30262\\RVC20240604Nvidia\\logs\\tosaka_rin_tts_v1",
+    "bytes": 264128619,
+    "files": [
+      {
+        "relative": "added_IVF2143_Flat_nprobe_1_tosaka_rin_tts_v1_v2.index",
+        "bytes": 264128619
+      }
+    ]
+  }
+}

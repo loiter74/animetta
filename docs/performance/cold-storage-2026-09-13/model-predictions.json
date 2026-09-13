@@ -1,0 +1,149 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-09-13T12:30:06.601491+00:00",
+  "frozen_before": "HDD model copying, path switching, loading measurements and either unbuffered read measurement",
+  "driver_sha256": "c357f20a9104b0ab70967becee936e97b59b94cbdda6254edc7e06b95b09bbde",
+  "lifecycle_measurement_driver_sha256": "d7812e7f005a562e0b13e4a1e53601175eb1e4f480f85341e09367be2c9548b7",
+  "source_sha256": {
+    "model-ssd-qwen-v2/summary.json": "c7e7799e180900548139c4ce86b8dde9ff227ff0c5bdc77f7a90ca5776aba735",
+    "model-ssd-rvc-v2/summary.json": "477798dcc5162645db289ba9176af332664d66da663693e8376dc4fa876654c1",
+    "model-ssd-rvc-v2-continuation/summary.json": "2dac7aed2592ea6b8b2d1d1d7b5addad4507d0cf9a836c3fd2dd6f105fa6e01c",
+    "model-input-file-sizes.json": "02df692afc00c6b4a73a860f3eae7bf3a7e62b1afb7bf4911919622676f92aa6"
+  },
+  "ssd_baseline": {
+    "qwen": {
+      "host_up_seconds": {
+        "values": [
+          14.823630500000036,
+          14.929167900000039,
+          14.89332760000002
+        ],
+        "median": 14.89332760000002,
+        "min": 14.823630500000036,
+        "max": 14.929167900000039
+      },
+      "first_inference_seconds": {
+        "values": [
+          1.159028600000056,
+          1.1409565999999813,
+          1.3303456999999526
+        ],
+        "median": 1.159028600000056,
+        "min": 1.1409565999999813,
+        "max": 1.3303456999999526
+      },
+      "combined_seconds": {
+        "values": [
+          17.109748999999965,
+          17.19468729999994,
+          17.32433909999986
+        ],
+        "median": 17.19468729999994,
+        "min": 17.109748999999965,
+        "max": 17.32433909999986
+      }
+    },
+    "rvc": {
+      "host_up_seconds": {
+        "values": [
+          10.601996299999882,
+          10.17346879999991,
+          10.063565899999958
+        ],
+        "median": 10.17346879999991,
+        "min": 10.063565899999958,
+        "max": 10.601996299999882
+      },
+      "first_inference_seconds": {
+        "values": [
+          11.4909447,
+          10.799575799999957,
+          10.624844899999971
+        ],
+        "median": 10.799575799999957,
+        "min": 10.624844899999971,
+        "max": 11.4909447
+      },
+      "combined_seconds": {
+        "values": [
+          23.248465299999907,
+          22.07327669999995,
+          21.73879020000004
+        ],
+        "median": 22.07327669999995,
+        "min": 21.73879020000004,
+        "max": 23.248465299999907
+      }
+    }
+  },
+  "hdd_predictions_seconds": {
+    "qwen": {
+      "median_combined": [
+        15,
+        28
+      ],
+      "median_host_up": [
+        13,
+        24
+      ],
+      "median_first_inference": [
+        1,
+        2
+      ],
+      "first_observed_combined": [
+        15,
+        55
+      ]
+    },
+    "rvc": {
+      "median_combined": [
+        20,
+        38
+      ],
+      "median_host_up": [
+        9,
+        20
+      ],
+      "median_first_inference": [
+        10,
+        16
+      ],
+      "first_observed_combined": [
+        20,
+        45
+      ]
+    }
+  },
+  "unbuffered_predictions_decimal_MB_per_second": {
+    "hdd": [
+      60,
+      160
+    ],
+    "ssd": [
+      500,
+      2500
+    ]
+  },
+  "basis": [
+    "Formal SSD medians are 17.1947s Qwen and22.0733s RVC including fixed inference and observed orchestration gaps.",
+    "Only model files move. Interpreters and code remain on SSD, so their warm-cache startup cost should not be attributed to HDD model storage.",
+    "Qwen model files total2444679640bytes; RVC model/auxiliary files total692109354bytes. Copy and SHA verification may warm the complete files before process-restart measurement.",
+    "Repeated cached model loading may show little storage benefit; wider upper bounds allow cache misses and HDD reads. These intervals are predictions, not physical-cold-read claims.",
+    "Unbuffered sequential reads have a separate throughput prediction based on local HDD/NVMe mapping; measured file throughput is not end-to-end model loading."
+  ],
+  "conditions": {
+    "boot_time_local": "2026-09-13T19:54:29.5+08:00",
+    "docker_and_application": "stopped on both media",
+    "qwen_group": "RVC stopped",
+    "rvc_group": "Qwen healthy and restored to original SSD model path",
+    "samples_per_model_medium": 3,
+    "original_ssd_observation": "Earlier pilot Qwen3/RVC1 retained separately; formal baselines are warm/unknown-cache observations under revised exit-wait guard."
+  },
+  "limitations": [
+    "External reboot occurred during interruption; do not compare model baseline with earlier build cache state.",
+    "No deliberate OS or device cache clearing. First observation is not guaranteed physical cold loading.",
+    "Combined elapsed is directly measured with monotonic clock, not phase sum.",
+    "n=3 and sequential media order limit causal interpretation.",
+    "Predictions remain unchanged if actual values miss the interval."
+  ]
+}

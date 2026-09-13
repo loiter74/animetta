@@ -1,0 +1,30 @@
+{
+  "command": [
+    "docker",
+    "buildx",
+    "create",
+    "--name",
+    "storage-hdd-c1-0913",
+    "--driver",
+    "docker-container",
+    "--driver-opt",
+    "default-load=true",
+    "--driver-opt",
+    "image=moby/buildkit@sha256:28a898719c18a33f4e8000685287fa36fd0dd9560c6440227d3a732d79bb41d8",
+    "--driver-opt",
+    "env.HTTP_PROXY=http://http.docker.internal:3128",
+    "--driver-opt",
+    "env.HTTPS_PROXY=http://http.docker.internal:3128",
+    "--driver-opt",
+    "env.NO_PROXY=localhost",
+    "desktop-linux"
+  ],
+  "started_at": "2026-09-13T00:44:08.482265+00:00",
+  "finished_at": "2026-09-13T00:44:28.712863+00:00",
+  "wall_seconds": 20.23063010000078,
+  "exit_code": 1,
+  "category": "builder_preparation_failure",
+  "included_in_performance_samples": false,
+  "error": "ERROR: failed to initialize builder storage-hdd-c1-0913 (storage-hdd-c1-09130): Get \"http://%2F%2F.%2Fpipe%2FdockerDesktopLinuxEngine/v1.54/containers/buildx_buildkit_storage-hdd-c1-09130/json\": context deadline exceeded",
+  "recovery": "Read-only diagnostics found Desktop idle wakeup and no registered partial builder. Engine recovered without restart or cache cleanup; a new unique builder was prepared."
+}

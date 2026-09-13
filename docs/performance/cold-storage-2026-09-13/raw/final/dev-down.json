@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "run_id": "final-dev-down",
+  "operation": "anima-dev-down",
+  "exit_code": 0,
+  "elapsed_seconds": 21.340497199998936,
+  "feedback_windows": 1,
+  "continuation_wait_seconds": 0.0,
+  "observations": [
+    {
+      "kind": "run_command",
+      "target": [
+        "development-watch-stop"
+      ],
+      "elapsed_seconds": 3.188231000000087,
+      "succeeded": true
+    },
+    {
+      "kind": "run_command",
+      "target": [
+        "docker",
+        "compose",
+        "down",
+        "--remove-orphans"
+      ],
+      "elapsed_seconds": 18.11412089999976,
+      "succeeded": true
+    }
+  ],
+  "error": null,
+  "build": null
+}

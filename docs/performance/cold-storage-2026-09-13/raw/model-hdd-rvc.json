@@ -1,0 +1,127 @@
+{
+  "source": "artifacts\\cold-storage-20260913\\model-hdd-rvc\\summary.json",
+  "source_sha256": "f95f12a09a40e95baca82132e52f5ab9e7f641951832f479c6fa5dd9e12040a7",
+  "measurement": {
+    "schema_version": 1,
+    "model": "rvc",
+    "medium": "hdd",
+    "samples_requested": 3,
+    "script_sha256": "c357f20a9104b0ab70967becee936e97b59b94cbdda6254edc7e06b95b09bbde",
+    "driver_sha256": "d7812e7f005a562e0b13e4a1e53601175eb1e4f480f85341e09367be2c9548b7",
+    "text": "你好，今天也请多关照。我们一起把这件事情做好吧。",
+    "reference_sha256": "46f6cfedc05b9e6ac5f2c1bde232bc61173821dd9a020ad615d561bb9c264245",
+    "rvc_input_sha256": "22853e3b2dd360e61193f4ec172595d3f0969a1edd030f68b944d6f7bcd087ce",
+    "rvc_input_slice_seconds": [
+      1,
+      3
+    ],
+    "model_dir_override": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_hubert",
+    "cache_contract": "Process stopped between samples. Windows and device caches are not cleared. Existing service identity hashing and warmup are included.",
+    "samples": [
+      {
+        "sample": 1,
+        "started_at": "2026-09-13T12:58:00.680449+00:00",
+        "boot_time": 1789300467.0154002,
+        "tracked_processes_exited": {},
+        "stop_process_exit_wait_seconds": 0.017989599999964412,
+        "gpu_before_start": "name, memory.total [MiB], memory.used [MiB], memory.free [MiB]\nNVIDIA GeForce RTX 5090 D v2, 24455 MiB, 3631 MiB, 20405 MiB\n",
+        "host_up_seconds": 22.038831800000025,
+        "host_up_command_wall_seconds": 22.706933599999957,
+        "first_inference_seconds": 15.093421900000067,
+        "first_audio_seconds": null,
+        "combined_seconds": 38.416654299999664,
+        "accounted_stage_sum_seconds": 37.13225370000009,
+        "audio_bytes": 190124,
+        "audio_seconds": 1.98,
+        "audio_sha256": "acb502690b73e5b53bfc41f66e881f14534d6e3e971187d8e6604c4f3066c581",
+        "identity": {
+          "ready": true,
+          "separation_ready": true,
+          "separation_model": "htdemucs",
+          "service": "rvc",
+          "api_version": "v1",
+          "provider": "rvc-webui-host",
+          "model": "tosaka_rin_tts_v1.pth",
+          "revision": "e2714bf076547117a24352943cb67d7766d6b512a163c4ecd26bd1e6abb54536",
+          "voice": "tosaka-rin-cn",
+          "sample_rate": 48000,
+          "index": "added_IVF2143_Flat_nprobe_1_tosaka_rin_tts_v1_v2.index",
+          "index_revision": "0E158DE97F5EF766D4991F80E94C954E4351A88D096B7850BFEB03D3A7864E79"
+        },
+        "exit_code": 0
+      },
+      {
+        "sample": 2,
+        "started_at": "2026-09-13T12:58:42.229728+00:00",
+        "boot_time": 1789300467.0154002,
+        "tracked_processes_exited": {
+          "23900": 1789304281.2814665,
+          "26424": 1789304281.3200603,
+          "28048": 1789304281.3306725
+        },
+        "stop_process_exit_wait_seconds": 0.43140790000006746,
+        "gpu_before_start": "name, memory.total [MiB], memory.used [MiB], memory.free [MiB]\nNVIDIA GeForce RTX 5090 D v2, 24455 MiB, 3636 MiB, 20400 MiB\n",
+        "host_up_seconds": 10.698791599999822,
+        "host_up_command_wall_seconds": 11.323054400000274,
+        "first_inference_seconds": 13.065615200000138,
+        "first_audio_seconds": null,
+        "combined_seconds": 24.943934999999783,
+        "accounted_stage_sum_seconds": 23.76440679999996,
+        "audio_bytes": 190124,
+        "audio_seconds": 1.98,
+        "audio_sha256": "0e05fe64053e2f858088e5a8a433848ba1b408b9534355ed66b9c953682ce2b6",
+        "identity": {
+          "ready": true,
+          "separation_ready": true,
+          "separation_model": "htdemucs",
+          "service": "rvc",
+          "api_version": "v1",
+          "provider": "rvc-webui-host",
+          "model": "tosaka_rin_tts_v1.pth",
+          "revision": "e2714bf076547117a24352943cb67d7766d6b512a163c4ecd26bd1e6abb54536",
+          "voice": "tosaka-rin-cn",
+          "sample_rate": 48000,
+          "index": "added_IVF2143_Flat_nprobe_1_tosaka_rin_tts_v1_v2.index",
+          "index_revision": "0E158DE97F5EF766D4991F80E94C954E4351A88D096B7850BFEB03D3A7864E79"
+        },
+        "exit_code": 0
+      },
+      {
+        "sample": 3,
+        "started_at": "2026-09-13T12:59:10.174682+00:00",
+        "boot_time": 1789300467.0154002,
+        "tracked_processes_exited": {
+          "25108": 1789304322.809634,
+          "26636": 1789304322.8502896,
+          "19528": 1789304322.869377
+        },
+        "stop_process_exit_wait_seconds": 0.39274420000037935,
+        "gpu_before_start": "name, memory.total [MiB], memory.used [MiB], memory.free [MiB]\nNVIDIA GeForce RTX 5090 D v2, 24455 MiB, 3637 MiB, 20399 MiB\n",
+        "host_up_seconds": 9.591388900000311,
+        "host_up_command_wall_seconds": 10.169093099999827,
+        "first_inference_seconds": 11.92458140000008,
+        "first_audio_seconds": null,
+        "combined_seconds": 22.579832800000077,
+        "accounted_stage_sum_seconds": 21.51597030000039,
+        "audio_bytes": 190124,
+        "audio_seconds": 1.98,
+        "audio_sha256": "eb1f4276628524aa2362058446f78f7a2a73fb142042870a0c33c1b65b9789a9",
+        "identity": {
+          "ready": true,
+          "separation_ready": true,
+          "separation_model": "htdemucs",
+          "service": "rvc",
+          "api_version": "v1",
+          "provider": "rvc-webui-host",
+          "model": "tosaka_rin_tts_v1.pth",
+          "revision": "e2714bf076547117a24352943cb67d7766d6b512a163c4ecd26bd1e6abb54536",
+          "voice": "tosaka-rin-cn",
+          "sample_rate": 48000,
+          "index": "added_IVF2143_Flat_nprobe_1_tosaka_rin_tts_v1_v2.index",
+          "index_revision": "0E158DE97F5EF766D4991F80E94C954E4351A88D096B7850BFEB03D3A7864E79"
+        },
+        "exit_code": 0
+      }
+    ]
+  }
+}

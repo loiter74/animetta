@@ -1,0 +1,16 @@
+{
+  "entries": [
+    {
+      "source": "C:\\Users\\30262\\AppData\\Local\\Docker\\run",
+      "backup": "C:\\Users\\30262\\AppData\\Local\\Docker\\run.final-recovery-20260913-2108"
+    },
+    {
+      "source": "C:\\Users\\30262\\AppData\\Local\\docker-secrets-engine",
+      "backup": "C:\\Users\\30262\\AppData\\Local\\docker-secrets-engine.final-recovery-20260913-2108"
+    }
+  ],
+  "at": "2026-09-13T13:08:06.0795006Z",
+  "recovery": "official force stop and exact temporary IPC backup rename",
+  "normal_start_succeeded": false,
+  "error": "dockerInference socket inaccessible"
+}

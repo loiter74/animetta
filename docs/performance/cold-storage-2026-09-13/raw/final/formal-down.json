@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "run_id": "final-formal-down",
+  "operation": "anima-down",
+  "exit_code": 0,
+  "elapsed_seconds": 17.206955599999674,
+  "feedback_windows": 1,
+  "continuation_wait_seconds": 0.0,
+  "observations": [
+    {
+      "kind": "run_command",
+      "target": [
+        "docker",
+        "compose",
+        "down",
+        "--remove-orphans"
+      ],
+      "elapsed_seconds": 17.168908399999964,
+      "succeeded": true
+    }
+  ],
+  "error": null,
+  "build": null
+}

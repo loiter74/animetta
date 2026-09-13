@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-09-13T00:33:25.481172+00:00",
+  "frozen_before": "Any no-gcc probe, Dockerfile modification, candidate measurement or SSD migration",
+  "baseline_revision": "407a64874cfc991407e3572f1517153f75f03291",
+  "baseline_dockerfile_sha256": "c8d80740b92ae7d348a5453dae23bd532fd072b570f636d17578a9ae092d1d23",
+  "baseline_analysis_sha256": "7e4386090eb0c2bff4d0014fd1dc24e2815ff00f7c7c4ce817739afc3cdeea43",
+  "baseline_build_seconds": [
+    749.2571441,
+    810.9077411999997,
+    800.1600553999997
+  ],
+  "baseline_build_median_seconds": 800.1600553999997,
+  "primary_metric": "image_build_receipt_elapsed_seconds",
+  "scenarios": {
+    "hdd-candidate": {
+      "target_seconds": [
+        650,
+        780
+      ],
+      "basis": "Three runs show runtime apt 460.8-516.3s and gcc including shared lock 515.6-601.2s. Removing gcc may eliminate about55-85s of serialized install plus allow23.5-26.1s uv to overlap runtime apt. Baseline total spread61.65s and export78.9-102.6s require uncertainty margin. Benefits are conditional on no-compiler compatibility."
+    },
+    "ssd-final": {
+      "target_seconds": [
+        200,
+        500
+      ],
+      "basis": "HDD is active for much of build while CPU mean is about26%. SSD may reduce apt unpack/configuration, layer writes and export. Downloads, compilation and complete functionality remain; no SSD timing has been observed."
+    }
+  },
+  "phase_predictions_seconds": {
+    "hdd_runtime_apt": [
+      430,
+      550
+    ],
+    "hdd_uv": [
+      20,
+      35
+    ],
+    "hdd_export": [
+      70,
+      115
+    ],
+    "ssd_runtime_apt": [
+      90,
+      240
+    ],
+    "ssd_uv": [
+      10,
+      30
+    ],
+    "ssd_export": [
+      10,
+      45
+    ],
+    "ssd_base_pull_unpack": [
+      20,
+      90
+    ],
+    "ssd_pnpm": [
+      15,
+      35
+    ],
+    "ssd_vite": [
+      7,
+      15
+    ]
+  },
+  "adoption_rules": {
+    "candidate_min_reduction_percent": 5,
+    "candidate_requires_three_complete_samples": true,
+    "ssd_min_reduction_percent": 20,
+    "ssd_comparator": "Same final implementation on HDD",
+    "ssd_requires_three_complete_samples": true,
+    "ssd_min_remaining_bytes": 50000000000,
+    "ssd_requires_desktop_stop_start_and_smoke": true
+  },
+  "model_prediction": "Append a separate immutable prediction after the original SSD model baseline and before HDD model measurements; do not overwrite this file.",
+  "limitations": [
+    "n=3 is not a statistical guarantee",
+    "Build cache empty does not mean OS or device cache empty",
+    "Phase durations overlap and must not be summed",
+    "Forecast intervals and adoption thresholds are different criteria",
+    "Failure, interruption and migration costs are reported separately"
+  ]
+}

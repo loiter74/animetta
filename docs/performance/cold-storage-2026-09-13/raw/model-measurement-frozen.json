@@ -1,0 +1,243 @@
+{
+  "observed_at": "2026-09-13T12:15:58.845425+00:00",
+  "boot_time": 1789300467.0154676,
+  "boot_utc": "2026-09-13T11:54:27.015468+00:00",
+  "previous_boot_local": "2026-09-13T06:35:24.5+08:00",
+  "interruption": "External reboot occurred while task was interrupted; agent did not reboot computer. Both model groups start after this reboot with Docker and application stopped.",
+  "files": {
+    "Dockerfile": "8b3cce3a040c26cfe21a2f14f2094cb274ef03277a12d34102772a510e7a698f",
+    "scripts/benchmark_startup.py": "d7812e7f005a562e0b13e4a1e53601175eb1e4f480f85341e09367be2c9548b7",
+    ".zcode/model_storage_measure.py": "3044a63f96d281e2e9d208e03d312d0dff95496ae61a6938d5efd37d916614e4",
+    "config/host-tts.yaml": "e31131c7451c73595ef556fa66ba926e5160c62ee72cbee4375883d7bb733a53",
+    "config/host-rvc.yaml": "98017fe5936464627d3beccf92f37af5707f6cb95eaa70d78ee1cf89d3833b03"
+  },
+  "docker_processes": [],
+  "model_processes": [],
+  "gpu_processes": [
+    {
+      "pid": 6184,
+      "name": "ShellHost.exe",
+      "command": [
+        "C:\\Windows\\System32\\ShellHost.exe"
+      ]
+    },
+    {
+      "pid": 4516,
+      "name": "CrossDeviceResume.exe",
+      "command": [
+        "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\CrossDeviceResume.exe",
+        "/tileid",
+        "MicrosoftWindows.Client.CBS_cw5n1h2txyewy!CrossDeviceResumeApp"
+      ]
+    },
+    {
+      "pid": 8688,
+      "name": "explorer.exe",
+      "command": [
+        "C:\\Windows\\Explorer.EXE"
+      ]
+    },
+    {
+      "pid": 12632,
+      "name": "StartMenuExperienceHost.exe",
+      "command": [
+        "C:\\Windows\\SystemApps\\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\\StartMenuExperienceHost.exe",
+        "-ServerName:FullTrustApp.AppXykjsye98af63ez2annt9djke8trg8stn.mca"
+      ]
+    },
+    {
+      "pid": 12624,
+      "name": "SearchHost.exe",
+      "command": [
+        "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\SearchHost.exe",
+        "-ServerName:CortanaUI.AppXstmwaab17q5s3y22tp6apqz7a45vwv65.mca"
+      ]
+    },
+    {
+      "pid": 13356,
+      "name": "msedgewebview2.exe",
+      "command": [
+        "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\152.0.4191.66\\msedgewebview2.exe",
+        "--type=gpu-process",
+        "--noerrdialogs",
+        "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64; Cortana 1.18.9.23723; 10.0.0.0.26200.9445) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36 Edge/18.26200 IsWebView2/True (WebView2Version 152.0.4191.66)",
+        "--user-data-dir=C:\\Users\\30262\\AppData\\Local\\Packages\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\LocalState\\EBWebView",
+        "--webview-exe-name=SearchHost.exe",
+        "--webview-exe-version=2607.28006.200.0",
+        "--embedded-browser-webview=1",
+        "--gpu-preferences=WAAAAAAAAADgAAAEAAAAAAAAAAAAAGAAQAAAAAAAAAADAAAAAAAAADgAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAoAAAAAAAAAAgAAAAAAAAAEAAAAAIAAAABAAAAAAAAAAgAAAAAAAAACAAAAAAAAAA=",
+        "--always-read-main-dll",
+        "--metrics-shmem-handle=1956,i,4965285429158434042,13228874886832008106,262144",
+        "--field-trial-handle=2032,i,9041955201775824064,9476059239746378296,262144",
+        "--enable-features=msEdgeFluentOverlayScrollbar",
+        "--disable-features=msSmartScreenProtection",
+        "--variations-seed-version",
+        "--pseudonymization-salt-handle=1340,i,260508428030213590,5890788320551984244,4",
+        "--trace-process-track-uuid=3190708988185955192",
+        "--mojo-platform-channel-handle=2016",
+        "/prefetch:2",
+        "/pfhostedapp:0e92868509b763fff20c67b11e11aeda04b91537"
+      ]
+    },
+    {
+      "pid": 15260,
+      "name": "PhoneExperienceHost.exe",
+      "command": [
+        "C:\\Program Files\\WindowsApps\\Microsoft.YourPhone_1.26071.164.0_x64__8wekyb3d8bbwe\\PhoneExperienceHost.exe",
+        "-ComServer:Background",
+        "-Embedding"
+      ]
+    },
+    {
+      "pid": 11308,
+      "name": "TextInputHost.exe",
+      "command": [
+        "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\TextInputHost.exe",
+        "-ServerName:InputApp.AppXk0k6mrh4r2q0ct33a9wgbez0x7v9cz5y.mca"
+      ]
+    },
+    {
+      "pid": 2888,
+      "name": "QQ.exe",
+      "command": [
+        "C:\\Program Files\\Tencent\\QQNT\\QQ.exe",
+        "--type=gpu-process",
+        "--user-data-dir=C:\\Users\\30262\\AppData\\Roaming\\QQ",
+        "--gpu-preferences=SAAAAAAAAADgAAAEAAAAAAAAAAAAAGAAAQAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAQAAAAAAAAABAAAAAAAAAACAAAAAAAAAAIAAAAAAAAAA==",
+        "--field-trial-handle=1832,i,4850538072324492349,14467739633193904210,262144",
+        "--enable-features=EnableTransparentHwndEnlargement,PdfUseShowSaveFilePicker,SchedulerYield",
+        "--disable-features=LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation",
+        "--variations-seed-version",
+        "--trace-process-track-uuid=3190708988185955192",
+        "--mojo-platform-channel-handle=1820",
+        "/prefetch:2"
+      ]
+    },
+    {
+      "pid": 16764,
+      "name": "steamwebhelper.exe",
+      "command": [
+        "C:\\Program Files (x86)\\Steam\\bin\\cef\\cef.win64\\steamwebhelper.exe",
+        "--type=gpu-process",
+        "--start-stack-profiler",
+        "--enable-chrome-runtime",
+        "--user-data-dir=C:\\Users\\30262\\AppData\\Local\\Steam\\htmlcache",
+        "--user-agent-product=Valve Steam Client",
+        "--buildid=1788652215",
+        "--steamid=0",
+        "--valve-initial-threadpool-size=10",
+        "--gpu-preferences=WAAAAAAAAADgAAAMAAAAAAAAAAAAAAAAAABgAAEAAAA4AAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGAAAAAAAAAAYAAAAAAAAAAgAAAAAAAAACAAAAAAAAAAIAAAAAAAAAA==",
+        "--field-trial-handle=1892,i,15479209976925059087,18077600576495895594,262144",
+        "--enable-features=PlatformHEVCDecoderSupport",
+        "--disable-features=BlockPromptsIfIgnoredOften,DcheckIsFatal,SpareRendererForSitePerProcess,ValveFFmpegAllowLowDelayHEVC,WebUsbDeviceDetection,WinRetrieveSuggestionsOnlyOnDemand",
+        "--variations-seed-version",
+        "--enable-logging=handle",
+        "--log-file=2004",
+        "--mojo-platform-channel-handle=1888",
+        "/prefetch:2"
+      ]
+    },
+    {
+      "pid": 18784,
+      "name": "QQEX.exe",
+      "command": [
+        "C:\\Program Files\\Tencent\\QQNT\\QQEX.exe",
+        "--type=gpu-process",
+        "--disable-gpu-sandbox",
+        "--user-data-dir=C:\\Users\\30262\\AppData\\Roaming\\QQEX",
+        "--gpu-preferences=SAAAAAAAAADgAAAEAAAAAAAAAAAAAGAAAQAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAQAAAAAAAAABAAAAAAAAAACAAAAAAAAAAIAAAAAAAAAA==",
+        "--field-trial-handle=2272,i,13485114524792385098,3370446966278155138,262144",
+        "--enable-features=EnableTransparentHwndEnlargement,PdfUseShowSaveFilePicker,SharedArrayBuffer",
+        "--disable-features=BlockInsecurePrivateNetworkRequests,LocalNetworkAccessChecks,NetworkServiceSandbox,PrivateNetworkAccessSendPreflights,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation",
+        "--variations-seed-version",
+        "--trace-process-track-uuid=3190708988185955192",
+        "--mojo-platform-channel-handle=2264",
+        "/prefetch:2"
+      ]
+    },
+    {
+      "pid": 20280,
+      "name": "BaiduNetdiskUnite.exe",
+      "command": [
+        "C:\\Users\\30262\\AppData\\Roaming\\baidu\\BaiduNetdisk\\module\\BrowserEngine\\BaiduNetdiskUnite.exe",
+        "--type=gpu-process",
+        "--no-sandbox",
+        "--user-data-dir=C:\\Users\\30262\\AppData\\Roaming\\baidunetdisk",
+        "--gpu-preferences=UAAAAAAAAADgAAAYAAAAAAAAAAAAAAAAAABgAAAAAAAwAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAEgAAAAAAAAASAAAAAAAAAAYAAAAAgAAABAAAAAAAAAAGAAAAAAAAAAQAAAAAAAAAAAAAAAOAAAAEAAAAAAAAAABAAAADgAAAAgAAAAAAAAACAAAAAAAAAA=",
+        "--mojo-platform-channel-handle=1860",
+        "--field-trial-handle=1888,i,1131994265209808892,1224717711263948565,131072",
+        "--disable-features=SpareRendererForSitePerProcess,WinRetrieveSuggestionsOnlyOnDemand",
+        "/prefetch:2"
+      ]
+    },
+    {
+      "pid": 21628,
+      "name": "msedge.exe",
+      "command": [
+        "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+        "--type=gpu-process",
+        "--gpu-preferences=WAAAAAAAAADgAAAEAAAAAAAAAAAAAGAAQAAAAAAAAAADAAAAAAAAADgAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAoAAAAAAAAAAgAAAAAAAAAEAAAAAIAAAABAAAAAAAAAAgAAAAAAAAACAAAAAAAAAA=",
+        "--startup-read-main-dll",
+        "--metrics-shmem-handle=2164,i,10775185613633416299,17806291099183254645,262144",
+        "--field-trial-handle=2232,i,11064582759241246095,10346921427753529126,262144",
+        "--variations-seed-version",
+        "--pseudonymization-salt-handle=2248,i,8193914028929780379,15492611437844381582,4",
+        "--trace-process-track-uuid=3190708988185955192",
+        "--mojo-platform-channel-handle=2216",
+        "/prefetch:2"
+      ]
+    },
+    {
+      "pid": 23280,
+      "name": "DCv2.exe",
+      "command": [
+        "C:\\Program Files\\WindowsApps\\9426MICRO-STARINTERNATION.MSICenter_2.0.71.0_x64__kzh8wxbdkxb8p\\DCv2\\DCv2.exe",
+        "msi-mc:Startup"
+      ]
+    },
+    {
+      "pid": 16228,
+      "name": "ShellExperienceHost.exe",
+      "command": [
+        "C:\\Windows\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe",
+        "-ServerName:App.AppXtk181tbxbce2qsex02s8tw7hfxa9xb3t.mca"
+      ]
+    },
+    {
+      "pid": 16836,
+      "name": "MollyCloud.exe",
+      "command": [
+        "D:\\Program Files\\MollyCloud\\MollyCloud.exe"
+      ]
+    },
+    {
+      "pid": 13172,
+      "name": "ChatGPT.exe",
+      "command": [
+        "C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.908.4834.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe",
+        "--type=gpu-process",
+        "--no-pre-read-main-dll",
+        "--start-stack-profiler",
+        "--gpu-preferences=WAAAAAAAAADgAAAEAAAAAAAAAAAAAGAAQAAAAAAAAAADAAAAAAAAADgAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAoAAAAAAAAAAgAAAAAAAAAEAAAAAIAAAABAAAAAAAAAAgAAAAAAAAACAAAAAAAAAA=",
+        "--metrics-shmem-handle=2172,i,9277334823184295600,6592548578632597725,262144",
+        "--field-trial-handle=2236,i,16002566268005059969,16260220151406814268,262144",
+        "--enable-features=ReportStuckThrottle",
+        "--disable-features=DropInputEventsWhilePaintHolding,WebUIOmniboxAimPopup,WebUIOmniboxPopup",
+        "--variations-seed-version",
+        "--pseudonymization-salt-handle=2248,i,3851803957928880417,950005377180443704,4",
+        "--trace-process-track-uuid=3190708988185955192",
+        "--mojo-platform-channel-handle=2224",
+        "/prefetch:2"
+      ]
+    },
+    {
+      "pid": 4840,
+      "name": "codex-computer-use-swift.exe",
+      "command": [
+        "C:\\Users\\30262\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\a708e72b10c27b59\\bin\\node_modules\\@oai\\sky\\bin\\windows\\swift\\x64\\codex-computer-use-swift.exe",
+        "--parent-pid",
+        "10596"
+      ]
+    }
+  ]
+}

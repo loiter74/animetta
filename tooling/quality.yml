@@ -363,6 +363,7 @@ groups:
       - tests/scripts/test_runtime_lifecycle_feedback.py
       - tests/scripts/test_startup_cache.py
       - tests/scripts/test_benchmark_startup.py
+      - tests/scripts/test_benchmark_storage.py
       - tests/scripts/test_qwen_preflight.py
       - tests/scripts/test_rvc_preflight.py
       - tests/scripts/test_benchmark_host_tts.py
@@ -1883,6 +1884,21 @@ components:
       - frontend-duplicates
     impacts: []
     risk: high
+
+  storage-benchmark:
+    domain: repository
+    paths:
+      - scripts/benchmark_storage.py
+      - scripts/measure_storage_telemetry.ps1
+      - tests/scripts/test_benchmark_storage.py
+    direct_groups:
+      - runtime-lifecycle-unit
+      - python-format
+      - backend-static
+      - backend-support-typecheck
+      - security-secrets
+    impacts: []
+    risk: normal
 
   docker-infrastructure:
     domain: repository

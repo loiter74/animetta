@@ -1,0 +1,84 @@
+{
+  "observed_at": "2026-09-12T23:45:27.1778875Z",
+  "revision": "407a64874cfc991407e3572f1517153f75f03291",
+  "disks": [
+    {
+      "FriendlyName": "WDC WD5000AAKX-60U6AA0",
+      "MediaType": "HDD",
+      "BusType": "SATA",
+      "Size": 500107862016
+    },
+    {
+      "FriendlyName": "J.ZAO 5 SERIES 1TB SSD",
+      "MediaType": "SSD",
+      "BusType": "NVMe",
+      "Size": 1024209543168
+    }
+  ],
+  "partitions": [
+    {
+      "DiskNumber": 1,
+      "PartitionNumber": 3,
+      "DriveLetter": "D",
+      "Size": 429499875328
+    },
+    {
+      "DiskNumber": 1,
+      "PartitionNumber": 4,
+      "DriveLetter": "C",
+      "Size": 593621942272
+    },
+    {
+      "DiskNumber": 0,
+      "PartitionNumber": 2,
+      "DriveLetter": "E",
+      "Size": 500090011648
+    }
+  ],
+  "volumes": [
+    {
+      "DriveLetter": "E",
+      "Size": 500090007552,
+      "SizeRemaining": 145478578176
+    },
+    {
+      "DriveLetter": "D",
+      "Size": 429499871232,
+      "SizeRemaining": 99099496448
+    },
+    {
+      "DriveLetter": "C",
+      "Size": 593621938176,
+      "SizeRemaining": 140063449088
+    }
+  ],
+  "docker_root": "E:\\DockerDesktop\\wsl",
+  "vhdx": [
+    {
+      "FullName": "E:\\DockerDesktop\\wsl\\disk\\docker_data.vhdx",
+      "Length": 23071817728
+    },
+    {
+      "FullName": "E:\\DockerDesktop\\wsl\\main\\ext4.vhdx",
+      "Length": 100663296
+    }
+  ],
+  "measurement_tools": [
+    {
+      "Path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\storage_baseline_run.py",
+      "Hash": "63A85F082EF22E6559E5AC412072B0A13C407F2232F804839FE6F7628164D649"
+    },
+    {
+      "Path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\storage_telemetry.ps1",
+      "Hash": "0FDF8BBEF8DA0C37DAC61071BB7B76AB1C1D6F15B9B3444ECC577C370AFFCC99"
+    },
+    {
+      "Path": "C:\\Users\\30262\\Project\\Anima\\scripts\\benchmark_startup.py",
+      "Hash": "D7812E7F005A562E0B13E4A1E53601175EB1E4F480F85341E09367BE2C9548B7"
+    },
+    {
+      "Path": "C:\\Users\\30262\\Project\\Anima\\frontend\\scripts\\benchmark-startup.mjs",
+      "Hash": "9E49A22EFCFD461C451C36FA4080911506CB01DB8366663FE1EEFAD81AF2DD27"
+    }
+  ]
+}

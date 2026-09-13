@@ -1,0 +1,11 @@
+{
+  "at": "2026-09-13T03:46:11.8963618Z",
+  "c_free_bytes": 139796942848,
+  "source_bytes": 62799216640,
+  "expected_additional_cache_bytes": 24000000000,
+  "projected_free_bytes": 52997726208,
+  "threshold_bytes": 50000000000,
+  "target": "C:\\DockerDesktop\\wsl",
+  "target_empty": true,
+  "desktop_version": "4.81.0.232925"
+}

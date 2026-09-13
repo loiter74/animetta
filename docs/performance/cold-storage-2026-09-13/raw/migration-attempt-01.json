@@ -1,0 +1,21 @@
+{
+  "observed_at": "2026-09-13T03:56:19.0449028Z",
+  "confirmed_at": "2026-09-13T03:48:20.606Z",
+  "copy_started_at": "2026-09-13T03:48:36.0866698Z",
+  "copy_finished_at": "2026-09-13T03:53:26.3919684Z",
+  "copy_seconds": 290.3052986,
+  "settings_applied_at": "2026-09-13T03:53:49.971174Z",
+  "ui_engine_running_observed_at": "2026-09-13T03:54:19.152Z",
+  "ui_observed_monotonic_seconds": 358.5455821,
+  "status": "migration_failed_settings_rolled_back",
+  "error": "Docker Desktop treats robocopy exit status 1 as failure; New setting not applied",
+  "actual_data_root": "E:\\DockerDesktop\\wsl",
+  "requested_data_root": "C:\\DockerDesktop\\wsl\\DockerDesktopWSL",
+  "desktop_version": "4.81.0.232925",
+  "engine_version": "29.6.1",
+  "images_and_volumes_identical_to_before": true,
+  "source_vhdx_exists": true,
+  "target_vhdx_exists": true,
+  "no_manual_vhdx_move": true,
+  "robocopy_return_code_reference": "https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/robocopy"
+}

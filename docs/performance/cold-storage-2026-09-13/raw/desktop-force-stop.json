@@ -1,0 +1,7 @@
+{
+  "at": "2026-09-13T03:42:28.0524594Z",
+  "command": "docker desktop stop --force --timeout 30",
+  "exit_code": 0,
+  "elapsed_seconds": 1.1018686,
+  "output": "✓ Forcing Docker Desktop to stop"
+}

@@ -1,0 +1,8 @@
+﻿group,sample,build_seconds,build_exit_code,complete_success,end_to_end_seconds,raw
+hdd-before,1,749.2571441,0,True,816.0834464,raw/b1.json
+hdd-before,2,810.9077411999997,0,True,859.3086581000007,raw/b2.json
+hdd-before,3,800.1600553999997,0,True,871.6906450999995,raw/b3.json
+hdd-candidate,1,719.8195992999999,0,True,793.2858961999991,raw/c1.json
+hdd-candidate,2,713.1864906999999,0,True,753.9643421000001,raw/c2.json
+hdd-candidate,3,747.0866117999994,0,False,,raw/c3.json
+hdd-candidate,4,733.8815921000005,0,True,786.5344747999989,raw/c4.json

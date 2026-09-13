@@ -1,0 +1,122 @@
+{
+  "source": "artifacts\\cold-storage-20260913\\model-ssd-qwen\\summary.json",
+  "source_sha256": "89eedb18b478ef0a4cc5a0dad0d039959b7af962e377dd1aab106feaa97a8cb1",
+  "measurement": {
+    "schema_version": 1,
+    "model": "qwen",
+    "medium": "ssd",
+    "samples_requested": 3,
+    "script_sha256": "3044a63f96d281e2e9d208e03d312d0dff95496ae61a6938d5efd37d916614e4",
+    "driver_sha256": "d7812e7f005a562e0b13e4a1e53601175eb1e4f480f85341e09367be2c9548b7",
+    "text": "你好，今天也请多关照。我们一起把这件事情做好吧。",
+    "reference_sha256": "46f6cfedc05b9e6ac5f2c1bde232bc61173821dd9a020ad615d561bb9c264245",
+    "rvc_input_sha256": "22853e3b2dd360e61193f4ec172595d3f0969a1edd030f68b944d6f7bcd087ce",
+    "rvc_input_slice_seconds": [
+      1,
+      3
+    ],
+    "model_dir_override": null,
+    "cache_contract": "Process stopped between samples. Windows and device caches are not cleared. Existing service identity hashing and warmup are included.",
+    "samples": [
+      {
+        "sample": 1,
+        "started_at": "2026-09-13T12:16:26.802839+00:00",
+        "boot_time": 1789300467.015046,
+        "tracked_processes_exited": {},
+        "gpu_before_start": "name, memory.total [MiB], memory.used [MiB], memory.free [MiB]\nNVIDIA GeForce RTX 5090 D v2, 24455 MiB, 1574 MiB, 22462 MiB\n",
+        "host_up_seconds": 30.917371700000103,
+        "host_up_command_wall_seconds": 31.60702059999994,
+        "first_inference_seconds": 1.2048005999999987,
+        "first_audio_seconds": 0.32178620000013325,
+        "combined_seconds": 33.480787700000064,
+        "accounted_stage_sum_seconds": 32.1221723000001,
+        "audio_bytes": 188160,
+        "audio_seconds": 3.92,
+        "audio_sha256": "50c66d69923c2701edacdb2f890cfada82863fd5a16f25c8d207cd9f08b69966",
+        "identity": {
+          "ready": true,
+          "service": "qwen-tts",
+          "api_version": "v1",
+          "provider": "qwen3-tts-gguf-host",
+          "model": "Qwen3-TTS-1.7B-Base",
+          "revision": "0eb32e283ee46b86820c67843abb04cf12bc58d7",
+          "voice": "tosaka-rin-cn",
+          "sample_rate": 24000,
+          "quantization": "talker=Q5_K,predictor=Q8_0,onnx=FP16",
+          "runtime_commit": "0eb32e283ee46b86820c67843abb04cf12bc58d7"
+        },
+        "exit_code": 0
+      },
+      {
+        "sample": 2,
+        "started_at": "2026-09-13T12:17:13.208016+00:00",
+        "boot_time": 1789300467.015046,
+        "tracked_processes_exited": {
+          "13904": 1789301790.507511,
+          "24992": 1789301790.6299574,
+          "25552": 1789301790.6429703,
+          "23856": 1789301809.8169112,
+          "25392": 1789301809.8878367
+        },
+        "gpu_before_start": "name, memory.total [MiB], memory.used [MiB], memory.free [MiB]\nNVIDIA GeForce RTX 5090 D v2, 24455 MiB, 1581 MiB, 22455 MiB\n",
+        "host_up_seconds": 14.591311700000006,
+        "host_up_command_wall_seconds": 15.23752310000009,
+        "first_inference_seconds": 1.2147595999999794,
+        "first_audio_seconds": 0.32168539999997847,
+        "combined_seconds": 16.866250000000036,
+        "accounted_stage_sum_seconds": 15.806071299999985,
+        "audio_bytes": 188160,
+        "audio_seconds": 3.92,
+        "audio_sha256": "50c66d69923c2701edacdb2f890cfada82863fd5a16f25c8d207cd9f08b69966",
+        "identity": {
+          "ready": true,
+          "service": "qwen-tts",
+          "api_version": "v1",
+          "provider": "qwen3-tts-gguf-host",
+          "model": "Qwen3-TTS-1.7B-Base",
+          "revision": "0eb32e283ee46b86820c67843abb04cf12bc58d7",
+          "voice": "tosaka-rin-cn",
+          "sample_rate": 24000,
+          "quantization": "talker=Q5_K,predictor=Q8_0,onnx=FP16",
+          "runtime_commit": "0eb32e283ee46b86820c67843abb04cf12bc58d7"
+        },
+        "exit_code": 0
+      },
+      {
+        "sample": 3,
+        "started_at": "2026-09-13T12:17:42.861049+00:00",
+        "boot_time": 1789300467.015046,
+        "tracked_processes_exited": {
+          "14128": 1789301836.809425,
+          "25188": 1789301836.8287532,
+          "25216": 1789301840.8543499,
+          "6908": 1789301840.9250784,
+          "24244": 1789301836.7452884
+        },
+        "gpu_before_start": "name, memory.total [MiB], memory.used [MiB], memory.free [MiB]\nNVIDIA GeForce RTX 5090 D v2, 24455 MiB, 1563 MiB, 22473 MiB\n",
+        "host_up_seconds": 14.49061340000003,
+        "host_up_command_wall_seconds": 15.15214530000003,
+        "first_inference_seconds": 1.1199624000000767,
+        "first_audio_seconds": 0.3024427000000287,
+        "combined_seconds": 16.656201499999952,
+        "accounted_stage_sum_seconds": 15.610575800000106,
+        "audio_bytes": 188160,
+        "audio_seconds": 3.92,
+        "audio_sha256": "50c66d69923c2701edacdb2f890cfada82863fd5a16f25c8d207cd9f08b69966",
+        "identity": {
+          "ready": true,
+          "service": "qwen-tts",
+          "api_version": "v1",
+          "provider": "qwen3-tts-gguf-host",
+          "model": "Qwen3-TTS-1.7B-Base",
+          "revision": "0eb32e283ee46b86820c67843abb04cf12bc58d7",
+          "voice": "tosaka-rin-cn",
+          "sample_rate": 24000,
+          "quantization": "talker=Q5_K,predictor=Q8_0,onnx=FP16",
+          "runtime_commit": "0eb32e283ee46b86820c67843abb04cf12bc58d7"
+        },
+        "exit_code": 0
+      }
+    ]
+  }
+}

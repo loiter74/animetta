@@ -33,12 +33,6 @@ FROM ghcr.io/astral-sh/uv:0.11.19 AS uv
 FROM python:3.13-slim-bookworm AS python-builder
 COPY --from=uv /uv /usr/local/bin/uv
 WORKDIR /build
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    rm -f /etc/apt/apt.conf.d/docker-clean \
-    && sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources \
-    && apt-get -o Acquire::Retries=5 update \
-    && apt-get install -y --no-install-recommends gcc
 ENV UV_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/ UV_LINK_MODE=copy
 COPY requirements.txt ./
 RUN --mount=type=cache,id=animetta-uv-013,target=/root/.cache/uv \

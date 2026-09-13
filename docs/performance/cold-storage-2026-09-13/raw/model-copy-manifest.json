@@ -1,0 +1,317 @@
+{
+  "completed_at": "2026-09-13T12:32:14.056752+00:00",
+  "copy_and_hash_seconds": 60.689950299999964,
+  "cache_note": "Copy and hash verification can warm file caches; no caches cleared.",
+  "files": [
+    {
+      "group": "qwen",
+      "source": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\qwen3_tts_codec_encoder.fp16.onnx",
+      "source_resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\qwen3_tts_codec_encoder.fp16.onnx",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_codec_encoder.fp16.onnx",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_codec_encoder.fp16.onnx",
+      "bytes": 113998920,
+      "sha256": "bc381cb2664699d66de7d28367afb1124f11542b38f28db8551bb937173e9f8f",
+      "copy_sha256": "bc381cb2664699d66de7d28367afb1124f11542b38f28db8551bb937173e9f8f"
+    },
+    {
+      "group": "qwen",
+      "source": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\qwen3_tts_decoder.fp16.onnx",
+      "source_resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\qwen3_tts_decoder.fp16.onnx",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_decoder.fp16.onnx",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_decoder.fp16.onnx",
+      "bytes": 229914656,
+      "sha256": "98fc6cd579fe57144ccd6792930e0ca8e7ca97aac3d8f0a7b35f60d97961a793",
+      "copy_sha256": "98fc6cd579fe57144ccd6792930e0ca8e7ca97aac3d8f0a7b35f60d97961a793"
+    },
+    {
+      "group": "qwen",
+      "source": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\qwen3_tts_predictor.q8_0.gguf",
+      "source_resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\qwen3_tts_predictor.q8_0.gguf",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_predictor.q8_0.gguf",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_predictor.q8_0.gguf",
+      "bytes": 151124320,
+      "sha256": "945c8fc1565484fa1d1228cdadeeabee24899903ac917a971807b0e0fb51acb7",
+      "copy_sha256": "945c8fc1565484fa1d1228cdadeeabee24899903ac917a971807b0e0fb51acb7"
+    },
+    {
+      "group": "qwen",
+      "source": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\qwen3_tts_speaker_encoder.fp16.onnx",
+      "source_resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\qwen3_tts_speaker_encoder.fp16.onnx",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_speaker_encoder.fp16.onnx",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_speaker_encoder.fp16.onnx",
+      "bytes": 24423582,
+      "sha256": "421c0b8c09a0cee29742e141a76621ab3eaf98f68ca96403f00396b250cb3aac",
+      "copy_sha256": "421c0b8c09a0cee29742e141a76621ab3eaf98f68ca96403f00396b250cb3aac"
+    },
+    {
+      "group": "qwen",
+      "source": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\qwen3_tts_talker.q5_k.gguf",
+      "source_resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\qwen3_tts_talker.q5_k.gguf",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_talker.q5_k.gguf",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\qwen3_tts_talker.q5_k.gguf",
+      "bytes": 1006245120,
+      "sha256": "569a72350d93e87b6b4d8dc968ccd9c4d54cda818e20878f4c7db1eefb6ecaf5",
+      "copy_sha256": "569a72350d93e87b6b4d8dc968ccd9c4d54cda818e20878f4c7db1eefb6ecaf5"
+    },
+    {
+      "group": "qwen",
+      "source": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\tokenizer.json",
+      "source_resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\tokenizer.json",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\tokenizer.json",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\tokenizer.json",
+      "bytes": 11423986,
+      "sha256": "09267689b8362020b9763b65dd5be7e086b31e28d72e02837a9e781de9a91bc7",
+      "copy_sha256": "09267689b8362020b9763b65dd5be7e086b31e28d72e02837a9e781de9a91bc7"
+    },
+    {
+      "group": "qwen",
+      "source": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_0.npy",
+      "source_resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_0.npy",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_0.npy",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_0.npy",
+      "bytes": 25165952,
+      "sha256": "c85fd9a94229fef07cd21830880a609f194efec85d0f3809822b2198275e4e40",
+      "copy_sha256": "c85fd9a94229fef07cd21830880a609f194efec85d0f3809822b2198275e4e40"
+    },
+    {
+      "group": "qwen",
+      "source": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_1.npy",
+      "source_resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_1.npy",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_1.npy",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_1.npy",
+      "bytes": 16777344,
+      "sha256": "6eeefb93b59d80ae3203c96357b5e22d0c9f6a99340623c504c9ef3845d165cc",
+      "copy_sha256": "6eeefb93b59d80ae3203c96357b5e22d0c9f6a99340623c504c9ef3845d165cc"
+    },
+    {
+      "group": "qwen",
+      "source": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_10.npy",
+      "source_resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_10.npy",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_10.npy",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_10.npy",
+      "bytes": 16777344,
+      "sha256": "c8d3ce993a0504b3d4a0d6b4f83d6465ce7f65ed724f7df4902c0c3a91ea47ae",
+      "copy_sha256": "c8d3ce993a0504b3d4a0d6b4f83d6465ce7f65ed724f7df4902c0c3a91ea47ae"
+    },
+    {
+      "group": "qwen",
+      "source": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_11.npy",
+      "source_resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_11.npy",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_11.npy",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_11.npy",
+      "bytes": 16777344,
+      "sha256": "fbcc5014e96f26af5025cfcbf899794b88298b57d7d4b9d54649cae75959fa64",
+      "copy_sha256": "fbcc5014e96f26af5025cfcbf899794b88298b57d7d4b9d54649cae75959fa64"
+    },
+    {
+      "group": "qwen",
+      "source": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_12.npy",
+      "source_resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_12.npy",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_12.npy",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_12.npy",
+      "bytes": 16777344,
+      "sha256": "e5c18d6ab0f21327765524735e79a62a70a80f18c10095a69e0b9baaef0ec5b9",
+      "copy_sha256": "e5c18d6ab0f21327765524735e79a62a70a80f18c10095a69e0b9baaef0ec5b9"
+    },
+    {
+      "group": "qwen",
+      "source": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_13.npy",
+      "source_resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_13.npy",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_13.npy",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_13.npy",
+      "bytes": 16777344,
+      "sha256": "72319019affd8ac13917389d6eb634585c10b1d74e9b4ef3c68d94616a780eca",
+      "copy_sha256": "72319019affd8ac13917389d6eb634585c10b1d74e9b4ef3c68d94616a780eca"
+    },
+    {
+      "group": "qwen",
+      "source": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_14.npy",
+      "source_resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_14.npy",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_14.npy",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_14.npy",
+      "bytes": 16777344,
+      "sha256": "c33a61e607f7b4a2dbfc729fc3302a1fb8fbd5a4c9128ea2e1a57538f93110e2",
+      "copy_sha256": "c33a61e607f7b4a2dbfc729fc3302a1fb8fbd5a4c9128ea2e1a57538f93110e2"
+    },
+    {
+      "group": "qwen",
+      "source": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_15.npy",
+      "source_resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_15.npy",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_15.npy",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_15.npy",
+      "bytes": 16777344,
+      "sha256": "3fde9e115b374feb2142104b74260a04269994e45d2f3bf5077a83bf16a828d7",
+      "copy_sha256": "3fde9e115b374feb2142104b74260a04269994e45d2f3bf5077a83bf16a828d7"
+    },
+    {
+      "group": "qwen",
+      "source": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_2.npy",
+      "source_resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_2.npy",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_2.npy",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_2.npy",
+      "bytes": 16777344,
+      "sha256": "f59acdcf7459abef2b8b8817da6716eba70dd296bdedfe9e897aba8e332ae893",
+      "copy_sha256": "f59acdcf7459abef2b8b8817da6716eba70dd296bdedfe9e897aba8e332ae893"
+    },
+    {
+      "group": "qwen",
+      "source": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_3.npy",
+      "source_resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_3.npy",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_3.npy",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_3.npy",
+      "bytes": 16777344,
+      "sha256": "4fea12991c0386fe08d6ddeb8e674a68247cba0370c0b761e27b02478a3f8dd2",
+      "copy_sha256": "4fea12991c0386fe08d6ddeb8e674a68247cba0370c0b761e27b02478a3f8dd2"
+    },
+    {
+      "group": "qwen",
+      "source": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_4.npy",
+      "source_resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_4.npy",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_4.npy",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_4.npy",
+      "bytes": 16777344,
+      "sha256": "41627b3302b53258a25e55329eda4297a150eb96ecb21d933a2d0def50a4d87e",
+      "copy_sha256": "41627b3302b53258a25e55329eda4297a150eb96ecb21d933a2d0def50a4d87e"
+    },
+    {
+      "group": "qwen",
+      "source": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_5.npy",
+      "source_resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_5.npy",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_5.npy",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_5.npy",
+      "bytes": 16777344,
+      "sha256": "857cd908438894fb9130b3527941f3d1cb91055d3a99eaddde81c2c630921504",
+      "copy_sha256": "857cd908438894fb9130b3527941f3d1cb91055d3a99eaddde81c2c630921504"
+    },
+    {
+      "group": "qwen",
+      "source": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_6.npy",
+      "source_resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_6.npy",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_6.npy",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_6.npy",
+      "bytes": 16777344,
+      "sha256": "ab1e8aed58d3773113263cba5040f9bbc055f2e947995eda6dd24a8c50d15177",
+      "copy_sha256": "ab1e8aed58d3773113263cba5040f9bbc055f2e947995eda6dd24a8c50d15177"
+    },
+    {
+      "group": "qwen",
+      "source": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_7.npy",
+      "source_resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_7.npy",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_7.npy",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_7.npy",
+      "bytes": 16777344,
+      "sha256": "e4c576b938facec624a57f9bf2500f64805df56a4c06817b3e4bd90a3f0c34db",
+      "copy_sha256": "e4c576b938facec624a57f9bf2500f64805df56a4c06817b3e4bd90a3f0c34db"
+    },
+    {
+      "group": "qwen",
+      "source": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_8.npy",
+      "source_resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_8.npy",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_8.npy",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_8.npy",
+      "bytes": 16777344,
+      "sha256": "bb5e9150e032351ae7a9a7f42648846d86c9162c57bfc2bcc7cb4838fbae4bd5",
+      "copy_sha256": "bb5e9150e032351ae7a9a7f42648846d86c9162c57bfc2bcc7cb4838fbae4bd5"
+    },
+    {
+      "group": "qwen",
+      "source": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_9.npy",
+      "source_resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\codec_embedding_9.npy",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_9.npy",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\codec_embedding_9.npy",
+      "bytes": 16777344,
+      "sha256": "ccdfbae0f5d706c539d17c28ccc1267f3c76cf001e4c593af38ec44d9ac6f464",
+      "copy_sha256": "ccdfbae0f5d706c539d17c28ccc1267f3c76cf001e4c593af38ec44d9ac6f464"
+    },
+    {
+      "group": "qwen",
+      "source": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\proj_bias.npy",
+      "source_resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\proj_bias.npy",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\proj_bias.npy",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\proj_bias.npy",
+      "bytes": 4224,
+      "sha256": "6c9534469070a22f1a46cedfbe13ded62f2f97a6d8715b7a505ddbd20023421a",
+      "copy_sha256": "6c9534469070a22f1a46cedfbe13ded62f2f97a6d8715b7a505ddbd20023421a"
+    },
+    {
+      "group": "qwen",
+      "source": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\proj_weight.npy",
+      "source_resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\proj_weight.npy",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\proj_weight.npy",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\proj_weight.npy",
+      "bytes": 8388736,
+      "sha256": "7fa5850687d66da23e911f5cfd6eac96003c4b95cbbf7db7eb7a4d334bfdee81",
+      "copy_sha256": "7fa5850687d66da23e911f5cfd6eac96003c4b95cbbf7db7eb7a4d334bfdee81"
+    },
+    {
+      "group": "qwen",
+      "source": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\text_embedding_projected.npy",
+      "source_resolved": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\model-base\\embeddings\\text_embedding_projected.npy",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\text_embedding_projected.npy",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\qwen\\embeddings\\text_embedding_projected.npy",
+      "bytes": 622329984,
+      "sha256": "3122f93be9a2a5aa65d2611f50c99626a0b94bf299c314b4575ba867cd376ad5",
+      "copy_sha256": "3122f93be9a2a5aa65d2611f50c99626a0b94bf299c314b4575ba867cd376ad5"
+    },
+    {
+      "group": "rvc_weights",
+      "source": "C:\\Users\\30262\\RVC20240604Nvidia\\assets\\weights\\tosaka_rin_tts_v1.pth",
+      "source_resolved": "C:\\Users\\30262\\RVC20240604Nvidia\\assets\\weights\\tosaka_rin_tts_v1.pth",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_weights\\tosaka_rin_tts_v1.pth",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_weights\\tosaka_rin_tts_v1.pth",
+      "bytes": 57588035,
+      "sha256": "c033c49457043ed9fd95d60fff61ab98760a5516c7e79331ed7876d1f407d734",
+      "copy_sha256": "c033c49457043ed9fd95d60fff61ab98760a5516c7e79331ed7876d1f407d734"
+    },
+    {
+      "group": "rvc_rmvpe",
+      "source": "C:\\Users\\30262\\RVC20240604Nvidia\\assets\\rmvpe\\rmvpe.pt",
+      "source_resolved": "C:\\Users\\30262\\RVC20240604Nvidia\\assets\\rmvpe\\rmvpe.pt",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_rmvpe\\rmvpe.pt",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_rmvpe\\rmvpe.pt",
+      "bytes": 181184272,
+      "sha256": "6d62215f4306e3ca278246188607209f09af3dc77ed4232efdd069798c4ec193",
+      "copy_sha256": "6d62215f4306e3ca278246188607209f09af3dc77ed4232efdd069798c4ec193"
+    },
+    {
+      "group": "rvc_hubert",
+      "source": "C:\\Users\\30262\\RVC20240604Nvidia\\assets\\hubert\\hubert_base\\config.json",
+      "source_resolved": "C:\\Users\\30262\\RVC20240604Nvidia\\assets\\hubert\\hubert_base\\config.json",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_hubert\\config.json",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_hubert\\config.json",
+      "bytes": 1492,
+      "sha256": "0346950779dfb7f9316fa74ed846e2b8a22a08eedfdc5387b73f327cb1a4a7cf",
+      "copy_sha256": "0346950779dfb7f9316fa74ed846e2b8a22a08eedfdc5387b73f327cb1a4a7cf"
+    },
+    {
+      "group": "rvc_hubert",
+      "source": "C:\\Users\\30262\\RVC20240604Nvidia\\assets\\hubert\\hubert_base\\preprocessor_config.json",
+      "source_resolved": "C:\\Users\\30262\\RVC20240604Nvidia\\assets\\hubert\\hubert_base\\preprocessor_config.json",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_hubert\\preprocessor_config.json",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_hubert\\preprocessor_config.json",
+      "bytes": 225,
+      "sha256": "7c1976a680fb7acc757cd36fb08eef878fa36c70b4c9d2d595df9c608bbbbf0e",
+      "copy_sha256": "7c1976a680fb7acc757cd36fb08eef878fa36c70b4c9d2d595df9c608bbbbf0e"
+    },
+    {
+      "group": "rvc_hubert",
+      "source": "C:\\Users\\30262\\RVC20240604Nvidia\\assets\\hubert\\hubert_base\\pytorch_model.bin",
+      "source_resolved": "C:\\Users\\30262\\RVC20240604Nvidia\\assets\\hubert\\hubert_base\\pytorch_model.bin",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_hubert\\pytorch_model.bin",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_hubert\\pytorch_model.bin",
+      "bytes": 189206711,
+      "sha256": "cc8c20f4b90a520757260197a3ff2505705a7adbd20ad9eeaa4e1a9b38442ef5",
+      "copy_sha256": "cc8c20f4b90a520757260197a3ff2505705a7adbd20ad9eeaa4e1a9b38442ef5"
+    },
+    {
+      "group": "rvc_index",
+      "source": "C:\\Users\\30262\\RVC20240604Nvidia\\logs\\tosaka_rin_tts_v1\\added_IVF2143_Flat_nprobe_1_tosaka_rin_tts_v1_v2.index",
+      "source_resolved": "C:\\Users\\30262\\RVC20240604Nvidia\\logs\\tosaka_rin_tts_v1\\added_IVF2143_Flat_nprobe_1_tosaka_rin_tts_v1_v2.index",
+      "target": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_index\\added_IVF2143_Flat_nprobe_1_tosaka_rin_tts_v1_v2.index",
+      "target_resolved": "E:\\AnimaStorageCompare\\cold-storage-20260913\\rvc_index\\added_IVF2143_Flat_nprobe_1_tosaka_rin_tts_v1_v2.index",
+      "bytes": 264128619,
+      "sha256": "0e158de97f5ef766d4991f80e94c954e4351a88d096b7850bfeb03d3a7864e79",
+      "copy_sha256": "0e158de97f5ef766d4991f80e94c954e4351a88d096b7850bfeb03d3a7864e79"
+    }
+  ]
+}

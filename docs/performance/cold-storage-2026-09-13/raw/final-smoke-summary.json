@@ -1,0 +1,801 @@
+{
+  "finished_at": "2026-09-13T15:22:02.728407+00:00",
+  "layout": "E:/DockerDesktop/wsl",
+  "ssd_docker_comparison": "blocked; two supported UI migrations rolled back; no third attempt",
+  "desktop_cycle": {
+    "started_at": "2026-09-13T15:15:20.598292+00:00",
+    "steps": [
+      {
+        "command": [
+          "docker",
+          "desktop",
+          "stop",
+          "--timeout",
+          "60"
+        ],
+        "exit_code": 0,
+        "seconds": 20.64336270000058,
+        "stdout": "✓ Stopping Docker Desktop\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "docker",
+          "desktop",
+          "start",
+          "--timeout",
+          "60"
+        ],
+        "exit_code": 0,
+        "seconds": 22.46494630000052,
+        "stdout": "✓ Starting Docker Desktop\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "docker",
+          "version",
+          "--format",
+          "{{.Server.Version}}"
+        ],
+        "exit_code": 0,
+        "seconds": 16.91668910000044,
+        "stdout": "29.6.1\n",
+        "stderr": ""
+      }
+    ],
+    "prior_ipc_recurrence": "../final-desktop-recovery.json",
+    "passed": true
+  },
+  "prior_desktop_ipc_recurrence_ref": "final-desktop-recovery.json",
+  "model_restoration_ref": "model-restoration-verified.json",
+  "formal_down_host_preservation_ref": "final/hosts-after-formal-down.json",
+  "operations": {
+    "formal-up": {
+      "exit_code": 0,
+      "receipt": "final/formal-up.json"
+    },
+    "formal-down": {
+      "exit_code": 0,
+      "receipt": "final/formal-down.json"
+    },
+    "dev-up": {
+      "exit_code": 0,
+      "receipt": "final/dev-up.json"
+    },
+    "dev-down": {
+      "exit_code": 0,
+      "receipt": "final/dev-down.json"
+    },
+    "formal-restore": {
+      "exit_code": 0,
+      "receipt": "final/formal-restore.json"
+    }
+  },
+  "surfaces": {
+    "formal-up": {
+      "schema_version": 1,
+      "scenario": "surfaces",
+      "phase": "after",
+      "samples": [],
+      "samples_requested": 1,
+      "started_at": "2026-09-13T13:12:39.672Z",
+      "root": "C:\\Users\\30262\\Project\\Anima",
+      "url": "http://localhost/",
+      "authentication": "existing_machine_token",
+      "surface_errors": [],
+      "surface_seconds": 15.3286326,
+      "resources": [
+        {
+          "url": "http://localhost/live2d/live2dcubismcore.min.js",
+          "sha256": "25ae938cb4fe282ce189b357bcc97e603d1e1f7ec78bf04150d401c23cdc792f"
+        },
+        {
+          "url": "http://localhost/assets/app-DfjfTlZG.js",
+          "sha256": "89c7cd9665112a75bf841eaf326b827e9438a035cd114178b8a4d673ad9c8018"
+        },
+        {
+          "url": "http://localhost/live2d/live2dcubismcore.min.js",
+          "sha256": "25ae938cb4fe282ce189b357bcc97e603d1e1f7ec78bf04150d401c23cdc792f"
+        },
+        {
+          "url": "http://localhost/assets/live-CJ-4DTXu.js",
+          "sha256": "afd785bb74cba7653af8aefdb22f940f90446b473f91dad5cdf124ab7347ca43"
+        }
+      ],
+      "socket_connected": true,
+      "exit_code": 0,
+      "successful_samples": 0,
+      "median_seconds": null,
+      "min_seconds": null,
+      "max_seconds": null
+    },
+    "dev-up": {
+      "schema_version": 1,
+      "scenario": "surfaces",
+      "phase": "after",
+      "samples": [],
+      "samples_requested": 1,
+      "started_at": "2026-09-13T15:10:36.779Z",
+      "root": "C:\\Users\\30262\\Project\\Anima",
+      "url": "http://localhost:3000/",
+      "authentication": "existing_machine_token",
+      "surface_errors": [],
+      "surface_seconds": 11.944130600000001,
+      "resources": [
+        {
+          "url": "http://localhost:3000/@vite/client",
+          "sha256": "5aa34c343f4b794f165c0af5f282eb0504292cb5b28503593927ad24586ea8d1"
+        },
+        {
+          "url": "http://localhost:3000/live2d/live2dcubismcore.min.js",
+          "sha256": "25ae938cb4fe282ce189b357bcc97e603d1e1f7ec78bf04150d401c23cdc792f"
+        },
+        {
+          "url": "http://localhost:3000/src/main.ts",
+          "sha256": "72c0ced0b5c818738494ae3162582e67b819d7e695c6477c0da39d7fc63c7023"
+        },
+        {
+          "url": "http://localhost:3000/@vite/client",
+          "sha256": "5aa34c343f4b794f165c0af5f282eb0504292cb5b28503593927ad24586ea8d1"
+        },
+        {
+          "url": "http://localhost:3000/live2d/live2dcubismcore.min.js",
+          "sha256": "25ae938cb4fe282ce189b357bcc97e603d1e1f7ec78bf04150d401c23cdc792f"
+        },
+        {
+          "url": "http://localhost:3000/src/live/main.ts",
+          "sha256": "cf08614469eec9ce851015731c41bcfbd3a82d6b144039bc6cb7771e4b04be68"
+        }
+      ],
+      "socket_connected": true,
+      "exit_code": 0,
+      "successful_samples": 0,
+      "median_seconds": null,
+      "min_seconds": null,
+      "max_seconds": null
+    },
+    "formal-restore": {
+      "schema_version": 1,
+      "scenario": "surfaces",
+      "phase": "after",
+      "samples": [],
+      "samples_requested": 1,
+      "started_at": "2026-09-13T15:20:56.615Z",
+      "root": "C:\\Users\\30262\\Project\\Anima",
+      "url": "http://localhost/",
+      "authentication": "existing_machine_token",
+      "surface_errors": [],
+      "surface_seconds": 3.2335209999999996,
+      "resources": [
+        {
+          "url": "http://localhost/live2d/live2dcubismcore.min.js",
+          "sha256": "25ae938cb4fe282ce189b357bcc97e603d1e1f7ec78bf04150d401c23cdc792f"
+        },
+        {
+          "url": "http://localhost/assets/app-DfjfTlZG.js",
+          "sha256": "89c7cd9665112a75bf841eaf326b827e9438a035cd114178b8a4d673ad9c8018"
+        },
+        {
+          "url": "http://localhost/live2d/live2dcubismcore.min.js",
+          "sha256": "25ae938cb4fe282ce189b357bcc97e603d1e1f7ec78bf04150d401c23cdc792f"
+        },
+        {
+          "url": "http://localhost/assets/live-CJ-4DTXu.js",
+          "sha256": "afd785bb74cba7653af8aefdb22f940f90446b473f91dad5cdf124ab7347ca43"
+        }
+      ],
+      "socket_connected": true,
+      "exit_code": 0,
+      "successful_samples": 0,
+      "median_seconds": null,
+      "min_seconds": null,
+      "max_seconds": null
+    }
+  },
+  "dev_initialization": {
+    "source": "lifecycle/final-dev-up/evidence/command-c994de93f194.log",
+    "counts": {
+      "Application startup complete": 1,
+      "[ServicePool] Initializing shared service instances...": 1,
+      "[__pool__] Services loaded": 1
+    }
+  },
+  "formal_initialization": {
+    "source": "final/formal-runtime.log",
+    "counts": {
+      "Application startup complete": 1,
+      "[ServicePool] Initializing shared service instances...": 1,
+      "[__pool__] Services loaded": 1
+    }
+  },
+  "containers": [
+    {
+      "Command": "\"/app/entrypoint.sh\"",
+      "CreatedAt": "2026-09-13 23:16:54 +0800 CST",
+      "HealthStatus": "healthy",
+      "ID": "a481194112fc",
+      "Image": "animetta:anima-storage-c4",
+      "Labels": "com.docker.compose.config-hash=cba78069d9442bcd7c3dea6c76e19b2357490f429f12a4eac4af5adc449605e6,com.docker.compose.container-number=1,com.docker.compose.depends_on=redis:service_healthy:false,com.docker.compose.image=sha256:e017a84e6dbc3eeb3ab79d36452dee6b840917d058f9df0eff36a055f601cc15,com.docker.compose.oneoff=False,com.docker.compose.project.config_files=C:\\Users\\30262\\Project\\Anima\\docker-compose.yml,com.docker.compose.project.working_dir=C:\\Users\\30262\\Project\\Anima,com.docker.compose.project=anima,com.docker.compose.service=animetta,com.docker.compose.version=5.2.0,desktop.docker.io/ports.scheme=v2,desktop.docker.io/ports/12394/tcp=:12394,desktop.docker.io/ports/80/tcp=:80,org.animetta.build-fingerprint=52bc643ab11e296685d74bb4eabd833f05831cf1f7ee78420d19bd2e693c7979,org.animetta.runtime-fingerprint=927f78c462643168b3f7e3ca8732f5a2f497a4ec0af394fb20843801d3a7b5ef",
+      "LocalVolumes": "2",
+      "Mounts": "anima_animetta…,anima_animetta…",
+      "Names": "anima-animetta-1",
+      "Networks": "anima_default",
+      "Platform": {
+        "architecture": "amd64",
+        "os": "linux"
+      },
+      "Ports": "0.0.0.0:80->80/tcp, [::]:80->80/tcp, 0.0.0.0:12394->12394/tcp, [::]:12394->12394/tcp",
+      "RunningFor": "5 minutes ago",
+      "Size": "7.32MB (virtual 1.06GB)",
+      "State": "running",
+      "Status": "Up 4 minutes (healthy)"
+    },
+    {
+      "Command": "\"docker-entrypoint.s…\"",
+      "CreatedAt": "2026-09-13 23:16:51 +0800 CST",
+      "HealthStatus": "healthy",
+      "ID": "6ce6d745d853",
+      "Image": "redis:8.8.1-alpine",
+      "Labels": "com.docker.compose.config-hash=e9db5ea9f3bd813a87ff0d3fe8cad5cfd04cdf3bbdb7b03e9d0da9388b525a1d,com.docker.compose.container-number=1,com.docker.compose.depends_on=,com.docker.compose.image=sha256:8096655e437712b07503796fb64d81359256cfcff0ab29d95a7da72863786efb,com.docker.compose.oneoff=False,com.docker.compose.project.config_files=C:\\Users\\30262\\Project\\Anima\\docker-compose.yml,com.docker.compose.project.working_dir=C:\\Users\\30262\\Project\\Anima,com.docker.compose.project=anima,com.docker.compose.service=redis,com.docker.compose.version=5.2.0,desktop.docker.io/ports.scheme=v2,org.animetta.runtime-fingerprint=ffd673be2b2563b7ac2ca9221f83ec861982d8b9df6d8ab9e23dde37c27f4e90",
+      "LocalVolumes": "1",
+      "Mounts": "anima_animetta…",
+      "Names": "anima-redis-1",
+      "Networks": "anima_default",
+      "Platform": {
+        "architecture": "amd64",
+        "os": "linux"
+      },
+      "Ports": "6379/tcp",
+      "RunningFor": "5 minutes ago",
+      "Size": "4.1kB (virtual 117MB)",
+      "State": "running",
+      "Status": "Up 5 minutes (healthy)"
+    }
+  ],
+  "watch_remaining": [],
+  "model_processes": [
+    {
+      "pid": 25868,
+      "name": "python.exe",
+      "cmdline": [
+        "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\venv\\Scripts\\python.exe",
+        "-m",
+        "animetta_qwen_tts"
+      ]
+    },
+    {
+      "pid": 25916,
+      "name": "python.exe",
+      "cmdline": [
+        "C:\\Users\\30262\\RVC20240604Nvidia\\runtime\\Scripts\\python.exe",
+        "-m",
+        "animetta_rvc_host"
+      ]
+    },
+    {
+      "pid": 27968,
+      "name": "python3.13.exe",
+      "cmdline": [
+        "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\venv\\Scripts\\python.exe",
+        "-m",
+        "animetta_qwen_tts"
+      ]
+    },
+    {
+      "pid": 28284,
+      "name": "python3.13.exe",
+      "cmdline": [
+        "C:\\Users\\30262\\RVC20240604Nvidia\\runtime\\Scripts\\python.exe",
+        "-m",
+        "animetta_rvc_host"
+      ]
+    }
+  ],
+  "watch_before_pids": [
+    33356,
+    39084,
+    39912
+  ],
+  "watch_old_pids_remaining": [],
+  "host_ready": {
+    "qwen": {
+      "ready": true,
+      "service": "qwen-tts",
+      "api_version": "v1",
+      "provider": "qwen3-tts-gguf-host",
+      "model": "Qwen3-TTS-1.7B-Base",
+      "revision": "0eb32e283ee46b86820c67843abb04cf12bc58d7",
+      "voice": "tosaka-rin-cn",
+      "sample_rate": 24000,
+      "quantization": "talker=Q5_K,predictor=Q8_0,onnx=FP16",
+      "runtime_commit": "0eb32e283ee46b86820c67843abb04cf12bc58d7"
+    },
+    "rvc": {
+      "ready": true,
+      "separation_ready": true,
+      "separation_model": "htdemucs",
+      "service": "rvc",
+      "api_version": "v1",
+      "provider": "rvc-webui-host",
+      "model": "tosaka_rin_tts_v1.pth",
+      "revision": "e2714bf076547117a24352943cb67d7766d6b512a163c4ecd26bd1e6abb54536",
+      "voice": "tosaka-rin-cn",
+      "sample_rate": 48000,
+      "index": "added_IVF2143_Flat_nprobe_1_tosaka_rin_tts_v1_v2.index",
+      "index_revision": "0E158DE97F5EF766D4991F80E94C954E4351A88D096B7850BFEB03D3A7864E79"
+    }
+  },
+  "final_ready": {
+    "schema_version": 1,
+    "status": "ready",
+    "ready": true,
+    "service": "anima",
+    "profile": "production",
+    "version": 1,
+    "persona": "anima.v0.1",
+    "effective_hash": "12d621f0645a06fd5de60e95fc7391417ed447554f74011052fd30ecfe20eb34",
+    "semantic_hash": "6ea30d4480ae3127f069def90d352f6c3a61c5d20f9c2334395b38168d4480b5",
+    "acceptance_eligible": true,
+    "components": {
+      "pool": {
+        "state": "ready",
+        "ready": true,
+        "reason": null
+      },
+      "llm": {
+        "state": "ready",
+        "ready": true,
+        "configured": {
+          "name": "deepseek",
+          "type": "deepseek",
+          "provider": "deepseek",
+          "model": "deepseek-v4-flash",
+          "voice": null
+        },
+        "resolved": {
+          "type": "deepseek",
+          "provider": "deepseek",
+          "model": "deepseek-v4-flash",
+          "voice": null
+        },
+        "reason": null
+      },
+      "asr": {
+        "state": "ready",
+        "ready": true,
+        "configured": {
+          "name": "mimo-asr",
+          "type": "mimo",
+          "provider": "mimo",
+          "model": "mimo-v2.5-asr",
+          "voice": null
+        },
+        "resolved": {
+          "type": "mimo",
+          "provider": "mimo",
+          "model": "mimo-v2.5-asr",
+          "voice": null
+        },
+        "reason": null
+      },
+      "tts": {
+        "state": "ready",
+        "ready": true,
+        "configured": {
+          "name": "dashscope-local-failover",
+          "type": "failover",
+          "provider": "failover",
+          "model": null,
+          "voice": null
+        },
+        "resolved": {
+          "type": "failover",
+          "provider": "failover",
+          "model": null,
+          "voice": null
+        },
+        "reason": null,
+        "degraded": true,
+        "active_backend": "fallback",
+        "primary": {
+          "ready": false,
+          "error_category": "billing",
+          "identity": {
+            "type": "dashscope",
+            "provider": "dashscope",
+            "model": "qwen3-tts-instruct-flash-realtime",
+            "voice": "Seren"
+          }
+        },
+        "fallback": {
+          "ready": true,
+          "error_category": null,
+          "identity": {
+            "type": null,
+            "provider": "qwen3-tts-gguf-host",
+            "model": "Qwen3-TTS-1.7B-Base",
+            "voice": "tosaka-rin-cn"
+          }
+        },
+        "circuit": {
+          "state": "open",
+          "cooldown_remaining_seconds": 231.44503512999927
+        }
+      },
+      "vad": {
+        "state": "ready",
+        "ready": true,
+        "configured": {
+          "name": "mimo-vad",
+          "type": "mimo",
+          "provider": "mimo",
+          "model": "mimo-v2.5-asr",
+          "voice": null
+        },
+        "resolved": {
+          "type": "mimo",
+          "provider": "mimo",
+          "model": "mimo-v2.5-asr",
+          "voice": null
+        },
+        "reason": null
+      },
+      "frontend": {
+        "state": "ready",
+        "ready": true,
+        "required": true,
+        "reason": null
+      },
+      "checkpoint": {
+        "state": "ready",
+        "ready": true,
+        "degraded": false,
+        "reason": null,
+        "required": false
+      },
+      "auth_session": {
+        "state": "ready",
+        "ready": true,
+        "reason": null,
+        "required": true
+      },
+      "auth_user": {
+        "state": "ready",
+        "ready": true,
+        "reason": null,
+        "required": true
+      },
+      "memory_runtime": {
+        "state": "ready",
+        "ready": true,
+        "reason": null,
+        "ingestion_queue": 0,
+        "index_backlog": 0,
+        "ingestion_failed": 0,
+        "required": true
+      },
+      "observation_ledger": {
+        "state": "ready",
+        "ready": true,
+        "reason": null,
+        "queue_depth": 0,
+        "dropped_records": 0,
+        "writer_errors": 0,
+        "schema_version": 2,
+        "write_probe": true,
+        "required": true
+      },
+      "metrics_projection": {
+        "state": "ready",
+        "ready": true,
+        "reason": null,
+        "has_anima_readiness_probe_total": true,
+        "anima_readiness_probe_total_delta": 2.0,
+        "required": true
+      }
+    },
+    "degraded": false,
+    "component_status_age_seconds": 28.6
+  },
+  "buildx": "NAME/NODE                       DRIVER/ENDPOINT     STATUS    BUILDKIT   PLATFORMS\nanima-cold-after-0913           docker-container                         \n \\_ anima-cold-after-09130       \\_ desktop-linux   stopped              \nanima-cold-before-0913          docker-container                         \n \\_ anima-cold-before-09130      \\_ desktop-linux   stopped              \nstorage-hdd-b1-0913             docker-container                         \n \\_ storage-hdd-b1-09130         \\_ desktop-linux   stopped              \nstorage-hdd-b2-0913             docker-container                         \n \\_ storage-hdd-b2-09130         \\_ desktop-linux   stopped              \nstorage-hdd-b3-0913             docker-container                         \n \\_ storage-hdd-b3-09130         \\_ desktop-linux   stopped              \nstorage-hdd-c1r-0913            docker-container                         \n \\_ storage-hdd-c1r-09130        \\_ desktop-linux   stopped              \nstorage-hdd-c2-0913             docker-container                         \n \\_ storage-hdd-c2-09130         \\_ desktop-linux   stopped              \nstorage-hdd-c3-0913             docker-container                         \n \\_ storage-hdd-c3-09130         \\_ desktop-linux   stopped              \nstorage-hdd-c4-0913             docker-container                         \n \\_ storage-hdd-c4-09130         \\_ desktop-linux   stopped              \nstorage-probe-nogcc-0913        docker-container                         \n \\_ storage-probe-nogcc-09130    \\_ desktop-linux   stopped              \ndefault                         docker                                   \n \\_ default                      \\_ default         running   v0.31.1    linux/amd64 (+3), linux/arm64, linux/arm (+2), linux/ppc64le, (2 more)\ndesktop-linux*                  docker                                   \n \\_ desktop-linux                \\_ desktop-linux   running   v0.31.1    linux/amd64 (+3), linux/arm64, linux/arm (+2), linux/ppc64le, (2 more)\n",
+  "builder_volumes": [
+    "anima-cold-after_animetta-data",
+    "anima-cold-after_animetta-memory-db",
+    "anima-cold-after_animetta-redis",
+    "anima-cold-before_animetta-data",
+    "anima-cold-before_animetta-memory-db",
+    "anima-cold-before_animetta-redis",
+    "anima-dev_animetta-data",
+    "anima-dev_animetta-memory-db",
+    "anima-dev_animetta-redis",
+    "anima-perf-after_animetta-data",
+    "anima-perf-after_animetta-memory-db",
+    "anima-perf-after_animetta-redis",
+    "anima-perf-before_animetta-data",
+    "anima-perf-before_animetta-memory-db",
+    "anima-perf-before_animetta-redis",
+    "anima-storage-b1_animetta-data",
+    "anima-storage-b1_animetta-memory-db",
+    "anima-storage-b1_animetta-redis",
+    "anima-storage-b2_animetta-data",
+    "anima-storage-b2_animetta-memory-db",
+    "anima-storage-b2_animetta-redis",
+    "anima-storage-b3_animetta-data",
+    "anima-storage-b3_animetta-memory-db",
+    "anima-storage-b3_animetta-redis",
+    "anima-storage-c1_animetta-data",
+    "anima-storage-c1_animetta-memory-db",
+    "anima-storage-c1_animetta-redis",
+    "anima-storage-c2_animetta-data",
+    "anima-storage-c2_animetta-memory-db",
+    "anima-storage-c2_animetta-redis",
+    "anima-storage-c3_animetta-data",
+    "anima-storage-c3_animetta-memory-db",
+    "anima-storage-c3_animetta-redis",
+    "anima-storage-c4_animetta-data",
+    "anima-storage-c4_animetta-memory-db",
+    "anima-storage-c4_animetta-redis",
+    "anima_animetta-data",
+    "anima_animetta-memory-db",
+    "anima_animetta-redis",
+    "buildx_buildkit_anima-cold-after-09130_state",
+    "buildx_buildkit_anima-cold-before-09130_state",
+    "buildx_buildkit_storage-hdd-b1-09130_state",
+    "buildx_buildkit_storage-hdd-b2-09130_state",
+    "buildx_buildkit_storage-hdd-b3-09130_state",
+    "buildx_buildkit_storage-hdd-c1r-09130_state",
+    "buildx_buildkit_storage-hdd-c2-09130_state",
+    "buildx_buildkit_storage-hdd-c3-09130_state",
+    "buildx_buildkit_storage-hdd-c4-09130_state",
+    "buildx_buildkit_storage-probe-nogcc-09130_state"
+  ],
+  "builder_containers": [
+    {
+      "Command": "\"/usr/bin/buildkitd-…\"",
+      "CreatedAt": "2026-09-13 09:37:38 +0800 CST",
+      "HealthStatus": "none",
+      "ID": "eb33fcf1e2af",
+      "Image": "28a898719c18",
+      "Labels": "desktop.docker.io/ports.scheme=v2",
+      "LocalVolumes": "1",
+      "Mounts": "buildx_buildki…",
+      "Names": "buildx_buildkit_storage-hdd-c4-09130",
+      "Networks": "bridge",
+      "Platform": {
+        "architecture": "amd64",
+        "os": "linux"
+      },
+      "Ports": "",
+      "RunningFor": "14 hours ago",
+      "Size": "94.2kB (virtual 244MB)",
+      "State": "exited",
+      "Status": "Exited (1) 13 hours ago"
+    },
+    {
+      "Command": "\"/usr/bin/buildkitd-…\"",
+      "CreatedAt": "2026-09-13 09:15:21 +0800 CST",
+      "HealthStatus": "none",
+      "ID": "eb7fb7691d90",
+      "Image": "28a898719c18",
+      "Labels": "desktop.docker.io/ports.scheme=v2",
+      "LocalVolumes": "1",
+      "Mounts": "buildx_buildki…",
+      "Names": "buildx_buildkit_storage-hdd-c3-09130",
+      "Networks": "bridge",
+      "Platform": {
+        "architecture": "amd64",
+        "os": "linux"
+      },
+      "Ports": "",
+      "RunningFor": "14 hours ago",
+      "Size": "94.2kB (virtual 244MB)",
+      "State": "exited",
+      "Status": "Exited (1) 14 hours ago"
+    },
+    {
+      "Command": "\"/usr/bin/buildkitd-…\"",
+      "CreatedAt": "2026-09-13 09:00:54 +0800 CST",
+      "HealthStatus": "none",
+      "ID": "d1908154d8ce",
+      "Image": "28a898719c18",
+      "Labels": "desktop.docker.io/ports.scheme=v2",
+      "LocalVolumes": "1",
+      "Mounts": "buildx_buildki…",
+      "Names": "buildx_buildkit_storage-hdd-c2-09130",
+      "Networks": "bridge",
+      "Platform": {
+        "architecture": "amd64",
+        "os": "linux"
+      },
+      "Ports": "",
+      "RunningFor": "14 hours ago",
+      "Size": "94.2kB (virtual 244MB)",
+      "State": "exited",
+      "Status": "Exited (1) 14 hours ago"
+    },
+    {
+      "Command": "\"/usr/bin/buildkitd-…\"",
+      "CreatedAt": "2026-09-13 08:46:14 +0800 CST",
+      "HealthStatus": "none",
+      "ID": "44df146c70ca",
+      "Image": "28a898719c18",
+      "Labels": "desktop.docker.io/ports.scheme=v2",
+      "LocalVolumes": "1",
+      "Mounts": "buildx_buildki…",
+      "Names": "buildx_buildkit_storage-hdd-c1r-09130",
+      "Networks": "bridge",
+      "Platform": {
+        "architecture": "amd64",
+        "os": "linux"
+      },
+      "Ports": "",
+      "RunningFor": "15 hours ago",
+      "Size": "94.2kB (virtual 244MB)",
+      "State": "exited",
+      "Status": "Exited (1) 14 hours ago"
+    },
+    {
+      "Command": "\"/usr/bin/buildkitd-…\"",
+      "CreatedAt": "2026-09-13 08:34:43 +0800 CST",
+      "HealthStatus": "none",
+      "ID": "426157037ee3",
+      "Image": "28a898719c18",
+      "Labels": "desktop.docker.io/ports.scheme=v2",
+      "LocalVolumes": "1",
+      "Mounts": "buildx_buildki…",
+      "Names": "buildx_buildkit_storage-probe-nogcc-09130",
+      "Networks": "bridge",
+      "Platform": {
+        "architecture": "amd64",
+        "os": "linux"
+      },
+      "Ports": "",
+      "RunningFor": "15 hours ago",
+      "Size": "94.2kB (virtual 244MB)",
+      "State": "exited",
+      "Status": "Exited (1) 15 hours ago"
+    },
+    {
+      "Command": "\"/usr/bin/buildkitd-…\"",
+      "CreatedAt": "2026-09-13 08:15:46 +0800 CST",
+      "HealthStatus": "none",
+      "ID": "8f0949e10dc9",
+      "Image": "28a898719c18",
+      "Labels": "desktop.docker.io/ports.scheme=v2",
+      "LocalVolumes": "1",
+      "Mounts": "buildx_buildki…",
+      "Names": "buildx_buildkit_storage-hdd-b3-09130",
+      "Networks": "bridge",
+      "Platform": {
+        "architecture": "amd64",
+        "os": "linux"
+      },
+      "Ports": "",
+      "RunningFor": "15 hours ago",
+      "Size": "94.2kB (virtual 244MB)",
+      "State": "exited",
+      "Status": "Exited (1) 15 hours ago"
+    },
+    {
+      "Command": "\"/usr/bin/buildkitd-…\"",
+      "CreatedAt": "2026-09-13 07:59:25 +0800 CST",
+      "HealthStatus": "none",
+      "ID": "a6f305d8134d",
+      "Image": "28a898719c18",
+      "Labels": "desktop.docker.io/ports.scheme=v2",
+      "LocalVolumes": "1",
+      "Mounts": "buildx_buildki…",
+      "Names": "buildx_buildkit_storage-hdd-b2-09130",
+      "Networks": "bridge",
+      "Platform": {
+        "architecture": "amd64",
+        "os": "linux"
+      },
+      "Ports": "",
+      "RunningFor": "15 hours ago",
+      "Size": "94.2kB (virtual 244MB)",
+      "State": "exited",
+      "Status": "Exited (1) 15 hours ago"
+    },
+    {
+      "Command": "\"/usr/bin/buildkitd-…\"",
+      "CreatedAt": "2026-09-13 07:43:28 +0800 CST",
+      "HealthStatus": "none",
+      "ID": "09bd58c020ca",
+      "Image": "28a898719c18",
+      "Labels": "desktop.docker.io/ports.scheme=v2",
+      "LocalVolumes": "1",
+      "Mounts": "buildx_buildki…",
+      "Names": "buildx_buildkit_storage-hdd-b1-09130",
+      "Networks": "bridge",
+      "Platform": {
+        "architecture": "amd64",
+        "os": "linux"
+      },
+      "Ports": "",
+      "RunningFor": "16 hours ago",
+      "Size": "94.2kB (virtual 244MB)",
+      "State": "exited",
+      "Status": "Exited (1) 15 hours ago"
+    },
+    {
+      "Command": "\"/usr/bin/buildkitd-…\"",
+      "CreatedAt": "2026-09-13 06:52:27 +0800 CST",
+      "HealthStatus": "none",
+      "ID": "9449b65ea9b2",
+      "Image": "28a898719c18",
+      "Labels": "desktop.docker.io/ports.scheme=v2",
+      "LocalVolumes": "1",
+      "Mounts": "buildx_buildki…",
+      "Names": "buildx_buildkit_anima-cold-after-09130",
+      "Networks": "bridge",
+      "Platform": {
+        "architecture": "amd64",
+        "os": "linux"
+      },
+      "Ports": "",
+      "RunningFor": "16 hours ago",
+      "Size": "94.2kB (virtual 244MB)",
+      "State": "exited",
+      "Status": "Exited (1) 16 hours ago"
+    },
+    {
+      "Command": "\"/usr/bin/buildkitd-…\"",
+      "CreatedAt": "2026-09-13 00:20:32 +0800 CST",
+      "HealthStatus": "none",
+      "ID": "156eed07d834",
+      "Image": "28a898719c18",
+      "Labels": "desktop.docker.io/ports.scheme=v2",
+      "LocalVolumes": "1",
+      "Mounts": "buildx_buildki…",
+      "Names": "buildx_buildkit_anima-cold-before-09130",
+      "Networks": "bridge",
+      "Platform": {
+        "architecture": "amd64",
+        "os": "linux"
+      },
+      "Ports": "",
+      "RunningFor": "23 hours ago",
+      "Size": "94.2kB (virtual 244MB)",
+      "State": "exited",
+      "Status": "Exited (1) 16 hours ago"
+    }
+  ],
+  "formal_instance": {
+    "Id": "a481194112fc6ccd6971016fac3967cdc41c369ba42460aa28c40268d0f89bcd",
+    "Image": "sha256:e017a84e6dbc3eeb3ab79d36452dee6b840917d058f9df0eff36a055f601cc15",
+    "labels": {
+      "com.docker.compose.config-hash": "cba78069d9442bcd7c3dea6c76e19b2357490f429f12a4eac4af5adc449605e6",
+      "com.docker.compose.container-number": "1",
+      "com.docker.compose.depends_on": "redis:service_healthy:false",
+      "com.docker.compose.image": "sha256:e017a84e6dbc3eeb3ab79d36452dee6b840917d058f9df0eff36a055f601cc15",
+      "com.docker.compose.oneoff": "False",
+      "com.docker.compose.project": "anima",
+      "com.docker.compose.project.config_files": "C:\\Users\\30262\\Project\\Anima\\docker-compose.yml",
+      "com.docker.compose.project.working_dir": "C:\\Users\\30262\\Project\\Anima",
+      "com.docker.compose.service": "animetta",
+      "com.docker.compose.version": "5.2.0",
+      "org.animetta.build-fingerprint": "52bc643ab11e296685d74bb4eabd833f05831cf1f7ee78420d19bd2e693c7979",
+      "org.animetta.runtime-fingerprint": "927f78c462643168b3f7e3ca8732f5a2f497a4ec0af394fb20843801d3a7b5ef"
+    },
+    "state": {
+      "Status": "running",
+      "Running": true,
+      "StartedAt": "2026-09-13T15:17:17.386035461Z"
+    }
+  },
+  "dockerfile_sha256": "8b3cce3a040c26cfe21a2f14f2094cb274ef03277a12d34102772a510e7a698f",
+  "engine_version": "29.6.1",
+  "desktop_version": "4.81.0.232925",
+  "passed": true,
+  "formal_restored_initialization": {
+    "source": "final/formal-restored-runtime.log",
+    "counts": {
+      "Application startup complete": 1,
+      "[ServicePool] Initializing shared service instances...": 1,
+      "[__pool__] Services loaded": 1
+    }
+  },
+  "evidence_self_check_passed": true
+}

@@ -1,0 +1,81 @@
+{
+  "schema_version": 2,
+  "status": "passed",
+  "plan_hash": "70d1dcd9697a9067db380961b45a25cb835fbccd569fa49305e19449872bca6e",
+  "manifest_hash": "768b464c37fcd8dfb38af5d0a163db7110136a2dc39b4ba8b94a6a5c3e57377e",
+  "missing_groups": [],
+  "failed_groups": [],
+  "blocked_groups": [],
+  "cancelled_groups": [],
+  "unexpected_groups": [],
+  "dominated_groups": [],
+  "docker_actions": [
+    {
+      "scope_id": "animetta",
+      "service": "animetta",
+      "compose_file": "docker-compose.yml",
+      "input_fingerprint": "52bc643ab11e296685d74bb4eabd833f05831cf1f7ee78420d19bd2e693c7979",
+      "input_file_count": 800,
+      "input_patterns": [
+        "Dockerfile",
+        ".dockerignore",
+        "requirements.txt",
+        "docker/entrypoint.sh",
+        "docker/nginx.conf",
+        "scripts/validate-events.py",
+        "src/animetta/**",
+        "config/**",
+        ".env.example",
+        "frontend/.npmrc",
+        "frontend/package.json",
+        "frontend/pnpm-lock.yaml",
+        "frontend/pnpm-workspace.yaml",
+        "frontend/*.html",
+        "frontend/vite.config.ts",
+        "frontend/uno.config.ts",
+        "frontend/tsconfig.json",
+        "frontend/src/**",
+        "frontend/public/**"
+      ],
+      "reasons": [
+        "Docker input changed: Dockerfile",
+        "Docker input changed: scripts/benchmark_storage.py",
+        "Docker input changed: scripts/measure_storage_telemetry.ps1"
+      ]
+    }
+  ],
+  "cache_hit_groups": [],
+  "executed_groups": [
+    "architecture-boundary-audit",
+    "backend-deadcode",
+    "backend-route-smoke",
+    "backend-static",
+    "backend-support-typecheck",
+    "backend-tooling-quality",
+    "docker-compose-contract",
+    "docs-contract",
+    "operational-source-contract",
+    "python-format",
+    "runtime-lifecycle-unit",
+    "security-secrets"
+  ],
+  "cache_miss_groups": [
+    "architecture-boundary-audit",
+    "backend-deadcode",
+    "backend-route-smoke",
+    "backend-static",
+    "backend-support-typecheck",
+    "backend-tooling-quality",
+    "docs-contract",
+    "operational-source-contract",
+    "python-format",
+    "runtime-lifecycle-unit"
+  ],
+  "wall_seconds": 91.57617070000015,
+  "critical_path_seconds": 91.08696580000014,
+  "planning_seconds": 3.074813400000494,
+  "queue_seconds": 0.0,
+  "run_seconds": 129.58989609999844,
+  "cache_seconds": 0.0,
+  "cache_hit_ratio": 0.0
+}

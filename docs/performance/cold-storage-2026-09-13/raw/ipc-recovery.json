@@ -1,0 +1,17 @@
+{
+  "at": "2026-09-13T03:43:05.9715176Z",
+  "desktop_processes": 0,
+  "entries": [
+    {
+      "source": "C:\\Users\\30262\\AppData\\Local\\Docker\\run",
+      "backup": "C:\\Users\\30262\\AppData\\Local\\Docker\\run.cold-storage-backup-20260913-114305",
+      "renamed": true
+    },
+    {
+      "source": "C:\\Users\\30262\\AppData\\Local\\docker-secrets-engine",
+      "backup": "C:\\Users\\30262\\AppData\\Local\\docker-secrets-engine.cold-storage-backup-20260913-114305",
+      "renamed": true
+    }
+  ],
+  "operation": "rename temporary IPC directories only; preserve inaccessible socket entries; no deletion"
+}

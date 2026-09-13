@@ -1,0 +1,6 @@
+{
+  "frozen_at": "2026-09-13T12:22:46.140964+00:00",
+  "wrapper_sha256": "c357f20a9104b0ab70967becee936e97b59b94cbdda6254edc7e06b95b09bbde",
+  "previous_sha256": "3044a63f96d281e2e9d208e03d312d0dff95496ae61a6938d5efd37d916614e4",
+  "change": "Bounded exact process exit wait outside startup timer, maximum 10 seconds; pilot evidence preserved, formal SSD/HDD samples use this identical wrapper."
+}

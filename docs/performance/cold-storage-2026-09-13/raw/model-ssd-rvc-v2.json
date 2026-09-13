@@ -1,0 +1,55 @@
+{
+  "source": "artifacts\\cold-storage-20260913\\model-ssd-rvc-v2\\summary.json",
+  "source_sha256": "477798dcc5162645db289ba9176af332664d66da663693e8376dc4fa876654c1",
+  "measurement": {
+    "schema_version": 1,
+    "model": "rvc",
+    "medium": "ssd",
+    "samples_requested": 3,
+    "script_sha256": "c357f20a9104b0ab70967becee936e97b59b94cbdda6254edc7e06b95b09bbde",
+    "driver_sha256": "d7812e7f005a562e0b13e4a1e53601175eb1e4f480f85341e09367be2c9548b7",
+    "text": "你好，今天也请多关照。我们一起把这件事情做好吧。",
+    "reference_sha256": "46f6cfedc05b9e6ac5f2c1bde232bc61173821dd9a020ad615d561bb9c264245",
+    "rvc_input_sha256": "22853e3b2dd360e61193f4ec172595d3f0969a1edd030f68b944d6f7bcd087ce",
+    "rvc_input_slice_seconds": [
+      1,
+      3
+    ],
+    "model_dir_override": null,
+    "cache_contract": "Process stopped between samples. Windows and device caches are not cleared. Existing service identity hashing and warmup are included.",
+    "samples": [
+      {
+        "sample": 1,
+        "started_at": "2026-09-13T12:24:52.241587+00:00",
+        "boot_time": 1789300467.0155556,
+        "tracked_processes_exited": {},
+        "stop_process_exit_wait_seconds": 0.017041800000015428,
+        "gpu_before_start": "name, memory.total [MiB], memory.used [MiB], memory.free [MiB]\nNVIDIA GeForce RTX 5090 D v2, 24455 MiB, 3552 MiB, 20484 MiB\n",
+        "host_up_seconds": 10.601996299999882,
+        "host_up_command_wall_seconds": 11.261395400000083,
+        "first_inference_seconds": 11.4909447,
+        "first_audio_seconds": null,
+        "combined_seconds": 23.248465299999907,
+        "accounted_stage_sum_seconds": 22.092940999999882,
+        "audio_bytes": 190124,
+        "audio_seconds": 1.98,
+        "audio_sha256": "277a8d5bcdd500c17e0dae0c8b62961bc4aca5731dd9929c16a38c2378dd8cbb",
+        "identity": {
+          "ready": true,
+          "separation_ready": true,
+          "separation_model": "htdemucs",
+          "service": "rvc",
+          "api_version": "v1",
+          "provider": "rvc-webui-host",
+          "model": "tosaka_rin_tts_v1.pth",
+          "revision": "e2714bf076547117a24352943cb67d7766d6b512a163c4ecd26bd1e6abb54536",
+          "voice": "tosaka-rin-cn",
+          "sample_rate": 48000,
+          "index": "added_IVF2143_Flat_nprobe_1_tosaka_rin_tts_v1_v2.index",
+          "index_revision": "0E158DE97F5EF766D4991F80E94C954E4351A88D096B7850BFEB03D3A7864E79"
+        },
+        "exit_code": 0
+      }
+    ]
+  }
+}
