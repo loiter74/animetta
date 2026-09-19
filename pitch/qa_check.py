@@ -6,7 +6,7 @@ from pptx import Presentation
 from pptx.util import Emu
 import zipfile, re
 
-PATH = r"pitch/Animetta-投资人简报.pptx"
+PATH = sys.argv[1] if len(sys.argv) > 1 else r"pitch/Animetta-投资人简报.pptx"
 
 # 1) 同一 <a:p> 内多个 <a:pPr>（pptxgenjs 混排陷阱）
 bad_ppr = []
