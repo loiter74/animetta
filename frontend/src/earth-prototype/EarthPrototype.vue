@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
 import type * as Cesium from 'cesium'
+import EarthCompanion from './EarthCompanion.vue'
 
 declare global {
   interface Window {
@@ -371,6 +372,9 @@ onBeforeUnmount(() => {
           @wheel.passive="pause"
           @keydown="pause"
         />
+        <EarthCompanion
+          class="absolute right-[3%] bottom-0 w-[34%] max-w-104 h-[62%] max-h-140 pointer-events-none"
+        />
         <nav
           class="absolute top-5 left-5 flex gap-1 bg-c-panel/90 p-2 rounded-xl text-sm"
           aria-label="探索位置"
@@ -387,7 +391,7 @@ onBeforeUnmount(() => {
           </button>
         </nav>
         <div
-          class="absolute bottom-13 left-6 right-6 max-w-170 bg-c-panel/95 backdrop-blur-xl rounded-xl p-6 shadow-xl"
+          class="absolute bottom-13 left-6 box-border w-[calc(63%_-_3rem)] max-w-182 bg-c-panel/95 backdrop-blur-xl rounded-xl p-6 shadow-xl"
           aria-live="polite"
         >
           <div class="flex items-center justify-between mb-3">

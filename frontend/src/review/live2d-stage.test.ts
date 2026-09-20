@@ -3,6 +3,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const fixtures = vi.hoisted(() => {
   let beforeModelUpdate: (() => void) | null = null
   let applicationOptions: Record<string, unknown> | null = null
+  const screen = { width: 1080, height: 1920 }
+  let resizeListener: (() => void) | null = null
+  const renderer = {
+    on: vi.fn((_event: string, listener: () => void) => {
+      resizeListener = listener
+    }),
+    off: vi.fn(() => {
+      resizeListener = null
+    }),
+  }
   const setParameterValueByIndex = vi.fn()
   const parameterNames = [
     'ParamMouthOpenY',
@@ -60,6 +70,13 @@ const fixtures = vi.hoisted(() => {
     destroy: vi.fn(),
   }
   return {
+    screen,
+    renderer,
+    emitRendererResize: (width: number, height: number) => {
+      screen.width = width
+      screen.height = height
+      resizeListener?.()
+    },
     model,
     idleMotions,
     setParameterValueByIndex,
@@ -67,6 +84,9 @@ const fixtures = vi.hoisted(() => {
       applicationOptions = options
     },
     resetModelState: () => {
+      screen.width = 1080
+      screen.height = 1920
+      resizeListener = null
       parameterValues.fill(0)
       motionState.currentGroup = 'Idle'
     },
@@ -84,7 +104,8 @@ const fixtures = vi.hoisted(() => {
 
 vi.mock('pixi.js', () => ({
   Application: class {
-    screen = { width: 1080, height: 1920 }
+    screen = fixtures.screen
+    renderer = fixtures.renderer
     stage = { addChild: vi.fn() }
     stop = vi.fn()
     destroy = vi.fn()
@@ -106,6 +127,21 @@ describe('createLive2DStage', () => {
       <p id="modelStatus"></p>
       <span id="audioStatus" data-lip-sync-applied-count="0" data-lip-sync-peak="0"></span>
     `
+  })
+
+  it('fits the model after the renderer changes size and removes the resize listener on disposal', async () => {
+    const { createLive2DStage } = await import('./live2d-stage')
+    const stage = createLive2DStage({ on: vi.fn().mockReturnThis(), off: vi.fn().mockReturnThis() })
+    await stage.ready
+    expect(document.getElementById('modelStatus')?.dataset.state).toBe('live')
+    fixtures.emitRendererResize(300, 400)
+    expect(fixtures.model.position.set).toHaveBeenLastCalledWith(150, 320)
+    const appliedScale = fixtures.model.scale.set.mock.lastCall?.[0]
+    expect(appliedScale).toBeCloseTo(0.738)
+    stage.dispose()
+    const calls = fixtures.model.position.set.mock.calls.length
+    fixtures.emitRendererResize(600, 800)
+    expect(fixtures.model.position.set).toHaveBeenCalledTimes(calls)
   })
 
   it('owns the only review playback and samples mouth volume in the model frame', async () => {

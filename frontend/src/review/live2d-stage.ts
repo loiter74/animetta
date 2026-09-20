@@ -238,8 +238,8 @@ export function createLive2DStage(
 
       app.stage.addChild(model)
       layout()
-      window.addEventListener('resize', layout)
-      disposers.add(() => window.removeEventListener('resize', layout))
+      app.renderer.on('resize', layout)
+      disposers.add(() => app?.renderer.off('resize', layout))
       socket.on(Events.CHAT.LIVE2D_ACTION, onLive2DAction)
       disposers.add(() => socket.off(Events.CHAT.LIVE2D_ACTION, onLive2DAction))
       state.textContent = 'Live2D 已加载'
