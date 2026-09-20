@@ -2,6 +2,8 @@
 
 这是用于评审探索节奏的临时原型。真实 Cesium 三维地球与 Esri 卫星影像已经接入，引导对话使用固定脚本，尚未接入 Anima 的 LangGraph、视觉模型、ASR 或宿主 TTS。它不属于正式产品入口，也不进入生产构建。
 
+后续实施见[地球探索详细计划](earth-exploration-plan.md)。Live2D 已加入地图偏右下方并贴齐底边。视觉分析仅可使用明确允许相应用途的影像；Google Map Tiles 官方政策禁止图像分析和机器解读，不能把该数据源的截图直接交给模型分析。[官方政策](https://developers.google.com/maps/documentation/tile/policies)
+
 ## 启动与操作
 
 在 `frontend/` 执行 `pnpm earth:prototype`，浏览器打开 <http://127.0.0.1:3011/earth-prototype.html>。首次拉取代码后先执行 `pnpm install --frozen-lockfile`。端口被占用时先核对进程，不终止其他任务。
@@ -41,7 +43,7 @@ window.earthPrototype.getView() // 位置、朝向、层级、阶段、所选点
 window.earthPrototype.capture() // 当前地图 canvas 的 PNG data URL
 ```
 
-这是同页面的原型接口，不是已部署的 MCP 或后端 HTTP API。后续正式接入时，由 LangGraph 的产品工具发出语义动作，前端回传视图及用户指认；视觉模型收到画面后再决定下一步。模型不能因为用户沉默而确认住址或任意选择行政区。
+这是同页面的原型接口，不是已部署的 MCP 或后端 HTTP API。后续正式接入时，由 LangGraph 的产品工具发出语义动作，前端回传视图及用户指认；仅在影像分析授权明确后，才把画面交给视觉模型辅助决定下一步。模型不能因为用户沉默而确认住址或任意选择行政区。
 
 当前已识别的局限：语音为系统可选能力，未验证宿主声音；地图加载最多等 20 秒，超时暂停；交互针对桌面；原型保留渲染缓冲用于截图，正式接入时需重新评估开销；Google 请求失败会保持底图。
 
