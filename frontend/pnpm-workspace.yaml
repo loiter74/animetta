@@ -5,6 +5,7 @@ allowBuilds:
   electron: true
   electron-winstaller: true
   esbuild: true
+  protobufjs: false
   vue-demi: true
 
 minimumReleaseAgeExclude:

@@ -7,6 +7,7 @@
   "packageManager": "pnpm@11.7.0",
   "scripts": {
     "dev": "vite",
+    "earth:prototype": "vite --host 127.0.0.1 --port 3011 --strictPort --open /earth-prototype.html",
     "dev:electron": "concurrently \"vite\" \"wait-on http://localhost:3000 && electron .\"",
     "build": "vue-tsc --noEmit && vite build && node scripts/assert-live-build.mjs",
     "build:sites": "pnpm build && node scripts/package-sites-worker.mjs",
@@ -54,6 +55,7 @@
     "@vitejs/plugin-vue": "^5.2.4",
     "@vitest/coverage-v8": "^4.1.9",
     "@vue/test-utils": "^2.4.11",
+    "cesium": "1.133.0",
     "concurrently": "^10.0.3",
     "electron": "39.8.10",
     "electron-builder": "^26.15.3",
