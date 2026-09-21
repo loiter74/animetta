@@ -23,6 +23,7 @@ let currentBlobUrl: string | null = null
 let audioUnlocked = false
 let unlockPending = false
 let currentLifecycle: AudioPlaybackLifecycle | null = null
+let playbackOwner: symbol | null = null
 
 // ===== Audio Playback =====
 
@@ -30,6 +31,7 @@ function cleanup(): void {
   if (currentAudio) {
     currentAudio.pause()
     currentAudio.onended = null
+    currentAudio.onerror = null
     currentAudio.removeAttribute('src')
     currentAudio.load()
   }
@@ -94,10 +96,12 @@ export function playAudio(
   data: AudioPlaybackPayload,
   lifecycle?: AudioPlaybackLifecycle,
   mouthTarget?: MouthTarget,
-): void {
-  if (!data?.audio_data && !data?.audio_url) return
+): () => void {
+  if (!data?.audio_data && !data?.audio_url) return () => {}
   stopPcmAudioStream()
   currentLifecycle?.onCancel?.()
+  const owner = Symbol('audio-playback')
+  playbackOwner = owner
   currentLifecycle = lifecycle ?? null
   cleanup()
 
@@ -117,6 +121,8 @@ export function playAudio(
   if (data.volumes?.length) startLipSync(audio, data.volumes, mouthTarget)
 
   audio.onended = () => {
+    if (playbackOwner !== owner) return
+    playbackOwner = null
     const completed = currentLifecycle
     currentLifecycle = null
     stopLipSync()
@@ -124,18 +130,29 @@ export function playAudio(
     completed?.onComplete?.()
   }
 
+  audio.onerror = () => {
+    if (playbackOwner !== owner) return
+    stopAudio()
+  }
+
   audio
     .play()
     .then(() => {
-      if (currentLifecycle === playbackLifecycle) playbackLifecycle?.onStart?.()
+      if (playbackOwner === owner) playbackLifecycle?.onStart?.()
     })
     .catch((error: unknown) => {
+      if (playbackOwner !== owner) return
       console.warn('[audio] Chat audio playback failed', error)
       const cancelled = currentLifecycle === playbackLifecycle ? playbackLifecycle : null
       if (cancelled) currentLifecycle = null
+      playbackOwner = null
+      stopLipSync()
       cleanup()
       cancelled?.onCancel?.()
     })
+  return () => {
+    if (playbackOwner === owner) stopAudio()
+  }
 }
 
 export function startAudioStream(
@@ -143,6 +160,7 @@ export function startAudioStream(
   lifecycle?: AudioPlaybackLifecycle,
   mouthTarget?: MouthTarget,
 ): void {
+  playbackOwner = null
   stopLipSync()
   currentLifecycle?.onCancel?.()
   currentLifecycle = null
@@ -159,6 +177,7 @@ export function endAudioStream(data: AudioStreamEndEvent): void {
 }
 
 export function stopAudio(): void {
+  playbackOwner = null
   if (currentAudio) {
     currentAudio.pause()
     currentAudio.currentTime = 0

@@ -4,6 +4,8 @@ import subprocess
 import sys
 from pathlib import Path, PurePosixPath
 
+import pytest
+
 from tooling.quality.architecture_boundaries import (
     audit_frontend_source,
     audit_python_source,
@@ -108,3 +110,132 @@ def test_report_cli_runs_from_repository_root() -> None:
 
     assert completed.returncode == 0, completed.stderr
     assert completed.stdout.startswith("Architecture boundary audit:")
+
+
+@pytest.mark.parametrize("requested", ["cesium", "@cesium/engine", "socket.io-client", "pixi.js"])
+def test_earth_sdk_imports_require_adapter(requested: str) -> None:
+    source = f"import SDK from '{requested}'\n"
+    assert _codes(
+        audit_frontend_source(
+            PurePosixPath("frontend/src/features/earth/EarthWorkspace.vue"),
+            source,
+        )
+    ) == {"EARTH_SDK_OUTSIDE_ADAPTER"}
+    assert (
+        audit_frontend_source(
+            PurePosixPath("frontend/src/features/earth/adapters/vendor.ts"),
+            source,
+        )
+        == ()
+    )
+
+
+@pytest.mark.parametrize(
+    "requested",
+    [
+        "vue",
+        "@vue/runtime-core",
+        "pinia",
+        "socket.io-client",
+        "cesium",
+        "@cesium/engine",
+        "./adapters/cesium",
+        "./EarthWorkspace.vue",
+        "./mount",
+        "@/shared/transport/liveSocket",
+    ],
+)
+def test_earth_controller_has_no_framework_or_execution_dependencies(requested: str) -> None:
+    assert _codes(
+        audit_frontend_source(
+            PurePosixPath("frontend/src/features/earth/controller.ts"),
+            f"const module = import(\n '{requested}'\n)\n",
+        )
+    ) == {"EARTH_CORE_OUTWARD_IMPORT"}
+
+
+def test_earth_core_contract_import_and_shared_rendering_sdk_are_allowed() -> None:
+    assert (
+        audit_frontend_source(
+            PurePosixPath("frontend/src/features/earth/controller.ts"),
+            "import type { EarthMap } from './contracts'\n",
+        )
+        == ()
+    )
+    assert (
+        audit_frontend_source(
+            PurePosixPath("frontend/src/shared/live2d/renderer.ts"),
+            "import * as PIXI from 'pixi.js'\n",
+        )
+        == ()
+    )
+
+
+@pytest.mark.parametrize(
+    "requested", ["@/review/live2d-stage", "../../review/live2d-stage", "@/features/earth"]
+)
+def test_shared_renderer_rejects_upward_imports(requested: str) -> None:
+    assert _codes(
+        audit_frontend_source(
+            PurePosixPath("frontend/src/shared/live2d/renderer.ts"),
+            f"export {{ renderer }} from '{requested}'\n",
+        )
+    ) == {"FRONTEND_SHARED_UPWARD_IMPORT"}
+
+
+@pytest.mark.parametrize(
+    "requested", ["../conversation/internal", "@/features/conversation/internal"]
+)
+def test_earth_cannot_import_other_feature_internals(requested: str) -> None:
+    assert _codes(
+        audit_frontend_source(
+            PurePosixPath("frontend/src/features/earth/controller.ts"),
+            f"import {{ value }} from '{requested}'\n",
+        )
+    ) == {"EARTH_CORE_OUTWARD_IMPORT", "FRONTEND_CROSS_FEATURE_DEEP_IMPORT"}
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "from animetta.orchestration.graph import state",
+        "from animetta import tools",
+        "from . import photon",
+        "from .providers import imagery",
+        "from ..llm import factory",
+        "import httpx",
+        "from openai import OpenAI",
+        "from langgraph.graph import StateGraph",
+    ],
+)
+def test_earth_domain_rejects_outer_services_including_relative_imports(source: str) -> None:
+    assert "EARTH_DOMAIN_OUTWARD_IMPORT" in _codes(
+        audit_python_source(
+            PurePosixPath("src/animetta/services/earth/domain.py"),
+            source,
+        )
+    )
+
+
+def test_earth_domain_allows_values_and_contracts() -> None:
+    assert (
+        audit_python_source(
+            PurePosixPath("src/animetta/services/earth/domain.py"),
+            "from dataclasses import dataclass\nfrom .contracts import GeoPoint\n",
+        )
+        == ()
+    )
+
+
+def test_earth_audit_detects_internal_cycles_with_existing_detector(tmp_path: Path) -> None:
+    frontend = tmp_path / "frontend/src/features/earth"
+    backend = tmp_path / "src/animetta/services/earth"
+    frontend.mkdir(parents=True)
+    backend.mkdir(parents=True)
+    (frontend / "controller.ts").write_text("import { b } from './contracts'", encoding="utf-8")
+    (frontend / "contracts.ts").write_text("export { a } from './controller'", encoding="utf-8")
+    (backend / "domain.py").write_text("from .contracts import Point", encoding="utf-8")
+    (backend / "contracts.py").write_text("from .domain import State", encoding="utf-8")
+    violations = audit_repository(tmp_path)
+    assert len(violations) == 2
+    assert _codes(violations) == {"EARTH_DEPENDENCY_CYCLE"}

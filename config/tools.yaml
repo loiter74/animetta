@@ -1,5 +1,14 @@
 # Animetta 工具配置
 
+# 地球工具只接受私密探索图注入的会话能力，不可从公共聊天操纵地图。
+earth:
+  enabled: true
+  provider: photon
+  endpoint: https://photon.komoot.io/api/
+  min_interval_seconds: 2.0
+  auto_search: false
+  vision: false
+
 # ========================================
 # 内置工具（不需要 API Key）
 # ========================================

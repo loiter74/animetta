@@ -1,0 +1,403 @@
+{
+  "schema_version": 1,
+  "scope": "Scripted prototype and shared avatar only. No formal Dashboard/LLM/TTS/vision acceptance.",
+  "prediction": {
+    "frozenAt": "2026-09-20T16:55:01.826Z",
+    "frameTargetFPS": 30,
+    "cancelP95TargetMs": 100,
+    "definition": "RAF frame intervals during fixed route; cancel API duration and next-frame paused observation measured separately. Not a GPU presentation measurement.",
+    "route": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "runs": 5,
+    "viewport": {
+      "width": 1600,
+      "height": 1000
+    },
+    "dpr": 1
+  },
+  "raw": [
+    {
+      "file": "perf-baseline-isolated-raw.json",
+      "originalSha256": "6e1a5ceac2cc82cfa59e1f025f4436e2802d848f5b4c436cb9ef6d88a0244c4a",
+      "portableSha256": "3719483b5adc8a8af0801f1961bbc679ffda40e706b715b4966516a2b07dbfbd"
+    },
+    {
+      "file": "perf-baseline-resume-raw.json",
+      "originalSha256": "ef473ee5d101763f6f1ed5f2791c36eb206dd5d637c922602e41b3db2d78f6f1",
+      "portableSha256": "6b7042517af6de613d84f0fb8089e94c7da674c4b5cc5c84ff992e1e969c7948"
+    },
+    {
+      "file": "perf-post-renderer-raw.json",
+      "originalSha256": "f339ef8831eba7098d219275cd902857766727a9de15b727277b2af038e98079",
+      "portableSha256": "b83da745d946d5afbcb7c04b62d47a3d04888a1cf39d0791f9aa7b05fbd1769f"
+    },
+    {
+      "file": "perf-post-renderer-resume-raw.json",
+      "originalSha256": "d50fa1701c93b0d0968a27ea12c4ad03fc43962712845e669a7d64fa1f47601b",
+      "portableSha256": "faaac55f5a688ef7cf0444d275785912ebe5278299b38e48072fac1c0e70cca2"
+    }
+  ],
+  "sourceSets": {
+    "baselineSources": [
+      {
+        "file": "frontend/src/earth-prototype/EarthPrototype.vue",
+        "sha256": "b608597280ab4a11c798d75fe6119c4b677131fc19eaa3f46eb833ee397c6125"
+      },
+      {
+        "file": "frontend/src/earth-prototype/EarthCompanion.vue",
+        "sha256": "be579235fefc52c41ba1ce7e7568917effff9339dbd882f8d577fb86154ff579"
+      },
+      {
+        "file": "frontend/src/review/live2d-stage.ts",
+        "sha256": "ba45491a90f3bed6f17d2e002d06f62575506f0beafa2d87f5d8909f6e4367d9"
+      },
+      {
+        "file": "frontend/earth-prototype.html",
+        "sha256": "50a685d60c456dd156937b316a5f3db210dff2126b8aadde8d21b01e3f456ebb"
+      }
+    ],
+    "baselineAssets": [
+      {
+        "file": "source.tar",
+        "sha256": "9037f4cb961f1e6ab0bac79c66ebf210e9ba160a77c82ed06369815f4c38459e"
+      },
+      {
+        "file": "frontend/node_modules/cesium/Build/Cesium/Cesium.js",
+        "sha256": "94b9ab884a3724d91965b563543d98829465eab7b27818cf42c1171b1d23e419"
+      },
+      {
+        "file": "frontend/public/live2d/live2dcubismcore.min.js",
+        "sha256": "25ae938cb4fe282ce189b357bcc97e603d1e1f7ec78bf04150d401c23cdc792f"
+      },
+      {
+        "file": "frontend/public/live2d/mao/ASSET_LICENSE.md",
+        "sha256": "c3ed2a1ab8d1c8ddbcf56870751126d877a4019db3d4ba6187e8e665741497e1"
+      },
+      {
+        "file": "frontend/public/live2d/mao/Mao.cdi3.json",
+        "sha256": "f261069f302c013f1c60b48045aa4bf5ac2cb086ebb54917f7e5c3f47e5c8f81"
+      },
+      {
+        "file": "frontend/public/live2d/mao/Mao.moc3",
+        "sha256": "ad5195b39e35e0da8ba0c825ad9cc2d60571502007f6f7d4f00963b768bb90d8"
+      },
+      {
+        "file": "frontend/public/live2d/mao/Mao.model3.json",
+        "sha256": "d5fb29f93ef3cf3eba96b5aa9538eca063abbebee81a8d2dbeecea0cef4fecba"
+      },
+      {
+        "file": "frontend/public/live2d/mao/Mao.physics3.json",
+        "sha256": "27de73695ca6418a84953a0b2776e78160f9d0b988521e9bbfa02ff913f20a6d"
+      },
+      {
+        "file": "frontend/public/live2d/mao/Mao.pose3.json",
+        "sha256": "efac160eccb7183ee6555d4e53a739042e1c55b92f59a99c2e4bed8e73a5ab91"
+      },
+      {
+        "file": "frontend/public/live2d/mao/expressions/exp_01.exp3.json",
+        "sha256": "afbe54559e428acdaf43190d1c497792048c35ed37979f33d9a37c70181ddf5b"
+      },
+      {
+        "file": "frontend/public/live2d/mao/expressions/exp_02.exp3.json",
+        "sha256": "6d35132627f9e362e526c0ce8c2152ece2b305c9abd3368da43460c2af8538f6"
+      },
+      {
+        "file": "frontend/public/live2d/mao/expressions/exp_03.exp3.json",
+        "sha256": "460a3077d61adfdd1e6b9a062d0d7c3fcc2fb74c80f67ec3649982a9fab49bee"
+      },
+      {
+        "file": "frontend/public/live2d/mao/expressions/exp_04.exp3.json",
+        "sha256": "abad61f4ec7f1a157d6b914643e5bd4ffb29964e67f538cace420ebc9f69a716"
+      },
+      {
+        "file": "frontend/public/live2d/mao/expressions/exp_05.exp3.json",
+        "sha256": "331fe0d9c78861496a9cc9acba9650f295a72af8c36df7036ab8a372840d2cc1"
+      },
+      {
+        "file": "frontend/public/live2d/mao/expressions/exp_06.exp3.json",
+        "sha256": "52f1e391008d61efb17a33602c004a637a42bdb8af8aca3d2319ac5dac215ed1"
+      },
+      {
+        "file": "frontend/public/live2d/mao/expressions/exp_07.exp3.json",
+        "sha256": "8bf587d3d7bef509166c8ff95cc9f47c23c895eaf55f9d95110263e44452a53a"
+      },
+      {
+        "file": "frontend/public/live2d/mao/expressions/exp_08.exp3.json",
+        "sha256": "761190452e48d22727fce91e76270af2c27b0bb0ee3d04b2c6b0dc6cec49f88d"
+      },
+      {
+        "file": "frontend/public/live2d/mao/Mao.2048/texture_00.png",
+        "sha256": "0b97283d69e62d346bcca25f8a91a5dd477f2e668ad9801b15fa7f108631c624"
+      },
+      {
+        "file": "frontend/public/live2d/mao/motions/mtn_01.motion3.json",
+        "sha256": "4da75468148da722525272c1fe0f8dfabb7242dde0404cbd285938bbbfb88ee7"
+      },
+      {
+        "file": "frontend/public/live2d/mao/motions/mtn_02.motion3.json",
+        "sha256": "aa8c78c03f1d5fe143eedecfb7d077e7e4a7804c93723ba661eef2dd6a5d5ae0"
+      },
+      {
+        "file": "frontend/public/live2d/mao/motions/mtn_03.motion3.json",
+        "sha256": "e31eab8c371a253322c68968dbe5895e3029562f31a5b8d277012e94b0a6badd"
+      },
+      {
+        "file": "frontend/public/live2d/mao/motions/mtn_04.motion3.json",
+        "sha256": "a95f67d35c81755dee7f3be1e5e60171f090026725f628c99a1e3585985a1ac1"
+      },
+      {
+        "file": "frontend/public/live2d/mao/motions/sample_01.motion3.json",
+        "sha256": "90e769f545022676daca634748ec9754ed35a68333119d04fabf68cbe08a0167"
+      },
+      {
+        "file": "frontend/public/live2d/mao/motions/special_01.motion3.json",
+        "sha256": "141320d2e8913097156bf61aa2c27cd51ffcf8ba5d288172da288d2afcc164db"
+      },
+      {
+        "file": "frontend/public/live2d/mao/motions/special_02.motion3.json",
+        "sha256": "68e6e12c14d2c06504891971dcdce7771637aedbda9ef5edc616fd4f6972d20c"
+      },
+      {
+        "file": "frontend/public/live2d/mao/motions/special_03.motion3.json",
+        "sha256": "fe6b990b6d26a48955c0b33e27c3de8e020c98d2d06be41dcdfecdd053e6dd0f"
+      }
+    ],
+    "postBefore": [
+      {
+        "file": "frontend/src/earth-prototype/EarthPrototype.vue",
+        "sha256": "7e4dd4dbc13d86627a9f8d46de9078ef175ebc67010362bd12f13beed7f32e7b"
+      },
+      {
+        "file": "frontend/src/shared/live2d/Companion.vue",
+        "sha256": "bce05e2d2a4ca4799272c49ba48a1e41d097bbc62dd45060d64133b010f37500"
+      },
+      {
+        "file": "frontend/src/shared/live2d/renderer.ts",
+        "sha256": "575f3387f46c7d6a92b97c81da471dc99064cbe540b3013be195a707a6dd170c"
+      },
+      {
+        "file": "frontend/src/shared/audio/playback.ts",
+        "sha256": "cb88b62c4b6c5b9b9db830b93035bc7a454b0d27bb1a3f3a6ff2014f64f2cad7"
+      },
+      {
+        "file": "frontend/node_modules/cesium/Build/Cesium/Cesium.js",
+        "sha256": "94b9ab884a3724d91965b563543d98829465eab7b27818cf42c1171b1d23e419"
+      }
+    ],
+    "postAfter": [
+      {
+        "file": "frontend/src/earth-prototype/EarthPrototype.vue",
+        "sha256": "7e4dd4dbc13d86627a9f8d46de9078ef175ebc67010362bd12f13beed7f32e7b"
+      },
+      {
+        "file": "frontend/src/shared/live2d/Companion.vue",
+        "sha256": "bce05e2d2a4ca4799272c49ba48a1e41d097bbc62dd45060d64133b010f37500"
+      },
+      {
+        "file": "frontend/src/shared/live2d/renderer.ts",
+        "sha256": "575f3387f46c7d6a92b97c81da471dc99064cbe540b3013be195a707a6dd170c"
+      },
+      {
+        "file": "frontend/src/shared/audio/playback.ts",
+        "sha256": "00b32163c17051da3aac5975f3e1e897d7edfb6d206310bfd6dc5305d9265e63"
+      },
+      {
+        "file": "frontend/node_modules/cesium/Build/Cesium/Cesium.js",
+        "sha256": "94b9ab884a3724d91965b563543d98829465eab7b27818cf42c1171b1d23e419"
+      }
+    ]
+  },
+  "formalMapPerformanceVerified": false,
+  "summary": {
+    "before": {
+      "validRuns": 5,
+      "aggregate": {
+        "samples": 20535,
+        "medianMs": 6.099999999998545,
+        "p95Ms": 6.200000000000728,
+        "maxMs": 145.39999999999964,
+        "meanFPS": 163.3222781608487,
+        "atLeast30FPSFraction": 0.9998052106160215
+      },
+      "cancel": {
+        "samples": 5,
+        "synchronousP95Ms": 0.2000000011175871,
+        "nextFrameP95Ms": 7
+      },
+      "runs": [
+        {
+          "run": 1,
+          "cache": "fresh browser context; OS/network caches uncontrolled",
+          "startupMs": 3849,
+          "frames": {
+            "samples": 4118,
+            "medianMs": 6.099999999998545,
+            "p95Ms": 6.200000000000728,
+            "maxMs": 145.39999999999964,
+            "meanFPS": 162.16492937280213,
+            "atLeast30FPSFraction": 0.9995143273433705
+          },
+          "stable": true
+        },
+        {
+          "run": 2,
+          "cache": "same browser context warm cache",
+          "startupMs": 962,
+          "frames": {
+            "samples": 4100,
+            "medianMs": 6.099999999998545,
+            "p95Ms": 6.200000000000728,
+            "maxMs": 24.300000000000182,
+            "meanFPS": 163.7602549866995,
+            "atLeast30FPSFraction": 1
+          },
+          "stable": true
+        },
+        {
+          "run": 3,
+          "cache": "same browser context warm cache",
+          "startupMs": 1205,
+          "frames": {
+            "samples": 4110,
+            "medianMs": 6.099999999998545,
+            "p95Ms": 6.200000000000728,
+            "maxMs": 18.299999999999272,
+            "meanFPS": 164.20164441354842,
+            "atLeast30FPSFraction": 1
+          },
+          "stable": true
+        },
+        {
+          "run": 4,
+          "cache": "fresh browser context; OS/network caches uncontrolled",
+          "startupMs": 2878,
+          "frames": {
+            "samples": 4113,
+            "medianMs": 6.099999999998545,
+            "p95Ms": 6.200000000000728,
+            "maxMs": 139.40000000000146,
+            "meanFPS": 163.0984340488304,
+            "atLeast30FPSFraction": 0.99951373693168
+          },
+          "stable": true
+        },
+        {
+          "run": 5,
+          "cache": "same browser context warm cache",
+          "startupMs": 851,
+          "frames": {
+            "samples": 4094,
+            "medianMs": 6.099999999998545,
+            "p95Ms": 6.200000000000728,
+            "maxMs": 30.399999999997817,
+            "meanFPS": 163.40443195606363,
+            "atLeast30FPSFraction": 1
+          },
+          "stable": true
+        }
+      ],
+      "stabilityDefinition": "Position and pitch unchanged exactly; heading equivalent modulo 2pi (sin(delta/2) <1e-10); raw values retained."
+    },
+    "after": {
+      "validRuns": 5,
+      "aggregate": {
+        "samples": 15980,
+        "medianMs": 7.80000000000291,
+        "p95Ms": 8.199999999998909,
+        "maxMs": 193.40000000000146,
+        "meanFPS": 127.50644314473232,
+        "atLeast30FPSFraction": 0.9996871088861077
+      },
+      "cancel": {
+        "samples": 5,
+        "synchronousP95Ms": 0.19999999925494194,
+        "nextFrameP95Ms": 8
+      },
+      "runs": [
+        {
+          "run": 1,
+          "cache": "fresh browser context; OS/network caches uncontrolled",
+          "startupMs": 4149,
+          "frames": {
+            "samples": 3188,
+            "medianMs": 7.800000000000182,
+            "p95Ms": 8.199999999999818,
+            "maxMs": 193.40000000000146,
+            "meanFPS": 126.47631742857938,
+            "atLeast30FPSFraction": 0.9993726474278545
+          },
+          "stable": true
+        },
+        {
+          "run": 2,
+          "cache": "same browser context warm cache",
+          "startupMs": 1015,
+          "frames": {
+            "samples": 3196,
+            "medianMs": 7.899999999999864,
+            "p95Ms": 8.199999999999818,
+            "maxMs": 39.099999999998545,
+            "meanFPS": 127.63986069842488,
+            "atLeast30FPSFraction": 0.9996871088861077
+          },
+          "stable": true
+        },
+        {
+          "run": 3,
+          "cache": "fresh browser context; OS/network caches uncontrolled",
+          "startupMs": 4100,
+          "frames": {
+            "samples": 3174,
+            "medianMs": 7.799999999999272,
+            "p95Ms": 8.199999999998909,
+            "maxMs": 178.5,
+            "meanFPS": 126.80529753700488,
+            "atLeast30FPSFraction": 0.9993698802772527
+          },
+          "stable": true
+        },
+        {
+          "run": 4,
+          "cache": "same browser context warm cache",
+          "startupMs": 1007,
+          "frames": {
+            "samples": 3212,
+            "medianMs": 7.800000000001091,
+            "p95Ms": 8.199999999999818,
+            "maxMs": 31.5,
+            "meanFPS": 128.33011043101658,
+            "atLeast30FPSFraction": 1
+          },
+          "stable": true
+        },
+        {
+          "run": 5,
+          "cache": "same browser context warm cache",
+          "startupMs": 977,
+          "frames": {
+            "samples": 3210,
+            "medianMs": 7.800000000001091,
+            "p95Ms": 8.100000000002183,
+            "maxMs": 30,
+            "meanFPS": 128.28813274824353,
+            "atLeast30FPSFraction": 1
+          },
+          "stable": true
+        }
+      ],
+      "stabilityDefinition": "Position and pitch unchanged exactly; heading equivalent modulo 2pi (sin(delta/2) <1e-10); raw values retained."
+    }
+  },
+  "limitations": [
+    "RAF intervals are scheduling samples, not GPU presented frames",
+    "Five cancellations per phase; nearest-rank p95 is maximum in this small batch",
+    "Uncontrolled concurrent developer load and OS/network caches prevent causal speedup claims",
+    "Baseline batch resumed after startup tile-readiness timeout; post batch resumed after Vite HMR restart",
+    "Post prototype/Companion/renderer/Cesium source hashes unchanged; unused shared audio implementation changed during text-only runs"
+  ]
+}

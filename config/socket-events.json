@@ -1818,5 +1818,83 @@
       "name": "meme:collect",
       "payload": { "task_id?": "string", "source?": "string" }
     }
+  },
+  "earth": {
+    "control": {
+      "name": "earth:control",
+      "payload": {
+        "conversation_id": "string",
+        "control_revision": "number",
+        "operation": "string",
+        "text?": "string",
+        "candidate_id?": "string",
+        "point?": "object",
+        "task_id?": "string",
+        "voice_enabled?": "boolean",
+        "audio_data?": "string",
+        "format?": "string"
+      }
+    },
+    "context": {
+      "name": "earth:context",
+      "payload": {
+        "conversation_id": "string",
+        "control_revision": "number",
+        "view_revision": "number",
+        "view": "object",
+        "selected_point?": "object"
+      }
+    },
+    "result": {
+      "name": "earth:result",
+      "payload": {
+        "conversation_id": "string",
+        "control_revision": "number",
+        "view_revision": "number",
+        "action_id": "string",
+        "status": "string",
+        "view?": "object"
+      }
+    },
+    "command": {
+      "name": "earth:command",
+      "payload": {
+        "conversation_id": "string",
+        "control_revision": "number",
+        "action_id": "string",
+        "kind": "string",
+        "target?": "object",
+        "duration_seconds?": "number"
+      }
+    },
+    "state": {
+      "name": "earth:state",
+      "payload": {
+        "conversation_id": "string",
+        "control_revision": "number",
+        "phase": "string",
+        "candidates": "object[]",
+        "selected?": "object",
+        "transcript": "object[]",
+        "action_id?": "string|null",
+        "task_id?": "string|null",
+        "feedback_deadline?": "number|null",
+        "capabilities": "object",
+        "error?": "object",
+        "view_revision?": "number",
+        "checkpoint_durable?": "boolean"
+      }
+    },
+    "narration": {
+      "name": "earth:narration",
+      "payload": {
+        "conversation_id": "string",
+        "control_revision": "number",
+        "task_id": "string",
+        "text": "string",
+        "status": "string",
+        "audio?": "object"
+      }
+    }
   }
 }

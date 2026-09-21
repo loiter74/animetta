@@ -58,6 +58,20 @@ describe('useAudioPlayback', () => {
     expect(MockAudio.instances[0].play).toHaveBeenCalledTimes(2)
   })
 
+  it('an old owner cannot cancel a newer session playback', async () => {
+    const { playAudio } = await import('./playback')
+    const first = { onCancel: vi.fn() }
+    const second = { onCancel: vi.fn(), onComplete: vi.fn() }
+    const cancelOld = playAudio({ audio_url: '/first.wav' }, first)
+    playAudio({ audio_url: '/second.wav' }, second)
+    cancelOld()
+    expect(first.onCancel).toHaveBeenCalledTimes(1)
+    expect(second.onCancel).not.toHaveBeenCalled()
+    expect(MockAudio.instances[0].src).toBe('/second.wav')
+    MockAudio.instances[0].onended?.()
+    expect(second.onComplete).toHaveBeenCalledTimes(1)
+  })
+
   it('starts performance only after play resolves and completes it on audio end', async () => {
     const { playAudio } = await import('./playback')
     const lifecycle = {

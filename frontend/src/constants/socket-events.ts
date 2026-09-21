@@ -36,6 +36,14 @@ const socketEvents = events as SocketEventsConfig
  * ```
  */
 export const Events = {
+  EARTH: {
+    CONTROL: socketEvents.earth.control.name,
+    CONTEXT: socketEvents.earth.context.name,
+    RESULT: socketEvents.earth.result.name,
+    STATE: socketEvents.earth.state.name,
+    COMMAND: socketEvents.earth.command.name,
+    NARRATION: socketEvents.earth.narration.name,
+  },
   TOOL: {
     APPROVAL_REQUIRED: socketEvents.tool.approval_required.name,
     APPROVAL_LIST: socketEvents.tool.approval_list.name,

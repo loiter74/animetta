@@ -44,6 +44,13 @@ _COMPATIBILITY_FACADES = frozenset(
 )
 
 _FRONTEND_IMPORT_RE = re.compile(r"(?:from\s+|import\s*\(\s*|import\s+)[\"']([^\"']+)[\"']")
+_EARTH_FRONTEND = PurePosixPath("frontend/src/features/earth")
+_EARTH_BACKEND = "animetta.services.earth"
+_EARTH_SDKS = ("cesium", "@cesium/", "socket.io-client", "pixi.js", "pixi-live2d-display")
+
+
+def _module_matches(module: str, prefix: str) -> bool:
+    return module == prefix or module.startswith(prefix + ".")
 
 
 def _backend_group(path: PurePosixPath) -> str | None:
@@ -104,7 +111,10 @@ def _resolved_python_imports(
             )
         except (ImportError, ValueError):
             continue
-        imports.append((node.lineno, imported))
+        imports.extend(
+            (node.lineno, imported if alias.name == "*" else f"{imported}.{alias.name}")
+            for alias in node.names
+        )
     return tuple(imports)
 
 
@@ -120,7 +130,36 @@ def audit_python_source(
     if source_group is None:
         return ()
     violations: list[BoundaryViolation] = []
+    module, _ = _python_module(path)
     for line, imported in _resolved_python_imports(path, source):
+        if _module_matches(module, _EARTH_BACKEND + ".domain") and (
+            imported.startswith("animetta.")
+            and not any(
+                _module_matches(imported, _EARTH_BACKEND + "." + part)
+                for part in ("domain", "contracts")
+            )
+            or any(
+                _module_matches(imported, dependency)
+                for dependency in (
+                    "langgraph",
+                    "langchain",
+                    "langchain_core",
+                    "socketio",
+                    "httpx",
+                    "requests",
+                    "openai",
+                    "anthropic",
+                )
+            )
+        ):
+            violations.append(
+                BoundaryViolation(
+                    "EARTH_DOMAIN_OUTWARD_IMPORT",
+                    path,
+                    line,
+                    f"earth domain must depend only on domain values and contracts: {imported}",
+                )
+            )
         if imported == "animetta":
             target_group = None
         elif imported.startswith("animetta."):
@@ -141,7 +180,7 @@ def audit_python_source(
 
 def _resolve_frontend_target(path: PurePosixPath, requested: str) -> PurePosixPath | None:
     if requested.startswith("@/"):
-        return PurePosixPath("frontend/src") / requested[2:]
+        return PurePosixPath(posixpath.normpath("frontend/src/" + requested[2:]))
     if requested.startswith("."):
         return PurePosixPath(posixpath.normpath(str(path.parent / requested)))
     return None
@@ -201,28 +240,84 @@ def audit_frontend_source(
     if source_group is None:
         return ()
     violations: list[BoundaryViolation] = []
-    for line_number, line in enumerate(source.splitlines(), start=1):
-        for match in _FRONTEND_IMPORT_RE.finditer(line):
-            requested = match.group(1)
-            target_path = _resolve_frontend_target(path, requested)
-            if target_path is None:
-                continue
-            target_group = _frontend_group(target_path)
-            if target_group is None or target_group == source_group:
-                continue
-            rule = _frontend_rule(source_group, target_group, requested)
-            if rule is None:
-                continue
-            code, message = rule
-            violations.append(
-                BoundaryViolation(
-                    code=code,
-                    path=path,
-                    line=line_number,
-                    message=f"{message}: {requested}",
-                )
+    for match in _FRONTEND_IMPORT_RE.finditer(source):
+        line_number = source.count("\n", 0, match.start()) + 1
+        requested = match.group(1)
+        target_path = _resolve_frontend_target(path, requested)
+        earth_rule = _earth_frontend_rule(path, requested, target_path)
+        if earth_rule:
+            code, message = earth_rule
+            violations.append(BoundaryViolation(code, path, line_number, message))
+        if target_path is None:
+            continue
+        if not target_path.is_relative_to("frontend/src"):
+            continue
+        target_group = _frontend_group(target_path)
+        if target_group is None or target_group == source_group:
+            continue
+        canonical = "@/" + str(target_path.relative_to("frontend/src"))
+        if target_path.stem == "index":
+            canonical = canonical.rsplit("/", 1)[0]
+        rule = _frontend_rule(source_group, target_group, canonical)
+        if rule is None:
+            continue
+        code, message = rule
+        violations.append(
+            BoundaryViolation(
+                code=code,
+                path=path,
+                line=line_number,
+                message=f"{message}: {requested}",
             )
+        )
     return tuple(violations)
+
+
+def _earth_frontend_rule(
+    path: PurePosixPath,
+    requested: str,
+    target: PurePosixPath | None,
+) -> tuple[str, str] | None:
+    if not path.is_relative_to(_EARTH_FRONTEND):
+        return None
+    relative = path.relative_to(_EARTH_FRONTEND)
+    core = str(relative) in {"contracts.ts", "controller.ts"} or relative.parts[0] in {
+        "core",
+        "domain",
+    }
+    if core and (
+        target is not None
+        and (
+            not target.is_relative_to(_EARTH_FRONTEND)
+            or target.suffix == ".vue"
+            or target.relative_to(_EARTH_FRONTEND).parts[0] in {"adapters", "ui", "components"}
+            or target.stem in {"mount", "EarthWorkspace", "index"}
+        )
+        or target is None
+        and any(
+            requested == dependency or requested.startswith(dependency + "/")
+            for dependency in (
+                "vue",
+                "@vue",
+                "pinia",
+                "socket.io-client",
+                "cesium",
+                "@cesium",
+                "pixi.js",
+                "pixi-live2d-display",
+            )
+        )
+    ):
+        return (
+            "EARTH_CORE_OUTWARD_IMPORT",
+            f"earth core must not import frameworks or adapters: {requested}",
+        )
+    if relative.parts[0] != "adapters" and any(
+        requested == sdk or requested.startswith(sdk if sdk.endswith("/") else sdk + "/")
+        for sdk in _EARTH_SDKS
+    ):
+        return "EARTH_SDK_OUTSIDE_ADAPTER", f"earth SDK imports belong in adapters: {requested}"
+    return None
 
 
 def _strongly_connected_components(
@@ -338,7 +433,53 @@ def audit_repository(root: Path) -> tuple[BoundaryViolation, ...]:
                 message="frontend module cycle: " + " -> ".join(component),
             )
         )
+    for component in _strongly_connected_components(_earth_file_graph(root)):
+        violations.append(
+            BoundaryViolation(
+                code="EARTH_DEPENDENCY_CYCLE",
+                path=PurePosixPath(component[0]),
+                line=0,
+                message="earth module cycle: " + " -> ".join(component),
+            )
+        )
     return tuple(sorted(violations, key=lambda item: (str(item.path), item.line, item.code)))
+
+
+def _earth_file_graph(root: Path) -> dict[str, set[str]]:
+    """Reuse the cycle detector at file granularity inside the earth feature."""
+    graph: dict[str, set[str]] = defaultdict(set)
+    frontend_files = {
+        PurePosixPath(path.relative_to(root).as_posix()): path
+        for path in (root / _EARTH_FRONTEND).rglob("*")
+        if path.suffix in {".ts", ".vue"} and ".test." not in path.name
+    }
+    for relative, path in frontend_files.items():
+        for match in _FRONTEND_IMPORT_RE.finditer(path.read_text(encoding="utf-8-sig")):
+            target = _resolve_frontend_target(relative, match.group(1))
+            if target is None:
+                continue
+            for candidate in (
+                target,
+                target.with_suffix(".ts"),
+                target.with_suffix(".vue"),
+                target / "index.ts",
+            ):
+                if candidate in frontend_files:
+                    graph[str(relative)].add(str(candidate))
+                    break
+    backend_files = {
+        _python_module(PurePosixPath(path.relative_to(root).as_posix()))[0]: path
+        for path in (root / "src/animetta/services/earth").rglob("*.py")
+    }
+    for path in backend_files.values():
+        relative = PurePosixPath(path.relative_to(root).as_posix())
+        for _, imported in _resolved_python_imports(relative, path.read_text(encoding="utf-8-sig")):
+            while imported:
+                if imported in backend_files:
+                    graph[str(relative)].add(backend_files[imported].relative_to(root).as_posix())
+                    break
+                imported = imported.rpartition(".")[0]
+    return graph
 
 
 def render_report(violations: tuple[BoundaryViolation, ...]) -> str:

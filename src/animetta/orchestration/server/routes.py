@@ -622,6 +622,10 @@ def register_routes(
 
     security = security or SecurityRuntime.from_effective_config(None)
 
+    from .handlers.earth_handlers import EarthHandlers
+
+    earth = EarthHandlers(sio, handlers.base, security)
+
     class ReadOnlyRegistrationServer:
         """Reject every client business event from the public live surface."""
 
@@ -705,6 +709,7 @@ def register_routes(
         return None
 
     async def disconnect_adapter(sid: str) -> None:
+        await earth.disconnect(sid)
         security.unbind_socket(sid)
         await handlers.on_disconnect(sid)
 
@@ -756,6 +761,9 @@ def register_routes(
         return adapter
 
     sio.on(developer_text_event, developer_text_adapter)
+    sio.on(event_name("earth", "control"), control_guard(earth.control))
+    sio.on(event_name("earth", "context"), control_guard(earth.context))
+    sio.on(event_name("earth", "result"), control_guard(earth.result))
     sio.on(
         event_name("chat", "sandbox_request"),
         chat_guard(handlers.chat.on_sandbox_request),

@@ -57,7 +57,8 @@ songs/
 sources/
 services/
 tooling/
-frontend/scripts/
+frontend/scripts/*
+!frontend/scripts/earth-assets.ts
 frontend/electron/
 frontend/tests/
 frontend/src/**/__tests__/

@@ -28,11 +28,13 @@ services:
       platforms: [linux/amd64]
       args:
         ANIMETTA_BUILD_FINGERPRINT: ${ANIMETTA_BUILD_FINGERPRINT:-untracked}
+        VITE_EARTH_ENABLED: ${ANIMETTA_EARTH_ENABLED:-true}
     ports:
       - "${ANIMETTA_HTTP_PORT:-80}:80"
       - "${ANIMETTA_PORT:-12394}:12394"
     environment:
       - ANIMETTA_PROFILE=${ANIMETTA_PROFILE:-production}
+      - ANIMETTA_EARTH_ENABLED=${ANIMETTA_EARTH_ENABLED:-true}
       - ANIMETTA_HOST=0.0.0.0
       - ANIMETTA_PORT=12394
       - ANIMETTA_DATA_DIR=/app/data

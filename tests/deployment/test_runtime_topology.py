@@ -26,7 +26,11 @@ def _text(path: str) -> str:
 
 
 def _compose(path: str) -> dict:
-    payload = yaml.safe_load(_text(path))
+    class ComposeLoader(yaml.SafeLoader):
+        pass
+
+    ComposeLoader.add_constructor("!override", ComposeLoader.construct_sequence)
+    payload = yaml.load(_text(path), Loader=ComposeLoader)
     assert isinstance(payload, dict)
     return payload
 
@@ -59,6 +63,18 @@ def test_main_image_does_not_copy_removed_stats_placeholder() -> None:
     dockerfile = _text("Dockerfile")
 
     assert "frontend/stats" not in dockerfile
+
+
+def test_earth_feature_flag_and_static_assets_reach_both_frontend_builds() -> None:
+    dockerfile = _text("Dockerfile")
+    assert "COPY frontend/scripts/earth-assets.ts ./scripts/earth-assets.ts" in dockerfile
+    assert "ARG VITE_EARTH_ENABLED=true" in dockerfile
+    production = _compose("docker-compose.yml")["services"]["animetta"]
+    development = _compose("docker-compose.dev.yml")["services"]["frontend"]
+    for service in (production, development):
+        assert service["build"]["args"]["VITE_EARTH_ENABLED"] == "${ANIMETTA_EARTH_ENABLED:-true}"
+    assert "ANIMETTA_EARTH_ENABLED=${ANIMETTA_EARTH_ENABLED:-true}" in production["environment"]
+    assert _text("tooling/quality.yml").count("- frontend/scripts/earth-assets.ts") == 2
 
 
 def test_build_context_excludes_reference_audio_from_all_images() -> None:
@@ -154,7 +170,10 @@ def test_animetta_compose_selects_local_or_verified_image_from_one_definition() 
         "context": ".",
         "dockerfile": "Dockerfile",
         "platforms": ["linux/amd64"],
-        "args": {"ANIMETTA_BUILD_FINGERPRINT": "${ANIMETTA_BUILD_FINGERPRINT:-untracked}"},
+        "args": {
+            "ANIMETTA_BUILD_FINGERPRINT": "${ANIMETTA_BUILD_FINGERPRINT:-untracked}",
+            "VITE_EARTH_ENABLED": "${ANIMETTA_EARTH_ENABLED:-true}",
+        },
     }
 
 
@@ -195,6 +214,7 @@ def test_compose_services_inject_only_explicit_least_privilege_environment() -> 
 
     assert "env_file" not in app
     assert set(app["environment"]) == {
+        "ANIMETTA_EARTH_ENABLED=${ANIMETTA_EARTH_ENABLED:-true}",
         "ANIMETTA_PROFILE=${ANIMETTA_PROFILE:-production}",
         "ANIMETTA_HOST=0.0.0.0",
         "ANIMETTA_PORT=12394",

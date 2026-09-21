@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
 import type * as Cesium from 'cesium'
-import EarthCompanion from './EarthCompanion.vue'
+import EarthCompanion from '@/shared/live2d/Companion.vue'
 
 declare global {
   interface Window {
@@ -373,6 +373,7 @@ onBeforeUnmount(() => {
           @keydown="pause"
         />
         <EarthCompanion
+          data-testid="earth-companion"
           class="absolute right-[3%] bottom-0 w-[34%] max-w-104 h-[62%] max-h-140 pointer-events-none"
         />
         <nav

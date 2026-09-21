@@ -14,9 +14,12 @@ RUN --mount=type=cache,id=animetta-pnpm-11,target=/pnpm/store \
     pnpm install --frozen-lockfile --prefer-offline
 
 FROM frontend-deps AS frontend-source
+ARG VITE_EARTH_ENABLED=true
+ENV VITE_EARTH_ENABLED=${VITE_EARTH_ENABLED}
 COPY frontend/*.html frontend/vite.config.ts frontend/uno.config.ts frontend/tsconfig.json ./
 COPY frontend/src/ ./src/
 COPY frontend/public/ ./public/
+COPY frontend/scripts/earth-assets.ts ./scripts/earth-assets.ts
 COPY config/socket-events.json /build/config/socket-events.json
 
 FROM frontend-source AS frontend-dev

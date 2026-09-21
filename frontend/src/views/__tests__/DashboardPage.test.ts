@@ -37,11 +37,12 @@ function tab(wrapper: ReturnType<typeof mountPage>, label: string) {
 }
 
 describe('DashboardPage information architecture', () => {
-  it('keeps exactly four backend tasks and starts in live operations', () => {
+  it('offers private exploration and starts in live operations without mounting a map', () => {
     const wrapper = mountPage()
 
     const taskTabs = wrapper.findAll('[aria-label="后台任务"] [role="tab"]')
-    expect(taskTabs.map((item) => item.text())).toEqual(['现场', '节目', '记忆', '验证'])
+    expect(taskTabs.map((item) => item.text())).toEqual(['现场', '节目', '记忆', '验证', '探索'])
+    expect(wrapper.find('[data-testid="earth-workspace"]').exists()).toBe(false)
     expect(wrapper.get('[data-testid="title-bar"]')).toBeTruthy()
     expect(wrapper.get('[data-testid="live-workspace"]')).toBeTruthy()
     expect(wrapper.find('[data-testid="script-workspace"]').exists()).toBe(false)

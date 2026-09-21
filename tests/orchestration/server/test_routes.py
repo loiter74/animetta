@@ -13,6 +13,7 @@ from animetta.orchestration.chat_contracts import ChatTransportMode, ChatTurnCom
 from animetta.orchestration.server.desktop import DesktopClientManager
 from animetta.orchestration.server.live2d import Live2DManager
 from animetta.orchestration.server.routes import RouteHandlers, register_routes
+from animetta.services.command_inbox import CommandInbox
 
 # ── Helper fixture ─────────────────────────────────────────────────
 
@@ -32,6 +33,16 @@ def mock_session_manager():
 
 
 # ── RouteHandlers — Init ───────────────────────────────────────────
+
+
+@pytest.fixture
+async def command_inbox():
+    """Own the real command database, including its non-daemon SQLite worker."""
+    inbox = CommandInbox(":memory:")
+    try:
+        yield inbox
+    finally:
+        await inbox.close()
 
 
 class TestRouteHandlersInit:
@@ -219,10 +230,10 @@ class TestRouteHandlersDispatch:
 
     @pytest.mark.asyncio
     async def test_on_text_input_handles_explicit_zhouli_without_orchestrator(
-        self, mock_socketio, mock_session_manager
+        self, mock_socketio, mock_session_manager, command_inbox
     ):
         """meme:zhouli should be handled as a style tool command before LLM dispatch."""
-        handlers = RouteHandlers(mock_socketio, mock_session_manager)
+        handlers = RouteHandlers(mock_socketio, mock_session_manager, command_inbox=command_inbox)
         handlers.global_config = MagicMock()
         mock_orch = AsyncMock()
         mock_session_manager.get_or_create_orchestrator = AsyncMock(return_value=mock_orch)

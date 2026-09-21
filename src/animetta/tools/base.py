@@ -192,6 +192,11 @@ def load_tools_from_config(config: dict[str, Any]) -> tuple:
     builtin_enabled = config.get("builtin_tools")
     extra_tools = []
 
+    if config.get("earth", {}).get("enabled", False):
+        from .earth import get_earth_tools
+
+        extra_tools.extend(get_earth_tools())
+
     # LangChain tools
     lc_config = config.get("langchain_tools", {})
     if lc_config:

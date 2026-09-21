@@ -195,6 +195,63 @@ describe('createLive2DStage', () => {
     stage.dispose()
   })
 
+  it('unsubscribes its own socket handler and ignores actions after disposal', async () => {
+    const { createLive2DStage } = await import('./live2d-stage')
+    const socket = { on: vi.fn().mockReturnThis(), off: vi.fn().mockReturnThis() }
+    const stage = createLive2DStage(socket)
+    await stage.ready
+    const [event, handler] = socket.on.mock.calls[0]
+    handler({ type: 'expression', name: 'smile' })
+    expect(fixtures.model.expression).toHaveBeenCalledWith('smile')
+    stage.dispose()
+    expect(socket.off).toHaveBeenCalledWith(event, handler)
+    handler({ type: 'expression', name: 'late' })
+    expect(fixtures.model.expression).toHaveBeenCalledOnce()
+  })
+
+  it('detaches replaced audio callbacks and ignores a late playback rejection', async () => {
+    const { createLive2DStage } = await import('./live2d-stage')
+    const stage = createLive2DStage({ on: vi.fn().mockReturnThis(), off: vi.fn().mockReturnThis() })
+    await stage.ready
+    const first = document.createElement('aside')
+    const second = document.createElement('aside')
+    const oldAudio = document.createElement('audio')
+    const newAudio = document.createElement('audio')
+    for (const audio of [oldAudio, newAudio]) {
+      audio.id = 'reviewAudio'
+      Object.defineProperties(audio, {
+        currentTime: { value: 0 },
+        paused: { value: false },
+        ended: { value: false },
+      })
+    }
+    let reject!: (reason: Error) => void
+    vi.spyOn(oldAudio, 'play').mockReturnValue(
+      new Promise((_resolve, fail) => {
+        reject = fail
+      }),
+    )
+    vi.spyOn(newAudio, 'play').mockResolvedValue()
+    const removeOld = vi.spyOn(oldAudio, 'removeEventListener')
+    const removeNew = vi.spyOn(newAudio, 'removeEventListener')
+    first.append(oldAudio)
+    second.append(newAudio)
+    stage.playReviewAudio(first, Array(10).fill(0.4))
+    stage.playReviewAudio(second, Array(10).fill(0.8))
+    expect(removeOld).toHaveBeenCalledWith('ended', expect.any(Function))
+    expect(removeOld).toHaveBeenCalledWith('error', expect.any(Function))
+    reject(new Error('late rejection'))
+    await Promise.resolve()
+    await Promise.resolve()
+    oldAudio.dispatchEvent(new Event('ended'))
+    fixtures.emitBeforeModelUpdate()
+    expect(second.dataset.lipSync).toBe('observed')
+    expect(oldAudio.dataset.complete).toBeUndefined()
+    stage.dispose()
+    expect(removeNew).toHaveBeenCalledWith('ended', expect.any(Function))
+    expect(removeNew).toHaveBeenCalledWith('error', expect.any(Function))
+  })
+
   it('can size the shared stage to a bounded broadcast avatar container', async () => {
     const { createLive2DStage } = await import('./live2d-stage')
     const socket = { on: vi.fn().mockReturnThis(), off: vi.fn().mockReturnThis() }

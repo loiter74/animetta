@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-22",
+  "files": {
+    "formal-acceptance.json": {
+      "sha256": "451ef7bfb6465c40115874a5cd55b4acae25a25faa9b21c14cb0d8bf1fcf2b6c",
+      "bytes": 74463
+    },
+    "formal-map-timing.json": {
+      "sha256": "289e98889509bce85fcc40a0809da547d920b442c4a172985511e920963ae6fd",
+      "bytes": 20246
+    }
+  },
+  "sanitization": "Whitelist-only event metadata, public landmark fixture names and anonymous task ids. No auth, audio payloads, user home clues or full model conversations. Repeated live playback samples reduced to state transitions and final counter."
+}

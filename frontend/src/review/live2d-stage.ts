@@ -1,35 +1,12 @@
-import * as PIXI from 'pixi.js'
-import { Live2DModel } from 'pixi-live2d-display/cubism4'
-import type { Cubism4InternalModel } from 'pixi-live2d-display/cubism4'
 import { Events } from '@/constants/socket-events'
-import { DisposerStack } from './disposable'
 import type { Live2DAction } from '@/types/live2d'
 import type { LiveSocket } from '@/shared/transport/liveSocket'
 import type { PublicLive2DCue } from '@/shared/broadcast/publicActivity'
-import { computeLive2DLayout } from './layout'
-import { bindReviewMouthAfterMotion, createReviewVolumeTimelineLipSync } from './review-lip-sync'
 import type { Live2DPerformancePlanV1 } from '@/types/socket-events'
-import {
-  DEFAULT_LIVE2D_PERFORMANCE_PLAN,
-  createLive2DPerformanceController,
-  Live2DPerformanceController,
-} from '@/shared/live2d/performanceController'
-import {
-  createCubismParameterAdapter,
-  type CubismParameterModel,
-} from '@/shared/live2d/performanceProfile'
-
-const IDLE_VITALITY_PARAMETERS = [
-  { name: 'ParamAngleX', factor: 2.3 },
-  { name: 'ParamAngleY', factor: 2.3 },
-  { name: 'ParamAngleZ', factor: 2.3 },
-  { name: 'ParamBodyAngleX', factor: 2.6 },
-  { name: 'ParamBodyAngleY', factor: 2.6 },
-  { name: 'ParamBodyAngleZ', factor: 2.6 },
-  { name: 'ParamBreath', factor: 2.4 },
-] as const
-
-const PARAMETER_LIMIT_KNEE_RATIO = 0.8
+import { DEFAULT_LIVE2D_PERFORMANCE_PLAN } from '@/shared/live2d/performanceController'
+import { createLive2DRenderer } from '@/shared/live2d/renderer'
+import { computeLive2DLayout } from './layout'
+import { createReviewVolumeTimelineLipSync } from './review-lip-sync'
 
 const PUBLIC_CUE_ACTIONS = {
   planning: { emotion: 'thinking', group: 'TapBody', index: 0 },
@@ -40,64 +17,6 @@ const PUBLIC_CUE_ACTIONS = {
   recovering: { emotion: 'alert', group: 'TapBody', index: 4 },
   finished: { emotion: 'relieved', group: 'TapBody', index: 5 },
 } as const
-
-function softlyLimitParameter(
-  value: number,
-  defaultValue: number,
-  minimum: number,
-  maximum: number,
-): number {
-  const offset = value - defaultValue
-  const limit = offset < 0 ? defaultValue - minimum : maximum - defaultValue
-  if (!Number.isFinite(limit)) return value
-  if (limit <= 0) return defaultValue
-
-  const magnitude = Math.abs(offset)
-  const knee = limit * PARAMETER_LIMIT_KNEE_RATIO
-  if (magnitude <= knee) return value
-
-  const remaining = limit - knee
-  const softened = knee + remaining * (1 - Math.exp(-(magnitude - knee) / remaining))
-  return defaultValue + Math.sign(offset) * softened
-}
-
-function amplifyIdleMotion(internalModel: Cubism4InternalModel): void {
-  if (internalModel.motionManager.state.currentGroup !== 'Idle') return
-
-  for (const { name, factor } of IDLE_VITALITY_PARAMETERS) {
-    const index = internalModel.coreModel.getParameterIndex(name)
-    if (index < 0) continue
-    const current = internalModel.coreModel.getParameterValueByIndex(index)
-    const defaultValue = internalModel.coreModel.getParameterDefaultValue?.(index) ?? 0
-    const minimum =
-      internalModel.coreModel.getParameterMinimumValue?.(index) ?? Number.NEGATIVE_INFINITY
-    const maximum =
-      internalModel.coreModel.getParameterMaximumValue?.(index) ?? Number.POSITIVE_INFINITY
-    internalModel.coreModel.setParameterValueByIndex(
-      index,
-      softlyLimitParameter(
-        defaultValue + (current - defaultValue) * factor,
-        defaultValue,
-        minimum,
-        maximum,
-      ),
-    )
-  }
-}
-
-async function configureIdleLoopMotions(internalModel: Cubism4InternalModel): Promise<void> {
-  const { motionManager } = internalModel
-  const idleGroup = motionManager.groups.idle
-  const idleDefinitions = motionManager.definitions[idleGroup] ?? []
-  await Promise.all(
-    idleDefinitions.map(async (_definition, index) => {
-      const motion = await motionManager.loadMotion(idleGroup, index)
-      if (!motion) return
-      motion.setIsLoop(true)
-      motion.setIsLoopFadeIn(false)
-    }),
-  )
-}
 
 export interface Live2DStage {
   ready: Promise<void>
@@ -134,182 +53,130 @@ export function createLive2DStage(
       dispose() {},
     }
   }
-
-  const disposers = new DisposerStack()
   let disposed = false
-  let app: PIXI.Application | null = null
-  let setStageMouth: (value: number) => void = () => {}
-  let setReviewMouthSampler: (callback: (() => void) | null) => void = () => {}
-  let markReviewMouthApplied = (): void => {}
-  let activeMouthTaskId = ''
-  let reviewLipSync: ReturnType<typeof createReviewVolumeTimelineLipSync> | null = null
-  let performanceController: Live2DPerformanceController | null = null
-  let pendingPublicCue: PublicLive2DCue | null = null
-  let lastPublicCueSource = ''
-  let applyPublicCueAction: (cue: PublicLive2DCue) => void = (cue) => {
-    pendingPublicCue = cue
-  }
-
-  const ready = (async (): Promise<void> => {
-    try {
-      app = new PIXI.Application({
-        view: canvas,
-        resizeTo: options.resizeTo ?? window,
-        backgroundAlpha: 0,
-        autoStart: true,
-      })
-      disposers.add(() => {
-        app?.stop()
-        app?.destroy(false, { children: true, texture: false, baseTexture: false })
-        app = null
-      })
-
-      const model = await Live2DModel.from('/live2d/mao/Mao.model3.json', {
-        autoInteract: false,
-      })
-      if (disposed || !app) {
-        model.destroy()
-        return
-      }
-      await configureIdleLoopMotions(model.internalModel as Cubism4InternalModel)
-      const baseWidth = model.width / model.scale.x
-      const baseHeight = model.height / model.scale.y
-      const mouthBinding = bindReviewMouthAfterMotion(
-        model.internalModel as Parameters<typeof bindReviewMouthAfterMotion>[0],
-        (value) => {
-          markReviewMouthApplied()
-          if (!audioStatus || value <= 0.02) return
-          audioStatus.dataset.lipSyncState = 'observed'
-          audioStatus.dataset.lipSyncAppliedCount = String(
-            Number(audioStatus.dataset.lipSyncAppliedCount ?? 0) + 1,
-          )
-          audioStatus.dataset.lipSyncPeak = String(
-            Math.max(Number(audioStatus.dataset.lipSyncPeak ?? 0), value),
-          )
-          audioStatus.dataset.lastLipSyncTaskId = activeMouthTaskId
-          audioStatus.dataset.lastLipSyncAppliedAt = String(Date.now())
-        },
+  let loaded = false
+  let pendingCue: PublicLive2DCue | null = null
+  let lastCue = ''
+  let lipSync: ReturnType<typeof createReviewVolumeTimelineLipSync> | null = null
+  let notification: HTMLElement | null = null
+  let releaseAudio: (() => void) | null = null
+  let playbackVersion = 0
+  const renderer = createLive2DRenderer({
+    canvas,
+    resizeTo: options.resizeTo ?? window,
+    idleVitality: options.idleVitality,
+    layout: computeLive2DLayout,
+    beforeMouthApply: () => lipSync?.sample(),
+    onMouthApplied(value, taskId) {
+      if (notification) notification.dataset.lipSync = 'observed'
+      if (!audioStatus) return
+      audioStatus.dataset.lipSyncState = 'observed'
+      audioStatus.dataset.lipSyncAppliedCount = String(
+        Number(audioStatus.dataset.lipSyncAppliedCount ?? 0) + 1,
       )
-      setStageMouth = mouthBinding.setMouth
-      setReviewMouthSampler = mouthBinding.setBeforeApply
-      disposers.add(() => mouthBinding.dispose())
-      const coreModel = model.internalModel.coreModel as CubismParameterModel
-      performanceController = createLive2DPerformanceController(
-        createCubismParameterAdapter(coreModel),
+      audioStatus.dataset.lipSyncPeak = String(
+        Math.max(Number(audioStatus.dataset.lipSyncPeak ?? 0), value),
       )
-      setReviewMouthSampler(() => {
-        performanceController?.tick()
-        if (options.idleVitality) {
-          amplifyIdleMotion(model.internalModel as Cubism4InternalModel)
-        }
-        reviewLipSync?.sample()
-      })
-      disposers.add(() => performanceController?.destroy())
-
-      const layout = (): void => {
-        if (!app) return
-        const { scale, x, y } = computeLive2DLayout({
-          screenWidth: app.screen.width,
-          screenHeight: app.screen.height,
-          baseWidth,
-          baseHeight,
-        })
-        model.scale.set(scale)
-        model.anchor.set(0.5, 0.5)
-        model.position.set(x, y)
-      }
-      const onLive2DAction = (value: unknown): void => {
-        const action = value as Live2DAction
-        if (action.type === 'expression' && action.name) model.expression(action.name)
-        if (action.type === 'motion' && action.group) model.motion(action.group, action.index ?? 0)
-      }
-      applyPublicCueAction = (cue): void => {
-        if (cue.sourceEventId === lastPublicCueSource) return
-        const action = PUBLIC_CUE_ACTIONS[cue.phase]
-        if (cue.emotion !== action.emotion) return
-        lastPublicCueSource = cue.sourceEventId
-        void model.motion(action.group, action.index)
-      }
-      if (pendingPublicCue) {
-        const cue = pendingPublicCue
-        pendingPublicCue = null
-        applyPublicCueAction(cue)
-      }
-
-      app.stage.addChild(model)
-      layout()
-      app.renderer.on('resize', layout)
-      disposers.add(() => app?.renderer.off('resize', layout))
-      socket.on(Events.CHAT.LIVE2D_ACTION, onLive2DAction)
-      disposers.add(() => socket.off(Events.CHAT.LIVE2D_ACTION, onLive2DAction))
-      state.textContent = 'Live2D 已加载'
-      state.dataset.state = 'live'
-    } catch (error) {
-      if (disposed) return
-      state.textContent = 'Live2D 加载失败'
-      state.dataset.state = 'error'
-      console.error('[Live] Live2D initialization failed', error)
+      audioStatus.dataset.lastLipSyncTaskId = taskId
+      audioStatus.dataset.lastLipSyncAppliedAt = String(Date.now())
+    },
+    onState(status, error) {
+      state.textContent = status === 'live' ? 'Live2D 已加载' : 'Live2D 加载失败'
+      state.dataset.state = status
+      if (error) console.error('[Live] Live2D initialization failed', error)
+    },
+  })
+  const applyPublicCue = (cue: PublicLive2DCue): void => {
+    if (disposed) return
+    if (!loaded) {
+      pendingCue = cue
+      return
     }
-  })()
-
+    if (cue.sourceEventId === lastCue) return
+    const action = PUBLIC_CUE_ACTIONS[cue.phase]
+    if (cue.emotion !== action.emotion) return
+    lastCue = cue.sourceEventId
+    renderer.applyAction({ type: 'motion', group: action.group, index: action.index })
+  }
+  const onAction = (value: unknown): void => {
+    if (disposed) return
+    const action = value as Live2DAction
+    if (action?.type === 'expression' && action.name) renderer.applyAction(action)
+    if (action?.type === 'motion' && action.group) renderer.applyAction(action)
+  }
+  const ready = renderer.ready.then(() => {
+    if (disposed || state.dataset.state !== 'live') return
+    loaded = true
+    socket.on(Events.CHAT.LIVE2D_ACTION, onAction)
+    if (pendingCue) {
+      applyPublicCue(pendingCue)
+      pendingCue = null
+    }
+  })
+  const cancelReviewAudio = (): void => {
+    playbackVersion++
+    releaseAudio?.()
+    releaseAudio = null
+    lipSync?.stop()
+    lipSync = null
+    notification = null
+    renderer.setMouth(0)
+    renderer.cancelPerformance()
+  }
   return {
     ready,
-    setMouth(value: number, taskId = ''): void {
-      if (taskId) activeMouthTaskId = taskId
-      setStageMouth(value)
-    },
-    playReviewAudio(
-      notification: HTMLElement,
-      volumes: readonly number[],
-      performance = DEFAULT_LIVE2D_PERFORMANCE_PLAN,
-    ): void {
-      const audio = notification.querySelector<HTMLAudioElement>('#reviewAudio')
+    setMouth: renderer.setMouth,
+    applyPublicCue,
+    cancelReviewAudio,
+    playReviewAudio(element, volumes, performance = DEFAULT_LIVE2D_PERFORMANCE_PLAN) {
+      if (disposed) return
+      const audio = element.querySelector<HTMLAudioElement>('#reviewAudio')
       if (!audio) throw new Error('TTS review audio is unavailable')
+      cancelReviewAudio()
+      const version = playbackVersion
       const taskId = `${performance.base}:${performance.accent}:${audio.currentSrc || audio.src}`
-      performanceController?.arm(performance, taskId)
-      notification.dataset.performanceBase = performance.base
-      notification.dataset.performanceAccent = performance.accent
-      markReviewMouthApplied = () => {
-        notification.dataset.lipSync = 'observed'
-      }
-      reviewLipSync?.stop()
-      reviewLipSync = createReviewVolumeTimelineLipSync({
+      notification = element
+      renderer.armPerformance(performance, taskId)
+      element.dataset.performanceBase = performance.base
+      element.dataset.performanceAccent = performance.accent
+      lipSync = createReviewVolumeTimelineLipSync({
         audio,
         volumes,
-        setMouth: setStageMouth,
+        setMouth: (value) => renderer.setMouth(value, taskId),
         manualSampling: true,
       })
       const stop = (): void => {
-        reviewLipSync?.stop()
-        performanceController?.finish(taskId)
+        if (version !== playbackVersion) return
+        lipSync?.stop()
+        renderer.finishPerformance(taskId)
+        releaseAudio?.()
+        releaseAudio = null
       }
       audio.addEventListener('ended', stop, { once: true })
       audio.addEventListener('error', stop, { once: true })
-      reviewLipSync.start()
+      releaseAudio = () => {
+        audio.removeEventListener('ended', stop)
+        audio.removeEventListener('error', stop)
+      }
+      lipSync.start()
       void audio
         .play()
-        .then(() => performanceController?.start(taskId))
+        .then(() => {
+          if (!disposed && version === playbackVersion) renderer.startPerformance(taskId)
+        })
         .catch(() => {
+          if (disposed || version !== playbackVersion) return
           audio.dataset.complete = 'blocked'
-          performanceController?.cancel()
+          renderer.cancelPerformance()
           stop()
         })
     },
-    cancelReviewAudio(): void {
-      reviewLipSync?.stop()
-      reviewLipSync = null
-      setStageMouth(0)
-      performanceController?.cancel()
-    },
-    applyPublicCue(cue: PublicLive2DCue): void {
-      applyPublicCueAction(cue)
-    },
-    dispose(): void {
+    dispose() {
       if (disposed) return
       disposed = true
-      reviewLipSync?.stop()
-      performanceController?.cancel()
-      disposers.dispose()
+      if (loaded) socket.off(Events.CHAT.LIVE2D_ACTION, onAction)
+      cancelReviewAudio()
+      renderer.dispose()
     },
   }
 }

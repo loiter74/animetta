@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { defineAsyncComponent, ref } from 'vue'
 import LiveOperationsWorkspace from '@/components/dashboard/LiveOperationsWorkspace.vue'
 import ValidationWorkspace from '@/components/dashboard/ValidationWorkspace.vue'
 import TitleBar from '@/components/layout/TitleBar.vue'
@@ -7,11 +7,17 @@ import MemoryWorkspace from '@/components/memory/MemoryWorkspace.vue'
 import ProgramWorkspace from '@/components/program/ProgramWorkspace.vue'
 import SectionTabs, { type SectionTab } from '@/components/shared/SectionTabs.vue'
 
+const earthEnabled = import.meta.env.VITE_EARTH_ENABLED !== 'false'
+const EarthWorkspace = defineAsyncComponent(() =>
+  import('@/features/earth').then((module) => module.EarthWorkspace),
+)
+
 const tasks: readonly SectionTab[] = [
   { id: 'live', label: '现场', description: '监看直播健康、节目进度和执行链路' },
   { id: 'program', label: '节目', description: '编排脚本、制作唱歌内容和治理 Meme' },
   { id: 'memory', label: '记忆', description: '整理、检索和修正长期记忆' },
   { id: 'validation', label: '验证', description: '私密演练对话并重放弹幕事件' },
+  ...(earthEnabled ? [{ id: 'earth', label: '探索', description: '一起寻找熟悉的地方' }] : []),
 ]
 
 const activeTask = ref('live')
@@ -50,6 +56,12 @@ function sendMemoryToSandbox(content: string): void {
       role="tabpanel"
       aria-labelledby="后台任务-memory-tab"
       @send-to-sandbox="sendMemoryToSandbox"
+    />
+    <EarthWorkspace
+      v-else-if="activeTask === 'earth'"
+      id="后台任务-earth-panel"
+      role="tabpanel"
+      aria-labelledby="后台任务-earth-tab"
     />
     <ValidationWorkspace
       v-else

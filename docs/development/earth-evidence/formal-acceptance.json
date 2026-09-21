@@ -1,0 +1,2485 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-22",
+  "scope": "Public landmark test inputs only; no user home clues, auth tokens, or audio payloads",
+  "batches": [
+    {
+      "url": "http://localhost/dashboard",
+      "status": "failed",
+      "steps": [
+        {
+          "name": "Dashboard lazy resources",
+          "status": "passed",
+          "at": 1790006954826
+        },
+        {
+          "name": "Real map and companion",
+          "status": "passed",
+          "at": 1790006959186
+        },
+        {
+          "name": "好像是在上海",
+          "status": "passed",
+          "at": 1790006978833
+        },
+        {
+          "name": "大概是青浦区",
+          "status": "passed",
+          "at": 1790006999688
+        },
+        {
+          "name": "我记得淀山湖",
+          "status": "passed",
+          "at": 1790007022599
+        },
+        {
+          "name": "Pause and user point",
+          "status": "passed",
+          "at": 1790007031839
+        },
+        {
+          "name": "Avatar optional",
+          "status": "passed",
+          "at": 1790007040050
+        }
+      ],
+      "events": [
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790006957716,
+          "operation": "open",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790006959119,
+          "phase": "paused",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:context",
+          "at": 1790006959185,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790006959435,
+          "phase": "paused",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790006962937,
+          "operation": "text",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790006963564,
+          "action_id": "cancel-1",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790006965965,
+          "phase": "waiting_selection",
+          "action_id": null,
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790006968836,
+          "operation": "select",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790006969096,
+          "action_id": "cancel-2",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790006969361,
+          "phase": "moving",
+          "action_id": "dc5aca97-461a-4d1e-950a-d68b42d50d3f",
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790006969365,
+          "action_id": "dc5aca97-461a-4d1e-950a-d68b42d50d3f",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:result",
+          "at": 1790006969365,
+          "status": "accepted",
+          "action_id": "dc5aca97-461a-4d1e-950a-d68b42d50d3f",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790006969651,
+          "phase": "moving",
+          "action_id": "dc5aca97-461a-4d1e-950a-d68b42d50d3f",
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:result",
+          "at": 1790006973780,
+          "status": "arrived",
+          "action_id": "dc5aca97-461a-4d1e-950a-d68b42d50d3f",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790006973785,
+          "phase": "moving",
+          "action_id": "dc5aca97-461a-4d1e-950a-d68b42d50d3f",
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:result",
+          "at": 1790006978459,
+          "status": "ready",
+          "action_id": "dc5aca97-461a-4d1e-950a-d68b42d50d3f",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790006978460,
+          "phase": "reading",
+          "action_id": "dc5aca97-461a-4d1e-950a-d68b42d50d3f",
+          "task_id": "9f49261d-7719-45ca-808a-3909af3644a0",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:narration",
+          "at": 1790006978696,
+          "status": "text_only",
+          "task_id": "9f49261d-7719-45ca-808a-3909af3644a0",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790006981620,
+          "operation": "pause",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790006982200,
+          "action_id": "cancel-3",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790006982431,
+          "phase": "paused",
+          "action_id": null,
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790006982431,
+          "action_id": "085cbb93-e820-4db2-b8fd-1d1efabc358c",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790006983588,
+          "operation": "text",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790006983821,
+          "action_id": "cancel-4",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790006986894,
+          "phase": "waiting_selection",
+          "action_id": null,
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790006989037,
+          "operation": "select",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790006989271,
+          "action_id": "cancel-5",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790006989519,
+          "phase": "moving",
+          "action_id": "533172de-11a1-4d86-8d4a-f145c0f55a6d",
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790006989521,
+          "action_id": "533172de-11a1-4d86-8d4a-f145c0f55a6d",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:result",
+          "at": 1790006989521,
+          "status": "accepted",
+          "action_id": "533172de-11a1-4d86-8d4a-f145c0f55a6d",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790006989783,
+          "phase": "moving",
+          "action_id": "533172de-11a1-4d86-8d4a-f145c0f55a6d",
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:result",
+          "at": 1790006993902,
+          "status": "arrived",
+          "action_id": "533172de-11a1-4d86-8d4a-f145c0f55a6d",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790006993904,
+          "phase": "moving",
+          "action_id": "533172de-11a1-4d86-8d4a-f145c0f55a6d",
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:result",
+          "at": 1790006999505,
+          "status": "ready",
+          "action_id": "533172de-11a1-4d86-8d4a-f145c0f55a6d",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790006999526,
+          "phase": "reading",
+          "action_id": "533172de-11a1-4d86-8d4a-f145c0f55a6d",
+          "task_id": "fb697372-e608-4b70-ae2d-587fc24a42e2",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:narration",
+          "at": 1790006999710,
+          "status": "text_only",
+          "task_id": "fb697372-e608-4b70-ae2d-587fc24a42e2",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790007002495,
+          "operation": "pause",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790007002734,
+          "action_id": "cancel-6",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790007002941,
+          "phase": "paused",
+          "action_id": null,
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790007002941,
+          "action_id": "bcd05fd7-201c-41b5-b2d2-5806eea9755a",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790007004603,
+          "operation": "text",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790007004805,
+          "action_id": "cancel-7",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790007007717,
+          "phase": "waiting_selection",
+          "action_id": null,
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790007010124,
+          "operation": "select",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790007010339,
+          "action_id": "cancel-8",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790007010556,
+          "phase": "moving",
+          "action_id": "41a95ba3-75a8-48b2-815e-624d69f57f91",
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790007010557,
+          "action_id": "41a95ba3-75a8-48b2-815e-624d69f57f91",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:result",
+          "at": 1790007010557,
+          "status": "accepted",
+          "action_id": "41a95ba3-75a8-48b2-815e-624d69f57f91",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790007010763,
+          "phase": "moving",
+          "action_id": "41a95ba3-75a8-48b2-815e-624d69f57f91",
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:result",
+          "at": 1790007014885,
+          "status": "arrived",
+          "action_id": "41a95ba3-75a8-48b2-815e-624d69f57f91",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790007014887,
+          "phase": "moving",
+          "action_id": "41a95ba3-75a8-48b2-815e-624d69f57f91",
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:result",
+          "at": 1790007022266,
+          "status": "ready",
+          "action_id": "41a95ba3-75a8-48b2-815e-624d69f57f91",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790007022267,
+          "phase": "reading",
+          "action_id": "41a95ba3-75a8-48b2-815e-624d69f57f91",
+          "task_id": "3f2324ed-869a-428e-accd-6cf7bbdceae1",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:narration",
+          "at": 1790007022468,
+          "status": "text_only",
+          "task_id": "3f2324ed-869a-428e-accd-6cf7bbdceae1",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790007026297,
+          "operation": "pause",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790007026515,
+          "action_id": "cancel-9",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790007026727,
+          "phase": "paused",
+          "action_id": null,
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790007026727,
+          "action_id": "708a425c-d006-4126-a3a4-a133b09ed98f",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:context",
+          "at": 1790007030752,
+          "audio_present": false,
+          "point_present": true
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790007030752,
+          "operation": "select",
+          "audio_present": false,
+          "point_present": true
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790007031436,
+          "action_id": "cancel-10",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790007031837,
+          "phase": "waiting_identification",
+          "action_id": null,
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790007042816,
+          "operation": "pause",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790007043011,
+          "action_id": "cancel-11",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790007043199,
+          "phase": "paused",
+          "action_id": null,
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790007043199,
+          "action_id": "7d188cb4-a168-43b9-88aa-637d0287b163",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790007044804,
+          "operation": "text",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790007045192,
+          "action_id": "cancel-12",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790007049646,
+          "phase": "waiting_selection",
+          "action_id": null,
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        }
+      ],
+      "resources": [
+        {
+          "url": "http://localhost/live2d/live2dcubismcore.min.js",
+          "status": 200,
+          "sha256": "25ae938cb4fe282ce189b357bcc97e603d1e1f7ec78bf04150d401c23cdc792f"
+        },
+        {
+          "url": "http://localhost/assets/app-T4ZBtzwl.js",
+          "status": 200,
+          "sha256": "e187150f5e0ab5f6ea59fbb1c3613b5e1a0e35d3e124fee49d47b00ddc4e4386"
+        }
+      ],
+      "playback": [
+        {
+          "count": "0",
+          "state": "",
+          "task": "",
+          "at": "0"
+        }
+      ],
+      "errors": [],
+      "imageryTiles": 215,
+      "run": "formal-1790006948413",
+      "source_sha256": "845271e35f61ba2effae19ee623f5ce66408babd9776dba6bdde763999b2bf2a",
+      "limitations": "Whole batch failed on compound Hangzhou West Lake query. Qingpu candidate was the convention centre in Qingpu, not the administrative region. Startup screenshot was premature."
+    },
+    {
+      "url": "http://localhost/dashboard",
+      "status": "failed",
+      "steps": [
+        {
+          "name": "Dashboard lazy resources",
+          "status": "passed",
+          "at": 1790007592485
+        },
+        {
+          "name": "Real map and companion",
+          "status": "passed",
+          "at": 1790007600550
+        },
+        {
+          "name": "Non Shanghai with explicit Hangzhou candidate",
+          "status": "passed",
+          "at": 1790007623591
+        },
+        {
+          "name": "Real narration playback",
+          "status": "passed",
+          "at": 1790007685327
+        }
+      ],
+      "events": [
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790007598578,
+          "operation": "open",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790007599160,
+          "phase": "paused",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:context",
+          "at": 1790007599893,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790007600390,
+          "phase": "paused",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790007605256,
+          "operation": "text",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790007605906,
+          "action_id": "cancel-1",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790007609252,
+          "phase": "waiting_selection",
+          "action_id": null,
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790007611655,
+          "operation": "select",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790007611912,
+          "action_id": "cancel-2",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790007612175,
+          "phase": "moving",
+          "action_id": "4770d0e9-cba8-42f5-8ef3-0815f9ab7065",
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790007612189,
+          "action_id": "4770d0e9-cba8-42f5-8ef3-0815f9ab7065",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:result",
+          "at": 1790007612190,
+          "status": "accepted",
+          "action_id": "4770d0e9-cba8-42f5-8ef3-0815f9ab7065",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790007612450,
+          "phase": "moving",
+          "action_id": "4770d0e9-cba8-42f5-8ef3-0815f9ab7065",
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:result",
+          "at": 1790007616517,
+          "status": "arrived",
+          "action_id": "4770d0e9-cba8-42f5-8ef3-0815f9ab7065",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790007616518,
+          "phase": "moving",
+          "action_id": "4770d0e9-cba8-42f5-8ef3-0815f9ab7065",
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:result",
+          "at": 1790007623035,
+          "status": "ready",
+          "action_id": "4770d0e9-cba8-42f5-8ef3-0815f9ab7065",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790007623036,
+          "phase": "reading",
+          "action_id": "4770d0e9-cba8-42f5-8ef3-0815f9ab7065",
+          "task_id": "3bfddb8e-58f4-4a2a-8f2f-88a53843f3c4",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:narration",
+          "at": 1790007623225,
+          "status": "text_only",
+          "task_id": "3bfddb8e-58f4-4a2a-8f2f-88a53843f3c4",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790007627633,
+          "operation": "pause",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790007627841,
+          "action_id": "cancel-3",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790007628023,
+          "phase": "paused",
+          "action_id": null,
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790007628023,
+          "action_id": "4ffa43b7-e8fc-4a94-98d0-825e0db1fb0b",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790007630858,
+          "operation": "text",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790007631048,
+          "action_id": "cancel-4",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790007634133,
+          "phase": "waiting_selection",
+          "action_id": null,
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790007636286,
+          "operation": "select",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790007636462,
+          "action_id": "cancel-5",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790007636648,
+          "phase": "moving",
+          "action_id": "5403a465-6b9d-4251-ab53-11be533b66ae",
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790007636649,
+          "action_id": "5403a465-6b9d-4251-ab53-11be533b66ae",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:result",
+          "at": 1790007636649,
+          "status": "accepted",
+          "action_id": "5403a465-6b9d-4251-ab53-11be533b66ae",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790007636841,
+          "phase": "moving",
+          "action_id": "5403a465-6b9d-4251-ab53-11be533b66ae",
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:result",
+          "at": 1790007640870,
+          "status": "arrived",
+          "action_id": "5403a465-6b9d-4251-ab53-11be533b66ae",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790007640875,
+          "phase": "moving",
+          "action_id": "5403a465-6b9d-4251-ab53-11be533b66ae",
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:result",
+          "at": 1790007642920,
+          "status": "ready",
+          "action_id": "5403a465-6b9d-4251-ab53-11be533b66ae",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790007663927,
+          "phase": "awaiting_playback",
+          "action_id": "5403a465-6b9d-4251-ab53-11be533b66ae",
+          "task_id": "dbe0266b-b0b7-4fbb-9f38-1159c057b846",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:narration",
+          "at": 1790007667062,
+          "status": "ready",
+          "task_id": "dbe0266b-b0b7-4fbb-9f38-1159c057b846",
+          "audio_present": true,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790007668404,
+          "operation": "playback_started",
+          "task_id": "dbe0266b-b0b7-4fbb-9f38-1159c057b846",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790007668617,
+          "phase": "playing",
+          "action_id": "5403a465-6b9d-4251-ab53-11be533b66ae",
+          "task_id": "dbe0266b-b0b7-4fbb-9f38-1159c057b846",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790007684459,
+          "operation": "playback_ended",
+          "task_id": "dbe0266b-b0b7-4fbb-9f38-1159c057b846",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790007684693,
+          "phase": "feedback",
+          "action_id": "5403a465-6b9d-4251-ab53-11be533b66ae",
+          "task_id": "dbe0266b-b0b7-4fbb-9f38-1159c057b846",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790007689496,
+          "operation": "pause",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790007689822,
+          "action_id": "cancel-6",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790007690031,
+          "phase": "paused",
+          "action_id": null,
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790007690031,
+          "action_id": "d8df4374-f298-4f10-97a2-4d52989252cd",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790007704693,
+          "operation": "audio",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790007704911,
+          "action_id": "cancel-7",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790007705557,
+          "phase": "paused",
+          "action_id": null,
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        }
+      ],
+      "resources": [
+        {
+          "url": "http://localhost/live2d/live2dcubismcore.min.js",
+          "status": 200,
+          "sha256": "25ae938cb4fe282ce189b357bcc97e603d1e1f7ec78bf04150d401c23cdc792f"
+        },
+        {
+          "url": "http://localhost/assets/app-T4ZBtzwl.js",
+          "status": 200,
+          "sha256": "e187150f5e0ab5f6ea59fbb1c3613b5e1a0e35d3e124fee49d47b00ddc4e4386"
+        }
+      ],
+      "playback": [
+        {
+          "count": "0",
+          "state": "",
+          "task": "",
+          "at": "0"
+        },
+        {
+          "count": "1",
+          "state": "started",
+          "task": "dbe0266b-b0b7-4fbb-9f38-1159c057b846",
+          "at": "1790007668402"
+        },
+        {
+          "count": "1",
+          "state": "ended",
+          "task": "dbe0266b-b0b7-4fbb-9f38-1159c057b846",
+          "at": "1790007684456"
+        }
+      ],
+      "errors": [],
+      "resumedFrom": "formal-1790006948413: seven successful steps retained; compound Hangzhou West Lake query failed",
+      "voice": {
+        "task": "dbe0266b-b0b7-4fbb-9f38-1159c057b846",
+        "count": "1",
+        "state": "ended",
+        "providerIdentity": "Verify against lifecycle Qwen identity evidence"
+      },
+      "imageryTiles": 137,
+      "run": "formal-1790007562763",
+      "source_sha256": "46f22d6acc8ce373dcf71dcba804fb9af3a57961c402d6207d191788a8d52560",
+      "limitations": "Whole batch failed on real ASR provider invalid_key HTTP401. Generated public test audio through MediaRecorder, not physical microphone. West Lake and narration steps passed."
+    },
+    {
+      "url": "http://localhost/dashboard",
+      "status": "passed",
+      "steps": [
+        {
+          "name": "Dashboard lazy resources",
+          "status": "passed",
+          "at": 1790008027460
+        },
+        {
+          "name": "Real map and companion",
+          "status": "passed",
+          "at": 1790008039481
+        },
+        {
+          "name": "Workspace exit and reentry",
+          "status": "passed",
+          "at": 1790008052425
+        }
+      ],
+      "events": [
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790008036948,
+          "operation": "open",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790008038265,
+          "phase": "paused",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:context",
+          "at": 1790008038556,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790008039255,
+          "phase": "paused",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790008044005,
+          "operation": "close",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790008044011,
+          "action_id": "cancel-1",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790008044012,
+          "phase": "closed",
+          "action_id": null,
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790008044013,
+          "action_id": "6e675c96-e704-4e5d-a59e-a9c2a5596767",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790008044880,
+          "operation": "open",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790008045237,
+          "phase": "paused",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:context",
+          "at": 1790008045642,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790008045868,
+          "phase": "paused",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790008048122,
+          "operation": "close",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790008048124,
+          "action_id": "cancel-1",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790008048208,
+          "phase": "closed",
+          "action_id": null,
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790008048209,
+          "action_id": "e85eb055-bebe-4ae5-8e33-d34f367d0347",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790008049012,
+          "operation": "open",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790008049475,
+          "phase": "paused",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:context",
+          "at": 1790008049718,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790008049942,
+          "phase": "paused",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790008051447,
+          "operation": "close",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790008051457,
+          "action_id": "cancel-1",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790008051458,
+          "phase": "closed",
+          "action_id": null,
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790008051460,
+          "action_id": "7e5527c4-2a24-4400-8480-da09acc5eff3",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790008051827,
+          "operation": "open",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790008051905,
+          "phase": "paused",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:context",
+          "at": 1790008051910,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790008052061,
+          "phase": "paused",
+          "audio_present": false,
+          "point_present": false
+        }
+      ],
+      "resources": [
+        {
+          "url": "http://localhost/live2d/live2dcubismcore.min.js",
+          "status": 200,
+          "sha256": "25ae938cb4fe282ce189b357bcc97e603d1e1f7ec78bf04150d401c23cdc792f"
+        },
+        {
+          "url": "http://localhost/assets/app-T4ZBtzwl.js",
+          "status": 200,
+          "sha256": "e187150f5e0ab5f6ea59fbb1c3613b5e1a0e35d3e124fee49d47b00ddc4e4386"
+        }
+      ],
+      "playback": [
+        {
+          "count": "0",
+          "state": "",
+          "task": "",
+          "at": "0"
+        }
+      ],
+      "errors": [],
+      "resumedFrom": "formal-1790006948413: seven successful steps retained; compound Hangzhou West Lake query failed",
+      "lifecycle": {
+        "cycles": 3,
+        "detachedMapAndAvatarOnExit": true,
+        "privateCloseSent": true
+      },
+      "imageryTiles": 80,
+      "run": "formal-1790007988513",
+      "source_sha256": "c46f63f3aee5c9a26803c185e43ccdb19259ccc7643d4486916503d4cfc0fb00",
+      "limitations": "Three DOM/protocol lifecycle cycles, not GPU memory measurement."
+    },
+    {
+      "url": "http://localhost/live.html",
+      "status": "passed",
+      "playback": [
+        {
+          "at": 1790008085093,
+          "playbackState": "idle",
+          "playbackCount": "0",
+          "lastAudioTaskId": "",
+          "lipSyncState": "idle",
+          "lipSyncAppliedCount": "0",
+          "lipSyncPeak": "0",
+          "lastLipSyncTaskId": ""
+        },
+        {
+          "at": 1790008085626,
+          "playbackState": "standby",
+          "playbackCount": "0",
+          "lastAudioTaskId": "",
+          "lipSyncState": "idle",
+          "lipSyncAppliedCount": "0",
+          "lipSyncPeak": "0",
+          "lastLipSyncTaskId": ""
+        },
+        {
+          "at": 1790008091913,
+          "playbackState": "pending",
+          "playbackCount": "0",
+          "lastAudioTaskId": "332ce16c-9ba0-4158-8b3f-05af59c676ca",
+          "lipSyncState": "pending",
+          "lipSyncAppliedCount": "0",
+          "lipSyncPeak": "0",
+          "lastLipSyncTaskId": "332ce16c-9ba0-4158-8b3f-05af59c676ca"
+        },
+        {
+          "at": 1790008092815,
+          "playbackState": "playing",
+          "playbackCount": "1",
+          "lastAudioTaskId": "332ce16c-9ba0-4158-8b3f-05af59c676ca",
+          "lipSyncState": "pending",
+          "lipSyncAppliedCount": "0",
+          "lipSyncPeak": "0",
+          "lastLipSyncTaskId": "332ce16c-9ba0-4158-8b3f-05af59c676ca"
+        },
+        {
+          "at": 1790008092863,
+          "playbackState": "playing",
+          "playbackCount": "1",
+          "lastAudioTaskId": "332ce16c-9ba0-4158-8b3f-05af59c676ca",
+          "lipSyncState": "observed",
+          "lipSyncAppliedCount": "1",
+          "lipSyncPeak": "0.721621622137558",
+          "lastLipSyncTaskId": "332ce16c-9ba0-4158-8b3f-05af59c676ca"
+        },
+        {
+          "at": 1790008104602,
+          "playbackState": "completed",
+          "playbackCount": "1",
+          "lastAudioTaskId": "332ce16c-9ba0-4158-8b3f-05af59c676ca",
+          "lipSyncState": "observed",
+          "lipSyncAppliedCount": "368",
+          "lipSyncPeak": "0.9959168920326977",
+          "lastLipSyncTaskId": "332ce16c-9ba0-4158-8b3f-05af59c676ca"
+        },
+        {
+          "at": 1790008104602,
+          "playbackState": "completed",
+          "playbackCount": "1",
+          "lastAudioTaskId": "332ce16c-9ba0-4158-8b3f-05af59c676ca",
+          "lipSyncState": "observed",
+          "lipSyncAppliedCount": "368",
+          "lipSyncPeak": "0.9959168920326977",
+          "lastLipSyncTaskId": "332ce16c-9ba0-4158-8b3f-05af59c676ca"
+        }
+      ],
+      "errors": [],
+      "taskId": "332ce16c-9ba0-4158-8b3f-05af59c676ca",
+      "before": {
+        "playbackState": "standby",
+        "playbackCount": "0",
+        "audioOwner": "active",
+        "lastAudioTaskId": "",
+        "lastAudioKind": "",
+        "bgmState": "blocked",
+        "lipSyncState": "idle",
+        "lipSyncAppliedCount": "0",
+        "lipSyncPeak": "0",
+        "lastLipSyncTaskId": "",
+        "lastLipSyncAppliedAt": "",
+        "audioOwnerId": "a3602191-d063-4ae1-9692-e984b3d2711b",
+        "audioOwnerFence": "1",
+        "audioOwnerRequested": "active"
+      },
+      "after": {
+        "playbackState": "completed",
+        "playbackCount": "1",
+        "audioOwner": "active",
+        "lastAudioTaskId": "332ce16c-9ba0-4158-8b3f-05af59c676ca",
+        "lastAudioKind": "chat",
+        "bgmState": "blocked",
+        "lipSyncState": "observed",
+        "lipSyncAppliedCount": "368",
+        "lipSyncPeak": "0.9959168920326977",
+        "lastLipSyncTaskId": "332ce16c-9ba0-4158-8b3f-05af59c676ca",
+        "lastLipSyncAppliedAt": "1790008104576",
+        "audioOwnerId": "a3602191-d063-4ae1-9692-e984b3d2711b",
+        "audioOwnerFence": "1",
+        "audioOwnerRequested": "active"
+      },
+      "run": "formal-live-1790008084050",
+      "source_sha256": "2e667ac40557d7243c944a7519189eca13c46dd70dcaf10d4f5573be407b2242",
+      "limitations": "Actual public speech playback and lip sync verified; BGM not accepted."
+    },
+    {
+      "run": "formal-1790010777784",
+      "source_sha256": "270cedd43a30f37ec36f2a6ac96ad8e88e952bb7ce4901f68a12f9f3c4c6eb33",
+      "url": "http://localhost/dashboard",
+      "status": "passed",
+      "steps": [
+        {
+          "name": "Dashboard lazy resources",
+          "status": "passed",
+          "at": 1790010779020
+        },
+        {
+          "name": "Real map and companion",
+          "status": "passed",
+          "at": 1790010781326
+        },
+        {
+          "name": "好像是在上海",
+          "status": "passed",
+          "at": 1790010791627
+        },
+        {
+          "name": "大概是青浦区",
+          "status": "passed",
+          "at": 1790010800834
+        },
+        {
+          "name": "我记得淀山湖",
+          "status": "passed",
+          "at": 1790010810007
+        },
+        {
+          "name": "我想看看杭州西湖",
+          "status": "passed",
+          "at": 1790010819217
+        }
+      ],
+      "events": [
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790010780796,
+          "operation": "open",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790010780904,
+          "phase": "paused",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:context",
+          "at": 1790010780906,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790010780939,
+          "phase": "paused",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790010782838,
+          "operation": "text",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790010782848,
+          "action_id": "cancel-1",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790010785839,
+          "phase": "waiting_selection",
+          "action_id": null,
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790010786771,
+          "operation": "select",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790010786777,
+          "action_id": "cancel-2",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790010786805,
+          "phase": "moving",
+          "action_id": "1b103ade-b657-4b45-913c-c2c87744ff58",
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790010786808,
+          "action_id": "1b103ade-b657-4b45-913c-c2c87744ff58",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:result",
+          "at": 1790010786808,
+          "status": "accepted",
+          "action_id": "1b103ade-b657-4b45-913c-c2c87744ff58",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790010786840,
+          "phase": "moving",
+          "action_id": "1b103ade-b657-4b45-913c-c2c87744ff58",
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:result",
+          "at": 1790010790816,
+          "status": "arrived",
+          "action_id": "1b103ade-b657-4b45-913c-c2c87744ff58",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:result",
+          "at": 1790010790816,
+          "status": "ready",
+          "action_id": "1b103ade-b657-4b45-913c-c2c87744ff58",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790010790846,
+          "phase": "moving",
+          "action_id": "1b103ade-b657-4b45-913c-c2c87744ff58",
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790010790871,
+          "phase": "reading",
+          "action_id": "1b103ade-b657-4b45-913c-c2c87744ff58",
+          "task_id": "5b0e9110-64aa-4ff4-bb2d-9f8ffe038ded",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:narration",
+          "at": 1790010790871,
+          "status": "text_only",
+          "task_id": "5b0e9110-64aa-4ff4-bb2d-9f8ffe038ded",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790010791963,
+          "operation": "pause",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790010791970,
+          "action_id": "cancel-3",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790010791998,
+          "phase": "paused",
+          "action_id": null,
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790010791998,
+          "action_id": "fcf1c9e2-2ebd-4de9-9d08-e15ab3a273ab",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790010792020,
+          "operation": "text",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790010792047,
+          "action_id": "cancel-4",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790010794919,
+          "phase": "waiting_selection",
+          "action_id": null,
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790010795949,
+          "operation": "select",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790010795965,
+          "action_id": "cancel-5",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790010796003,
+          "phase": "moving",
+          "action_id": "c92d32b5-e5a1-449d-9367-fa3fcd3337cb",
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790010796004,
+          "action_id": "c92d32b5-e5a1-449d-9367-fa3fcd3337cb",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:result",
+          "at": 1790010796004,
+          "status": "accepted",
+          "action_id": "c92d32b5-e5a1-449d-9367-fa3fcd3337cb",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790010796034,
+          "phase": "moving",
+          "action_id": "c92d32b5-e5a1-449d-9367-fa3fcd3337cb",
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:result",
+          "at": 1790010800017,
+          "status": "arrived",
+          "action_id": "c92d32b5-e5a1-449d-9367-fa3fcd3337cb",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790010800043,
+          "phase": "moving",
+          "action_id": "c92d32b5-e5a1-449d-9367-fa3fcd3337cb",
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:result",
+          "at": 1790010800232,
+          "status": "ready",
+          "action_id": "c92d32b5-e5a1-449d-9367-fa3fcd3337cb",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790010800277,
+          "phase": "reading",
+          "action_id": "c92d32b5-e5a1-449d-9367-fa3fcd3337cb",
+          "task_id": "1f0fe8fa-56ac-4192-91fe-a4b7c61a75d7",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:narration",
+          "at": 1790010800277,
+          "status": "text_only",
+          "task_id": "1f0fe8fa-56ac-4192-91fe-a4b7c61a75d7",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790010801197,
+          "operation": "pause",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790010801204,
+          "action_id": "cancel-6",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790010801231,
+          "phase": "paused",
+          "action_id": null,
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790010801231,
+          "action_id": "ed971f0b-57e4-4230-93fb-451aa9d48218",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790010801236,
+          "operation": "text",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790010801240,
+          "action_id": "cancel-7",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790010804189,
+          "phase": "waiting_selection",
+          "action_id": null,
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790010805145,
+          "operation": "select",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790010805152,
+          "action_id": "cancel-8",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790010805180,
+          "phase": "moving",
+          "action_id": "134b44eb-1764-4008-b6e5-c474bc938168",
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790010805181,
+          "action_id": "134b44eb-1764-4008-b6e5-c474bc938168",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:result",
+          "at": 1790010805181,
+          "status": "accepted",
+          "action_id": "134b44eb-1764-4008-b6e5-c474bc938168",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790010805207,
+          "phase": "moving",
+          "action_id": "134b44eb-1764-4008-b6e5-c474bc938168",
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:result",
+          "at": 1790010809194,
+          "status": "arrived",
+          "action_id": "134b44eb-1764-4008-b6e5-c474bc938168",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:result",
+          "at": 1790010809194,
+          "status": "ready",
+          "action_id": "134b44eb-1764-4008-b6e5-c474bc938168",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790010809221,
+          "phase": "moving",
+          "action_id": "134b44eb-1764-4008-b6e5-c474bc938168",
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790010809246,
+          "phase": "reading",
+          "action_id": "134b44eb-1764-4008-b6e5-c474bc938168",
+          "task_id": "a0bf3920-7e77-4918-9ed9-b68de3a57bb1",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:narration",
+          "at": 1790010809246,
+          "status": "text_only",
+          "task_id": "a0bf3920-7e77-4918-9ed9-b68de3a57bb1",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790010810353,
+          "operation": "pause",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790010810360,
+          "action_id": "cancel-9",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790010810400,
+          "phase": "paused",
+          "action_id": null,
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790010810404,
+          "action_id": "575eca69-21e4-47b2-a4ad-af5ab136421b",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790010810432,
+          "operation": "text",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790010810453,
+          "action_id": "cancel-10",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790010813682,
+          "phase": "waiting_selection",
+          "action_id": null,
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790010814354,
+          "operation": "select",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790010814359,
+          "action_id": "cancel-11",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790010814388,
+          "phase": "moving",
+          "action_id": "171ecaed-8ba5-4a8b-b300-3e7e3ab840c0",
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790010814389,
+          "action_id": "171ecaed-8ba5-4a8b-b300-3e7e3ab840c0",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:result",
+          "at": 1790010814389,
+          "status": "accepted",
+          "action_id": "171ecaed-8ba5-4a8b-b300-3e7e3ab840c0",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790010814418,
+          "phase": "moving",
+          "action_id": "171ecaed-8ba5-4a8b-b300-3e7e3ab840c0",
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:result",
+          "at": 1790010818399,
+          "status": "arrived",
+          "action_id": "171ecaed-8ba5-4a8b-b300-3e7e3ab840c0",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790010818438,
+          "phase": "moving",
+          "action_id": "171ecaed-8ba5-4a8b-b300-3e7e3ab840c0",
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:result",
+          "at": 1790010819002,
+          "status": "ready",
+          "action_id": "171ecaed-8ba5-4a8b-b300-3e7e3ab840c0",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790010819034,
+          "phase": "reading",
+          "action_id": "171ecaed-8ba5-4a8b-b300-3e7e3ab840c0",
+          "task_id": "b4abfa71-81cc-4186-bcca-b4574237514c",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:narration",
+          "at": 1790010819034,
+          "status": "text_only",
+          "task_id": "b4abfa71-81cc-4186-bcca-b4574237514c",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framesent",
+          "event": "earth:control",
+          "at": 1790010819659,
+          "operation": "pause",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790010819667,
+          "action_id": "cancel-12",
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:state",
+          "at": 1790010819764,
+          "phase": "paused",
+          "action_id": null,
+          "task_id": null,
+          "audio_present": false,
+          "point_present": false
+        },
+        {
+          "direction": "framereceived",
+          "event": "earth:command",
+          "at": 1790010819764,
+          "action_id": "636be51f-3f74-4314-926f-3d9e63d63cb3",
+          "audio_present": false,
+          "point_present": false
+        }
+      ],
+      "resources": [
+        {
+          "url": "http://localhost/live2d/live2dcubismcore.min.js",
+          "status": 200,
+          "sha256": "25ae938cb4fe282ce189b357bcc97e603d1e1f7ec78bf04150d401c23cdc792f"
+        },
+        {
+          "url": "http://localhost/assets/app-T4ZBtzwl.js",
+          "status": 200,
+          "sha256": "e187150f5e0ab5f6ea59fbb1c3613b5e1a0e35d3e124fee49d47b00ddc4e4386"
+        }
+      ],
+      "errors": [],
+      "layouts": [
+        {
+          "width": 1280,
+          "height": 800,
+          "map": {
+            "x": 0,
+            "y": 96.66667175292969,
+            "width": 888,
+            "height": 703.3333740234375,
+            "top": 96.66667175292969,
+            "right": 888,
+            "bottom": 800.0000457763672,
+            "left": 0
+          },
+          "avatar": {
+            "x": 559.4479370117188,
+            "y": 363.9375,
+            "width": 301.91668701171875,
+            "height": 436.0625,
+            "top": 363.9375,
+            "right": 861.3646240234375,
+            "bottom": 800,
+            "left": 559.4479370117188
+          },
+          "explanation": {
+            "x": 24,
+            "y": 560.6666870117188,
+            "width": 511.4375,
+            "height": 187.33334350585938,
+            "top": 560.6666870117188,
+            "right": 535.4375,
+            "bottom": 748.0000305175781,
+            "left": 24
+          },
+          "horizontalOverflow": false
+        },
+        {
+          "width": 1600,
+          "height": 1000,
+          "map": {
+            "x": 0,
+            "y": 96.66667175292969,
+            "width": 1208,
+            "height": 903.3333740234375,
+            "top": 96.66667175292969,
+            "right": 1208,
+            "bottom": 1000.0000457763672,
+            "left": 0
+          },
+          "avatar": {
+            "x": 761.0416870117188,
+            "y": 440,
+            "width": 410.71875,
+            "height": 560,
+            "top": 440,
+            "right": 1171.7604370117188,
+            "bottom": 1000,
+            "left": 761.0416870117188
+          },
+          "explanation": {
+            "x": 24,
+            "y": 788.6666870117188,
+            "width": 713.03125,
+            "height": 159.33334350585938,
+            "top": 788.6666870117188,
+            "right": 737.03125,
+            "bottom": 948.0000305175781,
+            "left": 24
+          },
+          "horizontalOverflow": false
+        },
+        {
+          "width": 1920,
+          "height": 1080,
+          "map": {
+            "x": 0,
+            "y": 96.66667175292969,
+            "width": 1528,
+            "height": 983.3333740234375,
+            "top": 96.66667175292969,
+            "right": 1528,
+            "bottom": 1080.0000457763672,
+            "left": 0
+          },
+          "avatar": {
+            "x": 1066.166748046875,
+            "y": 520,
+            "width": 416,
+            "height": 560,
+            "top": 520,
+            "right": 1482.166748046875,
+            "bottom": 1080,
+            "left": 1066.166748046875
+          },
+          "explanation": {
+            "x": 24,
+            "y": 868.6666870117188,
+            "width": 728,
+            "height": 159.33334350585938,
+            "top": 868.6666870117188,
+            "right": 752,
+            "bottom": 1028.0000305175781,
+            "left": 24
+          },
+          "horizontalOverflow": false
+        }
+      ],
+      "imageryTiles": 446
+    }
+  ],
+  "deployment": {
+    "run_id": "anima-up-earth-3d5458b78104",
+    "exit_code": 0,
+    "profile": "production",
+    "ready": true,
+    "providers": {
+      "llm": {
+        "ready": true,
+        "configured": {
+          "name": "deepseek",
+          "type": "deepseek",
+          "provider": "deepseek",
+          "model": "deepseek-v4-flash",
+          "voice": null
+        },
+        "resolved": {
+          "type": "deepseek",
+          "provider": "deepseek",
+          "model": "deepseek-v4-flash",
+          "voice": null
+        }
+      },
+      "tts": {
+        "ready": true,
+        "configured": {
+          "name": "dashscope-local-failover",
+          "type": "failover",
+          "provider": "failover",
+          "model": null,
+          "voice": null
+        },
+        "resolved": {
+          "type": "failover",
+          "provider": "failover",
+          "model": null,
+          "voice": null
+        },
+        "degraded": true,
+        "active_backend": "fallback",
+        "primary": {
+          "ready": false,
+          "error_category": "billing",
+          "identity": {
+            "type": "dashscope",
+            "provider": "dashscope",
+            "model": "qwen3-tts-instruct-flash-realtime",
+            "voice": "Seren"
+          }
+        },
+        "fallback": {
+          "ready": true,
+          "error_category": null,
+          "identity": {
+            "type": null,
+            "provider": "qwen3-tts-gguf-host",
+            "model": "Qwen3-TTS-1.7B-Base",
+            "voice": "tosaka-rin-cn"
+          }
+        }
+      },
+      "asr": {
+        "ready": true,
+        "configured": {
+          "name": "mimo-asr",
+          "type": "mimo",
+          "provider": "mimo",
+          "model": "mimo-v2.5-asr",
+          "voice": null
+        },
+        "resolved": {
+          "type": "mimo",
+          "provider": "mimo",
+          "model": "mimo-v2.5-asr",
+          "voice": null
+        }
+      }
+    },
+    "frontend": {
+      "path": "/assets/app-T4ZBtzwl.js",
+      "http": 200,
+      "sha256": "e187150f5e0ab5f6ea59fbb1c3613b5e1a0e35d3e124fee49d47b00ddc4e4386"
+    },
+    "image": "sha256:c4e708a46764aae7c5db59da5d5c30b926626a45f0d6f841d01bb2d270d145b3",
+    "source_fingerprint": "ad61ca8de73e086d487f03933b0be5bf772b26a50a69e31bee1c6906ab184f23",
+    "logs": "no Traceback or ERROR"
+  },
+  "quality": {
+    "plan_hash": "071aeb3aef04ceedc66cff966064d65cae13429951ba2f3d135cbf520f531a7e",
+    "status": "passed",
+    "backend_tests": 5659,
+    "frontend_tests": 638,
+    "frontend_files": 95,
+    "backend_full_seconds": 595.8944970000011
+  }
+}

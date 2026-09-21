@@ -458,3 +458,95 @@ def test_deterministic_provider_does_not_echo_private_marker() -> None:
 
     assert "PUBLIC-1" in answer
     assert not re.search("PRIVATE-1", answer)
+
+
+async def test_earth_private_entry_isolated_from_live_memory_and_sibling_sid(monkeypatch) -> None:
+    from animetta.orchestration.server.handlers.earth_handlers import EarthHandlers
+
+    monkeypatch.setenv("ANIMETTA_HOST", "127.0.0.1")
+    monkeypatch.setenv("ANIMETTA_PORT", "12394")
+    public_marker, first_marker, sibling_marker = (f"scope-{uuid4().hex}" for _ in range(3))
+    provider = DeterministicHistoryProvider(public_marker, first_marker, sibling_marker)
+    original_history = provider.get_history()
+    manager = SessionManager()
+    sio = MagicMock(emit=AsyncMock())
+    monkeypatch.setattr(
+        importlib.import_module("animetta.orchestration.graph.output_node").translation_state,
+        "enabled",
+        False,
+    )
+    public = await _new_orchestrator(
+        sid="public",
+        profile="test",
+        provider=provider,
+        sio=sio,
+        registry=manager.conversation_registry,
+    )
+    manager.orchestrators["public"] = public
+    memory = MagicMock()
+    context = SimpleNamespace(
+        llm_engine=provider, tts_engine=None, asr_engine=None, memory_system=memory
+    )
+    base = SimpleNamespace(
+        session_manager=SimpleNamespace(
+            checkpoint_runtime=None,
+            _load_tools_config=AsyncMock(return_value={"config": {"earth": {"enabled": True}}}),
+        ),
+        get_or_create_context=AsyncMock(return_value=context),
+    )
+    principal = SimpleNamespace(
+        user_id="owner", session_id="login", source="session", password_change_required=False
+    )
+    earth = EarthHandlers(sio, base, SimpleNamespace(socket_principal=lambda sid: principal))
+    earth.search = SimpleNamespace(search=AsyncMock(return_value=[]))
+    live_session = str(uuid4())
+    try:
+        await public.process_text(
+            public_marker,
+            conversation_id=str(uuid4()),
+            task_id=str(uuid4()),
+            audience="livestream",
+            live_session_id=live_session,
+            actor_role="viewer",
+            source="bilibili:danmaku",
+        )
+        public_count = _scope_count(manager, live_session)
+        assert public_count > 0
+        earth_emits_start = sio.emit.await_count
+        for sid, marker in (("earth-a", first_marker), ("earth-b", sibling_marker)):
+            payload = {"conversation_id": sid, "control_revision": 0}
+            assert (await earth.control(sid, {**payload, "operation": "open"}))["ok"]
+            before = len(provider.calls)
+            reply = await earth.control(sid, {**payload, "operation": "text", "text": marker})
+            assert reply["ok"]
+            private_context = json.dumps(provider.calls[before:], ensure_ascii=False)
+            assert marker in private_context
+            assert public_marker not in private_context
+            assert (sibling_marker if sid == "earth-a" else first_marker) not in private_context
+        for call in sio.emit.await_args_list[earth_emits_start:]:
+            assert call.args[0].startswith("earth:")
+            assert call.kwargs["to"] in {"earth-a", "earth-b"}
+            assert (
+                sibling_marker if call.kwargs["to"] == "earth-a" else first_marker
+            ) not in json.dumps(call.args)
+        memory.assert_not_called()
+        assert memory.mock_calls == []
+        assert _scope_count(manager, live_session) == public_count
+        assert manager.conversation_registry.scope_count == 1
+        before = len(provider.calls)
+        await public.process_text(
+            "继续公开对话",
+            conversation_id=str(uuid4()),
+            task_id=str(uuid4()),
+            audience="livestream",
+            live_session_id=live_session,
+            actor_role="viewer",
+            source="bilibili:danmaku",
+        )
+        public_context = json.dumps(provider.calls[before:], ensure_ascii=False)
+        assert first_marker not in public_context and sibling_marker not in public_context
+        assert provider.get_history() == original_history
+    finally:
+        await earth.disconnect("earth-a")
+        await earth.disconnect("earth-b")
+        await manager.cleanup_all()
