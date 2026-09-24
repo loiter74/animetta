@@ -9,7 +9,7 @@ source and does not depend on another checkout.
 ## 运行方式
 
 `mc-mcp` owns Minecraft server, bot, viewer controller and GameBot v2 runtime
-lifecycle. Profiles live in `config/mc-mcp.json`:
+lifecycle. Profiles live in `services/mc-mcp/config/mc-mcp.json`:
 
 - `managed`: starts and probes the repository-owned Compose service, then logs in the
   bot. Shutdown uses the exact persisted ownership identity.
@@ -31,9 +31,32 @@ in-repository CLI entrypoint, so no global installation is required.
 
 The default `connect` target is `external-local`, which reuses the existing server on
 `127.0.0.1:25565`. Managed profiles cannot create a Compose project unless the caller
-passes `--allow-create`; `prepare` also requires an explicit profile. This flag is for a
-single user-approved isolated review or survival run, and that run must call `shutdown`
-when it finishes.
+passes `--allow-create`; `prepare` also requires an explicit profile. Creation requires
+explicit authorization for either a permanent server or an isolated review world.
+Only temporary review worlds must call `shutdown` when the run finishes; a permanent
+server remains available for later `external-local` connections.
+
+### 长期本地服务器
+
+`managed-local` 用于首次部署或恢复固定服务器：容器名 `animetta-mc`，Compose
+项目 `mc-mcp-managed-local`，世界卷 `animetta-mc-data`，仅监听
+`127.0.0.1:25565`。Minecraft Java 版本固定为 `1.21`，采用生存模式。
+`restart: unless-stopped` 会在 Docker 引擎恢复后自动启动未被手动停止的容器；
+它不负责启动 Docker Desktop。世界数据保存在命名卷中，不能删除该卷来重置服务。
+
+用户明确授权首次部署后，通过现有 mc-mcp 生命周期执行：
+
+```bash
+node services/mc-mcp/src/mcp/cli.js prepare managed-local --allow-create
+node services/mc-mcp/src/mcp/cli.js disconnect
+node services/mc-mcp/src/mcp/cli.js connect external-local
+```
+
+`disconnect` 将准备阶段切回可连接状态并保留服务器。日常连接仍使用默认
+`external-local`；Anima 通过公开 `mc_connection` 连接，再经 `mc_operate_bot`
+执行任务。外部连接的 `shutdown`、普通 `disconnect` 和 service stop 都保留
+长期服务器。只有显式选择托管服务器并要求停止时，才使用 managed `shutdown`。
+临时评审继续使用独立的 review profile，不复用长期世界进行管理员场景布置。
 
 `disconnect` stops only the bot. `shutdown` additionally stops only managed resources
 owned by the current mc-mcp service. The HTTP endpoint defaults to

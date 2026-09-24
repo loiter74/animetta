@@ -49,6 +49,43 @@ function probeSequence(...values) {
 }
 
 describe('MinecraftLifecycle', () => {
+  it('preserves managed ownership through external disconnect and repeated shutdown', async () => {
+    const commands = [];
+    const instance = new MinecraftLifecycle({
+      config: {
+        root: 'C:/mc',
+        profiles: {
+          managed: {
+            mode: 'managed',
+            server: { compose_file: 'server/compose.yml', host: '127.0.0.1', port: 25565 },
+            bot: { username: 'Bot' },
+          },
+          external: {
+            mode: 'external',
+            server: { host: '127.0.0.1', port: 25565 },
+            bot: { username: 'Bot' },
+          },
+        },
+      },
+      runtime: new FakeRuntime(),
+      eventBuffer: new FakeEventBuffer(),
+      stateFile: null,
+      command: async (argv) => { commands.push(argv); },
+      probe: probeSequence(false, true),
+    });
+    await instance.prepare('managed', 'prepare', true);
+    await instance.disconnect('prepared-disconnect');
+    await instance.connect('external', 'external-connect');
+    await instance.disconnect('external-disconnect');
+    await instance.shutdown('external-shutdown');
+    await instance.shutdown('repeat-shutdown');
+    assert.equal(commands.filter((argv) => argv.includes('down')).length, 0);
+    assert.ok(instance.managedServer.ownership);
+    await instance.prepare('managed', 'restore-managed');
+    await instance.shutdown('explicit-managed-shutdown');
+    assert.equal(commands.filter((argv) => argv.includes('down')).length, 1);
+  });
+
   it('uses application tempo and seed while a profile may only reduce mode', async () => {
     const runtime = new FakeRuntime();
     const instance = new MinecraftLifecycle({

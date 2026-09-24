@@ -25,10 +25,11 @@ timeouts. Only `core/bridge.py` may resolve the repository's
 Mineflayer bot or Minecraft Compose directly from Python.
 
 常规运行、调试和验证必须使用 `external-local` 复用既有 `animetta-mc`，不得创建
-新的 Minecraft 容器。只有用户在当前任务中明确授权隔离世界时，受信任的内部评审
-入口才可传递 `allow_create=true`；模型可见的 `mc_connection` 不得暴露该参数。获准
-创建的 managed profile 必须在 `finally` 中调用 `shutdown`，而普通 `disconnect`、
-service stop 和 external profile 的 shutdown 必须保留 `animetta-mc`。
+新的 Minecraft 容器。用户明确要求首次建立或恢复长期服务器时，可通过 mc-mcp
+受信任的部署入口显式传递 `allow_create=true`，固定容器身份、持久卷及自动重启策略，
+完成后保留服务器，后续继续使用 `external-local`。模型可见的 `mc_connection`
+不得暴露该参数。用户单独授权的临时隔离世界必须在 `finally` 中调用 `shutdown`；
+普通 `disconnect`、service stop 和 external profile 的 shutdown 必须保留 `animetta-mc`。
 
 ## Domains
 

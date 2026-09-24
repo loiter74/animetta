@@ -12,6 +12,18 @@ function offlineUuid(username) {
 }
 
 describe('managed Minecraft Compose configuration', () => {
+  it('pins the reusable local server identity and keeps ports local', async () => {
+    const config = JSON.parse(await readFile('config/mc-mcp.json', 'utf8'));
+    const compose = await readFile('server/docker-compose.yml', 'utf8');
+    const environment = config.profiles['managed-local'].server.environment;
+    assert.equal(environment.MC_MCP_CONTAINER_NAME, 'animetta-mc');
+    assert.equal(environment.MC_MCP_DATA_VOLUME, 'animetta-mc-data');
+    assert.match(compose, /restart: unless-stopped/);
+    assert.match(compose, /127\.0\.0\.1:\$\{MC_MCP_SERVER_PORT:-25565\}:25565/);
+    assert.match(compose, /VERSION: "1\.21"/);
+    assert.match(compose, /GAMEMODE: "survival"/);
+  });
+
   it('provisions the bot operator from a checked-in offline ops file', async () => {
     const compose = await readFile('server/docker-compose.yml', 'utf8');
     const operators = JSON.parse(await readFile('server/ops.json', 'utf8'));

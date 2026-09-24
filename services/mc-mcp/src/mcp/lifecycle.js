@@ -272,7 +272,7 @@ export class MinecraftLifecycle {
       try {
         this.state = 'shutting_down';
         await this.runtime.stop();
-        await this.managedServer.stop();
+        if (this.profile?.mode === 'managed') await this.managedServer.stop();
         this.profile = null;
         this.profileName = null;
         this.presentation = null;
