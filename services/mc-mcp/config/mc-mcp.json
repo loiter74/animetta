@@ -48,7 +48,7 @@
         "version": "1.21",
         "login_timeout_ms": 10000,
         "presentation": {
-          "mode": "off",
+          "mode": "visual_only",
           "tempo": "normal",
           "seed": "animetta-live-v1"
         }

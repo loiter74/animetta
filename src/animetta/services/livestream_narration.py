@@ -142,24 +142,31 @@ class BroadcastNarrationDirector:
             if event_id in self._seen_set or sequence <= self._highest_sequence:
                 return
             state = _narration_state(detached, speech_state="none")
+            repeated = bool(
+                self._recent
+                and detached.get("mission_id") == self._recent[-1][0].get("mission_id")
+                and detached["payload"] == self._recent[-1][0]["payload"]
+                and state["phase"] != "finished"
+            )
             await self._emit("minecraft:activity_projection", detached, None)
-            await self._emit("livestream:narration_state", state, None)
+            if not repeated:
+                await self._emit("livestream:narration_state", state, None)
             self._remember(event_id)
             self._highest_sequence = sequence
             self._recent.append((detached, state))
 
-        if self._mode != "full" or self._speaker is None:
+        if repeated or self._mode != "full" or self._speaker is None:
             return
         cue = _cue(detached, state, now=self._clock())
         generation = self._generation
-        progress_key = _progress_key(detached) if cue.priority == 50 else None
-        if progress_key is not None:
-            previous = self._pending_progress.get(progress_key)
-            if previous is not None and not previous.done():
-                previous_cue_id = previous.get_name().removeprefix("minecraft-narration-")
-                if previous_cue_id not in self._started_cues:
-                    self._superseded_cues.add(previous_cue_id)
-                    previous.cancel()
+        scope_key = _progress_key(detached)
+        previous = self._pending_progress.get(scope_key)
+        if previous is not None and not previous.done():
+            previous_cue_id = previous.get_name().removeprefix("minecraft-narration-")
+            if previous_cue_id not in self._started_cues:
+                self._superseded_cues.add(previous_cue_id)
+                previous.cancel()
+        progress_key = scope_key if cue.priority == 50 else None
         task = asyncio.create_task(
             self._deliver(cue, state, generation),
             name=f"minecraft-narration-{cue.cue_id}",
@@ -419,7 +426,9 @@ def _narration_state(projection: Mapping[str, Any], *, speech_state: str) -> dic
         "source_event_id": str(projection["event_id"]),
         "phase": phase,
         "visual_text": _visual_text(payload)[:80],
-        "emotion": _PHASE_EMOTION[phase],
+        "emotion": (
+            "alert" if payload.get("outcome") in {"failed", "blocked"} else _PHASE_EMOTION[phase]
+        ),
         "speech_state": speech_state,
         "occurred_at_ms": int(projection["occurred_at_ms"]),
     }
@@ -466,21 +475,32 @@ def _visual_text(payload: Mapping[str, Any]) -> str:
     focus = payload.get("focus")
     label = str(focus.get("label")) if isinstance(focus, Mapping) else "当前目标"
     if phase == "planning":
-        return f"我先想清楚怎么{intent}{label}。"
+        return {
+            "acquire": f"先找{label}，拿到手再往下做。",
+            "craft": f"先看看材料够不够，再做{label}。",
+            "build": f"我先看看位置，再动手搭{label}。",
+            "travel": "先看看路，再往目的地走。",
+            "combat": "我先看看情况，别贸然冲上去。",
+            "survive": "先顾好安全，其他的等一下。",
+            "discover": "我先看看附近有什么。",
+        }.get(str(payload.get("intent")), f"先从{label}开始，我看看怎么做比较合适。")
     if phase == "observing":
         return f"先看看{label}周围的情况。"
     if phase == "committed":
-        return f"目标确定，开始{intent}{label}。"
+        return f"就先{intent}{label}，做完再看下一步。"
     if phase == "acting":
-        return f"正在{intent}{label}。"
+        progress = payload.get("progress")
+        if isinstance(progress, Mapping):
+            return f"{label}已经做到 {progress['current']}/{progress['total']}，我继续。"
+        return f"我在{intent}{label}，稍等一下。"
     if phase == "checking":
-        return f"等一下，我确认{label}是否真的完成。"
+        return f"先别急，我确认一下{label}的结果。"
     if phase == "recovering":
-        return f"刚才没有按预期进行，我正在调整{label}。"
+        return f"{label}这一步不太顺，我先重新看看情况。"
     terminal = {
-        "succeeded": f"{label}已经确认完成。",
-        "failed": f"{label}这次没有完成。",
-        "cancelled": f"{label}已经停止。",
-        "blocked": f"{label}暂时被卡住了。",
+        "succeeded": f"好了，{label}这一步完成了。",
+        "failed": f"{label}这次没做成，先停在这里。",
+        "cancelled": f"好，{label}先不做了。",
+        "blocked": f"{label}现在卡住了，还不能算完成。",
     }
     return terminal.get(outcome, f"{label}已经结束。")

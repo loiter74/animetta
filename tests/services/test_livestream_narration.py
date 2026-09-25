@@ -401,3 +401,61 @@ async def test_persisted_replay_skips_one_invalid_record() -> None:
         ("minecraft:activity_projection", "activity:2"),
         ("livestream:narration_state", "activity:2"),
     ]
+
+
+async def test_repeated_phase_keeps_facts_without_repeating_commentary() -> None:
+    emitted: list[tuple[str, dict[str, Any]]] = []
+
+    async def emit(event, payload, _to):
+        emitted.append((event, payload))
+
+    director = BroadcastNarrationDirector(emit, mode="visual_only")
+    await director.submit(_projection(1, phase="acting"))
+    await director.submit(_projection(2, phase="acting"))
+    await director.submit(_projection(3, phase="finished", outcome="failed"))
+    assert len([e for e, _ in emitted if e == "minecraft:activity_projection"]) == 3
+    states = [p for e, p in emitted if e == "livestream:narration_state"]
+    assert [s["source_event_id"] for s in states] == ["activity:1", "activity:3"]
+    assert states[-1]["emotion"] == "alert"
+    assert "没做成" in states[-1]["visual_text"]
+
+
+async def test_result_supersedes_unspoken_plan_instead_of_speaking_it_late() -> None:
+    blocked = True
+    spoken: list[str] = []
+
+    async def emit(_event, _payload, _to):
+        pass
+
+    async def speaker(cue, on_started):
+        await on_started()
+        spoken.append(cue.source_event_id)
+        return cue.visual_text
+
+    director = BroadcastNarrationDirector(emit, mode="full", speaker=speaker, busy=lambda: blocked)
+    await director.submit(_projection(1, phase="planning"))
+    await asyncio.sleep(0)
+    await director.submit(_projection(2, phase="finished", outcome="succeeded"))
+    blocked = False
+    await asyncio.sleep(0.2)
+    await director.close()
+    assert spoken == ["activity:2"]
+
+
+async def test_plan_changes_with_intent_and_progress_uses_observed_counts() -> None:
+    states: list[dict[str, Any]] = []
+
+    async def emit(event, payload, _to):
+        if event == "livestream:narration_state":
+            states.append(payload)
+
+    director = BroadcastNarrationDirector(emit, mode="visual_only")
+    planning = _projection(1, phase="planning")
+    planning["payload"]["intent"] = "craft"
+    await director.submit(planning)
+    assert "材料够不够" in states[-1]["visual_text"]
+    assert "完成" not in states[-1]["visual_text"]
+    acting = _projection(2, phase="acting")
+    acting["payload"]["progress"] = {"current": 1, "total": 3, "unit": "items"}
+    await director.submit(acting)
+    assert "1/3" in states[-1]["visual_text"]

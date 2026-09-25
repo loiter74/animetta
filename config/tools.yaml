@@ -79,7 +79,7 @@ minecraft:
     auto_heal: true             # 自动回血
     max_distance: 500           # 最大活动半径
   presentation:
-    mode: "off"                 # 通过固定世界与真实直播验收后，再由正式部署显式开启 full
+    mode: "visual_only"         # 自然动作与公开行动说明；语音旁白仍需显式开启 full
     tempo: normal
     seed: animetta-live-v1
     replay_limit: 64

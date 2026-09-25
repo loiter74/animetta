@@ -53,11 +53,11 @@ def test_presentation_defaults_off_and_has_bounded_replay_retention() -> None:
     )
 
 
-def test_bundled_presentation_stays_off_until_formal_acceptance() -> None:
+def test_bundled_presentation_enables_visual_intent_without_automatic_speech() -> None:
     project_root = Path(__file__).resolve().parents[4]
     tools = yaml.safe_load((project_root / "config" / "tools.yaml").read_text(encoding="utf-8"))
 
-    assert tools["minecraft"]["presentation"]["mode"] == "off"
+    assert tools["minecraft"]["presentation"]["mode"] == "visual_only"
 
 
 def test_presentation_accepts_the_canonical_public_policy() -> None:

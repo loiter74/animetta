@@ -156,9 +156,13 @@ async def test_assembly_wires_presentation_to_durable_activity_and_emit(tmp_path
     assert [event.payload.phase for event in page.events] == [
         "planning",
         "finished",
+        "planning",
+        "finished",
         "finished",
     ]
     assert [event.payload.outcome for event in page.events] == [
+        "active",
+        "succeeded",
         "active",
         "blocked",
         "succeeded",

@@ -78,6 +78,8 @@ _FOCUS_KIND_BY_INTENT: dict[str, Literal["item", "entity", "place", "structure",
 }
 _INTENT_BY_CAPABILITY = {
     "collect": "acquire",
+    "mine": "acquire",
+    "mine_shaft": "build",
     "craft": "craft",
     "smelt": "craft",
     "place": "build",
@@ -86,29 +88,38 @@ _INTENT_BY_CAPABILITY = {
     "attack": "combat",
     "inspect": "discover",
     "observe": "discover",
+    "status": "discover",
+    "inspect_region": "discover",
+    "recipes": "learn",
+    "equip": "interact",
 }
 _UNSAFE_LABEL = re.compile(r"(?i)(?:\bBearer\s+|\bsk-[A-Za-z0-9_-]{6,}|[\r\n\x00-\x1f])")
 _PUBLIC_FOCUS_LABELS = {
-    "minecraft:birch_planks": "birch planks",
-    "minecraft:cobblestone": "cobblestone",
-    "minecraft:cooked_beef": "cooked beef",
-    "minecraft:copper_ingot": "copper ingot",
-    "minecraft:copper_ore": "copper ore",
-    "minecraft:crafting_table": "crafting table",
-    "minecraft:creeper": "creeper",
-    "minecraft:diamond_block": "diamond block",
-    "minecraft:diamond_pickaxe": "diamond pickaxe",
-    "minecraft:oak_door": "oak door",
-    "minecraft:oak_log": "oak log",
-    "minecraft:oak_planks": "oak planks",
-    "minecraft:raw_copper": "raw copper",
-    "minecraft:skeleton": "skeleton",
-    "minecraft:spruce_planks": "spruce planks",
-    "minecraft:starter_shelter": "starter shelter",
-    "minecraft:stone_pickaxe": "stone pickaxe",
-    "minecraft:stone_sword": "stone sword",
-    "minecraft:white_bed": "white bed",
-    "minecraft:zombie": "zombie",
+    "minecraft:birch_log": "白桦原木",
+    "minecraft:birch_planks": "白桦木板",
+    "minecraft:stick": "木棍",
+    "minecraft:iron_ingot": "铁锭",
+    "minecraft:iron_pickaxe": "铁镐",
+    "minecraft:diamond": "钻石",
+    "minecraft:cobblestone": "圆石",
+    "minecraft:cooked_beef": "熟牛肉",
+    "minecraft:copper_ingot": "铜锭",
+    "minecraft:copper_ore": "铜矿石",
+    "minecraft:crafting_table": "工作台",
+    "minecraft:creeper": "苦力怕",
+    "minecraft:diamond_block": "钻石块",
+    "minecraft:diamond_pickaxe": "钻石镐",
+    "minecraft:oak_door": "橡木门",
+    "minecraft:oak_log": "橡木原木",
+    "minecraft:oak_planks": "橡木木板",
+    "minecraft:raw_copper": "粗铜",
+    "minecraft:skeleton": "骷髅",
+    "minecraft:spruce_planks": "云杉木板",
+    "minecraft:starter_shelter": "临时庇护所",
+    "minecraft:stone_pickaxe": "石镐",
+    "minecraft:stone_sword": "石剑",
+    "minecraft:white_bed": "白色床",
+    "minecraft:zombie": "僵尸",
 }
 _RUNTIME_PHASE_TO_PUBLIC: dict[RuntimeActionPhase, PublicActivityPhase | None] = {
     "accepted": None,
@@ -332,10 +343,8 @@ class PublicActivityRecorder:
         outcome: PublicActivityOutcome = "active",
         progress: PublicActivityProgress | None = None,
     ) -> ActivityRecord | None:
-        if (
-            not self._enabled
-            or command.mode == "atomic"
-            or not isinstance(command.payload.get("goal"), dict)
+        if not self._enabled or not any(
+            isinstance(command.payload.get(key), dict) for key in ("goal", "action")
         ):
             return None
         try:
@@ -497,7 +506,25 @@ def _public_context(
         target = goal.get("target")
     elif isinstance(command.payload.get("action"), dict):
         action = command.payload["action"]
-        intent_value = _INTENT_BY_CAPABILITY.get(str(action.get("capability")), "interact")
+        capability = str(action.get("capability"))
+        intent_value = _INTENT_BY_CAPABILITY.get(capability, "interact")
+        # Only registry-backed item/entity identifiers may become public labels.
+        # Coordinates, chat messages and arbitrary runtime detail stay private.
+        parameter = {
+            "collect": "block_type",
+            "mine": "block_type",
+            "place": "block_type",
+            "craft": "recipe",
+            "smelt": "item",
+            "equip": "item",
+            "recipes": "item",
+            "attack": "target",
+        }.get(capability)
+        parameters = action.get("parameters")
+        if parameter and isinstance(parameters, dict):
+            target = parameters.get(parameter)
+            if isinstance(target, str) and ":" not in target:
+                target = f"minecraft:{target}"
 
     intent_text = (
         intent_value

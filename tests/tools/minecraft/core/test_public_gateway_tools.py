@@ -428,7 +428,7 @@ async def test_activity_progress_replays_public_projection_while_disconnected(
     second = json.loads(second_response)["events"][0]
     assert first["payload"]["phase"] == "planning"
     assert second["payload"]["phase"] == "observing"
-    assert first["payload"]["focus"] == {"kind": "structure", "label": "starter shelter"}
+    assert first["payload"]["focus"] == {"kind": "structure", "label": "临时庇护所"}
     assert first["event"] == "minecraft.activity.projection"
     assert "private-command-id" not in first_response
     assert "conversation:offline-user" not in first_response

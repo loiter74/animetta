@@ -51,6 +51,36 @@ async def _command(
     )[0]
 
 
+async def test_atomic_activity_uses_only_known_target_labels() -> None:
+    repository = InMemoryCommandJournal()
+    base = await _command(repository)
+    recorder = PublicActivityRecorder(repository=repository, enabled=True, now_ms=lambda: 100)
+    for capability, parameters, label in (
+        ("collect", {"block_type": "birch_log", "count": 1}, "白桦原木"),
+        ("craft", {"recipe": "stick", "count": 1}, "木棍"),
+        ("goto", {"x": 12, "y": 64, "z": 20}, None),
+        ("chat", {"message": "private transcript"}, None),
+        ("collect", {"block_type": "untrusted_free_text"}, None),
+    ):
+        command = base.model_copy(
+            update={
+                "mode": "atomic",
+                "payload": {"action": {"capability": capability, "parameters": parameters}},
+            }
+        )
+        record = await recorder.record_command(
+            command, source_key=str(parameters), phase="committed"
+        )
+        assert record is not None
+        assert (record.payload.focus.label if record.payload.focus else None) == label
+        assert (
+            "private transcript"
+            not in project_activity_page(
+                await repository.read_activity("conversation:one")
+            ).model_dump_json()
+        )
+
+
 async def test_recorder_projects_public_scoped_cursor_replay_after_commit() -> None:
     repository = InMemoryCommandJournal()
     one = await _command(repository)
@@ -97,7 +127,7 @@ async def test_recorder_projects_public_scoped_cursor_replay_after_commit() -> N
     assert public["payload"] == {
         "phase": "planning",
         "intent": "acquire",
-        "focus": {"kind": "item", "label": "oak log"},
+        "focus": {"kind": "item", "label": "橡木原木"},
         "progress": None,
         "outcome": "active",
     }

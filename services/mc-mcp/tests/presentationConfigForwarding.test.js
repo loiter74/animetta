@@ -18,7 +18,7 @@ test('the effective application presentation is forwarded to the bot child envir
 });
 
 
-test('all bundled profiles stay off until formal acceptance explicitly enables presentation', async () => {
+test('everyday connections show intent while review profiles remain quiet', async () => {
   const config = JSON.parse(await readFile(
     new URL('../config/mc-mcp.json', import.meta.url),
     'utf8',
@@ -31,6 +31,9 @@ test('all bundled profiles stay off until formal acceptance explicitly enables p
     'managed-review',
     'managed-survival',
   ]) {
-    assert.equal(configuredProfile(config, profileName).bot.presentation.mode, 'off');
+    assert.equal(
+      configuredProfile(config, profileName).bot.presentation.mode,
+      profileName === 'external-local' ? 'visual_only' : 'off',
+    );
   }
 });
