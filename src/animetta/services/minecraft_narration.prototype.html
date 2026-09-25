@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Animetta · MC 拟人表达原型</title>
+<style>
+:root{  --c-bg:        #1a1028;
+  --c-bg-rgb:        26 16 40;
+  --c-surface:   #241538;
+  --c-surface-rgb:   36 21 56;
+  --c-panel:     #2d1b45;
+  --c-panel-rgb:     45 27 69;
+  --c-card:      #36205a;
+  --c-card-rgb:      54 32 90;
+  --c-text:        #e8e0f0;
+  --c-text-rgb:        232 224 240;
+  --c-text-dim:    #e4afc5;
+  --c-text-dim-rgb:    228 175 197;
+  --c-text-muted:  #c8849c;
+  --c-text-muted-rgb:  200 132 156;
+  --c-accent:        #e879a8;
+  --c-accent-rgb:        232 121 168;
+  --c-accent-hover:  #f090c0;
+  --c-accent-hover-rgb:  240 144 192;
+  --c-accent-soft:   rgba(232, 121, 168, 0.15);
+  --c-glow:          rgba(232, 121, 168, 0.40);
+  --c-glow-soft:     rgba(232, 121, 168, 0.15);
+  --c-blue:  #7c8cf5;    
+  --c-blue-rgb:  124 140 245;
+  --c-mint:  #6ee7b7;
+  --c-mint-rgb:  110 231 183;
+  --c-gold:  #f5c872;
+  --c-gold-rgb:  245 200 114;
+  --c-violet: #a882ff;   
+  --c-violet-rgb: 168 130 255;
+  --c-violet-soft: rgba(168, 130, 255, 0.15);
+  --c-violet-glow: rgba(168, 130, 255, 0.50);
+  --c-success: #4ade80;
+  --c-success-rgb: 74 222 128;
+  --c-warning: #fbbf24;
+  --c-warning-rgb: 251 191 36;
+  --c-error:   #f87171;
+  --c-error-rgb:   248 113 113;
+  --c-border:        rgba(255, 255, 255, 0.08);
+  --c-border-accent: rgba(232, 121, 168, 0.30);
+  --c-user-bubble:   rgba(124, 140, 245, 0.20);
+  --c-ai-bubble:     rgba(232, 121, 168, 0.15);
+  --r-sm:   6px;
+  --r-md:   8px;
+  --r-lg:  12px;
+  --r-xl:  16px;
+  --r-2xl: 20px;
+  --r-full: 9999px;
+  --s-1:    4px;
+  --s-1_5:  6px;
+  --s-2:    8px;
+  --s-2_5: 10px;
+  --s-3:   12px;
+  --s-4:   16px;
+  --s-5:   20px;
+  --s-6:   24px;
+  --s-8:   32px;
+  --s-10:  40px;
+  --s-12:  48px;
+  --shadow-soft:         0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-panel:        0 20px 48px rgba(0, 0, 0, 0.45);
+  --shadow-glow-accent:  0 0 8px rgba(232, 121, 168, 0.6);
+  --shadow-glow-success: 0 0 8px rgba(74, 222, 128, 0.6);
+  --shadow-glow-violet:  0 0 12px var(--c-violet-glow);
+  --d-fast: 150ms;
+  --d-base: 200ms;
+  --d-slow: 300ms;
+  --ease-out-expo:  cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-back-soft: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --font-sans:
+  --font-mono:
+  --fs-9:    9px;     
+  --fs-10:  10px;     
+  --fs-xs:  12px;     
+  --fs-sm:  14px;     
+  --fs-base:16px;
+  --fs-lg:  18px;     
+  --fs-xl:  20px;     
+  --fs-2xl: 28px;     
+  --fs-3xl: 40px;     
+  --lh-tight:  1.15;
+  --lh-snug:   1.30;
+  --lh-body:   1.50;
+  --lh-relax:  1.65;}
+*{box-sizing:border-box}body{margin:0;background:var(--c-bg);color:var(--c-text);font:16px/1.65 system-ui,"Microsoft YaHei",sans-serif}main{max-width:1140px;margin:auto;padding:48px 28px}header{max-width:820px;margin-bottom:28px}.eyebrow{color:var(--c-accent);font-size:12px;letter-spacing:.16em}h1{font-size:36px;line-height:1.3;margin:12px 0}h2{font-size:18px;margin:0 0 16px}p{color:var(--c-text-dim)}.grid{display:grid;grid-template-columns:1.5fr 1fr;gap:20px}.panel{background:var(--c-surface);border:1px solid var(--c-border);border-radius:12px;padding:24px;margin-bottom:20px}.stage{background:var(--c-panel);min-height:260px;display:flex;flex-direction:column;justify-content:space-between;border-radius:12px;padding:24px}.small{font-size:13px;color:var(--c-text-muted)}.bubble{font-size:24px;line-height:1.65;background:var(--c-ai-bubble);border-left:3px solid var(--c-accent);padding:18px;border-radius:12px;margin:22px 0 6px}.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}button,select{font:inherit;color:var(--c-text);background:var(--c-card);border:1px solid var(--c-border);border-radius:12px;padding:9px 14px;cursor:pointer}button:hover,button[aria-selected=true]{border-color:var(--c-accent);color:var(--c-accent)}button:focus-visible,select:focus-visible{outline:2px solid var(--c-accent);outline-offset:3px}button:disabled{opacity:.45;cursor:default}.primary{background:var(--c-accent);color:var(--c-bg)}dl{display:grid;grid-template-columns:100px 1fr;gap:10px;margin:0}dt{color:var(--c-text-muted)}dd{margin:0}.log{list-style:none;padding:0;margin:0;max-height:290px;overflow:auto}.log li{border-bottom:1px solid var(--c-border);padding:12px 0}.tabs{margin:16px 0}.steps{margin-top:18px}.note{padding:14px;background:var(--c-panel);border-radius:12px;font-size:14px}.section{margin-top:24px}@media(max-width:760px){.grid{grid-template-columns:1fr}main{padding:24px 16px}h1{font-size:28px}}
+</style>
+<main><header><div class="eyebrow">ANIMETTA / MINECRAFT / PROTOTYPE</div><h1>让行动有回应，也留一点安静。</h1><p>想验证：简短意图、真实进度和受阻反馈，能否让 MC 伙伴的表达更自然？基于现有播报逻辑制作；这是可丢弃的交互模拟，场景事件由按钮注入，不连接游戏。</p></header>
+<div class="grid"><div><section class="panel"><h2>观众看到的行动说明</h2><div class="stage"><div class="row"><span>Animetta · 收集 4 个橡木原木</span><span class="small">模拟预览</span></div><div id="bubble" class="bubble" aria-live="polite">准备好了，选一个场景开始。</div><div class="small">字幕卡片为原型布局；文案直接提取自现有 Python 实现。</div></div><p id="notice" class="small" aria-live="polite">等待第一条活动。</p></section>
+<section class="panel"><h2>自由探索</h2><p class="small">任意注入活动，感受表达节奏。这些按钮不代表真实游戏允许任意状态跳转。</p><div class="row" id="actions"></div><div class="row section"><button id="reset">清空重来</button><label>呈现方式 <select id="mode"><option value="visual_only">自然表达（当前默认）</option><option value="off">关闭展示</option></select></label></div></section></div>
+<aside><section class="panel"><h2>当前状态</h2><dl id="state"></dl></section><section class="panel"><h2>公开表达记录</h2><ul id="log" class="log"></ul></section></aside></div>
+<section class="panel"><h2>跟着场景走一遍</h2><div class="row tabs" id="tabs" role="tablist" aria-label="演示场景"></div><p id="description"></p><div class="row steps" id="steps"></div></section>
+<div class="note">实现边界：现有逻辑按阶段使用固定句式，并对连续相同的非终态活动去重；它还没有基于具体环境自由组织语言。原型展示公开意图与结果，不展示内部推理。默认仅视觉说明，不播放 TTS，也不模拟自然转头动作。</div>
+<p class="small">来源：src/animetta/services/livestream_narration.py · 基线 f53f6a89。结论待体验：现有句式是否仍显机械，以及哪些阶段适合保持安静。</p>
+</main>
+<script>
+const events={"plan": {"payload": {"phase": "planning", "intent": "acquire", "focus": {"kind": "item", "label": "橡木原木"}, "outcome": "active"}, "text": "先找橡木原木，拿到手再往下做。"}, "look": {"payload": {"phase": "observing", "intent": "acquire", "focus": {"kind": "item", "label": "橡木原木"}, "outcome": "active"}, "text": "先看看橡木原木周围的情况。"}, "decide": {"payload": {"phase": "committed", "intent": "acquire", "focus": {"kind": "item", "label": "橡木原木"}, "outcome": "active"}, "text": "就先收集橡木原木，做完再看下一步。"}, "work": {"payload": {"phase": "acting", "intent": "acquire", "focus": {"kind": "item", "label": "橡木原木"}, "outcome": "active"}, "text": "我在收集橡木原木，稍等一下。"}, "progress": {"payload": {"phase": "acting", "intent": "acquire", "focus": {"kind": "item", "label": "橡木原木"}, "outcome": "active", "progress": {"current": 2, "total": 4, "unit": "items"}}, "text": "橡木原木已经做到 2/4，我继续。"}, "check": {"payload": {"phase": "checking", "intent": "acquire", "focus": {"kind": "item", "label": "橡木原木"}, "outcome": "active"}, "text": "先别急，我确认一下橡木原木的结果。"}, "retry": {"payload": {"phase": "recovering", "intent": "acquire", "focus": {"kind": "item", "label": "橡木原木"}, "outcome": "active"}, "text": "橡木原木这一步不太顺，我先重新看看情况。"}, "done": {"payload": {"phase": "finished", "intent": "acquire", "focus": {"kind": "item", "label": "橡木原木"}, "outcome": "succeeded"}, "text": "好了，橡木原木这一步完成了。"}, "blocked": {"payload": {"phase": "finished", "intent": "acquire", "focus": {"kind": "item", "label": "橡木原木"}, "outcome": "blocked"}, "text": "橡木原木现在卡住了，还不能算完成。"}, "fail": {"payload": {"phase": "finished", "intent": "acquire", "focus": {"kind": "item", "label": "橡木原木"}, "outcome": "failed"}, "text": "橡木原木这次没做成，先停在这里。"}, "cancel": {"payload": {"phase": "finished", "intent": "acquire", "focus": {"kind": "item", "label": "橡木原木"}, "outcome": "cancelled"}, "text": "好，橡木原木先不做了。"}};
+const labels={plan:'想好下一步',look:'看看周围',decide:'开始收集',work:'正在收集',progress:'拿到 2 / 4',check:'检查结果',retry:'重新观察',done:'确认完成',blocked:'遇到阻碍',fail:'本次失败',cancel:'取消任务'};
+const phases={planning:'规划',observing:'观察',committed:'决定行动',acting:'行动中',checking:'检查',recovering:'恢复中',finished:'已结束'};
+const outcomes={active:'进行中',succeeded:'完成',blocked:'受阻',failed:'失败',cancelled:'已取消'};
+const emotions={planning:'思考',observing:'思考',committed:'自信',acting:'专注',checking:'思考',recovering:'警觉',finished:'放松'};
+const scenarios=[
+ {name:'顺利采集',description:'逐步观察、采集并检查结果。注意：有确认结果后，才说完成。',steps:['plan','look','decide','progress','check','done']},
+ {name:'重复进度',description:'连续点击两次相同进度：活动事实继续计数，但不重复刷出同一句话。',steps:['plan','progress','progress','check','done']},
+ {name:'遇到阻碍',description:'恢复阶段只说明重新观察，不虚构已经找到替代路线；受阻时明确还没有完成。',steps:['plan','work','retry','blocked']},
+ {name:'中途取消',description:'任务被取消时，给出简短确认，避免把取消当成成功。',steps:['plan','work','cancel']}
+];
+function initial(mode='visual_only'){return {mode,facts:0,suppressed:0,last:null,visible:null,log:[],notice:'等待第一条活动。'};}
+function reduce(s,key){
+ if(s.mode==='off')return {...s,notice:'展示已关闭：本次活动不进入展示层。'};
+ const event=events[key],repeat=s.last&&JSON.stringify(s.last.payload)===JSON.stringify(event.payload)&&event.payload.phase!=='finished';
+ return {...s,facts:s.facts+1,last:event,suppressed:s.suppressed+(repeat?1:0),visible:repeat?s.visible:event,log:repeat?s.log:[...s.log,event],notice:repeat?'收到相同进度，保留活动事实，本次安静不刷屏。':'收到新活动，更新公开表达。'};
+}
+let state=initial(),scenario=0,step=0;
+const $=id=>document.getElementById(id);
+function render(){
+ const p=state.last?.payload;
+ const emotion=p?(['blocked','failed'].includes(p.outcome)?'警觉':emotions[p.phase]):'等待';
+ $('state').innerHTML=[['呈现方式',state.mode==='off'?'关闭':'仅视觉'],['行动目标','橡木原木'],['当前阶段',p?phases[p.phase]:'未开始'],['结果',p?outcomes[p.outcome]:'未确认'],['当前进度',p?.progress?'2 / 4':'本条未提供'],['情绪',emotion],['活动事实',state.facts],['公开表达',state.log.length],['已抑制重复',state.suppressed]].map(([k,v])=>'<dt>'+k+'</dt><dd>'+v+'</dd>').join('');
+ $('bubble').textContent=state.visible?.text||'准备好了，选一个场景开始。';
+ $('notice').textContent=state.notice;
+ $('log').replaceChildren(...state.log.slice().reverse().map(e=>{const li=document.createElement('li');li.textContent=e.text;return li;}));
+ $('description').textContent=scenarios[scenario].description;
+ $('steps').replaceChildren(...scenarios[scenario].steps.map((key,i)=>{const b=document.createElement('button');b.textContent=(i<step?'✓ ':String(i+1)+'. ')+labels[key];b.disabled=i!==step;b.onclick=()=>{state=reduce(state,key);step++;render();};return b;}));
+ [...$('tabs').children].forEach((b,i)=>b.setAttribute('aria-selected',String(i===scenario)));
+}
+Object.entries(labels).forEach(([key,label])=>{const b=document.createElement('button');b.textContent=label;b.onclick=()=>{state=reduce(state,key);render();};$('actions').append(b);});
+scenarios.forEach((s,i)=>{const b=document.createElement('button');b.textContent=s.name;b.setAttribute('role','tab');b.onclick=()=>{scenario=i;step=0;state=initial(state.mode);render();};$('tabs').append(b);});
+$('reset').onclick=()=>{state=initial(state.mode);step=0;render();};
+$('mode').onchange=e=>{state=initial(e.target.value);step=0;render();};
+render();
+</script></html>
