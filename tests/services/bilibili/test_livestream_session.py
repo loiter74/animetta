@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import threading
 import time
 from collections.abc import Callable
 
@@ -367,9 +368,11 @@ async def test_stop_timeout_does_not_block_session_shutdown() -> None:
 
 @pytest.mark.asyncio
 async def test_hot_switch_does_not_start_new_gateway_when_old_stop_times_out() -> None:
+    release_stop = threading.Event()
+
     class SlowGateway(FakeGateway):
         def stop(self) -> None:
-            time.sleep(0.2)
+            release_stop.wait()
 
     gateways: list[FakeGateway] = []
 
@@ -382,19 +385,20 @@ async def test_hot_switch_does_not_start_new_gateway_when_old_stop_times_out() -
         gateway_factory=factory,
         shutdown_timeout_seconds=0.01,
     )
-    await session.set_room(100)
+    try:
+        await session.set_room(100)
+        snapshot = await session.set_room(200)
+        assert len(gateways) == 1
+        assert snapshot["state"] == "error"
+        assert snapshot["error_code"] == "shutdown_timeout"
+        assert snapshot["desired_room_id"] == 200
+        assert snapshot["message"] == "Previous gateway did not stop"
 
-    snapshot = await session.set_room(200)
-
-    assert len(gateways) == 1
-    assert snapshot["state"] == "error"
-    assert snapshot["error_code"] == "shutdown_timeout"
-    assert snapshot["desired_room_id"] == 200
-    assert snapshot["message"] == "Previous gateway did not stop"
-
-    retry = await session.set_room(300)
-    assert len(gateways) == 1
-    assert retry["error_code"] == "shutdown_timeout"
+        retry = await session.set_room(300)
+        assert len(gateways) == 1
+        assert retry["error_code"] == "shutdown_timeout"
+    finally:
+        release_stop.set()
 
 
 @pytest.mark.asyncio

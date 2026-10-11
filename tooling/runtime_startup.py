@@ -165,7 +165,15 @@ class StartupContext:
         )
         if not all(selected.values()):
             raise RuntimeError("the quality catalog does not declare image inputs")
-        return {name: image_fingerprint(self.root, inputs)[0] for name, inputs in selected.items()}
+        fingerprints = {
+            name: image_fingerprint(self.root, inputs)[0] for name, inputs in selected.items()
+        }
+        extras = sorted(set(self.environment.get("ANIMETTA_PYTHON_EXTRAS", "").split()))
+        if extras:
+            fingerprints["animetta"] = canonical_json_hash(
+                {"source": fingerprints["animetta"], "python_extras": extras}
+            )
+        return fingerprints
 
     def prepare(self) -> None:
         if self.command("docker", "info", "--format", "{{.OSType}}").stdout.strip() != "linux":

@@ -40,6 +40,14 @@ def test_host_python_environment_excludes_callers_python_packages(monkeypatch, t
     assert runtime_lifecycle.os.environ["PYTHONPATH"] == str(tmp_path / "foreign-packages")
 
 
+def test_optional_image_dependencies_are_normalized_and_reject_unknown_values(monkeypatch):
+    monkeypatch.setenv("ANIMETTA_PYTHON_EXTRAS", "search bilibili search")
+    assert runtime_lifecycle._compose_environment()["ANIMETTA_PYTHON_EXTRAS"] == "bilibili search"
+    monkeypatch.setenv("ANIMETTA_PYTHON_EXTRAS", "dev")
+    with pytest.raises(ValueError, match="unsupported extra"):
+        runtime_lifecycle._compose_environment()
+
+
 @pytest.mark.parametrize(
     ("operation", "build"),
     [

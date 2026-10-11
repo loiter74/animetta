@@ -191,6 +191,7 @@ def test_animetta_compose_selects_local_or_verified_image_from_one_definition() 
             "ANIMETTA_BUILD_FINGERPRINT": "${ANIMETTA_BUILD_FINGERPRINT:-untracked}",
             "VITE_EARTH_ENABLED": "${ANIMETTA_EARTH_ENABLED:-false}",
             "ANIMETTA_MEDIA_ENABLED": "${ANIMETTA_MEDIA_ENABLED:-false}",
+            "ANIMETTA_PYTHON_EXTRAS": "${ANIMETTA_PYTHON_EXTRAS:-}",
         },
     }
 
@@ -239,7 +240,7 @@ def test_compose_services_inject_only_explicit_least_privilege_environment() -> 
         "ANIMETTA_DATA_DIR=/app/data",
         "ANIMETTA_ACCESS_TOKEN=${ANIMETTA_ACCESS_TOKEN:?ANIMETTA_ACCESS_TOKEN is required}",
         "ANIMETTA_AUTH_USERNAME=${ANIMETTA_AUTH_USERNAME:-admin}",
-        "ANIMETTA_AUTH_PASSWORD_HASH=${ANIMETTA_AUTH_PASSWORD_HASH:-scrypt-v1:hCKIbfm-qsCRNXImQMlMtQ:Y8LBHJTp-XPsjB0z3Jqs_V3hV8MuGPCVMpN0BsSlcs4}",
+        "ANIMETTA_AUTH_PASSWORD_HASH=${ANIMETTA_AUTH_PASSWORD_HASH:-scrypt-v1:26c5Is2zGZm4xRqKSTvRqQ:ntOgMo49QXyM4gLX8TvWtmAunKLamrv13QpUoERssio}",
         "ANIMETTA_REDIS_URL=${ANIMETTA_REDIS_URL:-redis://:${ANIMETTA_REDIS_PASSWORD}@redis:6379/0}",
         "DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}",
         "DASHSCOPE_API_KEY=${DASHSCOPE_API_KEY:-}",

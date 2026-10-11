@@ -140,6 +140,9 @@ docker_scopes:
         - Dockerfile
         - .dockerignore
         - requirements.txt
+        - requirements-bilibili.txt
+        - requirements-search.txt
+        - requirements-memory-semantic.txt
         - docker/entrypoint.sh
         - docker/nginx.conf
         - scripts/validate-events.py
@@ -178,6 +181,9 @@ docker_scopes:
           - Dockerfile
           - .dockerignore
           - requirements.txt
+          - requirements-bilibili.txt
+          - requirements-search.txt
+          - requirements-memory-semantic.txt
           - src/animetta/**
           - config/**
           - .env.example
@@ -202,6 +208,7 @@ docker_scopes:
           - config/socket-events.json
         exclude_paths: *image-excludes
     environment_identity_fields:
+      - ANIMETTA_PYTHON_EXTRAS
       - ANIMETTA_EARTH_ENABLED
       - ANIMETTA_IMAGE
       - ANIMETTA_PROFILE
@@ -221,6 +228,9 @@ docker_scopes:
       - docker/entrypoint.sh
       - docker/nginx.conf
       - requirements.txt
+      - requirements-bilibili.txt
+      - requirements-search.txt
+      - requirements-memory-semantic.txt
       - pyproject.toml
       - uv.lock
       - frontend/**
@@ -373,6 +383,7 @@ groups:
     runner: pytest
     targets:
       - tests/scripts/test_runtime_lifecycle.py
+      - tests/scripts/test_bootstrap.py
       - tests/scripts/test_runtime_lifecycle_feedback.py
       - tests/scripts/test_startup_cache.py
       - tests/scripts/test_benchmark_startup.py
@@ -1931,6 +1942,7 @@ components:
       - scripts/rvc_preflight.py
       - scripts/benchmark_host_tts.py
       - scripts/runtime_lifecycle.py
+      - scripts/bootstrap.py
       - scripts/benchmark_startup.py
       - tooling/runtime_startup.py
       - tests/scripts/test_startup_cache.py
@@ -1944,6 +1956,7 @@ components:
       - tests/scripts/test_rvc_preflight.py
       - tests/scripts/test_benchmark_host_tts.py
       - tests/scripts/test_runtime_lifecycle.py
+      - tests/scripts/test_bootstrap.py
       - tests/scripts/test_runtime_lifecycle_feedback.py
       - tests/smoke/test_docker_frontend.py
     direct_groups:

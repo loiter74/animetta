@@ -35,6 +35,12 @@ services:
         - action: rebuild
           path: ./requirements.txt
         - action: rebuild
+          path: ./requirements-bilibili.txt
+        - action: rebuild
+          path: ./requirements-search.txt
+        - action: rebuild
+          path: ./requirements-memory-semantic.txt
+        - action: rebuild
           path: ./uv.lock
         - action: rebuild
           path: ./pyproject.toml

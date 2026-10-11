@@ -45,10 +45,16 @@ FROM python:3.13-slim-bookworm AS python-builder
 COPY --from=uv /uv /usr/local/bin/uv
 WORKDIR /build
 ENV UV_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/ UV_LINK_MODE=copy
-COPY requirements.txt ./
+COPY requirements.txt requirements-bilibili.txt requirements-search.txt requirements-memory-semantic.txt ./
+ARG ANIMETTA_PYTHON_EXTRAS=""
 RUN --mount=type=cache,id=animetta-uv-013,target=/root/.cache/uv \
+    set -- requirements.txt; \
+    for extra in $ANIMETTA_PYTHON_EXTRAS; do \
+      case "$extra" in bilibili|search|memory-semantic) ;; *) echo "Invalid Python extra" >&2; exit 1 ;; esac; \
+      set -- "$@" "requirements-$extra.txt"; \
+    done; \
     uv venv --python /usr/local/bin/python /opt/venv \
-    && uv pip sync --python /opt/venv/bin/python --compile-bytecode requirements.txt \
+    && uv pip sync --python /opt/venv/bin/python --compile-bytecode "$@" \
     && uv pip check --python /opt/venv/bin/python
 # Ship the native, hash-verified encoding with the copied venv so fresh
 # containers do not download it during service initialization or first use.

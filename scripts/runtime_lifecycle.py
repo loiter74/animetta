@@ -62,6 +62,7 @@ _COMPOSE_TARGET_KEYS = (
     "ANIMETTA_PORT",
     "ANIMETTA_DEV_PORT",
     "ANIMETTA_DEV_BACKEND_PORT",
+    "ANIMETTA_PYTHON_EXTRAS",
 )
 _DEPLOY_IMAGE_PATTERN = re.compile(
     rf"^(?:{re.escape(GHCR_ANIMETTA_IMAGE)}:"
@@ -551,6 +552,11 @@ def _compose_environment(
 
     environment = proxy_environment()
     environment.update({name: value(name) for name in _COMPOSE_TARGET_KEYS if value(name)})
+    extras = value("ANIMETTA_PYTHON_EXTRAS").split()
+    if set(extras) - {"bilibili", "search", "memory-semantic"}:
+        raise ValueError("ANIMETTA_PYTHON_EXTRAS contains an unsupported extra")
+    if extras:
+        environment["ANIMETTA_PYTHON_EXTRAS"] = " ".join(sorted(set(extras)))
     for name in (
         "ANIMETTA_HTTP_PORT",
         "ANIMETTA_PORT",

@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 
 import aiosqlite
 import pytest
 
 from animetta.orchestration.server.auth_admin_cli import reset_admin_password
-from animetta.orchestration.server.auth_password import hash_password
+from animetta.orchestration.server.auth_password import INITIAL_ADMIN_PASSWORD_HASH, hash_password
 from animetta.orchestration.server.auth_user import (
     AuthUserStore,
     LastActiveAdminError,
@@ -39,6 +40,91 @@ async def test_bootstrap_credentials_only_seed_an_empty_database(tmp_path: Path)
     assert await replacement.authenticate("ADMIN", "first-password") is not None
     assert await replacement.authenticate("replacement", "replacement-password") is None
     await replacement.close()
+
+
+async def test_initial_password_migrates_once_and_preserves_user_changes(
+    tmp_path, monkeypatch, capsys
+):
+    from animetta.orchestration.server import auth_admin_cli
+
+    monkeypatch.setenv("ANIMETTA_DATA_DIR", str(tmp_path))
+    monkeypatch.setenv("ANIMETTA_AUTH_USERNAME", "admin")
+    monkeypatch.setenv("ANIMETTA_AUTH_PASSWORD_HASH", hash_password("bootstrap-password"))
+    revoked = []
+
+    class Sessions:
+        def __init__(self, *_args, **_kwargs):
+            pass
+
+        async def start(self):
+            return SimpleNamespace(available=True)
+
+        async def revoke_user(self, user_id):
+            revoked.append(user_id)
+
+        async def close(self):
+            pass
+
+    monkeypatch.setattr(auth_admin_cli, "RedisAuthSessionStore", Sessions)
+    assert (
+        await reset_admin_password("admin", enable=False, password="123456", initial_only=True) == 0
+    )
+    store = AuthUserStore(
+        tmp_path / "auth.db",
+        bootstrap_username="admin",
+        bootstrap_password_hash=hash_password("ignored-password"),
+    )
+    await store.start()
+    first = await store.authenticate("admin", "123456")
+    assert first is not None and first.must_change_password is True
+    assert (
+        await reset_admin_password("admin", enable=False, password="123456", initial_only=True) == 0
+    )
+    second = await store.get_by_id(first.id)
+    assert second.credential_version == first.credential_version
+    assert revoked == [first.id]
+    for must_change in (False, True):
+        changed = await store.update_password(
+            first.id,
+            password_hash=hash_password("user-chosen-password"),
+            must_change_password=must_change,
+            actor_user_id=first.id,
+            action="password_changed" if not must_change else "local_admin_password_reset",
+        )
+        assert (
+            await reset_admin_password("admin", enable=False, password="123456", initial_only=True)
+            == 0
+        )
+        preserved = await store.authenticate("admin", "user-chosen-password")
+        assert preserved is not None and preserved.credential_version == changed.credential_version
+        assert preserved.must_change_password is must_change
+        assert await store.authenticate("admin", "123456") is None
+    assert revoked == [first.id]
+    output = capsys.readouterr().out
+    assert '"changed": false' in output
+    assert "user-chosen-password" not in output
+    await store.close()
+
+
+async def test_fresh_initial_admin_remains_restricted_without_credential_rotation(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setenv("ANIMETTA_DATA_DIR", str(tmp_path))
+    monkeypatch.setenv("ANIMETTA_AUTH_USERNAME", "admin")
+    monkeypatch.setenv("ANIMETTA_AUTH_PASSWORD_HASH", INITIAL_ADMIN_PASSWORD_HASH)
+    assert (
+        await reset_admin_password("admin", enable=False, password="123456", initial_only=True) == 0
+    )
+    store = AuthUserStore(
+        tmp_path / "auth.db",
+        bootstrap_username="admin",
+        bootstrap_password_hash=hash_password("ignored-password"),
+    )
+    await store.start()
+    account = await store.authenticate("admin", "123456")
+    assert account is not None and account.must_change_password is True
+    assert account.credential_version == 1
+    await store.close()
 
 
 async def test_username_normalization_conflicts_and_last_admin_are_enforced() -> None:

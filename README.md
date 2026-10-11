@@ -153,38 +153,30 @@ A ten-step reading path through the actual code, from boot to deep internals:
 
 - **Python 3.13** (the toolchain targets 3.13 via ruff/mypy)
 - **Docker** and the separately prepared Windows Qwen host service for the default voice runtime
-- **Node.js 22** and **pnpm 11.7.0** for frontend development or source builds; verified image deployment does not need them
+- **Node.js 22** and **pnpm 11.7.0** only for local frontend development; Docker builds and verified image deployment do not need them on the host
 - Optional inference capabilities use separate host environments; GPU packages do not enter the application image
 
-### 1. Install dependencies
+### Start with one command
 
 ```powershell
-py -3.13 -m pip install -c requirements.txt pydantic pyyaml python-dotenv loguru
+py -3.13 scripts/bootstrap.py --open
 ```
 
-The default core keeps character dialogue, Live2D, memory v2 and the existing Qwen voice. The command above prepares the lifecycle controller; the application environment is inside Docker. Local backend development uses `requirements.txt`. For Web development, install with `pnpm --dir frontend --filter animetta-desktop install --frozen-lockfile` and start with `pnpm --dir frontend dev`. For all developer tools, choose `--filter '*'`. Installation scopes, optional capabilities and memory modes are documented in the [core deployment guide](docs/development/core-deployment.md).
+Already configured? This is also available by double-clicking `start-anima.cmd`. The launcher prepares an isolated lightweight controller; the application environment and frontend build stay inside Docker. The default core keeps character dialogue, Live2D, memory v2 and the existing Qwen voice. First login uses `admin` / `123456` and requires a new password before accessing the product; subsequent launches preserve the password you choose. `--extra bilibili search` selects optional image dependencies; capability switches remain in `config/animetta.yaml`.
 
-### 2. Configure
+### First-time configuration
 
 Edit `config/animetta.yaml` to choose the persona and the complete provider map for the `test`, `smoke`, and `production` profiles. Provider selection lives only in this manifest; environment variables supply profile, endpoints, and secrets.
 
-```bash
-cp .env.example .env
-# Choose test, smoke, or production and fill only the keys it needs:
-#   ANIMETTA_PROFILE="test"
-#   DEEPSEEK_API_KEY="..."
-#   DASHSCOPE_API_KEY="..."
-#   MIMO_API_KEY="..."
-#   QWEN_TTS_API_KEY="..."
-```
-
-### 3. Run
-
 ```powershell
-py -3.13 scripts/runtime_lifecycle.py anima-up
+py -3.13 scripts/bootstrap.py --prepare-only
+# Fill the selected LLM and existing Qwen credentials in the generated .env.
+py -3.13 scripts/bootstrap.py --open
 ```
 
 Use `http://localhost/live.html` for the character and `http://localhost/dashboard` for the dashboard. Lifecycle startup reuses a healthy Qwen host and prepares other services only when their capability is enabled.
+
+Local backend development uses `requirements.txt`. For Web development, install with `pnpm --dir frontend --filter animetta-desktop install --frozen-lockfile` and start with `pnpm --dir frontend dev`. Installation scopes, optional capabilities and memory modes are documented in the [core deployment guide](docs/development/core-deployment.md).
 
 ### Build from source or deploy a verified image
 

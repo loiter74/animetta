@@ -15,6 +15,11 @@ PASSWORD_MAX_BYTES = 1024
 PASSWORD_SCRYPT_N = 2**14
 PASSWORD_SCRYPT_R = 8
 PASSWORD_SCRYPT_P = 1
+# Public first-login credential; ordinary password creation still requires 8 bytes.
+INITIAL_ADMIN_PASSWORD = "123456"
+INITIAL_ADMIN_PASSWORD_HASH = (
+    "scrypt-v1:26c5Is2zGZm4xRqKSTvRqQ:ntOgMo49QXyM4gLX8TvWtmAunKLamrv13QpUoERssio"
+)
 
 
 def validate_password(password: str) -> None:

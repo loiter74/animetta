@@ -11,6 +11,7 @@ from starlette.routing import Route
 from starlette.testclient import TestClient
 
 from animetta.config.security import SecurityConfig
+from animetta.orchestration.server.auth_password import INITIAL_ADMIN_PASSWORD_HASH
 from animetta.orchestration.server.auth_session import RedisAuthSessionStore
 from animetta.orchestration.server.auth_user import (
     AuthUserStore,
@@ -30,9 +31,7 @@ from animetta.orchestration.server.security import (
 TEST_USERNAME = "admin"
 TEST_PASSWORD = "correct horse battery staple"
 TEST_PASSWORD_HASH = hash_password(TEST_PASSWORD)
-DEFAULT_PASSWORD_HASH = (
-    "scrypt-v1:hCKIbfm-qsCRNXImQMlMtQ:Y8LBHJTp-XPsjB0z3Jqs_V3hV8MuGPCVMpN0BsSlcs4"
-)
+DEFAULT_PASSWORD_HASH = INITIAL_ADMIN_PASSWORD_HASH
 
 
 class FakeRedis:
@@ -147,15 +146,17 @@ def test_production_rejects_missing_or_invalid_account_credentials(
 
 
 @pytest.mark.asyncio
-async def test_compose_default_password_hash_accepts_animetta_and_is_salted() -> None:
+async def test_compose_initial_password_is_123456_and_new_passwords_remain_strong() -> None:
     first = hash_password("animetta")
     second = hash_password("animetta")
     security = _runtime(password_hash=DEFAULT_PASSWORD_HASH)
 
     assert first.startswith("scrypt-v1:")
     assert first != second
-    assert await security.verify_account_credentials("admin", "animetta") is True
+    assert await security.verify_account_credentials("admin", "123456") is True
     assert await security.verify_account_credentials("admin", "wrong") is False
+    with pytest.raises(ValueError):
+        hash_password("123456")
     compose = Path("docker-compose.yml").read_text(encoding="utf-8")
     assert "ANIMETTA_AUTH_USERNAME=${ANIMETTA_AUTH_USERNAME:-admin}" in compose
     assert (
@@ -206,7 +207,7 @@ def test_login_issues_strict_httponly_session_and_protects_api() -> None:
 
 
 def test_first_login_requires_password_change_and_replaces_all_sessions() -> None:
-    security = _runtime()
+    security = _runtime(password_hash=DEFAULT_PASSWORD_HASH)
 
     async def ok(_request):
         return JSONResponse({"ok": True})
@@ -219,7 +220,7 @@ def test_first_login_requires_password_change_and_replaces_all_sessions() -> Non
     with TestClient(app, base_url="https://animetta.example") as first:
         first_login = first.post(
             "/api/auth/login",
-            json={"username": TEST_USERNAME, "password": TEST_PASSWORD},
+            json={"username": TEST_USERNAME, "password": "123456"},
         )
         assert first_login.json()["password_change_required"] is True
         original_cookie = first.cookies.get("animetta_session")
@@ -230,17 +231,23 @@ def test_first_login_requires_password_change_and_replaces_all_sessions() -> Non
             assert (
                 second.post(
                     "/api/auth/login",
-                    json={"username": TEST_USERNAME, "password": TEST_PASSWORD},
+                    json={"username": TEST_USERNAME, "password": "123456"},
                 ).status_code
                 == 200
             )
             second_cookie = second.cookies.get("animetta_session")
             assert second_cookie
 
+            weak = first.post(
+                "/api/auth/password",
+                json={"current_password": "123456", "new_password": "123456"},
+            )
+            assert weak.status_code == 422
+
             changed = first.post(
                 "/api/auth/password",
                 json={
-                    "current_password": TEST_PASSWORD,
+                    "current_password": "123456",
                     "new_password": "a-new-secure-password",
                 },
             )
@@ -250,6 +257,20 @@ def test_first_login_requires_password_change_and_replaces_all_sessions() -> Non
             assert first.get("/api/private").status_code == 200
             assert first.get("/api/auth/session").json()["password_change_required"] is False
             assert second.get("/api/auth/session").status_code == 401
+
+            assert (
+                second.post(
+                    "/api/auth/login", json={"username": TEST_USERNAME, "password": "123456"}
+                ).status_code
+                == 401
+            )
+            assert (
+                second.post(
+                    "/api/auth/login",
+                    json={"username": TEST_USERNAME, "password": "a-new-secure-password"},
+                ).json()["password_change_required"]
+                is False
+            )
 
         replay = TestClient(app, base_url="https://animetta.example")
         replay.cookies.set("animetta_session", original_cookie)

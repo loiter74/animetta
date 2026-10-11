@@ -84,39 +84,28 @@
 ### 前置要求
 
 - **Python 3.13**（工具链 ruff/mypy 目标版本）
-- **Node.js 20+** 与 **pnpm**
-- _（可选）_ NVIDIA GPU + nvidia-container-toolkit（GPU 模式）
+- **Docker Desktop Linux 引擎**，以及独立准备好的 Windows Qwen 服务
+- Node.js 与 pnpm 仅用于本地前端开发；默认启动不要求宿主安装它们
 
-### 1. 安装依赖
+### 日常启动：一个入口
 
-```bash
-pip install -r requirements.txt
-cd frontend && pnpm install
+```powershell
+py -3.13 scripts/bootstrap.py --open
 ```
 
-### 2. 配置
+也可双击根目录 `start-anima.cmd`。入口自动准备轻量控制环境，构建或复用 Docker 镜像，复用健康的 Qwen，验收就绪后打开正式直播页。默认保留角色对话、Live2D、记忆 v2 和现有 Qwen 语音；其他功能按需安装和启用。
+
+### 首次配置
 
 编辑 `config/animetta.yaml` 选择人格，并为 `test`、`smoke`、`production` 三个 profile 声明完整服务映射。服务选择只能写在这份清单中；环境变量只传 profile、endpoint 和 secret。
 
-```bash
-cp .env.example .env
-# 选择 profile，并填写它实际需要的 key：
-#   ANIMETTA_PROFILE="test"
-#   DEEPSEEK_API_KEY="..."
-#   DASHSCOPE_API_KEY="..."
-#   MIMO_API_KEY="..."
-#   QWEN_TTS_API_KEY="..."
+```powershell
+py -3.13 scripts/bootstrap.py --prepare-only
+# 在生成的 .env 填写所选 LLM 与现有 Qwen 服务密钥。
+py -3.13 scripts/bootstrap.py --open
 ```
 
-### 3. 启动
-
-```bash
-# 后端
-python -m animetta.core.socketio_server
-
-# 前端（另开终端）
-cd frontend && pnpm dev
-```
+机器 token 和 Redis 密码自动补齐已有配置中的缺项。首次使用 `admin` / `123456` 登录，必须设置新密码才能进入产品；后续启动保留你设置的密码。用 `--extra bilibili search` 选择镜像依赖，再在 `config/animetta.yaml` 开启能力；不传 `--extra` 保留上次选择，空 `--extra` 恢复核心。详见 [核心部署指南](docs/development/core-deployment.md)。
 
 ### 构建并启动个人版本（推荐）
 

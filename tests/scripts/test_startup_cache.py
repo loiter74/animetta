@@ -135,6 +135,32 @@ def test_missing_image_forces_build(tmp_path, monkeypatch):
     assert not context.images_match()
 
 
+def test_optional_dependency_selection_invalidates_only_backend_image(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+
+    inputs = DockerImageInputs(paths=("requirements*.txt",))
+    (tmp_path / "requirements.txt").write_text("core-package", encoding="utf-8")
+    (tmp_path / "requirements-search.txt").write_text("search-package", encoding="utf-8")
+    scope = SimpleNamespace(
+        image_inputs=inputs, development_inputs={"animetta": inputs, "frontend": inputs}
+    )
+    monkeypatch.setattr(
+        runtime_startup,
+        "load_catalog",
+        lambda _path: SimpleNamespace(catalog=SimpleNamespace(docker_scopes={"animetta": scope})),
+    )
+    context = StartupContext(tmp_path, {}, development=True)
+    core = context.current_fingerprints()
+    context.environment["ANIMETTA_PYTHON_EXTRAS"] = "search bilibili"
+    selected = context.current_fingerprints()
+    assert selected["animetta"] != core["animetta"]
+    assert selected["frontend"] == core["frontend"]
+    context.environment["ANIMETTA_PYTHON_EXTRAS"] = "bilibili search search"
+    assert context.current_fingerprints() == selected
+    (tmp_path / "requirements-search.txt").write_text("changed-search-package", encoding="utf-8")
+    assert context.current_fingerprints()["animetta"] != selected["animetta"]
+
+
 def test_ready_false_cannot_be_overridden_by_a_generic_ok_status():
     assert not runtime_lifecycle._valid_http_body(
         "http://localhost/ready", '{"status":"ok","ready":false}'
