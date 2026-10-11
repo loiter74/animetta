@@ -1,0 +1,124 @@
+"""One warmup, then three canonical cached starts. No alternate lifecycle."""
+import hashlib,json,os,re,subprocess,time
+from datetime import UTC,datetime
+from pathlib import Path
+from urllib.request import Request,urlopen
+import psutil
+from dotenv import dotenv_values
+
+ROOT=Path(r'C:\Users\30262\Project\Anima');OUT=Path(__file__).parent
+STATE=OUT/'state.json';RECORD=OUT/'baseline.json'
+IMAGE='animetta:startup-speed-baseline-59fca67c'
+ENV=os.environ.copy();ENV.update({k:v for k,v in dotenv_values(ROOT/'.env').items() if v is not None})
+ENV.update(PYTHONUTF8='1',PYTHONDONTWRITEBYTECODE='1',COMPOSE_PROJECT_NAME='anima',COMPOSE_FILE=str(ROOT/'docker-compose.yml'),COMPOSE_ENV_FILES=str(ROOT/'.env'),ANIMETTA_PROFILE='production',ANIMETTA_HTTP_PORT='80',ANIMETTA_PORT='12394',ANIMETTA_IMAGE=IMAGE)
+for k in ['ANIMETTA_EARTH_ENABLED','ANIMETTA_MEDIA_ENABLED']:ENV.pop(k,None)
+SECRETS=[];record={'status':'preparing','runs':[],'samples':[],'warmup':None}
+sha=lambda b:hashlib.sha256(b).hexdigest()
+now=lambda:datetime.now(UTC).isoformat()
+parse=lambda s:datetime.fromisoformat(s.replace('Z','+00:00'))
+
+def clean(b):
+ for s in SECRETS:
+  if len(s)>=8:b=b.replace(s.encode(),b'<redacted>')
+ return b
+
+def write(p,v):p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(clean((json.dumps(v,ensure_ascii=False,indent=2)+'\n').encode()))
+
+def state(step,**kw):
+ record.update(current_step=step,updated_at=now(),**kw);write(RECORD,record)
+ d=json.loads(STATE.read_bytes());d.update(current_step=step,status=record['status'],active_pid=record.get('active_pid'),driver_pid=os.getpid(),active_run_id=record.get('active_run_id'),new_samples=len(record['samples']),record_path=str(RECORD),next_action=record.get('next_action'),updated_at=now());write(STATE,d)
+ print(json.dumps({'step':step,'status':record['status'],'samples':len(record['samples']),'pid':record.get('active_pid')},ensure_ascii=False),flush=True)
+
+def cmd(a):
+ p=subprocess.run(a,cwd=ROOT,env=ENV,capture_output=True,timeout=30);assert p.returncode==0,'Readonly command failed '+str(a[:3]);return p.stdout
+
+def identity():
+ inv=json.loads((OUT/'current-inventory.json').read_bytes())
+ for x in inv['Qwen_processes']:
+  p=psutil.Process(x['pid']);assert abs(p.create_time()-x['creation_time'])<.01 and p.cmdline()==x['command_line'],'Qwen identity changed'
+ competing=[]
+ for p in psutil.process_iter(['name','cmdline']):
+  try:
+   a=p.info['cmdline'] or [];n=(p.info['name'] or '').lower()
+   if p.pid==os.getpid():continue
+   module=a[a.index('-m')+1] if '-m' in a and len(a)>a.index('-m')+1 else ''
+   script=next((Path(x).name for x in a[1:] if x.endswith('.py')),'')
+   if (n.startswith('python') and (script in ['runtime_lifecycle.py','benchmark_startup.py'] or module in ['tooling.quality','pytest','mypy','pip'])) or (n in ['uv.exe','pnpm.exe'] and any(x in a for x in ['sync','install','test'])) or (n=='node.exe' and any(any(t in x for t in ['vitest','vue-tsc','vite.js','tsc.js']) for x in a)) or (n=='docker.exe' and 'build' in a):competing.append({'pid':p.pid,'argv':a})
+  except (psutil.NoSuchProcess,psutil.AccessDenied):pass
+ assert not competing,'Concurrent lifecycle/quality/install/build: '+str([x['pid'] for x in competing])
+ for ep in ['/ready','/v1/identity']:
+  with urlopen(Request('http://127.0.0.1:8767'+ep,headers={'Authorization':'Bearer '+ENV['QWEN_TTS_API_KEY']}),timeout=10) as r:body=json.loads(r.read())
+  assert body==inv['Qwen_http'][ep]['body'],'Qwen service identity changed'
+
+def freeze():
+ assert not RECORD.exists(),'Read existing run/handle; never restart runner'
+ assert cmd(['git','rev-parse','HEAD']).decode().strip()=='59fca67ca0931ed75999aec08acf545b953835ac'
+ app=json.loads(cmd(['docker','inspect','anima-animetta-1']))[0]
+ actual=dict(x.split('=',1) for x in app['Config']['Env'] if '=' in x)
+ for k,v in actual.items():
+  if k in ['ANIMETTA_ACCESS_TOKEN','QWEN_TTS_API_KEY','ANIMETTA_AUTH_USERNAME','ANIMETTA_AUTH_PASSWORD_HASH','DEEPSEEK_API_KEY','DASHSCOPE_API_KEY','MIMO_API_KEY','MC_MCP_AUTH_TOKEN']:
+   if ENV.get(k):assert ENV[k]==v,'Credentials changed: '+k
+   elif v:ENV[k]=v
+ SECRETS.extend(v for k,v in ENV.items() if v and re.search('PASSWORD|TOKEN|SECRET|API_KEY|COOKIE',k,re.I))
+ old=json.loads((ROOT/'docs/performance/deployment-core-2026-10-11/phase3-5-evidence/runtime-r4/frozen-root-input.json').read_bytes())
+ names=set(old['files'])|{'tooling/runtime_startup.py','tooling/execution_feedback/lifecycle.py','scripts/qwen_preflight.py'}
+ mapping={p:sha((ROOT/p).read_bytes()) for p in sorted(names)}
+ write(OUT/'frozen-source-input.json',{'commit':'59fca67ca0931ed75999aec08acf545b953835ac','files':mapping,'env_sha256':sha((ROOT/'.env').read_bytes()),'user_training_songs_data_excluded':True})
+ contract={'schema_version':1,'frozen_at':now(),'prediction':'baseline_attribution_only','source_commit':'59fca67ca0931ed75999aec08acf545b953835ac','source_manifest_SHA':sha((OUT/'frozen-source-input.json').read_bytes()),'image_tag':IMAGE,'project':'anima','profile':'production','ports':[80,12394],'volumes':['anima_animetta-data','anima_animetta-memory-db','anima_animetta-redis'],'Qwen_PIDs':[14240,16104],'Qwen_retained':True,'RVC_off':True,'n':3,'warmup_run':'ss-base-warmup01','sample_runs':['ss-base01','ss-base02','ss-base03'],'down_runs':['ss-base01-down','ss-base02-down','ss-base03-down'],'primary':'actual animetta-start result.started_at to actual animetta-ready result.feedback_at; no /health substitution; excludes prior Qwen checks and cached BUILD','secondary':['CLI request to completion including controller/Qwen/cache checks','container StartedAt to ready result.feedback_at','all actual step elapsed/timestamps','fresh Redis/entrypoint/backend log timeline, tokenizer and LLM connectivity'],'conditions':'one canonical prebuild/warmup outside samples; each sample canonical down/up, fresh app+Redis, retained image/OS/model caches/named volumes/private credentials; no quality/install/build/diagnostics/browser concurrent; no data cleanup','failure':'HOLD original failed container; no subsequent cycle or terminal retry','rollback_images':['animetta:deployment-core-core-r4-f8dcd2e7acf6-3bfb7799','ghcr.io/loiter74/animetta@sha256:a6a41059d3adfa51792c864fedd8ee7d81128948c4bba6581f26774d9dd89ed4']}
+ for tag in contract['rollback_images']:cmd(['docker','image','inspect','--format','{{.Id}}',tag])
+ write(OUT/'contract.json',contract);record.update(contract_SHA=sha((OUT/'contract.json').read_bytes()),started_at=now())
+ identity();cmd(['docker','compose','config','--quiet']);state('contract_frozen',status='baseline_running',next_action='One canonical prebuild/warmup, outside samples')
+
+def verify():
+ d=json.loads((OUT/'frozen-source-input.json').read_bytes())
+ assert all(sha((ROOT/p).read_bytes())==h for p,h in d['files'].items()),'Frozen source changed'
+ assert sha((ROOT/'.env').read_bytes())==d['env_sha256'],'Private env changed'
+ identity()
+
+def run(action,rid):
+ verify();art=ROOT/'artifacts/iteration-plans'/rid;assert not art.exists(),'Canonical run already exists; read original'
+ argv=['py','-3.13','scripts/runtime_lifecycle.py',action,'--run-id',rid,'--wait','--artifacts-root',str(art.parent)]
+ state(rid,status='baseline_running',active_run_id=rid,next_action='Same canonical --wait execution; preserve original result on failure')
+ start=time.perf_counter();child=subprocess.Popen(argv,cwd=ROOT,env=ENV,stdout=subprocess.PIPE,stderr=subprocess.PIPE);state(rid,active_pid=child.pid)
+ out,err=child.communicate();wall=time.perf_counter()-start
+ raw={'run_id':rid,'action':action,'command':argv,'exit_code':child.returncode,'CLI_elapsed_seconds':wall,'stdout_bytes':len(out),'stdout_SHA':sha(clean(out)),'stderr_SHA':sha(clean(err)),'steps':[]}
+ (OUT/(rid+'-stderr.log')).write_bytes(clean(err))
+ plan=json.loads((art/'plan.json').read_bytes())
+ for s in plan['steps']:
+  cp=art/'steps'/s['id']/'checkpoint.json'
+  if not cp.exists():continue
+  c=json.loads(cp.read_bytes());rp=Path(c['result_reference']);v=json.loads(rp.read_bytes())
+  row={k:v.get(k) for k in ['step_id','status','started_at','feedback_at','elapsed_seconds','progress_summary','evidence_refs']};row.update(checkpoint_path=str(cp),checkpoint_SHA=sha(cp.read_bytes()),result_path=str(rp),result_SHA=sha(rp.read_bytes()));raw['steps'].append(row)
+  for suffix,p in [('checkpoint',cp),('result',rp)]:
+   dest=OUT/'raw'/rid/(s['id']+'-'+suffix+'.json');dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(clean(p.read_bytes()))
+ build=art/'animetta-build-receipt.json'
+ if build.exists():raw['build_receipt']=json.loads(build.read_bytes());(OUT/(rid+'-build-receipt.json')).write_bytes(clean(build.read_bytes()))
+ write(OUT/(rid+'-result.json'),raw);record['runs'].append(raw);state(rid+'_terminal',active_pid=None,active_run_id=None)
+ assert child.returncode==0 and len(raw['steps'])==len(plan['steps']) and all(s['status']=='passed' for s in raw['steps']),'Canonical failure: '+rid
+ return raw
+
+def snapshot(rid,raw):
+ cs=json.loads(cmd(['docker','inspect','anima-animetta-1','anima-redis-1']));steps={s['step_id']:s for s in raw['steps']};ready=steps['animetta-ready']['feedback_at'];logs={}
+ for c in cs:
+  assert c['Config']['Labels']['com.docker.compose.project']=='anima'
+  a=['docker','logs','--timestamps','--since',c['State']['StartedAt'],'--until',ready,c['Name'].lstrip('/')];p=subprocess.run(a,cwd=ROOT,env=ENV,capture_output=True,timeout=30);b=clean(p.stdout+p.stderr);path=OUT/(rid+('-app.log' if 'animetta-1' in c['Name'] else '-redis.log'));path.write_bytes(b)
+  selected=[re.sub(r'\x1b\[[0-9;]*m','',s) for s in b.decode('utf8','replace').splitlines() if any(t in s for t in ['[entrypoint]','Started server process','Application startup complete','Uvicorn running','ServicePool','tokenizer','LLM connectivity','Ready to accept connections','DB loaded from append only'])]
+  logs[c['Name']]={'path':str(path),'SHA':sha(b),'bytes':len(b),'key_lines':selected}
+ sample={'run_id':rid,'CLI_elapsed_seconds':raw['CLI_elapsed_seconds'],'application_start_to_ready_seconds':(parse(ready)-parse(steps['animetta-start']['started_at'])).total_seconds(),'container_start_to_ready_seconds':(parse(ready)-parse(cs[0]['State']['StartedAt'])).total_seconds(),'containers':[{'name':c['Name'],'id':c['Id'],'image':c['Image'],'StartedAt':c['State']['StartedAt'],'volumes':[{'name':m.get('Name'),'destination':m['Destination']} for m in c['Mounts']]} for c in cs],'steps':raw['steps'],'startup_logs':logs}
+ assert {m['name'] for c in sample['containers'] for m in c['volumes']}=={'anima_animetta-data','anima_animetta-memory-db','anima_animetta-redis'}
+ assert cs[0]['Config']['Image']==IMAGE
+ return sample
+
+def main():
+ try:
+  freeze();warm=run('anima-up','ss-base-warmup01');record['warmup']=snapshot('ss-base-warmup01',warm);state('warmup_complete_outside_samples',next_action='Three fresh canonical down/up cached samples')
+  for i in range(1,4):
+   rid=f'ss-base0{i}';run('anima-down',rid+'-down');raw=run('anima-up',rid)
+   build=next(s for s in raw['steps'] if s['step_id']=='animetta-build');assert build['progress_summary']=='Reused images with matching source content' and 'build_receipt' not in raw,'Sample unexpectedly built; HOLD, not timing-comparable'
+   sample=snapshot(rid,raw);record['samples'].append(sample);write(OUT/(rid+'-sample.json'),sample);identity();state(rid+'_sample_complete',next_action='Next distinct authorized sample' if i<3 else 'HOLD for parent implementation; no more sample/probe')
+  state('three_samples_complete',status='baseline_complete_HOLD_for_parent_implementation',active_pid=None,next_action='Parent freezes optimization prediction and implementation; runtime owner holds Qwen/current baseline image, no browser or extra samples')
+ except Exception as e:
+  state('HOLD_original_failure',status='HOLD',error_type=type(e).__name__,error=str(e),next_action='Read original failed run/container diagnostics; never proceed next cycle')
+  raise
+
+if __name__=='__main__':main()

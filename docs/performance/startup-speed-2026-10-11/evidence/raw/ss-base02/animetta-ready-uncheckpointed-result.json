@@ -1,0 +1,17 @@
+{
+  "checkpoint": null,
+  "cleanup_pending": false,
+  "elapsed_seconds": 240.02011130000028,
+  "evidence_refs": [],
+  "failure_fingerprint": "5286a0aedd7a762b773bc53ed7b8dd1aae8a7b7b9467b1a232f51bc99fc2e1bd",
+  "feedback_at": "2026-10-11T09:50:57.266973Z",
+  "lease": null,
+  "next_action": "inspect animetta-ready timeout",
+  "progress_summary": "animetta-ready exceeded its action budget",
+  "run_id": "ss-base02",
+  "schema_version": 1,
+  "started_at": "2026-10-11T09:46:57.246870Z",
+  "status": "timed_out",
+  "step_id": "animetta-ready",
+  "window_sequence": 1
+}

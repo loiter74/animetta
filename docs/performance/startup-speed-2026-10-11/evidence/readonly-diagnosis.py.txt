@@ -1,0 +1,168 @@
+"""Read-only current identity audit and two explicitly authorized imports, once each."""
+import hashlib
+import json
+import os
+import re
+import socket
+import subprocess
+import sys
+import time
+from datetime import UTC, datetime, timedelta
+from pathlib import Path
+from urllib.parse import unquote, urlparse
+from urllib.request import Request, urlopen
+
+import psutil
+from dotenv import dotenv_values
+
+ROOT=Path(r'C:\Users\30262\Project\Anima')
+OUT=Path(__file__).parent
+STATE=OUT/'state.json'
+SECRET=[]
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def clean(raw):
+    for value in SECRET:
+        if len(value)>=8:
+            raw=raw.replace(value.encode(),b'<redacted>')
+    return raw
+
+
+def write(path,value):
+    path.write_bytes(clean((json.dumps(value,ensure_ascii=False,indent=2)+'\n').encode()))
+
+
+def stage(step,**kw):
+    d=json.loads(STATE.read_bytes());d.update(current_step=step,updated_at=datetime.now(UTC).isoformat(),**kw);write(STATE,d)
+    print(json.dumps({'step':step,**{k:v for k,v in kw.items() if k in ['status','active_pid']}},ensure_ascii=False),flush=True)
+
+
+def command(argv,timeout=30):
+    p=subprocess.run(argv,cwd=ROOT,capture_output=True,timeout=timeout)
+    assert p.returncode==0, 'Read-only command failed: '+str(argv[:3])
+    return p.stdout
+
+
+def audit():
+    root_env={k:v for k,v in dotenv_values(ROOT/'.env').items() if v is not None}
+    actual=json.loads(command(['docker','inspect','anima-animetta-1','anima-redis-1']))
+    envs=[dict(x.split('=',1) for x in c['Config']['Env'] if '=' in x) for c in actual]
+    for env in [root_env,*envs]:
+        SECRET.extend(v for k,v in env.items() if v and re.search('PASSWORD|TOKEN|SECRET|API_KEY|COOKIE',k,re.I))
+    creds={}
+    for k in ['ANIMETTA_ACCESS_TOKEN','QWEN_TTS_API_KEY','ANIMETTA_AUTH_USERNAME','ANIMETTA_AUTH_PASSWORD_HASH','DEEPSEEK_API_KEY','DASHSCOPE_API_KEY','MIMO_API_KEY','MC_MCP_AUTH_TOKEN']:
+        value=envs[0].get(k)
+        if root_env.get(k):assert root_env[k]==value, 'Credential mismatch: '+k
+        creds[k]={'present':bool(value),'root_defined':bool(root_env.get(k)),'root_matches_actual':True if root_env.get(k) else None,'preserve_actual_container_value_in_future_child':True}
+    redisurl=envs[0]['ANIMETTA_REDIS_URL']
+    assert unquote(urlparse(redisurl).password or '')==envs[1]['REDIS_PASSWORD']==root_env['ANIMETTA_REDIS_PASSWORD']
+    public=[]
+    for c in actual:
+        ls=c['Config']['Labels']
+        assert ls['com.docker.compose.project']=='anima'
+        assert Path(ls['com.docker.compose.project.working_dir']).resolve()==ROOT
+        assert Path(ls['com.docker.compose.project.config_files']).resolve()==ROOT/'docker-compose.yml'
+        public.append({'name':c['Name'],'id':c['Id'],'image_id':c['Image'],'image_reference':c['Config']['Image'],'created':c['Created'],
+                       'state':{k:c['State'].get(k) for k in ['Status','StartedAt','Health']},
+                       'labels':{k:v for k,v in ls.items() if k.startswith(('com.docker.compose.project','org.animetta','org.opencontainers.image'))},
+                       'ports':c['NetworkSettings']['Ports'],'mounts':[{'type':m['Type'],'name':m.get('Name'),'destination':m['Destination']} for m in c['Mounts']]})
+    assert public[0]['id'].startswith('905a6b4fc7a3') and public[1]['id'].startswith('299f53af7794')
+    assert public[0]['image_reference']=='ghcr.io/loiter74/animetta@sha256:a6a41059d3adfa51792c864fedd8ee7d81128948c4bba6581f26774d9dd89ed4'
+    assert {m['name'] for c in public for m in c['mounts']}=={'anima_animetta-data','anima_animetta-memory-db','anima_animetta-redis'}
+    expected=json.loads((ROOT/'docs/performance/deployment-core-2026-10-11/runtime-core-r3.json').read_bytes())['preflight']['qwen_processes']
+    processes=[]
+    for e in expected:
+        p=psutil.Process(e['pid']);assert abs(p.create_time()-e['creation_time'])<0.01 and p.cmdline()==e['command_line']
+        processes.append({'pid':p.pid,'creation_time':p.create_time(),'command_line':p.cmdline(),'rss_bytes':p.memory_info().rss})
+    assert {p['pid'] for p in processes}=={14240,16104}
+    def http(url,key):
+        start=time.perf_counter()
+        with urlopen(Request(url,headers={'Authorization':'Bearer '+envs[0][key]}),timeout=10) as response:
+            b=response.read();return {'status':response.status,'elapsed_seconds':time.perf_counter()-start,'bytes':len(b),'sha256':sha(b),'body':json.loads(b)}
+    qwen={ep:http('http://127.0.0.1:8767'+ep,'QWEN_TTS_API_KEY') for ep in ['/ready','/v1/identity']}
+    assert qwen['/ready']['body']['ready'] is True
+    assert qwen['/v1/identity']['body']['voice']=='tosaka-rin-cn'
+    with socket.socket() as s:
+        s.settimeout(1);rvc_closed=s.connect_ex(('127.0.0.1',8769))!=0
+    competing=[]
+    for p in psutil.process_iter(['name','cmdline']):
+        try:
+            args=p.info['cmdline'] or [];name=(p.info['name'] or '').lower()
+            if p.pid==os.getpid():continue
+            module=args[args.index('-m')+1] if '-m' in args and len(args)>args.index('-m')+1 else ''
+            script=next((Path(x).name for x in args[1:] if x.endswith('.py')), '')
+            lifecycle=name.startswith('python') and script in {'runtime_lifecycle.py','benchmark_startup.py'}
+            quality=name.startswith('python') and module in {'tooling.quality','pytest','mypy','pip'}
+            installer=name in {'uv.exe','pnpm.exe'} and any(x in args for x in ['sync','install','test'])
+            if lifecycle or quality or installer:
+                competing.append({'pid':p.pid,'creation_time':p.create_time(),'command_line':args})
+        except (psutil.NoSuchProcess,psutil.AccessDenied):pass
+    public_http={ep:http('http://localhost'+ep,'ANIMETTA_ACCESS_TOKEN') for ep in ['/health','/ready','/api/auth/session']}
+    assert all(v['status']==200 for v in public_http.values()) and public_http['/ready']['body']['ready'] is True
+    image=json.loads(command(['docker','image','inspect',public[0]['image_id']]))[0]
+    result={'recorded_at':datetime.now(UTC).isoformat(),'status':'passed','root_commit':command(['git','rev-parse','HEAD']).decode().strip(),
+            'private_env_sha256':sha((ROOT/'.env').read_bytes()),'credentials_continuity':creds,'redis_password_continuous':True,
+            'containers':public,'image':{'id':image['Id'],'size_bytes':image['Size'],'repo_digests':image['RepoDigests'],'labels':{k:v for k,v in image['Config']['Labels'].items() if k.startswith(('org.opencontainers','org.animetta'))}},
+            'Qwen_processes':processes,'Qwen_http':qwen,'RVC8769_unavailable':rvc_closed,'competing_processes':competing,
+            'formal_http':public_http,'no_lifecycle_or_synthesis_executed':True}
+    write(OUT/'current-inventory.json',result)
+    assert not competing,'Concurrent CPU/lifecycle task present; postpone import diagnosis'
+    start=datetime.fromisoformat(public[0]['state']['StartedAt'].replace('Z','+00:00'))
+    until=start+timedelta(seconds=90)
+    logs={}
+    for c in public:
+        p=subprocess.run(['docker','logs','--timestamps','--since',c['state']['StartedAt'],'--until',until.isoformat(),c['name'].lstrip('/')],capture_output=True,timeout=20)
+        raw=clean(p.stdout+p.stderr)
+        target=OUT/('current-app-startup.log' if c['name']=='/anima-animetta-1' else 'current-redis-startup.log')
+        target.write_bytes(raw);logs[c['name']]={'path':str(target),'sha256':sha(raw),'bytes':len(raw),'exit_code':p.returncode}
+    write(OUT/'current-startup-log-refs.json',logs)
+    stage('current_identity_and_logs_verified',status='readonly_import_diagnosis_ready')
+
+
+def imports():
+    assert sys.version_info >= (3,13)
+    rows=[]
+    for short,target in [('manifest','animetta.config.manifest'),('socketio','animetta.core.socketio_server')]:
+        rp=OUT/(short+'-import-result.json');assert not rp.exists(), 'Preserve terminal diagnostic; no repeat'
+        argv=['docker','exec','anima-animetta-1','python','-B','-X','importtime','-c',
+              f"import {target}; import sys,json; print(json.dumps({{'target':'{target}','main_called':False,'heavy_model_modules_loaded':[m for m in ['torch','transformers','torchaudio','chromadb','demucs'] if m in sys.modules]}}))"]
+        stage(short+'_import_once',status='readonly_import_diagnosis_running')
+        start=time.perf_counter();child=subprocess.Popen(argv,cwd=ROOT,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        stage(short+'_import_once',active_pid=child.pid)
+        try:stdout,stderr=child.communicate(timeout=60)
+        except subprocess.TimeoutExpired:
+            child.kill();stdout,stderr=child.communicate();error='bounded Docker exec wrapper timeout; inspect exact container exec PID, do not retry'
+        else:error=None
+        stdout,stderr=clean(stdout),clean(stderr)
+        (OUT/(short+'-import.stdout.log')).write_bytes(stdout);(OUT/(short+'-import.stderr.log')).write_bytes(stderr)
+        timings=[]
+        for line in stderr.decode('utf8','replace').splitlines():
+            m=re.match(r'import time:\s*(\d+)\s*\|\s*(\d+)\s*\|(.*)',line)
+            if m:timings.append({'module':m[3].strip(),'self_us':int(m[1]),'cumulative_us':int(m[2])})
+        body=json.loads(stdout.decode().strip().splitlines()[-1]) if not error and child.returncode==0 else None
+        row={'target':target,'command':argv,'exit_code':child.returncode,'elapsed_seconds':time.perf_counter()-start,'error':error,
+             'process_flags':'-B avoids pyc writes; no env override and no main call','module_result':body,
+             'raw_stderr_path':str(OUT/(short+'-import.stderr.log')),'stderr_sha256':sha(stderr),'stdout_sha256':sha(stdout),
+             'target_cumulative':[x for x in timings if x['module']==target],
+             'top_self':sorted(timings,key=lambda x:x['self_us'],reverse=True)[:20],
+             'top_cumulative_overlapping_do_not_sum':sorted(timings,key=lambda x:x['cumulative_us'],reverse=True)[:20],
+             'sum_exclusive_self_us':sum(x['self_us'] for x in timings),'parsed_import_count':len(timings),
+             'interpretation':'Single bounded import-only diagnostic in a running/warm container, not startup baseline; cumulative overlaps, never add ranked cumulative rows. load_effective_config is not called here.'}
+        write(rp,row);rows.append(row)
+        assert not error and child.returncode==0 and not body['heavy_model_modules_loaded'], 'Import diagnostic failed; preserve and HOLD'
+        stage(short+'_import_terminal',active_pid=None)
+    write(OUT/'importtime-summary.json',{'diagnostics':rows,'new_startup_performance_samples':0})
+    stage('readonly_diagnostics_complete',status='readonly_ready_for_parent_baseline_authorization',active_pid=None,
+          next_action='Report historical timing definition, live fingerprints and import-only attribution; wait explicit new baseline canonical command/window authorization')
+
+
+if __name__=='__main__':
+    try:
+        audit();imports()
+    except Exception as exc:
+        stage('HOLD_readonly_failure',status='HOLD',error_type=type(exc).__name__,error=str(exc),next_action='Diagnose original readonly failure; no lifecycle or repeat terminal import')
+        raise

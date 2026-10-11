@@ -1,0 +1,486 @@
+{
+  "recorded_at": "2026-10-11T09:36:16.609072+00:00",
+  "status": "passed",
+  "root_commit": "59fca67ca0931ed75999aec08acf545b953835ac",
+  "private_env_sha256": "66d4ad7e31d2596374c115e3dbe47b0690a89b98513f6b7fd0e181161e977084",
+  "credentials_continuity": {
+    "ANIMETTA_ACCESS_TOKEN": {
+      "present": true,
+      "root_defined": true,
+      "root_matches_actual": true,
+      "preserve_actual_container_value_in_future_child": true
+    },
+    "QWEN_TTS_API_KEY": {
+      "present": true,
+      "root_defined": true,
+      "root_matches_actual": true,
+      "preserve_actual_container_value_in_future_child": true
+    },
+    "ANIMETTA_AUTH_USERNAME": {
+      "present": true,
+      "root_defined": false,
+      "root_matches_actual": null,
+      "preserve_actual_container_value_in_future_child": true
+    },
+    "ANIMETTA_AUTH_PASSWORD_HASH": {
+      "present": true,
+      "root_defined": false,
+      "root_matches_actual": null,
+      "preserve_actual_container_value_in_future_child": true
+    },
+    "DEEPSEEK_API_KEY": {
+      "present": true,
+      "root_defined": true,
+      "root_matches_actual": true,
+      "preserve_actual_container_value_in_future_child": true
+    },
+    "DASHSCOPE_API_KEY": {
+      "present": true,
+      "root_defined": true,
+      "root_matches_actual": true,
+      "preserve_actual_container_value_in_future_child": true
+    },
+    "MIMO_API_KEY": {
+      "present": true,
+      "root_defined": true,
+      "root_matches_actual": true,
+      "preserve_actual_container_value_in_future_child": true
+    },
+    "MC_MCP_AUTH_TOKEN": {
+      "present": false,
+      "root_defined": false,
+      "root_matches_actual": null,
+      "preserve_actual_container_value_in_future_child": true
+    }
+  },
+  "redis_password_continuous": true,
+  "containers": [
+    {
+      "name": "/anima-animetta-1",
+      "id": "905a6b4fc7a3f99fba89235f12555ae89b3f30a343dc15afa30d8fd7d1fa3c87",
+      "image_id": "sha256:a6a41059d3adfa51792c864fedd8ee7d81128948c4bba6581f26774d9dd89ed4",
+      "image_reference": "ghcr.io/loiter74/animetta@sha256:a6a41059d3adfa51792c864fedd8ee7d81128948c4bba6581f26774d9dd89ed4",
+      "created": "2026-10-11T09:08:26.584213505Z",
+      "state": {
+        "Status": "running",
+        "StartedAt": "2026-10-11T09:08:42.112654076Z",
+        "Health": {
+          "Status": "healthy",
+          "FailingStreak": 0,
+          "Log": [
+            {
+              "Start": "2026-10-11T09:33:50.368960458Z",
+              "End": "2026-10-11T09:33:50.439721036Z",
+              "ExitCode": 0,
+              "Output": "{\"status\":\"ok\",\"service\":\"anima\",\"timestamp\":1791711230.437131}"
+            },
+            {
+              "Start": "2026-10-11T09:34:20.438515998Z",
+              "End": "2026-10-11T09:34:20.488589736Z",
+              "ExitCode": 0,
+              "Output": "{\"status\":\"ok\",\"service\":\"anima\",\"timestamp\":1791711260.4856615}"
+            },
+            {
+              "Start": "2026-10-11T09:34:50.487327823Z",
+              "End": "2026-10-11T09:34:50.560008425Z",
+              "ExitCode": 0,
+              "Output": "{\"status\":\"ok\",\"service\":\"anima\",\"timestamp\":1791711290.557529}"
+            },
+            {
+              "Start": "2026-10-11T09:35:20.559426806Z",
+              "End": "2026-10-11T09:35:20.629011396Z",
+              "ExitCode": 0,
+              "Output": "{\"status\":\"ok\",\"service\":\"anima\",\"timestamp\":1791711320.6254346}"
+            },
+            {
+              "Start": "2026-10-11T09:35:50.626653463Z",
+              "End": "2026-10-11T09:35:50.682820561Z",
+              "ExitCode": 0,
+              "Output": "{\"status\":\"ok\",\"service\":\"anima\",\"timestamp\":1791711350.679849}"
+            }
+          ]
+        }
+      },
+      "labels": {
+        "com.docker.compose.project": "anima",
+        "com.docker.compose.project.config_files": "C:\\Users\\30262\\Project\\Anima\\docker-compose.yml",
+        "com.docker.compose.project.environment_file": "C:\\Users\\30262\\Project\\Anima\\.env",
+        "com.docker.compose.project.working_dir": "C:\\Users\\30262\\Project\\Anima",
+        "org.animetta.build-fingerprint": "6385b98a0ec4b8e1aa7f03d6f1305478a4867fe6b913c47181b3deb84c7a4bb0",
+        "org.animetta.runtime-fingerprint": "untracked",
+        "org.opencontainers.image.created": "2026-10-11T08:58:25Z",
+        "org.opencontainers.image.description": "",
+        "org.opencontainers.image.licenses": "MIT",
+        "org.opencontainers.image.revision": "595cd4770afe74ff2f8b2fc769cf30f6d8a3c9a2",
+        "org.opencontainers.image.source": "https://github.com/loiter74/animetta",
+        "org.opencontainers.image.title": "Animetta",
+        "org.opencontainers.image.url": "https://github.com/loiter74/animetta",
+        "org.opencontainers.image.version": "sha-595cd4770afe74ff2f8b2fc769cf30f6d8a3c9a2"
+      },
+      "ports": {
+        "12394/tcp": [
+          {
+            "HostIp": "0.0.0.0",
+            "HostPort": "12394"
+          },
+          {
+            "HostIp": "::",
+            "HostPort": "12394"
+          }
+        ],
+        "80/tcp": [
+          {
+            "HostIp": "0.0.0.0",
+            "HostPort": "80"
+          },
+          {
+            "HostIp": "::",
+            "HostPort": "80"
+          }
+        ]
+      },
+      "mounts": [
+        {
+          "type": "volume",
+          "name": "anima_animetta-data",
+          "destination": "/app/data"
+        },
+        {
+          "type": "volume",
+          "name": "anima_animetta-memory-db",
+          "destination": "/app/memory_db"
+        }
+      ]
+    },
+    {
+      "name": "/anima-redis-1",
+      "id": "299f53af779401e5bb9a6bad9edd7706d6d8a17e269d3923705d26b6528539ba",
+      "image_id": "sha256:8096655e437712b07503796fb64d81359256cfcff0ab29d95a7da72863786efb",
+      "image_reference": "redis:8.8.1-alpine",
+      "created": "2026-10-11T09:08:15.324100842Z",
+      "state": {
+        "Status": "running",
+        "StartedAt": "2026-10-11T09:08:34.778179116Z",
+        "Health": {
+          "Status": "healthy",
+          "FailingStreak": 0,
+          "Log": [
+            {
+              "Start": "2026-10-11T09:35:51.449328548Z",
+              "End": "2026-10-11T09:35:51.51115502Z",
+              "ExitCode": 0,
+              "Output": ""
+            },
+            {
+              "Start": "2026-10-11T09:35:56.511765344Z",
+              "End": "2026-10-11T09:35:56.560511112Z",
+              "ExitCode": 0,
+              "Output": ""
+            },
+            {
+              "Start": "2026-10-11T09:36:01.561789365Z",
+              "End": "2026-10-11T09:36:01.60760183Z",
+              "ExitCode": 0,
+              "Output": ""
+            },
+            {
+              "Start": "2026-10-11T09:36:06.608084441Z",
+              "End": "2026-10-11T09:36:06.66631094Z",
+              "ExitCode": 0,
+              "Output": ""
+            },
+            {
+              "Start": "2026-10-11T09:36:11.66698088Z",
+              "End": "2026-10-11T09:36:11.719077498Z",
+              "ExitCode": 0,
+              "Output": ""
+            }
+          ]
+        }
+      },
+      "labels": {
+        "com.docker.compose.project": "anima",
+        "com.docker.compose.project.config_files": "C:\\Users\\30262\\Project\\Anima\\docker-compose.yml",
+        "com.docker.compose.project.environment_file": "C:\\Users\\30262\\Project\\Anima\\.env",
+        "com.docker.compose.project.working_dir": "C:\\Users\\30262\\Project\\Anima",
+        "org.animetta.runtime-fingerprint": "untracked"
+      },
+      "ports": {
+        "6379/tcp": null
+      },
+      "mounts": [
+        {
+          "type": "volume",
+          "name": "anima_animetta-redis",
+          "destination": "/data"
+        }
+      ]
+    }
+  ],
+  "image": {
+    "id": "sha256:a6a41059d3adfa51792c864fedd8ee7d81128948c4bba6581f26774d9dd89ed4",
+    "size_bytes": 613588481,
+    "repo_digests": [
+      "ghcr.io/loiter74/animetta@sha256:a6a41059d3adfa51792c864fedd8ee7d81128948c4bba6581f26774d9dd89ed4"
+    ],
+    "labels": {
+      "org.animetta.build-fingerprint": "6385b98a0ec4b8e1aa7f03d6f1305478a4867fe6b913c47181b3deb84c7a4bb0",
+      "org.opencontainers.image.created": "2026-10-11T08:58:25Z",
+      "org.opencontainers.image.description": "",
+      "org.opencontainers.image.licenses": "MIT",
+      "org.opencontainers.image.revision": "595cd4770afe74ff2f8b2fc769cf30f6d8a3c9a2",
+      "org.opencontainers.image.source": "https://github.com/loiter74/animetta",
+      "org.opencontainers.image.title": "Animetta",
+      "org.opencontainers.image.url": "https://github.com/loiter74/animetta",
+      "org.opencontainers.image.version": "sha-595cd4770afe74ff2f8b2fc769cf30f6d8a3c9a2"
+    }
+  },
+  "Qwen_processes": [
+    {
+      "pid": 14240,
+      "creation_time": 1791686620.901652,
+      "command_line": [
+        "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\venv\\Scripts\\python.exe",
+        "-m",
+        "animetta_qwen_tts"
+      ],
+      "rss_bytes": 1063387136
+    },
+    {
+      "pid": 16104,
+      "creation_time": 1791686620.775384,
+      "command_line": [
+        "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\venv\\Scripts\\python.exe",
+        "-m",
+        "animetta_qwen_tts"
+      ],
+      "rss_bytes": 7335936
+    }
+  ],
+  "Qwen_http": {
+    "/ready": {
+      "status": 200,
+      "elapsed_seconds": 0.055825600000389386,
+      "bytes": 329,
+      "sha256": "a20c3011698586f54171ff97f52ee19f7d1fe4e0c21d3e8b60bb6bf2061f9afe",
+      "body": {
+        "ready": true,
+        "service": "qwen-tts",
+        "api_version": "v1",
+        "provider": "qwen3-tts-gguf-host",
+        "model": "Qwen3-TTS-1.7B-Base",
+        "revision": "0eb32e283ee46b86820c67843abb04cf12bc58d7",
+        "voice": "tosaka-rin-cn",
+        "sample_rate": 24000,
+        "quantization": "talker=Q5_K,predictor=Q8_0,onnx=FP16",
+        "runtime_commit": "0eb32e283ee46b86820c67843abb04cf12bc58d7"
+      }
+    },
+    "/v1/identity": {
+      "status": 200,
+      "elapsed_seconds": 0.0017967999992833938,
+      "bytes": 329,
+      "sha256": "a20c3011698586f54171ff97f52ee19f7d1fe4e0c21d3e8b60bb6bf2061f9afe",
+      "body": {
+        "ready": true,
+        "service": "qwen-tts",
+        "api_version": "v1",
+        "provider": "qwen3-tts-gguf-host",
+        "model": "Qwen3-TTS-1.7B-Base",
+        "revision": "0eb32e283ee46b86820c67843abb04cf12bc58d7",
+        "voice": "tosaka-rin-cn",
+        "sample_rate": 24000,
+        "quantization": "talker=Q5_K,predictor=Q8_0,onnx=FP16",
+        "runtime_commit": "0eb32e283ee46b86820c67843abb04cf12bc58d7"
+      }
+    }
+  },
+  "RVC8769_unavailable": true,
+  "competing_processes": [],
+  "formal_http": {
+    "/health": {
+      "status": 200,
+      "elapsed_seconds": 0.010080600000947015,
+      "bytes": 64,
+      "sha256": "be383f16c222cf58bfa8113c61c73e2ddea321b8c3c1c7fe412b8e1a54c99165",
+      "body": {
+        "status": "ok",
+        "service": "anima",
+        "timestamp": 1791711376.4205217
+      }
+    },
+    "/ready": {
+      "status": 200,
+      "elapsed_seconds": 0.0058266000014555175,
+      "bytes": 2336,
+      "sha256": "bedd54f6451f1afca793f42f52b799dbe76bfed8739601f2044d51335f15d200",
+      "body": {
+        "schema_version": 1,
+        "status": "ready",
+        "ready": true,
+        "service": "anima",
+        "profile": "production",
+        "version": 1,
+        "persona": "anima.v0.1",
+        "effective_hash": "4be171239c60ddc83a414f8c0a3a6ba4f3be658864d55985cfc5a2d92b6325db",
+        "semantic_hash": "293cd32f315131c15aff8e0a2a9ee41f7963899c9715f9baab80c3d0767b1558",
+        "acceptance_eligible": true,
+        "components": {
+          "pool": {
+            "state": "ready",
+            "ready": true,
+            "reason": null
+          },
+          "llm": {
+            "state": "ready",
+            "ready": true,
+            "configured": {
+              "name": "deepseek",
+              "type": "deepseek",
+              "provider": "deepseek",
+              "model": "deepseek-v4-flash",
+              "voice": null
+            },
+            "resolved": {
+              "type": "deepseek",
+              "provider": "deepseek",
+              "model": "deepseek-v4-flash",
+              "voice": null
+            },
+            "reason": null
+          },
+          "asr": {
+            "state": "disabled",
+            "ready": false,
+            "required": false,
+            "configured": {
+              "type": null,
+              "provider": null,
+              "model": null,
+              "voice": null
+            },
+            "resolved": {
+              "type": null,
+              "provider": null,
+              "model": null,
+              "voice": null
+            },
+            "reason": "capability_disabled"
+          },
+          "tts": {
+            "state": "ready",
+            "ready": true,
+            "configured": {
+              "name": "qwen-host",
+              "type": "remote",
+              "provider": "qwen3-tts-gguf-host",
+              "model": "Qwen3-TTS-1.7B-Base",
+              "voice": "tosaka-rin-cn"
+            },
+            "resolved": {
+              "type": "remote",
+              "provider": "qwen3-tts-gguf-host",
+              "model": "Qwen3-TTS-1.7B-Base",
+              "voice": "tosaka-rin-cn"
+            },
+            "reason": null
+          },
+          "vad": {
+            "state": "disabled",
+            "ready": false,
+            "required": false,
+            "configured": {
+              "type": null,
+              "provider": null,
+              "model": null,
+              "voice": null
+            },
+            "resolved": {
+              "type": null,
+              "provider": null,
+              "model": null,
+              "voice": null
+            },
+            "reason": "capability_disabled"
+          },
+          "frontend": {
+            "state": "ready",
+            "ready": true,
+            "required": true,
+            "reason": null
+          },
+          "checkpoint": {
+            "state": "ready",
+            "ready": true,
+            "degraded": false,
+            "reason": null,
+            "required": false
+          },
+          "auth_session": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "required": true
+          },
+          "auth_user": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "required": true
+          },
+          "metrics_projection": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "has_anima_readiness_probe_total": true,
+            "anima_readiness_probe_total_delta": 2.0,
+            "required": true
+          },
+          "memory_runtime": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "ingestion_queue": 0,
+            "index_backlog": 0,
+            "ingestion_failed": 0,
+            "required": true
+          },
+          "observation_ledger": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "queue_depth": 0,
+            "dropped_records": 0,
+            "writer_errors": 0,
+            "schema_version": 2,
+            "write_probe": true,
+            "required": true
+          },
+          "remote_tts": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "contract_valid": true,
+            "required": true
+          }
+        },
+        "degraded": false,
+        "component_status_age_seconds": 24.902
+      }
+    },
+    "/api/auth/session": {
+      "status": 200,
+      "elapsed_seconds": 0.03191069999957108,
+      "bytes": 95,
+      "sha256": "551a5229465ee45b5d83d1b09cbf0c396e7410692392f74679ce5aded0dab8cb",
+      "body": {
+        "ok": true,
+        "authenticated": true,
+        "source": "bearer",
+        "user": null,
+        "password_change_required": false
+      }
+    }
+  },
+  "no_lifecycle_or_synthesis_executed": true
+}

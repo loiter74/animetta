@@ -1,0 +1,31 @@
+"""Metadata-free final secret scan and byte index; no service calls."""
+import hashlib, json, os, re
+from pathlib import Path
+from dotenv import dotenv_values
+O=Path(__file__).parent;ROOT=O.parents[2]
+sha=lambda b:hashlib.sha256(b).hexdigest()
+assert sha((O/'optimization-prediction.json').read_bytes())=='e6099b1c3675aab79d0f7579d3f0a26d9fd30a08e2078bb1e0e5bd1114405123'
+names=['contract.json','baseline.json','baseline-summary.json','baseline-evidence-index.json','recovery-addendum.json','recovery-baseline.json','optimization-prediction.json','optimized-source-input.json','optimized.json','optimized-summary.json','baseline-runner.py','resume-baseline.py','run-optimized.py','acceptance-readonly.py','run-role.py','finalize-optimized.py','freeze-index.py']
+files=[O/p for p in names];files.extend(p for directory in ['optimized','acceptance'] for p in (O/directory).rglob('*') if p.is_file());files=sorted(set(files))
+values={**os.environ,**{k:v for k,v in dotenv_values(ROOT/'.env').items() if v}}
+secret_name=r'PASSWORD|SECRET|API_KEY|COOKIE|(?:^|_)TOKEN$'
+secrets={v for k,v in values.items() if re.search(secret_name,k,re.I) and v and len(v)>=8 and v not in ['<redacted>','[redacted]']}
+leaks=[];structural=[]
+def check(value,path,where=''):
+ if isinstance(value,dict):
+  for k,v in value.items():
+   if k.lower() in ['api_key','token','password','password_hash','authorization','access_token'] and isinstance(v,str) and v and 'redacted' not in v.lower():structural.append({'path':str(path),'field':where+'.'+k})
+   check(v,path,where+'.'+k)
+ elif isinstance(value,list):
+  for v in value:check(v,path,where+'[]')
+for p in files:
+ b=p.read_bytes()
+ if any(secret.encode() in b for secret in secrets):leaks.append(str(p))
+ if p.suffix=='.json':check(json.loads(b),p)
+assert not leaks and not structural,'HOLD: evidence secret scan failed; do not print values'
+scan={'status':'passed','known_root_and_inherited_credential_literal_scan':'passed','structured_authentication_field_scan':'passed','public_cache_directory_is_not_a_credential':True,'corrected_original_false_positive':{'setting_name':'TIKTOKEN_CACHE_DIR','file':'optimization-prediction.json','decision':'Public tokenizer data path; prediction bytes unchanged'},'whitelist_file_count':len(files),'credential_values_logged':False}
+scanpath=O/'secret-scan.json';scanpath.write_bytes((json.dumps(scan,ensure_ascii=False,indent=2)+'\n').encode());files.append(scanpath)
+index={'status':'passed','files':[{'path':str(p),'bytes':p.stat().st_size,'SHA256':sha(p.read_bytes())} for p in files],'original_baseline_raw_index':'baseline-evidence-index.json','automatic_artifacts_not_copied':True,'no_self_hash':True}
+idx=O/'optimized-evidence-index.json';idx.write_bytes((json.dumps(index,ensure_ascii=False,indent=2)+'\n').encode())
+statepath=O/'state.json';state=json.loads(statepath.read_bytes());state.update(status='complete',current_step='optimized_acceptance_and_index_complete',active_pid=None,driver_pid=None,active_tool_session=None,secret_scan_path=str(scanpath),secret_scan_SHA256=sha(scanpath.read_bytes()),optimized_index_path=str(idx),optimized_index_SHA256=sha(idx.read_bytes()),next_action='Parent byte-preserving public archive/report/Git; visible page already opened by Parent; no further runtime actions');statepath.write_bytes((json.dumps(state,ensure_ascii=False,indent=2)+'\n').encode())
+summary=json.loads((O/'optimized-summary.json').read_bytes());print(json.dumps({'index':str(idx),'index_SHA256':state['optimized_index_SHA256'],'secret_scan':str(scanpath),'secret_scan_SHA256':state['secret_scan_SHA256'],'image_id':summary['image_id'],'whitelist_files':len(files)},ensure_ascii=False))

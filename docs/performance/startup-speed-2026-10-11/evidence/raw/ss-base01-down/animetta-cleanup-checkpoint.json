@@ -1,0 +1,12 @@
+{
+  "committed_at": "2026-10-11T09:45:54.404730Z",
+  "evidence_refs": [
+    "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-base01-down/evidence/command-658be53f288e.log"
+  ],
+  "result_reference": "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-base01-down/steps/animetta-cleanup/windows/000001/result.json",
+  "reuse_fingerprint": "96be9b0ca9f39b95fc05fe17686c70337359fb5cf430f767c5b8ed0d5f1863b6",
+  "run_id": "ss-base01-down",
+  "schema_version": 1,
+  "status": "passed",
+  "step_id": "animetta-cleanup"
+}

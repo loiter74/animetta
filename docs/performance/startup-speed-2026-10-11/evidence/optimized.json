@@ -1,0 +1,1075 @@
+{
+  "variant": "optimized",
+  "status": "optimized_complete_HOLD_for_Parent",
+  "runs": [
+    {
+      "run_id": "ss-opt-warmup01",
+      "action": "anima-up",
+      "command": [
+        "py",
+        "-3.13",
+        "scripts/runtime_lifecycle.py",
+        "anima-up",
+        "--run-id",
+        "ss-opt-warmup01",
+        "--wait",
+        "--artifacts-root",
+        "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans"
+      ],
+      "exit_code": 0,
+      "CLI_elapsed_seconds": 155.7276161000009,
+      "stdout_bytes": 44702,
+      "stdout_SHA": "6dc81ec3820b2e8956baa572d233b9d7e9caff8cff9875b31a23e1863e9456c2",
+      "stderr_SHA": "6c96a4ff000019422522dc8c0fc774d2e053d31ba3648a885c69955d84740533",
+      "steps": [
+        {
+          "step_id": "host-tts-start",
+          "status": "passed",
+          "started_at": "2026-10-11T10:09:46.810037Z",
+          "feedback_at": "2026-10-11T10:09:47.788854Z",
+          "elapsed_seconds": 0.9788224999974773,
+          "progress_summary": "Host TTS is ready",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt-warmup01/evidence/host-tts-readiness.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\host-tts-start\\checkpoint.json",
+          "checkpoint_SHA": "bfe2b0d1e1e5a978dca028cf849c0f788782bad4bf022e7b3ea3630f85c81bf4",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\host-tts-start\\windows\\000022\\result.json",
+          "result_SHA": "be5a9cf2b06f67d4d2396451fef34b7f011a8620b00288c0f5a7b2dfbb212cc3"
+        },
+        {
+          "step_id": "host-tts-preflight",
+          "status": "passed",
+          "started_at": "2026-10-11T10:09:47.812067Z",
+          "feedback_at": "2026-10-11T10:09:48.126764Z",
+          "elapsed_seconds": 0.31470550000085495,
+          "progress_summary": "command completed with exit code 0",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt-warmup01/evidence/command-a9629353fa5e.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\host-tts-preflight\\checkpoint.json",
+          "checkpoint_SHA": "f5fd59c5c7e76fcc1ab6c6d806e95f42fd283e67e090597e17539ee1737f8342",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\host-tts-preflight\\windows\\000022\\result.json",
+          "result_SHA": "1d0aaa2294a5b99cf05f9a0c1c86bedc96c89a410672b73799b446f4034037f6"
+        },
+        {
+          "step_id": "animetta-build",
+          "status": "passed",
+          "started_at": "2026-10-11T10:09:48.135399Z",
+          "feedback_at": "2026-10-11T10:09:49.394122Z",
+          "elapsed_seconds": 1.2587281999985862,
+          "progress_summary": "BuildKit process completed successfully",
+          "evidence_refs": [
+            "ss-opt-warmup01/animetta-build.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\animetta-build\\checkpoint.json",
+          "checkpoint_SHA": "6f47f527681b47c8d35fda9d8f1c53c7528d85e398e4d225ece23f9a42da9358",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\animetta-build\\windows\\000022\\result.json",
+          "result_SHA": "5078a6bf7e20131b81be5e94d05fec07f57b85a135eec50eb006439518101e4a"
+        },
+        {
+          "step_id": "animetta-start",
+          "status": "passed",
+          "started_at": "2026-10-11T10:09:49.400627Z",
+          "feedback_at": "2026-10-11T10:10:13.717113Z",
+          "elapsed_seconds": 24.31649180000022,
+          "progress_summary": "command completed with exit code 0",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt-warmup01/evidence/command-a84b3fe2a39f.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\animetta-start\\checkpoint.json",
+          "checkpoint_SHA": "9ccfe86e7df5d3345b63dde6340c25a3e4d6962ed58a557c29ad217e051db2d4",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\animetta-start\\windows\\000001\\result.json",
+          "result_SHA": "f2c41350f51a259205743668ba1b98838682e9ceaa2ebbffc1446e8f0d4e0b89"
+        },
+        {
+          "step_id": "animetta-health",
+          "status": "passed",
+          "started_at": "2026-10-11T10:10:13.723403Z",
+          "feedback_at": "2026-10-11T10:10:28.382079Z",
+          "elapsed_seconds": 14.658681899996736,
+          "progress_summary": "HTTP 200 from http://localhost/health",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt-warmup01/evidence/http-91234995d891.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\animetta-health\\checkpoint.json",
+          "checkpoint_SHA": "668d3188c27e30cfd3defc6de1e7f98c1202e177007f8cca7afd392cf88cc69e",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\animetta-health\\windows\\000001\\result.json",
+          "result_SHA": "66233f0d1267d5fe0bfb796dcaefa01e2335f256e76f7402349b0097de7d5ae8"
+        },
+        {
+          "step_id": "animetta-ready",
+          "status": "passed",
+          "started_at": "2026-10-11T10:10:28.388252Z",
+          "feedback_at": "2026-10-11T10:10:28.400195Z",
+          "elapsed_seconds": 0.011948100000154227,
+          "progress_summary": "HTTP 200 from http://localhost/ready",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt-warmup01/evidence/http-1c2d6f651f30.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\animetta-ready\\checkpoint.json",
+          "checkpoint_SHA": "e722f39bedcccab19ed815c84a93de206d269a9bb89b7a4506e79a5dc4687355",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\animetta-ready\\windows\\000001\\result.json",
+          "result_SHA": "8dd7812550d2815b0bb8f6831aa1a70a2471adac237b97ad5c318d1abf15d3b8"
+        },
+        {
+          "step_id": "frontend-readiness",
+          "status": "passed",
+          "started_at": "2026-10-11T10:10:28.406873Z",
+          "feedback_at": "2026-10-11T10:10:28.418460Z",
+          "elapsed_seconds": 0.011592400001973147,
+          "progress_summary": "HTTP 200 from http://localhost",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt-warmup01/evidence/http-8605b8ba08c2.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\frontend-readiness\\checkpoint.json",
+          "checkpoint_SHA": "c5072c64edef7b026e11710768cb0a79c508eb926401ee1f42b0cf4d5991eb04",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\frontend-readiness\\windows\\000001\\result.json",
+          "result_SHA": "e26d5288f11a74c35cda7bee074ead62a137c795add09ef383bcc660a9d220e2"
+        },
+        {
+          "step_id": "default-log-check",
+          "status": "passed",
+          "started_at": "2026-10-11T10:10:28.425098Z",
+          "feedback_at": "2026-10-11T10:10:28.677150Z",
+          "elapsed_seconds": 0.25205819999973755,
+          "progress_summary": "logs contain no Traceback or ERROR",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt-warmup01/evidence/command-0fb6b160bab7.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\default-log-check\\checkpoint.json",
+          "checkpoint_SHA": "2b4c6929b7048777e31dc74a7e5f9c48c2a6ee8ba3582f91d17643964698d859",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\default-log-check\\windows\\000001\\result.json",
+          "result_SHA": "514e3c1de0fadcd38f08eae91d5046076bcfe54f09eced61f3cb41ea7e9a4375"
+        }
+      ],
+      "build_receipt": {
+        "elapsed_seconds": 106.61333790000208,
+        "exit_code": 0,
+        "finished_at": "2026-10-11T10:09:43.193615+00:00",
+        "started_at": "2026-10-11T10:07:56.579422+00:00"
+      }
+    },
+    {
+      "run_id": "ss-opt01-down",
+      "action": "anima-down",
+      "command": [
+        "py",
+        "-3.13",
+        "scripts/runtime_lifecycle.py",
+        "anima-down",
+        "--run-id",
+        "ss-opt01-down",
+        "--wait",
+        "--artifacts-root",
+        "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans"
+      ],
+      "exit_code": 0,
+      "CLI_elapsed_seconds": 8.8889479999998,
+      "stdout_bytes": 631,
+      "stdout_SHA": "d48ce29efb0dee209ac1d4681e51943759fcb2b1bc70e7721d4ef601fce03df3",
+      "stderr_SHA": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "steps": [
+        {
+          "step_id": "animetta-cleanup",
+          "status": "passed",
+          "started_at": "2026-10-11T10:10:30.333601Z",
+          "feedback_at": "2026-10-11T10:10:38.529872Z",
+          "elapsed_seconds": 8.196276300001045,
+          "progress_summary": "command completed with exit code 0",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt01-down/evidence/command-658be53f288e.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01-down\\steps\\animetta-cleanup\\checkpoint.json",
+          "checkpoint_SHA": "eb7eda5f0b5cc983d58ffb16b4767d0d5cfa62a4ab6ec573fb613633281def0c",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01-down\\steps\\animetta-cleanup\\windows\\000001\\result.json",
+          "result_SHA": "e51fa589de6873aa7960d5a97f2bf7d65ea21b3e7bddfc683c9792a58f19b329"
+        }
+      ]
+    },
+    {
+      "run_id": "ss-opt01",
+      "action": "anima-up",
+      "command": [
+        "py",
+        "-3.13",
+        "scripts/runtime_lifecycle.py",
+        "anima-up",
+        "--run-id",
+        "ss-opt01",
+        "--wait",
+        "--artifacts-root",
+        "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans"
+      ],
+      "exit_code": 0,
+      "CLI_elapsed_seconds": 22.127374699997745,
+      "stdout_bytes": 4443,
+      "stdout_SHA": "a1f4d5c4634aac0571ba154affd98f64f6f2b2f6bba00d6a8f0a415f3dbfa144",
+      "stderr_SHA": "60156f644c61aba20f679cdde5e2ab73ad4ab4d2b91e87830879232d91fce53b",
+      "steps": [
+        {
+          "step_id": "host-tts-start",
+          "status": "passed",
+          "started_at": "2026-10-11T10:10:42.608043Z",
+          "feedback_at": "2026-10-11T10:10:43.665118Z",
+          "elapsed_seconds": 1.0570851999982551,
+          "progress_summary": "Host TTS is ready",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt01/evidence/host-tts-readiness.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\host-tts-start\\checkpoint.json",
+          "checkpoint_SHA": "6ae282aade86c3c7d806fecf4319ba1c973562c41043315580c7b91007582dfc",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\host-tts-start\\windows\\000001\\result.json",
+          "result_SHA": "3ac4192aa7d9f2a915c94a127161a9e5e296666171b608669122b508dc34d385"
+        },
+        {
+          "step_id": "host-tts-preflight",
+          "status": "passed",
+          "started_at": "2026-10-11T10:10:43.678726Z",
+          "feedback_at": "2026-10-11T10:10:44.008511Z",
+          "elapsed_seconds": 0.32979189999969094,
+          "progress_summary": "command completed with exit code 0",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt01/evidence/command-a9629353fa5e.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\host-tts-preflight\\checkpoint.json",
+          "checkpoint_SHA": "fa0cdfecc50ac420aa592369af16f712fcf542d31d15841ee8f20391a2479e7d",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\host-tts-preflight\\windows\\000001\\result.json",
+          "result_SHA": "049ca4abef7840d043326f6c386ab2e6a4571a4d56a53a69613fdd201c39f739"
+        },
+        {
+          "step_id": "animetta-build",
+          "status": "passed",
+          "started_at": "2026-10-11T10:10:44.013967Z",
+          "feedback_at": "2026-10-11T10:10:44.893412Z",
+          "elapsed_seconds": 0.8794522999996843,
+          "progress_summary": "Reused images with matching source content",
+          "evidence_refs": [],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\animetta-build\\checkpoint.json",
+          "checkpoint_SHA": "939fce66aec59d1b818fb89062ec227d0ab5754a466e1076ab413d466d2c3c3b",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\animetta-build\\windows\\000001\\result.json",
+          "result_SHA": "58e2fd9532b7c9384398381524985b77cbc654af1a349e4eccbb59bc08ce5e0f"
+        },
+        {
+          "step_id": "animetta-start",
+          "status": "passed",
+          "started_at": "2026-10-11T10:10:44.900470Z",
+          "feedback_at": "2026-10-11T10:10:53.781807Z",
+          "elapsed_seconds": 8.881343900000502,
+          "progress_summary": "command completed with exit code 0",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt01/evidence/command-a84b3fe2a39f.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\animetta-start\\checkpoint.json",
+          "checkpoint_SHA": "c845f9d6eecbd68e3e7384ce93f99ac763323db52eee14d5ec91f1b117716407",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\animetta-start\\windows\\000001\\result.json",
+          "result_SHA": "f0d466cef0357fc589314cf6e187edcce948c3072988ea877cb95d59e95d6b51"
+        },
+        {
+          "step_id": "animetta-health",
+          "status": "passed",
+          "started_at": "2026-10-11T10:10:53.787778Z",
+          "feedback_at": "2026-10-11T10:10:57.405932Z",
+          "elapsed_seconds": 3.618160199999693,
+          "progress_summary": "HTTP 200 from http://localhost/health",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt01/evidence/http-91234995d891.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\animetta-health\\checkpoint.json",
+          "checkpoint_SHA": "d9c41b67d4472797f51372c8bfaf24f2bf74acb80f266a41710a5b442bd9ec71",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\animetta-health\\windows\\000001\\result.json",
+          "result_SHA": "6495b6eceef04375cce1353d8fa31d4981457251e052709c76ae04419a532a79"
+        },
+        {
+          "step_id": "animetta-ready",
+          "status": "passed",
+          "started_at": "2026-10-11T10:10:57.418268Z",
+          "feedback_at": "2026-10-11T10:11:00.540831Z",
+          "elapsed_seconds": 3.122573199998442,
+          "progress_summary": "HTTP 200 from http://localhost/ready",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt01/evidence/http-1c2d6f651f30.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\animetta-ready\\checkpoint.json",
+          "checkpoint_SHA": "766a96bf5fc34ca61a14c308ef097117116e7d1f1af276a0f9d7f5b2cae5e1be",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\animetta-ready\\windows\\000001\\result.json",
+          "result_SHA": "6ed9812b250fbba7cd87389e191a7e8ba8cb051f33b966309913a2a8b4833a6d"
+        },
+        {
+          "step_id": "frontend-readiness",
+          "status": "passed",
+          "started_at": "2026-10-11T10:11:00.551197Z",
+          "feedback_at": "2026-10-11T10:11:00.564263Z",
+          "elapsed_seconds": 0.013072600002487889,
+          "progress_summary": "HTTP 200 from http://localhost",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt01/evidence/http-8605b8ba08c2.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\frontend-readiness\\checkpoint.json",
+          "checkpoint_SHA": "deb8f52fdd4cf76708f7b9bb34b90351c74de1b589e9e5ac10b977b4c17dab0e",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\frontend-readiness\\windows\\000001\\result.json",
+          "result_SHA": "a725757b2071c376f8fa3913d6f017eebb7842ed4c2eb0da5a6bfc0af364af14"
+        },
+        {
+          "step_id": "default-log-check",
+          "status": "passed",
+          "started_at": "2026-10-11T10:11:00.571227Z",
+          "feedback_at": "2026-10-11T10:11:00.823011Z",
+          "elapsed_seconds": 0.2517895999990287,
+          "progress_summary": "logs contain no Traceback or ERROR",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt01/evidence/command-1c5c8e7806d8.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\default-log-check\\checkpoint.json",
+          "checkpoint_SHA": "f17fc9b7d6ea333cac5daa56775e2604e2eaac9601c6f736c348be9051c896c0",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\default-log-check\\windows\\000001\\result.json",
+          "result_SHA": "e43dae136ac89e117b95b575e91fdd4cea6f32edb731cf13a43c51b9649d8f84"
+        }
+      ]
+    },
+    {
+      "run_id": "ss-opt02-down",
+      "action": "anima-down",
+      "command": [
+        "py",
+        "-3.13",
+        "scripts/runtime_lifecycle.py",
+        "anima-down",
+        "--run-id",
+        "ss-opt02-down",
+        "--wait",
+        "--artifacts-root",
+        "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans"
+      ],
+      "exit_code": 0,
+      "CLI_elapsed_seconds": 9.338136400001531,
+      "stdout_bytes": 631,
+      "stdout_SHA": "16b739ba81540dd305088d66391cf97d8098d589b5fd214e3fac520f721cc36e",
+      "stderr_SHA": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "steps": [
+        {
+          "step_id": "animetta-cleanup",
+          "status": "passed",
+          "started_at": "2026-10-11T10:11:02.471702Z",
+          "feedback_at": "2026-10-11T10:11:11.146092Z",
+          "elapsed_seconds": 8.674394400000892,
+          "progress_summary": "command completed with exit code 0",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt02-down/evidence/command-658be53f288e.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02-down\\steps\\animetta-cleanup\\checkpoint.json",
+          "checkpoint_SHA": "79bf7bf1a01798af6f985e2d3921f3a69b2eeb3d111a947022a3df5c077c4cd6",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02-down\\steps\\animetta-cleanup\\windows\\000001\\result.json",
+          "result_SHA": "f0bb23e30434657d074846917f2b518ff880244645baa77b2b8dbd175ed0afef"
+        }
+      ]
+    },
+    {
+      "run_id": "ss-opt02",
+      "action": "anima-up",
+      "command": [
+        "py",
+        "-3.13",
+        "scripts/runtime_lifecycle.py",
+        "anima-up",
+        "--run-id",
+        "ss-opt02",
+        "--wait",
+        "--artifacts-root",
+        "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans"
+      ],
+      "exit_code": 0,
+      "CLI_elapsed_seconds": 21.889793599999393,
+      "stdout_bytes": 4445,
+      "stdout_SHA": "73d22900674f75226bb08ffed648f239d7c9b031cf340a80698e0460acd489d3",
+      "stderr_SHA": "fddf035b1c5a0d14efb8b013950d9b87eae0dae3f5c5ff56c2b8b90ab81297c3",
+      "steps": [
+        {
+          "step_id": "host-tts-start",
+          "status": "passed",
+          "started_at": "2026-10-11T10:11:15.261378Z",
+          "feedback_at": "2026-10-11T10:11:16.312389Z",
+          "elapsed_seconds": 1.0510175000017625,
+          "progress_summary": "Host TTS is ready",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt02/evidence/host-tts-readiness.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\host-tts-start\\checkpoint.json",
+          "checkpoint_SHA": "7977c0ce384fea1860fbe6a838cdd61439d9e88d56132c9db90e29588f2173ad",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\host-tts-start\\windows\\000001\\result.json",
+          "result_SHA": "055927946f8ba6da4bfbdaac6d49aa4e2dfadf28f2a681a5fc09561b657b9de7"
+        },
+        {
+          "step_id": "host-tts-preflight",
+          "status": "passed",
+          "started_at": "2026-10-11T10:11:16.318384Z",
+          "feedback_at": "2026-10-11T10:11:16.669472Z",
+          "elapsed_seconds": 0.35109469999952125,
+          "progress_summary": "command completed with exit code 0",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt02/evidence/command-a9629353fa5e.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\host-tts-preflight\\checkpoint.json",
+          "checkpoint_SHA": "47937ac2a78a57ed48b97ac9b541e8224adf88717e1fe2e24441cb7f89e75ab8",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\host-tts-preflight\\windows\\000001\\result.json",
+          "result_SHA": "71109821560c0daa7ced2c3d0f33ab9219cdef22d2a3912822606821f1925798"
+        },
+        {
+          "step_id": "animetta-build",
+          "status": "passed",
+          "started_at": "2026-10-11T10:11:16.675973Z",
+          "feedback_at": "2026-10-11T10:11:17.575811Z",
+          "elapsed_seconds": 0.8998477999994066,
+          "progress_summary": "Reused images with matching source content",
+          "evidence_refs": [],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\animetta-build\\checkpoint.json",
+          "checkpoint_SHA": "88cadfc6470a3506c9585b1834c98e13be8bc06f85d1c36f89bec1f9bbdbb29f",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\animetta-build\\windows\\000001\\result.json",
+          "result_SHA": "83fe05685472807825e564424f3f66add0c386d641cfae8921dc9628bc00a3b4"
+        },
+        {
+          "step_id": "animetta-start",
+          "status": "passed",
+          "started_at": "2026-10-11T10:11:17.582670Z",
+          "feedback_at": "2026-10-11T10:11:26.417798Z",
+          "elapsed_seconds": 8.83513359999779,
+          "progress_summary": "command completed with exit code 0",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt02/evidence/command-a84b3fe2a39f.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\animetta-start\\checkpoint.json",
+          "checkpoint_SHA": "026ed972108d054843aa2171aaefa5f217ee490ae0c70e97e7b34eb0e9dfecd9",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\animetta-start\\windows\\000001\\result.json",
+          "result_SHA": "72d30e46bef145d6e701434395d39469055d744b2e2c7515f28f6d1a426681ad"
+        },
+        {
+          "step_id": "animetta-health",
+          "status": "passed",
+          "started_at": "2026-10-11T10:11:26.424376Z",
+          "feedback_at": "2026-10-11T10:11:30.394495Z",
+          "elapsed_seconds": 3.9701252000013483,
+          "progress_summary": "HTTP 200 from http://localhost/health",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt02/evidence/http-91234995d891.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\animetta-health\\checkpoint.json",
+          "checkpoint_SHA": "2bd692255e7733f0883d7b91522900ca0349b37cca3bc0d9f8306861cb40dd2b",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\animetta-health\\windows\\000001\\result.json",
+          "result_SHA": "37beaa3f1d7e07b42360332e43a34fe1bc65383a8bf7e4c09a723554a6bbcb76"
+        },
+        {
+          "step_id": "animetta-ready",
+          "status": "passed",
+          "started_at": "2026-10-11T10:11:30.401478Z",
+          "feedback_at": "2026-10-11T10:11:32.978419Z",
+          "elapsed_seconds": 2.5769475999986753,
+          "progress_summary": "HTTP 200 from http://localhost/ready",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt02/evidence/http-1c2d6f651f30.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\animetta-ready\\checkpoint.json",
+          "checkpoint_SHA": "542ff8a5fddc5191108cd5ae82e48fb54bdbceb99d0f5df4b88cb90c79d172c2",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\animetta-ready\\windows\\000001\\result.json",
+          "result_SHA": "2b370b3d4ecb31ba9b4f937066cf36c907cf22c756c03aac593c5cdf3664d384"
+        },
+        {
+          "step_id": "frontend-readiness",
+          "status": "passed",
+          "started_at": "2026-10-11T10:11:32.985162Z",
+          "feedback_at": "2026-10-11T10:11:32.997475Z",
+          "elapsed_seconds": 0.012320900001213886,
+          "progress_summary": "HTTP 200 from http://localhost",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt02/evidence/http-8605b8ba08c2.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\frontend-readiness\\checkpoint.json",
+          "checkpoint_SHA": "e9727adb677a24ba3b68b2a0d2350836fce62dbca36d132962e7f5d33ba840b8",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\frontend-readiness\\windows\\000001\\result.json",
+          "result_SHA": "c43f758ddf25d52e4c38d96506343884f59c6d120cd33ae4000e400aa25670c8"
+        },
+        {
+          "step_id": "default-log-check",
+          "status": "passed",
+          "started_at": "2026-10-11T10:11:33.005259Z",
+          "feedback_at": "2026-10-11T10:11:33.222245Z",
+          "elapsed_seconds": 0.21699119999902905,
+          "progress_summary": "logs contain no Traceback or ERROR",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt02/evidence/command-3e8790d06348.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\default-log-check\\checkpoint.json",
+          "checkpoint_SHA": "1ad503439c6cb4eaf548325aa18fc6f1f17d22cb25ea5bda8c9ebf98fb8012de",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\default-log-check\\windows\\000001\\result.json",
+          "result_SHA": "a8f9197685cf6b7119f0af2980cadd37277f0f5f3cde795168011be85a15954e"
+        }
+      ]
+    }
+  ],
+  "samples": [
+    {
+      "run_id": "ss-opt01",
+      "CLI_elapsed_seconds": 22.127374699997745,
+      "application_start_to_ready_seconds": 15.640361,
+      "container_start_to_ready_seconds": 7.613101,
+      "containers": [
+        {
+          "name": "/anima-animetta-1",
+          "id": "94a6a36e458338c558a6d2724026cba0ffc5805a8c20bc6bf0e3d17f95febae6",
+          "image": "sha256:74da0dbe9974e9c674ec61b843e507d9681df87f0da9aacc7a18da10c719ecd8",
+          "StartedAt": "2026-10-11T10:10:52.927730254Z",
+          "volumes": [
+            {
+              "name": "anima_animetta-data",
+              "destination": "/app/data"
+            },
+            {
+              "name": "anima_animetta-memory-db",
+              "destination": "/app/memory_db"
+            }
+          ]
+        },
+        {
+          "name": "/anima-redis-1",
+          "id": "0161f60fe6387cd50dc8fc70aeb82397efe5dbf05b108a9cb5fadc8fa8f71d2f",
+          "image": "sha256:8096655e437712b07503796fb64d81359256cfcff0ab29d95a7da72863786efb",
+          "StartedAt": "2026-10-11T10:10:50.116403518Z",
+          "volumes": [
+            {
+              "name": "anima_animetta-redis",
+              "destination": "/data"
+            }
+          ]
+        }
+      ],
+      "steps": [
+        {
+          "step_id": "host-tts-start",
+          "status": "passed",
+          "started_at": "2026-10-11T10:10:42.608043Z",
+          "feedback_at": "2026-10-11T10:10:43.665118Z",
+          "elapsed_seconds": 1.0570851999982551,
+          "progress_summary": "Host TTS is ready",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt01/evidence/host-tts-readiness.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\host-tts-start\\checkpoint.json",
+          "checkpoint_SHA": "6ae282aade86c3c7d806fecf4319ba1c973562c41043315580c7b91007582dfc",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\host-tts-start\\windows\\000001\\result.json",
+          "result_SHA": "3ac4192aa7d9f2a915c94a127161a9e5e296666171b608669122b508dc34d385"
+        },
+        {
+          "step_id": "host-tts-preflight",
+          "status": "passed",
+          "started_at": "2026-10-11T10:10:43.678726Z",
+          "feedback_at": "2026-10-11T10:10:44.008511Z",
+          "elapsed_seconds": 0.32979189999969094,
+          "progress_summary": "command completed with exit code 0",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt01/evidence/command-a9629353fa5e.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\host-tts-preflight\\checkpoint.json",
+          "checkpoint_SHA": "fa0cdfecc50ac420aa592369af16f712fcf542d31d15841ee8f20391a2479e7d",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\host-tts-preflight\\windows\\000001\\result.json",
+          "result_SHA": "049ca4abef7840d043326f6c386ab2e6a4571a4d56a53a69613fdd201c39f739"
+        },
+        {
+          "step_id": "animetta-build",
+          "status": "passed",
+          "started_at": "2026-10-11T10:10:44.013967Z",
+          "feedback_at": "2026-10-11T10:10:44.893412Z",
+          "elapsed_seconds": 0.8794522999996843,
+          "progress_summary": "Reused images with matching source content",
+          "evidence_refs": [],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\animetta-build\\checkpoint.json",
+          "checkpoint_SHA": "939fce66aec59d1b818fb89062ec227d0ab5754a466e1076ab413d466d2c3c3b",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\animetta-build\\windows\\000001\\result.json",
+          "result_SHA": "58e2fd9532b7c9384398381524985b77cbc654af1a349e4eccbb59bc08ce5e0f"
+        },
+        {
+          "step_id": "animetta-start",
+          "status": "passed",
+          "started_at": "2026-10-11T10:10:44.900470Z",
+          "feedback_at": "2026-10-11T10:10:53.781807Z",
+          "elapsed_seconds": 8.881343900000502,
+          "progress_summary": "command completed with exit code 0",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt01/evidence/command-a84b3fe2a39f.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\animetta-start\\checkpoint.json",
+          "checkpoint_SHA": "c845f9d6eecbd68e3e7384ce93f99ac763323db52eee14d5ec91f1b117716407",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\animetta-start\\windows\\000001\\result.json",
+          "result_SHA": "f0d466cef0357fc589314cf6e187edcce948c3072988ea877cb95d59e95d6b51"
+        },
+        {
+          "step_id": "animetta-health",
+          "status": "passed",
+          "started_at": "2026-10-11T10:10:53.787778Z",
+          "feedback_at": "2026-10-11T10:10:57.405932Z",
+          "elapsed_seconds": 3.618160199999693,
+          "progress_summary": "HTTP 200 from http://localhost/health",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt01/evidence/http-91234995d891.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\animetta-health\\checkpoint.json",
+          "checkpoint_SHA": "d9c41b67d4472797f51372c8bfaf24f2bf74acb80f266a41710a5b442bd9ec71",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\animetta-health\\windows\\000001\\result.json",
+          "result_SHA": "6495b6eceef04375cce1353d8fa31d4981457251e052709c76ae04419a532a79"
+        },
+        {
+          "step_id": "animetta-ready",
+          "status": "passed",
+          "started_at": "2026-10-11T10:10:57.418268Z",
+          "feedback_at": "2026-10-11T10:11:00.540831Z",
+          "elapsed_seconds": 3.122573199998442,
+          "progress_summary": "HTTP 200 from http://localhost/ready",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt01/evidence/http-1c2d6f651f30.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\animetta-ready\\checkpoint.json",
+          "checkpoint_SHA": "766a96bf5fc34ca61a14c308ef097117116e7d1f1af276a0f9d7f5b2cae5e1be",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\animetta-ready\\windows\\000001\\result.json",
+          "result_SHA": "6ed9812b250fbba7cd87389e191a7e8ba8cb051f33b966309913a2a8b4833a6d"
+        },
+        {
+          "step_id": "frontend-readiness",
+          "status": "passed",
+          "started_at": "2026-10-11T10:11:00.551197Z",
+          "feedback_at": "2026-10-11T10:11:00.564263Z",
+          "elapsed_seconds": 0.013072600002487889,
+          "progress_summary": "HTTP 200 from http://localhost",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt01/evidence/http-8605b8ba08c2.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\frontend-readiness\\checkpoint.json",
+          "checkpoint_SHA": "deb8f52fdd4cf76708f7b9bb34b90351c74de1b589e9e5ac10b977b4c17dab0e",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\frontend-readiness\\windows\\000001\\result.json",
+          "result_SHA": "a725757b2071c376f8fa3913d6f017eebb7842ed4c2eb0da5a6bfc0af364af14"
+        },
+        {
+          "step_id": "default-log-check",
+          "status": "passed",
+          "started_at": "2026-10-11T10:11:00.571227Z",
+          "feedback_at": "2026-10-11T10:11:00.823011Z",
+          "elapsed_seconds": 0.2517895999990287,
+          "progress_summary": "logs contain no Traceback or ERROR",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt01/evidence/command-1c5c8e7806d8.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\default-log-check\\checkpoint.json",
+          "checkpoint_SHA": "f17fc9b7d6ea333cac5daa56775e2604e2eaac9601c6f736c348be9051c896c0",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt01\\steps\\default-log-check\\windows\\000001\\result.json",
+          "result_SHA": "e43dae136ac89e117b95b575e91fdd4cea6f32edb731cf13a43c51b9649d8f84"
+        }
+      ],
+      "startup_logs": {
+        "/anima-animetta-1": {
+          "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt01-app.log",
+          "SHA": "d3322a7e1797bd789d93ca8cd460abc358e0b26b2b743d536e9ed3f47b3a4a58",
+          "bytes": 23969,
+          "key_lines": [
+            "2026-10-11T10:10:53.590408495Z [entrypoint] Validating config/animetta.yaml for profile production...",
+            "2026-10-11T10:10:54.314681863Z [entrypoint] Config ready: production 1 293cd32f315131c15aff8e0a2a9ee41f7963899c9715f9baab80c3d0767b1558",
+            "2026-10-11T10:10:54.357019955Z [entrypoint] Starting nginx...",
+            "2026-10-11T10:10:54.368122102Z [entrypoint] Starting Animetta backend on port 12394...",
+            "2026-10-11T10:10:57.130123231Z INFO:     Started server process [17]",
+            "2026-10-11T10:10:57.283751796Z INFO:     Application startup complete.",
+            "2026-10-11T10:10:57.284477951Z INFO:     Uvicorn running on http://0.0.0.0:12394 (Press CTRL+C to quit)",
+            "2026-10-11T10:10:57.285709455Z 2026-10-11 10:10:57 | INFO     | animetta.runtime.provider_pool:_init_once:120 - [ServicePool] Initializing shared service instances...",
+            "2026-10-11T10:10:57.621582574Z 2026-10-11 10:10:57 | INFO     | animetta.runtime.session_context:_preload_tokenizers:288 - [__pool__] tiktoken tokenizer preloaded",
+            "2026-10-11T10:11:00.081479092Z 2026-10-11 10:11:00 | INFO     | animetta.runtime.session_context:verify_llm_connectivity:818 - [health] LLM connectivity ready (2259ms)",
+            "2026-10-11T10:11:00.081987456Z 2026-10-11 10:11:00 | INFO     | animetta.runtime.provider_pool:_init_once:220 - [ServicePool] Ready (2796ms) — shared LLM/TTS/ASR"
+          ]
+        },
+        "/anima-redis-1": {
+          "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt01-redis.log",
+          "SHA": "4981787214611a273eb8f4fd53ea4d26647b5bb667f6b1c34837dc3777e31d01",
+          "bytes": 9306,
+          "key_lines": [
+            "2026-10-11T10:10:51.314107334Z 1:M 11 Oct 2026 10:10:51.313 * DB loaded from append only file: 0.359 seconds",
+            "2026-10-11T10:10:51.453326329Z 1:M 11 Oct 2026 10:10:51.452 * Ready to accept connections tcp"
+          ]
+        }
+      }
+    },
+    {
+      "run_id": "ss-opt02",
+      "CLI_elapsed_seconds": 21.889793599999393,
+      "application_start_to_ready_seconds": 15.395749,
+      "container_start_to_ready_seconds": 7.49302,
+      "containers": [
+        {
+          "name": "/anima-animetta-1",
+          "id": "2d336ae4218d5f7e438df4493264ee51f4c20578cd7d9cfe59d0d893d02e3b81",
+          "image": "sha256:74da0dbe9974e9c674ec61b843e507d9681df87f0da9aacc7a18da10c719ecd8",
+          "StartedAt": "2026-10-11T10:11:25.485399455Z",
+          "volumes": [
+            {
+              "name": "anima_animetta-data",
+              "destination": "/app/data"
+            },
+            {
+              "name": "anima_animetta-memory-db",
+              "destination": "/app/memory_db"
+            }
+          ]
+        },
+        {
+          "name": "/anima-redis-1",
+          "id": "2cab0ebff1b6626fba7841c0e38dcae57f788d527d3f19baccdc59ab307ff961",
+          "image": "sha256:8096655e437712b07503796fb64d81359256cfcff0ab29d95a7da72863786efb",
+          "StartedAt": "2026-10-11T10:11:22.723022102Z",
+          "volumes": [
+            {
+              "name": "anima_animetta-redis",
+              "destination": "/data"
+            }
+          ]
+        }
+      ],
+      "steps": [
+        {
+          "step_id": "host-tts-start",
+          "status": "passed",
+          "started_at": "2026-10-11T10:11:15.261378Z",
+          "feedback_at": "2026-10-11T10:11:16.312389Z",
+          "elapsed_seconds": 1.0510175000017625,
+          "progress_summary": "Host TTS is ready",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt02/evidence/host-tts-readiness.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\host-tts-start\\checkpoint.json",
+          "checkpoint_SHA": "7977c0ce384fea1860fbe6a838cdd61439d9e88d56132c9db90e29588f2173ad",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\host-tts-start\\windows\\000001\\result.json",
+          "result_SHA": "055927946f8ba6da4bfbdaac6d49aa4e2dfadf28f2a681a5fc09561b657b9de7"
+        },
+        {
+          "step_id": "host-tts-preflight",
+          "status": "passed",
+          "started_at": "2026-10-11T10:11:16.318384Z",
+          "feedback_at": "2026-10-11T10:11:16.669472Z",
+          "elapsed_seconds": 0.35109469999952125,
+          "progress_summary": "command completed with exit code 0",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt02/evidence/command-a9629353fa5e.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\host-tts-preflight\\checkpoint.json",
+          "checkpoint_SHA": "47937ac2a78a57ed48b97ac9b541e8224adf88717e1fe2e24441cb7f89e75ab8",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\host-tts-preflight\\windows\\000001\\result.json",
+          "result_SHA": "71109821560c0daa7ced2c3d0f33ab9219cdef22d2a3912822606821f1925798"
+        },
+        {
+          "step_id": "animetta-build",
+          "status": "passed",
+          "started_at": "2026-10-11T10:11:16.675973Z",
+          "feedback_at": "2026-10-11T10:11:17.575811Z",
+          "elapsed_seconds": 0.8998477999994066,
+          "progress_summary": "Reused images with matching source content",
+          "evidence_refs": [],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\animetta-build\\checkpoint.json",
+          "checkpoint_SHA": "88cadfc6470a3506c9585b1834c98e13be8bc06f85d1c36f89bec1f9bbdbb29f",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\animetta-build\\windows\\000001\\result.json",
+          "result_SHA": "83fe05685472807825e564424f3f66add0c386d641cfae8921dc9628bc00a3b4"
+        },
+        {
+          "step_id": "animetta-start",
+          "status": "passed",
+          "started_at": "2026-10-11T10:11:17.582670Z",
+          "feedback_at": "2026-10-11T10:11:26.417798Z",
+          "elapsed_seconds": 8.83513359999779,
+          "progress_summary": "command completed with exit code 0",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt02/evidence/command-a84b3fe2a39f.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\animetta-start\\checkpoint.json",
+          "checkpoint_SHA": "026ed972108d054843aa2171aaefa5f217ee490ae0c70e97e7b34eb0e9dfecd9",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\animetta-start\\windows\\000001\\result.json",
+          "result_SHA": "72d30e46bef145d6e701434395d39469055d744b2e2c7515f28f6d1a426681ad"
+        },
+        {
+          "step_id": "animetta-health",
+          "status": "passed",
+          "started_at": "2026-10-11T10:11:26.424376Z",
+          "feedback_at": "2026-10-11T10:11:30.394495Z",
+          "elapsed_seconds": 3.9701252000013483,
+          "progress_summary": "HTTP 200 from http://localhost/health",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt02/evidence/http-91234995d891.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\animetta-health\\checkpoint.json",
+          "checkpoint_SHA": "2bd692255e7733f0883d7b91522900ca0349b37cca3bc0d9f8306861cb40dd2b",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\animetta-health\\windows\\000001\\result.json",
+          "result_SHA": "37beaa3f1d7e07b42360332e43a34fe1bc65383a8bf7e4c09a723554a6bbcb76"
+        },
+        {
+          "step_id": "animetta-ready",
+          "status": "passed",
+          "started_at": "2026-10-11T10:11:30.401478Z",
+          "feedback_at": "2026-10-11T10:11:32.978419Z",
+          "elapsed_seconds": 2.5769475999986753,
+          "progress_summary": "HTTP 200 from http://localhost/ready",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt02/evidence/http-1c2d6f651f30.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\animetta-ready\\checkpoint.json",
+          "checkpoint_SHA": "542ff8a5fddc5191108cd5ae82e48fb54bdbceb99d0f5df4b88cb90c79d172c2",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\animetta-ready\\windows\\000001\\result.json",
+          "result_SHA": "2b370b3d4ecb31ba9b4f937066cf36c907cf22c756c03aac593c5cdf3664d384"
+        },
+        {
+          "step_id": "frontend-readiness",
+          "status": "passed",
+          "started_at": "2026-10-11T10:11:32.985162Z",
+          "feedback_at": "2026-10-11T10:11:32.997475Z",
+          "elapsed_seconds": 0.012320900001213886,
+          "progress_summary": "HTTP 200 from http://localhost",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt02/evidence/http-8605b8ba08c2.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\frontend-readiness\\checkpoint.json",
+          "checkpoint_SHA": "e9727adb677a24ba3b68b2a0d2350836fce62dbca36d132962e7f5d33ba840b8",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\frontend-readiness\\windows\\000001\\result.json",
+          "result_SHA": "c43f758ddf25d52e4c38d96506343884f59c6d120cd33ae4000e400aa25670c8"
+        },
+        {
+          "step_id": "default-log-check",
+          "status": "passed",
+          "started_at": "2026-10-11T10:11:33.005259Z",
+          "feedback_at": "2026-10-11T10:11:33.222245Z",
+          "elapsed_seconds": 0.21699119999902905,
+          "progress_summary": "logs contain no Traceback or ERROR",
+          "evidence_refs": [
+            "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt02/evidence/command-3e8790d06348.log"
+          ],
+          "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\default-log-check\\checkpoint.json",
+          "checkpoint_SHA": "1ad503439c6cb4eaf548325aa18fc6f1f17d22cb25ea5bda8c9ebf98fb8012de",
+          "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt02\\steps\\default-log-check\\windows\\000001\\result.json",
+          "result_SHA": "a8f9197685cf6b7119f0af2980cadd37277f0f5f3cde795168011be85a15954e"
+        }
+      ],
+      "startup_logs": {
+        "/anima-animetta-1": {
+          "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt02-app.log",
+          "SHA": "4beea701153f628bbd58e0a5587ddaafc45f40d42be8495a6abd4fb2b90b86d2",
+          "bytes": 23864,
+          "key_lines": [
+            "2026-10-11T10:11:26.194915181Z [entrypoint] Validating config/animetta.yaml for profile production...",
+            "2026-10-11T10:11:26.919197690Z [entrypoint] Config ready: production 1 293cd32f315131c15aff8e0a2a9ee41f7963899c9715f9baab80c3d0767b1558",
+            "2026-10-11T10:11:26.959261613Z [entrypoint] Starting nginx...",
+            "2026-10-11T10:11:26.970375307Z [entrypoint] Starting Animetta backend on port 12394...",
+            "2026-10-11T10:11:29.732181620Z INFO:     Started server process [17]",
+            "2026-10-11T10:11:29.883765781Z INFO:     Application startup complete.",
+            "2026-10-11T10:11:29.884761345Z INFO:     Uvicorn running on http://0.0.0.0:12394 (Press CTRL+C to quit)",
+            "2026-10-11T10:11:29.885959585Z 2026-10-11 10:11:29 | INFO     | animetta.runtime.provider_pool:_init_once:120 - [ServicePool] Initializing shared service instances...",
+            "2026-10-11T10:11:30.145925442Z 2026-10-11 10:11:30 | INFO     | animetta.runtime.session_context:_preload_tokenizers:288 - [__pool__] tiktoken tokenizer preloaded",
+            "2026-10-11T10:11:32.544654846Z 2026-10-11 10:11:32 | INFO     | animetta.runtime.session_context:verify_llm_connectivity:818 - [health] LLM connectivity ready (2194ms)",
+            "2026-10-11T10:11:32.546080747Z 2026-10-11 10:11:32 | INFO     | animetta.runtime.provider_pool:_init_once:220 - [ServicePool] Ready (2660ms) — shared LLM/TTS/ASR"
+          ]
+        },
+        "/anima-redis-1": {
+          "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt02-redis.log",
+          "SHA": "607812e4990326865370f3bf6499effce439a25eba0832652eb683e7336654e3",
+          "bytes": 9306,
+          "key_lines": [
+            "2026-10-11T10:11:23.855075940Z 1:M 11 Oct 2026 10:11:23.854 * DB loaded from append only file: 0.439 seconds",
+            "2026-10-11T10:11:23.989347117Z 1:M 11 Oct 2026 10:11:23.988 * Ready to accept connections tcp"
+          ]
+        }
+      }
+    }
+  ],
+  "warmup": {
+    "run_id": "ss-opt-warmup01",
+    "CLI_elapsed_seconds": 155.7276161000009,
+    "application_start_to_ready_seconds": 38.999568,
+    "container_start_to_ready_seconds": 15.588541,
+    "containers": [
+      {
+        "name": "/anima-animetta-1",
+        "id": "a9b3b7b54bf03fae3c3b3266107485e5788b78a45b569660a4c3bc6937cfd48c",
+        "image": "sha256:74da0dbe9974e9c674ec61b843e507d9681df87f0da9aacc7a18da10c719ecd8",
+        "StartedAt": "2026-10-11T10:10:12.81165475Z",
+        "volumes": [
+          {
+            "name": "anima_animetta-data",
+            "destination": "/app/data"
+          },
+          {
+            "name": "anima_animetta-memory-db",
+            "destination": "/app/memory_db"
+          }
+        ]
+      },
+      {
+        "name": "/anima-redis-1",
+        "id": "442b99cf6008ee0f17bfa190fcaf238bfc164f0cbfe9de423fb37cca4bb0a936",
+        "image": "sha256:8096655e437712b07503796fb64d81359256cfcff0ab29d95a7da72863786efb",
+        "StartedAt": "2026-10-11T10:10:09.957281068Z",
+        "volumes": [
+          {
+            "name": "anima_animetta-redis",
+            "destination": "/data"
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "step_id": "host-tts-start",
+        "status": "passed",
+        "started_at": "2026-10-11T10:09:46.810037Z",
+        "feedback_at": "2026-10-11T10:09:47.788854Z",
+        "elapsed_seconds": 0.9788224999974773,
+        "progress_summary": "Host TTS is ready",
+        "evidence_refs": [
+          "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt-warmup01/evidence/host-tts-readiness.log"
+        ],
+        "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\host-tts-start\\checkpoint.json",
+        "checkpoint_SHA": "bfe2b0d1e1e5a978dca028cf849c0f788782bad4bf022e7b3ea3630f85c81bf4",
+        "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\host-tts-start\\windows\\000022\\result.json",
+        "result_SHA": "be5a9cf2b06f67d4d2396451fef34b7f011a8620b00288c0f5a7b2dfbb212cc3"
+      },
+      {
+        "step_id": "host-tts-preflight",
+        "status": "passed",
+        "started_at": "2026-10-11T10:09:47.812067Z",
+        "feedback_at": "2026-10-11T10:09:48.126764Z",
+        "elapsed_seconds": 0.31470550000085495,
+        "progress_summary": "command completed with exit code 0",
+        "evidence_refs": [
+          "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt-warmup01/evidence/command-a9629353fa5e.log"
+        ],
+        "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\host-tts-preflight\\checkpoint.json",
+        "checkpoint_SHA": "f5fd59c5c7e76fcc1ab6c6d806e95f42fd283e67e090597e17539ee1737f8342",
+        "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\host-tts-preflight\\windows\\000022\\result.json",
+        "result_SHA": "1d0aaa2294a5b99cf05f9a0c1c86bedc96c89a410672b73799b446f4034037f6"
+      },
+      {
+        "step_id": "animetta-build",
+        "status": "passed",
+        "started_at": "2026-10-11T10:09:48.135399Z",
+        "feedback_at": "2026-10-11T10:09:49.394122Z",
+        "elapsed_seconds": 1.2587281999985862,
+        "progress_summary": "BuildKit process completed successfully",
+        "evidence_refs": [
+          "ss-opt-warmup01/animetta-build.log"
+        ],
+        "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\animetta-build\\checkpoint.json",
+        "checkpoint_SHA": "6f47f527681b47c8d35fda9d8f1c53c7528d85e398e4d225ece23f9a42da9358",
+        "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\animetta-build\\windows\\000022\\result.json",
+        "result_SHA": "5078a6bf7e20131b81be5e94d05fec07f57b85a135eec50eb006439518101e4a"
+      },
+      {
+        "step_id": "animetta-start",
+        "status": "passed",
+        "started_at": "2026-10-11T10:09:49.400627Z",
+        "feedback_at": "2026-10-11T10:10:13.717113Z",
+        "elapsed_seconds": 24.31649180000022,
+        "progress_summary": "command completed with exit code 0",
+        "evidence_refs": [
+          "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt-warmup01/evidence/command-a84b3fe2a39f.log"
+        ],
+        "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\animetta-start\\checkpoint.json",
+        "checkpoint_SHA": "9ccfe86e7df5d3345b63dde6340c25a3e4d6962ed58a557c29ad217e051db2d4",
+        "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\animetta-start\\windows\\000001\\result.json",
+        "result_SHA": "f2c41350f51a259205743668ba1b98838682e9ceaa2ebbffc1446e8f0d4e0b89"
+      },
+      {
+        "step_id": "animetta-health",
+        "status": "passed",
+        "started_at": "2026-10-11T10:10:13.723403Z",
+        "feedback_at": "2026-10-11T10:10:28.382079Z",
+        "elapsed_seconds": 14.658681899996736,
+        "progress_summary": "HTTP 200 from http://localhost/health",
+        "evidence_refs": [
+          "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt-warmup01/evidence/http-91234995d891.log"
+        ],
+        "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\animetta-health\\checkpoint.json",
+        "checkpoint_SHA": "668d3188c27e30cfd3defc6de1e7f98c1202e177007f8cca7afd392cf88cc69e",
+        "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\animetta-health\\windows\\000001\\result.json",
+        "result_SHA": "66233f0d1267d5fe0bfb796dcaefa01e2335f256e76f7402349b0097de7d5ae8"
+      },
+      {
+        "step_id": "animetta-ready",
+        "status": "passed",
+        "started_at": "2026-10-11T10:10:28.388252Z",
+        "feedback_at": "2026-10-11T10:10:28.400195Z",
+        "elapsed_seconds": 0.011948100000154227,
+        "progress_summary": "HTTP 200 from http://localhost/ready",
+        "evidence_refs": [
+          "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt-warmup01/evidence/http-1c2d6f651f30.log"
+        ],
+        "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\animetta-ready\\checkpoint.json",
+        "checkpoint_SHA": "e722f39bedcccab19ed815c84a93de206d269a9bb89b7a4506e79a5dc4687355",
+        "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\animetta-ready\\windows\\000001\\result.json",
+        "result_SHA": "8dd7812550d2815b0bb8f6831aa1a70a2471adac237b97ad5c318d1abf15d3b8"
+      },
+      {
+        "step_id": "frontend-readiness",
+        "status": "passed",
+        "started_at": "2026-10-11T10:10:28.406873Z",
+        "feedback_at": "2026-10-11T10:10:28.418460Z",
+        "elapsed_seconds": 0.011592400001973147,
+        "progress_summary": "HTTP 200 from http://localhost",
+        "evidence_refs": [
+          "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt-warmup01/evidence/http-8605b8ba08c2.log"
+        ],
+        "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\frontend-readiness\\checkpoint.json",
+        "checkpoint_SHA": "c5072c64edef7b026e11710768cb0a79c508eb926401ee1f42b0cf4d5991eb04",
+        "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\frontend-readiness\\windows\\000001\\result.json",
+        "result_SHA": "e26d5288f11a74c35cda7bee074ead62a137c795add09ef383bcc660a9d220e2"
+      },
+      {
+        "step_id": "default-log-check",
+        "status": "passed",
+        "started_at": "2026-10-11T10:10:28.425098Z",
+        "feedback_at": "2026-10-11T10:10:28.677150Z",
+        "elapsed_seconds": 0.25205819999973755,
+        "progress_summary": "logs contain no Traceback or ERROR",
+        "evidence_refs": [
+          "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt-warmup01/evidence/command-0fb6b160bab7.log"
+        ],
+        "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\default-log-check\\checkpoint.json",
+        "checkpoint_SHA": "2b4c6929b7048777e31dc74a7e5f9c48c2a6ee8ba3582f91d17643964698d859",
+        "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-opt-warmup01\\steps\\default-log-check\\windows\\000001\\result.json",
+        "result_SHA": "514e3c1de0fadcd38f08eae91d5046076bcfe54f09eced61f3cb41ea7e9a4375"
+      }
+    ],
+    "startup_logs": {
+      "/anima-animetta-1": {
+        "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt-warmup01-app.log",
+        "SHA": "ca4c2d98fc363b1b87393afff4f977439f2b89fed5b1d47e6eee8fe6594d990d",
+        "bytes": 23339,
+        "key_lines": [
+          "2026-10-11T10:10:13.506441695Z [entrypoint] Validating config/animetta.yaml for profile production...",
+          "2026-10-11T10:10:14.388029250Z [entrypoint] Config ready: production 1 293cd32f315131c15aff8e0a2a9ee41f7963899c9715f9baab80c3d0767b1558",
+          "2026-10-11T10:10:14.428357011Z [entrypoint] Starting nginx...",
+          "2026-10-11T10:10:14.439587638Z [entrypoint] Starting Animetta backend on port 12394...",
+          "2026-10-11T10:10:17.348753661Z INFO:     Started server process [17]",
+          "2026-10-11T10:10:17.529071700Z 2026-10-11 10:10:17 | INFO     | animetta.runtime.provider_pool:_init_once:120 - [ServicePool] Initializing shared service instances...",
+          "2026-10-11T10:10:17.610101445Z INFO:     Application startup complete.",
+          "2026-10-11T10:10:17.610869436Z INFO:     Uvicorn running on http://0.0.0.0:12394 (Press CTRL+C to quit)",
+          "2026-10-11T10:10:17.902725443Z 2026-10-11 10:10:17 | INFO     | animetta.runtime.session_context:_preload_tokenizers:288 - [__pool__] tiktoken tokenizer preloaded",
+          "2026-10-11T10:10:20.291575311Z 2026-10-11 10:10:20 | INFO     | animetta.runtime.session_context:verify_llm_connectivity:818 - [health] LLM connectivity ready (2182ms)",
+          "2026-10-11T10:10:20.293158235Z 2026-10-11 10:10:20 | INFO     | animetta.runtime.provider_pool:_init_once:220 - [ServicePool] Ready (2766ms) — shared LLM/TTS/ASR"
+        ]
+      },
+      "/anima-redis-1": {
+        "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt-warmup01-redis.log",
+        "SHA": "4df9fcb4e87897c5acd123d8348445763fe2b9abf65b0d0a916d831b0946d3b5",
+        "bytes": 9306,
+        "key_lines": [
+          "2026-10-11T10:10:11.487873866Z 1:M 11 Oct 2026 10:10:11.487 * DB loaded from append only file: 0.350 seconds",
+          "2026-10-11T10:10:11.660889326Z 1:M 11 Oct 2026 10:10:11.660 * Ready to accept connections tcp"
+        ]
+      }
+    }
+  },
+  "source_manifest_SHA256": "64fb053880ac5242393111ebad2bf00313ec05b5470f11b8a8a398da31624bd4",
+  "prediction_SHA256": "e6099b1c3675aab79d0f7579d3f0a26d9fd30a08e2078bb1e0e5bd1114405123",
+  "parent_decision": "Two optimized successful samples, baseline 2 successes + 2 failures retained; failure HOLD without extra cycles",
+  "current_step": "optimized_two_samples_complete",
+  "updated_at": "2026-10-11T10:11:34.097190+00:00",
+  "next_action": "Parent separately authorizes offline tokenizer/playback acceptance; no additional lifecycle/sample/probe",
+  "active_run_id": null,
+  "active_pid": null
+}

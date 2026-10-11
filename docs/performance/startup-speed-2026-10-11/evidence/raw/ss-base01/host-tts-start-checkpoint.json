@@ -1,0 +1,12 @@
+{
+  "committed_at": "2026-10-11T09:45:59.903224Z",
+  "evidence_refs": [
+    "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-base01/evidence/host-tts-readiness.log"
+  ],
+  "result_reference": "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-base01/steps/host-tts-start/windows/000001/result.json",
+  "reuse_fingerprint": "481dd599fdfffbd97dd541ddb1d9f0657d4eb637e562659ab64df17223bb3bcb",
+  "run_id": "ss-base01",
+  "schema_version": 1,
+  "status": "passed",
+  "step_id": "host-tts-start"
+}

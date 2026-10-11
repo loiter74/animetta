@@ -1,0 +1,12 @@
+{
+  "committed_at": "2026-10-11T10:10:53.781807Z",
+  "evidence_refs": [
+    "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt01/evidence/command-a84b3fe2a39f.log"
+  ],
+  "result_reference": "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-opt01/steps/animetta-start/windows/000001/result.json",
+  "reuse_fingerprint": "285c2b90027a9239eaf3d55120082d26403fef2fe12437bb3ed40072152edbd5",
+  "run_id": "ss-opt01",
+  "schema_version": 1,
+  "status": "passed",
+  "step_id": "animetta-start"
+}

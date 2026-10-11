@@ -1,0 +1,1538 @@
+{
+  "schema_version": 1,
+  "run_id": "startup-speed-20261011",
+  "byte_preserving": true,
+  "script_carrier": "Python/Node sources use .txt; remove the last suffix to replay original names.",
+  "files": [
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\acceptance\\core-role-probe-optimized.mjs",
+      "archive": "acceptance/core-role-probe-optimized.mjs.txt",
+      "bytes": 18370,
+      "sha256": "945be9bece22285e7aff60eda756863a4446bf1c2ce2e319cf0b896f086db4d6"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\acceptance\\final-identity-resources.json",
+      "archive": "acceptance/final-identity-resources.json",
+      "bytes": 12518,
+      "sha256": "6f2c367abe1f74e420e9cbe01c791d32d31d516398c208273550473fce7e2f39"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\acceptance\\offline-tokenizer.stderr.log",
+      "archive": "acceptance/offline-tokenizer.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\acceptance\\offline-tokenizer.stdout.json",
+      "archive": "acceptance/offline-tokenizer.stdout.json",
+      "bytes": 5363,
+      "sha256": "49297dc12b735a14dea4d7a61cd958d6e84a9cc811d796395517bc0df9f6169c"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\acceptance\\readiness-collector-original-failure.json",
+      "archive": "acceptance/readiness-collector-original-failure.json",
+      "bytes": 326,
+      "sha256": "1653cce2991d33aac6081944c587309a2aa0e7c5bb7e18526f65931c7b3d6599"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\acceptance\\ready-identity-redis.json",
+      "archive": "acceptance/ready-identity-redis.json",
+      "bytes": 10944,
+      "sha256": "5b6cce37b94077a76abd629cafeae2c60c8159cdf46a9f20467a83016ed09383"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\acceptance\\role-probe-input.json",
+      "archive": "acceptance/role-probe-input.json",
+      "bytes": 431,
+      "sha256": "29ec646650f489abf2d20fbc8400ae78df9aeeb6f829f61d3c2ae88aa1f6a160"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\acceptance\\ss-opt-role01.json",
+      "archive": "acceptance/ss-opt-role01.json",
+      "bytes": 17286,
+      "sha256": "e7c673456817e9164bff06c1f99f0a0e66bca5672f7c74b263d0123559c3f70d"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\acceptance\\ss-opt-role01.stderr.log",
+      "archive": "acceptance/ss-opt-role01.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\acceptance-readonly.py",
+      "archive": "acceptance-readonly.py.txt",
+      "bytes": 5379,
+      "sha256": "1511ce301f3b4108e114d8527ec010b86e4651acf152be95416424fca0cac9ff"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\baseline-evidence-index.json",
+      "archive": "baseline-evidence-index.json",
+      "bytes": 5128,
+      "sha256": "1e037517942590219d057e1b82801f7f6d405c1c340551c0a4375dcae91d1554"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\baseline-runner.py",
+      "archive": "baseline-runner.py.txt",
+      "bytes": 11956,
+      "sha256": "92d35e4bbaa6e7b651facedd98b969c889399e40ee61e9bd81ea5b0369ddfea8"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\baseline-summary.json",
+      "archive": "baseline-summary.json",
+      "bytes": 4524,
+      "sha256": "6b28948016912acc6ca84da2c1171af48bef5ca1ab5a0d90e94e0face60a9c69"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\baseline.json",
+      "archive": "baseline.json",
+      "bytes": 48093,
+      "sha256": "f71af7de18c79f35f528479eb10a3b80624c758e7f720fa86a9f3f6f84a890c9"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\collect-hold.py",
+      "archive": "collect-hold.py.txt",
+      "bytes": 4204,
+      "sha256": "0d0b72996289ab660539e3f1276aa71a31c971a625f76642fd6f828f8c115e5b"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\contract.json",
+      "archive": "contract.json",
+      "bytes": 1798,
+      "sha256": "d6c6233a49e8e82ca8a3bba8f6b326ca4b13d3e9550ce521d7f512891ce8018e"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\current-app-startup.log",
+      "archive": "current-app-startup.log",
+      "bytes": 24777,
+      "sha256": "27bc216ddff5b9ee65510703a25e950d8ebadbab37beb47b275bd32220deef78"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\current-inventory.json",
+      "archive": "current-inventory.json",
+      "bytes": 16011,
+      "sha256": "333d7a44f5e1b80d24802de4f160705fce7241e023d7d18b0dc6b51c0157ae7c"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\current-redis-startup.log",
+      "archive": "current-redis-startup.log",
+      "bytes": 9681,
+      "sha256": "4498214c23a8f8138cbf9f6bb4952393b55e25a28ccd1199c3cca5cb64978402"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\current-startup-log-refs.json",
+      "archive": "current-startup-log-refs.json",
+      "bytes": 539,
+      "sha256": "46367c1ba3cff64f576fcbac4fa9fb3cd7a211cbd0310fffcd0b07653b6812b5"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\display.json",
+      "archive": "display.json",
+      "bytes": 499,
+      "sha256": "45320850ddd7f4c344ce283e93d7e2c3a465b35c1fe2f69c1e142bcddf9c5a8a"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\finalize-baseline.py",
+      "archive": "finalize-baseline.py.txt",
+      "bytes": 7349,
+      "sha256": "c0c0af643f755e92f9dfe89a4da4e51d6b29f38bed112f3face34df89afcea95"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\finalize-optimized.py",
+      "archive": "finalize-optimized.py.txt",
+      "bytes": 8910,
+      "sha256": "01b51b24d1a8ad580ffc385a2ae7d66883bd0f61631c311073f659333d29ac65"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\freeze-index.py",
+      "archive": "freeze-index.py.txt",
+      "bytes": 3671,
+      "sha256": "6246a0b53249ef5f63eb3ce6c215eb348dea6f44b0e6ece037e82d3717ed19d0"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\frozen-source-input.json",
+      "archive": "frozen-source-input.json",
+      "bytes": 99689,
+      "sha256": "5daa5ef521e57cd178d25a7c736857c2cd8ee73aff78230bc5532246aa6a7f4a"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\historical-segments.json",
+      "archive": "historical-segments.json",
+      "bytes": 51351,
+      "sha256": "f749b8059c45162460f34b1336ea2139d74313ea321d8fb3454c8651e20d51c2"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\importtime-summary.json",
+      "archive": "importtime-summary.json",
+      "bytes": 13983,
+      "sha256": "e0534e98e4979b762d25c79b20c6021e8039ca45fc8f2c6c68e8ed96d9281726"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\manifest-import-result.json",
+      "archive": "manifest-import-result.json",
+      "bytes": 5793,
+      "sha256": "3610e0c948596c9bd8cbeb4758fbe1e833944dd2f23c8583dd7b65d55768332a"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\manifest-import.stderr.log",
+      "archive": "manifest-import.stderr.log",
+      "bytes": 29404,
+      "sha256": "477f6e88e3f8a0529aaa498ce02b8dfc7b58e561d88061c1b65363df348f48f6"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\manifest-import.stdout.log",
+      "archive": "manifest-import.stdout.log",
+      "bytes": 95,
+      "sha256": "e14d002c1b27c28682d6dd2b025503759bd86c641c49d4b6f0520b8bee2f6f91"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimization-prediction.json",
+      "archive": "optimization-prediction.json",
+      "bytes": 2406,
+      "sha256": "e6099b1c3675aab79d0f7579d3f0a26d9fd30a08e2078bb1e0e5bd1114405123"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\current-inventory.json",
+      "archive": "optimized/current-inventory.json",
+      "bytes": 16011,
+      "sha256": "333d7a44f5e1b80d24802de4f160705fce7241e023d7d18b0dc6b51c0157ae7c"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\frozen-source-input.json",
+      "archive": "optimized/frozen-source-input.json",
+      "bytes": 99920,
+      "sha256": "64fb053880ac5242393111ebad2bf00313ec05b5470f11b8a8a398da31624bd4"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt-warmup01\\animetta-build-checkpoint.json",
+      "archive": "optimized/raw/ss-opt-warmup01/animetta-build-checkpoint.json",
+      "bytes": 461,
+      "sha256": "6f47f527681b47c8d35fda9d8f1c53c7528d85e398e4d225ece23f9a42da9358"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt-warmup01\\animetta-build-result.json",
+      "archive": "optimized/raw/ss-opt-warmup01/animetta-build-result.json",
+      "bytes": 546,
+      "sha256": "5078a6bf7e20131b81be5e94d05fec07f57b85a135eec50eb006439518101e4a"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt-warmup01\\animetta-health-checkpoint.json",
+      "archive": "optimized/raw/ss-opt-warmup01/animetta-health-checkpoint.json",
+      "bytes": 530,
+      "sha256": "668d3188c27e30cfd3defc6de1e7f98c1202e177007f8cca7afd392cf88cc69e"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt-warmup01\\animetta-health-result.json",
+      "archive": "optimized/raw/ss-opt-warmup01/animetta-health-result.json",
+      "bytes": 616,
+      "sha256": "66233f0d1267d5fe0bfb796dcaefa01e2335f256e76f7402349b0097de7d5ae8"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt-warmup01\\animetta-ready-checkpoint.json",
+      "archive": "optimized/raw/ss-opt-warmup01/animetta-ready-checkpoint.json",
+      "bytes": 528,
+      "sha256": "e722f39bedcccab19ed815c84a93de206d269a9bb89b7a4506e79a5dc4687355"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt-warmup01\\animetta-ready-result.json",
+      "archive": "optimized/raw/ss-opt-warmup01/animetta-ready-result.json",
+      "bytes": 615,
+      "sha256": "8dd7812550d2815b0bb8f6831aa1a70a2471adac237b97ad5c318d1abf15d3b8"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt-warmup01\\animetta-start-checkpoint.json",
+      "archive": "optimized/raw/ss-opt-warmup01/animetta-start-checkpoint.json",
+      "bytes": 531,
+      "sha256": "9ccfe86e7df5d3345b63dde6340c25a3e4d6962ed58a557c29ad217e051db2d4"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt-warmup01\\animetta-start-result.json",
+      "archive": "optimized/raw/ss-opt-warmup01/animetta-start-result.json",
+      "bytes": 613,
+      "sha256": "f2c41350f51a259205743668ba1b98838682e9ceaa2ebbffc1446e8f0d4e0b89"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt-warmup01\\default-log-check-checkpoint.json",
+      "archive": "optimized/raw/ss-opt-warmup01/default-log-check-checkpoint.json",
+      "bytes": 537,
+      "sha256": "2b4c6929b7048777e31dc74a7e5f9c48c2a6ee8ba3582f91d17643964698d859"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt-warmup01\\default-log-check-result.json",
+      "archive": "optimized/raw/ss-opt-warmup01/default-log-check-result.json",
+      "bytes": 621,
+      "sha256": "514e3c1de0fadcd38f08eae91d5046076bcfe54f09eced61f3cb41ea7e9a4375"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt-warmup01\\frontend-readiness-checkpoint.json",
+      "archive": "optimized/raw/ss-opt-warmup01/frontend-readiness-checkpoint.json",
+      "bytes": 536,
+      "sha256": "c5072c64edef7b026e11710768cb0a79c508eb926401ee1f42b0cf4d5991eb04"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt-warmup01\\frontend-readiness-result.json",
+      "archive": "optimized/raw/ss-opt-warmup01/frontend-readiness-result.json",
+      "bytes": 617,
+      "sha256": "e26d5288f11a74c35cda7bee074ead62a137c795add09ef383bcc660a9d220e2"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt-warmup01\\host-tts-preflight-checkpoint.json",
+      "archive": "optimized/raw/ss-opt-warmup01/host-tts-preflight-checkpoint.json",
+      "bytes": 539,
+      "sha256": "f5fd59c5c7e76fcc1ab6c6d806e95f42fd283e67e090597e17539ee1737f8342"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt-warmup01\\host-tts-preflight-result.json",
+      "archive": "optimized/raw/ss-opt-warmup01/host-tts-preflight-result.json",
+      "bytes": 624,
+      "sha256": "1d0aaa2294a5b99cf05f9a0c1c86bedc96c89a410672b73799b446f4034037f6"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt-warmup01\\host-tts-start-checkpoint.json",
+      "archive": "optimized/raw/ss-opt-warmup01/host-tts-start-checkpoint.json",
+      "bytes": 529,
+      "sha256": "bfe2b0d1e1e5a978dca028cf849c0f788782bad4bf022e7b3ea3630f85c81bf4"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt-warmup01\\host-tts-start-result.json",
+      "archive": "optimized/raw/ss-opt-warmup01/host-tts-start-result.json",
+      "bytes": 596,
+      "sha256": "be5a9cf2b06f67d4d2396451fef34b7f011a8620b00288c0f5a7b2dfbb212cc3"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt01\\animetta-build-checkpoint.json",
+      "archive": "optimized/raw/ss-opt01/animetta-build-checkpoint.json",
+      "bytes": 524,
+      "sha256": "939fce66aec59d1b818fb89062ec227d0ab5754a466e1076ab413d466d2c3c3b"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt01\\animetta-build-result.json",
+      "archive": "optimized/raw/ss-opt01/animetta-build-result.json",
+      "bytes": 498,
+      "sha256": "58e2fd9532b7c9384398381524985b77cbc654af1a349e4eccbb59bc08ce5e0f"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt01\\animetta-health-checkpoint.json",
+      "archive": "optimized/raw/ss-opt01/animetta-health-checkpoint.json",
+      "bytes": 509,
+      "sha256": "d9c41b67d4472797f51372c8bfaf24f2bf74acb80f266a41710a5b442bd9ec71"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt01\\animetta-health-result.json",
+      "archive": "optimized/raw/ss-opt01/animetta-health-result.json",
+      "bytes": 601,
+      "sha256": "6495b6eceef04375cce1353d8fa31d4981457251e052709c76ae04419a532a79"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt01\\animetta-ready-checkpoint.json",
+      "archive": "optimized/raw/ss-opt01/animetta-ready-checkpoint.json",
+      "bytes": 507,
+      "sha256": "766a96bf5fc34ca61a14c308ef097117116e7d1f1af276a0f9d7f5b2cae5e1be"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt01\\animetta-ready-result.json",
+      "archive": "optimized/raw/ss-opt01/animetta-ready-result.json",
+      "bytes": 598,
+      "sha256": "6ed9812b250fbba7cd87389e191a7e8ba8cb051f33b966309913a2a8b4833a6d"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt01\\animetta-start-checkpoint.json",
+      "archive": "optimized/raw/ss-opt01/animetta-start-checkpoint.json",
+      "bytes": 510,
+      "sha256": "c845f9d6eecbd68e3e7384ce93f99ac763323db52eee14d5ec91f1b117716407"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt01\\animetta-start-result.json",
+      "archive": "optimized/raw/ss-opt01/animetta-start-result.json",
+      "bytes": 599,
+      "sha256": "f0d466cef0357fc589314cf6e187edcce948c3072988ea877cb95d59e95d6b51"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt01\\default-log-check-checkpoint.json",
+      "archive": "optimized/raw/ss-opt01/default-log-check-checkpoint.json",
+      "bytes": 516,
+      "sha256": "f17fc9b7d6ea333cac5daa56775e2604e2eaac9601c6f736c348be9051c896c0"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt01\\default-log-check-result.json",
+      "archive": "optimized/raw/ss-opt01/default-log-check-result.json",
+      "bytes": 606,
+      "sha256": "e43dae136ac89e117b95b575e91fdd4cea6f32edb731cf13a43c51b9649d8f84"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt01\\frontend-readiness-checkpoint.json",
+      "archive": "optimized/raw/ss-opt01/frontend-readiness-checkpoint.json",
+      "bytes": 515,
+      "sha256": "deb8f52fdd4cf76708f7b9bb34b90351c74de1b589e9e5ac10b977b4c17dab0e"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt01\\frontend-readiness-result.json",
+      "archive": "optimized/raw/ss-opt01/frontend-readiness-result.json",
+      "bytes": 603,
+      "sha256": "a725757b2071c376f8fa3913d6f017eebb7842ed4c2eb0da5a6bfc0af364af14"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt01\\host-tts-preflight-checkpoint.json",
+      "archive": "optimized/raw/ss-opt01/host-tts-preflight-checkpoint.json",
+      "bytes": 518,
+      "sha256": "fa0cdfecc50ac420aa592369af16f712fcf542d31d15841ee8f20391a2479e7d"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt01\\host-tts-preflight-result.json",
+      "archive": "optimized/raw/ss-opt01/host-tts-preflight-result.json",
+      "bytes": 609,
+      "sha256": "049ca4abef7840d043326f6c386ab2e6a4571a4d56a53a69613fdd201c39f739"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt01\\host-tts-start-checkpoint.json",
+      "archive": "optimized/raw/ss-opt01/host-tts-start-checkpoint.json",
+      "bytes": 508,
+      "sha256": "6ae282aade86c3c7d806fecf4319ba1c973562c41043315580c7b91007582dfc"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt01\\host-tts-start-result.json",
+      "archive": "optimized/raw/ss-opt01/host-tts-start-result.json",
+      "bytes": 581,
+      "sha256": "3ac4192aa7d9f2a915c94a127161a9e5e296666171b608669122b508dc34d385"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt01-down\\animetta-cleanup-checkpoint.json",
+      "archive": "optimized/raw/ss-opt01-down/animetta-cleanup-checkpoint.json",
+      "bytes": 529,
+      "sha256": "eb7eda5f0b5cc983d58ffb16b4767d0d5cfa62a4ab6ec573fb613633281def0c"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt01-down\\animetta-cleanup-result.json",
+      "archive": "optimized/raw/ss-opt01-down/animetta-cleanup-result.json",
+      "bytes": 613,
+      "sha256": "e51fa589de6873aa7960d5a97f2bf7d65ea21b3e7bddfc683c9792a58f19b329"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt02\\animetta-build-checkpoint.json",
+      "archive": "optimized/raw/ss-opt02/animetta-build-checkpoint.json",
+      "bytes": 524,
+      "sha256": "88cadfc6470a3506c9585b1834c98e13be8bc06f85d1c36f89bec1f9bbdbb29f"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt02\\animetta-build-result.json",
+      "archive": "optimized/raw/ss-opt02/animetta-build-result.json",
+      "bytes": 498,
+      "sha256": "83fe05685472807825e564424f3f66add0c386d641cfae8921dc9628bc00a3b4"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt02\\animetta-health-checkpoint.json",
+      "archive": "optimized/raw/ss-opt02/animetta-health-checkpoint.json",
+      "bytes": 509,
+      "sha256": "2bd692255e7733f0883d7b91522900ca0349b37cca3bc0d9f8306861cb40dd2b"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt02\\animetta-health-result.json",
+      "archive": "optimized/raw/ss-opt02/animetta-health-result.json",
+      "bytes": 602,
+      "sha256": "37beaa3f1d7e07b42360332e43a34fe1bc65383a8bf7e4c09a723554a6bbcb76"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt02\\animetta-ready-checkpoint.json",
+      "archive": "optimized/raw/ss-opt02/animetta-ready-checkpoint.json",
+      "bytes": 507,
+      "sha256": "542ff8a5fddc5191108cd5ae82e48fb54bdbceb99d0f5df4b88cb90c79d172c2"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt02\\animetta-ready-result.json",
+      "archive": "optimized/raw/ss-opt02/animetta-ready-result.json",
+      "bytes": 599,
+      "sha256": "2b370b3d4ecb31ba9b4f937066cf36c907cf22c756c03aac593c5cdf3664d384"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt02\\animetta-start-checkpoint.json",
+      "archive": "optimized/raw/ss-opt02/animetta-start-checkpoint.json",
+      "bytes": 510,
+      "sha256": "026ed972108d054843aa2171aaefa5f217ee490ae0c70e97e7b34eb0e9dfecd9"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt02\\animetta-start-result.json",
+      "archive": "optimized/raw/ss-opt02/animetta-start-result.json",
+      "bytes": 598,
+      "sha256": "72d30e46bef145d6e701434395d39469055d744b2e2c7515f28f6d1a426681ad"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt02\\default-log-check-checkpoint.json",
+      "archive": "optimized/raw/ss-opt02/default-log-check-checkpoint.json",
+      "bytes": 516,
+      "sha256": "1ad503439c6cb4eaf548325aa18fc6f1f17d22cb25ea5bda8c9ebf98fb8012de"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt02\\default-log-check-result.json",
+      "archive": "optimized/raw/ss-opt02/default-log-check-result.json",
+      "bytes": 607,
+      "sha256": "a8f9197685cf6b7119f0af2980cadd37277f0f5f3cde795168011be85a15954e"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt02\\frontend-readiness-checkpoint.json",
+      "archive": "optimized/raw/ss-opt02/frontend-readiness-checkpoint.json",
+      "bytes": 515,
+      "sha256": "e9727adb677a24ba3b68b2a0d2350836fce62dbca36d132962e7f5d33ba840b8"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt02\\frontend-readiness-result.json",
+      "archive": "optimized/raw/ss-opt02/frontend-readiness-result.json",
+      "bytes": 603,
+      "sha256": "c43f758ddf25d52e4c38d96506343884f59c6d120cd33ae4000e400aa25670c8"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt02\\host-tts-preflight-checkpoint.json",
+      "archive": "optimized/raw/ss-opt02/host-tts-preflight-checkpoint.json",
+      "bytes": 518,
+      "sha256": "47937ac2a78a57ed48b97ac9b541e8224adf88717e1fe2e24441cb7f89e75ab8"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt02\\host-tts-preflight-result.json",
+      "archive": "optimized/raw/ss-opt02/host-tts-preflight-result.json",
+      "bytes": 609,
+      "sha256": "71109821560c0daa7ced2c3d0f33ab9219cdef22d2a3912822606821f1925798"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt02\\host-tts-start-checkpoint.json",
+      "archive": "optimized/raw/ss-opt02/host-tts-start-checkpoint.json",
+      "bytes": 508,
+      "sha256": "7977c0ce384fea1860fbe6a838cdd61439d9e88d56132c9db90e29588f2173ad"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt02\\host-tts-start-result.json",
+      "archive": "optimized/raw/ss-opt02/host-tts-start-result.json",
+      "bytes": 581,
+      "sha256": "055927946f8ba6da4bfbdaac6d49aa4e2dfadf28f2a681a5fc09561b657b9de7"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt02-down\\animetta-cleanup-checkpoint.json",
+      "archive": "optimized/raw/ss-opt02-down/animetta-cleanup-checkpoint.json",
+      "bytes": 529,
+      "sha256": "79bf7bf1a01798af6f985e2d3921f3a69b2eeb3d111a947022a3df5c077c4cd6"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\raw\\ss-opt02-down\\animetta-cleanup-result.json",
+      "archive": "optimized/raw/ss-opt02-down/animetta-cleanup-result.json",
+      "bytes": 613,
+      "sha256": "f0bb23e30434657d074846917f2b518ff880244645baa77b2b8dbd175ed0afef"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt-warmup01-anima-animetta-1-stderr.log",
+      "archive": "optimized/ss-opt-warmup01-anima-animetta-1-stderr.log",
+      "bytes": 22686,
+      "sha256": "a7498e07f593dc9d1be86635655f408b80c38f92a19d7f19eab7c8cbb0773af3"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt-warmup01-anima-animetta-1-stdout.log",
+      "archive": "optimized/ss-opt-warmup01-anima-animetta-1-stdout.log",
+      "bytes": 653,
+      "sha256": "5bb9ee00b68e30c026649d5c516f6f9012513664e7539661c074c238f506b0d5"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt-warmup01-anima-redis-1-stderr.log",
+      "archive": "optimized/ss-opt-warmup01-anima-redis-1-stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt-warmup01-anima-redis-1-stdout.log",
+      "archive": "optimized/ss-opt-warmup01-anima-redis-1-stdout.log",
+      "bytes": 9306,
+      "sha256": "4df9fcb4e87897c5acd123d8348445763fe2b9abf65b0d0a916d831b0946d3b5"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt-warmup01-app.log",
+      "archive": "optimized/ss-opt-warmup01-app.log",
+      "bytes": 23339,
+      "sha256": "ca4c2d98fc363b1b87393afff4f977439f2b89fed5b1d47e6eee8fe6594d990d"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt-warmup01-build-receipt.json",
+      "archive": "optimized/ss-opt-warmup01-build-receipt.json",
+      "bytes": 157,
+      "sha256": "4f69921b1dfae22dc98d266c7709441e537284fbb0672772dcf0df4d064258cb"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt-warmup01-extra-evidence.json",
+      "archive": "optimized/ss-opt-warmup01-extra-evidence.json",
+      "bytes": 2653,
+      "sha256": "b374b31cca4b9dc185937d122888043b284b49e91e7f18c6bc21b2e3c6b5529a"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt-warmup01-redis.log",
+      "archive": "optimized/ss-opt-warmup01-redis.log",
+      "bytes": 9306,
+      "sha256": "4df9fcb4e87897c5acd123d8348445763fe2b9abf65b0d0a916d831b0946d3b5"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt-warmup01-result.json",
+      "archive": "optimized/ss-opt-warmup01-result.json",
+      "bytes": 8035,
+      "sha256": "47db8897646a0c06a66b25b098638b37f5299bc1f8caf7ace46e697370d6ccc0"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt-warmup01-stderr.log",
+      "archive": "optimized/ss-opt-warmup01-stderr.log",
+      "bytes": 6399,
+      "sha256": "6c96a4ff000019422522dc8c0fc774d2e053d31ba3648a885c69955d84740533"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt01-anima-animetta-1-stderr.log",
+      "archive": "optimized/ss-opt01-anima-animetta-1-stderr.log",
+      "bytes": 22686,
+      "sha256": "e1823f921700557980b35e92e4979f38b1ae9e512a2c0f12c84a3dd0967c6b8f"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt01-anima-animetta-1-stdout.log",
+      "archive": "optimized/ss-opt01-anima-animetta-1-stdout.log",
+      "bytes": 1283,
+      "sha256": "f874325c7d46b70f229fa19bd813c53dbd110de8c3c936b7457c02a7e84b5e20"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt01-anima-redis-1-stderr.log",
+      "archive": "optimized/ss-opt01-anima-redis-1-stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt01-anima-redis-1-stdout.log",
+      "archive": "optimized/ss-opt01-anima-redis-1-stdout.log",
+      "bytes": 9306,
+      "sha256": "4981787214611a273eb8f4fd53ea4d26647b5bb667f6b1c34837dc3777e31d01"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt01-app.log",
+      "archive": "optimized/ss-opt01-app.log",
+      "bytes": 23969,
+      "sha256": "d3322a7e1797bd789d93ca8cd460abc358e0b26b2b743d536e9ed3f47b3a4a58"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt01-down-result.json",
+      "archive": "optimized/ss-opt01-down-result.json",
+      "bytes": 1479,
+      "sha256": "77b23f7d5976d1845c24024827b465c31e537a98ed10d46b082594d648c7313a"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt01-down-stderr.log",
+      "archive": "optimized/ss-opt01-down-stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt01-extra-evidence.json",
+      "archive": "optimized/ss-opt01-extra-evidence.json",
+      "bytes": 2341,
+      "sha256": "e2660405985d2f010c941a8ca61a15e102130e45bde84dcde14ca21f21d6c439"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt01-redis.log",
+      "archive": "optimized/ss-opt01-redis.log",
+      "bytes": 9306,
+      "sha256": "4981787214611a273eb8f4fd53ea4d26647b5bb667f6b1c34837dc3777e31d01"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt01-result.json",
+      "archive": "optimized/ss-opt01-result.json",
+      "bytes": 7609,
+      "sha256": "a75795ff14050d9bfe6b76610d5bccd16b1907f8218b9dcc6365a13bbe0c1565"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt01-sample.json",
+      "archive": "optimized/ss-opt01-sample.json",
+      "bytes": 10398,
+      "sha256": "fd3091887582fc56133c4c80c96e172d59703df0ed15b1d48bb1517a7cd4dbf0"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt01-stderr.log",
+      "archive": "optimized/ss-opt01-stderr.log",
+      "bytes": 6399,
+      "sha256": "60156f644c61aba20f679cdde5e2ab73ad4ab4d2b91e87830879232d91fce53b"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt02-anima-animetta-1-stderr.log",
+      "archive": "optimized/ss-opt02-anima-animetta-1-stderr.log",
+      "bytes": 22686,
+      "sha256": "403a5ea9f2aed08120b4c5507e4bf44ab6743d1408d7fdf739c3505be523554d"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt02-anima-animetta-1-stdout.log",
+      "archive": "optimized/ss-opt02-anima-animetta-1-stdout.log",
+      "bytes": 1178,
+      "sha256": "be2b5a86f1deb3e0f23182dfd6fb16b47e352cac926a1081a29589d4a0c51744"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt02-anima-redis-1-stderr.log",
+      "archive": "optimized/ss-opt02-anima-redis-1-stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt02-anima-redis-1-stdout.log",
+      "archive": "optimized/ss-opt02-anima-redis-1-stdout.log",
+      "bytes": 9306,
+      "sha256": "607812e4990326865370f3bf6499effce439a25eba0832652eb683e7336654e3"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt02-app.log",
+      "archive": "optimized/ss-opt02-app.log",
+      "bytes": 23864,
+      "sha256": "4beea701153f628bbd58e0a5587ddaafc45f40d42be8495a6abd4fb2b90b86d2"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt02-down-result.json",
+      "archive": "optimized/ss-opt02-down-result.json",
+      "bytes": 1481,
+      "sha256": "054f3e7f3c1b80dbd845007960580bf2340cbbb83d0e9cdaa2b8d6c0484a6609"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt02-down-stderr.log",
+      "archive": "optimized/ss-opt02-down-stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt02-extra-evidence.json",
+      "archive": "optimized/ss-opt02-extra-evidence.json",
+      "bytes": 2341,
+      "sha256": "9939aaf40f71e5e41f91ac6dbd3853f5bbbacfdc3ffc7b858af0869aae0b7bf1"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt02-redis.log",
+      "archive": "optimized/ss-opt02-redis.log",
+      "bytes": 9306,
+      "sha256": "607812e4990326865370f3bf6499effce439a25eba0832652eb683e7336654e3"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt02-result.json",
+      "archive": "optimized/ss-opt02-result.json",
+      "bytes": 7611,
+      "sha256": "d8909892cb3900bbd254e501d4294d0e72d7a1b4acbb96ba2bbd5b0540483c89"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt02-sample.json",
+      "archive": "optimized/ss-opt02-sample.json",
+      "bytes": 10399,
+      "sha256": "d2b254ae377d9e0bd19984122b1c4667ecd8b46fcd44ad7652f420333f80d468"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt02-stderr.log",
+      "archive": "optimized/ss-opt02-stderr.log",
+      "bytes": 6399,
+      "sha256": "fddf035b1c5a0d14efb8b013950d9b87eae0dae3f5c5ff56c2b8b90ab81297c3"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized-evidence-index.json",
+      "archive": "optimized-evidence-index.json",
+      "bytes": 29837,
+      "sha256": "2503997c5764f341ff4cb054862745f5b73d8f0d149b70a37679d4d5be54b8fc"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized-source-input.json",
+      "archive": "optimized-source-input.json",
+      "bytes": 99920,
+      "sha256": "64fb053880ac5242393111ebad2bf00313ec05b5470f11b8a8a398da31624bd4"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized-summary.json",
+      "archive": "optimized-summary.json",
+      "bytes": 3235,
+      "sha256": "cc9eead28cee23be58c383045c91f90829aad306bc9d9988d93fb170a9ee41a0"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized.json",
+      "archive": "optimized.json",
+      "bytes": 62238,
+      "sha256": "5c2174017c482f3e188622c9d836953d8bd605de6c08386a9e1ad57a03c5ee6e"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base-warmup01\\animetta-build-checkpoint.json",
+      "archive": "raw/ss-base-warmup01/animetta-build-checkpoint.json",
+      "bytes": 464,
+      "sha256": "b71c8c32472f77319393777071872f0e2c7f8bcd3ffd4939553f5716f19a910c"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base-warmup01\\animetta-build-result.json",
+      "archive": "raw/ss-base-warmup01/animetta-build-result.json",
+      "bytes": 547,
+      "sha256": "ed970d8b6ce5689fd757606ef01f4afd9a0c67acddcafb41adc1bfbae2bda846"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base-warmup01\\animetta-health-checkpoint.json",
+      "archive": "raw/ss-base-warmup01/animetta-health-checkpoint.json",
+      "bytes": 533,
+      "sha256": "17fc2edb28f9e241141f666f3c65921560f0ee8b1072e7fe3872ee3e69e49604"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base-warmup01\\animetta-health-result.json",
+      "archive": "raw/ss-base-warmup01/animetta-health-result.json",
+      "bytes": 617,
+      "sha256": "fb98ff4f756901c144b9edea1aab20ecaf48083cec0bc3404c85305dbff23b9d"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base-warmup01\\animetta-ready-checkpoint.json",
+      "archive": "raw/ss-base-warmup01/animetta-ready-checkpoint.json",
+      "bytes": 531,
+      "sha256": "0093d44625ad92b09c2011727b68856b7881a45f19b87266b6b26d8c0ad71bde"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base-warmup01\\animetta-ready-result.json",
+      "archive": "raw/ss-base-warmup01/animetta-ready-result.json",
+      "bytes": 615,
+      "sha256": "da3da51520f7cbf5e2bd09ae671702d08556e5ae681a55d5b8ad9a994a9b48ee"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base-warmup01\\animetta-start-checkpoint.json",
+      "archive": "raw/ss-base-warmup01/animetta-start-checkpoint.json",
+      "bytes": 534,
+      "sha256": "26b1e46865862b43e6fe97944e6f32e84031d9b499ae6af94a1d1b7749a53f30"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base-warmup01\\animetta-start-result.json",
+      "archive": "raw/ss-base-warmup01/animetta-start-result.json",
+      "bytes": 616,
+      "sha256": "f6453047f629ff495c10156f6f13d492db9ffeaa60c157240b19dffb70a0785e"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base-warmup01\\default-log-check-checkpoint.json",
+      "archive": "raw/ss-base-warmup01/default-log-check-checkpoint.json",
+      "bytes": 540,
+      "sha256": "58aac4e72c0184e8df02d9df605be1abb787fa10dc1994ca9ebe5621c14f3850"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base-warmup01\\default-log-check-result.json",
+      "archive": "raw/ss-base-warmup01/default-log-check-result.json",
+      "bytes": 622,
+      "sha256": "c235a39b5910242e25bff2efa6d34196293779d441fa9b4409cb6ed57f824cf6"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base-warmup01\\frontend-readiness-checkpoint.json",
+      "archive": "raw/ss-base-warmup01/frontend-readiness-checkpoint.json",
+      "bytes": 539,
+      "sha256": "df9add023baf7f96283e41681b0f0682284ce48d494b719d3b6d90bc781fa197"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base-warmup01\\frontend-readiness-result.json",
+      "archive": "raw/ss-base-warmup01/frontend-readiness-result.json",
+      "bytes": 619,
+      "sha256": "479f22c44a4f972902b329727c55b0de01d86fe6b16219a4f431a075140c8947"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base-warmup01\\host-tts-preflight-checkpoint.json",
+      "archive": "raw/ss-base-warmup01/host-tts-preflight-checkpoint.json",
+      "bytes": 542,
+      "sha256": "4fcfbc41164329614cf2c8562f1c59866288bf767edf6bce8d4099f673de11f8"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base-warmup01\\host-tts-preflight-result.json",
+      "archive": "raw/ss-base-warmup01/host-tts-preflight-result.json",
+      "bytes": 626,
+      "sha256": "c4e9cf754eb770d65376074f9d3a563004c7e422fd40bb8ecf6005ab67c0e2e2"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base-warmup01\\host-tts-start-checkpoint.json",
+      "archive": "raw/ss-base-warmup01/host-tts-start-checkpoint.json",
+      "bytes": 532,
+      "sha256": "ecfd5bec0c65315bd79459a301621b4511cb5665282d9752fb58cdbe249c2bd6"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base-warmup01\\host-tts-start-result.json",
+      "archive": "raw/ss-base-warmup01/host-tts-start-result.json",
+      "bytes": 598,
+      "sha256": "ae486802c4c77b39fc9b2495651b1a3985339a58222acdfe289a28aff380eac5"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base01\\animetta-build-checkpoint.json",
+      "archive": "raw/ss-base01/animetta-build-checkpoint.json",
+      "bytes": 527,
+      "sha256": "07a47eeb48e486989d918e778c00fb62dade7fbe6ecd939c5367eaf4a01696e1"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base01\\animetta-build-result.json",
+      "archive": "raw/ss-base01/animetta-build-result.json",
+      "bytes": 498,
+      "sha256": "e7f39088cdd1874516de56da8bd8aa99acf931d91607366f97d308ada445373c"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base01\\animetta-health-checkpoint.json",
+      "archive": "raw/ss-base01/animetta-health-checkpoint.json",
+      "bytes": 512,
+      "sha256": "78b44212e3f2de50b0f60eed0ccaea43a088dc01728a274425b3350d4e12a30e"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base01\\animetta-health-result.json",
+      "archive": "raw/ss-base01/animetta-health-result.json",
+      "bytes": 601,
+      "sha256": "44ea3ffc7f19f19375f58587b42074c9c2c68947eb2978cf4c9ba9f68618ec9a"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base01\\animetta-ready-checkpoint.json",
+      "archive": "raw/ss-base01/animetta-ready-checkpoint.json",
+      "bytes": 510,
+      "sha256": "3e149e20fb55b2e28bc5b9ffc396e993a5a3ffd3d4ccda02f0d8711987d7dd38"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base01\\animetta-ready-result.json",
+      "archive": "raw/ss-base01/animetta-ready-result.json",
+      "bytes": 600,
+      "sha256": "65d9d96ff44fd70455be608b20e2efaa04041dec687ab7e27a860343766c85a1"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base01\\animetta-start-checkpoint.json",
+      "archive": "raw/ss-base01/animetta-start-checkpoint.json",
+      "bytes": 513,
+      "sha256": "818d4826fd3d39b6f6380303441cf961c8f6416fc46d65b9acb89645f5b106ba"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base01\\animetta-start-result.json",
+      "archive": "raw/ss-base01/animetta-start-result.json",
+      "bytes": 602,
+      "sha256": "f4b4d9cc944e50a0a8b80c19fd71daeaf4ab8dd81250f0a9e68d9c9d73c7d0c1"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base01\\default-log-check-checkpoint.json",
+      "archive": "raw/ss-base01/default-log-check-checkpoint.json",
+      "bytes": 519,
+      "sha256": "e6667e1c0876d068fcbcac66d737518d365bf6d6ed44514599c4cd3cd644ae64"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base01\\default-log-check-result.json",
+      "archive": "raw/ss-base01/default-log-check-result.json",
+      "bytes": 609,
+      "sha256": "dc702b66d89683550d00e2b699a889267a82e3a347d6aafca22fa8012e6b22ef"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base01\\frontend-readiness-checkpoint.json",
+      "archive": "raw/ss-base01/frontend-readiness-checkpoint.json",
+      "bytes": 518,
+      "sha256": "6eff85c6b522a249bbe44b3464a8c585535e4d184440f5d63ec2961a1b760a90"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base01\\frontend-readiness-result.json",
+      "archive": "raw/ss-base01/frontend-readiness-result.json",
+      "bytes": 605,
+      "sha256": "bc6a27846cab8c44c335678ba3e2a7be0c50268c4ce418585208cb1a57168a92"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base01\\host-tts-preflight-checkpoint.json",
+      "archive": "raw/ss-base01/host-tts-preflight-checkpoint.json",
+      "bytes": 521,
+      "sha256": "bad5f24b3756f161df7b8d001125d705d02ddcbd9ceed9e2ae19ecd98916abb8"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base01\\host-tts-preflight-result.json",
+      "archive": "raw/ss-base01/host-tts-preflight-result.json",
+      "bytes": 611,
+      "sha256": "29875a8cac47e93d47a50dc9b891fb4d47c4b6e84af584ec8508205570e6d66d"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base01\\host-tts-start-checkpoint.json",
+      "archive": "raw/ss-base01/host-tts-start-checkpoint.json",
+      "bytes": 511,
+      "sha256": "b0304ccc469f9382e42bc46e7f2eac4ba084aa00ac8ad6607af9f78d755769e6"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base01\\host-tts-start-result.json",
+      "archive": "raw/ss-base01/host-tts-start-result.json",
+      "bytes": 583,
+      "sha256": "4630edd333f65d8aee994db48b1ff8b3e141e76c5726192bdd72a94be9373357"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base01-down\\animetta-cleanup-checkpoint.json",
+      "archive": "raw/ss-base01-down/animetta-cleanup-checkpoint.json",
+      "bytes": 532,
+      "sha256": "4f32846bf465fff2040b02d8f7bf151703aa1ed2e44c0d1fdfe313299ecb56ba"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base01-down\\animetta-cleanup-result.json",
+      "archive": "raw/ss-base01-down/animetta-cleanup-result.json",
+      "bytes": 614,
+      "sha256": "d6dd84a3425b77264ffe7c4c178cad528a63301f12feefabe02ffe0f41745b79"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base02\\animetta-build-checkpoint.json",
+      "archive": "raw/ss-base02/animetta-build-checkpoint.json",
+      "bytes": 527,
+      "sha256": "eaa69d8935f0d471699fb486023b720a94312487f0c297c5a61844d4c5591532"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base02\\animetta-build-result.json",
+      "archive": "raw/ss-base02/animetta-build-result.json",
+      "bytes": 499,
+      "sha256": "af5b82af7714844e4e8e13018eea67c957727206c409726388e4d38a1a4b987f"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base02\\animetta-health-checkpoint.json",
+      "archive": "raw/ss-base02/animetta-health-checkpoint.json",
+      "bytes": 512,
+      "sha256": "c0ee4204738fe109d0afb3524fbb8bffece8297eab8112f81f4898500f22e1a8"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base02\\animetta-health-result.json",
+      "archive": "raw/ss-base02/animetta-health-result.json",
+      "bytes": 604,
+      "sha256": "3f5c9ea24de69a2fda98471aa7173766c4c3604db588b3d197d41511533f2671"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base02\\animetta-ready-uncheckpointed-result.json",
+      "archive": "raw/ss-base02/animetta-ready-uncheckpointed-result.json",
+      "bytes": 568,
+      "sha256": "be024954e3e25025a968a607d94f01002eb607980a3c3d2bb939125cca50d258"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base02\\animetta-start-checkpoint.json",
+      "archive": "raw/ss-base02/animetta-start-checkpoint.json",
+      "bytes": 513,
+      "sha256": "1cd867b37958db07ad8b13a7117013fdb34daf2e6c9bac79b68ec192ccc865a5"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base02\\animetta-start-result.json",
+      "archive": "raw/ss-base02/animetta-start-result.json",
+      "bytes": 602,
+      "sha256": "12648e2fa76520ebaeba00747e6e2e806163df0950947ef9c1d4de1ce014360c"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base02\\host-tts-preflight-checkpoint.json",
+      "archive": "raw/ss-base02/host-tts-preflight-checkpoint.json",
+      "bytes": 521,
+      "sha256": "adedc5a644733e8e9f764237f52a2c7834d29052ce3d82b9cf6ffa2bd7cde4ab"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base02\\host-tts-preflight-result.json",
+      "archive": "raw/ss-base02/host-tts-preflight-result.json",
+      "bytes": 610,
+      "sha256": "a42f2a60c06e6af4fb0d5ea6f0428bf56a78dad5dd567fbb433741bd66cbe268"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base02\\host-tts-start-checkpoint.json",
+      "archive": "raw/ss-base02/host-tts-start-checkpoint.json",
+      "bytes": 511,
+      "sha256": "749352e1352a3288f771fcb3ea18dcb2d84b5005299115ebb6694e8a775ee62c"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base02\\host-tts-start-result.json",
+      "archive": "raw/ss-base02/host-tts-start-result.json",
+      "bytes": 583,
+      "sha256": "4a3cd43cf78717f4540936719268ec4b282e7846928bea6bc2355384f8b9c830"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base02-down\\animetta-cleanup-checkpoint.json",
+      "archive": "raw/ss-base02-down/animetta-cleanup-checkpoint.json",
+      "bytes": 532,
+      "sha256": "e4aebf172d74b50f5c4cf731dfadc550ca2bd30839123456dfc9a8908f916698"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base02-down\\animetta-cleanup-result.json",
+      "archive": "raw/ss-base02-down/animetta-cleanup-result.json",
+      "bytes": 614,
+      "sha256": "905fb37552657245180ab14d6e0a6969ad11e581dc3be8b809e8f8dc12bf8697"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base03\\animetta-build-checkpoint.json",
+      "archive": "raw/ss-base03/animetta-build-checkpoint.json",
+      "bytes": 527,
+      "sha256": "fc78caff17086eda8753e42507ba0995507e6d0e211619f89ebcc9a40c1b9e80"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base03\\animetta-build-result.json",
+      "archive": "raw/ss-base03/animetta-build-result.json",
+      "bytes": 499,
+      "sha256": "4662048c6180b7cdc61fbd5146b722f7856b104676ea5919c9d4ea62bbc23ece"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base03\\animetta-health-checkpoint.json",
+      "archive": "raw/ss-base03/animetta-health-checkpoint.json",
+      "bytes": 512,
+      "sha256": "8b2019bae8592b1ff5df24f696c6be3f5af1e8758227c1b33b90efc8bc9fb938"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base03\\animetta-health-result.json",
+      "archive": "raw/ss-base03/animetta-health-result.json",
+      "bytes": 603,
+      "sha256": "6ecaf823181947200c8bacba1a833ba6aa490956ae801d46bd7fdce704fa5b23"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base03\\animetta-ready-checkpoint.json",
+      "archive": "raw/ss-base03/animetta-ready-checkpoint.json",
+      "bytes": 510,
+      "sha256": "6a182c2fbc3df20816eb8fe44b0ec87ce6e541b5da82d010c999163f60f394ff"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base03\\animetta-ready-result.json",
+      "archive": "raw/ss-base03/animetta-ready-result.json",
+      "bytes": 600,
+      "sha256": "71ae418ec6d84e5f7d86db2b9a07774dd730e9ff20744084bdd682b9395727fd"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base03\\animetta-start-checkpoint.json",
+      "archive": "raw/ss-base03/animetta-start-checkpoint.json",
+      "bytes": 513,
+      "sha256": "49b05c3eb487bf6cca7a7415269d684671b30d4c17cad039589d76c7e3d39474"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base03\\animetta-start-result.json",
+      "archive": "raw/ss-base03/animetta-start-result.json",
+      "bytes": 602,
+      "sha256": "cff22c5e9d4a2e1dfd035139932d8c032f542ab3df3bc3013b15554017bffe37"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base03\\default-log-check-checkpoint.json",
+      "archive": "raw/ss-base03/default-log-check-checkpoint.json",
+      "bytes": 519,
+      "sha256": "8ccb43067f8659d4b7161571e09eec03206dc2dc9e75399d5c4e205f15dcbe51"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base03\\default-log-check-result.json",
+      "archive": "raw/ss-base03/default-log-check-result.json",
+      "bytes": 609,
+      "sha256": "228c98c52df2cbf928b48a94a3f64b296c834916cad042b015f32c286b9aac5e"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base03\\frontend-readiness-checkpoint.json",
+      "archive": "raw/ss-base03/frontend-readiness-checkpoint.json",
+      "bytes": 518,
+      "sha256": "ea1711a63774c3157884749b2ce197a64020bc78f8a64bf47cb5617226dd88f3"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base03\\frontend-readiness-result.json",
+      "archive": "raw/ss-base03/frontend-readiness-result.json",
+      "bytes": 605,
+      "sha256": "df9e889b1f7a6c580e67bdda47dd923ab05878e57cd441484ab2732ba72e82fb"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base03\\host-tts-preflight-checkpoint.json",
+      "archive": "raw/ss-base03/host-tts-preflight-checkpoint.json",
+      "bytes": 521,
+      "sha256": "fa4caf63c10b85afaaee61442873983e8f470977f7f44e158c511b0d8156ffb7"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base03\\host-tts-preflight-result.json",
+      "archive": "raw/ss-base03/host-tts-preflight-result.json",
+      "bytes": 611,
+      "sha256": "53314efd4cd8932754e74e272ad8ad87ac0714209981ecadda7d936503458825"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base03\\host-tts-start-checkpoint.json",
+      "archive": "raw/ss-base03/host-tts-start-checkpoint.json",
+      "bytes": 511,
+      "sha256": "fd62a45fd1fc45be8ffad18120f2c0d97f969e27fb7c2750c78547c4c78ac8b5"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base03\\host-tts-start-result.json",
+      "archive": "raw/ss-base03/host-tts-start-result.json",
+      "bytes": 582,
+      "sha256": "96cefb86f718115f2848087db5562dc0a924ef4741affae833594b5eff35a126"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base03-down\\animetta-cleanup-checkpoint.json",
+      "archive": "raw/ss-base03-down/animetta-cleanup-checkpoint.json",
+      "bytes": 532,
+      "sha256": "f232a95541ee348d0783f44225614f88267213f4da9ed9e4a5f80a63d46c982c"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base03-down\\animetta-cleanup-result.json",
+      "archive": "raw/ss-base03-down/animetta-cleanup-result.json",
+      "bytes": 614,
+      "sha256": "3326488219cfd9b758cc37c09cb4e39bfbe9f13fe8e9df7b3df45ff8d99add5a"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base04\\animetta-build-checkpoint.json",
+      "archive": "raw/ss-base04/animetta-build-checkpoint.json",
+      "bytes": 527,
+      "sha256": "98ae4f348d31573a2f127a60c34d07a56d32ab85a3b909d4fcf7f72f89e5a76b"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base04\\animetta-build-result.json",
+      "archive": "raw/ss-base04/animetta-build-result.json",
+      "bytes": 498,
+      "sha256": "3c6e82ae4a66dc64f900a8eb42cd9619aa1f0c50715f3334d77c78f642b6bbb2"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base04\\animetta-health-checkpoint.json",
+      "archive": "raw/ss-base04/animetta-health-checkpoint.json",
+      "bytes": 512,
+      "sha256": "b75ac8b00a2d2fb3f6b7574c69c624dabd44aad1bc6c04a6bb791f53a1642418"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base04\\animetta-health-result.json",
+      "archive": "raw/ss-base04/animetta-health-result.json",
+      "bytes": 603,
+      "sha256": "da12f202ea36e3ccf828eb24b6076469c3d1dce80292b9fa7a9e1333d92029a0"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base04\\animetta-ready-uncheckpointed-result.json",
+      "archive": "raw/ss-base04/animetta-ready-uncheckpointed-result.json",
+      "bytes": 568,
+      "sha256": "527cd2314ea4e0becdcd93f985ee510a513cece1dc8ae8329f388a28dd6222f5"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base04\\animetta-start-checkpoint.json",
+      "archive": "raw/ss-base04/animetta-start-checkpoint.json",
+      "bytes": 513,
+      "sha256": "660c99769bacc7f8b828db95ad6a873cab9cf959329d500092b02fc33bc43982"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base04\\animetta-start-result.json",
+      "archive": "raw/ss-base04/animetta-start-result.json",
+      "bytes": 602,
+      "sha256": "391da2abf83ccbc1a4eb9a4ef82e1a22ac385bc8419c8754cff5a8c9d5be835c"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base04\\host-tts-preflight-checkpoint.json",
+      "archive": "raw/ss-base04/host-tts-preflight-checkpoint.json",
+      "bytes": 521,
+      "sha256": "f270a6eae52be1d96d319a21e1e32e17dfbbb9c767e65ad0df364a540cc6fb24"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base04\\host-tts-preflight-result.json",
+      "archive": "raw/ss-base04/host-tts-preflight-result.json",
+      "bytes": 611,
+      "sha256": "3a78490e6ac4485256aa151bcea9c4af4dbede83dac87ea6fff8a9f5a27633af"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base04\\host-tts-start-checkpoint.json",
+      "archive": "raw/ss-base04/host-tts-start-checkpoint.json",
+      "bytes": 511,
+      "sha256": "c97cfb90f69d4bbd4e2316e1177c4e176ee6b185e638af5be771660cb6e890f7"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base04\\host-tts-start-result.json",
+      "archive": "raw/ss-base04/host-tts-start-result.json",
+      "bytes": 583,
+      "sha256": "0d04cbacd0f4d1eda8988fd74f793a7f94c87f968e72b438d272930b03a41c71"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base04-down\\animetta-cleanup-checkpoint.json",
+      "archive": "raw/ss-base04-down/animetta-cleanup-checkpoint.json",
+      "bytes": 532,
+      "sha256": "505753a8e9c2a5642b8dc3e1887d9d447455af5f97474a298b83d9e3fded4a59"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base04-down\\animetta-cleanup-result.json",
+      "archive": "raw/ss-base04-down/animetta-cleanup-result.json",
+      "bytes": 615,
+      "sha256": "6dcfa97691860ca85f426bf00aaa515d16688243517df0c10b632416f3fced97"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\readonly-diagnosis.py",
+      "archive": "readonly-diagnosis.py.txt",
+      "bytes": 11170,
+      "sha256": "190151b95be508828535a0ea35e57b6c94005937276cbcb290f837bde84dafea"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\recovery-addendum.json",
+      "archive": "recovery-addendum.json",
+      "bytes": 7012,
+      "sha256": "5822fcab885fd86a6aebf44e006ca49f3b4b82825b9e0b37a57783bee21a8f91"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\recovery-baseline.json",
+      "archive": "recovery-baseline.json",
+      "bytes": 76316,
+      "sha256": "36d5eb5a5b33add8de45e3630ce6cd1cfded8b3888c1637c2c0d30e3e728576d"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\resume-baseline.py",
+      "archive": "resume-baseline.py.txt",
+      "bytes": 4638,
+      "sha256": "342b33f1cbca1dc3e1e8bd2af4c12bcfc92bb2acc4e5680ba483ba73873730f8"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\run-optimized.py",
+      "archive": "run-optimized.py.txt",
+      "bytes": 6001,
+      "sha256": "412877a2839248bb0fca46db3aa21b1af5548a1ee47daa950418a531ab80ee4d"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\run-role.py",
+      "archive": "run-role.py.txt",
+      "bytes": 3891,
+      "sha256": "c5b9933531ef9a51beec4263d5bf28ae70489ec04a368643cd788fc4c9e562ef"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\secret-scan.json",
+      "archive": "secret-scan.json",
+      "bytes": 468,
+      "sha256": "d51fd3123f7d5dd82e1895cf695b7d23188d9905c65790f45ba30ce0a524e973"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\socketio-import-result.json",
+      "archive": "socketio-import-result.json",
+      "bytes": 6182,
+      "sha256": "54bf601d60b2ef711fbbad99b9ff8b0995e1f3ee79a156db263f373b590f7018"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\socketio-import.stderr.log",
+      "archive": "socketio-import.stderr.log",
+      "bytes": 225058,
+      "sha256": "d3e1ff99b4bd4f7e4a0cc7babeb671109a04aee0e42b9738e6d0b2605214717e"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\socketio-import.stdout.log",
+      "archive": "socketio-import.stdout.log",
+      "bytes": 100,
+      "sha256": "dc4721f8af29d6cfce4d295d47f1fa88b4d7924030202f2c90274ab620edc886"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base-warmup01-app.log",
+      "archive": "ss-base-warmup01-app.log",
+      "bytes": 24389,
+      "sha256": "1f825b239e09b97a32f26b22e99d4b9ed4b17bc125de1ccb11d3fdd0984c23db"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base-warmup01-build-receipt.json",
+      "archive": "ss-base-warmup01-build-receipt.json",
+      "bytes": 156,
+      "sha256": "7bfc97b29706d70cfd0899fe82d0fe370fe154fe98ec20a8b52d7ee3f0cd4299"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base-warmup01-redis.log",
+      "archive": "ss-base-warmup01-redis.log",
+      "bytes": 9187,
+      "sha256": "4014e92fe3c3f95efa0dc7ad2eee547fe7aeaab1a47ec22e505010714556deda"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base-warmup01-result.json",
+      "archive": "ss-base-warmup01-result.json",
+      "bytes": 8057,
+      "sha256": "ffe2ddf17b0a5e3d9b96b944453094398b0da54a2d0719f2ab8dd3a484af053e"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base-warmup01-stderr.log",
+      "archive": "ss-base-warmup01-stderr.log",
+      "bytes": 6399,
+      "sha256": "e6453f643547cef37ef87c412580e13ab3d33ae1311034735edb6f89528983fd"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base01-app.log",
+      "archive": "ss-base01-app.log",
+      "bytes": 24494,
+      "sha256": "7ba1748cba090efa16f8d400ebcf88fef7eb6e2d25a9ef325c5445252e965d84"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base01-down-result.json",
+      "archive": "ss-base01-down-result.json",
+      "bytes": 1485,
+      "sha256": "363a97a204c56d5db4cdfbc1e2c321ecd7e507e0c1f993de0d405193108741b3"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base01-down-stderr.log",
+      "archive": "ss-base01-down-stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base01-redis.log",
+      "archive": "ss-base01-redis.log",
+      "bytes": 9306,
+      "sha256": "276e9f6333ca51eb654cd5e417296ad2eb26913c09e074e712fb045a4f6e6b68"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base01-result.json",
+      "archive": "ss-base01-result.json",
+      "bytes": 7633,
+      "sha256": "92c2f037013ef51316848edd3b29035cc25fde35cf4c76cbac3a58a2ab1e4e75"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base01-sample.json",
+      "archive": "ss-base01-sample.json",
+      "bytes": 10401,
+      "sha256": "5c49c7f0fade0db117e91cf0d6d35eb2f02c9a540a00919e244d2976d6922e88"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base01-stderr.log",
+      "archive": "ss-base01-stderr.log",
+      "bytes": 6399,
+      "sha256": "c1f6dd6dc1c1e4317f92b030dea524c0dbc2345e15ab83ac5f9decbe5a9402df"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base02-1-stderr-hold.log",
+      "archive": "ss-base02-1-stderr-hold.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base02-1-stdout-hold.log",
+      "archive": "ss-base02-1-stdout-hold.log",
+      "bytes": 10308,
+      "sha256": "72a2680c45584b0cac12b2a5086d938b4b0ba726cecc68a1944728c3144773f9"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base02-anima-animetta-1-stderr-hold.log",
+      "archive": "ss-base02-anima-animetta-1-stderr-hold.log",
+      "bytes": 22988,
+      "sha256": "75bfb3818a3cbb64e420119b597ff42edf51b7eb4c09e2af329604776350ebed"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base02-anima-animetta-1-stdout-hold.log",
+      "archive": "ss-base02-anima-animetta-1-stdout-hold.log",
+      "bytes": 51252,
+      "sha256": "daac93434fcd421cdedb9392564dffe885971ed9b63de628c01cbfd6207ca03d"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base02-anima-redis-1-stderr-hold.log",
+      "archive": "ss-base02-anima-redis-1-stderr-hold.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base02-anima-redis-1-stdout-hold.log",
+      "archive": "ss-base02-anima-redis-1-stdout-hold.log",
+      "bytes": 10308,
+      "sha256": "72a2680c45584b0cac12b2a5086d938b4b0ba726cecc68a1944728c3144773f9"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base02-down-result.json",
+      "archive": "ss-base02-down-result.json",
+      "bytes": 1484,
+      "sha256": "7a62af5480368a5135e02dfc9696de24ab7b8d6d033be4ce643028a745de5a90"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base02-down-stderr.log",
+      "archive": "ss-base02-down-stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base02-hold.json",
+      "archive": "ss-base02-hold.json",
+      "bytes": 16016,
+      "sha256": "709e5b4428585499a449506a2a4a2d27b69f3a0d85803509c98a3666dea17018"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base02-result.json",
+      "archive": "ss-base02-result.json",
+      "bytes": 4930,
+      "sha256": "c43f57e56e6f799df755ce012abc65b346cb59e164a60788ebfee0b35b3c0d65"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base02-stderr.log",
+      "archive": "ss-base02-stderr.log",
+      "bytes": 6399,
+      "sha256": "49dda56894322d5fa259ae4b10ddbeea557462fde4a924ec45843d01dbaee603"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base02-tokenizer-cache-readonly.json",
+      "archive": "ss-base02-tokenizer-cache-readonly.json",
+      "bytes": 932,
+      "sha256": "3fc2c0440f64d0e0954c4e23556b3decf2dfde6defb7c05ab95b632282a05772"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base02-upstream-readonly01.json",
+      "archive": "ss-base02-upstream-readonly01.json",
+      "bytes": 822,
+      "sha256": "f27484e9612b8f824cf92ef04fe0d2871f425f2b45e8b106e9d834bce37fc0bc"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base03-app.log",
+      "archive": "ss-base03-app.log",
+      "bytes": 24494,
+      "sha256": "d2863233fce94f78931f199fd21d1dae3fc4a97a4d3fdcb0122f86538482187f"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base03-down-result.json",
+      "archive": "ss-base03-down-result.json",
+      "bytes": 1485,
+      "sha256": "6cc808b8cbb26e1547ec6e684c630634e4e32bdc02359b3828b63084707aba60"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base03-down-stderr.log",
+      "archive": "ss-base03-down-stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base03-redis-health.json",
+      "archive": "ss-base03-redis-health.json",
+      "bytes": 672,
+      "sha256": "b6f9ff0464c900262889c7327630c035c1d39d599d15d526789da31225e4123a"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base03-redis.log",
+      "archive": "ss-base03-redis.log",
+      "bytes": 9425,
+      "sha256": "ff264bede9a1c3a0ccd2b7d37d00a29af84fea7b11a5af897aa9b1386c44e426"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base03-result.json",
+      "archive": "ss-base03-result.json",
+      "bytes": 7635,
+      "sha256": "d33a69c7de40be95411ff4ec873597767b517fe77b0faf4de6cf88e798ac2631"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base03-sample.json",
+      "archive": "ss-base03-sample.json",
+      "bytes": 10403,
+      "sha256": "c7df4a2b7d41b6ba64d483bf698a946a5dfdca1d3a0b40e801852e1035582dd5"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base03-stderr.log",
+      "archive": "ss-base03-stderr.log",
+      "bytes": 6399,
+      "sha256": "f8e9e1e6f93779e63f6475023a32e2b16901bcb62f2b0c1ffc0e368c06e2cd6c"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base04-anima-animetta-1-stderr-hold.log",
+      "archive": "ss-base04-anima-animetta-1-stderr-hold.log",
+      "bytes": 22988,
+      "sha256": "ca8490c417ccd00043f079074eb281f0cd376f58b9595915c7b0ae2e7b22dd74"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base04-anima-animetta-1-stdout-hold.log",
+      "archive": "ss-base04-anima-animetta-1-stdout-hold.log",
+      "bytes": 50328,
+      "sha256": "8c323ee22812d808fe8875d1d0b185fa562e26d685fb49530e2045f5a3b48d05"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base04-anima-redis-1-stderr-hold.log",
+      "archive": "ss-base04-anima-redis-1-stderr-hold.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base04-anima-redis-1-stdout-hold.log",
+      "archive": "ss-base04-anima-redis-1-stdout-hold.log",
+      "bytes": 9681,
+      "sha256": "e78f320fe0abf262082cef4c63ac68e4e37328873a8c68fc4280c950f11513aa"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base04-down-result.json",
+      "archive": "ss-base04-down-result.json",
+      "bytes": 1486,
+      "sha256": "cb530252db0e8e52f1f75c6c3f9e3d48951b835c510ac95797aaeb124f31c43d"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base04-down-stderr.log",
+      "archive": "ss-base04-down-stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base04-hold.json",
+      "archive": "ss-base04-hold.json",
+      "bytes": 5544,
+      "sha256": "b76ed535440ee4c53f5f4af806f492b9946ff8e05431607c0357704f17dce735"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base04-result.json",
+      "archive": "ss-base04-result.json",
+      "bytes": 4929,
+      "sha256": "a65c7bb235ef4760b1a81c2372a87c86c603201a32c73ca23ce60902ad703c89"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base04-stderr.log",
+      "archive": "ss-base04-stderr.log",
+      "bytes": 6399,
+      "sha256": "a0f8bc81df6a3e811378592f429534ff4fb059dab82b86184d84bd9d78d5416d"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\tokenizer-cache-readonly.py",
+      "archive": "tokenizer-cache-readonly.py.txt",
+      "bytes": 1399,
+      "sha256": "6ebf2a99098374617eae6f24ddd6041fbd594d923b6388c6c6098bcde1af55b4"
+    },
+    {
+      "source": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\upstream-readonly.py",
+      "archive": "upstream-readonly.py.txt",
+      "bytes": 2736,
+      "sha256": "e2bd5f09177c878077a8c113c38665b3ad4934434062c5a8f6393d7cc6fcd5a0"
+    }
+  ]
+}

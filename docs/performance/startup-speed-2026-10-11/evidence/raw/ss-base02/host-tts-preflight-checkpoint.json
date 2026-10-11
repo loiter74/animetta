@@ -1,0 +1,12 @@
+{
+  "committed_at": "2026-10-11T09:46:39.933576Z",
+  "evidence_refs": [
+    "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-base02/evidence/command-a9629353fa5e.log"
+  ],
+  "result_reference": "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-base02/steps/host-tts-preflight/windows/000001/result.json",
+  "reuse_fingerprint": "40294c7a872aedc772de4df0b294c3e4714563f66fa687ed218aa16fcfa0f58f",
+  "run_id": "ss-base02",
+  "schema_version": 1,
+  "status": "passed",
+  "step_id": "host-tts-preflight"
+}

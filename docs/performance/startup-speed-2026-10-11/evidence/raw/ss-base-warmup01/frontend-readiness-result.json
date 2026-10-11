@@ -1,0 +1,19 @@
+{
+  "checkpoint": null,
+  "cleanup_pending": false,
+  "elapsed_seconds": 0.016907799999898998,
+  "evidence_refs": [
+    "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-base-warmup01/evidence/http-8605b8ba08c2.log"
+  ],
+  "failure_fingerprint": null,
+  "feedback_at": "2026-10-11T09:45:44.453830Z",
+  "lease": null,
+  "next_action": "advance after frontend-readiness",
+  "progress_summary": "HTTP 200 from http://localhost",
+  "run_id": "ss-base-warmup01",
+  "schema_version": 1,
+  "started_at": "2026-10-11T09:45:44.436929Z",
+  "status": "passed",
+  "step_id": "frontend-readiness",
+  "window_sequence": 1
+}

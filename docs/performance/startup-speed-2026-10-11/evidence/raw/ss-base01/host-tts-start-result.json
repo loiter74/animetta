@@ -1,0 +1,19 @@
+{
+  "checkpoint": null,
+  "cleanup_pending": false,
+  "elapsed_seconds": 1.1084972999997262,
+  "evidence_refs": [
+    "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-base01/evidence/host-tts-readiness.log"
+  ],
+  "failure_fingerprint": null,
+  "feedback_at": "2026-10-11T09:45:59.903224Z",
+  "lease": null,
+  "next_action": "advance after host-tts-start",
+  "progress_summary": "Host TTS is ready",
+  "run_id": "ss-base01",
+  "schema_version": 1,
+  "started_at": "2026-10-11T09:45:58.794734Z",
+  "status": "passed",
+  "step_id": "host-tts-start",
+  "window_sequence": 1
+}

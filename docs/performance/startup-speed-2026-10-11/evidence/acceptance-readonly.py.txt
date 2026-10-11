@@ -1,0 +1,53 @@
+"""One native offline cache proof and authenticated read-only surfaces."""
+import json, subprocess, importlib.util
+from pathlib import Path
+from urllib.request import Request, urlopen
+O=Path(__file__).parent; A=O/'acceptance';A.mkdir(exist_ok=True)
+spec=importlib.util.spec_from_file_location('baseline_helpers',O/'baseline-runner.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+app=json.loads(m.cmd(['docker','inspect','anima-animetta-1','anima-redis-1']))
+actual=dict(v.split('=',1) for v in app[0]['Config']['Env'] if '=' in v)
+for k,v in actual.items():
+ if k in ['ANIMETTA_ACCESS_TOKEN','QWEN_TTS_API_KEY']:m.ENV[k]=v
+ if m.re.search('PASSWORD|TOKEN|SECRET|API_KEY|COOKIE',k,m.re.I):m.SECRETS.append(v)
+code='''import socket, requests, hashlib, json, os, pathlib, ast, inspect, shutil, importlib.metadata as meta
+attempts=[]
+def denied(*a,**kw):
+ attempts.append('network_attempt');raise RuntimeError('Offline proof forbids network')
+socket.socket.connect=denied;socket.socket.connect_ex=denied;socket.create_connection=denied
+requests.get=denied;requests.sessions.Session.request=denied
+import tiktoken,tiktoken.load,tiktoken_ext.openai_public
+checks=[];check=tiktoken.load.check_hash
+def observed(contents,expected_hash):
+ ok=check(contents,expected_hash);checks.append({'expected_hash':expected_hash,'actual_SHA256':hashlib.sha256(contents).hexdigest(),'bytes':len(contents),'passed':ok});return ok
+tiktoken.load.check_hash=observed
+encoding=tiktoken.get_encoding('cl100k_base')
+texts=['Hello world','你好，世界','今日はいい天気です。','مرحبا بالعالم','🍵南瓜芝麻荞麦面']
+vectors=[{'text':s,'tokens':encoding.encode(s),'roundtrip':encoding.decode(encoding.encode(s))==s} for s in texts]
+cache=pathlib.Path(os.environ['TIKTOKEN_CACHE_DIR'])/hashlib.sha1(b'https://openaipublic.blob.core.windows.net/encodings/cl100k_base.tiktoken').hexdigest()
+packages=sorted([{'name':d.metadata['Name'],'version':d.version} for d in meta.distributions()],key=lambda d:d['name'].lower().replace('_','-'))
+absent=['torch','torchaudio','transformers','chromadb','langchain-community','bilibili-api-python','demucs','faiss-cpu']
+installed={p['name'].lower().replace('_','-') for p in packages}
+cesium=[str(p) for p in pathlib.Path('/app/frontend/dist').rglob('*') if 'cesium' in str(p).lower()]
+out={'status':'passed','tiktoken_version':meta.version('tiktoken'),'cache_path':str(cache),'cache_bytes':cache.stat().st_size,'cache_SHA256':hashlib.sha256(cache.read_bytes()).hexdigest(),'native_hash_checks':checks,'native_token_vectors':vectors,'network_attempts':attempts,'package_count':len(packages),'packages':packages,'optional_absent':{p:p not in installed for p in absent},'ffmpeg_absent':shutil.which('ffmpeg') is None,'Cesium_absent':not cesium,'Cesium_paths':cesium}
+assert checks and all(x['passed'] for x in checks) and not attempts and all(x['roundtrip'] for x in vectors)
+assert len(packages)==88 and all(out['optional_absent'].values()) and out['ffmpeg_absent'] and out['Cesium_absent']
+print(json.dumps(out,ensure_ascii=False))
+'''
+if (A/'offline-tokenizer.stdout.json').exists():
+ assert json.loads((A/'offline-tokenizer.stdout.json').read_bytes())['status']=='passed','Retain original offline failure; HOLD'
+else:
+ r=subprocess.run(['docker','exec','-i','anima-animetta-1','python','-B','-'],input=code.encode(),capture_output=True,timeout=20)
+ (A/'offline-tokenizer.stdout.json').write_bytes(m.clean(r.stdout));(A/'offline-tokenizer.stderr.log').write_bytes(m.clean(r.stderr))
+ assert r.returncode==0,'Offline native proof failed; inspect retained stdout/stderr, HOLD'
+out={'status':'passed','formal_urls':['http://localhost/dashboard','http://localhost/live.html'],'http':{},'container_identity':[]}
+for base in ['http://localhost','http://127.0.0.1:12394']:
+ with urlopen(Request(base+'/ready',headers={'Authorization':'Bearer '+m.ENV['ANIMETTA_ACCESS_TOKEN']}),timeout=10) as response:
+  body=json.loads(response.read());assert response.status==200 and body['ready'];out['http'][base+'/ready']={'status':response.status,'body':body}
+for x in app:
+ out['container_identity'].append({'id':x['Id'],'name':x['Name'],'image':x['Image'],'image_tag':x['Config']['Image'],'project':x['Config']['Labels'].get('com.docker.compose.project'),'working_dir':x['Config']['Labels'].get('com.docker.compose.project.working_dir'),'config_files':x['Config']['Labels'].get('com.docker.compose.project.config_files'),'volumes':[{'name':v.get('Name'),'destination':v['Destination']} for v in x['Mounts']],'health_status':x['State'].get('Health',{}).get('Status')})
+health=' '.join(app[1]['Config']['Healthcheck']['Test']);out['Redis_health_check_has']={t:t in health.upper() for t in ['PING','FT.CREATE','JSON.SET']}
+out['Redis_health_check_semantics']='PING plus COMMAND INFO FT.CREATE/JSON.SET; command availability, not a claimed direct write test'
+logs=(O/'optimized/ss-opt02-app.log').read_text(encoding='utf-8');out['official_redis_checkpointer_ready_log']=[line for line in logs.splitlines() if 'Official Redis checkpointer is ready' in line]
+m.write(A/'ready-identity-redis.json',out)
+assert all(out['Redis_health_check_has'].values()) and out['official_redis_checkpointer_ready_log']
+print(json.dumps({'offline_native':'passed','package_count':88,'strict_ready80_12394':'passed','Redis_and_official_checkpointer':'passed'}))

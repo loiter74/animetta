@@ -1,0 +1,19 @@
+{
+  "checkpoint": null,
+  "cleanup_pending": false,
+  "elapsed_seconds": 8.38335680000091,
+  "evidence_refs": [
+    "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-base03-down/evidence/command-658be53f288e.log"
+  ],
+  "failure_fingerprint": null,
+  "feedback_at": "2026-10-11T09:59:03.838382Z",
+  "lease": null,
+  "next_action": "advance after animetta-cleanup",
+  "progress_summary": "command completed with exit code 0",
+  "run_id": "ss-base03-down",
+  "schema_version": 1,
+  "started_at": "2026-10-11T09:58:55.455032Z",
+  "status": "passed",
+  "step_id": "animetta-cleanup",
+  "window_sequence": 1
+}

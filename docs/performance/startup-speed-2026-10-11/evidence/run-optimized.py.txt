@@ -1,0 +1,59 @@
+"""Optimized 2-sample wrapper around unchanged baseline lifecycle functions."""
+import importlib.util, json, re, subprocess
+from pathlib import Path
+from datetime import UTC, datetime
+
+O=Path(__file__).parent; D=O/'optimized'
+spec=importlib.util.spec_from_file_location('startup_baseline',O/'baseline-runner.py')
+m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);g=m.run.__globals__
+assert not (O/'optimized.json').exists(), 'Read existing optimized handle/record; never restart'
+g.update(OUT=D,STATE=O/'state.json',RECORD=O/'optimized.json',IMAGE='animetta:startup-speed-optimized-20261011')
+g['ENV']['ANIMETTA_IMAGE']=g['IMAGE'];g['record']={'variant':'optimized','status':'preparing','runs':[],'samples':[],'warmup':None}
+D.mkdir(exist_ok=True)
+prediction=O/'optimization-prediction.json'; expected='e6099b1c3675aab79d0f7579d3f0a26d9fd30a08e2078bb1e0e5bd1114405123'
+assert g['sha'](prediction.read_bytes())==expected
+(D/'current-inventory.json').write_bytes((O/'current-inventory.json').read_bytes())
+old=json.loads((O/'frozen-source-input.json').read_bytes())
+current={p:g['sha']((g['ROOT']/p).read_bytes()) for p in old['files']}
+assert {p for p,h in current.items() if h!=old['files'][p]}=={'Dockerfile','docker-compose.yml'}
+manifest={'commit':old['commit'],'files':current,'env_sha256':old['env_sha256'],'user_training_songs_data_excluded':True,'prediction_SHA256':expected,'parent_affected_plan':'69d1c4c1d24e','parent_affected_status':'passed','image_tag':g['IMAGE']}
+g['write'](O/'optimized-source-input.json',manifest);(D/'frozen-source-input.json').write_bytes((O/'optimized-source-input.json').read_bytes())
+g['record'].update(source_manifest_SHA256=g['sha']((O/'optimized-source-input.json').read_bytes()),prediction_SHA256=expected,parent_decision='Two optimized successful samples, baseline 2 successes + 2 failures retained; failure HOLD without extra cycles')
+s=json.loads((O/'state.json').read_bytes());s.update(current_variant='optimized',lifecycle_authorized=True,lifecycle_executed=True,parent_decision=g['record']['parent_decision'],scope_revision={'success_n_per_variant':2,'baseline_failed_n':2,'decision_authority':'Parent','no_automatic_replacement':True},active_tool_session=None);g['write'](O/'state.json',s)
+
+def extra_evidence(rid,sample):
+ cs=json.loads(g['cmd'](['docker','inspect','anima-animetta-1','anima-redis-1']))
+ end=next(x['feedback_at'] for x in sample['steps'] if x['step_id']=='animetta-ready');out={'run_id':rid,'streams':[]}
+ for x in cs:
+  r=subprocess.run(['docker','logs','--timestamps','--since',x['State']['StartedAt'],'--until',end,x['Id']],capture_output=True,timeout=15)
+  for stream,b in [('stdout',r.stdout),('stderr',r.stderr)]:
+   b=g['clean'](b);p=D/(rid+'-'+x['Name'].lstrip('/')+'-'+stream+'.log');p.write_bytes(b);out['streams'].append({'container_id':x['Id'],'stream':stream,'path':str(p),'SHA256':g['sha'](b),'bytes':len(b)})
+ redis=cs[1]; checks=[{k:v[k] for k in ['Start','End','ExitCode']} for v in redis['State'].get('Health',{}).get('Log',[])]
+ r=subprocess.run(['docker','events','--since',redis['State']['StartedAt'],'--until',end,'--filter','container='+redis['Id'],'--filter','event=health_status','--format','{{json .}}'],capture_output=True,timeout=15)
+ events=[]
+ for line in r.stdout.splitlines():
+  v=json.loads(line);events.append({k:v.get(k) for k in ['status','Action','time','timeNano','id']})
+ healthy=[v for v in events if (v.get('Action') or v.get('status'))=='health_status: healthy']
+ out['Redis_health']={'container_id':redis['Id'],'StartedAt':redis['State']['StartedAt'],'status':redis['State'].get('Health',{}).get('Status'),'checks':checks,'events':events,'firsthealthy_timeNano':min(v['timeNano'] for v in healthy) if healthy else None,'firsthealthy_missing':not bool(healthy),'events_exit_code':r.returncode}
+ g['write'](D/(rid+'-extra-evidence.json'),out)
+
+try:
+ actual=dict(x.split('=',1) for x in json.loads(g['cmd'](['docker','inspect','anima-animetta-1']))[0]['Config']['Env'] if '=' in x)
+ for k in ['ANIMETTA_ACCESS_TOKEN','QWEN_TTS_API_KEY','ANIMETTA_AUTH_USERNAME','ANIMETTA_AUTH_PASSWORD_HASH','DEEPSEEK_API_KEY','DASHSCOPE_API_KEY','MIMO_API_KEY','MC_MCP_AUTH_TOKEN']:
+  if g['ENV'].get(k):assert g['ENV'][k]==actual.get(k,g['ENV'][k]), 'Credential mismatch: '+k
+  elif actual.get(k):g['ENV'][k]=actual[k]
+ g['SECRETS'].extend(v for k,v in g['ENV'].items() if v and re.search('PASSWORD|TOKEN|SECRET|API_KEY|COOKIE',k,re.I))
+ g['verify']();g['state']('optimized_input_frozen',next_action='One ss-opt-warmup01 canonical prebuild/warmup outside samples')
+ raw=g['run']('anima-up','ss-opt-warmup01');warm=g['snapshot']('ss-opt-warmup01',raw);g['record']['warmup']=warm;extra_evidence('ss-opt-warmup01',warm)
+ g['verify']();g['state']('optimized_warmup_complete',next_action='Only ss-opt01 and ss-opt02 fresh cached down/up')
+ for rid in ['ss-opt01','ss-opt02']:
+  g['run']('anima-down',rid+'-down');raw=g['run']('anima-up',rid)
+  build=next(x for x in raw['steps'] if x['step_id']=='animetta-build')
+  assert build['progress_summary']=='Reused images with matching source content' and 'build_receipt' not in raw,'Unexpected timed image build; HOLD'
+  sample=g['snapshot'](rid,raw);g['record']['samples'].append(sample);g['write'](D/(rid+'-sample.json'),sample);extra_evidence(rid,sample)
+  g['verify']();assert g['sha'](prediction.read_bytes())==expected,'Prediction changed'
+  g['state'](rid+'_sample_complete',next_action='ss-opt02 only' if rid=='ss-opt01' else 'HOLD for Parent; no browser/offline tokenizer/playback probe')
+ g['state']('optimized_two_samples_complete',status='optimized_complete_HOLD_for_Parent',active_pid=None,next_action='Parent separately authorizes offline tokenizer/playback acceptance; no additional lifecycle/sample/probe')
+except Exception as ex:
+ g['state']('HOLD_optimized_failure',status='HOLD',active_pid=None,error_type=type(ex).__name__,error=str(ex),next_action='Inspect original optimized failure and retained container; no next cycle')
+ raise

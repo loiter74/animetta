@@ -1,0 +1,19 @@
+{
+  "checkpoint": null,
+  "cleanup_pending": false,
+  "elapsed_seconds": 12.965259700002207,
+  "evidence_refs": [
+    "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-base04/evidence/command-a84b3fe2a39f.log"
+  ],
+  "failure_fingerprint": null,
+  "feedback_at": "2026-10-11T10:00:01.634856Z",
+  "lease": null,
+  "next_action": "advance after animetta-start",
+  "progress_summary": "command completed with exit code 0",
+  "run_id": "ss-base04",
+  "schema_version": 1,
+  "started_at": "2026-10-11T09:59:48.669601Z",
+  "status": "passed",
+  "step_id": "animetta-start",
+  "window_sequence": 1
+}

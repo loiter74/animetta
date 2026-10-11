@@ -1,0 +1,12 @@
+2026-10-11T10:11:26.194915181Z [entrypoint] Validating config/animetta.yaml for profile production...
+2026-10-11T10:11:26.919197690Z [entrypoint] Config ready: production 1 293cd32f315131c15aff8e0a2a9ee41f7963899c9715f9baab80c3d0767b1558
+2026-10-11T10:11:26.959261613Z [entrypoint] Starting nginx...
+2026-10-11T10:11:26.970375307Z [entrypoint] Starting Animetta backend on port 12394...
+2026-10-11T10:11:30.390976310Z INFO:     127.0.0.1:50948 - "GET /health HTTP/1.0" 200 OK
+2026-10-11T10:11:30.410322433Z INFO:     127.0.0.1:50950 - "GET /ready HTTP/1.0" 503 Service Unavailable
+2026-10-11T10:11:30.555340817Z INFO:     127.0.0.1:50958 - "GET /health HTTP/1.0" 200 OK
+2026-10-11T10:11:30.916359341Z INFO:     127.0.0.1:50974 - "GET /ready HTTP/1.0" 503 Service Unavailable
+2026-10-11T10:11:31.427940488Z INFO:     127.0.0.1:50980 - "GET /ready HTTP/1.0" 503 Service Unavailable
+2026-10-11T10:11:31.940524994Z INFO:     127.0.0.1:50990 - "GET /ready HTTP/1.0" 503 Service Unavailable
+2026-10-11T10:11:32.467962766Z INFO:     127.0.0.1:51002 - "GET /ready HTTP/1.0" 503 Service Unavailable
+2026-10-11T10:11:32.974804306Z INFO:     127.0.0.1:51004 - "GET /ready HTTP/1.0" 200 OK

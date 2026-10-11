@@ -50,6 +50,10 @@ RUN --mount=type=cache,id=animetta-uv-013,target=/root/.cache/uv \
     uv venv --python /usr/local/bin/python /opt/venv \
     && uv pip sync --python /opt/venv/bin/python --compile-bytecode requirements.txt \
     && uv pip check --python /opt/venv/bin/python
+# Ship the native, hash-verified encoding with the copied venv so fresh
+# containers do not download it during service initialization or first use.
+ENV TIKTOKEN_CACHE_DIR=/opt/venv/tokenizer-cache
+RUN timeout 60s /opt/venv/bin/python -c "import tiktoken; tiktoken.get_encoding('cl100k_base')"
 
 FROM python:3.13-slim-bookworm AS backend-base
 ARG ANIMETTA_MEDIA_ENABLED=false
@@ -62,7 +66,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && apt-get install -y --no-install-recommends nginx curl \
     && if [ "$ANIMETTA_MEDIA_ENABLED" = "true" ]; then apt-get install -y --no-install-recommends ffmpeg; fi
 COPY --from=python-builder /opt/venv /opt/venv
-ENV PATH=/opt/venv/bin:$PATH PYTHONPATH=/app/src PYTHONUNBUFFERED=1
+ENV PATH=/opt/venv/bin:$PATH PYTHONPATH=/app/src PYTHONUNBUFFERED=1 \
+    TIKTOKEN_CACHE_DIR=/opt/venv/tokenizer-cache
 ENV ANIMETTA_HOST=0.0.0.0 ANIMETTA_PORT=12394 ANIMETTA_PROFILE=test
 COPY src/animetta/ src/animetta/
 COPY config/ config/

@@ -1,0 +1,12 @@
+{
+  "committed_at": "2026-10-11T09:45:34.950014Z",
+  "evidence_refs": [
+    "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-base-warmup01/evidence/command-a84b3fe2a39f.log"
+  ],
+  "result_reference": "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-base-warmup01/steps/animetta-start/windows/000001/result.json",
+  "reuse_fingerprint": "6f3079589dafc23797ded56bc03e00fb35d850d42d3f912318627040e8404141",
+  "run_id": "ss-base-warmup01",
+  "schema_version": 1,
+  "status": "passed",
+  "step_id": "animetta-start"
+}

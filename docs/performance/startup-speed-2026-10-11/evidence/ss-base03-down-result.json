@@ -1,0 +1,37 @@
+{
+  "run_id": "ss-base03-down",
+  "action": "anima-down",
+  "command": [
+    "py",
+    "-3.13",
+    "scripts/runtime_lifecycle.py",
+    "anima-down",
+    "--run-id",
+    "ss-base03-down",
+    "--wait",
+    "--artifacts-root",
+    "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans"
+  ],
+  "exit_code": 0,
+  "CLI_elapsed_seconds": 9.023563700000523,
+  "stdout_bytes": 633,
+  "stdout_SHA": "f3b652290d13794c81a72a28d8835166132aa1bcf8e52462f7095257bb9f2f13",
+  "stderr_SHA": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "steps": [
+    {
+      "step_id": "animetta-cleanup",
+      "status": "passed",
+      "started_at": "2026-10-11T09:58:55.455032Z",
+      "feedback_at": "2026-10-11T09:59:03.838382Z",
+      "elapsed_seconds": 8.38335680000091,
+      "progress_summary": "command completed with exit code 0",
+      "evidence_refs": [
+        "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-base03-down/evidence/command-658be53f288e.log"
+      ],
+      "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-base03-down\\steps\\animetta-cleanup\\checkpoint.json",
+      "checkpoint_SHA": "f232a95541ee348d0783f44225614f88267213f4da9ed9e4a5f80a63d46c982c",
+      "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-base03-down\\steps\\animetta-cleanup\\windows\\000001\\result.json",
+      "result_SHA": "3326488219cfd9b758cc37c09cb4e39bfbe9f13fe8e9df7b3df45ff8d99add5a"
+    }
+  ]
+}

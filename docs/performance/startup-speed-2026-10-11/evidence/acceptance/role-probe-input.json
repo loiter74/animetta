@@ -1,0 +1,9 @@
+{
+  "run_id": "ss-opt-role01",
+  "source_SHA256": "7f4582efdcffec5cdc552d0acb455f2ed24eb4cf9b8fd1019cecc1d7589ce25c",
+  "executed_SHA256": "945be9bece22285e7aff60eda756863a4446bf1c2ce2e319cf0b896f086db4d6",
+  "changes": "run_id and existing installed module import paths only; original real playback/continuity assertions retained",
+  "url": "http://localhost/live.html",
+  "headless_browser_once": true,
+  "no_new_server": true
+}

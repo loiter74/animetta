@@ -1,0 +1,28 @@
+"""Exactly one archived native role/playback/continuity probe with new run ID."""
+import json, subprocess, importlib.util
+from pathlib import Path
+O=Path(__file__).parent;A=O/'acceptance'
+spec=importlib.util.spec_from_file_location('helpers',O/'baseline-runner.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+original=m.ROOT/'docs/performance/deployment-core-2026-10-11/phase3-5-evidence/distribution-final/probes/core-role-probe-distribution.mjs.txt'
+dest=A/'core-role-probe-optimized.mjs';result=A/'ss-opt-role01.json'
+assert not result.exists() and not dest.exists(),'Do not repeat original browser run'
+data=original.read_bytes().replace(b'c-dc-distribution-role01',b'ss-opt-role01')
+# Resolve the existing frontend packages; no installation and no changed assertions.
+play=m.ROOT/'frontend/node_modules/.pnpm/playwright@1.60.0/node_modules/playwright/index.mjs'
+socket=m.ROOT/'frontend/node_modules/.pnpm/socket.io-client@4.8.3/node_modules/socket.io-client/build/esm-debug/index.js'
+assert play.exists() and socket.exists(),'Required existing probe packages missing'
+data=data.replace(b"from 'playwright'",("from '"+play.as_uri()+"'").encode()).replace(b"from 'socket.io-client'",("from '"+socket.as_uri()+"'").encode());dest.write_bytes(data)
+actual=dict(x.split('=',1) for x in json.loads(m.cmd(['docker','inspect','anima-animetta-1']))[0]['Config']['Env'] if '=' in x)
+for k,v in actual.items():
+ if m.re.search('PASSWORD|TOKEN|SECRET|API_KEY|COOKIE',k,m.re.I):m.SECRETS.append(v)
+m.ENV['ANIMETTA_ACCESS_TOKEN']=actual['ANIMETTA_ACCESS_TOKEN']
+m.write(A/'role-probe-input.json',{'run_id':'ss-opt-role01','source_SHA256':m.sha(original.read_bytes()),'executed_SHA256':m.sha(data),'changes':'run_id and existing installed module import paths only; original real playback/continuity assertions retained','url':'http://localhost/live.html','headless_browser_once':True,'no_new_server':True})
+m.write(A/'readiness-collector-original-failure.json',{'failure':'AssertionError: literal uppercase PING not found in lower-case redis-cli ping','actual_healthcheck':'redis-cli ping and COMMAND INFO FT.CREATE/JSON.SET','resolution':'Case-insensitive command detection; offline successful bytes reused, no repeat offline native execution','product_failure':False})
+p=subprocess.Popen(['node',str(dest)],cwd=m.ROOT,env=m.ENV,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+s=json.loads(m.STATE.read_bytes());s.update(current_step='ss-opt-role01',active_pid=p.pid,driver_pid=__import__('os').getpid(),next_action='One archived role/native/continuity run; failure HOLD, no replay');m.write(m.STATE,s)
+print(json.dumps({'run_id':'ss-opt-role01','active_pid':p.pid}),flush=True)
+out,err=p.communicate(timeout=450);result.write_bytes(m.clean(out));(A/'ss-opt-role01.stderr.log').write_bytes(m.clean(err))
+r=json.loads(result.read_bytes());passed=p.returncode==0 and r.get('status')=='passed' and r.get('native_nonzero_audio_completed') and r.get('live_persistent_playback') and r.get('live2d_model_runtime_loaded') and r.get('live2d_real_task_mouth_applied') and r.get('continuity',{}).get('status')=='passed'
+s=json.loads(m.STATE.read_bytes());s.update(current_step='role_acceptance_complete' if passed else 'HOLD_role_acceptance',active_pid=None,driver_pid=None,active_tool_session=None,status='acceptance_passed_pending_final_index' if passed else 'HOLD',next_action='Final identity, secret scan and whitelist index only' if passed else 'Read original failed role evidence; no replay');m.write(m.STATE,s)
+print(json.dumps({'run_id':'ss-opt-role01','acceptance_passed':passed,'status':r.get('status'),'first_reply_seconds':r.get('first_reply_seconds'),'native_seconds':r.get('first_native_audio_start_seconds'),'continuity':r.get('continuity',{}).get('status'),'SHA256':m.sha(result.read_bytes())}),flush=True)
+assert passed,'Original role acceptance failed; HOLD, no replay'

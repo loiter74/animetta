@@ -14,6 +14,8 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "REDISCLI_AUTH=\"$$REDIS_PASSWORD\" redis-cli ping | grep -q PONG && REDISCLI_AUTH=\"$$REDIS_PASSWORD\" redis-cli --raw COMMAND INFO FT.CREATE | grep -qi ft.create && REDISCLI_AUTH=\"$$REDIS_PASSWORD\" redis-cli --raw COMMAND INFO JSON.SET | grep -qi json.set"]
       interval: 5s
+      start_period: 20s
+      start_interval: 1s
       timeout: 3s
       retries: 20
     restart: unless-stopped

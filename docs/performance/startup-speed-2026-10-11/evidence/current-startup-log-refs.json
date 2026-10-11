@@ -1,0 +1,14 @@
+{
+  "/anima-animetta-1": {
+    "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\current-app-startup.log",
+    "sha256": "27bc216ddff5b9ee65510703a25e950d8ebadbab37beb47b275bd32220deef78",
+    "bytes": 24777,
+    "exit_code": 0
+  },
+  "/anima-redis-1": {
+    "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\current-redis-startup.log",
+    "sha256": "4498214c23a8f8138cbf9f6bb4952393b55e25a28ccd1199c3cca5cb64978402",
+    "bytes": 9681,
+    "exit_code": 0
+  }
+}

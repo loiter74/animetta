@@ -1,0 +1,12 @@
+{
+  "committed_at": "2026-10-11T09:46:40.822625Z",
+  "evidence_refs": [
+    "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-base02/steps/animetta-build/windows/000001/result.json"
+  ],
+  "result_reference": "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-base02/steps/animetta-build/windows/000001/result.json",
+  "reuse_fingerprint": "66c3613a083fd566d70a625e2abc286fa367df6d057fcfb4fa5c8099c9e09255",
+  "run_id": "ss-base02",
+  "schema_version": 1,
+  "status": "passed",
+  "step_id": "animetta-build"
+}

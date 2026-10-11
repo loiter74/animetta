@@ -1,0 +1,240 @@
+{
+  "target": "animetta.core.socketio_server",
+  "command": [
+    "docker",
+    "exec",
+    "anima-animetta-1",
+    "python",
+    "-B",
+    "-X",
+    "importtime",
+    "-c",
+    "import animetta.core.socketio_server; import sys,json; print(json.dumps({'target':'animetta.core.socketio_server','main_called':False,'heavy_model_modules_loaded':[m for m in ['torch','transformers','torchaudio','chromadb','demucs'] if m in sys.modules]}))"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 2.9117990999984613,
+  "error": null,
+  "process_flags": "-B avoids pyc writes; no env override and no main call",
+  "module_result": {
+    "target": "animetta.core.socketio_server",
+    "main_called": false,
+    "heavy_model_modules_loaded": []
+  },
+  "raw_stderr_path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\socketio-import.stderr.log",
+  "stderr_sha256": "d3e1ff99b4bd4f7e4a0cc7babeb671109a04aee0e42b9738e6d0b2605214717e",
+  "stdout_sha256": "dc4721f8af29d6cfce4d295d47f1fa88b4d7924030202f2c90274ab620edc886",
+  "target_cumulative": [
+    {
+      "module": "animetta.core.socketio_server",
+      "self_us": 6602,
+      "cumulative_us": 2433984
+    }
+  ],
+  "top_self": [
+    {
+      "module": "mcp.types",
+      "self_us": 186455,
+      "cumulative_us": 186455
+    },
+    {
+      "module": "langsmith.schemas",
+      "self_us": 88119,
+      "cumulative_us": 88119
+    },
+    {
+      "module": "animetta.tools.minecraft.mission.models",
+      "self_us": 35049,
+      "cumulative_us": 35049
+    },
+    {
+      "module": "animetta.services.scene_analysis.models",
+      "self_us": 30504,
+      "cumulative_us": 30504
+    },
+    {
+      "module": "animetta.tools.minecraft.voyager.goal_models",
+      "self_us": 27589,
+      "cumulative_us": 94017
+    },
+    {
+      "module": "charset_normalizer.api",
+      "self_us": 21758,
+      "cumulative_us": 28086
+    },
+    {
+      "module": "animetta.tools.minecraft.mission.repository",
+      "self_us": 20178,
+      "cumulative_us": 20178
+    },
+    {
+      "module": "animetta.services.llm.tool_handler",
+      "self_us": 18698,
+      "cumulative_us": 60622
+    },
+    {
+      "module": "animetta.services.program_script.models",
+      "self_us": 18494,
+      "cumulative_us": 18494
+    },
+    {
+      "module": "animetta.tools.minecraft.skill.ir",
+      "self_us": 18298,
+      "cumulative_us": 18298
+    },
+    {
+      "module": "animetta.tools.minecraft.blueprint.models",
+      "self_us": 17637,
+      "cumulative_us": 17637
+    },
+    {
+      "module": "langgraph.graph.state",
+      "self_us": 16933,
+      "cumulative_us": 214250
+    },
+    {
+      "module": "animetta.tools.gamebot.contracts.v2.receipts",
+      "self_us": 15553,
+      "cumulative_us": 15553
+    },
+    {
+      "module": "animetta.services.dialogue.response_processing",
+      "self_us": 15042,
+      "cumulative_us": 39272
+    },
+    {
+      "module": "animetta.config.manifest",
+      "self_us": 13452,
+      "cumulative_us": 43258
+    },
+    {
+      "module": "animetta.observability.dto",
+      "self_us": 13322,
+      "cumulative_us": 13322
+    },
+    {
+      "module": "animetta.tools.minecraft.voyager.public_activity",
+      "self_us": 12498,
+      "cumulative_us": 12498
+    },
+    {
+      "module": "pydantic_core.core_schema",
+      "self_us": 12124,
+      "cumulative_us": 12124
+    },
+    {
+      "module": "animetta.tools.minecraft.voyager.journal",
+      "self_us": 11420,
+      "cumulative_us": 30282
+    },
+    {
+      "module": "numpy._core._multiarray_umath",
+      "self_us": 11263,
+      "cumulative_us": 12777
+    }
+  ],
+  "top_cumulative_overlapping_do_not_sum": [
+    {
+      "module": "animetta.core.socketio_server",
+      "self_us": 6602,
+      "cumulative_us": 2433984
+    },
+    {
+      "module": "animetta.orchestration.server.websocket",
+      "self_us": 31,
+      "cumulative_us": 1836165
+    },
+    {
+      "module": "animetta.orchestration.server",
+      "self_us": 395,
+      "cumulative_us": 1836134
+    },
+    {
+      "module": "animetta.orchestration.server.routes",
+      "self_us": 1162,
+      "cumulative_us": 1681064
+    },
+    {
+      "module": "animetta.orchestration.server.handlers.base_handler",
+      "self_us": 28,
+      "cumulative_us": 890609
+    },
+    {
+      "module": "animetta.orchestration.server.handlers",
+      "self_us": 371,
+      "cumulative_us": 890581
+    },
+    {
+      "module": "animetta.orchestration.server.handlers.minecraft_handlers",
+      "self_us": 502,
+      "cumulative_us": 754689
+    },
+    {
+      "module": "animetta.orchestration.server.handlers.bilibili_handlers",
+      "self_us": 700,
+      "cumulative_us": 555798
+    },
+    {
+      "module": "animetta.tools.minecraft.core",
+      "self_us": 27,
+      "cumulative_us": 413866
+    },
+    {
+      "module": "animetta.tools.minecraft",
+      "self_us": 230,
+      "cumulative_us": 413840
+    },
+    {
+      "module": "animetta.memory.v2.context",
+      "self_us": 23,
+      "cumulative_us": 406919
+    },
+    {
+      "module": "animetta.memory.v2",
+      "self_us": 16,
+      "cumulative_us": 406896
+    },
+    {
+      "module": "animetta.memory",
+      "self_us": 157,
+      "cumulative_us": 406881
+    },
+    {
+      "module": "animetta.memory.v2.atom",
+      "self_us": 26,
+      "cumulative_us": 406724
+    },
+    {
+      "module": "animetta.memory.v2",
+      "self_us": 515,
+      "cumulative_us": 406699
+    },
+    {
+      "module": "animetta.tools",
+      "self_us": 279,
+      "cumulative_us": 405814
+    },
+    {
+      "module": "animetta.memory.v2.reconsolidation",
+      "self_us": 783,
+      "cumulative_us": 396101
+    },
+    {
+      "module": "openai",
+      "self_us": 904,
+      "cumulative_us": 395319
+    },
+    {
+      "module": "animetta.tools.mcp_bridge",
+      "self_us": 542,
+      "cumulative_us": 385808
+    },
+    {
+      "module": "mcp",
+      "self_us": 403,
+      "cumulative_us": 385266
+    }
+  ],
+  "sum_exclusive_self_us": 2449383,
+  "parsed_import_count": 2292,
+  "interpretation": "Single bounded import-only diagnostic in a running/warm container, not startup baseline; cumulative overlaps, never add ranked cumulative rows. load_effective_config is not called here."
+}

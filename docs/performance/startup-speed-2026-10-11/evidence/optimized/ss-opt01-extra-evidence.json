@@ -1,0 +1,62 @@
+{
+  "run_id": "ss-opt01",
+  "streams": [
+    {
+      "container_id": "94a6a36e458338c558a6d2724026cba0ffc5805a8c20bc6bf0e3d17f95febae6",
+      "stream": "stdout",
+      "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt01-anima-animetta-1-stdout.log",
+      "SHA256": "f874325c7d46b70f229fa19bd813c53dbd110de8c3c936b7457c02a7e84b5e20",
+      "bytes": 1283
+    },
+    {
+      "container_id": "94a6a36e458338c558a6d2724026cba0ffc5805a8c20bc6bf0e3d17f95febae6",
+      "stream": "stderr",
+      "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt01-anima-animetta-1-stderr.log",
+      "SHA256": "e1823f921700557980b35e92e4979f38b1ae9e512a2c0f12c84a3dd0967c6b8f",
+      "bytes": 22686
+    },
+    {
+      "container_id": "0161f60fe6387cd50dc8fc70aeb82397efe5dbf05b108a9cb5fadc8fa8f71d2f",
+      "stream": "stdout",
+      "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt01-anima-redis-1-stdout.log",
+      "SHA256": "4981787214611a273eb8f4fd53ea4d26647b5bb667f6b1c34837dc3777e31d01",
+      "bytes": 9306
+    },
+    {
+      "container_id": "0161f60fe6387cd50dc8fc70aeb82397efe5dbf05b108a9cb5fadc8fa8f71d2f",
+      "stream": "stderr",
+      "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\optimized\\ss-opt01-anima-redis-1-stderr.log",
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  ],
+  "Redis_health": {
+    "container_id": "0161f60fe6387cd50dc8fc70aeb82397efe5dbf05b108a9cb5fadc8fa8f71d2f",
+    "StartedAt": "2026-10-11T10:10:50.116403518Z",
+    "status": "healthy",
+    "checks": [
+      {
+        "Start": "2026-10-11T10:10:51.987578156Z",
+        "End": "2026-10-11T10:10:52.047057854Z",
+        "ExitCode": 0
+      },
+      {
+        "Start": "2026-10-11T10:10:57.048289165Z",
+        "End": "2026-10-11T10:10:57.095580823Z",
+        "ExitCode": 0
+      }
+    ],
+    "events": [
+      {
+        "status": null,
+        "Action": "health_status: healthy",
+        "time": 1791713452,
+        "timeNano": 1791713452047520399,
+        "id": null
+      }
+    ],
+    "firsthealthy_timeNano": 1791713452047520399,
+    "firsthealthy_missing": false,
+    "events_exit_code": 0
+  }
+}

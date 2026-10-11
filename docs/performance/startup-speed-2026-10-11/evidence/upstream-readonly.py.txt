@@ -1,0 +1,39 @@
+"""One bounded real upstream check in retained container, outside timings."""
+import hashlib, json, subprocess
+from pathlib import Path
+
+code = '''import asyncio, os, time, json
+from datetime import datetime, UTC
+import httpx
+from openai import AsyncOpenAI
+
+async def main():
+ out={'run_id':'ss-base02-upstream-readonly01','started_at':datetime.now(UTC).isoformat(),'total_budget_seconds':5.0,'requests':[],'phases':[],'app_state_unchanged':True}
+ start=time.perf_counter(); phase='models.list'
+ async def request(req):out['requests'].append({'method':req.method,'path':req.url.path,'started_seconds':time.perf_counter()-start})
+ async def response(resp):out['requests'][-1].update(status=resp.status_code,headers_received_seconds=time.perf_counter()-start)
+ http=httpx.AsyncClient(timeout=httpx.Timeout(30.0,connect=10.0),limits=httpx.Limits(max_connections=10,max_keepalive_connections=5,keepalive_expiry=30.0),event_hooks={'request':[request],'response':[response]})
+ client=AsyncOpenAI(api_key=os.environ['DEEPSEEK_API_KEY'],base_url='https://api.deepseek.com/v1',http_client=http)
+ try:
+  async with asyncio.timeout(5.0):
+   catalog=await client.models.list(); ids={m.id for m in catalog.data}; t=time.perf_counter()-start
+   out['phases'].append({'phase':phase,'finished_seconds':t,'configured_model_present':'deepseek-v4-flash' in ids,'canonical_alias_present':'deepseek-flash' in ids})
+   if 'deepseek-v4-flash' not in ids and 'deepseek-flash' in ids:
+    phase='chat.completions.create alias verification'
+    reply=await client.chat.completions.create(model='deepseek-v4-flash',messages=[{'role':'user','content':'Reply OK'}],max_tokens=1,extra_body={'thinking':{'type':'disabled'}})
+    text=reply.choices[0].message.content
+    out['phases'].append({'phase':phase,'finished_seconds':time.perf_counter()-start,'resolved_model':reply.model,'actual_reply':text})
+    assert reply.model in {'deepseek-v4-flash','deepseek-flash'} and isinstance(text,str) and bool(text.strip())
+   else:assert 'deepseek-v4-flash' in ids
+   out['status']='passed'
+ except Exception as ex:
+  out.update(status='failed',failure_type=type(ex).__name__,failure_phase=phase,status_code=getattr(ex,'status_code',None))
+ finally:
+  out['elapsed_seconds']=time.perf_counter()-start;await client.close()
+ print(json.dumps(out))
+asyncio.run(main())
+'''
+r=subprocess.run(['docker','exec','-i','anima-animetta-1','python','-B','-'],input=code.encode(),capture_output=True,timeout=20)
+assert r.returncode == 0, 'Bounded readonly container subprocess failed'
+p=Path(__file__).parent/'ss-base02-upstream-readonly01.json'; p.write_bytes(r.stdout)
+print(r.stdout.decode());print(json.dumps({'path':str(p.resolve()),'SHA256':hashlib.sha256(r.stdout).hexdigest()}))

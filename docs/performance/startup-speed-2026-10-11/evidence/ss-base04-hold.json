@@ -1,0 +1,98 @@
+{
+  "run_id": "ss-base04",
+  "failed_step": {
+    "checkpoint": null,
+    "cleanup_pending": false,
+    "elapsed_seconds": 240.01723739999943,
+    "evidence_refs": [],
+    "failure_fingerprint": "5286a0aedd7a762b773bc53ed7b8dd1aae8a7b7b9467b1a232f51bc99fc2e1bd",
+    "feedback_at": "2026-10-11T10:04:05.235569Z",
+    "lease": null,
+    "next_action": "inspect animetta-ready timeout",
+    "progress_summary": "animetta-ready exceeded its action budget",
+    "run_id": "ss-base04",
+    "schema_version": 1,
+    "started_at": "2026-10-11T10:00:05.218338Z",
+    "status": "timed_out",
+    "step_id": "animetta-ready",
+    "window_sequence": 1
+  },
+  "source_SHA256": "527cd2314ea4e0becdcd93f985ee510a513cece1dc8ae8329f388a28dd6222f5",
+  "source_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-base04\\steps\\animetta-ready\\windows\\000001\\result.json",
+  "copy_path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base04\\animetta-ready-uncheckpointed-result.json",
+  "containers": [
+    {
+      "name": "/anima-animetta-1",
+      "id": "8279dcdef3b6a4070088b70f5dc03ec17599bc8db77d8d62f45138cddea2cc30",
+      "image": "sha256:98dc3042b286f72623261bd5d84c433c9af902c9ab67512146d345b76f4d43ea",
+      "StartedAt": "2026-10-11T10:00:00.709120218Z",
+      "status": "running",
+      "health_status": "healthy",
+      "key_lines": [
+        "2026-10-11T10:00:01.453474949Z [entrypoint] Validating config/animetta.yaml for profile production...",
+        "2026-10-11T10:00:02.174773137Z [entrypoint] Config ready: production 1 293cd32f315131c15aff8e0a2a9ee41f7963899c9715f9baab80c3d0767b1558",
+        "2026-10-11T10:00:02.214852901Z [entrypoint] Starting nginx...",
+        "2026-10-11T10:00:02.226099688Z [entrypoint] Starting Animetta backend on port 12394...",
+        "2026-10-11T10:00:05.019781160Z 2026-10-11 10:00:05 | INFO     | animetta.runtime.checkpoint:start:54 - [Checkpoint] Official Redis checkpointer is ready",
+        "2026-10-11T10:00:05.102654771Z INFO:     Application startup complete.",
+        "2026-10-11T10:00:05.105388941Z 2026-10-11 10:00:05 | INFO     | animetta.runtime.provider_pool:_init_once:120 - [ServicePool] Initializing shared service instances...",
+        "2026-10-11T10:00:05.111679856Z 2026-10-11 10:00:05 | INFO     | animetta.runtime.session_context:init_llm:400 - [__pool__] Initializing LLM: deepseek/deepseek-v4-flash",
+        "2026-10-11T10:00:05.181796224Z 2026-10-11 10:00:05 | INFO     | animetta.runtime.session_context:init_local_llm:435 - [__pool__] Local LLM config is empty, skipping initialization",
+        "2026-10-11T10:00:11.472143157Z 2026-10-11 10:00:11 | WARNING  | animetta.runtime.session_context:_preload_tokenizers:292 - [__pool__] Tokenizer preload failed (does not affect operation): HTTPSConnectionPool(host='openaipublic.blob.core.windows.net', port=443): Max retries exceeded with url: /encodings/cl100k_base.tiktoken (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))",
+        "2026-10-11T10:00:16.684320244Z 2026-10-11 10:00:16 | WARNING  | animetta.runtime.session_context:verify_llm_connectivity:792 - [health] LLM connectivity timed out",
+        "2026-10-11T10:00:16.685441577Z 2026-10-11 10:00:16 | WARNING  | animetta.runtime.provider_pool:_init_once:222 - [ServicePool] Shared engines initialized but readiness is pending"
+      ],
+      "stdout": {
+        "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base04-anima-animetta-1-stdout-hold.log",
+        "SHA256": "8c323ee22812d808fe8875d1d0b185fa562e26d685fb49530e2045f5a3b48d05",
+        "bytes": 50328
+      },
+      "stderr": {
+        "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base04-anima-animetta-1-stderr-hold.log",
+        "SHA256": "ca8490c417ccd00043f079074eb281f0cd376f58b9595915c7b0ae2e7b22dd74",
+        "bytes": 22988
+      }
+    },
+    {
+      "name": "/anima-redis-1",
+      "id": "96bcb26904791acb59a440e92550469e9a47d8e780ade07c0051d76934ef07e5",
+      "image": "sha256:8096655e437712b07503796fb64d81359256cfcff0ab29d95a7da72863786efb",
+      "StartedAt": "2026-10-11T09:59:53.755669183Z",
+      "status": "running",
+      "health_status": "healthy",
+      "key_lines": [
+        "2026-10-11T09:59:55.098305462Z 1:M 11 Oct 2026 09:59:55.097 * Ready to accept connections tcp"
+      ],
+      "stdout": {
+        "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base04-anima-redis-1-stdout-hold.log",
+        "SHA256": "e78f320fe0abf262082cef4c63ac68e4e37328873a8c68fc4280c950f11513aa",
+        "bytes": 9681
+      },
+      "stderr": {
+        "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base04-anima-redis-1-stderr-hold.log",
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      }
+    }
+  ],
+  "Qwen_processes": [
+    {
+      "pid": 14240,
+      "creation_time": 1791686620.901652,
+      "command_line": [
+        "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\venv\\Scripts\\python.exe",
+        "-m",
+        "animetta_qwen_tts"
+      ]
+    },
+    {
+      "pid": 16104,
+      "creation_time": 1791686620.775384,
+      "command_line": [
+        "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\venv\\Scripts\\python.exe",
+        "-m",
+        "animetta_qwen_tts"
+      ]
+    }
+  ]
+}

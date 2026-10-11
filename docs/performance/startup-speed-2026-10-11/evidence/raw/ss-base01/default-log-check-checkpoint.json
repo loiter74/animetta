@@ -1,0 +1,12 @@
+{
+  "committed_at": "2026-10-11T09:46:24.278278Z",
+  "evidence_refs": [
+    "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-base01/evidence/command-0bd7a560a082.log"
+  ],
+  "result_reference": "C:/Users/30262/Project/Anima/artifacts/iteration-plans/ss-base01/steps/default-log-check/windows/000001/result.json",
+  "reuse_fingerprint": "d4d7fd37c97985e70bf3071480e4589ac229f73483b9bff09689a6baefe7ed05",
+  "run_id": "ss-base01",
+  "schema_version": 1,
+  "status": "passed",
+  "step_id": "default-log-check"
+}

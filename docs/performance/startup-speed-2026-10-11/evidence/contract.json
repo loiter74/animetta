@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-10-11T09:43:27.204980+00:00",
+  "prediction": "baseline_attribution_only",
+  "source_commit": "59fca67ca0931ed75999aec08acf545b953835ac",
+  "source_manifest_SHA": "5daa5ef521e57cd178d25a7c736857c2cd8ee73aff78230bc5532246aa6a7f4a",
+  "image_tag": "animetta:startup-speed-baseline-59fca67c",
+  "project": "anima",
+  "profile": "production",
+  "ports": [
+    80,
+    12394
+  ],
+  "volumes": [
+    "anima_animetta-data",
+    "anima_animetta-memory-db",
+    "anima_animetta-redis"
+  ],
+  "Qwen_PIDs": [
+    14240,
+    16104
+  ],
+  "Qwen_retained": true,
+  "RVC_off": true,
+  "n": 3,
+  "warmup_run": "ss-base-warmup01",
+  "sample_runs": [
+    "ss-base01",
+    "ss-base02",
+    "ss-base03"
+  ],
+  "down_runs": [
+    "ss-base01-down",
+    "ss-base02-down",
+    "ss-base03-down"
+  ],
+  "primary": "actual animetta-start result.started_at to actual animetta-ready result.feedback_at; no /health substitution; excludes prior Qwen checks and cached BUILD",
+  "secondary": [
+    "CLI request to completion including controller/Qwen/cache checks",
+    "container StartedAt to ready result.feedback_at",
+    "all actual step elapsed/timestamps",
+    "fresh Redis/entrypoint/backend log timeline, tokenizer and LLM connectivity"
+  ],
+  "conditions": "one canonical prebuild/warmup outside samples; each sample canonical down/up, fresh app+Redis, retained image/OS/model caches/named volumes/private credentials; no quality/install/build/diagnostics/browser concurrent; no data cleanup",
+  "failure": "HOLD original failed container; no subsequent cycle or terminal retry",
+  "rollback_images": [
+    "animetta:deployment-core-core-r4-f8dcd2e7acf6-3bfb7799",
+    "ghcr.io/loiter74/animetta@sha256:a6a41059d3adfa51792c864fedd8ee7d81128948c4bba6581f26774d9dd89ed4"
+  ]
+}

@@ -1,0 +1,15 @@
+"""Read installed tokenizer source and cache metadata without importing it."""
+import hashlib, json, subprocess
+from pathlib import Path
+
+code = '''import os, tempfile, pathlib, hashlib, ast, json, importlib.metadata as m
+d=m.distribution('tiktoken')
+p=pathlib.Path(d.locate_file('tiktoken/load.py')); text=p.read_text(); t=ast.parse(text)
+root=pathlib.Path(os.environ.get('TIKTOKEN_CACHE_DIR',os.environ.get('DATA_GYM_CACHE_DIR',str(pathlib.Path(tempfile.gettempdir())/'data-gym-cache'))))
+target=root/hashlib.sha1(b'https://openaipublic.blob.core.windows.net/encodings/cl100k_base.tiktoken').hexdigest()
+print(json.dumps({'version':d.version,'TIKTOKEN_CACHE_DIR_set':'TIKTOKEN_CACHE_DIR' in os.environ,'DATA_GYM_CACHE_DIR_set':'DATA_GYM_CACHE_DIR' in os.environ,'effective_cache_path':str(root),'cl100k_cache_exists':target.is_file(),'cache_exists':root.is_dir(),'read_file_source':ast.get_source_segment(text,next(x for x in t.body if isinstance(x,ast.FunctionDef) and x.name=='read_file'))}))
+'''
+r=subprocess.run(['docker','exec','-i','anima-animetta-1','python','-B','-'],input=code.encode(),capture_output=True,timeout=10)
+assert r.returncode == 0, r.stderr.decode(errors='replace')
+p=Path(__file__).parent/'ss-base02-tokenizer-cache-readonly.json'; p.write_bytes(r.stdout)
+print(r.stdout.decode()); print(json.dumps({'exit_code':r.returncode,'SHA256':hashlib.sha256(r.stdout).hexdigest()}))

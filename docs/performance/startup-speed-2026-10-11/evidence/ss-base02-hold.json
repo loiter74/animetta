@@ -1,0 +1,522 @@
+{
+  "run_id": "ss-base02",
+  "status": "HOLD",
+  "collected_at": "2026-10-11T09:53:12.902231+00:00",
+  "containers": [
+    {
+      "name": "/anima-animetta-1",
+      "id": "66c5de615a07472e3a8124a08dc47d8bba8b360e1b87167950d3312976e18f38",
+      "image": "sha256:98dc3042b286f72623261bd5d84c433c9af902c9ab67512146d345b76f4d43ea",
+      "state": {
+        "Status": "running",
+        "StartedAt": "2026-10-11T09:46:52.714950506Z",
+        "ExitCode": 0
+      },
+      "volumes": [
+        {
+          "name": "anima_animetta-data",
+          "destination": "/app/data"
+        },
+        {
+          "name": "anima_animetta-memory-db",
+          "destination": "/app/memory_db"
+        }
+      ],
+      "health_status": "healthy",
+      "health_checks": [
+        {
+          "Start": "2026-10-11T09:50:58.223415201Z",
+          "End": "2026-10-11T09:50:58.321963968Z",
+          "ExitCode": 0
+        },
+        {
+          "Start": "2026-10-11T09:51:28.321019386Z",
+          "End": "2026-10-11T09:51:28.392246551Z",
+          "ExitCode": 0
+        },
+        {
+          "Start": "2026-10-11T09:51:58.389579676Z",
+          "End": "2026-10-11T09:51:58.458797705Z",
+          "ExitCode": 0
+        },
+        {
+          "Start": "2026-10-11T09:52:28.457766402Z",
+          "End": "2026-10-11T09:52:28.522817032Z",
+          "ExitCode": 0
+        },
+        {
+          "Start": "2026-10-11T09:52:58.520390002Z",
+          "End": "2026-10-11T09:52:58.591997272Z",
+          "ExitCode": 0
+        }
+      ],
+      "stdout": {
+        "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base02-anima-animetta-1-stdout-hold.log",
+        "bytes": 51252,
+        "SHA256": "daac93434fcd421cdedb9392564dffe885971ed9b63de628c01cbfd6207ca03d"
+      },
+      "stderr": {
+        "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base02-anima-animetta-1-stderr-hold.log",
+        "bytes": 22988,
+        "SHA256": "75bfb3818a3cbb64e420119b597ff42edf51b7eb4c09e2af329604776350ebed"
+      }
+    },
+    {
+      "name": "/anima-redis-1",
+      "id": "4937e8f6003503588fc1b0f00a66d576b0a944447ee8a69999431431e45582af",
+      "image": "sha256:8096655e437712b07503796fb64d81359256cfcff0ab29d95a7da72863786efb",
+      "state": {
+        "Status": "running",
+        "StartedAt": "2026-10-11T09:46:45.834047216Z",
+        "ExitCode": 0
+      },
+      "volumes": [
+        {
+          "name": "anima_animetta-redis",
+          "destination": "/data"
+        }
+      ],
+      "health_status": "healthy",
+      "health_checks": [
+        {
+          "Start": "2026-10-11T09:52:51.248236643Z",
+          "End": "2026-10-11T09:52:51.323444361Z",
+          "ExitCode": 0
+        },
+        {
+          "Start": "2026-10-11T09:52:56.325366824Z",
+          "End": "2026-10-11T09:52:56.373323747Z",
+          "ExitCode": 0
+        },
+        {
+          "Start": "2026-10-11T09:53:01.374456281Z",
+          "End": "2026-10-11T09:53:01.451110727Z",
+          "ExitCode": 0
+        },
+        {
+          "Start": "2026-10-11T09:53:06.452288059Z",
+          "End": "2026-10-11T09:53:06.516119487Z",
+          "ExitCode": 0
+        },
+        {
+          "Start": "2026-10-11T09:53:11.517528373Z",
+          "End": "2026-10-11T09:53:11.583978093Z",
+          "ExitCode": 0
+        }
+      ],
+      "stdout": {
+        "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base02-anima-redis-1-stdout-hold.log",
+        "bytes": 10308,
+        "SHA256": "72a2680c45584b0cac12b2a5086d938b4b0ba726cecc68a1944728c3144773f9"
+      },
+      "stderr": {
+        "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\ss-base02-anima-redis-1-stderr-hold.log",
+        "bytes": 0,
+        "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "http": {
+    "http://localhost/health": {
+      "status": 200,
+      "body": {
+        "status": "ok",
+        "service": "anima",
+        "timestamp": 1791712393.1118317
+      }
+    },
+    "http://localhost/ready": {
+      "status": 503,
+      "body": {
+        "schema_version": 1,
+        "status": "not_ready",
+        "ready": false,
+        "service": "anima",
+        "profile": "production",
+        "version": 1,
+        "persona": "anima.v0.1",
+        "effective_hash": "4be171239c60ddc83a414f8c0a3a6ba4f3be658864d55985cfc5a2d92b6325db",
+        "semantic_hash": "293cd32f315131c15aff8e0a2a9ee41f7963899c9715f9baab80c3d0767b1558",
+        "acceptance_eligible": true,
+        "components": {
+          "pool": {
+            "state": "failed",
+            "ready": false,
+            "reason": "component_not_ready"
+          },
+          "llm": {
+            "state": "failed",
+            "ready": false,
+            "configured": {
+              "name": "deepseek",
+              "type": "deepseek",
+              "provider": "deepseek",
+              "model": "deepseek-v4-flash",
+              "voice": null
+            },
+            "resolved": {
+              "type": "deepseek",
+              "provider": "deepseek",
+              "model": "deepseek-v4-flash",
+              "voice": null
+            },
+            "reason": "timeout"
+          },
+          "asr": {
+            "state": "disabled",
+            "ready": false,
+            "required": false,
+            "configured": {
+              "type": null,
+              "provider": null,
+              "model": null,
+              "voice": null
+            },
+            "resolved": {
+              "type": null,
+              "provider": null,
+              "model": null,
+              "voice": null
+            },
+            "reason": "capability_disabled"
+          },
+          "tts": {
+            "state": "ready",
+            "ready": true,
+            "configured": {
+              "name": "qwen-host",
+              "type": "remote",
+              "provider": "qwen3-tts-gguf-host",
+              "model": "Qwen3-TTS-1.7B-Base",
+              "voice": "tosaka-rin-cn"
+            },
+            "resolved": {
+              "type": "remote",
+              "provider": "qwen3-tts-gguf-host",
+              "model": "Qwen3-TTS-1.7B-Base",
+              "voice": "tosaka-rin-cn"
+            },
+            "reason": null
+          },
+          "vad": {
+            "state": "disabled",
+            "ready": false,
+            "required": false,
+            "configured": {
+              "type": null,
+              "provider": null,
+              "model": null,
+              "voice": null
+            },
+            "resolved": {
+              "type": null,
+              "provider": null,
+              "model": null,
+              "voice": null
+            },
+            "reason": "capability_disabled"
+          },
+          "frontend": {
+            "state": "ready",
+            "ready": true,
+            "required": true,
+            "reason": null
+          },
+          "checkpoint": {
+            "state": "ready",
+            "ready": true,
+            "degraded": false,
+            "reason": null,
+            "required": false
+          },
+          "auth_session": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "required": true
+          },
+          "auth_user": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "required": true
+          },
+          "memory_runtime": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "ingestion_queue": 0,
+            "index_backlog": 0,
+            "ingestion_failed": 0,
+            "required": true
+          },
+          "remote_tts": {
+            "state": "failed",
+            "ready": false,
+            "reason": "component_degraded",
+            "required": true
+          },
+          "observation_ledger": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "queue_depth": 0,
+            "dropped_records": 0,
+            "writer_errors": 0,
+            "schema_version": 2,
+            "write_probe": true,
+            "required": true
+          },
+          "metrics_projection": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "has_anima_readiness_probe_total": true,
+            "anima_readiness_probe_total_delta": 2.0,
+            "required": true
+          }
+        },
+        "degraded": false,
+        "component_status_age_seconds": 15.088
+      }
+    },
+    "http://127.0.0.1:12394/health": {
+      "status": 200,
+      "body": {
+        "status": "ok",
+        "service": "anima",
+        "timestamp": 1791712393.1296008
+      }
+    },
+    "http://127.0.0.1:12394/ready": {
+      "status": 503,
+      "body": {
+        "schema_version": 1,
+        "status": "not_ready",
+        "ready": false,
+        "service": "anima",
+        "profile": "production",
+        "version": 1,
+        "persona": "anima.v0.1",
+        "effective_hash": "4be171239c60ddc83a414f8c0a3a6ba4f3be658864d55985cfc5a2d92b6325db",
+        "semantic_hash": "293cd32f315131c15aff8e0a2a9ee41f7963899c9715f9baab80c3d0767b1558",
+        "acceptance_eligible": true,
+        "components": {
+          "pool": {
+            "state": "failed",
+            "ready": false,
+            "reason": "component_not_ready"
+          },
+          "llm": {
+            "state": "failed",
+            "ready": false,
+            "configured": {
+              "name": "deepseek",
+              "type": "deepseek",
+              "provider": "deepseek",
+              "model": "deepseek-v4-flash",
+              "voice": null
+            },
+            "resolved": {
+              "type": "deepseek",
+              "provider": "deepseek",
+              "model": "deepseek-v4-flash",
+              "voice": null
+            },
+            "reason": "timeout"
+          },
+          "asr": {
+            "state": "disabled",
+            "ready": false,
+            "required": false,
+            "configured": {
+              "type": null,
+              "provider": null,
+              "model": null,
+              "voice": null
+            },
+            "resolved": {
+              "type": null,
+              "provider": null,
+              "model": null,
+              "voice": null
+            },
+            "reason": "capability_disabled"
+          },
+          "tts": {
+            "state": "ready",
+            "ready": true,
+            "configured": {
+              "name": "qwen-host",
+              "type": "remote",
+              "provider": "qwen3-tts-gguf-host",
+              "model": "Qwen3-TTS-1.7B-Base",
+              "voice": "tosaka-rin-cn"
+            },
+            "resolved": {
+              "type": "remote",
+              "provider": "qwen3-tts-gguf-host",
+              "model": "Qwen3-TTS-1.7B-Base",
+              "voice": "tosaka-rin-cn"
+            },
+            "reason": null
+          },
+          "vad": {
+            "state": "disabled",
+            "ready": false,
+            "required": false,
+            "configured": {
+              "type": null,
+              "provider": null,
+              "model": null,
+              "voice": null
+            },
+            "resolved": {
+              "type": null,
+              "provider": null,
+              "model": null,
+              "voice": null
+            },
+            "reason": "capability_disabled"
+          },
+          "frontend": {
+            "state": "ready",
+            "ready": true,
+            "required": true,
+            "reason": null
+          },
+          "checkpoint": {
+            "state": "ready",
+            "ready": true,
+            "degraded": false,
+            "reason": null,
+            "required": false
+          },
+          "auth_session": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "required": true
+          },
+          "auth_user": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "required": true
+          },
+          "memory_runtime": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "ingestion_queue": 0,
+            "index_backlog": 0,
+            "ingestion_failed": 0,
+            "required": true
+          },
+          "remote_tts": {
+            "state": "failed",
+            "ready": false,
+            "reason": "component_degraded",
+            "required": true
+          },
+          "observation_ledger": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "queue_depth": 0,
+            "dropped_records": 0,
+            "writer_errors": 0,
+            "schema_version": 2,
+            "write_probe": true,
+            "required": true
+          },
+          "metrics_projection": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "has_anima_readiness_probe_total": true,
+            "anima_readiness_probe_total_delta": 2.0,
+            "required": true
+          }
+        },
+        "degraded": false,
+        "component_status_age_seconds": 15.095
+      }
+    },
+    "http://127.0.0.1:8767/ready": {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "service": "qwen-tts",
+        "api_version": "v1",
+        "provider": "qwen3-tts-gguf-host",
+        "model": "Qwen3-TTS-1.7B-Base",
+        "revision": "0eb32e283ee46b86820c67843abb04cf12bc58d7",
+        "voice": "tosaka-rin-cn",
+        "sample_rate": 24000,
+        "quantization": "talker=Q5_K,predictor=Q8_0,onnx=FP16",
+        "runtime_commit": "0eb32e283ee46b86820c67843abb04cf12bc58d7"
+      }
+    },
+    "http://127.0.0.1:8767/v1/identity": {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "service": "qwen-tts",
+        "api_version": "v1",
+        "provider": "qwen3-tts-gguf-host",
+        "model": "Qwen3-TTS-1.7B-Base",
+        "revision": "0eb32e283ee46b86820c67843abb04cf12bc58d7",
+        "voice": "tosaka-rin-cn",
+        "sample_rate": 24000,
+        "quantization": "talker=Q5_K,predictor=Q8_0,onnx=FP16",
+        "runtime_commit": "0eb32e283ee46b86820c67843abb04cf12bc58d7"
+      }
+    }
+  },
+  "Qwen_processes": [
+    {
+      "pid": 14240,
+      "creation_time": 1791686620.901652,
+      "command_line": [
+        "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\venv\\Scripts\\python.exe",
+        "-m",
+        "animetta_qwen_tts"
+      ]
+    },
+    {
+      "pid": 16104,
+      "creation_time": 1791686620.775384,
+      "command_line": [
+        "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\venv\\Scripts\\python.exe",
+        "-m",
+        "animetta_qwen_tts"
+      ]
+    }
+  ],
+  "lifecycle_processes": [],
+  "failed_result": {
+    "source": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\ss-base02\\steps\\animetta-ready\\windows\\000001\\result.json",
+    "source_SHA256": "be024954e3e25025a968a607d94f01002eb607980a3c3d2bb939125cca50d258",
+    "copy": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\raw\\ss-base02\\animetta-ready-uncheckpointed-result.json",
+    "copy_SHA256": "be024954e3e25025a968a607d94f01002eb607980a3c3d2bb939125cca50d258",
+    "actual": {
+      "checkpoint": null,
+      "cleanup_pending": false,
+      "elapsed_seconds": 240.02011130000028,
+      "evidence_refs": [],
+      "failure_fingerprint": "5286a0aedd7a762b773bc53ed7b8dd1aae8a7b7b9467b1a232f51bc99fc2e1bd",
+      "feedback_at": "2026-10-11T09:50:57.266973Z",
+      "lease": null,
+      "next_action": "inspect animetta-ready timeout",
+      "progress_summary": "animetta-ready exceeded its action budget",
+      "run_id": "ss-base02",
+      "schema_version": 1,
+      "started_at": "2026-10-11T09:46:57.246870Z",
+      "status": "timed_out",
+      "step_id": "animetta-ready",
+      "window_sequence": 1
+    }
+  },
+  "frozen_input_and_Qwen_verified": true
+}
