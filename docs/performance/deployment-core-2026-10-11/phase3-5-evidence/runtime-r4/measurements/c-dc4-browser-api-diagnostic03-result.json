@@ -1,0 +1,12 @@
+{
+  "run_id": "c-dc4-browser-api-diagnostic03",
+  "status": "blocked",
+  "exit_code": 1,
+  "outer_timeout_seconds": 25,
+  "exec_session": 93524,
+  "source": "Historical outer tool TimeoutExpired receipt; reconstructed summary, not a raw child result",
+  "child_output_available": false,
+  "exact_failure_stage": "not recorded",
+  "counts_as_success": false,
+  "terminal_preserved_no_retry": true
+}

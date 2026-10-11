@@ -20,6 +20,10 @@ input_sets:
     paths:
       - src/**/*.py
       - config/**/*.yaml
+  host-inference-dependencies:
+    paths:
+      - services/rvc-host/**
+      - services/qwen-host/**
   python-maintained-source:
     paths:
       - src/**/*.py
@@ -55,9 +59,11 @@ input_sets:
       - src/animetta/config/providers/llm/pricing.py
   frontend-toolchain:
     paths:
+      - frontend/.npmrc
       - frontend/package.json
       - frontend/pnpm-lock.yaml
       - frontend/pnpm-workspace.yaml
+      - frontend/optional/*/package.json
       - frontend/knip.json
       - frontend/vite.config.ts
       - frontend/vitest.config.ts
@@ -98,6 +104,8 @@ input_sets:
       - .github/assets/**
       - docs/**
       - openspec/**/*.md
+      - tests/smoke/test_readme_alignment.py
+      - tests/smoke/test_frontend_agents_docs.py
 
 default_input_sets: [quality-engine]
 
@@ -142,6 +150,7 @@ docker_scopes:
         - frontend/package.json
         - frontend/pnpm-lock.yaml
         - frontend/pnpm-workspace.yaml
+        - frontend/optional/*/package.json
         - frontend/*.html
         - frontend/vite.config.ts
         - frontend/scripts/earth-assets.ts
@@ -182,6 +191,7 @@ docker_scopes:
           - frontend/package.json
           - frontend/pnpm-lock.yaml
           - frontend/pnpm-workspace.yaml
+          - frontend/optional/*/package.json
           - frontend/*.html
           - frontend/vite.config.ts
           - frontend/scripts/earth-assets.ts
@@ -372,13 +382,14 @@ groups:
       - tests/scripts/test_benchmark_host_tts.py
       - tests/scripts/test_release_runtime_gate.py
       - tests/smoke/test_python_runtime_policy.py
+      - tests/smoke/test_docker_frontend.py
     args: [-q, -o, addopts=]
     timeout_seconds: 240
     include_in_full: true
     cacheable: true
     resource_class: cpu
     resource_weight: 2
-    input_sets: [python-toolchain]
+    input_sets: [python-toolchain, frontend-toolchain]
 
   host-tts-contract-unit:
     domain: backend
@@ -402,6 +413,7 @@ groups:
     runner: pytest
     targets:
       - tests/services/singing/test_rvc_host_app.py
+      - tests/services/singing/test_host_dependency_locks.py
       - tests/services/singing/test_rvc_host_engine.py
       - tests/services/singing/test_rvc_bridge.py
       - tests/services/singing/test_svc_pipeline_rvc.py
@@ -411,7 +423,7 @@ groups:
     cacheable: true
     resource_class: cpu
     resource_weight: 2
-    input_sets: [python-toolchain]
+    input_sets: [python-toolchain, host-inference-dependencies]
 
   backend-core-unit:
     domain: backend
@@ -911,7 +923,7 @@ groups:
     cacheable: true
     resource_class: heavy
     resource_weight: 8
-    input_sets: [python-toolchain, python-runtime]
+    input_sets: [python-toolchain, python-runtime, host-inference-dependencies]
     covers:
       - backend-core-unit
       - backend-config-unit
@@ -1590,7 +1602,8 @@ components:
     paths:
       - config/host-tts.yaml
       - src/animetta/host_tts_contract.py
-    direct_groups: [host-tts-contract-unit]
+      - services/qwen-host/**
+    direct_groups: [host-tts-contract-unit, host-rvc-contract-unit]
     impacts: []
     risk: normal
 
@@ -1603,6 +1616,8 @@ components:
       - src/animetta_rvc_host/**
       - scripts/rvc_preflight.py
       - tests/scripts/test_rvc_preflight.py
+      - services/rvc-host/**
+      - tests/services/singing/test_host_dependency_locks.py
     direct_groups:
       - host-rvc-contract-unit
       - runtime-lifecycle-unit
@@ -1875,6 +1890,7 @@ components:
       - frontend/package.json
       - frontend/pnpm-lock.yaml
       - frontend/pnpm-workspace.yaml
+      - frontend/optional/*/package.json
       - frontend/knip.json
       - frontend/vite.config.ts
       - frontend/vitest.config.ts
@@ -1929,6 +1945,7 @@ components:
       - tests/scripts/test_benchmark_host_tts.py
       - tests/scripts/test_runtime_lifecycle.py
       - tests/scripts/test_runtime_lifecycle_feedback.py
+      - tests/smoke/test_docker_frontend.py
     direct_groups:
       - runtime-lifecycle-unit
       - docker-compose-contract
@@ -2006,6 +2023,8 @@ components:
       - docs/**
       - openspec/**/*.md
       - scripts/README.md
+      - tests/smoke/test_readme_alignment.py
+      - tests/smoke/test_frontend_agents_docs.py
     direct_groups: [docs-contract]
     impacts: []
     risk: normal
@@ -2019,6 +2038,7 @@ components:
       - requirements-dev.txt
       - requirements-bilibili.txt
       - requirements-search.txt
+      - requirements-memory-semantic.txt
       - scripts/check_python_lock.py
       - tests/scripts/test_python_lock.py
       - tests/conftest.py

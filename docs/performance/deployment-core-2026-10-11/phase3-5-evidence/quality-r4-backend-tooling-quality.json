@@ -1,0 +1,23 @@
+{
+  "schema_version": 2,
+  "group_id": "backend-tooling-quality",
+  "required": true,
+  "status": "passed",
+  "exit_code": 0,
+  "duration_seconds": 94.3619131000014,
+  "failure_kind": null,
+  "artifacts": [],
+  "plan_hash": "54eb7ff41bcdf4c7c8a59475018bff43d4451a903061e2ebfc4e750626a914b5",
+  "manifest_hash": "d32af627ce3fe26356eb8cbd885b79b7cc29b039bb263fcc044ab4be801c005d",
+  "output": "........................................................................ [ 32%]\n........................................................................ [ 64%]\n........................................................................ [ 96%]\n........                                                                 [100%]\n224 passed in 48.85s\n\n........................................................................ [ 37%]\n........................................................................ [ 75%]\n...............................................                          [100%]\n191 passed in 39.22s\n\n.......                                                                  [100%]\n7 passed in 0.18s\n",
+  "remediation": "",
+  "execution_mode": "executed",
+  "input_fingerprint": "6fa9878444c767558b3e19bface221e166cc7dcd16b0481f7ba3c52c186f1010",
+  "trust_scope": "local",
+  "cache_reason": "miss:not-found;write:stored",
+  "cache_source": null,
+  "queue_seconds": 0.0,
+  "run_seconds": 94.3619131000014,
+  "cache_seconds": 0.0,
+  "artifact_digests": {}
+}

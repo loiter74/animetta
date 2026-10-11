@@ -207,6 +207,7 @@ class EffectiveSystemConfig(StrictFrozenModel):
     log_level: str = "INFO"
     runtime_profile: Literal["test", "smoke", "selftest", "production"]
     long_term_memory_mode: Literal["off", "read_only", "read_write"]
+    memory_retrieval_mode: Literal["fts", "semantic"] = "fts"
     enable_tools: bool
     enable_subtitle_translation: bool
     enable_active_memes: bool
@@ -255,6 +256,7 @@ class RuntimeCapabilities(StrictFrozenModel):
 class RuntimeSettings(StrictFrozenModel):
     debug: bool = False
     long_term_memory_mode: Literal["off", "read_only", "read_write"] = "off"
+    memory_retrieval_mode: Literal["fts", "semantic"] = "fts"
     enable_tools: bool = True
     enable_subtitle_translation: bool = True
     enable_active_memes: bool = True
@@ -361,6 +363,7 @@ class EffectiveConfig(StrictFrozenModel):
             debug=self.runtime.debug,
             runtime_profile=self.profile,
             long_term_memory_mode=self.runtime.long_term_memory_mode,
+            memory_retrieval_mode=self.runtime.memory_retrieval_mode,
             enable_tools=self.runtime.enable_tools,
             enable_subtitle_translation=self.runtime.enable_subtitle_translation,
             enable_active_memes=self.runtime.enable_active_memes,
@@ -924,6 +927,23 @@ def load_configured_provider(
         selected,
         cast(ServiceCategory, category),
     )
+
+
+def load_build_capabilities(
+    path: str | Path = DEFAULT_MANIFEST_PATH,
+    *,
+    profile: str | None = None,
+) -> dict[str, str]:
+    """Derive optional image inputs from canonical capabilities without secrets."""
+    manifest, _ = _read_manifest(Path(path).resolve())
+    _, selected = _select_profile(manifest, profile)
+    capabilities = selected.runtime.capabilities
+    return {
+        "ANIMETTA_EARTH_ENABLED": str(capabilities.earth).lower(),
+        "ANIMETTA_MEDIA_ENABLED": str(
+            capabilities.voice_input or capabilities.singing or capabilities.earth
+        ).lower(),
+    }
 
 
 def load_host_service_requirements(

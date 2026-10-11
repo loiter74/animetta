@@ -6,9 +6,49 @@ import pytest
 
 from animetta.config.manifest import (
     RuntimeConfigError,
+    load_build_capabilities,
     load_effective_config,
     load_host_service_requirements,
 )
+from animetta.config.runtime_reloader import classify_effective_config_diff
+
+
+@pytest.mark.parametrize(
+    ("capability", "earth", "media"),
+    [
+        (None, "false", "false"),
+        ("earth", "true", "true"),
+        ("singing", "false", "true"),
+        ("voice_input", "false", "true"),
+        ("minecraft", "false", "false"),
+    ],
+)
+def test_image_capabilities_follow_the_profile_without_resolving_secrets(
+    manifest_data, write_manifest, manifest_secrets, capability, earth, media
+):
+    data = deepcopy(manifest_data)
+    data["profiles"]["production"]["runtime"]["capabilities"] = (
+        {capability: True} if capability else {}
+    )
+    manifest_secrets.delenv("MIMO_API_KEY")
+    assert load_build_capabilities(write_manifest(data), profile="production") == {
+        "ANIMETTA_EARTH_ENABLED": earth,
+        "ANIMETTA_MEDIA_ENABLED": media,
+    }
+
+
+def test_memory_retrieval_mode_is_explicit_and_requires_restart(
+    manifest_data, write_manifest, manifest_secrets
+):
+    current = load_effective_config(write_manifest(manifest_data), profile="production")
+    assert current.system.memory_retrieval_mode == "fts"
+    data = deepcopy(manifest_data)
+    data["profiles"]["production"]["runtime"]["memory_retrieval_mode"] = "semantic"
+    candidate = load_effective_config(write_manifest(data), profile="production")
+    assert candidate.semantic_hash != current.semantic_hash
+    refreshed, restart = classify_effective_config_diff(current, candidate)
+    assert "runtime.memory_retrieval_mode" in restart
+    assert "ui" not in refreshed
 
 
 def test_disabled_voice_input_needs_no_secret_and_does_not_change_hash(

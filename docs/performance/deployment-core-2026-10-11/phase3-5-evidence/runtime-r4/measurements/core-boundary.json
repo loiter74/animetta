@@ -1,0 +1,408 @@
+{
+  "recorded_at": "2026-10-11T08:10:30.025810+00:00",
+  "status": "passed",
+  "image_id": "sha256:569b1ded734e021c5f87f6b822ffd7a422a608bfd8280fa89469233444a7703a",
+  "image_tag": "animetta:deployment-core-core-r4-f8dcd2e7acf6-3bfb7799",
+  "container_id": "1f248f6a0ac7b556a61facdb68cd2bc4085b4ec38fcc24d222639a1a1f7a6434",
+  "installed_distribution_and_module_probe": {
+    "python": "3.13.16 (main, Oct  6 2026, 02:04:05) [GCC 12.2.0]",
+    "executable": "/opt/venv/bin/python",
+    "distribution_versions": {
+      "bilibili-api-python": null,
+      "langchain-community": null,
+      "torch": null,
+      "transformers": null,
+      "chromadb": null,
+      "demucs": null,
+      "torchaudio": null,
+      "faiss-cpu": null
+    },
+    "module_discoverability": {
+      "bilibili_api": false,
+      "langchain_community": false,
+      "torch": false,
+      "transformers": false,
+      "chromadb": false,
+      "demucs": false,
+      "torchaudio": false
+    },
+    "installed_package_count": 88,
+    "ffmpeg_executable": null,
+    "cesium_paths": []
+  },
+  "actual_core_config_and_fts5": {
+    "capabilities": {
+      "voice_input": false,
+      "bilibili": false,
+      "singing": false,
+      "minecraft": false,
+      "earth": false
+    },
+    "enable_tools": false,
+    "required_services": [
+      "llm",
+      "tts"
+    ],
+    "memory_retrieval_mode": "fts",
+    "long_term_memory_mode": "off",
+    "actual_readonly_memory_path": "/app/memory_db/living_memory.sqlite",
+    "fts5_virtual_tables": [
+      "memory_fts"
+    ],
+    "database_open_mode": "ro"
+  },
+  "ready": {
+    "status": 200,
+    "bytes": 2335,
+    "sha256": "b23b22f6bdfb99efd789d33a9a288334d2ebfd928f1932530d526ec9341e90d6",
+    "body": {
+      "schema_version": 1,
+      "status": "ready",
+      "ready": true,
+      "service": "anima",
+      "profile": "production",
+      "version": 1,
+      "persona": "anima.v0.1",
+      "effective_hash": "4be171239c60ddc83a414f8c0a3a6ba4f3be658864d55985cfc5a2d92b6325db",
+      "semantic_hash": "293cd32f315131c15aff8e0a2a9ee41f7963899c9715f9baab80c3d0767b1558",
+      "acceptance_eligible": true,
+      "components": {
+        "pool": {
+          "state": "ready",
+          "ready": true,
+          "reason": null
+        },
+        "llm": {
+          "state": "ready",
+          "ready": true,
+          "configured": {
+            "name": "deepseek",
+            "type": "deepseek",
+            "provider": "deepseek",
+            "model": "deepseek-v4-flash",
+            "voice": null
+          },
+          "resolved": {
+            "type": "deepseek",
+            "provider": "deepseek",
+            "model": "deepseek-v4-flash",
+            "voice": null
+          },
+          "reason": null
+        },
+        "asr": {
+          "state": "disabled",
+          "ready": false,
+          "required": false,
+          "configured": {
+            "type": null,
+            "provider": null,
+            "model": null,
+            "voice": null
+          },
+          "resolved": {
+            "type": null,
+            "provider": null,
+            "model": null,
+            "voice": null
+          },
+          "reason": "capability_disabled"
+        },
+        "tts": {
+          "state": "ready",
+          "ready": true,
+          "configured": {
+            "name": "qwen-host",
+            "type": "remote",
+            "provider": "qwen3-tts-gguf-host",
+            "model": "Qwen3-TTS-1.7B-Base",
+            "voice": "tosaka-rin-cn"
+          },
+          "resolved": {
+            "type": "remote",
+            "provider": "qwen3-tts-gguf-host",
+            "model": "Qwen3-TTS-1.7B-Base",
+            "voice": "tosaka-rin-cn"
+          },
+          "reason": null
+        },
+        "vad": {
+          "state": "disabled",
+          "ready": false,
+          "required": false,
+          "configured": {
+            "type": null,
+            "provider": null,
+            "model": null,
+            "voice": null
+          },
+          "resolved": {
+            "type": null,
+            "provider": null,
+            "model": null,
+            "voice": null
+          },
+          "reason": "capability_disabled"
+        },
+        "frontend": {
+          "state": "ready",
+          "ready": true,
+          "required": true,
+          "reason": null
+        },
+        "checkpoint": {
+          "state": "ready",
+          "ready": true,
+          "degraded": false,
+          "reason": null,
+          "required": false
+        },
+        "auth_session": {
+          "state": "ready",
+          "ready": true,
+          "reason": null,
+          "required": true
+        },
+        "auth_user": {
+          "state": "ready",
+          "ready": true,
+          "reason": null,
+          "required": true
+        },
+        "memory_runtime": {
+          "state": "ready",
+          "ready": true,
+          "reason": null,
+          "ingestion_queue": 0,
+          "index_backlog": 0,
+          "ingestion_failed": 0,
+          "required": true
+        },
+        "remote_tts": {
+          "state": "ready",
+          "ready": true,
+          "reason": null,
+          "contract_valid": true,
+          "required": true
+        },
+        "observation_ledger": {
+          "state": "ready",
+          "ready": true,
+          "reason": null,
+          "queue_depth": 0,
+          "dropped_records": 0,
+          "writer_errors": 0,
+          "schema_version": 2,
+          "write_probe": true,
+          "required": true
+        },
+        "metrics_projection": {
+          "state": "ready",
+          "ready": true,
+          "reason": null,
+          "has_anima_readiness_probe_total": true,
+          "anima_readiness_probe_total_delta": 2.0,
+          "required": true
+        }
+      },
+      "degraded": false,
+      "component_status_age_seconds": 3.617
+    },
+    "assets": []
+  },
+  "same_public_surfaces": {
+    "/dashboard": {
+      "status": 200,
+      "bytes": 1665,
+      "sha256": "4de4bdd48d24ec9d81fba9c558b3d82f23a6caceb94a8ea825aea34d572f77fd",
+      "body": null,
+      "assets": [
+        "/live2d/live2dcubismcore.min.js",
+        "/assets/app-CNn01Dr6.js",
+        "/assets/__uno-DFSx-zmg.js",
+        "/assets/__uno-Cz082Y8U.css",
+        "/assets/app-fk-jzbIZ.css"
+      ]
+    },
+    "/live.html": {
+      "status": 200,
+      "bytes": 4136,
+      "sha256": "96322d8b4a66a2fde26a1de0cff68970a234b494313fa7aafea14008cf2ff32f",
+      "body": null,
+      "assets": [
+        "/live2d/live2dcubismcore.min.js",
+        "/assets/live-CKJ0rQ56.js",
+        "/assets/__uno-DFSx-zmg.js",
+        "/assets/playback-sync-BIYR2RVW.js",
+        "/assets/public-activity-Dgr1AmUL.js",
+        "/assets/__uno-Cz082Y8U.css",
+        "/assets/public-activity-DB2PvEIL.css",
+        "/assets/live-BowdoQJv.css"
+      ]
+    }
+  },
+  "actual_resource_fingerprints": [
+    {
+      "url": "http://localhost/live2d/live2dcubismcore.min.js",
+      "sha256": "25ae938cb4fe282ce189b357bcc97e603d1e1f7ec78bf04150d401c23cdc792f",
+      "bytes": 207155,
+      "status": 200
+    },
+    {
+      "url": "http://localhost/assets/app-CNn01Dr6.js",
+      "sha256": "27d06b488d5841ceb98275c649f7707a1b503f18f9b2e34da510ac83277bbc2b",
+      "bytes": 230533,
+      "status": 200
+    },
+    {
+      "url": "http://localhost/assets/__uno-DFSx-zmg.js",
+      "sha256": "d9e0baaa51c2715a36ac3c379fd621185c991f1b1708aa7bc2411b04eeafe530",
+      "bytes": 65610,
+      "status": 200
+    },
+    {
+      "url": "http://localhost/assets/__uno-Cz082Y8U.css",
+      "sha256": "eb9f9eaf6382157bf692029d565bf7e69721f3e1b52a1b5ad8a16a4664e0f5d3",
+      "bytes": 32036,
+      "status": 200
+    },
+    {
+      "url": "http://localhost/assets/app-fk-jzbIZ.css",
+      "sha256": "fc8f678eedad3c06082e286fec3df9eff8e60ba78ea2231baf9d4e6e51935d88",
+      "bytes": 4213,
+      "status": 200
+    },
+    {
+      "url": "http://localhost/live2d/live2dcubismcore.min.js",
+      "sha256": "25ae938cb4fe282ce189b357bcc97e603d1e1f7ec78bf04150d401c23cdc792f",
+      "bytes": 207155,
+      "status": 200
+    },
+    {
+      "url": "http://localhost/assets/live-CKJ0rQ56.js",
+      "sha256": "ace2d3373c7e29d9db92fd234b57b14d6757e8edfeff32b45f58ec16e1c11702",
+      "bytes": 18367,
+      "status": 200
+    },
+    {
+      "url": "http://localhost/assets/__uno-DFSx-zmg.js",
+      "sha256": "d9e0baaa51c2715a36ac3c379fd621185c991f1b1708aa7bc2411b04eeafe530",
+      "bytes": 65610,
+      "status": 200
+    },
+    {
+      "url": "http://localhost/assets/playback-sync-BIYR2RVW.js",
+      "sha256": "e9185192bc4a0a2614ed8a0515c0d8f76bf1c0311886befd63318bab80f102a2",
+      "bytes": 7498,
+      "status": 200
+    },
+    {
+      "url": "http://localhost/assets/public-activity-Dgr1AmUL.js",
+      "sha256": "7bc5f77a6b24147c2c504f43ed2b9e69cc95fe2673791d5d9ab9f04e14af6cd9",
+      "bytes": 674904,
+      "status": 200
+    },
+    {
+      "url": "http://localhost/assets/__uno-Cz082Y8U.css",
+      "sha256": "eb9f9eaf6382157bf692029d565bf7e69721f3e1b52a1b5ad8a16a4664e0f5d3",
+      "bytes": 32036,
+      "status": 200
+    },
+    {
+      "url": "http://localhost/assets/public-activity-DB2PvEIL.css",
+      "sha256": "bb082a828e3acdb4530cd2d38740855cea155d5b3edabc29767bdf4558f06dd0",
+      "bytes": 3192,
+      "status": 200
+    },
+    {
+      "url": "http://localhost/assets/live-BowdoQJv.css",
+      "sha256": "979bec121d8195241228676d0a3d30e817f5bc09e6e5d74fc8429e63b30e4f25",
+      "bytes": 10196,
+      "status": 200
+    }
+  ],
+  "host_ownership": {
+    "qwen_processes": [
+      {
+        "pid": 14240,
+        "creation_time": 1791686620.901652,
+        "command_line": [
+          "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\venv\\Scripts\\python.exe",
+          "-m",
+          "animetta_qwen_tts"
+        ],
+        "rss_bytes": 1058967552
+      },
+      {
+        "pid": 16104,
+        "creation_time": 1791686620.775384,
+        "command_line": [
+          "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\venv\\Scripts\\python.exe",
+          "-m",
+          "animetta_qwen_tts"
+        ],
+        "rss_bytes": 7335936
+      }
+    ],
+    "qwen_identity": {
+      "/ready": {
+        "ready": true,
+        "service": "qwen-tts",
+        "api_version": "v1",
+        "provider": "qwen3-tts-gguf-host",
+        "model": "Qwen3-TTS-1.7B-Base",
+        "revision": "0eb32e283ee46b86820c67843abb04cf12bc58d7",
+        "voice": "tosaka-rin-cn",
+        "sample_rate": 24000,
+        "quantization": "talker=Q5_K,predictor=Q8_0,onnx=FP16",
+        "runtime_commit": "0eb32e283ee46b86820c67843abb04cf12bc58d7"
+      },
+      "/v1/identity": {
+        "ready": true,
+        "service": "qwen-tts",
+        "api_version": "v1",
+        "provider": "qwen3-tts-gguf-host",
+        "model": "Qwen3-TTS-1.7B-Base",
+        "revision": "0eb32e283ee46b86820c67843abb04cf12bc58d7",
+        "voice": "tosaka-rin-cn",
+        "sample_rate": 24000,
+        "quantization": "talker=Q5_K,predictor=Q8_0,onnx=FP16",
+        "runtime_commit": "0eb32e283ee46b86820c67843abb04cf12bc58d7"
+      }
+    },
+    "rvc_port_8769_unavailable": true,
+    "competing_processes": []
+  },
+  "memory_v2_runtime_ready": true,
+  "long_term_memory_mode": "off (frozen production unchanged)",
+  "user_database_or_data_manually_written": false,
+  "rvc_lifecycle_steps_across_samples": [],
+  "rvc_8769_unavailable": true,
+  "stable_ROOT_labels": [
+    {
+      "name": "/anima-animetta-1",
+      "working_dir": "C:\\Users\\30262\\Project\\Anima",
+      "config_files": "C:\\Users\\30262\\Project\\Anima\\docker-compose.yml"
+    },
+    {
+      "name": "/anima-redis-1",
+      "working_dir": "C:\\Users\\30262\\Project\\Anima",
+      "config_files": "C:\\Users\\30262\\Project\\Anima\\docker-compose.yml"
+    }
+  ],
+  "preserved_named_volumes": [
+    {
+      "name": "anima_animetta-data",
+      "destination": "/app/data"
+    },
+    {
+      "name": "anima_animetta-memory-db",
+      "destination": "/app/memory_db"
+    },
+    {
+      "name": "anima_animetta-redis",
+      "destination": "/data"
+    }
+  ],
+  "old_r3_image_preserved": true
+}

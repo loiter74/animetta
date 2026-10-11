@@ -1,0 +1,156 @@
+{
+  "recorded_at": "2026-10-11T08:13:57.382611+00:00",
+  "task_ids": [
+    "18e79a33-eeee-4c53-9984-e7a3b1ebd765",
+    "45e53191-d4a1-4c34-a1d2-21c1b8a9c515",
+    "6517a952-771a-41f3-ac3c-33fe6253d04a"
+  ],
+  "live_role_turns": [
+    {
+      "trace_id": "6517a952-771a-41f3-ac3c-33fe6253d04a",
+      "message_id": "81789916-8c99-4ea1-a649-b079d85f7ab6",
+      "conversation_id": "7dfa2e21-75ca-4fb8-a1a6-8ac236b11a15",
+      "started_at": 1791706419.442886,
+      "finished_at": 1791706425.0713909,
+      "duration_ms": 5628.504753112793,
+      "outcome": "success",
+      "privacy_mode": "full",
+      "content": {
+        "user": {
+          "text": "我刚才午饭吃的是什么面？请说完整口味。",
+          "character_count": 19,
+          "byte_count": 57,
+          "digest": "4cb1c35125dab19d8536349bb04880f1519413b73df0c7a01252d08d0fbcc146"
+        },
+        "assistant": {
+          "text": "南瓜芝麻荞麦面。你自己刚说的，还让我记着——怎么，考我记性？酒馆的账本不丢，放心。",
+          "character_count": 41,
+          "byte_count": 123,
+          "digest": "8a1e97bc36eae2651b10210208fcbc2cd985c1f3f380d6119216dc698ea6fde1"
+        }
+      },
+      "actor_role": "developer",
+      "source": "developer_console",
+      "live_session_id": "e17dc5c6-0a94-4b8f-b4bb-5ce334c84160",
+      "audience": "livestream",
+      "tool_calls": 0,
+      "mc_status": "idle"
+    },
+    {
+      "trace_id": "45e53191-d4a1-4c34-a1d2-21c1b8a9c515",
+      "message_id": "b6548cb2-45e8-4d9b-a6b3-ca2efa3c49f2",
+      "conversation_id": "7dfa2e21-75ca-4fb8-a1a6-8ac236b11a15",
+      "started_at": 1791706401.0866976,
+      "finished_at": 1791706407.6875703,
+      "duration_ms": 6600.872755050659,
+      "outcome": "success",
+      "privacy_mode": "full",
+      "content": {
+        "user": {
+          "text": "我今天午饭吃的是南瓜芝麻荞麦面，记得这个口味。",
+          "character_count": 23,
+          "byte_count": 69,
+          "digest": "ad6dedc678df03834d927e359fc25a796eaf5bc60f92e5ee43d7319cd07fc28d"
+        },
+        "assistant": {
+          "text": "南瓜芝麻荞麦面，这搭配有点东西，记下了。不过你特意让我记住这一口，是打算以后天天来点同款？行吧，家人们的口味我都记账。",
+          "character_count": 59,
+          "byte_count": 177,
+          "digest": "238dd24c62fdb24d82f4b734f18d68b55d628427942f798c7cd7318383feb177"
+        }
+      },
+      "actor_role": "developer",
+      "source": "developer_console",
+      "live_session_id": "e17dc5c6-0a94-4b8f-b4bb-5ce334c84160",
+      "audience": "livestream",
+      "tool_calls": 0,
+      "mc_status": "idle"
+    },
+    {
+      "trace_id": "18e79a33-eeee-4c53-9984-e7a3b1ebd765",
+      "message_id": "a3db4196-609c-4aa7-a9e1-95538f8395ab",
+      "conversation_id": "7dfa2e21-75ca-4fb8-a1a6-8ac236b11a15",
+      "started_at": 1791706383.5513406,
+      "finished_at": 1791706389.7879772,
+      "duration_ms": 6236.636638641357,
+      "outcome": "success",
+      "privacy_mode": "full",
+      "content": {
+        "user": {
+          "text": "请用一句自然中文，冷静但明显开心地告诉我今天值得期待。",
+          "character_count": 27,
+          "byte_count": 81,
+          "digest": "b9c6ed3e34e9a457411278f096eae2fd667d4bd354b1be5e539ed35655799246"
+        },
+        "assistant": {
+          "text": "今天值得期待——开发者刚在后台说今晚有惊喜，至于惊喜是什么，我也还在等通知。总之，别关直播就对了。",
+          "character_count": 49,
+          "byte_count": 147,
+          "digest": "757d9d68dedf5d5cc2ba869fc56e5800126215f206cc2049e30012a6a923b148"
+        }
+      },
+      "actor_role": "developer",
+      "source": "developer_console",
+      "live_session_id": "e17dc5c6-0a94-4b8f-b4bb-5ce334c84160",
+      "audience": "livestream",
+      "tool_calls": 0,
+      "mc_status": "idle"
+    }
+  ],
+  "all_tasks_found": true,
+  "all_turn_outcomes_success": true,
+  "actual_conversation_ids": [
+    "7dfa2e21-75ca-4fb8-a1a6-8ac236b11a15"
+  ],
+  "same_effective_conversation": true,
+  "actual_roles": [
+    "developer"
+  ],
+  "actual_sources": [
+    "developer_console"
+  ],
+  "actual_audiences": [
+    "livestream"
+  ],
+  "selected_graph_log_lines": [
+    "2026-10-11 08:13:03 | INFO     | animetta.services.command_inbox:_log_accept:560 - [CommandInbox] kind=chat.public task_id=18e79a33-eeee-4c53-9984-e7a3b1ebd765 decision=execute status=accepted hash=d0c993c9f4d4",
+    "2026-10-11 08:13:03 | INFO     | animetta.orchestration.server.session:get_or_create_orchestrator:180 - [ZnzujoIofmNDo2iEAAAF] Tool config status: enable_tools=False, config_keys=[]",
+    "2026-10-11 08:13:03 | INFO     | animetta.orchestration.graph.orchestrator:start:125 - [ZnzujoIofmNDo2iEAAAF] [LangGraph] self.enable_tools=False",
+    "2026-10-11 08:13:03 | INFO     | animetta.orchestration.graph.builder:build_graph:174 - [LangGraph] Registered nodes: ['asr', 'personality', 'conversation_start', 'llm', 'humor_rewrite', 'humor_validation', 'reply_output', 'tts', 'emotion', 'output', 'conversation_finalizer']",
+    "2026-10-11 08:13:03 | INFO     | animetta.orchestration.graph.builder:build_graph:174 - [LangGraph] Registered nodes: ['asr', 'personality', 'conversation_start', 'llm', 'humor_rewrite', 'humor_validation', 'reply_output', 'tts', 'emotion', 'output', 'conversation_finalizer']",
+    "2026-10-11 08:13:03 | INFO     | animetta.orchestration.graph.orchestrator:process_text:246 - [ZnzujoIofmNDo2iEAAAF] [LangGraph] Processing text input: 请用一句自然中文，冷静但明显开心地告诉我今天值得期待。...",
+    "2026-10-11 08:13:03 | INFO     | animetta.orchestration.graph.orchestrator:_run_graph:444 - [ZnzujoIofmNDo2iEAAAF] [LangGraph] _run_graph starting — input_type=text, scope_kind=livestream, window_pairs=0",
+    "2026-10-11 08:13:09 | INFO     | animetta.orchestration.graph.orchestrator:_run_graph:489 - [ZnzujoIofmNDo2iEAAAF] [LangGraph] _run_graph completed in 6194ms — scope_kind=livestream, window_pairs=1",
+    "2026-10-11 08:13:21 | INFO     | animetta.services.command_inbox:_log_accept:560 - [CommandInbox] kind=chat.public task_id=45e53191-d4a1-4c34-a1d2-21c1b8a9c515 decision=execute status=accepted hash=c862ba08525e",
+    "2026-10-11 08:13:21 | INFO     | animetta.orchestration.graph.orchestrator:process_text:246 - [ZnzujoIofmNDo2iEAAAF] [LangGraph] Processing text input: 我今天午饭吃的是南瓜芝麻荞麦面，记得这个口味。...",
+    "2026-10-11 08:13:21 | INFO     | animetta.orchestration.graph.orchestrator:_run_graph:444 - [ZnzujoIofmNDo2iEAAAF] [LangGraph] _run_graph starting — input_type=text, scope_kind=livestream, window_pairs=1",
+    "2026-10-11 08:13:27 | INFO     | animetta.orchestration.graph.orchestrator:_run_graph:489 - [ZnzujoIofmNDo2iEAAAF] [LangGraph] _run_graph completed in 6570ms — scope_kind=livestream, window_pairs=2",
+    "2026-10-11 08:13:39 | INFO     | animetta.services.command_inbox:_log_accept:560 - [CommandInbox] kind=chat.public task_id=6517a952-771a-41f3-ac3c-33fe6253d04a decision=execute status=accepted hash=56a06e0d4e02",
+    "2026-10-11 08:13:39 | INFO     | animetta.orchestration.graph.orchestrator:process_text:246 - [ZnzujoIofmNDo2iEAAAF] [LangGraph] Processing text input: 我刚才午饭吃的是什么面？请说完整口味。...",
+    "2026-10-11 08:13:39 | INFO     | animetta.orchestration.graph.orchestrator:_run_graph:444 - [ZnzujoIofmNDo2iEAAAF] [LangGraph] _run_graph starting — input_type=text, scope_kind=livestream, window_pairs=2",
+    "2026-10-11 08:13:45 | INFO     | animetta.orchestration.graph.orchestrator:_run_graph:489 - [ZnzujoIofmNDo2iEAAAF] [LangGraph] _run_graph completed in 5599ms — scope_kind=livestream, window_pairs=3"
+  ],
+  "stats_metrics": {
+    "turn_count": 3,
+    "model_calls": 6,
+    "tool_calls": 0,
+    "tool_success_rate": 100.0,
+    "mc_command_count": 0,
+    "mc_status": "idle"
+  },
+  "long_term_memory_mode": "off unchanged; no durable long-term write claim",
+  "actual_graph_thread_id": "ZnzujoIofmNDo2iEAAAF",
+  "actual_channel_id": "ZnzujoIofmNDo2iEAAAF",
+  "thread_identity_evidence": "Actual logs same session_id; actual-container orchestrator matches frozen source config thread_id=session_id; history_authority=conversation_registry.",
+  "actual_same_graph_thread": true,
+  "window_pairs_start": [
+    0,
+    1,
+    2
+  ],
+  "window_pairs_end": [
+    1,
+    2,
+    3
+  ]
+}

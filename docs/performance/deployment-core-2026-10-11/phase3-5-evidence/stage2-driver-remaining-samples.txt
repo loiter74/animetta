@@ -1,0 +1,25 @@
+import subprocess
+import sys
+from pathlib import Path
+
+folder = Path(__file__).parent
+jobs = [
+    ('anima-down', 'c-dc3-app02-down', None),
+    ('anima-up', 'c-dc3-app02', 'application_cold'),
+    ('anima-down', 'c-dc3-app03-down', None),
+    ('anima-up', 'c-dc3-app03', 'application_cold'),
+    ('anima-down', 'c-dc3-re01-down', None),
+    ('anima-up', 'c-dc3-re01', 'application_restart_qwen_reused'),
+    ('anima-down', 'c-dc3-re02-down', None),
+    ('anima-up', 'c-dc3-re02', 'application_restart_qwen_reused'),
+    ('anima-down', 'c-dc3-re03-down', None),
+    ('anima-up', 'c-dc3-re03', 'application_restart_qwen_reused'),
+]
+for operation, run_id, group in jobs:
+    result = subprocess.run(['py', '-3.13', str(folder / 'core-runner.py'), 'lifecycle', operation, run_id])
+    if result.returncode:
+        sys.exit(result.returncode)
+    if group:
+        result = subprocess.run(['py', '-3.13', str(folder / 'collect-core.py'), run_id, group])
+        if result.returncode:
+            sys.exit(result.returncode)

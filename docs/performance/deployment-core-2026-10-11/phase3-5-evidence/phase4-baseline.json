@@ -1,0 +1,14 @@
+{
+  "captured_at": "2026-10-11T05:35:31.543822+00:00",
+  "commit": "de26e176fce571691609305b7a5aa9035aacc68c",
+  "frontend_dist": {
+    "files": 475,
+    "logical_bytes": 36484503
+  },
+  "cesium_assets": {
+    "files": 379,
+    "logical_bytes": 21041697
+  },
+  "pnpm_package_directories": 747,
+  "conditions": "Existing developer environment, all optional dependencies; not a clean install timing baseline"
+}

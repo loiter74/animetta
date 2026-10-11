@@ -1,0 +1,1251 @@
+{
+  "schema_version": 1,
+  "service": "qwen-host",
+  "status": "isolated_install_verified",
+  "recorded_at": "2026-10-11T06:15:27.016969+00:00",
+  "lock": {
+    "file": "requirements.lock",
+    "sha256": "f24ed980c892d355991cef8b3947f3a5018c5d005b8dcb1b2bdd71ffa689f26e",
+    "package_count": 35,
+    "artifact_hash_count": 459,
+    "index": "https://pypi.org/simple"
+  },
+  "target": {
+    "python_version": "3.13.14",
+    "system": "Windows",
+    "machine": "AMD64",
+    "marker_environment": {
+      "implementation_name": "cpython",
+      "implementation_version": "3.13.14",
+      "os_name": "nt",
+      "platform_machine": "AMD64",
+      "platform_release": "11",
+      "platform_system": "Windows",
+      "platform_version": "10.0.26200",
+      "python_full_version": "3.13.14",
+      "platform_python_implementation": "CPython",
+      "python_version": "3.13",
+      "sys_platform": "win32",
+      "extra": ""
+    }
+  },
+  "packages": [
+    {
+      "name": "anyio",
+      "version": "4.14.2",
+      "requires_dist": [
+        "exceptiongroup>=1.0.2; python_version < \"3.11\"",
+        "idna>=2.8",
+        "typing_extensions>=4.5; python_version < \"3.13\"",
+        "trio>=0.32.0; extra == \"trio\""
+      ],
+      "requires_python": ">=3.10",
+      "metadata_sha256": "c5e6fc4dfd833319913b287be7a30d9935e9208c7ef917630621855aaac4d419"
+    },
+    {
+      "name": "certifi",
+      "version": "2026.7.22",
+      "requires_dist": [],
+      "requires_python": ">=3.7",
+      "metadata_sha256": "ef5af1638fbb23676ac3c5777dfcfc2cd9c348fe4172ed5ba3d277655b248090"
+    },
+    {
+      "name": "cffi",
+      "version": "2.1.0",
+      "requires_dist": [
+        "pycparser; implementation_name != \"PyPy\""
+      ],
+      "requires_python": ">=3.10",
+      "metadata_sha256": "b91c3c381eab9e6d307680ef5ea22e91fa2e33ed9790aece5922e1621a087523"
+    },
+    {
+      "name": "charset-normalizer",
+      "version": "3.4.9",
+      "requires_dist": [],
+      "requires_python": ">=3.7",
+      "metadata_sha256": "83a2993c753cc6098985f8a75286025a01e96453403284ce25e3fef7665472e1"
+    },
+    {
+      "name": "click",
+      "version": "8.4.2",
+      "requires_dist": [
+        "colorama; platform_system == 'Windows'"
+      ],
+      "requires_python": ">=3.10",
+      "metadata_sha256": "194c9dd81d567f9081f026c7e401060fbafa7bc147c8e0a58b3668b40a64c031"
+    },
+    {
+      "name": "colorama",
+      "version": "0.4.6",
+      "requires_dist": [],
+      "requires_python": "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7",
+      "metadata_sha256": "7baed29eb50c3b29bdb33ff84e3177bf1bc05784f7685ecdcaa4471c7dd810cc"
+    },
+    {
+      "name": "filelock",
+      "version": "3.32.0",
+      "requires_dist": [],
+      "requires_python": ">=3.10",
+      "metadata_sha256": "d964d7bb976411acbc7b7641476c55193c33b919956fdc8a183c0733cd2db660"
+    },
+    {
+      "name": "flatbuffers",
+      "version": "25.12.19",
+      "requires_dist": [],
+      "requires_python": null,
+      "metadata_sha256": "9f38239f96faa21522a6aadab6912e1e560708bbe9c9f696a0679c9403fa089e"
+    },
+    {
+      "name": "fsspec",
+      "version": "2026.6.0",
+      "requires_dist": [
+        "adlfs; extra == 'abfs'",
+        "adlfs; extra == 'adl'",
+        "pyarrow>=1; extra == 'arrow'",
+        "dask; extra == 'dask'",
+        "distributed; extra == 'dask'",
+        "pre-commit; extra == 'dev'",
+        "ruff>=0.5; extra == 'dev'",
+        "numpydoc; extra == 'doc'",
+        "sphinx; extra == 'doc'",
+        "sphinx-design; extra == 'doc'",
+        "sphinx-rtd-theme; extra == 'doc'",
+        "yarl; extra == 'doc'",
+        "dropbox; extra == 'dropbox'",
+        "dropboxdrivefs; extra == 'dropbox'",
+        "requests; extra == 'dropbox'",
+        "adlfs; extra == 'full'",
+        "aiohttp!=4.0.0a0,!=4.0.0a1; extra == 'full'",
+        "dask; extra == 'full'",
+        "distributed; extra == 'full'",
+        "dropbox; extra == 'full'",
+        "dropboxdrivefs; extra == 'full'",
+        "fusepy; extra == 'full'",
+        "gcsfs>2024.2.0; extra == 'full'",
+        "libarchive-c; extra == 'full'",
+        "ocifs; extra == 'full'",
+        "panel; extra == 'full'",
+        "paramiko; extra == 'full'",
+        "pyarrow>=1; extra == 'full'",
+        "pygit2; extra == 'full'",
+        "requests; extra == 'full'",
+        "s3fs>2024.2.0; extra == 'full'",
+        "smbprotocol; extra == 'full'",
+        "tqdm; extra == 'full'",
+        "fusepy; extra == 'fuse'",
+        "gcsfs>2024.2.0; extra == 'gcs'",
+        "pygit2; extra == 'git'",
+        "requests; extra == 'github'",
+        "gcsfs; extra == 'gs'",
+        "panel; extra == 'gui'",
+        "pyarrow>=1; extra == 'hdfs'",
+        "aiohttp!=4.0.0a0,!=4.0.0a1; extra == 'http'",
+        "libarchive-c; extra == 'libarchive'",
+        "ocifs; extra == 'oci'",
+        "s3fs>2024.2.0; extra == 's3'",
+        "paramiko; extra == 'sftp'",
+        "smbprotocol; extra == 'smb'",
+        "paramiko; extra == 'ssh'",
+        "aiohttp!=4.0.0a0,!=4.0.0a1; extra == 'test'",
+        "numpy; extra == 'test'",
+        "pytest; extra == 'test'",
+        "pytest-asyncio!=0.22.0; extra == 'test'",
+        "pytest-benchmark; extra == 'test'",
+        "pytest-cov; extra == 'test'",
+        "pytest-mock; extra == 'test'",
+        "pytest-recording; extra == 'test'",
+        "pytest-rerunfailures; extra == 'test'",
+        "requests; extra == 'test'",
+        "aiobotocore<3.0.0,>=2.5.4; extra == 'test-downstream'",
+        "dask[dataframe,test]; extra == 'test-downstream'",
+        "moto[server]<5,>4; extra == 'test-downstream'",
+        "pytest-timeout; extra == 'test-downstream'",
+        "xarray; extra == 'test-downstream'",
+        "adlfs; extra == 'test-full'",
+        "aiohttp!=4.0.0a0,!=4.0.0a1; extra == 'test-full'",
+        "backports-zstd; (python_version < '3.14') and extra == 'test-full'",
+        "cloudpickle; extra == 'test-full'",
+        "dask; extra == 'test-full'",
+        "distributed; extra == 'test-full'",
+        "dropbox; extra == 'test-full'",
+        "dropboxdrivefs; extra == 'test-full'",
+        "fastparquet; extra == 'test-full'",
+        "fusepy; extra == 'test-full'",
+        "gcsfs; extra == 'test-full'",
+        "jinja2; extra == 'test-full'",
+        "kerchunk; extra == 'test-full'",
+        "libarchive-c; extra == 'test-full'",
+        "lz4; extra == 'test-full'",
+        "notebook; extra == 'test-full'",
+        "numpy; extra == 'test-full'",
+        "ocifs; extra == 'test-full'",
+        "pandas<3.0.0; extra == 'test-full'",
+        "panel; extra == 'test-full'",
+        "paramiko; extra == 'test-full'",
+        "pyarrow; extra == 'test-full'",
+        "pyarrow>=1; extra == 'test-full'",
+        "pyftpdlib; extra == 'test-full'",
+        "pygit2; extra == 'test-full'",
+        "pytest; extra == 'test-full'",
+        "pytest-asyncio!=0.22.0; extra == 'test-full'",
+        "pytest-benchmark; extra == 'test-full'",
+        "pytest-cov; extra == 'test-full'",
+        "pytest-mock; extra == 'test-full'",
+        "pytest-recording; extra == 'test-full'",
+        "pytest-rerunfailures; extra == 'test-full'",
+        "python-snappy; extra == 'test-full'",
+        "requests; extra == 'test-full'",
+        "smbprotocol; extra == 'test-full'",
+        "tqdm; extra == 'test-full'",
+        "urllib3; extra == 'test-full'",
+        "zarr<3.2.0; extra == 'test-full'",
+        "zstandard; (python_version < '3.14') and extra == 'test-full'",
+        "tqdm; extra == 'tqdm'"
+      ],
+      "requires_python": ">=3.10",
+      "metadata_sha256": "20c85c024a69a059237c3a7985d381a3745017ae1d634c554b0c5901dde81095"
+    },
+    {
+      "name": "gguf",
+      "version": "0.19.0",
+      "requires_dist": [
+        "PySide6 (>=6.9,<7.0) ; (python_version >= \"3.9\" and python_version < \"3.14\") and (extra == \"gui\")",
+        "numpy (>=1.17)",
+        "pyyaml (>=5.1)",
+        "requests (>=2.25)",
+        "tqdm (>=4.27)"
+      ],
+      "requires_python": ">=3.10",
+      "metadata_sha256": "c6ed6e4d4dbb4b46f32855b4189599c568d5617a012345aa9249b3acf7204a03"
+    },
+    {
+      "name": "h11",
+      "version": "0.16.0",
+      "requires_dist": [],
+      "requires_python": ">=3.8",
+      "metadata_sha256": "28f326098ac09fcba79b8f180f96087c841fe2456215cb7b872a9c7d5cd19d64"
+    },
+    {
+      "name": "hf-xet",
+      "version": "1.5.2",
+      "requires_dist": [
+        "pytest ; extra == 'tests'"
+      ],
+      "requires_python": ">=3.8",
+      "metadata_sha256": "66aff7f65c7eb5858e3361091e4d339a833161813330f1c7cfc30a75528eb926"
+    },
+    {
+      "name": "httpcore",
+      "version": "1.0.9",
+      "requires_dist": [
+        "certifi",
+        "h11>=0.16",
+        "anyio<5.0,>=4.0; extra == 'asyncio'",
+        "h2<5,>=3; extra == 'http2'",
+        "socksio==1.*; extra == 'socks'",
+        "trio<1.0,>=0.22.0; extra == 'trio'"
+      ],
+      "requires_python": ">=3.8",
+      "metadata_sha256": "fe2d4fda6199128978779e0cf27f3c045c531863fcdd987eacc74f3a18d41c21"
+    },
+    {
+      "name": "httpx",
+      "version": "0.28.1",
+      "requires_dist": [
+        "anyio",
+        "certifi",
+        "httpcore==1.*",
+        "idna",
+        "brotli; (platform_python_implementation == 'CPython') and extra == 'brotli'",
+        "brotlicffi; (platform_python_implementation != 'CPython') and extra == 'brotli'",
+        "click==8.*; extra == 'cli'",
+        "pygments==2.*; extra == 'cli'",
+        "rich<14,>=10; extra == 'cli'",
+        "h2<5,>=3; extra == 'http2'",
+        "socksio==1.*; extra == 'socks'",
+        "zstandard>=0.18.0; extra == 'zstd'"
+      ],
+      "requires_python": ">=3.8",
+      "metadata_sha256": "febb9b0f8f3e80d57c8199c304f35c4336e8581d1d18d7983c92766b82793b25"
+    },
+    {
+      "name": "huggingface-hub",
+      "version": "1.24.0",
+      "requires_dist": [
+        "click<9.0.0,>=8.4.2",
+        "filelock>=3.10.0",
+        "fsspec>=2023.5.0",
+        "hf-xet<2.0.0,>=1.5.1; platform_machine == \"x86_64\" or platform_machine == \"amd64\" or platform_machine == \"AMD64\" or platform_machine == \"arm64\" or platform_machine == \"aarch64\"",
+        "httpx<1,>=0.23.0",
+        "packaging>=20.9",
+        "pyyaml>=5.1",
+        "tqdm>=4.42.1",
+        "typing-extensions>=4.1.0",
+        "authlib>=1.3.2; extra == \"oauth\"",
+        "fastapi; extra == \"oauth\"",
+        "httpx; extra == \"oauth\"",
+        "itsdangerous; extra == \"oauth\"",
+        "torch; extra == \"torch\"",
+        "safetensors[torch]; extra == \"torch\"",
+        "toml; extra == \"fastai\"",
+        "fastai>=2.4; extra == \"fastai\"",
+        "fastcore>=1.3.27; extra == \"fastai\"",
+        "hf-xet<2.0.0,>=1.5.1; extra == \"hf-xet\"",
+        "mcp>=1.8.0; extra == \"mcp\"",
+        "authlib>=1.3.2; extra == \"testing\"",
+        "fastapi; extra == \"testing\"",
+        "httpx; extra == \"testing\"",
+        "itsdangerous; extra == \"testing\"",
+        "jedi; extra == \"testing\"",
+        "Jinja2; extra == \"testing\"",
+        "pytest>=8.4.2; extra == \"testing\"",
+        "pytest-cov; extra == \"testing\"",
+        "pytest-env; extra == \"testing\"",
+        "pytest-xdist; extra == \"testing\"",
+        "pytest-vcr; extra == \"testing\"",
+        "pytest-asyncio; extra == \"testing\"",
+        "pytest-rerunfailures<16.0; extra == \"testing\"",
+        "pytest-mock; extra == \"testing\"",
+        "urllib3<2.0; extra == \"testing\"",
+        "soundfile; extra == \"testing\"",
+        "Pillow; extra == \"testing\"",
+        "numpy; extra == \"testing\"",
+        "duckdb; extra == \"testing\"",
+        "fastapi; extra == \"testing\"",
+        "gradio>=5.0.0; extra == \"gradio\"",
+        "requests; extra == \"gradio\"",
+        "typing-extensions>=4.8.0; extra == \"typing\"",
+        "types-PyYAML; extra == \"typing\"",
+        "types-simplejson; extra == \"typing\"",
+        "types-toml; extra == \"typing\"",
+        "types-tqdm; extra == \"typing\"",
+        "types-urllib3; extra == \"typing\"",
+        "ruff>=0.9.0; extra == \"quality\"",
+        "mypy==1.15.0; extra == \"quality\"",
+        "libcst>=1.4.0; extra == \"quality\"",
+        "ty; extra == \"quality\"",
+        "authlib>=1.3.2; extra == \"all\"",
+        "fastapi; extra == \"all\"",
+        "httpx; extra == \"all\"",
+        "itsdangerous; extra == \"all\"",
+        "jedi; extra == \"all\"",
+        "Jinja2; extra == \"all\"",
+        "pytest>=8.4.2; extra == \"all\"",
+        "pytest-cov; extra == \"all\"",
+        "pytest-env; extra == \"all\"",
+        "pytest-xdist; extra == \"all\"",
+        "pytest-vcr; extra == \"all\"",
+        "pytest-asyncio; extra == \"all\"",
+        "pytest-rerunfailures<16.0; extra == \"all\"",
+        "pytest-mock; extra == \"all\"",
+        "urllib3<2.0; extra == \"all\"",
+        "soundfile; extra == \"all\"",
+        "Pillow; extra == \"all\"",
+        "numpy; extra == \"all\"",
+        "duckdb; extra == \"all\"",
+        "fastapi; extra == \"all\"",
+        "ruff>=0.9.0; extra == \"all\"",
+        "mypy==1.15.0; extra == \"all\"",
+        "libcst>=1.4.0; extra == \"all\"",
+        "ty; extra == \"all\"",
+        "typing-extensions>=4.8.0; extra == \"all\"",
+        "types-PyYAML; extra == \"all\"",
+        "types-simplejson; extra == \"all\"",
+        "types-toml; extra == \"all\"",
+        "types-tqdm; extra == \"all\"",
+        "types-urllib3; extra == \"all\"",
+        "authlib>=1.3.2; extra == \"dev\"",
+        "fastapi; extra == \"dev\"",
+        "httpx; extra == \"dev\"",
+        "itsdangerous; extra == \"dev\"",
+        "jedi; extra == \"dev\"",
+        "Jinja2; extra == \"dev\"",
+        "pytest>=8.4.2; extra == \"dev\"",
+        "pytest-cov; extra == \"dev\"",
+        "pytest-env; extra == \"dev\"",
+        "pytest-xdist; extra == \"dev\"",
+        "pytest-vcr; extra == \"dev\"",
+        "pytest-asyncio; extra == \"dev\"",
+        "pytest-rerunfailures<16.0; extra == \"dev\"",
+        "pytest-mock; extra == \"dev\"",
+        "urllib3<2.0; extra == \"dev\"",
+        "soundfile; extra == \"dev\"",
+        "Pillow; extra == \"dev\"",
+        "numpy; extra == \"dev\"",
+        "duckdb; extra == \"dev\"",
+        "fastapi; extra == \"dev\"",
+        "ruff>=0.9.0; extra == \"dev\"",
+        "mypy==1.15.0; extra == \"dev\"",
+        "libcst>=1.4.0; extra == \"dev\"",
+        "ty; extra == \"dev\"",
+        "typing-extensions>=4.8.0; extra == \"dev\"",
+        "types-PyYAML; extra == \"dev\"",
+        "types-simplejson; extra == \"dev\"",
+        "types-toml; extra == \"dev\"",
+        "types-tqdm; extra == \"dev\"",
+        "types-urllib3; extra == \"dev\""
+      ],
+      "requires_python": ">=3.10.0",
+      "metadata_sha256": "bfd35ce43e19acbde437cd5c36f77aea227524f77db8e904ed378b8fad5c8cc4"
+    },
+    {
+      "name": "idna",
+      "version": "3.18",
+      "requires_dist": [
+        "ruff >= 0.6.2 ; extra == \"all\"",
+        "mypy >= 1.11.2 ; extra == \"all\"",
+        "pytest >= 8.3.2 ; extra == \"all\""
+      ],
+      "requires_python": ">=3.9",
+      "metadata_sha256": "46dfe6e5ac462d0f680ecd9abcf66e829b6a2334824b4d9e3979b31135caf281"
+    },
+    {
+      "name": "mpmath",
+      "version": "1.3.0",
+      "requires_dist": [
+        "pytest (>=4.6) ; extra == 'develop'",
+        "pycodestyle ; extra == 'develop'",
+        "pytest-cov ; extra == 'develop'",
+        "codecov ; extra == 'develop'",
+        "wheel ; extra == 'develop'",
+        "sphinx ; extra == 'docs'",
+        "gmpy2 (>=2.1.0a4) ; (platform_python_implementation != \"PyPy\") and extra == 'gmpy'",
+        "pytest (>=4.6) ; extra == 'tests'"
+      ],
+      "requires_python": null,
+      "metadata_sha256": "44b66ea444b9c0d19ae94815d356bf047ae6b680c19268b5c265687cd6a81406"
+    },
+    {
+      "name": "numpy",
+      "version": "2.5.1",
+      "requires_dist": [],
+      "requires_python": ">=3.12",
+      "metadata_sha256": "6ae45122ee97050e48849438320430d05f01814f72e66e69cbeed027d2c6a1e8"
+    },
+    {
+      "name": "onnxruntime-directml",
+      "version": "1.24.4",
+      "requires_dist": [
+        "flatbuffers",
+        "numpy>=1.21.6",
+        "packaging",
+        "protobuf",
+        "sympy"
+      ],
+      "requires_python": ">=3.11",
+      "metadata_sha256": "257decf05faac72f39b086f1d8cc1d60c5b6a34985cfbef658f38b07c9608b5b"
+    },
+    {
+      "name": "packaging",
+      "version": "26.2",
+      "requires_dist": [],
+      "requires_python": ">=3.8",
+      "metadata_sha256": "4f9cbcd7933415a4793f7767c98a2b6a512c823fc81c87337815705f230ecabf"
+    },
+    {
+      "name": "pip",
+      "version": "26.1.2",
+      "requires_dist": [],
+      "requires_python": ">=3.10",
+      "metadata_sha256": "17832de47b5dc23e46253ba16462520036f28d9a27d5c30157784952ca4e69b2"
+    },
+    {
+      "name": "protobuf",
+      "version": "7.35.1",
+      "requires_dist": [],
+      "requires_python": ">=3.10",
+      "metadata_sha256": "1c58cfd7acd805c087ceb1f14c27cdba3c52d074e1d7b05dacf31fdf413c0a8c"
+    },
+    {
+      "name": "pycparser",
+      "version": "3.0",
+      "requires_dist": [],
+      "requires_python": ">=3.10",
+      "metadata_sha256": "f547a60b0ab54cc2f242213d1f87960ad80df7dd5dfeb98d17a444d48bfb6b93"
+    },
+    {
+      "name": "pyyaml",
+      "version": "6.0.3",
+      "requires_dist": [],
+      "requires_python": ">=3.8",
+      "metadata_sha256": "847a701020334386852b6e07bad1053cb0ce3da9ee1846e7e9d02b24e8bb3f8d"
+    },
+    {
+      "name": "requests",
+      "version": "2.34.2",
+      "requires_dist": [
+        "charset_normalizer<4,>=2",
+        "idna<4,>=2.5",
+        "urllib3<3,>=1.26",
+        "certifi>=2023.5.7",
+        "PySocks!=1.5.7,>=1.5.6; extra == \"socks\"",
+        "chardet<8,>=3.0.2; extra == \"use-chardet-on-py3\""
+      ],
+      "requires_python": ">=3.10",
+      "metadata_sha256": "8c384ba3e979480faae2859d3c5e6c1276dd2c3616e322e124d52c8cfc556f27"
+    },
+    {
+      "name": "scipy",
+      "version": "1.18.0",
+      "requires_dist": [
+        "numpy<2.8,>=2.0.0",
+        "pytest>=8.0.0; extra == \"test\"",
+        "pytest-cov; extra == \"test\"",
+        "pytest-timeout; extra == \"test\"",
+        "pytest-xdist; extra == \"test\"",
+        "asv; extra == \"test\"",
+        "mpmath; extra == \"test\"",
+        "gmpy2; extra == \"test\"",
+        "threadpoolctl; extra == \"test\"",
+        "scikit-umfpack; extra == \"test\"",
+        "pooch; extra == \"test\"",
+        "hypothesis>=6.30; extra == \"test\"",
+        "array-api-strict>=2.3.1; extra == \"test\"",
+        "Cython; extra == \"test\"",
+        "meson; extra == \"test\"",
+        "ninja; sys_platform != \"emscripten\" and extra == \"test\"",
+        "scipy-doctest>=2.0.0; extra == \"test\"",
+        "sphinx<8.2.0,>=5.0.0; extra == \"doc\"",
+        "intersphinx_registry; extra == \"doc\"",
+        "pydata-sphinx-theme>=0.15.2; extra == \"doc\"",
+        "sphinx-copybutton; extra == \"doc\"",
+        "sphinx-design>=0.4.0; extra == \"doc\"",
+        "matplotlib>=3.5; extra == \"doc\"",
+        "numpydoc; extra == \"doc\"",
+        "jupytext; extra == \"doc\"",
+        "myst-nb>=1.2.0; extra == \"doc\"",
+        "pooch; extra == \"doc\"",
+        "jupyterlite-sphinx>=0.19.1; extra == \"doc\"",
+        "jupyterlite-pyodide-kernel; extra == \"doc\"",
+        "linkify-it-py; extra == \"doc\"",
+        "tabulate; extra == \"doc\"",
+        "click<8.3.0; extra == \"dev\"",
+        "spin; extra == \"dev\"",
+        "mypy==1.19.1; extra == \"dev\"",
+        "pyrefly==0.63.0; extra == \"dev\"",
+        "typing_extensions; extra == \"dev\"",
+        "types-psutil; extra == \"dev\"",
+        "pycodestyle; extra == \"dev\"",
+        "ruff>=0.12.0; extra == \"dev\"",
+        "cython-lint>=0.12.2; extra == \"dev\""
+      ],
+      "requires_python": ">=3.12",
+      "metadata_sha256": "763cde904cd382a6194247f5aeac2bc03475759e676147608d5bc65c22a006a6"
+    },
+    {
+      "name": "sounddevice",
+      "version": "0.5.5",
+      "requires_dist": [
+        "cffi",
+        "numpy; extra == \"numpy\""
+      ],
+      "requires_python": ">=3.7",
+      "metadata_sha256": "06084da6630a6dc02ef6c62e67d55ae7323cb22f0a559618c8286cb5234e241d"
+    },
+    {
+      "name": "soundfile",
+      "version": "0.14.0",
+      "requires_dist": [
+        "cffi >=1.0",
+        "numpy",
+        "typing-extensions"
+      ],
+      "requires_python": ">=3.10",
+      "metadata_sha256": "266fbe4cb310c5222edd5216564149585c55395db7b29630f2e4b0ff8ac9cd47"
+    },
+    {
+      "name": "starlette",
+      "version": "0.52.1",
+      "requires_dist": [
+        "anyio<5,>=3.6.2",
+        "typing-extensions>=4.10.0; python_version < '3.13'",
+        "httpx<0.29.0,>=0.27.0; extra == 'full'",
+        "itsdangerous; extra == 'full'",
+        "jinja2; extra == 'full'",
+        "python-multipart>=0.0.18; extra == 'full'",
+        "pyyaml; extra == 'full'"
+      ],
+      "requires_python": ">=3.10",
+      "metadata_sha256": "c0ddc5837cca966a170fdeefb924a0dbd08f1cb1f310da1046a39faaeed0c535"
+    },
+    {
+      "name": "sympy",
+      "version": "1.14.0",
+      "requires_dist": [
+        "mpmath<1.4,>=1.1.0",
+        "pytest>=7.1.0; extra == \"dev\"",
+        "hypothesis>=6.70.0; extra == \"dev\""
+      ],
+      "requires_python": ">=3.9",
+      "metadata_sha256": "b756c2fbfd5be05ac5bdb0ebca61f55618f30f633ed92d88a5687429313a7595"
+    },
+    {
+      "name": "tokenizers",
+      "version": "0.23.1",
+      "requires_dist": [
+        "huggingface-hub>=0.16.4,<2.0",
+        "tokenizers[testing] ; extra == 'dev'",
+        "sphinx ; extra == 'docs'",
+        "sphinx-rtd-theme ; extra == 'docs'",
+        "setuptools-rust ; extra == 'docs'",
+        "pytest ; extra == 'testing'",
+        "pytest-asyncio ; extra == 'testing'",
+        "requests ; extra == 'testing'",
+        "numpy ; extra == 'testing'",
+        "datasets ; extra == 'testing'",
+        "ruff ; extra == 'testing'",
+        "ty ; extra == 'testing'"
+      ],
+      "requires_python": ">=3.10",
+      "metadata_sha256": "578762678fda626bf8d4aa55066c6234e2702520dd5152dc4d2b39486ba94184"
+    },
+    {
+      "name": "tqdm",
+      "version": "4.69.1",
+      "requires_dist": [
+        "colorama; platform_system == \"Windows\"",
+        "requests; extra == \"discord\"",
+        "envwrap; extra == \"discord\"",
+        "slack-sdk; extra == \"slack\"",
+        "envwrap; extra == \"slack\"",
+        "requests; extra == \"telegram\"",
+        "envwrap; extra == \"telegram\"",
+        "ipywidgets>=6; extra == \"notebook\""
+      ],
+      "requires_python": ">=3.8",
+      "metadata_sha256": "81b4ed808d87870060ce08925bf8396eebe141fd7d7ea06212964389e402416c"
+    },
+    {
+      "name": "typing-extensions",
+      "version": "4.16.0",
+      "requires_dist": [],
+      "requires_python": ">=3.9",
+      "metadata_sha256": "b05084ca1d50879865178d9fff9fabeab61bdfb1f361bfbde95421ffc8f9be46"
+    },
+    {
+      "name": "urllib3",
+      "version": "2.7.0",
+      "requires_dist": [
+        "brotli>=1.2.0; (platform_python_implementation == 'CPython') and extra == 'brotli'",
+        "brotlicffi>=1.2.0.0; (platform_python_implementation != 'CPython') and extra == 'brotli'",
+        "h2<5,>=4; extra == 'h2'",
+        "pysocks!=1.5.7,<2.0,>=1.5.6; extra == 'socks'",
+        "backports-zstd>=1.0.0; (python_version < '3.14') and extra == 'zstd'"
+      ],
+      "requires_python": ">=3.10",
+      "metadata_sha256": "66147856d30bbb6bed01c6ce3326d0f48d84ed5f286ac177633a1486b82eace5"
+    },
+    {
+      "name": "uvicorn",
+      "version": "0.42.0",
+      "requires_dist": [
+        "click>=7.0",
+        "h11>=0.8",
+        "typing-extensions>=4.0; python_version < '3.11'",
+        "colorama>=0.4; (sys_platform == 'win32') and extra == 'standard'",
+        "httptools>=0.6.3; extra == 'standard'",
+        "python-dotenv>=0.13; extra == 'standard'",
+        "pyyaml>=5.1; extra == 'standard'",
+        "uvloop>=0.15.1; (sys_platform != 'win32' and (sys_platform != 'cygwin' and platform_python_implementation != 'PyPy')) and extra == 'standard'",
+        "watchfiles>=0.20; extra == 'standard'",
+        "websockets>=10.4; extra == 'standard'"
+      ],
+      "requires_python": ">=3.10",
+      "metadata_sha256": "d0d4b4744b618fd6b953134769dddab9c199654e3fa389b0c9593639b9ff6a99"
+    }
+  ],
+  "resolution": {
+    "run_id": "host-lock-qwen-resolve01",
+    "name": "qwen",
+    "started_at": "2026-10-11T06:10:22.016566+00:00",
+    "finished_at": "2026-10-11T06:10:26.514491+00:00",
+    "seconds": 4.495647600000666,
+    "argv": [
+      "C:\\Users\\30262\\AppData\\Local\\hermes\\bin\\uv.exe",
+      "pip",
+      "compile",
+      "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-inputs\\qwen-pins.in",
+      "--python",
+      "C:\\Users\\30262\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\\python.exe",
+      "--python-version",
+      "3.13",
+      "--python-platform",
+      "x86_64-pc-windows-msvc",
+      "--generate-hashes",
+      "--no-build",
+      "--no-python-downloads",
+      "--no-config",
+      "--no-header",
+      "--emit-index-annotation",
+      "--default-index",
+      "https://pypi.org/simple",
+      "--cache-dir",
+      "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-cache\\qwen",
+      "--no-progress",
+      "--output-file",
+      "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-runs\\host-lock-qwen-resolve01.requirements.txt"
+    ],
+    "exit_code": 0,
+    "raw": {
+      "stdout": {
+        "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-runs\\host-lock-qwen-resolve01.stdout.log",
+        "bytes": 44868,
+        "sha256": "f24ed980c892d355991cef8b3947f3a5018c5d005b8dcb1b2bdd71ffa689f26e"
+      },
+      "stderr": {
+        "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-runs\\host-lock-qwen-resolve01.stderr.log",
+        "bytes": 30,
+        "sha256": "53ae60ea62339ea70f7975a503838b7cedac1b9cd334b59e242cf226daf6f3f6"
+      }
+    },
+    "generated_lock": {
+      "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-runs\\host-lock-qwen-resolve01.requirements.txt",
+      "sha256": "f24ed980c892d355991cef8b3947f3a5018c5d005b8dcb1b2bdd71ffa689f26e"
+    },
+    "conditions": {
+      "user_site_disabled": true,
+      "inherited_python_paths_removed": true,
+      "no_model_imports": true,
+      "no_installation": true,
+      "no_build_backend_execution": true
+    }
+  },
+  "isolated_installation": {
+    "run_id": "host-lock-qwen-install01",
+    "name": "qwen",
+    "started_at": "2026-10-11T06:12:19.743766+00:00",
+    "status": "passed",
+    "target": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\qwen-lock-validation-venv",
+    "permanent": false,
+    "lock": {
+      "path": "C:\\Users\\30262\\Project\\Anima\\services\\qwen-host\\requirements.lock",
+      "sha256": "f24ed980c892d355991cef8b3947f3a5018c5d005b8dcb1b2bdd71ffa689f26e"
+    },
+    "stages": [
+      {
+        "stage": "venv",
+        "argv": [
+          "C:\\Users\\30262\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\\python.exe",
+          "-m",
+          "venv",
+          "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\qwen-lock-validation-venv"
+        ],
+        "exit_code": 0,
+        "seconds": 5.387099000001399,
+        "raw": {
+          "stdout": {
+            "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-runs\\host-lock-qwen-install01-venv.stdout.log",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stderr": {
+            "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-runs\\host-lock-qwen-install01-venv.stderr.log",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      },
+      {
+        "stage": "dry-run",
+        "argv": [
+          "C:\\Users\\30262\\AppData\\Local\\hermes\\bin\\uv.exe",
+          "pip",
+          "sync",
+          "C:\\Users\\30262\\Project\\Anima\\services\\qwen-host\\requirements.lock",
+          "--python",
+          "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\qwen-lock-validation-venv\\Scripts\\python.exe",
+          "--require-hashes",
+          "--strict",
+          "--no-python-downloads",
+          "--no-config",
+          "--default-index",
+          "https://pypi.org/simple",
+          "--cache-dir",
+          "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-cache\\qwen",
+          "--no-progress",
+          "--dry-run"
+        ],
+        "exit_code": 0,
+        "seconds": 0.2877258000007714,
+        "raw": {
+          "stdout": {
+            "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-runs\\host-lock-qwen-install01-dry-run.stdout.log",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stderr": {
+            "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-runs\\host-lock-qwen-install01-dry-run.stderr.log",
+            "bytes": 887,
+            "sha256": "722f5e15a9fd19571f08746180705d02d81774e441c1c26cf38a8264e5a6711a"
+          }
+        }
+      },
+      {
+        "stage": "sync",
+        "argv": [
+          "C:\\Users\\30262\\AppData\\Local\\hermes\\bin\\uv.exe",
+          "pip",
+          "sync",
+          "C:\\Users\\30262\\Project\\Anima\\services\\qwen-host\\requirements.lock",
+          "--python",
+          "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\qwen-lock-validation-venv\\Scripts\\python.exe",
+          "--require-hashes",
+          "--strict",
+          "--no-python-downloads",
+          "--no-config",
+          "--default-index",
+          "https://pypi.org/simple",
+          "--cache-dir",
+          "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-cache\\qwen",
+          "--no-progress"
+        ],
+        "exit_code": 0,
+        "seconds": 31.157545899999604,
+        "raw": {
+          "stdout": {
+            "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-runs\\host-lock-qwen-install01-sync.stdout.log",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stderr": {
+            "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-runs\\host-lock-qwen-install01-sync.stderr.log",
+            "bytes": 1211,
+            "sha256": "ff77172104dd7284add523b8c5ff83ac6d5414b777fb7d63d987dd25ebec4222"
+          }
+        }
+      },
+      {
+        "stage": "pip-check",
+        "argv": [
+          "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\qwen-lock-validation-venv\\Scripts\\python.exe",
+          "-m",
+          "pip",
+          "check"
+        ],
+        "exit_code": 0,
+        "seconds": 0.8163132999998197,
+        "raw": {
+          "stdout": {
+            "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-runs\\host-lock-qwen-install01-pip-check.stdout.log",
+            "bytes": 31,
+            "sha256": "672aec65a45bed50e70229c70934a7eebf0462595c459b83023027645d57cccf"
+          },
+          "stderr": {
+            "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-runs\\host-lock-qwen-install01-pip-check.stderr.log",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      },
+      {
+        "stage": "metadata",
+        "argv": [
+          "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\qwen-lock-validation-venv\\Scripts\\python.exe",
+          "-B",
+          "-X",
+          "utf8",
+          "-c",
+          "\nimport sys,site,platform,json,importlib.metadata as m,importlib.machinery as machinery,re\nrows=[]\nfor d in m.distributions():\n name=d.metadata.get('Name') or ''\n rows.append({'name':name,'normalized_name':re.sub(r'[-_.]+','-',name).lower(),'version':d.version,'metadata_path':str(d._path),'package_location':str(d.locate_file(''))})\nmodules={}\nfor name in ['numpy','torch','torchaudio','demucs','faiss','pyworld','parselmouth','transformers','onnxruntime','starlette','uvicorn','yaml','soundfile','qwen3_tts_gguf']:\n spec=machinery.PathFinder.find_spec(name,sys.path)\n modules[name]={'origin':str(spec.origin) if spec and spec.origin else None,'search_locations':[str(p) for p in spec.submodule_search_locations] if spec and spec.submodule_search_locations else []}\nprint(json.dumps({'python':{'executable':sys.executable,'version':sys.version,'prefix':sys.prefix,'base_prefix':sys.base_prefix},'platform':platform.platform(),'sys_path':sys.path,'site_enabled':site.ENABLE_USER_SITE,'packages':sorted(rows,key=lambda p:p['normalized_name']),'modules_without_import':modules,'forbidden_modules_loaded':[name for name in ['torch','torchaudio','demucs','transformers','numpy','onnxruntime','animetta_rvc_host','animetta_qwen_tts','qwen3_tts_gguf'] if name in sys.modules]},ensure_ascii=False))\n"
+        ],
+        "exit_code": 0,
+        "seconds": 0.3617635999999038,
+        "raw": {
+          "stdout": {
+            "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-runs\\host-lock-qwen-install01-metadata.stdout.log",
+            "bytes": 17799,
+            "sha256": "ecd4c8d7071b334d87d6395d1a7353b4b3f788f20d29286e6e32b7b2c8a8a97d"
+          },
+          "stderr": {
+            "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-runs\\host-lock-qwen-install01-metadata.stderr.log",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      }
+    ],
+    "conditions": {
+      "user_site_disabled": true,
+      "inherited_python_paths_removed": true,
+      "model_inference": false,
+      "gpu": false,
+      "existing_host_environment_modified": false
+    },
+    "finished_at": "2026-10-11T06:12:57.772166+00:00",
+    "observed_packages": 35,
+    "runtime_pins": 35,
+    "bootstrap_extras": {},
+    "isolation_verified": true,
+    "pyvenv_cfg": {
+      "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\qwen-lock-validation-venv\\pyvenv.cfg",
+      "sha256": "8278f17b60e8de9f6579f89b0c656857e03f474046cea1bee41586a3159623e1"
+    },
+    "no_model_modules_loaded": true
+  },
+  "effective_isolation": {
+    "site_enabled": false,
+    "package_locations_all_inside_validation_venv": true,
+    "duplicate_names": false,
+    "model_modules_loaded": [],
+    "PYTHONNOUSERSITE": "1",
+    "PYTHONHOME": "removed",
+    "PYTHONUSERBASE": "removed",
+    "PYTHONPATH": "only project src and Qwen runtime root"
+  },
+  "native_runtime": {
+    "root": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726",
+    "actual_git_commit": "0eb32e283ee46b86820c67843abb04cf12bc58d7",
+    "git_command_exit_code": 0,
+    "expected_contract_commit": "0eb32e283ee46b86820c67843abb04cf12bc58d7",
+    "matches_contract_commit": true,
+    "live_identity_reused_from": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\finalization-runtime-inventory.json",
+    "live_identity": {
+      "ready": true,
+      "service": "qwen-tts",
+      "api_version": "v1",
+      "provider": "qwen3-tts-gguf-host",
+      "model": "Qwen3-TTS-1.7B-Base",
+      "revision": "0eb32e283ee46b86820c67843abb04cf12bc58d7",
+      "voice": "tosaka-rin-cn",
+      "sample_rate": 24000,
+      "quantization": "talker=Q5_K,predictor=Q8_0,onnx=FP16",
+      "runtime_commit": "0eb32e283ee46b86820c67843abb04cf12bc58d7"
+    },
+    "live_identity_matches_actual_commit": true,
+    "contract": "C:\\Users\\30262\\Project\\Anima\\config\\host-tts.yaml",
+    "contract_sha256": "e31131c7451c73595ef556fa66ba926e5160c62ee72cbee4375883d7bb733a53",
+    "native_existing_archive": {
+      "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\llama-b9333-bin-win-vulkan-x64.zip",
+      "exists": true,
+      "sha256": "0971a54893feafcc043b18d839dba9a42cb1038a5005030c18990e35fdc209d4",
+      "bytes": 32836469,
+      "provenance": "Existing local b9333 archive; no download/upgrade/extraction."
+    },
+    "native_dll_sha256": [
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\ggml-base.dll",
+        "name": "ggml-base.dll",
+        "bytes": 799232,
+        "sha256": "a47e922202e788543f5be864cce32b9ec4acefe308dd5861af9adfb33bdd507b",
+        "existing_archive_entry": "ggml-base.dll",
+        "existing_archive_entry_sha256": "a47e922202e788543f5be864cce32b9ec4acefe308dd5861af9adfb33bdd507b",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\ggml-cpu-alderlake.dll",
+        "name": "ggml-cpu-alderlake.dll",
+        "bytes": 1137152,
+        "sha256": "4f84d0e6f839bc2b6e9d526de0c937d8e5692337c3b7d2468dd5b0351f2a628a",
+        "existing_archive_entry": "ggml-cpu-alderlake.dll",
+        "existing_archive_entry_sha256": "4f84d0e6f839bc2b6e9d526de0c937d8e5692337c3b7d2468dd5b0351f2a628a",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\ggml-cpu-cannonlake.dll",
+        "name": "ggml-cpu-cannonlake.dll",
+        "bytes": 1375744,
+        "sha256": "113f359a87ae932d314fb95a1b7e755c7152d0ac291d9777c75314260d569ee4",
+        "existing_archive_entry": "ggml-cpu-cannonlake.dll",
+        "existing_archive_entry_sha256": "113f359a87ae932d314fb95a1b7e755c7152d0ac291d9777c75314260d569ee4",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\ggml-cpu-cascadelake.dll",
+        "name": "ggml-cpu-cascadelake.dll",
+        "bytes": 1361920,
+        "sha256": "ea5677f3716766ccc3dd9710844f05826ae6f3adf9634ee1a0aac6d7231c9d98",
+        "existing_archive_entry": "ggml-cpu-cascadelake.dll",
+        "existing_archive_entry_sha256": "ea5677f3716766ccc3dd9710844f05826ae6f3adf9634ee1a0aac6d7231c9d98",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\ggml-cpu-cooperlake.dll",
+        "name": "ggml-cpu-cooperlake.dll",
+        "bytes": 1362432,
+        "sha256": "68af5eb4fbe7a4694db7b6fd235e97b90b0fd5153036dc6db361d31eb4920431",
+        "existing_archive_entry": "ggml-cpu-cooperlake.dll",
+        "existing_archive_entry_sha256": "68af5eb4fbe7a4694db7b6fd235e97b90b0fd5153036dc6db361d31eb4920431",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\ggml-cpu-haswell.dll",
+        "name": "ggml-cpu-haswell.dll",
+        "bytes": 1142272,
+        "sha256": "3dfb4697fabcaec14b804ffdeaaf78b618afeb27ad612f7f93fcd07f7b7ca6ec",
+        "existing_archive_entry": "ggml-cpu-haswell.dll",
+        "existing_archive_entry_sha256": "3dfb4697fabcaec14b804ffdeaaf78b618afeb27ad612f7f93fcd07f7b7ca6ec",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\ggml-cpu-icelake.dll",
+        "name": "ggml-cpu-icelake.dll",
+        "bytes": 1368576,
+        "sha256": "a4e54bab782081eed74c48f5f189101f79fb8b763eed3efab980cc35623d4c1f",
+        "existing_archive_entry": "ggml-cpu-icelake.dll",
+        "existing_archive_entry_sha256": "a4e54bab782081eed74c48f5f189101f79fb8b763eed3efab980cc35623d4c1f",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\ggml-cpu-ivybridge.dll",
+        "name": "ggml-cpu-ivybridge.dll",
+        "bytes": 1036288,
+        "sha256": "4f25ebada9cd4ce818560840bc3d812a32e9628b0298806148dd96bf05bbdb17",
+        "existing_archive_entry": "ggml-cpu-ivybridge.dll",
+        "existing_archive_entry_sha256": "4f25ebada9cd4ce818560840bc3d812a32e9628b0298806148dd96bf05bbdb17",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\ggml-cpu-piledriver.dll",
+        "name": "ggml-cpu-piledriver.dll",
+        "bytes": 1037824,
+        "sha256": "c21a18abe9e73f9e1616a0fdd528ef2e74650ca22b8ee83bf0eb4cecfc64024e",
+        "existing_archive_entry": "ggml-cpu-piledriver.dll",
+        "existing_archive_entry_sha256": "c21a18abe9e73f9e1616a0fdd528ef2e74650ca22b8ee83bf0eb4cecfc64024e",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\ggml-cpu-sandybridge.dll",
+        "name": "ggml-cpu-sandybridge.dll",
+        "bytes": 1016320,
+        "sha256": "7d93dcef5e803c2cdd79820b82966711f5cbd35ba6bb82eddec0352f7d583a8f",
+        "existing_archive_entry": "ggml-cpu-sandybridge.dll",
+        "existing_archive_entry_sha256": "7d93dcef5e803c2cdd79820b82966711f5cbd35ba6bb82eddec0352f7d583a8f",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\ggml-cpu-sapphirerapids.dll",
+        "name": "ggml-cpu-sapphirerapids.dll",
+        "bytes": 1637888,
+        "sha256": "f733d832201d9def4c21e6c7ce79f7752ece665c1659ab8c8cd8df3b28019f9c",
+        "existing_archive_entry": "ggml-cpu-sapphirerapids.dll",
+        "existing_archive_entry_sha256": "f733d832201d9def4c21e6c7ce79f7752ece665c1659ab8c8cd8df3b28019f9c",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\ggml-cpu-skylakex.dll",
+        "name": "ggml-cpu-skylakex.dll",
+        "bytes": 1369088,
+        "sha256": "11eca0b507762a27bc713a782e87be9ba589fc6dfe1bc896968601db1377930c",
+        "existing_archive_entry": "ggml-cpu-skylakex.dll",
+        "existing_archive_entry_sha256": "11eca0b507762a27bc713a782e87be9ba589fc6dfe1bc896968601db1377930c",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\ggml-cpu-sse42.dll",
+        "name": "ggml-cpu-sse42.dll",
+        "bytes": 856064,
+        "sha256": "cd185db8a646bd2db9ea0fd3983f72cd7ee454eae1d28e0b116db42322fa548d",
+        "existing_archive_entry": "ggml-cpu-sse42.dll",
+        "existing_archive_entry_sha256": "cd185db8a646bd2db9ea0fd3983f72cd7ee454eae1d28e0b116db42322fa548d",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\ggml-cpu-x64.dll",
+        "name": "ggml-cpu-x64.dll",
+        "bytes": 847872,
+        "sha256": "9f1a40fb20e07769a3f03baff774e591652c755ea26362df36129e6726edbdab",
+        "existing_archive_entry": "ggml-cpu-x64.dll",
+        "existing_archive_entry_sha256": "9f1a40fb20e07769a3f03baff774e591652c755ea26362df36129e6726edbdab",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\ggml-cpu-zen4.dll",
+        "name": "ggml-cpu-zen4.dll",
+        "bytes": 1369600,
+        "sha256": "f57726c5c0257db5067c66c1198e32ae8a54ac2a6b9a78330d4e22bfc2eecda6",
+        "existing_archive_entry": "ggml-cpu-zen4.dll",
+        "existing_archive_entry_sha256": "f57726c5c0257db5067c66c1198e32ae8a54ac2a6b9a78330d4e22bfc2eecda6",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\ggml-rpc.dll",
+        "name": "ggml-rpc.dll",
+        "bytes": 149504,
+        "sha256": "8c83dbd1697c018e81f241d65c1864a61f7d6d2bf82bed1979e791bf5754bd6b",
+        "existing_archive_entry": "ggml-rpc.dll",
+        "existing_archive_entry_sha256": "8c83dbd1697c018e81f241d65c1864a61f7d6d2bf82bed1979e791bf5754bd6b",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\ggml-vulkan.dll",
+        "name": "ggml-vulkan.dll",
+        "bytes": 57489408,
+        "sha256": "5f9a24a704f96246ba1b6c7e686d98af69c6a7c2348de066c7737d57f9da3823",
+        "existing_archive_entry": "ggml-vulkan.dll",
+        "existing_archive_entry_sha256": "5f9a24a704f96246ba1b6c7e686d98af69c6a7c2348de066c7737d57f9da3823",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\ggml.dll",
+        "name": "ggml.dll",
+        "bytes": 96768,
+        "sha256": "5d958ca2145f1127a7d8c423148451fd2211d65e433581aceaa0e5201c48254a",
+        "existing_archive_entry": "ggml.dll",
+        "existing_archive_entry_sha256": "5d958ca2145f1127a7d8c423148451fd2211d65e433581aceaa0e5201c48254a",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\libomp140.x86_64.dll",
+        "name": "libomp140.x86_64.dll",
+        "bytes": 634936,
+        "sha256": "9ab1cb787e52b2a36133899c01c1db1f876067d1471cd224ead85f40a8152b99",
+        "existing_archive_entry": "libomp140.x86_64.dll",
+        "existing_archive_entry_sha256": "9ab1cb787e52b2a36133899c01c1db1f876067d1471cd224ead85f40a8152b99",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\llama-batched-bench-impl.dll",
+        "name": "llama-batched-bench-impl.dll",
+        "bytes": 69120,
+        "sha256": "a7e1b754eea893f0c111d4aba37514183a6f2a8037bbf380906d7f25937cc356",
+        "existing_archive_entry": "llama-batched-bench-impl.dll",
+        "existing_archive_entry_sha256": "a7e1b754eea893f0c111d4aba37514183a6f2a8037bbf380906d7f25937cc356",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\llama-bench-impl.dll",
+        "name": "llama-bench-impl.dll",
+        "bytes": 390656,
+        "sha256": "335c531fb6ddbd72ea5ee0d694974fd6f479f597324feda76e6082644d1e1d33",
+        "existing_archive_entry": "llama-bench-impl.dll",
+        "existing_archive_entry_sha256": "335c531fb6ddbd72ea5ee0d694974fd6f479f597324feda76e6082644d1e1d33",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\llama-cli-impl.dll",
+        "name": "llama-cli-impl.dll",
+        "bytes": 2632192,
+        "sha256": "b0ee99ad363135031c3f831a882ee0353019ad70f7df906d508686b4a7d5bbe6",
+        "existing_archive_entry": "llama-cli-impl.dll",
+        "existing_archive_entry_sha256": "b0ee99ad363135031c3f831a882ee0353019ad70f7df906d508686b4a7d5bbe6",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\llama-common.dll",
+        "name": "llama-common.dll",
+        "bytes": 8074752,
+        "sha256": "154dc397e72832b75ef2c9c625afbd403eed4fbb22ef14094134284f136554f2",
+        "existing_archive_entry": "llama-common.dll",
+        "existing_archive_entry_sha256": "154dc397e72832b75ef2c9c625afbd403eed4fbb22ef14094134284f136554f2",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\llama-completion-impl.dll",
+        "name": "llama-completion-impl.dll",
+        "bytes": 146432,
+        "sha256": "2d174d0dfd1911d57587cc57bba1e3fa6940a2435aeed9c0d155efadddfc14b3",
+        "existing_archive_entry": "llama-completion-impl.dll",
+        "existing_archive_entry_sha256": "2d174d0dfd1911d57587cc57bba1e3fa6940a2435aeed9c0d155efadddfc14b3",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\llama-fit-params-impl.dll",
+        "name": "llama-fit-params-impl.dll",
+        "bytes": 46080,
+        "sha256": "cd30a470bececfc9e77b541075376e036bc6fffad52a6227273f8d9f0bb99767",
+        "existing_archive_entry": "llama-fit-params-impl.dll",
+        "existing_archive_entry_sha256": "cd30a470bececfc9e77b541075376e036bc6fffad52a6227273f8d9f0bb99767",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\llama-perplexity-impl.dll",
+        "name": "llama-perplexity-impl.dll",
+        "bytes": 225792,
+        "sha256": "9866dc78ac46ba6cac7cf0711909bfe4788d7a133ccc8e3fe3229e94cd1260e3",
+        "existing_archive_entry": "llama-perplexity-impl.dll",
+        "existing_archive_entry_sha256": "9866dc78ac46ba6cac7cf0711909bfe4788d7a133ccc8e3fe3229e94cd1260e3",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\llama-quantize-impl.dll",
+        "name": "llama-quantize-impl.dll",
+        "bytes": 163328,
+        "sha256": "d975109ac14de1d0903b36121bf3a89e5d6ab98f68a31e7b8de0046fdd32c2ba",
+        "existing_archive_entry": "llama-quantize-impl.dll",
+        "existing_archive_entry_sha256": "d975109ac14de1d0903b36121bf3a89e5d6ab98f68a31e7b8de0046fdd32c2ba",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\llama-server-impl.dll",
+        "name": "llama-server-impl.dll",
+        "bytes": 12344320,
+        "sha256": "ec2bf9d245021a3d599a5e67badae2d2e434e13c32d13b66c8fe8a5f1c6c4f44",
+        "existing_archive_entry": "llama-server-impl.dll",
+        "existing_archive_entry_sha256": "ec2bf9d245021a3d599a5e67badae2d2e434e13c32d13b66c8fe8a5f1c6c4f44",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\llama.dll",
+        "name": "llama.dll",
+        "bytes": 2481664,
+        "sha256": "c3448bf7422a4c05994782b6e34b21dc6f7df4bea85760c150ef60f0fb045bcf",
+        "existing_archive_entry": "llama.dll",
+        "existing_archive_entry_sha256": "c3448bf7422a4c05994782b6e34b21dc6f7df4bea85760c150ef60f0fb045bcf",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      },
+      {
+        "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\qwen3_tts_gguf\\inference\\bin\\mtmd.dll",
+        "name": "mtmd.dll",
+        "bytes": 1271296,
+        "sha256": "61ff5d254c4609c838b863ca9c5cba9c9ae282e75108994b0cb1b5974070cd05",
+        "existing_archive_entry": "mtmd.dll",
+        "existing_archive_entry_sha256": "61ff5d254c4609c838b863ca9c5cba9c9ae282e75108994b0cb1b5974070cd05",
+        "matches_existing_archive": true,
+        "verification": "read bytes and compare existing archive; no DLL loaded"
+      }
+    ],
+    "native_historical_hash_reuse": "No dedicated native DLL hash manifest found in task evidence; reused existing local b9333 archive as byte comparison source and collected current DLL hashes. This is not a new model/inference or installation test."
+  },
+  "evidence_sources": [
+    {
+      "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-environment-snapshots.json",
+      "sha256": "b61c9da5d44bd9dba0f151f597870c4e77528ee5986b6971d6a7777ec8e46331"
+    },
+    {
+      "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-environment-effective.json",
+      "sha256": "4a2b72cdf9c8ab299af378c3331dd1d52ba84da53353f0abe9de28a68e2bc98f"
+    },
+    {
+      "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\rvc-dependency-audit.json",
+      "sha256": "0fe7703023ed8b1a3c134a0810e870a0886f688bc9b244cc1ab54c49852ae31a"
+    }
+  ],
+  "current_host": {
+    "reinstalled": false,
+    "restarted": false,
+    "voice_changed": false,
+    "model_files_changed": false
+  },
+  "limits": [
+    "仅验证软件包安装、依赖元数据和环境隔离；未导入模型、执行推理或调用GPU。",
+    "原生DLL复用已有本地zip和30项逐文件SHA256核验；未下载或替换原生运行时。"
+  ]
+}

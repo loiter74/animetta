@@ -13,6 +13,7 @@ import logging
 import uuid
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
+from typing import Literal
 
 from animetta.memory.v2.atom import (
     Layer,
@@ -85,8 +86,16 @@ class LivingMemorySystem:
     # Minimum salience for reconsolidation
     MIN_RECONSOLIDATION_SALIENCE = 0.3
 
-    def __init__(self, db_path: str = "memory_db/living_memory.sqlite"):
-        self.store = AtomStore(db_path=db_path)
+    def __init__(
+        self,
+        db_path: str = "memory_db/living_memory.sqlite",
+        *,
+        retrieval_mode: Literal["fts", "semantic"] = "fts",
+    ):
+        if retrieval_mode not in {"fts", "semantic"}:
+            raise ValueError("Unknown memory retrieval mode")
+        self.retrieval_mode = retrieval_mode
+        self.store = AtomStore(db_path=db_path, enable_chroma=retrieval_mode == "semantic")
         self._initialized = False
         self._closing = False
         self._shutdown_task: asyncio.Task | None = None
@@ -539,6 +548,7 @@ class LivingMemorySystem:
             profile=profile,
             memes=meme_atoms,
             metadata={
+                "retrieval_mode": self.retrieval_mode,
                 "revision": await self.store.get_revision(),
                 "scopes": sorted({atom.scope.value for atom in top_atoms}),
                 "actor_id": context.actor_id if context else None,

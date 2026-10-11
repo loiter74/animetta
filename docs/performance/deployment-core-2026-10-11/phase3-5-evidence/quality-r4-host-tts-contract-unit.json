@@ -1,0 +1,23 @@
+{
+  "schema_version": 2,
+  "group_id": "host-tts-contract-unit",
+  "required": true,
+  "status": "passed",
+  "exit_code": 0,
+  "duration_seconds": 5.235854799997469,
+  "failure_kind": null,
+  "artifacts": [],
+  "plan_hash": "54eb7ff41bcdf4c7c8a59475018bff43d4451a903061e2ebfc4e750626a914b5",
+  "manifest_hash": "d32af627ce3fe26356eb8cbd885b79b7cc29b039bb263fcc044ab4be801c005d",
+  "output": "........................................................................ [ 67%]\n...................................                                      [100%]\n107 passed in 2.88s\n",
+  "remediation": "",
+  "execution_mode": "executed",
+  "input_fingerprint": "3fcb87480d3ce02b1c033238b9c48b8ac1331f2ed97b8784db1bc797814e3691",
+  "trust_scope": "local",
+  "cache_reason": "miss:not-found;write:stored",
+  "cache_source": null,
+  "queue_seconds": 0.0,
+  "run_seconds": 5.235854799997469,
+  "cache_seconds": 0.0,
+  "artifact_digests": {}
+}

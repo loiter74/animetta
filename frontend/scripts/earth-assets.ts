@@ -3,8 +3,9 @@ import { resolve, relative, extname } from 'node:path'
 import type { Plugin } from 'vite'
 
 /** Serve the same pinned, self-hosted Cesium distribution in development and builds. */
-export function earthAssets(): Plugin {
-  const root = resolve(import.meta.dirname, '../node_modules/cesium/Build/Cesium')
+export function earthAssets(enabled = false): Plugin | false {
+  if (!enabled) return false
+  const root = resolve(import.meta.dirname, '../optional/earth/node_modules/cesium/Build/Cesium')
   const prefix = '/earth/cesium/'
   const mime: Record<string, string> = {
     '.js': 'application/javascript',

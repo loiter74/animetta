@@ -7,6 +7,7 @@ import base64
 import binascii
 import hmac
 import shutil
+from collections.abc import Callable, Coroutine
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from pathlib import Path
@@ -88,6 +89,29 @@ class RVCService:
         self.separator = separator
         self._ready = False
         self._separation_ready = False
+        self._worker: asyncio.Task[Any] | None = None
+
+    def _start_worker[T](
+        self, operation: Callable[[], Coroutine[Any, Any, T]]
+    ) -> asyncio.Task[T] | None:
+        # Admission has no await: both endpoints share one slot without a waiting queue.
+        if self._worker is not None and not self._worker.done():
+            return None
+        worker = asyncio.create_task(operation())
+        self._worker = worker
+        worker.add_done_callback(self._worker_finished)
+        return worker
+
+    def _worker_finished(self, worker: asyncio.Task[Any]) -> None:
+        if not worker.cancelled():
+            worker.exception()
+        if self._worker is worker:
+            self._worker = None
+
+    @staticmethod
+    def _discard_abandoned_archive(worker: asyncio.Task[Path]) -> None:
+        if not worker.cancelled() and worker.exception() is None:
+            shutil.rmtree(worker.result().parent, ignore_errors=True)
 
     async def preload(self) -> None:
         await self.engine.preload()
@@ -134,9 +158,12 @@ class RVCService:
             "rms_mix_rate": float(payload.get("rms_mix_rate") or 0.5),
             "protect": float(payload.get("protect") or 0.5),
         }
+        worker = self._start_worker(lambda: self.engine.convert(audio, **kwargs))
+        if worker is None:
+            return JSONResponse({"category": "busy", "request_id": request_id}, status_code=503)
         try:
             converted = await asyncio.wait_for(
-                self.engine.convert(audio, **kwargs),
+                asyncio.shield(worker),
                 timeout=self.settings.conversion_timeout_seconds,
             )
         except TimeoutError:
@@ -161,8 +188,14 @@ class RVCService:
             return JSONResponse({"category": "model_mismatch", "request_id": request_id}, 422)
         if len(audio) <= 44 or len(audio) > 128 * 1024 * 1024:
             return JSONResponse({"category": "invalid_audio", "request_id": request_id}, 422)
+        worker = self._start_worker(lambda: self.separator.separate(audio))
+        if worker is None:
+            return JSONResponse({"category": "busy", "request_id": request_id}, status_code=503)
         try:
-            archive_path = await self.separator.separate(audio)
+            archive_path = await asyncio.shield(worker)
+        except asyncio.CancelledError:
+            worker.add_done_callback(self._discard_abandoned_archive)
+            raise
         except TimeoutError:
             return JSONResponse({"category": "timeout", "request_id": request_id}, 504)
         except (OSError, RuntimeError, ValueError):
@@ -181,11 +214,13 @@ class RVCService:
         )
 
     async def close(self) -> None:
+        self._ready = False
+        self._separation_ready = False
+        if self._worker is not None:
+            await asyncio.gather(asyncio.shield(self._worker), return_exceptions=True)
         if self.separator is not None:
             await self.separator.close()
-            self._separation_ready = False
         await self.engine.close()
-        self._ready = False
 
 
 def create_app(service: RVCService) -> Starlette:

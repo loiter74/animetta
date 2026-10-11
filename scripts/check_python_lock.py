@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import shutil
 import subprocess
+import tomllib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -14,6 +15,7 @@ EXPORTS = {
     "requirements-dev.txt": ["--group", "dev", "--all-extras"],
     "requirements-bilibili.txt": ["--no-dev", "--extra", "bilibili"],
     "requirements-search.txt": ["--no-dev", "--extra", "search"],
+    "requirements-memory-semantic.txt": ["--no-dev", "--extra", "memory-semantic"],
 }
 
 
@@ -23,6 +25,7 @@ def export_requirements(root: Path, *, write: bool = False) -> None:
     if uv is None:
         raise RuntimeError("uv is required; install the version declared in pyproject.toml")
     subprocess.run([uv, "lock", "--check", "--offline"], cwd=root, check=True)
+    lock = tomllib.loads((root / "uv.lock").read_text(encoding="utf-8"))
     for filename, options in EXPORTS.items():
         result = subprocess.run(
             [
@@ -43,7 +46,21 @@ def export_requirements(root: Path, *, write: bool = False) -> None:
             text=True,
             encoding="utf-8",
         )
-        expected = HEADER + result.stdout
+        exported_names = {
+            line.split("==", 1)[0]
+            for line in result.stdout.splitlines()
+            if "==" in line and not line.lstrip().startswith("#")
+        }
+        indexes = sorted(
+            {
+                package["source"]["registry"]
+                for package in lock["package"]
+                if package["name"] in exported_names
+                and package.get("source", {}).get("registry")
+                not in (None, "https://pypi.org/simple")
+            }
+        )
+        expected = HEADER + "".join(f"--extra-index-url {url}\n" for url in indexes) + result.stdout
         path = root / filename
         if write:
             path.write_text(expected, encoding="utf-8", newline="\n")

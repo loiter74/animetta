@@ -1,13 +1,18 @@
 # Generated from pyproject.toml and uv.lock; do not edit.
 # Update with: py -3.13 scripts/check_python_lock.py --write
+--extra-index-url https://download.pytorch.org/whl/cpu
 aiohappyeyeballs==2.6.1
     # via aiohttp
 aiohttp==3.13.3
-    # via langchain-community
+    # via
+    #   kubernetes
+    #   langchain-community
 aiosignal==1.4.0
     # via aiohttp
 aiosqlite==0.22.1
     # via animetta
+annotated-doc==0.0.5
+    # via typer
 annotated-types==0.7.0
     # via pydantic
 anyio==4.12.1
@@ -26,6 +31,13 @@ attrs==26.1.0
     #   jsonschema
     #   referencing
 audioop-lts==0.2.2
+    # via
+    #   standard-aifc
+    #   standard-sunau
+audioread==3.1.0
+    # via librosa
+bcrypt==5.0.0
+    # via chromadb
 beautifulsoup4==4.15.0
     # via bilibili-api-python
 bidict==0.23.1
@@ -34,27 +46,38 @@ bilibili-api-python==17.4.1
     # via animetta
 brotli==1.2.0
     # via bilibili-api-python
+build==1.6.1
+    # via chromadb
 certifi==2026.2.25
     # via
     #   httpcore
     #   httpx
+    #   kubernetes
     #   requests
-cffi==2.0.0 ; platform_python_implementation != 'PyPy'
-    # via cryptography
+cffi==2.0.0
+    # via
+    #   cryptography
+    #   soundfile
 cfgv==3.5.0
     # via pre-commit
 charset-normalizer==3.4.6
     # via requests
+chromadb==1.5.9
+    # via animetta
 click==8.3.1
     # via uvicorn
+cloudpickle==3.1.2
+    # via joblib
 colorama==0.4.6
     # via
     #   bilibili-api-python
+    #   build
     #   click
     #   loguru
     #   pytest
     #   qrcode
     #   tqdm
+    #   typer
     #   uvicorn
 coverage==7.13.5
     # via pytest-cov
@@ -62,27 +85,47 @@ cryptography==46.0.5
     # via pyjwt
 dataclasses-json==0.6.7
     # via langchain-community
+decorator==5.3.1
+    # via librosa
 distlib==0.4.3
     # via virtualenv
 distro==1.9.0
     # via openai
+durationpy==0.11
+    # via kubernetes
 execnet==2.1.2
     # via pytest-xdist
 filelock==3.25.2
     # via
+    #   huggingface-hub
     #   python-discovery
+    #   torch
     #   virtualenv
+flatbuffers==25.12.19
+    # via onnxruntime
 frozenlist==1.8.0
     # via
     #   aiohttp
     #   aiosignal
+fsspec==2026.9.0
+    # via
+    #   huggingface-hub
+    #   torch
+googleapis-common-protos==1.75.5
+    # via opentelemetry-exporter-otlp-proto-grpc
 greenlet==3.3.2 ; platform_machine == 'AMD64' or platform_machine == 'WIN32' or platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'ppc64le' or platform_machine == 'win32' or platform_machine == 'x86_64'
     # via sqlalchemy
+grpcio==1.84.0
+    # via
+    #   chromadb
+    #   opentelemetry-exporter-otlp-proto-grpc
 h11==0.16.0
     # via
     #   httpcore
     #   uvicorn
     #   wsproto
+hf-xet==1.7.0 ; platform_machine == 'AMD64' or platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'arm64' or platform_machine == 'x86_64'
+    # via huggingface-hub
 hiredis==3.4.1
     # via redis
 httpcore==1.0.9
@@ -92,6 +135,8 @@ httptools==0.7.1
 httpx==0.28.1
     # via
     #   animetta
+    #   chromadb
+    #   huggingface-hub
     #   langgraph-sdk
     #   langsmith
     #   mcp
@@ -100,6 +145,8 @@ httpx-sse==0.4.3
     # via
     #   langchain-community
     #   mcp
+huggingface-hub==1.16.1
+    # via tokenizers
 identify==2.6.19
     # via pre-commit
 idna==3.11
@@ -110,14 +157,22 @@ idna==3.11
     #   yarl
 importlib-metadata==8.7.1
     # via opentelemetry-api
+importlib-resources==7.1.0
+    # via chromadb
 iniconfig==2.3.0
     # via pytest
 jieba==0.42.1
     # via animetta
 jinja2==3.1.6
-    # via animetta
+    # via
+    #   animetta
+    #   torch
 jiter==0.13.0
     # via openai
+joblib==1.6.0
+    # via
+    #   librosa
+    #   scikit-learn
 jsonpatch==1.33
     # via langchain-core
 jsonpath-ng==1.8.0
@@ -125,9 +180,13 @@ jsonpath-ng==1.8.0
 jsonpointer==3.1.0
     # via jsonpatch
 jsonschema==4.26.0
-    # via mcp
+    # via
+    #   chromadb
+    #   mcp
 jsonschema-specifications==2025.9.1
     # via jsonschema
+kubernetes==36.0.0
+    # via chromadb
 langchain==1.2.13
     # via animetta
 langchain-classic==1.0.3
@@ -170,20 +229,35 @@ langsmith==0.7.22
     #   langchain-classic
     #   langchain-community
     #   langchain-core
+lazy-loader==0.6
+    # via librosa
+librosa==0.11.0
 librt==0.13.0 ; platform_python_implementation != 'PyPy'
     # via mypy
+llvmlite==0.50.0
+    # via numba
 loguru==0.7.3
     # via animetta
 lxml==6.0.2
     # via bilibili-api-python
+markdown-it-py==4.2.0
+    # via rich
 markupsafe==3.0.3
     # via jinja2
 marshmallow==3.26.2
     # via dataclasses-json
 mcp==1.26.0
     # via animetta
+mdurl==0.1.2
+    # via markdown-it-py
 ml-dtypes==0.6.0
     # via redisvl
+mmh3==5.3.1
+    # via chromadb
+mpmath==1.3.0
+    # via sympy
+msgpack==1.2.3
+    # via librosa
 multidict==6.7.1
     # via
     #   aiohttp
@@ -193,14 +267,32 @@ mypy-extensions==1.1.0
     # via
     #   mypy
     #   typing-inspect
+narwhals==2.27.1
+    # via scikit-learn
+networkx==3.7
+    # via torch
 nodeenv==1.10.0
     # via pre-commit
+numba==0.68.0
+    # via librosa
 numpy==2.4.3
     # via
     #   animetta
+    #   chromadb
     #   langchain-community
+    #   librosa
     #   ml-dtypes
+    #   numba
+    #   onnxruntime
     #   redisvl
+    #   scikit-learn
+    #   scipy
+    #   soundfile
+    #   soxr
+oauthlib==4.0.0
+    # via requests-oauthlib
+onnxruntime==1.31.0
+    # via chromadb
 openai==2.29.0
     # via langchain-openai
 opencc-python-reimplemented==0.1.7
@@ -208,24 +300,45 @@ opencc-python-reimplemented==0.1.7
 opentelemetry-api==1.40.0
     # via
     #   animetta
+    #   chromadb
+    #   opentelemetry-exporter-otlp-proto-grpc
     #   opentelemetry-sdk
     #   opentelemetry-semantic-conventions
+opentelemetry-exporter-otlp-proto-common==1.40.0
+    # via opentelemetry-exporter-otlp-proto-grpc
+opentelemetry-exporter-otlp-proto-grpc==1.40.0
+    # via chromadb
+opentelemetry-proto==1.40.0
+    # via
+    #   opentelemetry-exporter-otlp-proto-common
+    #   opentelemetry-exporter-otlp-proto-grpc
 opentelemetry-sdk==1.40.0
-    # via animetta
+    # via
+    #   animetta
+    #   chromadb
+    #   opentelemetry-exporter-otlp-proto-grpc
 opentelemetry-semantic-conventions==0.61b0
     # via opentelemetry-sdk
 orjson==3.11.7
     # via
+    #   chromadb
     #   langgraph-checkpoint-redis
     #   langgraph-sdk
     #   langsmith
 ormsgpack==1.12.2
     # via langgraph-checkpoint
+overrides==7.7.0
+    # via chromadb
 packaging==26.0
     # via
+    #   build
+    #   huggingface-hub
     #   langchain-core
     #   langsmith
+    #   lazy-loader
     #   marshmallow
+    #   onnxruntime
+    #   pooch
     #   pytest
 pathspec==1.1.1
     # via mypy
@@ -235,12 +348,15 @@ pillow==12.1.1
     #   qrcode-terminal
 platformdirs==4.9.6
     # via
+    #   pooch
     #   python-discovery
     #   virtualenv
 pluggy==1.6.0
     # via
     #   pytest
     #   pytest-cov
+pooch==1.9.0
+    # via librosa
 pre-commit==4.6.0
 prometheus-client==0.25.0
     # via animetta
@@ -248,14 +364,22 @@ propcache==0.4.1
     # via
     #   aiohttp
     #   yarl
+protobuf==6.33.6
+    # via
+    #   googleapis-common-protos
+    #   onnxruntime
+    #   opentelemetry-proto
 psutil==7.2.2
-pycparser==3.0 ; implementation_name != 'PyPy' and platform_python_implementation != 'PyPy'
+pybase64==1.5.1
+    # via chromadb
+pycparser==3.0 ; implementation_name != 'PyPy'
     # via cffi
 pycryptodomex==3.23.0
     # via bilibili-api-python
 pydantic==2.12.5
     # via
     #   animetta
+    #   chromadb
     #   langchain
     #   langchain-classic
     #   langchain-core
@@ -269,16 +393,23 @@ pydantic-core==2.41.5
     # via pydantic
 pydantic-settings==2.13.1
     # via
+    #   chromadb
     #   langchain-community
     #   mcp
 pydub==0.25.1
 pygments==2.19.2
-    # via pytest
+    # via
+    #   pytest
+    #   rich
 pyjwt==2.10.1
     # via
     #   animetta
     #   bilibili-api-python
     #   mcp
+pypika==0.51.1
+    # via chromadb
+pyproject-hooks==1.3.3
+    # via build
 pytest==9.0.3
     # via
     #   pytest-asyncio
@@ -289,6 +420,8 @@ pytest-asyncio==1.3.0
 pytest-cov==7.1.0
 pytest-timeout==2.4.0
 pytest-xdist==3.8.0
+python-dateutil==2.9.0.post0
+    # via kubernetes
 python-discovery==1.4.4
     # via virtualenv
 python-dotenv==1.2.2
@@ -312,6 +445,9 @@ pyyaml==6.0.3
     # via
     #   animetta
     #   bilibili-api-python
+    #   chromadb
+    #   huggingface-hub
+    #   kubernetes
     #   langchain-classic
     #   langchain-community
     #   langchain-core
@@ -339,59 +475,119 @@ regex==2026.2.28
     # via tiktoken
 requests==2.32.5
     # via
+    #   kubernetes
     #   langchain-classic
     #   langchain-community
     #   langsmith
+    #   pooch
+    #   requests-oauthlib
     #   requests-toolbelt
     #   tiktoken
+requests-oauthlib==2.0.0
+    # via kubernetes
 requests-toolbelt==1.0.0
     # via langsmith
+rich==15.0.0
+    # via
+    #   chromadb
+    #   typer
 rpds-py==0.30.0
     # via
     #   jsonschema
     #   referencing
 ruff==0.15.21
+scikit-learn==1.9.1
+    # via librosa
+scipy==1.18.1
+    # via
+    #   librosa
+    #   scikit-learn
+setuptools==81.0.0
+    # via torch
+shellingham==1.5.4
+    # via typer
 simple-websocket==1.1.0
     # via python-engineio
+six==1.17.0
+    # via
+    #   kubernetes
+    #   python-dateutil
 sniffio==1.3.1
     # via openai
 socksio==1.0.0
     # via httpx
+soundfile==0.13.1
+    # via librosa
 soupsieve==2.8.4
     # via beautifulsoup4
+soxr==1.1.0
+    # via librosa
 sqlalchemy==2.0.48
     # via
     #   langchain-classic
     #   langchain-community
 sse-starlette==3.3.3
     # via mcp
+standard-aifc==3.13.0
+    # via
+    #   audioread
+    #   librosa
+standard-chunk==3.13.0
+    # via standard-aifc
+standard-sunau==3.13.0
+    # via
+    #   audioread
+    #   librosa
 starlette==0.52.1
     # via
     #   animetta
     #   mcp
     #   sse-starlette
+sympy==1.14.0
+    # via torch
 tenacity==9.1.4
     # via
+    #   chromadb
     #   langchain-community
     #   langchain-core
     #   redisvl
+threadpoolctl==3.7.0
+    # via scikit-learn
 tiktoken==0.12.0
     # via langchain-openai
+tokenizers==0.23.3
+    # via chromadb
+torch==2.11.0 ; sys_platform != 'linux' and sys_platform != 'win32'
+torch==2.11.0+cpu ; sys_platform == 'linux' or sys_platform == 'win32'
 tqdm==4.67.3
-    # via openai
+    # via
+    #   chromadb
+    #   huggingface-hub
+    #   openai
+typer==0.27.3
+    # via
+    #   chromadb
+    #   huggingface-hub
+types-pyyaml==6.0.12.20260518
 typing-extensions==4.15.0
     # via
     #   beautifulsoup4
+    #   chromadb
+    #   grpcio
+    #   huggingface-hub
     #   langchain-core
+    #   librosa
     #   mcp
     #   mypy
     #   openai
     #   opentelemetry-api
+    #   opentelemetry-exporter-otlp-proto-grpc
     #   opentelemetry-sdk
     #   opentelemetry-semantic-conventions
     #   pydantic
     #   pydantic-core
     #   sqlalchemy
+    #   torch
     #   typing-inspect
     #   typing-inspection
 typing-inspect==0.9.0
@@ -408,7 +604,9 @@ tzdata==2026.2 ; sys_platform == 'win32'
 tzlocal==5.4.4
     # via apscheduler
 urllib3==2.6.3
-    # via requests
+    # via
+    #   kubernetes
+    #   requests
 uuid-utils==0.14.1
     # via
     #   langchain-core
@@ -417,6 +615,7 @@ uv==0.11.19
 uvicorn==0.42.0
     # via
     #   animetta
+    #   chromadb
     #   mcp
 uvloop==0.22.1 ; platform_python_implementation != 'PyPy' and sys_platform != 'cygwin' and sys_platform != 'win32'
     # via uvicorn
@@ -426,6 +625,7 @@ vulture==2.16
 watchfiles==1.1.1
     # via uvicorn
 websocket-client==1.9.0
+    # via kubernetes
 websockets==16.0
     # via
     #   animetta

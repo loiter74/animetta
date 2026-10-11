@@ -6,8 +6,8 @@ import argparse
 import ctypes
 import hashlib
 import json
-import os
 import statistics
+import sys
 import time
 from collections.abc import Callable, Sequence
 from ctypes import wintypes
@@ -18,7 +18,7 @@ from typing import Any
 
 def read_unbuffered(path: Path, chunk_bytes: int = 1024 * 1024) -> int:
     """Read an entire regular file with FILE_FLAG_NO_BUFFERING and aligned memory."""
-    if os.name != "nt":
+    if sys.platform != "win32":
         raise OSError("Unbuffered storage measurement requires Windows")
     if chunk_bytes <= 0 or chunk_bytes % 65536:
         raise ValueError("chunk_bytes must be a positive multiple of 65536")

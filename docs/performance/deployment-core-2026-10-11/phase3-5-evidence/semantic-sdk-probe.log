@@ -1,0 +1,1 @@
+{"status": "passed", "python": "3.13.13 | packaged by Anaconda, Inc. | (main, Apr 14 2026, 06:12:50) [MSC v.1942 64 bit (AMD64)]", "chromadb": "1.5.9", "persistent_ids": [["bounded-sdk-probe"]], "embedding_model_downloaded": false, "scope": "Real SDK and native storage with supplied embeddings; no language-quality parity claim"}

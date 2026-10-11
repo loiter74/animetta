@@ -1,0 +1,86 @@
+{
+  "run_id": "c-dc4-auth-chain-diagnostic02",
+  "started_at": "2026-10-11T08:02:57.796674+00:00",
+  "http_rows": [
+    {
+      "url": "http://localhost/health",
+      "status": 200,
+      "bytes": 64,
+      "sha256": "c2ffbfd2eff9ceb668a8017bd030a5b552bbac2ba843b2ea333cc900247e9d3a",
+      "seconds": 0.05113659999915399
+    },
+    {
+      "url": "http://localhost/ready",
+      "status": 200,
+      "bytes": 2336,
+      "sha256": "a20e0f590d8137b8b2c9efcdc76296fd75005c958cbcd9c5dc1a246a5336aa4a",
+      "seconds": 0.004225599997880636
+    },
+    {
+      "url": "http://localhost/api/auth/session",
+      "status": 200,
+      "bytes": 95,
+      "sha256": "551a5229465ee45b5d83d1b09cbf0c396e7410692392f74679ce5aded0dab8cb",
+      "seconds": 0.0036734000022988766,
+      "authenticated": true
+    },
+    {
+      "url": "http://localhost:12394/health",
+      "status": 200,
+      "bytes": 62,
+      "sha256": "331dde1a6f7f7fafbed4fff2075c76ee337191625500dd5bb02db49409fb2acb",
+      "seconds": 0.003966599997511366
+    },
+    {
+      "url": "http://localhost:12394/ready",
+      "status": 200,
+      "bytes": 2336,
+      "sha256": "7c456bcc0213c3ce5413ce195dcf8667ce988710cfbe926398009c57190658e2",
+      "seconds": 0.003325000001495937
+    },
+    {
+      "url": "http://localhost:12394/api/auth/session",
+      "status": 200,
+      "bytes": 95,
+      "sha256": "551a5229465ee45b5d83d1b09cbf0c396e7410692392f74679ce5aded0dab8cb",
+      "seconds": 0.0032614999981888104,
+      "authenticated": true
+    }
+  ],
+  "localhost_dns": [
+    "127.0.0.1",
+    "::1"
+  ],
+  "nginx_actual_access_lines": [
+    "127.0.0.1 - - [11/Oct/2026:08:02:30 +0000] \"GET /health HTTP/1.1\" 502 157 \"-\" \"curl/7.88.1\"",
+    "172.18.0.1 - - [11/Oct/2026:08:02:31 +0000] \"GET /health HTTP/1.1\" 502 157 \"-\" \"Python-urllib/3.13\"",
+    "172.18.0.1 - - [11/Oct/2026:08:02:31 +0000] \"GET /health HTTP/1.1\" 502 157 \"-\" \"Python-urllib/3.13\"",
+    "127.0.0.1 - - [11/Oct/2026:08:02:32 +0000] \"GET /health HTTP/1.1\" 502 157 \"-\" \"curl/7.88.1\"",
+    "172.18.0.1 - - [11/Oct/2026:08:02:32 +0000] \"GET /health HTTP/1.1\" 502 157 \"-\" \"Python-urllib/3.13\"",
+    "172.18.0.1 - - [11/Oct/2026:08:02:32 +0000] \"GET /health HTTP/1.1\" 502 157 \"-\" \"Python-urllib/3.13\"",
+    "172.18.0.1 - - [11/Oct/2026:08:02:33 +0000] \"GET /health HTTP/1.1\" 502 157 \"-\" \"Python-urllib/3.13\"",
+    "127.0.0.1 - - [11/Oct/2026:08:02:33 +0000] \"GET /health HTTP/1.1\" 502 157 \"-\" \"curl/7.88.1\"",
+    "172.18.0.1 - - [11/Oct/2026:08:02:33 +0000] \"GET /health HTTP/1.1\" 200 64 \"-\" \"Python-urllib/3.13\"",
+    "172.18.0.1 - - [11/Oct/2026:08:02:33 +0000] \"GET /ready HTTP/1.1\" 503 2280 \"-\" \"Python-urllib/3.13\"",
+    "172.18.0.1 - - [11/Oct/2026:08:02:34 +0000] \"GET /ready HTTP/1.1\" 503 2279 \"-\" \"Python-urllib/3.13\"",
+    "127.0.0.1 - - [11/Oct/2026:08:02:34 +0000] \"GET /health HTTP/1.1\" 200 64 \"-\" \"curl/7.88.1\"",
+    "172.18.0.1 - - [11/Oct/2026:08:02:34 +0000] \"GET /ready HTTP/1.1\" 503 2280 \"-\" \"Python-urllib/3.13\"",
+    "172.18.0.1 - - [11/Oct/2026:08:02:35 +0000] \"GET /ready HTTP/1.1\" 503 2280 \"-\" \"Python-urllib/3.13\"",
+    "172.18.0.1 - - [11/Oct/2026:08:02:35 +0000] \"GET /ready HTTP/1.1\" 503 2280 \"-\" \"Python-urllib/3.13\"",
+    "172.18.0.1 - - [11/Oct/2026:08:02:36 +0000] \"GET /ready HTTP/1.1\" 503 2280 \"-\" \"Python-urllib/3.13\"",
+    "172.18.0.1 - - [11/Oct/2026:08:02:36 +0000] \"GET /ready HTTP/1.1\" 503 2280 \"-\" \"Python-urllib/3.13\"",
+    "172.18.0.1 - - [11/Oct/2026:08:02:37 +0000] \"GET /ready HTTP/1.1\" 503 2280 \"-\" \"Python-urllib/3.13\"",
+    "172.18.0.1 - - [11/Oct/2026:08:02:38 +0000] \"GET /ready HTTP/1.1\" 503 2280 \"-\" \"Python-urllib/3.13\"",
+    "172.18.0.1 - - [11/Oct/2026:08:02:38 +0000] \"GET /ready HTTP/1.1\" 503 2280 \"-\" \"Python-urllib/3.13\"",
+    "172.18.0.1 - - [11/Oct/2026:08:02:39 +0000] \"GET /ready HTTP/1.1\" 503 2280 \"-\" \"Python-urllib/3.13\"",
+    "172.18.0.1 - - [11/Oct/2026:08:02:39 +0000] \"GET /ready HTTP/1.1\" 503 2279 \"-\" \"Python-urllib/3.13\"",
+    "172.18.0.1 - - [11/Oct/2026:08:02:40 +0000] \"GET /ready HTTP/1.1\" 503 2280 \"-\" \"Python-urllib/3.13\"",
+    "172.18.0.1 - - [11/Oct/2026:08:02:40 +0000] \"GET /ready HTTP/1.1\" 200 2335 \"-\" \"Python-urllib/3.13\"",
+    "172.18.0.1 - - [11/Oct/2026:08:02:57 +0000] \"GET /health HTTP/1.1\" 200 64 \"-\" \"Python-urllib/3.13\"",
+    "172.18.0.1 - - [11/Oct/2026:08:02:57 +0000] \"GET /ready HTTP/1.1\" 200 2336 \"-\" \"Python-urllib/3.13\"",
+    "172.18.0.1 - - [11/Oct/2026:08:02:57 +0000] \"GET /api/auth/session HTTP/1.1\" 200 95 \"-\" \"Python-urllib/3.13\""
+  ],
+  "original_container_app01_removed_by_authorized_subsequent_down": "Original API request server-side log not retained; no claim original transient root identified",
+  "original_failure_preserved": "c-dc4-app01-surfaces.json (redacted)",
+  "lifecycle_repeated": false
+}

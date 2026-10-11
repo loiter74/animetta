@@ -15,7 +15,7 @@ def project(tmp_path):
     manifest = tmp_path / "pyproject.toml"
     manifest.write_text(
         '[project]\nname="lock-contract"\nversion="0.0.0"\nrequires-python=">=3.13"\n'
-        "[project.optional-dependencies]\nbilibili=[]\nsearch=[]\n"
+        "[project.optional-dependencies]\nbilibili=[]\nsearch=[]\nmemory-semantic=[]\n"
         "[dependency-groups]\ndev=[]\n",
         encoding="utf-8",
     )
@@ -44,3 +44,29 @@ def test_stale_lock_is_rejected_without_rewriting_it(project):
     with pytest.raises(subprocess.CalledProcessError):
         export_requirements(project)
     assert lock.read_bytes() == before
+
+
+def test_export_preserves_selected_custom_package_indexes(project, monkeypatch):
+    lock = project / "uv.lock"
+    with lock.open("a", encoding="utf-8") as stream:
+        stream.write(
+            '\n[[package]]\nname = "torch"\nversion = "2.11.0+cpu"\n'
+            'source = { registry = "https://download.pytorch.org/whl/cpu" }\n'
+        )
+
+    def resolved_export(argv, **kwargs):
+        output = "torch==2.11.0+cpu\n" if "--group" in argv else ""
+        return subprocess.CompletedProcess(argv, 0, stdout=output, stderr="")
+
+    monkeypatch.setattr(subprocess, "run", resolved_export)
+    export_requirements(project, write=True)
+    development = (project / "requirements-dev.txt").read_text(encoding="utf-8")
+    assert "--extra-index-url https://download.pytorch.org/whl/cpu\n" in development
+    assert "torch==2.11.0+cpu\n" in development
+    for name in (
+        "requirements.txt",
+        "requirements-bilibili.txt",
+        "requirements-search.txt",
+        "requirements-memory-semantic.txt",
+    ):
+        assert "pytorch.org" not in (project / name).read_text(encoding="utf-8")

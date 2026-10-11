@@ -1,0 +1,9 @@
+{
+  "name": "@animetta/earth",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "cesium": "1.133.0"
+  }
+}

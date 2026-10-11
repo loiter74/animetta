@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "run_id": "c-dc4-app02-down",
+  "operation": "anima-down",
+  "exit_code": 0,
+  "elapsed_seconds": 9.09582760000194,
+  "feedback_windows": null,
+  "continuation_wait_seconds": null,
+  "observations": [],
+  "error": null,
+  "build": null,
+  "measurement_driver": "actual canonical ROOT CLI; step receipts collected without replacing protocol"
+}

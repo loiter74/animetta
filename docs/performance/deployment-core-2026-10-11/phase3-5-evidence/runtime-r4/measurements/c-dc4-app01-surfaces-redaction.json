@@ -1,0 +1,10 @@
+{
+  "run_id": "c-dc4-app01-surfaces",
+  "status": "failed",
+  "failure": "Playwright apiRequestContext GET /api/auth/session 30s timeout",
+  "redaction": "Known private environment secret values replaced before evidence handoff; raw exception contained Authorization header",
+  "original_private_raw_sha256": "febc889a874221db2ee4a18e3e17752ee2b709403403955e5541cfcaa27dc827",
+  "shareable_redacted_sha256": "679c43b898dc820e27599a95443444ce08a95842efbc58f76b87fe15a36eb2c8",
+  "original_secret_raw_retained": false,
+  "canonical_lifecycle_rerun": false
+}

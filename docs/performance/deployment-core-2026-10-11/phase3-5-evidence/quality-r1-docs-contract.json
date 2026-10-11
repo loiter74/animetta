@@ -1,0 +1,23 @@
+{
+  "schema_version": 2,
+  "group_id": "docs-contract",
+  "required": true,
+  "status": "failed",
+  "exit_code": 1,
+  "duration_seconds": 2.53421100000196,
+  "failure_kind": "feedback-shard",
+  "artifacts": [],
+  "plan_hash": "6aefa2b9d9deb8f05f67eca5609f2639006b2169d37acade9dc336a4daf69b2b",
+  "manifest_hash": "3a29a7a11d9356dd82ba96804bc5072c8545d414e084d23da6f8469531db4976",
+  "output": ".F.                                                                      [100%]\n================================== FAILURES ===================================\n___________________ test_readme_frontend_commands_use_pnpm ____________________\n\n    def test_readme_frontend_commands_use_pnpm() -> None:\n        readme = (ROOT / \"README.md\").read_text(encoding=\"utf-8\")\n    \n>       assert \"cd frontend && pnpm install\" in readme\nE       assert 'cd frontend && pnpm install' in '<p align=\"center\">\\n  <h1 align=\"center\">🤖 Animetta — AI Virtual Companion / VTuber Framework</h1>\\n  <p align=\"cente... |\\n| **Game** | Mineflayer (Node.js) |\\n\\n---\\n\\n## 📄 License\\n\\n[MIT License](LICENSE) — Copyright (c) 2026 Cowork\\n'\n\ntests\\smoke\\test_readme_alignment.py:20: AssertionError\n=========================== short test summary info ===========================\nFAILED tests/smoke/test_readme_alignment.py::test_readme_frontend_commands_use_pnpm\n1 failed, 2 passed in 0.36s\n",
+  "remediation": "",
+  "execution_mode": "executed",
+  "input_fingerprint": "ac98596a5190821abc984e71779571c0acc11ced560491d4cc778ac0df8e4893",
+  "trust_scope": "local",
+  "cache_reason": "miss:not-found;write:result-not-reusable",
+  "cache_source": null,
+  "queue_seconds": 0.0,
+  "run_seconds": 2.53421100000196,
+  "cache_seconds": 0.0,
+  "artifact_digests": {}
+}

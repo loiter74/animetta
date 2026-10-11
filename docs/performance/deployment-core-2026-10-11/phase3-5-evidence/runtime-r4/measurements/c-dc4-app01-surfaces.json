@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "scenario": "surfaces",
+  "phase": "after",
+  "samples": [],
+  "samples_requested": 1,
+  "started_at": "2026-10-11T07:58:08.842Z",
+  "root": "C:\\Users\\30262\\Project\\Anima",
+  "url": "http://localhost/",
+  "authentication": "existing_machine_token",
+  "surface_errors": [],
+  "exit_code": 1,
+  "error": "TimeoutError: apiRequestContext.get: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - → GET http://localhost/api/auth/session\u001b[22m\n\u001b[2m    - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36\u001b[22m\n\u001b[2m    - accept: */*\u001b[22m\n\u001b[2m    - accept-encoding: gzip,deflate,br\u001b[22m\n\u001b[2m    - Authorization: Bearer <redacted>\u001b[22m\n",
+  "successful_samples": 0,
+  "median_seconds": null,
+  "min_seconds": null,
+  "max_seconds": null
+}

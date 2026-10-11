@@ -51,7 +51,7 @@ services:
       platforms: [linux/amd64]
       args:
         ANIMETTA_BUILD_FINGERPRINT: ${ANIMETTA_FRONTEND_BUILD_FINGERPRINT:-untracked}
-        VITE_EARTH_ENABLED: ${ANIMETTA_EARTH_ENABLED:-true}
+        VITE_EARTH_ENABLED: ${ANIMETTA_EARTH_ENABLED:-false}
     environment:
       ANIMETTA_BACKEND_URL: http://animetta:12394
     ports:

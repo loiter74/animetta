@@ -6,11 +6,14 @@ import { earthAssets } from './scripts/earth-assets'
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
+  const earthEnabled =
+    mode === 'earth' || (process.env.VITE_EARTH_ENABLED ?? env.VITE_EARTH_ENABLED) === 'true'
   const backendUrl =
     process.env.ANIMETTA_BACKEND_URL || env.ANIMETTA_BACKEND_URL || 'http://127.0.0.1:12394'
 
   return {
     root: resolve(__dirname),
+    define: { 'import.meta.env.VITE_EARTH_ENABLED': JSON.stringify(String(earthEnabled)) },
     server: {
       port: 3000,
       strictPort: true,
@@ -59,6 +62,6 @@ export default defineConfig(({ mode }) => {
         '@pixi/display',
       ],
     },
-    plugins: [vue(), unocss(), earthAssets()],
+    plugins: [vue(), unocss(), earthAssets(earthEnabled)],
   }
 })

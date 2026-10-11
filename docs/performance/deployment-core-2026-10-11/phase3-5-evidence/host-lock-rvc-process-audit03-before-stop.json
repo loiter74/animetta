@@ -1,0 +1,28 @@
+{
+  "installer_parent": [
+    {
+      "ProcessId": 33988,
+      "ParentProcessId": 14516,
+      "CreationDate": "2026-10-11T14:30:12.781319+08:00",
+      "Name": "python3.13.exe",
+      "CommandLine": "C:\\Users\\30262\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\\python.exe -"
+    }
+  ],
+  "old_uv_pid": 28568,
+  "process_trees": {
+    "28568": [],
+    "20740": [
+      {
+        "ProcessId": 20740,
+        "ParentProcessId": 33988,
+        "CreationDate": "2026-10-11T14:30:12.92603+08:00",
+        "Name": "uv.exe",
+        "CommandLine": "C:\\Users\\30262\\AppData\\Local\\hermes\\bin\\uv.exe pip sync C:\\Users\\30262\\Project\\Anima\\services\\rvc-host\\requirements.lock --python C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Scripts\\python.exe --require-hashes --strict --no-python-downloads --no-config --default-index https://pypi.org/simple --cache-dir C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-cache\\rvc --no-progress --index https://download.pytorch.org/whl/cu128 --index-strategy unsafe-best-match"
+      }
+    ]
+  },
+  "matching_cache_builders": [],
+  "current_uv_pid": 20740,
+  "recorded_at": "2026-10-11T06:38:37.8733681Z",
+  "current_exec_session": 79716
+}

@@ -17,7 +17,7 @@ def test_readme_describes_current_backend_stack() -> None:
 def test_readme_frontend_commands_use_pnpm() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
 
-    assert "cd frontend && pnpm install" in readme
-    assert "cd frontend && pnpm dev" in readme
+    assert "pnpm --dir frontend --filter animetta-desktop install --frozen-lockfile" in readme
+    assert "pnpm --dir frontend dev" in readme
     assert "cd frontend && npm install" not in readme
     assert "cd frontend && npm run dev" not in readme

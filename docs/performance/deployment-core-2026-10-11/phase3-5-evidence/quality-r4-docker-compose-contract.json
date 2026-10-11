@@ -1,0 +1,23 @@
+{
+  "schema_version": 2,
+  "group_id": "docker-compose-contract",
+  "required": true,
+  "status": "passed",
+  "exit_code": 0,
+  "duration_seconds": 0.1798153000017919,
+  "failure_kind": null,
+  "artifacts": [],
+  "plan_hash": "54eb7ff41bcdf4c7c8a59475018bff43d4451a903061e2ebfc4e750626a914b5",
+  "manifest_hash": "d32af627ce3fe26356eb8cbd885b79b7cc29b039bb263fcc044ab4be801c005d",
+  "output": "",
+  "remediation": "",
+  "execution_mode": "executed",
+  "input_fingerprint": "122644ee05a7ca69a198688a94b4b78f7b305d55a1fe5c88b851698fe4e2d0bb",
+  "trust_scope": "local",
+  "cache_reason": "miss:group-not-cacheable;write:group-not-cacheable",
+  "cache_source": null,
+  "queue_seconds": 0.0,
+  "run_seconds": 0.1798153000017919,
+  "cache_seconds": 0.0,
+  "artifact_digests": {}
+}

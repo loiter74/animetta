@@ -1,0 +1,118 @@
+param([switch]$Apply)
+$ErrorActionPreference = 'Stop'
+$taskRoot = 'C:\Users\30262\Project\Anima\.zcode\performance\deployment-core-20261011'
+$temporaryRoot = 'C:\Users\30262\AppData\Local\Temp'
+$plan = Get-Content -LiteralPath (Join-Path $taskRoot 'cleanup-plan.json') -Raw | ConvertFrom-Json
+$paths = @($plan.candidates | ForEach-Object { [IO.Path]::GetFullPath($_.path) })
+if ($paths.Count -ne 17 -or @($paths | Select-Object -Unique).Count -ne 17) { throw 'Unexpected cleanup inventory' }
+$temporaryNames = @(
+    'anima-deployment-core-20261011-b422c70a-3x_hbvvp',
+    'anima-deployment-core-20261011-core-51v0a4ti',
+    'anima-deployment-core-20261011-core-r2-dptpv3uv',
+    'anima-deployment-core-20261011-core-r3-t8urbyf1'
+)
+foreach ($target in $paths) {
+    $parent = [IO.Path]::GetDirectoryName($target)
+    $name = [IO.Path]::GetFileName($target)
+    if ($parent -ne $taskRoot -and -not ($parent -eq $temporaryRoot -and $name -in $temporaryNames)) {
+        throw "Outside explicitly owned scope: $target"
+    }
+    if (Test-Path -LiteralPath $target) {
+        $item = Get-Item -LiteralPath $target -Force
+        if (-not $item.PSIsContainer -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+            throw "Cleanup root is not an ordinary directory: $target"
+        }
+        if ((Resolve-Path -LiteralPath $target).ProviderPath -ne $target) { throw "Unexpected resolved target: $target" }
+    }
+}
+$processReferences = @()
+foreach ($process in Get-CimInstance Win32_Process) {
+    if (-not $process.CommandLine) { continue }
+    foreach ($target in $paths) {
+        if ($process.CommandLine.IndexOf($target, [StringComparison]::OrdinalIgnoreCase) -ge 0 -or
+            $process.CommandLine.IndexOf($target.Replace('\', '/'), [StringComparison]::OrdinalIgnoreCase) -ge 0) {
+            $processReferences += [ordered]@{ pid = $process.ProcessId; name = $process.Name; target = $target }
+        }
+    }
+}
+$containerReferences = @()
+$containerIds = @(& docker ps -aq)
+if ($LASTEXITCODE -ne 0) { throw 'Cannot inventory Docker containers' }
+if ($containerIds.Count) {
+    $containers = (& docker inspect @containerIds | ConvertFrom-Json)
+    if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect Docker container references' }
+    foreach ($container in $containers) {
+        $referenceValues = @($container.Mounts | ForEach-Object { $_.Source })
+        $referenceValues += @($container.Config.Labels.'com.docker.compose.project.working_dir', $container.Config.Labels.'com.docker.compose.project.config_files')
+        foreach ($reference in $referenceValues) {
+            if (-not $reference) { continue }
+            foreach ($target in $paths) {
+                $normalReference = $reference.Replace('/', '\')
+                $drive = $target.Substring(0, 1).ToLowerInvariant()
+                $tail = $target.Substring(3)
+                $variants = @($target, "\run\desktop\mnt\host\$drive\$tail", "\host_mnt\$drive\$tail", "\$drive\$tail")
+                $matched = $false
+                foreach ($variant in $variants) {
+                    if ($normalReference.IndexOf($variant, [StringComparison]::OrdinalIgnoreCase) -ge 0) { $matched = $true }
+                }
+                if ($matched) {
+                    $containerReferences += [ordered]@{ container = $container.Name; target = $target; reference = $reference }
+                }
+            }
+        }
+    }
+}
+$inventory = @()
+foreach ($target in $paths) {
+    if (-not (Test-Path -LiteralPath $target)) { $inventory += [ordered]@{ path = $target; existed = $false }; continue }
+    $stack = [Collections.Generic.Stack[IO.DirectoryInfo]]::new()
+    $stack.Push([IO.DirectoryInfo]::new($target))
+    [long]$bytes = 0
+    [long]$files = 0
+    [long]$directories = 1
+    $links = @()
+    while ($stack.Count) {
+        $directory = $stack.Pop()
+        foreach ($entry in $directory.EnumerateFileSystemInfos()) {
+            if ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+                $links += [ordered]@{ path = $entry.FullName; link_target = $entry.LinkTarget }
+                continue
+            }
+            if ($entry -is [IO.DirectoryInfo]) { $directories++; $stack.Push($entry) }
+            else { $files++; $bytes += $entry.Length }
+        }
+    }
+    $inventory += [ordered]@{ path = $target; existed = $true; logical_bytes = $bytes; files = $files; directories = $directories; reparse_points = $links; deleted = $false }
+}
+$receipt = [ordered]@{
+    status = 'audited_no_deletion'; time_utc = [DateTime]::UtcNow.ToString('o');
+    inventory = $inventory; process_references = $processReferences; container_references = $containerReferences;
+    method = 'PowerShell 7, exact absolute roots; Directory.Delete recursive does not traverse reparse points';
+    size_limit = 'Logical ordinary-file lengths; hardlinks not deduplicated; no claim of physically freed bytes';
+    protected = $plan.protected
+}
+$receiptPath = Join-Path $taskRoot 'cleanup-receipt.json'
+$receipt | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $receiptPath -Encoding utf8NoBOM
+if ($processReferences.Count -or $containerReferences.Count) { throw 'Owned temporary paths are still referenced; receipt retained' }
+if ($Apply) {
+    $receipt.status = 'deletion_in_progress'
+    $receipt | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $receiptPath -Encoding utf8NoBOM
+    foreach ($entry in $inventory) {
+        if (-not $entry.existed) { continue }
+        foreach ($link in $entry.reparse_points) {
+            $linkPath = [IO.Path]::GetFullPath($link.path)
+            if (-not $linkPath.StartsWith($entry.path + '\', [StringComparison]::OrdinalIgnoreCase)) { throw "Link outside owned root: $linkPath" }
+            $linkItem = Get-Item -LiteralPath $linkPath -Force
+            if (-not ($linkItem.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw "Link changed before unlink: $linkPath" }
+            Remove-Item -LiteralPath $linkPath -Force -Confirm:$false
+        }
+        [IO.Directory]::Delete($entry.path, $true)
+        if (Test-Path -LiteralPath $entry.path) { throw "Deletion was not terminal: $($entry.path)" }
+        $entry.deleted = $true
+        $receipt | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $receiptPath -Encoding utf8NoBOM
+    }
+    $receipt.status = 'completed'
+    $receipt.completed_at_utc = [DateTime]::UtcNow.ToString('o')
+    $receipt | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $receiptPath -Encoding utf8NoBOM
+}
+[ordered]@{ status = $receipt.status; directories = $paths.Count; deleted = @($inventory | Where-Object deleted).Count; logical_bytes = ($inventory.logical_bytes | Measure-Object -Sum).Sum; receipt = $receiptPath } | ConvertTo-Json

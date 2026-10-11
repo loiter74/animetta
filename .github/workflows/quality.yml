@@ -229,7 +229,7 @@ jobs:
 
       - name: Install frontend dependencies
         if: matrix.runner == 'pnpm' || matrix.runner == 'vitest'
-        run: pnpm --dir frontend install --frozen-lockfile
+        run: pnpm --dir frontend --filter '*' install --frozen-lockfile
 
       - name: Download frozen plan
         uses: actions/download-artifact@v8
@@ -301,7 +301,7 @@ jobs:
           cache-dependency-path: frontend/pnpm-lock.yaml
 
       - name: Install frontend dependencies
-        run: pnpm --dir frontend install --frozen-lockfile
+        run: pnpm --dir frontend --filter '*' install --frozen-lockfile
 
       - name: Install Chromium for a selected browser group
         if: matrix.group == 'frontend-playwright-smoke'

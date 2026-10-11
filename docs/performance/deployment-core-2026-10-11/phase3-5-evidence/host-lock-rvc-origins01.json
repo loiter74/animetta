@@ -1,0 +1,162 @@
+{
+  "run_id": "host-lock-rvc-origins01",
+  "started_at": "2026-10-11T07:01:45.004990+00:00",
+  "finished_at": "2026-10-11T07:01:45.338439+00:00",
+  "status": "passed",
+  "exit_code": 0,
+  "argv": [
+    "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Scripts\\python.exe",
+    "-B",
+    "-X",
+    "utf8",
+    "-c",
+    "\nimport sys,site,json,importlib.machinery as m\nfrom packaging.markers import default_environment\nnames=['av', 'demucs', 'faiss', 'ffmpeg', 'librosa', 'numpy', 'parselmouth', 'pyworld', 'scipy', 'soundfile', 'starlette', 'torch', 'torchaudio', 'torchcrepe', 'tqdm', 'transformers', 'uvicorn', 'yaml']\nrows={}\nfor name in names:\n spec=m.PathFinder.find_spec(name,sys.path)\n rows[name]={'origin':str(spec.origin) if spec and spec.origin else None,'search_locations':list(spec.submodule_search_locations) if spec and spec.submodule_search_locations else []}\nprint(json.dumps({'python':sys.executable,'marker_environment':default_environment(),'sys_path':sys.path,'site_enabled':site.ENABLE_USER_SITE,'roots':rows,'forbidden_modules_loaded':[n for n in names if n in sys.modules]},ensure_ascii=False))\n"
+  ],
+  "raw": {
+    "stdout": {
+      "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-runs\\host-lock-rvc-origins01.stdout.json",
+      "bytes": 5070,
+      "sha256": "6cb480ed3e6654f3229482032d90f39679198258ad22143c2f5af4266fc57336"
+    },
+    "stderr": {
+      "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-runs\\host-lock-rvc-origins01.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "result": {
+    "python": "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Scripts\\python.exe",
+    "marker_environment": {
+      "implementation_name": "cpython",
+      "implementation_version": "3.13.14",
+      "os_name": "nt",
+      "platform_machine": "AMD64",
+      "platform_release": "11",
+      "platform_system": "Windows",
+      "platform_version": "10.0.26200",
+      "python_full_version": "3.13.14",
+      "platform_python_implementation": "CPython",
+      "python_version": "3.13",
+      "sys_platform": "win32"
+    },
+    "sys_path": [
+      "",
+      "C:\\Users\\30262\\Project\\Anima\\src",
+      "C:\\Users\\30262\\RVC20240604Nvidia",
+      "C:\\Program Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3824.0_x64__qbz5n2kfra8p0\\python313.zip",
+      "C:\\Program Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3824.0_x64__qbz5n2kfra8p0\\DLLs",
+      "C:\\Program Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3824.0_x64__qbz5n2kfra8p0\\Lib",
+      "C:\\Program Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3824.0_x64__qbz5n2kfra8p0",
+      "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta",
+      "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages"
+    ],
+    "site_enabled": false,
+    "roots": {
+      "av": {
+        "origin": "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\av\\__init__.py",
+        "search_locations": [
+          "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\av"
+        ]
+      },
+      "demucs": {
+        "origin": "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\demucs\\__init__.py",
+        "search_locations": [
+          "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\demucs"
+        ]
+      },
+      "faiss": {
+        "origin": "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\faiss\\__init__.py",
+        "search_locations": [
+          "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\faiss"
+        ]
+      },
+      "ffmpeg": {
+        "origin": "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\ffmpeg\\__init__.py",
+        "search_locations": [
+          "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\ffmpeg"
+        ]
+      },
+      "librosa": {
+        "origin": "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\librosa\\__init__.py",
+        "search_locations": [
+          "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\librosa"
+        ]
+      },
+      "numpy": {
+        "origin": "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\numpy\\__init__.py",
+        "search_locations": [
+          "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\numpy"
+        ]
+      },
+      "parselmouth": {
+        "origin": "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\parselmouth.cp313-win_amd64.pyd",
+        "search_locations": []
+      },
+      "pyworld": {
+        "origin": "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\pyworld\\__init__.py",
+        "search_locations": [
+          "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\pyworld"
+        ]
+      },
+      "scipy": {
+        "origin": "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\scipy\\__init__.py",
+        "search_locations": [
+          "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\scipy"
+        ]
+      },
+      "soundfile": {
+        "origin": "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\soundfile.py",
+        "search_locations": []
+      },
+      "starlette": {
+        "origin": "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\starlette\\__init__.py",
+        "search_locations": [
+          "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\starlette"
+        ]
+      },
+      "torch": {
+        "origin": "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\torch\\__init__.py",
+        "search_locations": [
+          "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\torch"
+        ]
+      },
+      "torchaudio": {
+        "origin": "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\torchaudio\\__init__.py",
+        "search_locations": [
+          "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\torchaudio"
+        ]
+      },
+      "torchcrepe": {
+        "origin": "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\torchcrepe\\__init__.py",
+        "search_locations": [
+          "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\torchcrepe"
+        ]
+      },
+      "tqdm": {
+        "origin": "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\tqdm\\__init__.py",
+        "search_locations": [
+          "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\tqdm"
+        ]
+      },
+      "transformers": {
+        "origin": "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\transformers\\__init__.py",
+        "search_locations": [
+          "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\transformers"
+        ]
+      },
+      "uvicorn": {
+        "origin": "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\uvicorn\\__init__.py",
+        "search_locations": [
+          "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\uvicorn"
+        ]
+      },
+      "yaml": {
+        "origin": "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\yaml\\__init__.py",
+        "search_locations": [
+          "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Lib\\site-packages\\yaml"
+        ]
+      }
+    },
+    "forbidden_modules_loaded": []
+  }
+}

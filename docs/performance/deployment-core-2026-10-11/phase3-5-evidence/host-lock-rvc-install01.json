@@ -1,0 +1,132 @@
+{
+  "run_id": "host-lock-rvc-install01",
+  "name": "rvc",
+  "started_at": "2026-10-11T06:13:43.273969+00:00",
+  "status": "failed",
+  "target": "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta",
+  "permanent": true,
+  "lock": {
+    "path": "C:\\Users\\30262\\Project\\Anima\\services\\rvc-host\\requirements.lock",
+    "sha256": "6b97819f9724a6052aaf3c58f667a27701fc21929c30f50b07f85f043002c46c"
+  },
+  "stages": [
+    {
+      "stage": "venv",
+      "argv": [
+        "C:\\Users\\30262\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\\python.exe",
+        "-m",
+        "venv",
+        "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta"
+      ],
+      "exit_code": 0,
+      "seconds": 4.66664049999963,
+      "raw": {
+        "stdout": {
+          "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-runs\\host-lock-rvc-install01-venv.stdout.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-runs\\host-lock-rvc-install01-venv.stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "stage": "dry-run",
+      "argv": [
+        "C:\\Users\\30262\\AppData\\Local\\hermes\\bin\\uv.exe",
+        "pip",
+        "sync",
+        "C:\\Users\\30262\\Project\\Anima\\services\\rvc-host\\requirements.lock",
+        "--python",
+        "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Scripts\\python.exe",
+        "--require-hashes",
+        "--strict",
+        "--no-python-downloads",
+        "--no-config",
+        "--default-index",
+        "https://pypi.org/simple",
+        "--cache-dir",
+        "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-cache\\rvc",
+        "--no-progress",
+        "--index",
+        "https://download.pytorch.org/whl/cu128",
+        "--index-strategy",
+        "unsafe-best-match",
+        "--dry-run"
+      ],
+      "exit_code": 0,
+      "seconds": 1.9994638999996823,
+      "raw": {
+        "stdout": {
+          "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-runs\\host-lock-rvc-install01-dry-run.stdout.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-runs\\host-lock-rvc-install01-dry-run.stderr.log",
+          "bytes": 1590,
+          "sha256": "7791a8760375b97c11ee2161a41287d59f83fe09098ad9e2f3f3058ffa32442f"
+        }
+      }
+    },
+    {
+      "stage": "sync",
+      "argv": [
+        "C:\\Users\\30262\\AppData\\Local\\hermes\\bin\\uv.exe",
+        "pip",
+        "sync",
+        "C:\\Users\\30262\\Project\\Anima\\services\\rvc-host\\requirements.lock",
+        "--python",
+        "C:\\Users\\30262\\RVC20240604Nvidia\\.venv-animetta\\Scripts\\python.exe",
+        "--require-hashes",
+        "--strict",
+        "--no-python-downloads",
+        "--no-config",
+        "--default-index",
+        "https://pypi.org/simple",
+        "--cache-dir",
+        "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-cache\\rvc",
+        "--no-progress",
+        "--index",
+        "https://download.pytorch.org/whl/cu128",
+        "--index-strategy",
+        "unsafe-best-match"
+      ],
+      "exit_code": null,
+      "seconds": null,
+      "timeout_seconds": 900,
+      "timed_out": true,
+      "raw": {
+        "stdout": {
+          "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-runs\\host-lock-rvc-install01-sync.stdout.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\host-lock-runs\\host-lock-rvc-install01-sync.stderr.log",
+          "bytes": 1143,
+          "sha256": "13fd7c72bad6f2b6b538a98b9ae41c4190ea0a54887524a800ac5292abce2931"
+        }
+      }
+    }
+  ],
+  "conditions": {
+    "user_site_disabled": true,
+    "inherited_python_paths_removed": true,
+    "model_inference": false,
+    "gpu": false,
+    "existing_host_environment_modified": false
+  },
+  "finished_at": "2026-10-11T06:30:12.089230+00:00",
+  "failure": {
+    "type": "subprocess.TimeoutExpired",
+    "stage": "sync",
+    "timeout_seconds": 900,
+    "outer_tool_exit_code": 1,
+    "root_cause": "Active 2.6GiB Torch artifact transfer/extraction exceeded wrapper limit; no resolver dependency failure; target still only bootstrap pip",
+    "uv_process_verified_absent": true
+  }
+}

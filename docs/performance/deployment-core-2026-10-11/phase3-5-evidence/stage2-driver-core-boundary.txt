@@ -1,0 +1,52 @@
+import importlib.util
+import json
+from datetime import UTC, datetime
+from pathlib import Path
+
+spec = importlib.util.spec_from_file_location('core_runner', Path(__file__).with_name('core-runner.py'))
+r = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(r)
+core = json.loads((r.REPORT / 'runtime-core-r3.json').read_bytes())
+assert len(core['samples']['application_cold']) == 3
+assert len(core['samples']['application_restart_qwen_reused']) == 3
+assert core['resume']['active_run_id'] is None
+probe = '''import importlib.metadata as m, importlib.util as u, json, sys
+names=['bilibili-api-python','langchain-community','torch','transformers']
+versions={}
+for name in names:
+ try: versions[name]=m.version(name)
+ except m.PackageNotFoundError: versions[name]=None
+modules={name:u.find_spec(name) is not None for name in ['bilibili_api','langchain_community','torch','transformers']}
+print(json.dumps({'python':sys.version,'executable':sys.executable,'distribution_versions':versions,'module_discoverability':modules,'installed_package_count':len(list(m.distributions()))}))
+'''
+packages = json.loads(r.command(['docker', 'exec', 'anima-animetta-1', 'python', '-c', probe]))
+assert all(v is None for v in packages['distribution_versions'].values())
+assert all(v is False for v in packages['module_discoverability'].values())
+ready = r.http('http://localhost/ready')
+components = ready['body']['components']
+assert ready['body']['ready'] is True
+for name in ['asr', 'vad']:
+    assert components[name]['state'] == 'disabled' and components[name]['required'] is False
+assert components['memory_runtime']['state'] == 'ready' and components['memory_runtime']['ready'] is True
+assert components['checkpoint']['state'] == 'ready' and components['checkpoint']['ready'] is True
+assert components['tts']['resolved']['provider'] == 'qwen3-tts-gguf-host'
+assert components['tts']['resolved']['voice'] == 'tosaka-rin-cn'
+identity = r.ownership()
+image = r.command(['docker', 'inspect', '--format', '{{.Image}}', 'anima-animetta-1']).strip()
+assert image == core['samples']['application_cold'][0]['container']['image']
+surfaces = {ep: r.http('http://localhost' + ep) for ep in ['/dashboard', '/live.html']}
+resources = []
+for value in surfaces.values():
+    for asset in value['assets']:
+        response = r.http('http://localhost' + asset)
+        resources.append({'url': 'http://localhost' + asset, 'sha256': response['sha256'], 'bytes': response['bytes'], 'status': response['status']})
+boundary = {'recorded_at': datetime.now(UTC).isoformat(), 'status': 'passed', 'image_id': image, 'image_tag': r.CANDIDATE['image'],
+            'container_id': r.command(['docker', 'inspect', '--format', '{{.Id}}', 'anima-animetta-1']).strip(),
+            'installed_distribution_and_module_probe': packages, 'ready': ready, 'same_public_surfaces': surfaces, 'actual_resource_fingerprints': resources,
+            'host_ownership': identity, 'memory_v2_runtime_ready': True, 'long_term_memory_mode': 'off (frozen production unchanged)',
+            'user_database_or_data_manually_written': False, 'rvc_lifecycle_steps_across_samples': [], 'rvc_8769_unavailable': True}
+r.write(r.MEASURE / 'core-boundary.json', boundary)
+core['boundary_acceptance'] = boundary
+core['resume']['next_action'] = 'Run one supported role/live probe with native natural playback and two same-session continuity turns.'
+r.write(r.REPORT / 'runtime-core-r3.json', core)
+print(json.dumps({'boundary': 'passed', 'image': image, 'absent_distributions': list(packages['distribution_versions']), 'asr_vad': 'disabled/required=false', 'memory_v2': 'ready', 'rvc': 'unavailable', 'next': 'real role/live probe'}))

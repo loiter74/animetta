@@ -1,0 +1,113 @@
+{
+  "node": "v22.17.0",
+  "pnpm": "11.7.0",
+  "conditions": "same dev environment with all packages, alternating modes, warm store, independent output paths",
+  "samples": [
+    {
+      "mode": "production",
+      "sample": 1,
+      "seconds": 9.788696399999026,
+      "files": 92,
+      "bytes": 15418475,
+      "cesium_files": 0,
+      "cesium_bytes": 0,
+      "earth_chunks": [],
+      "transformed": [
+        "357"
+      ],
+      "log_sha256": "0d8e01fe67e1d68f9a2a9732b2f9ed876d444a5712a94611428dee20a7bb8378"
+    },
+    {
+      "mode": "earth",
+      "sample": 1,
+      "seconds": 10.26042790000065,
+      "files": 475,
+      "bytes": 36484503,
+      "cesium_files": 379,
+      "cesium_bytes": 21041697,
+      "earth_chunks": [
+        "index-C97Rixf5.js"
+      ],
+      "transformed": [
+        "357"
+      ],
+      "log_sha256": "94da393677828ce6a233877d00697cc3705c21757daeced2075de2b7b796696f"
+    },
+    {
+      "mode": "production",
+      "sample": 2,
+      "seconds": 9.708581900000354,
+      "files": 92,
+      "bytes": 15418475,
+      "cesium_files": 0,
+      "cesium_bytes": 0,
+      "earth_chunks": [],
+      "transformed": [
+        "357"
+      ],
+      "log_sha256": "3010ee709b4e1de5f30789fee53de6d8c5e2f9a167d819f228ae395d8275241d"
+    },
+    {
+      "mode": "earth",
+      "sample": 2,
+      "seconds": 10.167894900001556,
+      "files": 475,
+      "bytes": 36484503,
+      "cesium_files": 379,
+      "cesium_bytes": 21041697,
+      "earth_chunks": [
+        "index-C97Rixf5.js"
+      ],
+      "transformed": [
+        "357"
+      ],
+      "log_sha256": "c5acf95ee52280fac448e15d8cdeafa7bcb8dc3cb191d2ae67df1a48a650e23c"
+    },
+    {
+      "mode": "production",
+      "sample": 3,
+      "seconds": 9.836603399999149,
+      "files": 92,
+      "bytes": 15418475,
+      "cesium_files": 0,
+      "cesium_bytes": 0,
+      "earth_chunks": [],
+      "transformed": [
+        "357"
+      ],
+      "log_sha256": "8e32d30161be7ccb2271c8fede3e27fb8c0e41d0aea28d909dd21ded33187ee6"
+    },
+    {
+      "mode": "earth",
+      "sample": 3,
+      "seconds": 10.22981549999895,
+      "files": 475,
+      "bytes": 36484503,
+      "cesium_files": 379,
+      "cesium_bytes": 21041697,
+      "earth_chunks": [
+        "index-C97Rixf5.js"
+      ],
+      "transformed": [
+        "357"
+      ],
+      "log_sha256": "06fdb871edecaf8b74d92abb2f62dbebb21c6130940cca2efda566bc323a6bb4"
+    }
+  ],
+  "summary": {
+    "production": {
+      "median_seconds": 9.788696399999026,
+      "range_seconds": [
+        9.708581900000354,
+        9.836603399999149
+      ]
+    },
+    "earth": {
+      "median_seconds": 10.22981549999895,
+      "range_seconds": [
+        10.167894900001556,
+        10.26042790000065
+      ]
+    }
+  }
+}

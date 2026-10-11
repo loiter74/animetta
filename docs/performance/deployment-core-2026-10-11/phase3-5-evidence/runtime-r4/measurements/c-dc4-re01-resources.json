@@ -1,0 +1,209 @@
+{
+  "recorded_at": "2026-10-11T08:08:21.314153+00:00",
+  "phase": "c-dc4-re01",
+  "backend_rss_kib": 200148,
+  "backend_rss_mib": 195.45703125,
+  "app_top_rss_kib": "PID                 PPID                RSS                 COMMAND\n34980               34957               2944                /bin/bash /app/entrypoint.sh\n35023               34980               1580                nginx: master process nginx\n35024               35023               4140                nginx: worker process\n35025               35023               4140                nginx: worker process\n35026               35023               3244                nginx: worker process\n35027               35023               3244                nginx: worker process\n35028               35023               3244                nginx: worker process\n35029               34980               200148              python -m animetta.core.socketio_server\n35030               35023               3244                nginx: worker process\n35031               35023               3244                nginx: worker process\n35032               35023               3244                nginx: worker process\n35033               35023               3244                nginx: worker process\n35034               35023               3248                nginx: worker process\n",
+  "image": {
+    "id": "sha256:569b1ded734e021c5f87f6b822ffd7a422a608bfd8280fa89469233444a7703a",
+    "tag": "animetta:deployment-core-core-r4-f8dcd2e7acf6-3bfb7799",
+    "size_bytes": 614348725
+  },
+  "docker_stats": "{\"BlockIO\":\"0B / 6.89MB\",\"CPUPerc\":\"0.90%\",\"Container\":\"anima-animetta-1\",\"ID\":\"0f675f5f9a1e\",\"MemPerc\":\"1.83%\",\"MemUsage\":\"182.4MiB / 9.713GiB\",\"Name\":\"anima-animetta-1\",\"NetIO\":\"1.93MB / 133kB\",\"PIDs\":\"32\"}\n{\"BlockIO\":\"7.67MB / 8.19kB\",\"CPUPerc\":\"0.25%\",\"Container\":\"anima-redis-1\",\"ID\":\"38621402bf85\",\"MemPerc\":\"0.07%\",\"MemUsage\":\"7.281MiB / 9.713GiB\",\"Name\":\"anima-redis-1\",\"NetIO\":\"4.33kB / 8.28kB\",\"PIDs\":\"15\"}\n",
+  "gpu": "NVIDIA GeForce RTX 5090 D v2, 24455, 4101, 19935",
+  "gpu_compute_apps": "10424, C:\\Windows\\System32\\ShellHost.exe, [N/A]\n10876, C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\CrossDeviceResume.exe, [N/A]\n10380, C:\\Windows\\explorer.exe, [N/A]\n12776, C:\\Windows\\SystemApps\\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\\StartMenuExperienceHost.exe, [N/A]\n12764, C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\SearchHost.exe, [N/A]\n13684, C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\154.0.4258.62\\msedgewebview2.exe, [N/A]\n18032, C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\TextInputHost.exe, [N/A]\n17768, C:\\Program Files\\Tencent\\QQNT\\QQ.exe, [N/A]\n21212, C:\\Program Files (x86)\\Steam\\bin\\cef\\cef.win64\\steamwebhelper.exe, [N/A]\n20352, C:\\Program Files\\Tencent\\QQNT\\QQEX.exe, [N/A]\n23288, C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe, [N/A]\n24212, C:\\Program Files\\WindowsApps\\9426MICRO-STARINTERNATION.MSICenter_2.0.71.0_x64__kzh8wxbdkxb8p\\DCv2\\DCv2.exe, [N/A]\n24176, D:\\Program Files\\MollyCloud\\MollyCloud.exe, [N/A]\n24128, C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.1007.2314.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe, [N/A]\n13968, C:\\Users\\30262\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\cfb32733c877621e\\bin\\node_modules\\@oai\\sky\\bin\\windows\\swift\\x64\\codex-computer-use-swift.exe, [N/A]\n15408, C:\\Users\\30262\\AppData\\Local\\Programs\\Codex Web GPT\\Codex Web GPT.exe, [N/A]\n13704, C:\\Program Files\\Docker\\Docker\\frontend\\Docker Desktop.exe, [N/A]\n15548, C:\\Windows\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe, [N/A]\n14240, C:\\Program Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3824.0_x64__qbz5n2kfra8p0\\python3.13.exe, [N/A]\n24696, C:\\Program Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3824.0_x64__qbz5n2kfra8p0\\python3.13.exe, [N/A]\n19932, C:\\Program Files\\WindowsApps\\Microsoft.Edge.GameAssist_1.0.4019.0_x64__8wekyb3d8bbwe\\EdgeGameAssist.exe, [N/A]\n3400, C:\\Program Files\\Tencent\\QQNT\\QQ.exe, [N/A]\n31972, C:\\Users\\30262\\AppData\\Local\\hermes\\hermes-agent\\apps\\desktop\\release\\win-unpacked\\Hermes.exe, [N/A]",
+  "host_services": [
+    {
+      "pid": 14240,
+      "creation_time": 1791686620.901652,
+      "command_line": [
+        "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\venv\\Scripts\\python.exe",
+        "-m",
+        "animetta_qwen_tts"
+      ],
+      "rss_bytes": 1056792576
+    },
+    {
+      "pid": 16104,
+      "creation_time": 1791686620.775384,
+      "command_line": [
+        "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\venv\\Scripts\\python.exe",
+        "-m",
+        "animetta_qwen_tts"
+      ],
+      "rss_bytes": 7335936
+    }
+  ],
+  "http": {
+    "ready": {
+      "status": 200,
+      "bytes": 2335,
+      "sha256": "41a4a5a75c343cf238355bd559ef82279559dfd411562eeba29b9123ccbab41e",
+      "body": {
+        "schema_version": 1,
+        "status": "ready",
+        "ready": true,
+        "service": "anima",
+        "profile": "production",
+        "version": 1,
+        "persona": "anima.v0.1",
+        "effective_hash": "4be171239c60ddc83a414f8c0a3a6ba4f3be658864d55985cfc5a2d92b6325db",
+        "semantic_hash": "293cd32f315131c15aff8e0a2a9ee41f7963899c9715f9baab80c3d0767b1558",
+        "acceptance_eligible": true,
+        "components": {
+          "pool": {
+            "state": "ready",
+            "ready": true,
+            "reason": null
+          },
+          "llm": {
+            "state": "ready",
+            "ready": true,
+            "configured": {
+              "name": "deepseek",
+              "type": "deepseek",
+              "provider": "deepseek",
+              "model": "deepseek-v4-flash",
+              "voice": null
+            },
+            "resolved": {
+              "type": "deepseek",
+              "provider": "deepseek",
+              "model": "deepseek-v4-flash",
+              "voice": null
+            },
+            "reason": null
+          },
+          "asr": {
+            "state": "disabled",
+            "ready": false,
+            "required": false,
+            "configured": {
+              "type": null,
+              "provider": null,
+              "model": null,
+              "voice": null
+            },
+            "resolved": {
+              "type": null,
+              "provider": null,
+              "model": null,
+              "voice": null
+            },
+            "reason": "capability_disabled"
+          },
+          "tts": {
+            "state": "ready",
+            "ready": true,
+            "configured": {
+              "name": "qwen-host",
+              "type": "remote",
+              "provider": "qwen3-tts-gguf-host",
+              "model": "Qwen3-TTS-1.7B-Base",
+              "voice": "tosaka-rin-cn"
+            },
+            "resolved": {
+              "type": "remote",
+              "provider": "qwen3-tts-gguf-host",
+              "model": "Qwen3-TTS-1.7B-Base",
+              "voice": "tosaka-rin-cn"
+            },
+            "reason": null
+          },
+          "vad": {
+            "state": "disabled",
+            "ready": false,
+            "required": false,
+            "configured": {
+              "type": null,
+              "provider": null,
+              "model": null,
+              "voice": null
+            },
+            "resolved": {
+              "type": null,
+              "provider": null,
+              "model": null,
+              "voice": null
+            },
+            "reason": "capability_disabled"
+          },
+          "frontend": {
+            "state": "ready",
+            "ready": true,
+            "required": true,
+            "reason": null
+          },
+          "checkpoint": {
+            "state": "ready",
+            "ready": true,
+            "degraded": false,
+            "reason": null,
+            "required": false
+          },
+          "auth_session": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "required": true
+          },
+          "auth_user": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "required": true
+          },
+          "observation_ledger": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "queue_depth": 0,
+            "dropped_records": 0,
+            "writer_errors": 0,
+            "schema_version": 2,
+            "write_probe": true,
+            "required": true
+          },
+          "remote_tts": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "contract_valid": true,
+            "required": true
+          },
+          "metrics_projection": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "has_anima_readiness_probe_total": true,
+            "anima_readiness_probe_total_delta": 2.0,
+            "required": true
+          },
+          "memory_runtime": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "ingestion_queue": 0,
+            "index_backlog": 0,
+            "ingestion_failed": 0,
+            "required": true
+          }
+        },
+        "degraded": false,
+        "component_status_age_seconds": 6.104
+      },
+      "assets": []
+    },
+    "health": {
+      "status": 200,
+      "bytes": 63,
+      "sha256": "730373ec606dbb60f6a46ee52e4803007a3559fe054ecdbfef6fe208cd4124e2",
+      "body": {
+        "status": "ok",
+        "service": "anima",
+        "timestamp": 1791706101.129116
+      },
+      "assets": []
+    }
+  }
+}

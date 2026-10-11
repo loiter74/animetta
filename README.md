@@ -152,15 +152,17 @@ A ten-step reading path through the actual code, from boot to deep internals:
 ### Prerequisites
 
 - **Python 3.13** (the toolchain targets 3.13 via ruff/mypy)
-- **Node.js 20+** and **pnpm** (frontend)
-- _(optional)_ NVIDIA GPU + [nvidia-container-toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html) for GPU mode
+- **Docker** and the separately prepared Windows Qwen host service for the default voice runtime
+- **Node.js 22** and **pnpm 11.7.0** for frontend development or source builds; verified image deployment does not need them
+- Optional inference capabilities use separate host environments; GPU packages do not enter the application image
 
 ### 1. Install dependencies
 
-```bash
-pip install -r requirements.txt
-cd frontend && pnpm install
+```powershell
+py -3.13 -m pip install -c requirements.txt pydantic pyyaml python-dotenv loguru
 ```
+
+The default core keeps character dialogue, Live2D, memory v2 and the existing Qwen voice. The command above prepares the lifecycle controller; the application environment is inside Docker. Local backend development uses `requirements.txt`. For Web development, install with `pnpm --dir frontend --filter animetta-desktop install --frozen-lockfile` and start with `pnpm --dir frontend dev`. For all developer tools, choose `--filter '*'`. Installation scopes, optional capabilities and memory modes are documented in the [core deployment guide](docs/development/core-deployment.md).
 
 ### 2. Configure
 
@@ -178,15 +180,11 @@ cp .env.example .env
 
 ### 3. Run
 
-```bash
-# Backend
-python -m animetta.core.socketio_server
-
-# Frontend (in a second terminal)
-cd frontend && pnpm dev
+```powershell
+py -3.13 scripts/runtime_lifecycle.py anima-up
 ```
 
-The frontend dev server runs on `http://localhost:3000`; the backend on `http://localhost:12394`.
+Use `http://localhost/live.html` for the character and `http://localhost/dashboard` for the dashboard. Lifecycle startup reuses a healthy Qwen host and prepares other services only when their capability is enabled.
 
 ### Build from source or deploy a verified image
 

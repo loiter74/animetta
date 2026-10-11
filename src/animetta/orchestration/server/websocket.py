@@ -138,6 +138,7 @@ class WebSocketServer:
         project_root = Path(__file__).resolve().parent.parent.parent.parent.parent
         self.command_inbox = CommandInbox(get_data_dir() / "command_inbox.db")
         self.memory_runtime = SharedMemoryRuntime(
+            retrieval_mode=config.runtime.memory_retrieval_mode if config is not None else "fts",
             command_inbox=self.command_inbox,
             observation_recorder=self.observation_recorder,
         )

@@ -531,13 +531,18 @@ class ServiceContext:
         try:
             from animetta.memory.v2.system import LivingMemorySystem
 
-            self.memory_system = LivingMemorySystem(db_path="memory_db/living_memory.sqlite")
+            self.memory_system = LivingMemorySystem(
+                db_path="memory_db/living_memory.sqlite",
+                retrieval_mode=getattr(system, "memory_retrieval_mode", "fts"),
+            )
             await self.memory_system.initialize()
             self._owns_memory_system = True
             logger.info(f"[{self.session_id}] LivingMemory V2 initialized")
         except Exception as e:
             logger.warning(f"[{self.session_id}] Memory system initialization failed: {e}")
             self.memory_system = None
+            if isinstance(self.config, EffectiveConfig):
+                raise
 
     def attach_memory_system(
         self,

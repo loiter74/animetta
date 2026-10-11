@@ -12,7 +12,7 @@ from collections import OrderedDict
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from loguru import logger
 
@@ -59,6 +59,7 @@ class SharedMemoryRuntime:
         db_path: str | Path = "memory_db/living_memory.sqlite",
         *,
         system_factory: Callable[[], Any] | None = None,
+        retrieval_mode: Literal["fts", "semantic"] = "fts",
         worker_interval: float = 0.5,
         ingestion_queue_size: int = 256,
         dedup_window: int = 2048,
@@ -66,7 +67,10 @@ class SharedMemoryRuntime:
         observation_recorder: ObservationRecorder | None = None,
     ) -> None:
         self.db_path = str(db_path)
-        self._system_factory = system_factory or (lambda: LivingMemorySystem(db_path=self.db_path))
+        self.retrieval_mode = retrieval_mode
+        self._system_factory = system_factory or (
+            lambda: LivingMemorySystem(db_path=self.db_path, retrieval_mode=retrieval_mode)
+        )
         self.worker_interval = worker_interval
         self.system: Any | None = None
         self._initialize_lock = asyncio.Lock()
@@ -422,6 +426,8 @@ class SharedMemoryRuntime:
         index_health = store.get_index_health()
         return {
             "ready": True,
+            "retrieval_mode": self.retrieval_mode,
+            "vector_ready": bool(getattr(store, "_chroma_collection", None)),
             "degraded": bool(
                 index_health["degraded"] or self._last_ingestion_error or self._last_index_error
             ),

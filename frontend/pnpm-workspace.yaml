@@ -1,5 +1,17 @@
 packages:
   - '.'
+  - 'optional/*'
+
+# Default installs only the web project; contributors opt into the other packages.
+recursiveInstall: false
+publicHoistPattern:
+  - cesium
+  - electron
+  - obs-websocket-js
+  - pixelmatch
+  - playwright
+  - pngjs
+  - tsx
 
 allowBuilds:
   electron: true

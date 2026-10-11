@@ -34,10 +34,15 @@ def test_requirements_entrypoints_have_one_way_dependency_layers() -> None:
 
     def specifications(content: str) -> set[tuple[str, str]]:
         entries = (line.strip() for line in content.splitlines())
-        requirements = (Requirement(line) for line in entries if line and not line.startswith("#"))
+        requirements = (
+            Requirement(line)
+            for line in entries
+            if line and not line.startswith(("#", "--extra-index-url "))
+        )
         return {(requirement.name, str(requirement.specifier)) for requirement in requirements}
 
     assert specifications(runtime) <= specifications(dev)
+    assert not any(line.strip().startswith(("-r ", "--requirement ")) for line in dev.splitlines())
     assert not {"torch", "torchaudio", "transformers", "demucs"} & {
         name for name, _version in specifications(runtime)
     }
@@ -51,6 +56,7 @@ def test_requirement_files_are_ascii_for_windows_pip() -> None:
         "requirements-local-ai.txt",
         "requirements-bilibili.txt",
         "requirements-search.txt",
+        "requirements-memory-semantic.txt",
     ):
         data = (health_check.ROOT / name).read_bytes()
         data.decode("ascii")

@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import DashboardPage from '@/views/DashboardPage.vue'
 
 const leafStubs = {
@@ -37,11 +37,28 @@ function tab(wrapper: ReturnType<typeof mountPage>, label: string) {
 }
 
 describe('DashboardPage information architecture', () => {
-  it('offers private exploration and starts in live operations without mounting a map', () => {
+  it('offers exploration when a build explicitly enables the optional map', async () => {
+    vi.stubEnv('VITE_EARTH_ENABLED', 'true')
+    vi.resetModules()
+    try {
+      const { default: EnabledDashboard } = await import('@/views/DashboardPage.vue')
+      const wrapper = mount(EnabledDashboard, {
+        global: { plugins: [createPinia()], stubs: leafStubs },
+      })
+      expect(
+        wrapper.findAll('[aria-label="后台任务"] [role="tab"]').map((item) => item.text()),
+      ).toEqual(['现场', '节目', '记忆', '验证', '探索'])
+      wrapper.unmount()
+    } finally {
+      vi.unstubAllEnvs()
+      vi.resetModules()
+    }
+  })
+  it('starts in core live operations without requiring the optional map', () => {
     const wrapper = mountPage()
 
     const taskTabs = wrapper.findAll('[aria-label="后台任务"] [role="tab"]')
-    expect(taskTabs.map((item) => item.text())).toEqual(['现场', '节目', '记忆', '验证', '探索'])
+    expect(taskTabs.map((item) => item.text())).toEqual(['现场', '节目', '记忆', '验证'])
     expect(wrapper.find('[data-testid="earth-workspace"]').exists()).toBe(false)
     expect(wrapper.get('[data-testid="title-bar"]')).toBeTruthy()
     expect(wrapper.get('[data-testid="live-workspace"]')).toBeTruthy()

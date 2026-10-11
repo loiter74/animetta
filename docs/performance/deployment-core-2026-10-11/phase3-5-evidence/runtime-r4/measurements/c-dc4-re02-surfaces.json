@@ -1,0 +1,220 @@
+{
+  "schema_version": 1,
+  "status": "passed",
+  "run_id": "c-dc4-re02-http-surfaces",
+  "evidence_scope": "Authenticated HTTP/page/resource fingerprint only; real native browser playback accepted separately once after final sample",
+  "http": {
+    "/health": {
+      "status": 200,
+      "bytes": 64,
+      "sha256": "26bc67be939449014850b271e72c8206c3b1d443cc2dd82e783fcd18a6b163ed",
+      "body": {
+        "status": "ok",
+        "service": "anima",
+        "timestamp": 1791706150.9784245
+      },
+      "assets": []
+    },
+    "/ready": {
+      "status": 200,
+      "bytes": 2335,
+      "sha256": "62880d4d3744ce81812bf0bc1b0b5701e151dfbf28bcc810c00d6bf4a9db7a1c",
+      "body": {
+        "schema_version": 1,
+        "status": "ready",
+        "ready": true,
+        "service": "anima",
+        "profile": "production",
+        "version": 1,
+        "persona": "anima.v0.1",
+        "effective_hash": "4be171239c60ddc83a414f8c0a3a6ba4f3be658864d55985cfc5a2d92b6325db",
+        "semantic_hash": "293cd32f315131c15aff8e0a2a9ee41f7963899c9715f9baab80c3d0767b1558",
+        "acceptance_eligible": true,
+        "components": {
+          "pool": {
+            "state": "ready",
+            "ready": true,
+            "reason": null
+          },
+          "llm": {
+            "state": "ready",
+            "ready": true,
+            "configured": {
+              "name": "deepseek",
+              "type": "deepseek",
+              "provider": "deepseek",
+              "model": "deepseek-v4-flash",
+              "voice": null
+            },
+            "resolved": {
+              "type": "deepseek",
+              "provider": "deepseek",
+              "model": "deepseek-v4-flash",
+              "voice": null
+            },
+            "reason": null
+          },
+          "asr": {
+            "state": "disabled",
+            "ready": false,
+            "required": false,
+            "configured": {
+              "type": null,
+              "provider": null,
+              "model": null,
+              "voice": null
+            },
+            "resolved": {
+              "type": null,
+              "provider": null,
+              "model": null,
+              "voice": null
+            },
+            "reason": "capability_disabled"
+          },
+          "tts": {
+            "state": "ready",
+            "ready": true,
+            "configured": {
+              "name": "qwen-host",
+              "type": "remote",
+              "provider": "qwen3-tts-gguf-host",
+              "model": "Qwen3-TTS-1.7B-Base",
+              "voice": "tosaka-rin-cn"
+            },
+            "resolved": {
+              "type": "remote",
+              "provider": "qwen3-tts-gguf-host",
+              "model": "Qwen3-TTS-1.7B-Base",
+              "voice": "tosaka-rin-cn"
+            },
+            "reason": null
+          },
+          "vad": {
+            "state": "disabled",
+            "ready": false,
+            "required": false,
+            "configured": {
+              "type": null,
+              "provider": null,
+              "model": null,
+              "voice": null
+            },
+            "resolved": {
+              "type": null,
+              "provider": null,
+              "model": null,
+              "voice": null
+            },
+            "reason": "capability_disabled"
+          },
+          "frontend": {
+            "state": "ready",
+            "ready": true,
+            "required": true,
+            "reason": null
+          },
+          "checkpoint": {
+            "state": "ready",
+            "ready": true,
+            "degraded": false,
+            "reason": null,
+            "required": false
+          },
+          "auth_session": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "required": true
+          },
+          "auth_user": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "required": true
+          },
+          "observation_ledger": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "queue_depth": 0,
+            "dropped_records": 0,
+            "writer_errors": 0,
+            "schema_version": 2,
+            "write_probe": true,
+            "required": true
+          },
+          "remote_tts": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "contract_valid": true,
+            "required": true
+          },
+          "metrics_projection": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "has_anima_readiness_probe_total": true,
+            "anima_readiness_probe_total_delta": 2.0,
+            "required": true
+          },
+          "memory_runtime": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "ingestion_queue": 0,
+            "index_backlog": 0,
+            "ingestion_failed": 0,
+            "required": true
+          }
+        },
+        "degraded": false,
+        "component_status_age_seconds": 3.007
+      },
+      "assets": []
+    },
+    "/dashboard": {
+      "status": 200,
+      "bytes": 1665,
+      "sha256": "4de4bdd48d24ec9d81fba9c558b3d82f23a6caceb94a8ea825aea34d572f77fd",
+      "body": null,
+      "assets": [
+        "/live2d/live2dcubismcore.min.js",
+        "/assets/app-CNn01Dr6.js",
+        "/assets/__uno-DFSx-zmg.js",
+        "/assets/__uno-Cz082Y8U.css",
+        "/assets/app-fk-jzbIZ.css"
+      ]
+    },
+    "/live.html": {
+      "status": 200,
+      "bytes": 4136,
+      "sha256": "96322d8b4a66a2fde26a1de0cff68970a234b494313fa7aafea14008cf2ff32f",
+      "body": null,
+      "assets": [
+        "/live2d/live2dcubismcore.min.js",
+        "/assets/live-CKJ0rQ56.js",
+        "/assets/__uno-DFSx-zmg.js",
+        "/assets/playback-sync-BIYR2RVW.js",
+        "/assets/public-activity-Dgr1AmUL.js",
+        "/assets/__uno-Cz082Y8U.css",
+        "/assets/public-activity-DB2PvEIL.css",
+        "/assets/live-BowdoQJv.css"
+      ]
+    },
+    "/api/auth/session": {
+      "status": 200,
+      "bytes": 95,
+      "sha256": "551a5229465ee45b5d83d1b09cbf0c396e7410692392f74679ce5aded0dab8cb",
+      "body": {
+        "ok": true,
+        "authenticated": true,
+        "source": "bearer",
+        "user": null,
+        "password_change_required": false
+      },
+      "assets": []
+    }
+  }
+}

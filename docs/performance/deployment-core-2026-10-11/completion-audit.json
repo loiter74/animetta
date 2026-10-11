@@ -1,0 +1,183 @@
+{
+  "objective": "完成部署精简阶段0至5，真实核心冒烟，然后清理任务临时数据与文件",
+  "status": "in_progress",
+  "requirements": [
+    {
+      "id": "phase0_baseline",
+      "status": "verified",
+      "evidence": [
+        "contract.md",
+        "results.md"
+      ]
+    },
+    {
+      "id": "phase1_optional_lifecycle",
+      "status": "verified_previous_delivery",
+      "evidence": [
+        "runtime-core-r3.json",
+        "results.md"
+      ]
+    },
+    {
+      "id": "phase2_core_install",
+      "status": "verified_previous_delivery",
+      "evidence": [
+        "results.md",
+        "runtime-core-r3.json"
+      ]
+    },
+    {
+      "id": "phase3_memory_modes_persistence_scopes_governance",
+      "status": "verified",
+      "evidence": [
+        "phase3-5-evidence/semantic-sdk-probe.log",
+        "phase3-5-evidence/quality-r4-backend-full.json"
+      ]
+    },
+    {
+      "id": "phase3_voice_input_optional",
+      "status": "verified_with_recorded_limits",
+      "evidence": [
+        "phase3-5-evidence/runtime-r4/runtime-core-r4.json"
+      ]
+    },
+    {
+      "id": "phase3_qwen_independent_lock",
+      "status": "verified",
+      "evidence": [
+        "../../../services/qwen-host/requirements.lock",
+        "../../../services/qwen-host/native-provenance.json"
+      ]
+    },
+    {
+      "id": "phase3_rvc_independent_lock_and_environment",
+      "status": "verified_dependency_isolation",
+      "evidence": [
+        "../../../services/rvc-host/dependency-provenance.json",
+        "phase3-5-evidence/host-lock-rvc-install03.json"
+      ],
+      "limitation": "未执行模型加载、原生ABI或GPU推理验收"
+    },
+    {
+      "id": "phase3_task_identity_bounds_cancel_timeout_failure",
+      "status": "verified_with_recorded_limits",
+      "evidence": [
+        "phase3-5-evidence/quality-r4-host-rvc-contract-unit.json",
+        "phase3-5-evidence/quality-r4-host-tts-contract-unit.json",
+        "phase3-5-evidence/runtime-r4/runtime-core-r4.json"
+      ]
+    },
+    {
+      "id": "phase3_core_voice_and_memory_quality",
+      "status": "verified_with_recorded_limits",
+      "evidence": [
+        "phase3-5-evidence/runtime-r4/runtime-core-r4.json"
+      ]
+    },
+    {
+      "id": "phase4_map_assets_excluded",
+      "status": "verified_with_recorded_limits",
+      "evidence": [
+        "phase3-5-evidence/results.json",
+        "phase3-5-evidence/node-core-install-proof.json",
+        "phase3-5-evidence/runtime-r4/runtime-core-r4.json"
+      ]
+    },
+    {
+      "id": "phase4_desktop_review_install_isolation",
+      "status": "verified",
+      "evidence": [
+        "phase3-5-evidence/node-core-install-proof.json"
+      ]
+    },
+    {
+      "id": "phase4_reusable_image_and_ordinary_deploy",
+      "status": "pending_final_gate",
+      "evidence": [
+        "phase3-5-evidence/deploy-control-probe-r4.log"
+      ],
+      "remaining": "CI契约检查、规范生命周期部署；不把控制器导入成功当部署成功"
+    },
+    {
+      "id": "phase4_system_media_packages",
+      "status": "verified_with_recorded_limits",
+      "evidence": [
+        "phase3-5-evidence/runtime-r4/runtime-core-r4.json"
+      ]
+    },
+    {
+      "id": "phase4_formal_urls_and_permissions",
+      "status": "verified_with_recorded_limits",
+      "evidence": [
+        "phase3-5-evidence/runtime-r4/runtime-core-r4.json"
+      ]
+    },
+    {
+      "id": "phase5_confirmed_unused_dependencies_and_compatibility",
+      "status": "verified_with_recorded_limits",
+      "evidence": [
+        "phase3-5-evidence/runtime-r4/runtime-core-r4.json"
+      ]
+    },
+    {
+      "id": "phase5_unified_operator_docs",
+      "status": "verified_contract",
+      "evidence": [
+        "../../development/core-deployment.md",
+        "../../../README.md",
+        "../../../CONTRIBUTING.md",
+        "phase3-5-evidence/quality-r4-docs-contract.json"
+      ]
+    },
+    {
+      "id": "phase5_same_condition_cost_retest",
+      "status": "verified_with_recorded_limits",
+      "evidence": [
+        "phase3-5-evidence/phase4-contract.json",
+        "phase3-5-evidence/results.json",
+        "phase3-5-evidence/runtime-r4/runtime-core-r4.json"
+      ]
+    },
+    {
+      "id": "phase5_required_quality_groups",
+      "status": "verified",
+      "evidence": [
+        "phase3-5-evidence/quality-r4-summary.json"
+      ],
+      "groups": 25,
+      "unmapped_paths": []
+    },
+    {
+      "id": "phase5_previous_release_recoverable",
+      "status": "verified_image_availability",
+      "evidence": [
+        "phase3-5-evidence/rollback-registry-proof.json",
+        "phase3-5-evidence/previous-image.json"
+      ],
+      "limitation": "不可变镜像实际可取得，未执行回退部署；回退须配对原发布配置"
+    },
+    {
+      "id": "cleanup_after_smoke",
+      "status": "large_temporary_roots_removed",
+      "remaining": "提交和远端分发核验后归档并清理小型任务状态目录",
+      "evidence": [
+        "phase3-5-evidence/cleanup-summary.json"
+      ]
+    },
+    {
+      "id": "preserve_user_work_models_and_runtime_data",
+      "status": "pending_final_status_audit",
+      "remaining": "训练与song未提交修改不暂存；模型、共享cache、永久RVC环境及运行数据不清理"
+    },
+    {
+      "id": "task_only_commit_safe_push_main",
+      "status": "pending",
+      "remaining": "精确暂存、检查实际提交字节、单次fetch、可快进普通推送"
+    }
+  ],
+  "conditional_exclusions": [
+    "Redis移除仅为条件性后续，本轮不执行",
+    "未证实收益的ASR或embedding模型替换不另建服务",
+    "不以RVC可选模型推理替代默认核心冒烟"
+  ]
+}

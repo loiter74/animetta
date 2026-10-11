@@ -59,6 +59,22 @@ def test_main_image_installs_only_core_runtime_dependencies() -> None:
     assert "Acquire::Retries=5" in dockerfile
 
 
+def test_optional_web_and_media_dependencies_are_excluded_from_the_core_image() -> None:
+    dockerfile = _text("Dockerfile")
+    assert "pnpm --filter animetta-desktop install --frozen-lockfile" in dockerfile
+    assert "--filter @animetta/earth install" in dockerfile
+    assert "ARG ANIMETTA_MEDIA_ENABLED=false" in dockerfile
+    assert 'if [ "$ANIMETTA_MEDIA_ENABLED" = "true" ]; then' in dockerfile
+    package = json.loads(_text("frontend/package.json"))
+    for dependency in ("cesium", "electron", "electron-builder", "playwright", "obs-websocket-js"):
+        assert dependency not in package["dependencies"]
+        assert dependency not in package["devDependencies"]
+    for name in ("desktop", "earth", "review"):
+        feature = json.loads(_text(f"frontend/optional/{name}/package.json"))
+        assert feature["private"] is True
+        assert feature["dependencies"]
+
+
 def test_main_image_does_not_copy_removed_stats_placeholder() -> None:
     dockerfile = _text("Dockerfile")
 
@@ -68,12 +84,12 @@ def test_main_image_does_not_copy_removed_stats_placeholder() -> None:
 def test_earth_feature_flag_and_static_assets_reach_both_frontend_builds() -> None:
     dockerfile = _text("Dockerfile")
     assert "COPY frontend/scripts/earth-assets.ts ./scripts/earth-assets.ts" in dockerfile
-    assert "ARG VITE_EARTH_ENABLED=true" in dockerfile
+    assert "ARG VITE_EARTH_ENABLED=false" in dockerfile
     production = _compose("docker-compose.yml")["services"]["animetta"]
     development = _compose("docker-compose.dev.yml")["services"]["frontend"]
     for service in (production, development):
-        assert service["build"]["args"]["VITE_EARTH_ENABLED"] == "${ANIMETTA_EARTH_ENABLED:-true}"
-    assert "ANIMETTA_EARTH_ENABLED=${ANIMETTA_EARTH_ENABLED:-true}" in production["environment"]
+        assert service["build"]["args"]["VITE_EARTH_ENABLED"] == "${ANIMETTA_EARTH_ENABLED:-false}"
+    assert "ANIMETTA_EARTH_ENABLED=${ANIMETTA_EARTH_ENABLED:-false}" in production["environment"]
     assert _text("tooling/quality.yml").count("- frontend/scripts/earth-assets.ts") == 2
 
 
@@ -173,7 +189,8 @@ def test_animetta_compose_selects_local_or_verified_image_from_one_definition() 
         "platforms": ["linux/amd64"],
         "args": {
             "ANIMETTA_BUILD_FINGERPRINT": "${ANIMETTA_BUILD_FINGERPRINT:-untracked}",
-            "VITE_EARTH_ENABLED": "${ANIMETTA_EARTH_ENABLED:-true}",
+            "VITE_EARTH_ENABLED": "${ANIMETTA_EARTH_ENABLED:-false}",
+            "ANIMETTA_MEDIA_ENABLED": "${ANIMETTA_MEDIA_ENABLED:-false}",
         },
     }
 
@@ -215,7 +232,7 @@ def test_compose_services_inject_only_explicit_least_privilege_environment() -> 
 
     assert "env_file" not in app
     assert set(app["environment"]) == {
-        "ANIMETTA_EARTH_ENABLED=${ANIMETTA_EARTH_ENABLED:-true}",
+        "ANIMETTA_EARTH_ENABLED=${ANIMETTA_EARTH_ENABLED:-false}",
         "ANIMETTA_PROFILE=${ANIMETTA_PROFILE:-production}",
         "ANIMETTA_HOST=0.0.0.0",
         "ANIMETTA_PORT=12394",

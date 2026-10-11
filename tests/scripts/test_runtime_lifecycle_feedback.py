@@ -440,6 +440,8 @@ async def test_isolated_lifecycle_keeps_compose_http_and_image_on_one_target(
             "ANIMETTA_PORT": "22394",
             "ANIMETTA_IMAGE": "animetta:anima-core-opt-test",
             "ANIMETTA_PROFILE": "smoke",
+            "ANIMETTA_EARTH_ENABLED": "false",
+            "ANIMETTA_MEDIA_ENABLED": "false",
         }
 
 

@@ -13,9 +13,12 @@ def test_docker_frontend_build_uses_pnpm_lockfile() -> None:
 
     for name in DOCKERFILES:
         content = (ROOT / name).read_text(encoding="utf-8")
+        installs = re.findall(r"\bpnpm[^\n;]*\binstall\b[^\n;]*", content)
         uses_npm_install = re.search(r"^\s*RUN\s+npm\s+install\b", content, re.MULTILINE)
         if (
-            "pnpm install --frozen-lockfile" not in content
+            not installs
+            or any("--frozen-lockfile" not in command for command in installs)
+            or any("--filter animetta-desktop" not in command for command in installs)
             or "pnpm-workspace.yaml" not in content
             or ".npmrc" not in content
             or "package-lock" in content

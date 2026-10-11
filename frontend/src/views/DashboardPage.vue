@@ -7,10 +7,10 @@ import MemoryWorkspace from '@/components/memory/MemoryWorkspace.vue'
 import ProgramWorkspace from '@/components/program/ProgramWorkspace.vue'
 import SectionTabs, { type SectionTab } from '@/components/shared/SectionTabs.vue'
 
-const earthEnabled = import.meta.env.VITE_EARTH_ENABLED !== 'false'
-const EarthWorkspace = defineAsyncComponent(() =>
-  import('@/features/earth').then((module) => module.EarthWorkspace),
-)
+const earthEnabled = import.meta.env.VITE_EARTH_ENABLED === 'true'
+const EarthWorkspace = earthEnabled
+  ? defineAsyncComponent(() => import('@/features/earth').then((module) => module.EarthWorkspace))
+  : undefined
 
 const tasks: readonly SectionTab[] = [
   { id: 'live', label: '现场', description: '监看直播健康、节目进度和执行链路' },

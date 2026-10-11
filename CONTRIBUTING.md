@@ -24,7 +24,8 @@ Install the pre-commit hook so trivial lint/format/secret mistakes are caught
 locally on every commit (sub-second), instead of waiting for CI:
 
 ```bash
-pip install -r requirements-dev.txt   # installs pre-commit + ruff + mypy
+py -3.13 -m pip install -r requirements-dev.txt   # installs pre-commit + ruff + mypy
+pnpm --dir frontend --filter '*' install --frozen-lockfile  # include map, desktop and review tools
 make install-hooks                    # installs .git/hooks/pre-commit
 ```
 

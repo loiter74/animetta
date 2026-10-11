@@ -20,6 +20,60 @@ def isolated_compose_environment(monkeypatch) -> None:
     monkeypatch.setattr(runtime_lifecycle, "dotenv_values", lambda _path: {})
 
 
+def test_host_python_environment_excludes_callers_python_packages(monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv("PYTHONPATH", str(tmp_path / "foreign-packages"))
+    monkeypatch.setenv("PYTHONHOME", str(tmp_path / "foreign-python"))
+    monkeypatch.setenv("PYTHONUSERBASE", str(tmp_path / "foreign-user-base"))
+    monkeypatch.setenv("PYTHONNOUSERSITE", "0")
+    runtime_root = tmp_path / "service"
+
+    environment = runtime_lifecycle._host_python_environment(runtime_root)
+
+    assert environment["PYTHONPATH"].split(runtime_lifecycle.os.pathsep) == [
+        str(runtime_lifecycle.ROOT / "src"),
+        str(runtime_root),
+    ]
+    assert environment["PYTHONNOUSERSITE"] == "1"
+    assert "PYTHONHOME" not in environment
+    assert "PYTHONUSERBASE" not in environment
+    assert runtime_lifecycle.os.environ["PYTHONNOUSERSITE"] == "0"
+    assert runtime_lifecycle.os.environ["PYTHONPATH"] == str(tmp_path / "foreign-packages")
+
+
+@pytest.mark.parametrize(
+    ("operation", "build"),
+    [
+        ("anima-up", True),
+        ("anima-dev", True),
+        ("anima-selftest-up", True),
+        ("anima-deploy", False),
+        ("anima-down", False),
+    ],
+)
+def test_build_capabilities_are_only_parsed_for_source_builds(
+    monkeypatch, tmp_path, operation, build
+):
+    from animetta.config import manifest
+
+    calls = []
+
+    def selected_capabilities(path, *, profile):
+        calls.append((path, profile))
+        return {"ANIMETTA_EARTH_ENABLED": "true", "ANIMETTA_MEDIA_ENABLED": "true"}
+
+    monkeypatch.setattr(runtime_lifecycle, "ROOT", tmp_path)
+    monkeypatch.setattr(manifest, "load_build_capabilities", selected_capabilities)
+    environment = runtime_lifecycle._compose_environment(operation=operation)
+    if build:
+        assert calls == [(tmp_path / "config" / "animetta.yaml", "production")]
+        assert environment["ANIMETTA_EARTH_ENABLED"] == "true"
+        assert environment["ANIMETTA_MEDIA_ENABLED"] == "true"
+    else:
+        assert calls == []
+        assert "ANIMETTA_EARTH_ENABLED" not in environment
+        assert "ANIMETTA_MEDIA_ENABLED" not in environment
+
+
 def test_animetta_up_requires_host_tts_before_build(monkeypatch) -> None:
     commands: list[tuple[list[str], dict[str, str] | None]] = []
     host_calls: list[bool] = []
@@ -43,6 +97,8 @@ def test_animetta_up_requires_host_tts_before_build(monkeypatch) -> None:
     production_environment = {
         "ANIMETTA_IMAGE": "animetta:local",
         "ANIMETTA_PROFILE": "production",
+        "ANIMETTA_EARTH_ENABLED": "false",
+        "ANIMETTA_MEDIA_ENABLED": "false",
     }
     assert commands[1] == (
         ["docker", "compose", "build", "animetta"],
@@ -71,6 +127,8 @@ def test_animetta_up_preserves_an_explicit_runtime_profile(monkeypatch) -> None:
     expected_environment = {
         "ANIMETTA_IMAGE": "animetta:local",
         "ANIMETTA_PROFILE": "smoke",
+        "ANIMETTA_EARTH_ENABLED": "false",
+        "ANIMETTA_MEDIA_ENABLED": "false",
     }
     assert commands[1][1] == expected_environment
     assert commands[2][1] == expected_environment
@@ -98,6 +156,8 @@ def test_animetta_selftest_up_waits_for_qwen_and_uses_profile_environment(monkey
     selftest_environment = {
         "ANIMETTA_IMAGE": "animetta:local",
         "ANIMETTA_PROFILE": "selftest",
+        "ANIMETTA_EARTH_ENABLED": "false",
+        "ANIMETTA_MEDIA_ENABLED": "false",
     }
     assert commands[1] == (
         ["docker", "compose", "build", "animetta"],

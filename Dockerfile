@@ -3,6 +3,7 @@
 # Qwen and RVC remain Windows host services; no GPU packages enter this image.
 
 FROM node:22-bookworm-slim AS frontend-deps
+ARG VITE_EARTH_ENABLED=false
 RUN corepack enable \
     && corepack prepare pnpm@11.7.0 --activate \
     && pnpm config set registry https://registry.npmmirror.com \
@@ -10,11 +11,18 @@ RUN corepack enable \
 WORKDIR /build/frontend
 ENV ELECTRON_SKIP_BINARY_DOWNLOAD=1 npm_config_electron_skip_binary_download=true
 COPY frontend/.npmrc frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./
+COPY frontend/optional/earth/package.json ./optional/earth/package.json
+COPY frontend/optional/desktop/package.json ./optional/desktop/package.json
+COPY frontend/optional/review/package.json ./optional/review/package.json
 RUN --mount=type=cache,id=animetta-pnpm-11,target=/pnpm/store \
-    pnpm install --frozen-lockfile --prefer-offline
+    if [ "$VITE_EARTH_ENABLED" = "true" ]; then \
+      pnpm --filter animetta-desktop --filter @animetta/earth install --frozen-lockfile --prefer-offline; \
+    else \
+      pnpm --filter animetta-desktop install --frozen-lockfile --prefer-offline; \
+    fi
 
 FROM frontend-deps AS frontend-source
-ARG VITE_EARTH_ENABLED=true
+ARG VITE_EARTH_ENABLED=false
 ENV VITE_EARTH_ENABLED=${VITE_EARTH_ENABLED}
 COPY frontend/*.html frontend/vite.config.ts frontend/uno.config.ts frontend/tsconfig.json ./
 COPY frontend/src/ ./src/
@@ -44,13 +52,15 @@ RUN --mount=type=cache,id=animetta-uv-013,target=/root/.cache/uv \
     && uv pip check --python /opt/venv/bin/python
 
 FROM python:3.13-slim-bookworm AS backend-base
+ARG ANIMETTA_MEDIA_ENABLED=false
 WORKDIR /app
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     rm -f /etc/apt/apt.conf.d/docker-clean \
     && sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources \
     && apt-get -o Acquire::Retries=5 update \
-    && apt-get install -y --no-install-recommends ffmpeg nginx curl
+    && apt-get install -y --no-install-recommends nginx curl \
+    && if [ "$ANIMETTA_MEDIA_ENABLED" = "true" ]; then apt-get install -y --no-install-recommends ffmpeg; fi
 COPY --from=python-builder /opt/venv /opt/venv
 ENV PATH=/opt/venv/bin:$PATH PYTHONPATH=/app/src PYTHONUNBUFFERED=1
 ENV ANIMETTA_HOST=0.0.0.0 ANIMETTA_PORT=12394 ANIMETTA_PROFILE=test

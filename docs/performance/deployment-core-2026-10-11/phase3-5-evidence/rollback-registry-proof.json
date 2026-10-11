@@ -1,0 +1,36 @@
+{
+  "commit": "b422c70a835564a244e9bd3bd2058b699f14d948",
+  "image": "ghcr.io/loiter74/animetta@sha256:6cd5498e3279d933f8d290d8d6b476a63a71f07d4a3504adc1d6dec0602ce9f8",
+  "ci_run_id": 38055712933,
+  "ci_url": "https://github.com/loiter74/animetta/actions/runs/38055712933",
+  "package_jobs": [
+    {
+      "id": 114224127312,
+      "name": "Publish GHCR image",
+      "conclusion": "success",
+      "url": "https://github.com/loiter74/animetta/actions/runs/38055712933/job/114224127312"
+    },
+    {
+      "id": 114224260343,
+      "name": "Promote GHCR main tag",
+      "conclusion": "success",
+      "url": "https://github.com/loiter74/animetta/actions/runs/38055712933/job/114224260343"
+    }
+  ],
+  "registry_check": {
+    "command": [
+      "docker",
+      "buildx",
+      "imagetools",
+      "inspect",
+      "ghcr.io/loiter74/animetta@sha256:6cd5498e3279d933f8d290d8d6b476a63a71f07d4a3504adc1d6dec0602ce9f8",
+      "--format",
+      "{{json .Manifest}}"
+    ],
+    "exit_code": 0,
+    "media_type": "application/vnd.oci.image.index.v1+json",
+    "linux_amd64_manifest": "sha256:7a1203b1bab3b726f6d4a61d2edb19c47d486ac3ba49e71e1083c4c8ed268ab2",
+    "revision_annotation": "b422c70a835564a244e9bd3bd2058b699f14d948"
+  },
+  "scope": "Read-only publication and registry availability audit; no image deployment or rollback performed."
+}

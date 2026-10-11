@@ -1,0 +1,14 @@
+{
+  "scope": "same final real role interval; both container stdout/stderr",
+  "lines": [
+    "2026-10-11 08:13:03 | INFO     | animetta.orchestration.server.session:get_or_create_context:106 - [ZnzujoIofmNDo2iEAAAF] Using pooled engines (LLM/TTS/ASR)",
+    "2026-10-11 08:13:03 | INFO     | animetta.orchestration.graph.builder:build_graph:174 - [LangGraph] Registered nodes: ['asr', 'personality', 'conversation_start', 'llm', 'humor_rewrite', 'humor_validation', 'reply_output', 'tts', 'emotion', 'output', 'conversation_finalizer']",
+    "2026-10-11 08:13:03 | INFO     | animetta.orchestration.graph.builder:build_graph:174 - [LangGraph] Registered nodes: ['asr', 'personality', 'conversation_start', 'llm', 'humor_rewrite', 'humor_validation', 'reply_output', 'tts', 'emotion', 'output', 'conversation_finalizer']",
+    "2026-10-11 08:13:05 | INFO     | animetta.orchestration.graph.tts_node:tts_node:167 - [ZnzujoIofmNDo2iEAAAF] [TTSNode] Starting processing...",
+    "2026-10-11 08:13:09 | INFO     | animetta.orchestration.graph.tts_node:tts_node:335 - [ZnzujoIofmNDo2iEAAAF] [TTSNode] Audio data: 468524 bytes",
+    "2026-10-11 08:13:23 | INFO     | animetta.orchestration.graph.tts_node:tts_node:167 - [ZnzujoIofmNDo2iEAAAF] [TTSNode] Starting processing...",
+    "2026-10-11 08:13:27 | INFO     | animetta.orchestration.graph.tts_node:tts_node:335 - [ZnzujoIofmNDo2iEAAAF] [TTSNode] Audio data: 537644 bytes",
+    "2026-10-11 08:13:41 | INFO     | animetta.orchestration.graph.tts_node:tts_node:167 - [ZnzujoIofmNDo2iEAAAF] [TTSNode] Starting processing...",
+    "2026-10-11 08:13:44 | INFO     | animetta.orchestration.graph.tts_node:tts_node:335 - [ZnzujoIofmNDo2iEAAAF] [TTSNode] Audio data: 414764 bytes"
+  ]
+}

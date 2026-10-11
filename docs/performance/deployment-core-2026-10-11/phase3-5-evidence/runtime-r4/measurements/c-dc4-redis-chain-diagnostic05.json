@@ -1,0 +1,8 @@
+{
+  "run_id": "c-dc4-redis-chain-diagnostic05",
+  "exit_code": 0,
+  "ping_pong": true,
+  "ft_create_present": true,
+  "json_set_present": true,
+  "operation": "read-only PING and COMMAND INFO; no index/document writes"
+}

@@ -15,6 +15,7 @@ from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from functools import partial
+from pathlib import Path
 from typing import Any
 
 import aiosqlite
@@ -28,16 +29,6 @@ from animetta.memory.v2.atom import (
 )
 
 logger = logging.getLogger(__name__)
-
-# Optional Chroma support
-try:
-    import chromadb
-    from chromadb.core.config import Settings
-
-    _HAS_CHROMA = True
-except ImportError:
-    _HAS_CHROMA = False
-    chromadb = None  # type: ignore[assignment]
 
 
 class AtomStore:
@@ -53,7 +44,7 @@ class AtomStore:
         self,
         db_path: str = "memory_db/living_memory.sqlite",
         *,
-        enable_chroma: bool = True,
+        enable_chroma: bool = False,
     ):
         self.db_path = db_path
         self.enable_chroma = enable_chroma
@@ -92,8 +83,12 @@ class AtomStore:
                 await self._settle(asyncio.create_task(connection.close()))
                 self._conn = None
                 raise
-        if self.enable_chroma and _HAS_CHROMA:
-            await self._run_vector(self._init_chroma)
+        if self.enable_chroma:
+            try:
+                await self._run_vector(self._init_chroma)
+            except BaseException:
+                await self.close()
+                raise
 
     @staticmethod
     async def _settle(task: asyncio.Future) -> Any:
@@ -185,24 +180,28 @@ class AtomStore:
         return "scope" not in columns
 
     def _init_chroma(self) -> None:
-        """Initialize Chroma vector store if available."""
-        if not self.enable_chroma or not _HAS_CHROMA:
+        """Load the optional semantic backend only when explicitly selected."""
+        if not self.enable_chroma:
             return
         try:
-            self._chroma_client = chromadb.Client(
-                Settings(
-                    is_persistent=True,
-                    persist_directory="memory_db/chroma_v2",
-                    anonymized_telemetry=False,
-                )
+            import chromadb
+            from chromadb.config import Settings
+
+            self._chroma_client = chromadb.PersistentClient(
+                path=str(Path(self.db_path).parent / "chroma_v2"),
+                settings=Settings(anonymized_telemetry=False),
             )
             self._chroma_collection = self._chroma_client.get_or_create_collection(
                 name="memory_atoms_v2",
                 metadata={"hnsw:space": "cosine"},
             )
-        except Exception as e:
-            logger.warning(f"Chroma init failed, vector search disabled: {e}")
-            self._chroma_client = None
+        except ImportError as exc:
+            raise RuntimeError(
+                "Semantic memory requires the optional chromadb environment; "
+                "select memory_retrieval_mode=fts for the core installation"
+            ) from exc
+        except Exception as exc:
+            raise RuntimeError("Semantic memory backend initialization failed") from exc
 
     async def _vector_search(self, query_text: str, limit: int = 50) -> list[tuple[str, float]]:
         """Vector similarity search via Chroma. Returns [(atom_id, score), ...]."""
@@ -220,6 +219,8 @@ class AtomStore:
             # Convert cosine distance to similarity score (1 - distance)
             return [(id_, 1.0 - float(dist)) for id_, dist in zip(ids, distances)]
         except Exception as e:
+            self._index_degraded = True
+            self._index_last_error = f"semantic_query_failed:{type(e).__name__}"
             logger.warning(f"Vector search failed: {e}")
             return []
 

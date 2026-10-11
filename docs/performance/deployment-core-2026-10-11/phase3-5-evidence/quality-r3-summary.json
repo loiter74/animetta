@@ -1,0 +1,184 @@
+{
+  "schema_version": 2,
+  "status": "failed",
+  "plan_hash": "e01b8b41245be527dc58c2ad79ab20e6a1a93c9681e20573c6d4ddfa069e6643",
+  "manifest_hash": "7827f20fb653b766158ce4286c8ba0a4831ff762ef0676e9721cccf13d18fcf9",
+  "missing_groups": [],
+  "failed_groups": [
+    "backend-full"
+  ],
+  "blocked_groups": [],
+  "cancelled_groups": [],
+  "unexpected_groups": [],
+  "dominated_groups": [
+    {
+      "id": "backend-config-unit",
+      "covering_group": "backend-full",
+      "reasons": [
+        "explicitly covered by selected group backend-full"
+      ]
+    },
+    {
+      "id": "backend-core-unit",
+      "covering_group": "backend-full",
+      "reasons": [
+        "explicitly covered by selected group backend-full"
+      ]
+    },
+    {
+      "id": "backend-graph-unit",
+      "covering_group": "backend-full",
+      "reasons": [
+        "explicitly covered by selected group backend-full"
+      ]
+    },
+    {
+      "id": "backend-memory-unit",
+      "covering_group": "backend-full",
+      "reasons": [
+        "explicitly covered by selected group backend-full"
+      ]
+    },
+    {
+      "id": "backend-server-unit",
+      "covering_group": "backend-full",
+      "reasons": [
+        "explicitly covered by selected group backend-full"
+      ]
+    },
+    {
+      "id": "backend-services-unit",
+      "covering_group": "backend-full",
+      "reasons": [
+        "explicitly covered by selected group backend-full"
+      ]
+    },
+    {
+      "id": "livestream-continuity-contract",
+      "covering_group": "backend-full",
+      "reasons": [
+        "explicitly covered by selected group backend-full"
+      ]
+    }
+  ],
+  "docker_actions": [
+    {
+      "scope_id": "animetta",
+      "service": "animetta",
+      "compose_file": "docker-compose.yml",
+      "input_fingerprint": "f8dcd2e7acf6e31fe0a50f900f9c18cb086791619d999a5a1f12ac2bf83c24b0",
+      "input_file_count": 830,
+      "input_patterns": [
+        "Dockerfile",
+        ".dockerignore",
+        "requirements.txt",
+        "docker/entrypoint.sh",
+        "docker/nginx.conf",
+        "scripts/validate-events.py",
+        "src/animetta/**",
+        "config/**",
+        ".env.example",
+        "frontend/.npmrc",
+        "frontend/package.json",
+        "frontend/pnpm-lock.yaml",
+        "frontend/pnpm-workspace.yaml",
+        "frontend/optional/*/package.json",
+        "frontend/*.html",
+        "frontend/vite.config.ts",
+        "frontend/scripts/earth-assets.ts",
+        "frontend/uno.config.ts",
+        "frontend/tsconfig.json",
+        "frontend/src/**",
+        "frontend/public/**"
+      ],
+      "reasons": [
+        "Docker input changed: Dockerfile",
+        "Docker input changed: config/host-rvc.yaml",
+        "Docker input changed: docker-compose.dev.yml",
+        "Docker input changed: docker-compose.yml",
+        "Docker input changed: frontend/knip.json",
+        "Docker input changed: frontend/optional/desktop/package.json",
+        "Docker input changed: frontend/optional/earth/package.json",
+        "Docker input changed: frontend/optional/review/package.json",
+        "Docker input changed: frontend/package.json",
+        "Docker input changed: frontend/pnpm-lock.yaml",
+        "Docker input changed: frontend/pnpm-workspace.yaml",
+        "Docker input changed: frontend/scripts/earth-assets.ts",
+        "Docker input changed: frontend/src/views/DashboardPage.vue",
+        "Docker input changed: frontend/src/views/__tests__/DashboardPage.test.ts",
+        "Docker input changed: frontend/vite.config.ts",
+        "Docker input changed: pyproject.toml",
+        "Docker input changed: scripts/benchmark_storage.py",
+        "Docker input changed: scripts/check_python_lock.py",
+        "Docker input changed: scripts/runtime_lifecycle.py",
+        "Docker input changed: src/animetta/config/manifest.py",
+        "Docker input changed: src/animetta/memory/v2/store.py",
+        "Docker input changed: src/animetta/memory/v2/system.py",
+        "Docker input changed: src/animetta/orchestration/server/websocket.py",
+        "Docker input changed: src/animetta/runtime/session_context.py",
+        "Docker input changed: src/animetta/runtime/shared_memory.py",
+        "Docker input changed: uv.lock"
+      ]
+    }
+  ],
+  "cache_hit_groups": [],
+  "executed_groups": [
+    "architecture-boundary-audit",
+    "backend-deadcode",
+    "backend-events-contract",
+    "backend-full",
+    "backend-route-smoke",
+    "backend-static",
+    "backend-support-typecheck",
+    "backend-tooling-quality",
+    "backend-typecheck",
+    "docker-compose-contract",
+    "docs-contract",
+    "frontend-build",
+    "frontend-deadcode",
+    "frontend-duplicates",
+    "frontend-format",
+    "frontend-lint",
+    "frontend-tests",
+    "frontend-typecheck",
+    "host-rvc-contract-unit",
+    "host-tts-contract-unit",
+    "operational-source-contract",
+    "python-format",
+    "python-lock-contract",
+    "runtime-lifecycle-unit",
+    "security-secrets"
+  ],
+  "cache_miss_groups": [
+    "architecture-boundary-audit",
+    "backend-deadcode",
+    "backend-events-contract",
+    "backend-full",
+    "backend-route-smoke",
+    "backend-static",
+    "backend-support-typecheck",
+    "backend-tooling-quality",
+    "backend-typecheck",
+    "docs-contract",
+    "frontend-build",
+    "frontend-deadcode",
+    "frontend-duplicates",
+    "frontend-format",
+    "frontend-lint",
+    "frontend-tests",
+    "frontend-typecheck",
+    "host-rvc-contract-unit",
+    "host-tts-contract-unit",
+    "operational-source-contract",
+    "python-format",
+    "python-lock-contract",
+    "runtime-lifecycle-unit"
+  ],
+  "wall_seconds": 428.60099640000044,
+  "critical_path_seconds": 333.0063984000117,
+  "planning_seconds": 4.617793299999903,
+  "queue_seconds": 0.0,
+  "run_seconds": 597.3343713000031,
+  "cache_seconds": 0.0,
+  "cache_hit_ratio": 0.0
+}

@@ -1,0 +1,17 @@
+{
+  "name": "@animetta/desktop",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "electron": "39.8.10",
+    "electron-builder": "26.15.3",
+    "electron-builder-squirrel-windows": "26.15.3",
+    "concurrently": "10.0.3",
+    "wait-on": "8.0.5"
+  },
+  "scripts": {
+    "dev": "concurrently \"pnpm --dir ../.. dev\" \"wait-on http://localhost:3000 && electron ../..\"",
+    "build": "pnpm --dir ../.. build && electron-builder --projectDir ../.."
+  }
+}

@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 import pytest
 from starlette.testclient import TestClient
 
+from animetta.config.manifest import RuntimeSettings
 from animetta.config.runtime_reload import ReloadResult
 from animetta.config.security import SecurityConfig
 from animetta.orchestration.server.websocket import WebSocketServer
@@ -19,6 +20,7 @@ def _make_runtime_config(
 ):
     return SimpleNamespace(
         profile="test",
+        runtime=RuntimeSettings(),
         security=SecurityConfig(allowed_origins=("http://127.0.0.1:12394",)),
         persona=persona,
         agent=SimpleNamespace(llm_config=llm_config),

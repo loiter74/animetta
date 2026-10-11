@@ -1,0 +1,23 @@
+{
+  "schema_version": 2,
+  "group_id": "frontend-tests",
+  "required": true,
+  "status": "passed",
+  "exit_code": 0,
+  "duration_seconds": 24.009486499999184,
+  "failure_kind": null,
+  "artifacts": [],
+  "plan_hash": "54eb7ff41bcdf4c7c8a59475018bff43d4451a903061e2ebfc4e750626a914b5",
+  "manifest_hash": "d32af627ce3fe26356eb8cbd885b79b7cc29b039bb263fcc044ab4be801c005d",
+  "output": "\n RUN  v4.1.9 C:/Users/30262/Project/Anima/frontend\n\n\n Test Files  95 passed (95)\n      Tests  640 passed (640)\n   Start at  15:36:08\n   Duration  20.06s (transform 19.12s, setup 0ms, import 53.27s, tests 13.31s, environment 211.30s)\n\n\n$ vitest run\n",
+  "remediation": "",
+  "execution_mode": "executed",
+  "input_fingerprint": "43610a6bbad0543bd3e4718f64c86ad0e35824a5f54840086491436345a25df8",
+  "trust_scope": "local",
+  "cache_reason": "miss:not-found;write:stored",
+  "cache_source": null,
+  "queue_seconds": 0.0,
+  "run_seconds": 24.009486499999184,
+  "cache_seconds": 0.0,
+  "artifact_digests": {}
+}

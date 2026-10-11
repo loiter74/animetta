@@ -269,6 +269,17 @@ def _terminate_host_process(pid: int) -> None:
     raise RuntimeError("Host TTS process tree did not stop")
 
 
+def _host_python_environment(runtime_root: Path) -> dict[str, str]:
+    environment = os.environ.copy()
+    for name in ("PYTHONHOME", "PYTHONUSERBASE"):
+        environment.pop(name, None)
+    environment.update(
+        PYTHONPATH=os.pathsep.join((str(ROOT / "src"), str(runtime_root))),
+        PYTHONNOUSERSITE="1",
+    )
+    return environment
+
+
 def _start_host_tts_process(token: str) -> int:
     if not HOST_TTS_PYTHON.is_file():
         raise RuntimeError("Host TTS Python runtime is unavailable")
@@ -276,14 +287,9 @@ def _start_host_tts_process(token: str) -> int:
         raise RuntimeError("Host TTS runtime directory is unavailable")
 
     HOST_TTS_LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
-    environment = os.environ.copy()
-    existing_pythonpath = environment.get("PYTHONPATH", "")
-    python_paths = [str(ROOT / "src"), str(HOST_TTS_RUNTIME_ROOT)]
-    if existing_pythonpath:
-        python_paths.append(existing_pythonpath)
+    environment = _host_python_environment(HOST_TTS_RUNTIME_ROOT)
     environment.update(
         {
-            "PYTHONPATH": os.pathsep.join(python_paths),
             "QWEN_TTS_ENGINE": "gguf-host",
             "QWEN_TTS_BIND_HOST": "127.0.0.1",
             "QWEN_TTS_BIND_PORT": "8767",
@@ -437,14 +443,9 @@ def _start_host_rvc_process(token: str) -> int:
     if not HOST_RVC_RUNTIME_ROOT.is_dir():
         raise RuntimeError("Host RVC runtime directory is unavailable")
     HOST_RVC_LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
-    environment = os.environ.copy()
-    existing_pythonpath = environment.get("PYTHONPATH", "")
-    python_paths = [str(ROOT / "src"), str(HOST_RVC_RUNTIME_ROOT)]
-    if existing_pythonpath:
-        python_paths.append(existing_pythonpath)
+    environment = _host_python_environment(HOST_RVC_RUNTIME_ROOT)
     environment.update(
         {
-            "PYTHONPATH": os.pathsep.join(python_paths),
             "QWEN_TTS_API_KEY": token,
             "RVC_HOST_BIND_HOST": "127.0.0.1",
             "RVC_HOST_BIND_PORT": "8769",
@@ -539,7 +540,9 @@ def _prepare_host_runtimes(*, wait: bool, profile: str | None = None) -> None:
         _run(_rvc_preflight(wait=wait))
 
 
-def _compose_environment(*, image: str | None = None, profile: str | None = None) -> dict[str, str]:
+def _compose_environment(
+    *, image: str | None = None, profile: str | None = None, operation: str | None = None
+) -> dict[str, str]:
     """Freeze the public Compose target without copying credentials into fingerprints."""
     dotenv = dotenv_values(ROOT / ".env")
 
@@ -569,6 +572,14 @@ def _compose_environment(*, image: str | None = None, profile: str | None = None
         ANIMETTA_IMAGE=selected_image,
         ANIMETTA_PROFILE=profile or value("ANIMETTA_PROFILE") or "production",
     )
+    if operation in {"anima-up", "anima-dev", "anima-selftest-up"}:
+        from animetta.config.manifest import load_build_capabilities
+
+        environment.update(
+            load_build_capabilities(
+                ROOT / "config" / "animetta.yaml", profile=environment["ANIMETTA_PROFILE"]
+            )
+        )
     return environment
 
 
@@ -595,7 +606,7 @@ def run_operation(operation: str, *, image: str | None = None) -> None:
         _host_rvc_stop()
     elif operation == "anima-up":
         _prepare_host_runtimes(wait=False)
-        runtime_environment = _compose_environment()
+        runtime_environment = _compose_environment(operation=operation)
         _run(
             list(_ANIMETTA_BUILD_COMMAND),
             environment=runtime_environment,
@@ -631,6 +642,7 @@ def run_operation(operation: str, *, image: str | None = None) -> None:
         _prepare_host_runtimes(wait=True, profile="selftest")
         selftest_environment = _compose_environment(
             profile="selftest",
+            operation=operation,
         )
         _run(
             list(_ANIMETTA_BUILD_COMMAND),
@@ -926,7 +938,9 @@ def _bounded_input_fingerprint(
     profile: str,
     environment: dict[str, str] | None = None,
 ) -> str:
-    target_environment = environment or _compose_environment(image=image, profile=profile)
+    target_environment = environment or _compose_environment(
+        image=image, profile=profile, operation=operation
+    )
     parts = [
         operation.encode(),
         profile.encode(),
@@ -997,6 +1011,7 @@ async def run_bounded_operation(
     selected_image = _validate_deploy_image(image or "") if operation == "anima-deploy" else None
     runtime_environment = _compose_environment(
         image=selected_image,
+        operation=operation,
     )
     development = operation in {"anima-dev", "anima-dev-down"}
     if development:
@@ -1195,7 +1210,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 
 def _run_cli(args: argparse.Namespace, *, requested_at: float) -> int:
-    environment = _compose_environment(image=args.image)
+    environment = _compose_environment(image=args.image, operation=args.operation)
     if args.operation in {"anima-dev", "anima-dev-down"}:
         environment = development_environment(ROOT, environment)
     fingerprint = _bounded_input_fingerprint(

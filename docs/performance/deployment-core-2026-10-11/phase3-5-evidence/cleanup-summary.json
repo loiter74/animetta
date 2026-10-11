@@ -1,0 +1,26 @@
+{
+  "status": "completed",
+  "time_utc": "2026-10-11T08:24:17.892808+00:00",
+  "exact_owned_roots_removed": 17,
+  "initial_logical_bytes": 13948468419,
+  "logical_size_limit": "Ordinary file lengths, hardlinks not deduplicated; not physical bytes freed",
+  "first_attempt_completed_roots": 13,
+  "recovery_completed_roots": 4,
+  "recovery": "Original Directory.Delete recursion reported node_modules access denied; remaining reparse links unlinked individually with PowerShell LiteralPath and no recursion, then owned roots deleted",
+  "process_references": [],
+  "container_references": [],
+  "frontend_modules_marker_unchanged": true,
+  "permanent_rvc_environment_retained": true,
+  "shared_uv_cache_retained": true,
+  "protected": [
+    "services permanent environments and models",
+    "E:/Caches/uv",
+    "E:/Caches/pip",
+    "data",
+    "memory_db",
+    "Docker named volumes",
+    "unrelated train/song edits"
+  ],
+  "deletion_method_documentation": "https://learn.microsoft.com/en-us/dotnet/api/system.io.directory.delete",
+  "remaining_task_metadata": "Small task state and raw recovery records kept until commit, remote CI and distribution proof finish; archived before final deletion"
+}

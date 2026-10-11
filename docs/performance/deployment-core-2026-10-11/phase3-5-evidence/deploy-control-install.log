@@ -1,0 +1,16 @@
+Using Python 3.13.14 environment at: .zcode\performance\deployment-core-20261011\deploy-control-venv
+Resolved 10 packages in 2.56s
+warning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance.
+         If the cache and target directories are on different filesystems, hardlinking may not be supported.
+         If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.
+Installed 10 packages in 3.44s
+ + annotated-types==0.7.0
+ + colorama==0.4.6
+ + loguru==0.7.3
+ + pydantic==2.12.5
+ + pydantic-core==2.41.5
+ + python-dotenv==1.2.2
+ + pyyaml==6.0.3
+ + typing-extensions==4.15.0
+ + typing-inspection==0.4.2
+ + win32-setctime==1.2.0

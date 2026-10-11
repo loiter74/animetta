@@ -1,0 +1,12 @@
+{"run_id":"c-dc4-browser-api-diagnostic04","at":"2026-10-11T08:04:59.017Z","stage":"launch_before"}
+{"run_id":"c-dc4-browser-api-diagnostic04","at":"2026-10-11T08:04:59.129Z","stage":"launch_after"}
+{"run_id":"c-dc4-browser-api-diagnostic04","at":"2026-10-11T08:04:59.141Z","stage":"context_after"}
+{"run_id":"c-dc4-browser-api-diagnostic04","at":"2026-10-11T08:04:59.142Z","stage":"route_after"}
+{"run_id":"c-dc4-browser-api-diagnostic04","at":"2026-10-11T08:05:00.569Z","stage":"page1_after"}
+{"run_id":"c-dc4-browser-api-diagnostic04","at":"2026-10-11T08:05:00.781Z","stage":"page2_after"}
+{"run_id":"c-dc4-browser-api-diagnostic04","at":"2026-10-11T08:05:00.782Z","stage":"request_before","url":"http://localhost/api/auth/session"}
+{"run_id":"c-dc4-browser-api-diagnostic04","at":"2026-10-11T08:05:00.979Z","stage":"request_after","url":"http://localhost/api/auth/session","status":200,"authenticated":true}
+{"run_id":"c-dc4-browser-api-diagnostic04","at":"2026-10-11T08:05:00.979Z","stage":"request_before","url":"http://localhost:12394/api/auth/session"}
+{"run_id":"c-dc4-browser-api-diagnostic04","at":"2026-10-11T08:05:00.986Z","stage":"request_after","url":"http://localhost:12394/api/auth/session","status":200,"authenticated":true}
+{"run_id":"c-dc4-browser-api-diagnostic04","at":"2026-10-11T08:05:00.986Z","stage":"close_before"}
+{"run_id":"c-dc4-browser-api-diagnostic04","at":"2026-10-11T08:05:02.926Z","stage":"close_after"}
