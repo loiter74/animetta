@@ -1,6 +1,18 @@
 {
   "items": [
     {
+      "file": "ci-023eccf1-clean-run-failures.json",
+      "source": "actual source CI114427351840/114427351853 excerpts and bounded repair records",
+      "bytes": 4610,
+      "sha256": "6610c7f22e10b41b5a7bfd54627075bc07d50c65296ef52e2a66ad9832e16cd2"
+    },
+    {
+      "file": "ci-023eccf1-typecheck-failure.json",
+      "source": "actual source CI job114427351742 excerpt",
+      "bytes": 973,
+      "sha256": "1759d9de761ee1bd350bfe184b8a97ff37e4cbf98c4e89a76b0ac01627118927"
+    },
+    {
       "file": "ci-de26-failure.json",
       "source": "current read-only audit",
       "sha256": "3996f5f552acb75822f5b300fbc27a2fb2c30683f489c4131f7fcb4a71ab1002",
@@ -485,6 +497,84 @@
       "source": "frontend-build-probe-r2\\production-3.log",
       "sha256": "8e32d30161be7ccb2271c8fede3e27fb8c0e41d0aea28d909dd21ded33187ee6",
       "bytes": 3744
+    },
+    {
+      "file": "quality-ci-repair-architecture-boundary-audit.json",
+      "source": "ci-clean-repair-quality/architecture-boundary-audit.json",
+      "bytes": 821,
+      "sha256": "7d7201e79337a18b6412e2cbad41b7250bfb0eff1a66967b552d7f81f9f01bea"
+    },
+    {
+      "file": "quality-ci-repair-backend-deadcode.json",
+      "source": "ci-clean-repair-quality/backend-deadcode.json",
+      "bytes": 768,
+      "sha256": "1eeab4af29efad6be4d58f317923202914cb3443afff5897fb8455f43e8b9c7b"
+    },
+    {
+      "file": "quality-ci-repair-backend-graph-unit.json",
+      "source": "ci-clean-repair-quality/backend-graph-unit.json",
+      "bytes": 1648,
+      "sha256": "b4989b789cb5b04d2ecb4a60b473d075804606daf51193796b2c8db2399c5a24"
+    },
+    {
+      "file": "quality-ci-repair-backend-route-smoke.json",
+      "source": "ci-clean-repair-quality/backend-route-smoke.json",
+      "bytes": 12256,
+      "sha256": "15845a0a3c1221a927421732780522b63680454bb25948a2163bd4aec752f31d"
+    },
+    {
+      "file": "quality-ci-repair-backend-services-unit.json",
+      "source": "ci-clean-repair-quality/backend-services-unit.json",
+      "bytes": 2995,
+      "sha256": "d1bc238dcef5642552e4bfc5acead64beda0cf585f3758d40d337e39c70c4e86"
+    },
+    {
+      "file": "quality-ci-repair-backend-static.json",
+      "source": "ci-clean-repair-quality/backend-static.json",
+      "bytes": 788,
+      "sha256": "1aae5de36b542dfecfa9b9e1242a1ad270cb786e54f260bb1b3b58c1e829f041"
+    },
+    {
+      "file": "quality-ci-repair-backend-support-typecheck.json",
+      "source": "ci-clean-repair-quality/backend-support-typecheck.json",
+      "bytes": 995,
+      "sha256": "163b83952fbddd822314f12745188624977ed72bbb00f475efe01045e9052096"
+    },
+    {
+      "file": "quality-ci-repair-backend-typecheck.json",
+      "source": "ci-clean-repair-quality/backend-typecheck.json",
+      "bytes": 4654,
+      "sha256": "e43799fbd4464d1929df27d47c6160413141b6feee9453346dedbd72a76d39a8"
+    },
+    {
+      "file": "quality-ci-repair-docs-contract.json",
+      "source": "ci-clean-repair-quality/docs-contract.json",
+      "bytes": 863,
+      "sha256": "1b3813bd5047d41c0c55a9f978c76df6cfb0b1449b91413ccac76a3a372e6b10"
+    },
+    {
+      "file": "quality-ci-repair-livestream-continuity-contract.json",
+      "source": "ci-clean-repair-quality/livestream-continuity-contract.json",
+      "bytes": 2339,
+      "sha256": "aba801b855875896976d3de6ea29be298a74b2c19f8e06bdbd7de27c3259011c"
+    },
+    {
+      "file": "quality-ci-repair-operational-source-contract.json",
+      "source": "ci-clean-repair-quality/operational-source-contract.json",
+      "bytes": 900,
+      "sha256": "d59cca1caa9d37b15c4b54af43f0bc587ac2dde8ecbe660d639af50f550df064"
+    },
+    {
+      "file": "quality-ci-repair-python-format.json",
+      "source": "ci-clean-repair-quality/python-format.json",
+      "bytes": 797,
+      "sha256": "3248352b82bb72f8f40e99c9e4799fc46d51acd2ae0a4910d4efd262a4e15919"
+    },
+    {
+      "file": "quality-ci-repair-summary.json",
+      "source": "ci-clean-repair-quality/summary.json",
+      "bytes": 2495,
+      "sha256": "ae1b2f292b24ca090d6661e479b9334a3ab5551af21e747df7451348fecf9155"
     },
     {
       "file": "quality-r1-backend-full.json",

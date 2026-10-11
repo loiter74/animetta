@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import io
 import wave
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -161,7 +162,16 @@ def test_host_service_environment_publishes_fixed_identity(
     assert service.settings.identity_fields() == HOST_TTS_CONTRACT.identity()
 
 
-def test_host_service_uses_the_shared_reference_contract(monkeypatch: Any) -> None:
+def test_host_service_uses_the_shared_reference_contract(monkeypatch: Any, tmp_path: Path) -> None:
+    reference = tmp_path / "reference.wav"
+    reference.write_bytes(b"shared-reference")
+    contract = replace(
+        HOST_TTS_CONTRACT,
+        model_dir=tmp_path / "model",
+        reference_audio=reference,
+        reference_sha256=hashlib.sha256(reference.read_bytes()).hexdigest().upper(),
+    )
+    monkeypatch.setattr("animetta_qwen_tts.gguf_host.HOST_TTS_CONTRACT", contract)
     monkeypatch.setenv("QWEN_TTS_API_KEY", "host-secret")
     for name in (
         "QWEN_HOST_TTS_REFERENCE_AUDIO",
@@ -173,8 +183,8 @@ def test_host_service_uses_the_shared_reference_contract(monkeypatch: Any) -> No
     service = build_host_service_from_env(engine_factory=FakeRuntimeEngine)
 
     assert isinstance(service.engine, GGUFHostEngine)
-    assert service.engine.reference_audio == HOST_TTS_CONTRACT.reference_audio
-    assert service.engine.reference_text == HOST_TTS_CONTRACT.reference_text
+    assert service.engine.reference_audio == contract.reference_audio
+    assert service.engine.reference_text == contract.reference_text
     assert hashlib.sha256(service.engine.reference_audio.read_bytes()).hexdigest().upper() == (
-        HOST_TTS_CONTRACT.reference_sha256
+        contract.reference_sha256
     )

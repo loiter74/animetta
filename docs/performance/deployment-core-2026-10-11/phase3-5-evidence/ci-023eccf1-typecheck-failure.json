@@ -1,0 +1,10 @@
+{
+  "run_id": 38124858407,
+  "source_commit": "023eccf112e88db8bb448d10fc578ef4899e3969",
+  "job_id": 114427351742,
+  "job_url": "https://github.com/loiter74/animetta/actions/runs/38124858407/job/114427351742",
+  "failure_kind": "linux_platform_typecheck",
+  "error_excerpt": "2026-10-11T08:31:18.2407221Z Quality feedback: backend-typecheck-shard-3 failed (3.1s)\n2026-10-11T08:31:18.2453500Z src/animetta/services/earth/audio.py:46: error: Module has no attribute \"CREATE_NO_WINDOW\"  [attr-defined]\n2026-10-11T08:31:18.2455220Z Found 1 error in 1 file (checked 149 source files)",
+  "root_cause": "Windows-only subprocess.CREATE_NO_WINDOW referenced in a conditional expression; the Linux type checker still checks that expression. Explicit sys.platform if statement is recognized for platform exclusion.",
+  "fix": "Preserve zero creation flags on POSIX and CREATE_NO_WINDOW on Windows with an explicit platform branch; optional Earth remains disabled by default."
+}

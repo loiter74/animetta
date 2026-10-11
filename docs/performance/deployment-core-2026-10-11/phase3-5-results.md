@@ -44,6 +44,8 @@ RVC 第一次安装触发 900 s 下载超时；第二次根据父智能体的共
 
 上一成功发布 `b422c70a` 的远端 CI、GHCR 发布和不可变 digest 已实际核对可取得，见 [回退镜像证据](phase3-5-evidence/rollback-registry-proof.json)。没有执行回退部署，回退必须配对原发布配置；也不把上一镜像的可用性当作本轮已发布。
 
+源码提交 `023eccf1` 的干净 Linux CI 又检出一处地图音频 Windows 常量类型保护，以及两项单测环境依赖：GLM 纯单测直接导入未安装的厂商 SDK，Qwen 单测直接读取本机 D 盘声线。平台保护改为显式 `sys.platform` 分支；GLM／Ollama 复用同一测试 SDK 导入夹具，仍检查原消息顺序与共享历史；Qwen 使用临时文件和真实共享合约的副本。23 项定向回归通过，另有 8 项在明确阻止 SDK 导入时通过。旧 SDK 的 PyJWT 约束与核心锁冲突，因此没有将它加入安装规格，也没有改动生产声线／SDK 行为；依赖文件与锁保持 `023eccf1` 字节。失败原文见 [类型检查](phase3-5-evidence/ci-023eccf1-typecheck-failure.json) 和 [干净环境记录](phase3-5-evidence/ci-023eccf1-clean-run-failures.json)，继续以新提交的 CI 为发布门槛。
+
 正式 ROOT 部署和核心冒烟已完成，见 [完整运行记录](phase3-5-evidence/runtime-r4/runtime-core-r4.json)。镜像实际大小 **614,348,725 B**，相对阶段 0 的 1,447,480,052 B 减少 **57.56%**，相对阶段 2 的 1,274,643,121 B 减少 **51.80%**。这是本机镜像大小，不是压缩下载字节。Linux 容器有 88 个安装包，未发现 Torch、Transformers、Chroma、Demucs、Torchaudio、Faiss、Bilibili 或 langchain-community，没有 ffmpeg 或 Cesium 产物；不将该平台计数与 Windows 的 91 包当作同平台增减。
 
 | 应用启动到 HTTP ready | 原始 3 样本（秒） | 中位数 |

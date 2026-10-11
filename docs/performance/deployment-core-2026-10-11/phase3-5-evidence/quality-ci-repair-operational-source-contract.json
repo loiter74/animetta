@@ -1,0 +1,23 @@
+{
+  "schema_version": 2,
+  "group_id": "operational-source-contract",
+  "required": true,
+  "status": "passed",
+  "exit_code": 0,
+  "duration_seconds": 2.606523599999491,
+  "failure_kind": null,
+  "artifacts": [],
+  "plan_hash": "c031ebed3aa670b8b2eb963b28699a6b1d8272455f721fecf22ae144928042d5",
+  "manifest_hash": "d32af627ce3fe26356eb8cbd885b79b7cc29b039bb263fcc044ab4be801c005d",
+  "output": "source standards passed (dockerfile=3, shell=4, powershell=2, batch=4, yaml=46, json=299, toml=3, misplaced-javascript=0)\n",
+  "remediation": "",
+  "execution_mode": "executed",
+  "input_fingerprint": "c0900cd4c0e5a62af1251e0bc750c4ea7b6270738edeaffb0bd68c2d5f51444e",
+  "trust_scope": "local",
+  "cache_reason": "miss:not-found;write:stored",
+  "cache_source": null,
+  "queue_seconds": 0.0,
+  "run_seconds": 2.606523599999491,
+  "cache_seconds": 0.0,
+  "artifact_digests": {}
+}

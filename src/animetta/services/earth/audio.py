@@ -2,8 +2,8 @@
 
 import asyncio
 import io
-import os
 import subprocess
+import sys
 import wave
 from contextlib import suppress
 from pathlib import Path
@@ -16,6 +16,9 @@ async def normalize_asr_audio(data: bytes, audio_format: str) -> bytes:
     """Decode bounded browser audio into real 16kHz mono WAV, never relabel bytes."""
     if audio_format not in {"wav", "webm", "ogg"} or not data or len(data) > 8_000_000:
         raise ValueError("Invalid Earth audio input")
+    creationflags = 0
+    if sys.platform == "win32":
+        creationflags = subprocess.CREATE_NO_WINDOW
     process = await asyncio.create_subprocess_exec(
         "ffmpeg",
         "-hide_banner",
@@ -43,7 +46,7 @@ async def normalize_asr_audio(data: bytes, audio_format: str) -> bytes:
         stdin=asyncio.subprocess.PIPE,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.DEVNULL,
-        creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
+        creationflags=creationflags,
     )
     assert process.stdin is not None and process.stdout is not None
 

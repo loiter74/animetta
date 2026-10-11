@@ -21,7 +21,6 @@ from animetta.orchestration.graph.llm_node import (
     _provider_message,
 )
 from animetta.services.llm.factory import LLMFactory
-from animetta.services.llm.glm_llm import GLMLLM
 from animetta.services.llm.local_lora_llm import LocalLoraLLM
 from animetta.services.llm.mock_llm import MockLLM
 from animetta.services.llm.openai_llm import OpenAILLM
@@ -68,7 +67,23 @@ def _openai(provider_identity: str) -> tuple[OpenAILLM, list[list[dict]]]:
     return instance, captured
 
 
-def _glm() -> tuple[GLMLLM, list[list[dict]]]:
+def _optional_provider_module(module_name: str, dependency_name: str, client_name: str) -> Any:
+    try:
+        return import_module(module_name)
+    except ModuleNotFoundError as exc:
+        if exc.name != dependency_name:
+            raise
+        dependency = ModuleType(dependency_name)
+        dependency.__spec__ = ModuleSpec(dependency_name, loader=None)
+        setattr(dependency, client_name, object)
+        with patch.dict(sys.modules, {dependency_name: dependency}):
+            return import_module(module_name)
+
+
+def _glm() -> tuple[Any, list[list[dict]]]:
+    glm_llm = _optional_provider_module(
+        "animetta.services.llm.glm_llm", "zhipuai", "ZhipuAI"
+    ).GLMLLM
     captured: list[list[dict]] = []
 
     def create(**kwargs):
@@ -80,7 +95,7 @@ def _glm() -> tuple[GLMLLM, list[list[dict]]]:
             usage=None,
         )
 
-    instance = object.__new__(GLMLLM)
+    instance = object.__new__(glm_llm)
     instance.config = SimpleNamespace(model="glm-contract", temperature=0.1)
     instance.client = SimpleNamespace(
         chat=SimpleNamespace(completions=SimpleNamespace(create=create))
@@ -93,16 +108,7 @@ def _glm() -> tuple[GLMLLM, list[list[dict]]]:
 
 
 def _ollama() -> tuple[Any, list[list[dict]]]:
-    try:
-        module = import_module("animetta.services.llm.ollama_llm")
-    except ModuleNotFoundError as exc:
-        if exc.name != "ollama":
-            raise
-        dependency = ModuleType("ollama")
-        dependency.__spec__ = ModuleSpec("ollama", loader=None)
-        dependency.Client = object  # type: ignore[attr-defined]
-        with patch.dict(sys.modules, {"ollama": dependency}):
-            module = import_module("animetta.services.llm.ollama_llm")
+    module = _optional_provider_module("animetta.services.llm.ollama_llm", "ollama", "Client")
     ollama_llm = module.OllamaLLM
     captured: list[list[dict]] = []
 
