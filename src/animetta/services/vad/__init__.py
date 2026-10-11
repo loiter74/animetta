@@ -2,20 +2,28 @@
 VAD (Voice Activity Detection) module
 """
 
-from .detector import SileroDetector
+from importlib import import_module
+from typing import Any
+
 from .factory import VADFactory
 from .interface import VADInterface, VADResult, VADState
+from .mock_vad import MockVAD
 
-# Import implementations to trigger ProviderRegistry registration
-try:
-    from .mimo_vad import MimoVAD
-    from .mock_vad import MockVAD
-    from .silero_vad import SileroStateMachine, SileroVAD
-except ImportError:
-    MimoVAD = None  # type: ignore
-    SileroVAD = None  # type: ignore
-    SileroStateMachine = None  # type: ignore
-    MockVAD = None  # type: ignore
+_LAZY_EXPORTS = {
+    "SileroDetector": ".detector",
+    "SileroVAD": ".silero_vad",
+    "SileroStateMachine": ".silero_vad",
+    "MimoVAD": ".mimo_vad",
+}
+
+
+def __getattr__(name: str) -> Any:
+    if name not in _LAZY_EXPORTS:
+        raise AttributeError(name)
+    value = getattr(import_module(_LAZY_EXPORTS[name], __name__), name)
+    globals()[name] = value
+    return value
+
 
 __all__ = [
     "VADInterface",

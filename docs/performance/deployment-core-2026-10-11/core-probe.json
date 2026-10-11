@@ -1,0 +1,15 @@
+{
+  "command": ".zcode/performance/deployment-core-20261011/core-install/warm-1/Scripts/python.exe .zcode/performance/deployment-core-20261011/core-probe.py",
+  "exit_code": 0,
+  "python": "3.13.14",
+  "packages": 91,
+  "core_import": true,
+  "core_context": true,
+  "memory_v2_initialize_shutdown": true,
+  "optional_modules_loaded": false,
+  "providers": [
+    "llm",
+    "tts"
+  ],
+  "boundary": "Context uses test Mock providers to verify installation closure; real Qwen playback requires runtime acceptance."
+}

@@ -49,6 +49,8 @@ def test_requirement_files_are_ascii_for_windows_pip() -> None:
         "requirements.txt",
         "requirements-dev.txt",
         "requirements-local-ai.txt",
+        "requirements-bilibili.txt",
+        "requirements-search.txt",
     ):
         data = (health_check.ROOT / name).read_bytes()
         data.decode("ascii")
@@ -57,6 +59,7 @@ def test_requirement_files_are_ascii_for_windows_pip() -> None:
 def test_runtime_and_dev_requirements_include_required_transports() -> None:
     runtime = (health_check.ROOT / "requirements.txt").read_text(encoding="utf-8")
     dev = (health_check.ROOT / "requirements-dev.txt").read_text(encoding="utf-8")
+    bilibili = (health_check.ROOT / "requirements-bilibili.txt").read_text(encoding="utf-8")
     runtime_lines = [
         line.strip()
         for line in runtime.splitlines()
@@ -68,7 +71,10 @@ def test_runtime_and_dev_requirements_include_required_transports() -> None:
         if line.strip() and not line.lstrip().startswith("#")
     ]
 
-    assert any(line.startswith("bilibili-api-python") for line in runtime_lines)
+    assert any(line.startswith("python-socketio") for line in runtime_lines)
+    assert not any(line.startswith("bilibili-api-python") for line in runtime_lines)
+    assert any(line.startswith("bilibili-api-python") for line in bilibili.splitlines())
+    assert any(line.startswith("bilibili-api-python") for line in dev_lines)
     assert any(line.startswith("websocket-client") for line in dev_lines)
     assert any(line.startswith("pytest-cov") for line in dev_lines)
 

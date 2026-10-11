@@ -15,6 +15,7 @@ def project(tmp_path):
     manifest = tmp_path / "pyproject.toml"
     manifest.write_text(
         '[project]\nname="lock-contract"\nversion="0.0.0"\nrequires-python=">=3.13"\n'
+        "[project.optional-dependencies]\nbilibili=[]\nsearch=[]\n"
         "[dependency-groups]\ndev=[]\n",
         encoding="utf-8",
     )

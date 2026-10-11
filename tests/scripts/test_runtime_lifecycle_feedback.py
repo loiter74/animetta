@@ -129,8 +129,6 @@ def test_anima_feedback_plan_contains_every_protocol_stage_under_its_own_step() 
     assert tuple(step.id for step in lifecycle.steps) == (
         "host-tts-start",
         "host-tts-preflight",
-        "host-rvc-start",
-        "host-rvc-preflight",
         "animetta-build",
         "animetta-start",
         "animetta-health",
@@ -139,8 +137,6 @@ def test_anima_feedback_plan_contains_every_protocol_stage_under_its_own_step() 
         "default-log-check",
     )
     assert tuple(step.kind for step in lifecycle.steps) == (
-        LifecycleStepKind.COMMAND,
-        LifecycleStepKind.COMMAND,
         LifecycleStepKind.COMMAND,
         LifecycleStepKind.COMMAND,
         LifecycleStepKind.BUILD,
@@ -168,8 +164,6 @@ def test_deploy_plan_pulls_an_immutable_image_without_a_build_step() -> None:
     assert tuple(step.id for step in lifecycle.steps) == (
         "host-tts-start",
         "host-tts-preflight",
-        "host-rvc-start",
-        "host-rvc-preflight",
         "animetta-pull",
         "animetta-image-status",
         "animetta-start",
@@ -179,20 +173,29 @@ def test_deploy_plan_pulls_an_immutable_image_without_a_build_step() -> None:
         "default-log-check",
     )
     assert all(step.kind is not LifecycleStepKind.BUILD for step in lifecycle.steps)
-    assert lifecycle.steps[4].command == (
+    assert lifecycle.steps[2].command == (
         "docker",
         "compose",
         "pull",
         "--include-deps",
         "animetta",
     )
-    assert lifecycle.steps[5].command[3] == image
+    assert lifecycle.steps[3].command[3] == image
     assert [
         step.target for step in lifecycle.steps if step.kind is LifecycleStepKind.HTTP_CHECK
     ] == [
         "http://localhost/health",
         "http://localhost/ready",
         "http://localhost",
+    ]
+
+
+@pytest.mark.parametrize("workers", [(), ("tts",), ("tts", "rvc")])
+def test_optional_host_workers_are_absent_unless_required(workers) -> None:
+    plan = freeze_lifecycle_plan("anima-up", input_fingerprint="a" * 64, host_services=workers)
+    host_steps = [step.id for step in plan.steps if step.id.startswith("host-")]
+    assert host_steps == [
+        f"host-{worker}-{action}" for worker in workers for action in ("start", "preflight")
     ]
 
 
@@ -372,7 +375,7 @@ async def test_immutable_deploy_reuses_image_steps_but_refreshes_runtime_checks(
             == 0
         )
 
-    assert len(driver.commands) == 12
+    assert len(driver.commands) == 8
     assert len(driver.http_targets) == 6
     assert len(driver.log_commands) == 2
 

@@ -242,6 +242,16 @@ class ProviderPolicy(StrictFrozenModel):
     require_remote_identity: bool
 
 
+class RuntimeCapabilities(StrictFrozenModel):
+    """Optional product capabilities, disabled unless selected by the profile."""
+
+    voice_input: bool = False
+    bilibili: bool = False
+    singing: bool = False
+    minecraft: bool = False
+    earth: bool = False
+
+
 class RuntimeSettings(StrictFrozenModel):
     debug: bool = False
     long_term_memory_mode: Literal["off", "read_only", "read_write"] = "off"
@@ -249,6 +259,11 @@ class RuntimeSettings(StrictFrozenModel):
     enable_subtitle_translation: bool = True
     enable_active_memes: bool = True
     tts_timeout_seconds: float = Field(default=20.0, ge=1.0, le=300.0)
+    capabilities: RuntimeCapabilities = Field(default_factory=RuntimeCapabilities)
+
+    @property
+    def required_services(self) -> tuple[ServiceCategory, ...]:
+        return SERVICE_CATEGORIES if self.capabilities.voice_input else ("llm", "tts")
 
 
 class ProfileManifest(StrictFrozenModel):
@@ -427,7 +442,7 @@ class EffectiveConfig(StrictFrozenModel):
     ) -> dict[str, Any]:
         resolved_identities = resolved_identities or {}
         providers: dict[str, Any] = {}
-        for category in SERVICE_CATEGORIES:
+        for category in self.runtime.required_services:
             provider = self.providers[category]
             configured = provider.public_identity()
             supplied = resolved_identities.get(category)
@@ -463,6 +478,7 @@ class EffectiveConfig(StrictFrozenModel):
             "effective_hash": self.effective_hash,
             "semantic_hash": self.semantic_hash,
             "providers": providers,
+            "capabilities": self.runtime.capabilities.model_dump(),
         }
 
 
@@ -685,7 +701,7 @@ def _resolve_providers(
 ) -> dict[str, ConfiguredProvider]:
     return {
         category: _resolve_provider(manifest, profile_name, profile, category)
-        for category in SERVICE_CATEGORIES
+        for category in profile.runtime.required_services
     }
 
 
@@ -799,7 +815,7 @@ def _calculate_hashes(
 
     def payload(*, semantic: bool) -> dict[str, Any]:
         provider_payload: dict[str, Any] = {}
-        for category in SERVICE_CATEGORIES:
+        for category in selected.runtime.required_services:
             provider = providers[category]
             raw_declaration = raw_catalog.get(category, {}).get(provider.name, {})
             provider_payload[category] = {
@@ -821,7 +837,9 @@ def _calculate_hashes(
                 semantic=semantic,
             ),
             "persona_snapshot": persona_snapshot,
-            "services": selected.services.model_dump(),
+            "services": selected.services.model_dump(
+                include={str(category) for category in selected.runtime.required_services}
+            ),
             "policy": selected.policy.model_dump(),
             "runtime": selected.runtime.model_dump(),
             "providers": provider_payload,
@@ -872,7 +890,9 @@ def load_effective_config(
         services=selected.services,
         policy=selected.policy,
         runtime=selected.runtime,
-        provider_entries=tuple(providers[category] for category in SERVICE_CATEGORIES),
+        provider_entries=tuple(
+            providers[category] for category in selected.runtime.required_services
+        ),
         persona_snapshot_json=json.dumps(
             persona_snapshot_data,
             ensure_ascii=False,
@@ -903,4 +923,31 @@ def load_configured_provider(
         profile_name,
         selected,
         cast(ServiceCategory, category),
+    )
+
+
+def load_host_service_requirements(
+    path: str | Path = DEFAULT_MANIFEST_PATH,
+    *,
+    profile: str | None = None,
+) -> tuple[str, ...]:
+    """Plan host workers from the selected profile without resolving API secrets."""
+    manifest, _ = _read_manifest(Path(path).resolve())
+    _, selected = _select_profile(manifest, profile)
+    declaration = manifest.providers.tts.get(selected.services.tts)
+    if declaration is None:
+        raise ManifestValidationError("Selected TTS provider is not declared")
+
+    def requires_qwen(value: dict[str, Any]) -> bool:
+        if value.get("type") == "failover":
+            return any(requires_qwen(value[key]) for key in ("primary", "fallback"))
+        return value.get("type") == "remote" and value.get("provider") == "qwen3-tts-gguf-host"
+
+    return tuple(
+        name
+        for name, required in (
+            ("tts", requires_qwen(declaration)),
+            ("rvc", selected.runtime.capabilities.singing),
+        )
+        if required
     )

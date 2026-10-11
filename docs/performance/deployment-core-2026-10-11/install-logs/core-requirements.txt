@@ -1,0 +1,290 @@
+# Generated from pyproject.toml and uv.lock; do not edit.
+# Update with: py -3.13 scripts/check_python_lock.py --write
+aiosqlite==0.22.1
+    # via animetta
+annotated-types==0.7.0
+    # via pydantic
+anyio==4.12.1
+    # via
+    #   httpx
+    #   mcp
+    #   openai
+    #   sse-starlette
+    #   starlette
+    #   watchfiles
+attrs==26.1.0
+    # via
+    #   jsonschema
+    #   referencing
+bidict==0.23.1
+    # via python-socketio
+certifi==2026.2.25
+    # via
+    #   httpcore
+    #   httpx
+    #   requests
+cffi==2.0.0 ; platform_python_implementation != 'PyPy'
+    # via cryptography
+charset-normalizer==3.4.6
+    # via requests
+click==8.3.1
+    # via uvicorn
+colorama==0.4.6 ; sys_platform == 'win32'
+    # via
+    #   click
+    #   loguru
+    #   tqdm
+    #   uvicorn
+cryptography==46.0.5
+    # via pyjwt
+distro==1.9.0
+    # via openai
+h11==0.16.0
+    # via
+    #   httpcore
+    #   uvicorn
+    #   wsproto
+hiredis==3.4.1
+    # via redis
+httpcore==1.0.9
+    # via httpx
+httptools==0.7.1
+    # via uvicorn
+httpx==0.28.1
+    # via
+    #   animetta
+    #   langgraph-sdk
+    #   langsmith
+    #   mcp
+    #   openai
+httpx-sse==0.4.3
+    # via mcp
+idna==3.11
+    # via
+    #   anyio
+    #   httpx
+    #   requests
+importlib-metadata==8.7.1
+    # via opentelemetry-api
+jieba==0.42.1
+    # via animetta
+jinja2==3.1.6
+    # via animetta
+jiter==0.13.0
+    # via openai
+jsonpatch==1.33
+    # via langchain-core
+jsonpath-ng==1.8.0
+    # via redisvl
+jsonpointer==3.1.0
+    # via jsonpatch
+jsonschema==4.26.0
+    # via mcp
+jsonschema-specifications==2025.9.1
+    # via jsonschema
+langchain==1.2.13
+    # via animetta
+langchain-core==1.2.20
+    # via
+    #   animetta
+    #   langchain
+    #   langchain-openai
+    #   langgraph
+    #   langgraph-checkpoint
+    #   langgraph-prebuilt
+langchain-openai==1.1.11
+    # via animetta
+langgraph==1.1.3
+    # via
+    #   animetta
+    #   langchain
+langgraph-checkpoint==4.2.0
+    # via
+    #   animetta
+    #   langgraph
+    #   langgraph-checkpoint-redis
+    #   langgraph-prebuilt
+langgraph-checkpoint-redis==0.5.1
+    # via animetta
+langgraph-prebuilt==1.0.8
+    # via langgraph
+langgraph-sdk==0.3.12
+    # via langgraph
+langsmith==0.7.22
+    # via langchain-core
+loguru==0.7.3
+    # via animetta
+markupsafe==3.0.3
+    # via jinja2
+mcp==1.26.0
+    # via animetta
+ml-dtypes==0.6.0
+    # via redisvl
+numpy==2.4.3
+    # via
+    #   animetta
+    #   ml-dtypes
+    #   redisvl
+openai==2.29.0
+    # via langchain-openai
+opencc-python-reimplemented==0.1.7
+    # via animetta
+opentelemetry-api==1.40.0
+    # via
+    #   animetta
+    #   opentelemetry-sdk
+    #   opentelemetry-semantic-conventions
+opentelemetry-sdk==1.40.0
+    # via animetta
+opentelemetry-semantic-conventions==0.61b0
+    # via opentelemetry-sdk
+orjson==3.11.7
+    # via
+    #   langgraph-checkpoint-redis
+    #   langgraph-sdk
+    #   langsmith
+ormsgpack==1.12.2
+    # via langgraph-checkpoint
+packaging==26.0
+    # via
+    #   langchain-core
+    #   langsmith
+prometheus-client==0.25.0
+    # via animetta
+pycparser==3.0 ; implementation_name != 'PyPy' and platform_python_implementation != 'PyPy'
+    # via cffi
+pydantic==2.12.5
+    # via
+    #   animetta
+    #   langchain
+    #   langchain-core
+    #   langgraph
+    #   langsmith
+    #   mcp
+    #   openai
+    #   pydantic-settings
+    #   redisvl
+pydantic-core==2.41.5
+    # via pydantic
+pydantic-settings==2.13.1
+    # via mcp
+pyjwt==2.10.1
+    # via
+    #   animetta
+    #   mcp
+python-dotenv==1.2.2
+    # via
+    #   animetta
+    #   pydantic-settings
+    #   uvicorn
+python-engineio==4.13.1
+    # via
+    #   animetta
+    #   python-socketio
+python-multipart==0.0.22
+    # via mcp
+python-socketio==5.16.1
+    # via animetta
+python-ulid==4.0.1
+    # via redisvl
+pywin32==311 ; sys_platform == 'win32'
+    # via mcp
+pyyaml==6.0.3
+    # via
+    #   animetta
+    #   langchain-core
+    #   redisvl
+    #   uvicorn
+redis==7.4.1
+    # via
+    #   animetta
+    #   langgraph-checkpoint-redis
+    #   redisvl
+redisvl==0.25.1
+    # via langgraph-checkpoint-redis
+referencing==0.37.0
+    # via
+    #   jsonschema
+    #   jsonschema-specifications
+regex==2026.2.28
+    # via tiktoken
+requests==2.32.5
+    # via
+    #   langsmith
+    #   requests-toolbelt
+    #   tiktoken
+requests-toolbelt==1.0.0
+    # via langsmith
+rpds-py==0.30.0
+    # via
+    #   jsonschema
+    #   referencing
+simple-websocket==1.1.0
+    # via python-engineio
+sniffio==1.3.1
+    # via openai
+socksio==1.0.0
+    # via httpx
+sse-starlette==3.3.3
+    # via mcp
+starlette==0.52.1
+    # via
+    #   animetta
+    #   mcp
+    #   sse-starlette
+tenacity==9.1.4
+    # via
+    #   langchain-core
+    #   redisvl
+tiktoken==0.12.0
+    # via langchain-openai
+tqdm==4.67.3
+    # via openai
+typing-extensions==4.15.0
+    # via
+    #   langchain-core
+    #   mcp
+    #   openai
+    #   opentelemetry-api
+    #   opentelemetry-sdk
+    #   opentelemetry-semantic-conventions
+    #   pydantic
+    #   pydantic-core
+    #   typing-inspection
+typing-inspection==0.4.2
+    # via
+    #   mcp
+    #   pydantic
+    #   pydantic-settings
+tzdata==2026.2 ; sys_platform == 'win32'
+    # via animetta
+urllib3==2.6.3
+    # via requests
+uuid-utils==0.14.1
+    # via
+    #   langchain-core
+    #   langsmith
+uvicorn==0.42.0
+    # via
+    #   animetta
+    #   mcp
+uvloop==0.22.1 ; platform_python_implementation != 'PyPy' and sys_platform != 'cygwin' and sys_platform != 'win32'
+    # via uvicorn
+watchfiles==1.1.1
+    # via uvicorn
+websockets==16.0
+    # via
+    #   animetta
+    #   uvicorn
+win32-setctime==1.2.0 ; sys_platform == 'win32'
+    # via loguru
+wsproto==1.3.2
+    # via simple-websocket
+xxhash==3.6.0
+    # via
+    #   langgraph
+    #   langsmith
+zipp==3.23.0
+    # via importlib-metadata
+zstandard==0.25.0
+    # via langsmith

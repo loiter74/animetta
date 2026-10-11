@@ -156,7 +156,13 @@ def classify_effective_config_diff(
     if restart_required:
         return [], sorted(restart_required)
 
-    for path in _diff_paths(current.services.model_dump(), candidate.services.model_dump()):
+    active_services: set[str] = set(current.runtime.required_services) | set(
+        candidate.runtime.required_services
+    )
+    for path in _diff_paths(
+        current.services.model_dump(include=active_services),
+        candidate.services.model_dump(include=active_services),
+    ):
         restart_required.add(f"services.{path}")
     for path in _diff_paths(current.policy.model_dump(), candidate.policy.model_dump()):
         restart_required.add(f"policy.{path}")
@@ -186,6 +192,8 @@ def classify_effective_config_diff(
             restart_required.add(f"runtime.{path}")
 
     for category in ("llm", "asr", "tts", "vad"):
+        if category not in current.providers or category not in candidate.providers:
+            continue
         current_provider = current.providers[category]
         candidate_provider = candidate.providers[category]
         if current_provider.name != candidate_provider.name:

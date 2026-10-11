@@ -473,13 +473,21 @@ def _contracts(
     *,
     image: str | None = None,
     http_base_url: str = "http://localhost",
+    host_services: tuple[str, ...] = ("tts",),
 ) -> tuple[LifecycleStepContract, ...]:
+    if set(host_services) - {"tts", "rvc"}:
+        raise ValueError("Unknown host service requirement")
+    host_definitions = tuple(
+        step
+        for step in _HOST_RUNTIME_DEFINITIONS
+        if any(step[0].startswith(f"host-{name}-") for name in host_services)
+    )
     definitions: tuple[_LifecycleStepDefinition, ...]
     if operation in {"anima-up", "anima-dev"}:
         development = operation == "anima-dev"
         services = ("animetta", "frontend") if development else ("animetta",)
         definitions = (
-            *_HOST_RUNTIME_DEFINITIONS,
+            *host_definitions,
             (
                 "animetta-build",
                 LifecycleStepKind.BUILD,
@@ -511,7 +519,7 @@ def _contracts(
         if image is None:
             raise ValueError("anima-deploy requires an image reference")
         definitions = (
-            *_HOST_RUNTIME_DEFINITIONS,
+            *host_definitions,
             (
                 "animetta-pull",
                 LifecycleStepKind.COMMAND,
@@ -613,8 +621,11 @@ def freeze_lifecycle_plan(
     run_id: str | None = None,
     image: str | None = None,
     http_base_url: str = "http://localhost",
+    host_services: tuple[str, ...] = ("tts",),
 ) -> FrozenLifecyclePlan:
-    steps = _contracts(operation, image=image, http_base_url=http_base_url)
+    steps = _contracts(
+        operation, image=image, http_base_url=http_base_url, host_services=host_services
+    )
     plan = ExecutionPlanManifest(
         run_id=run_id or f"{operation}-plan",
         input_fingerprint=input_fingerprint,

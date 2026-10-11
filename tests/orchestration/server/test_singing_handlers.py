@@ -132,7 +132,7 @@ async def test_url_song_reuses_the_pooled_asr_engine(
             get_context=lambda: {"asr_engine": asr_engine},
         )
     )
-    monkeypatch.setattr(singing_handlers, "SVCPipeline", create_pipeline)
+    monkeypatch.setattr("animetta.services.singing.svc_pipeline.SVCPipeline", create_pipeline)
     handler = SingingHandlers(
         SimpleNamespace(emit=AsyncMock()), session_manager, MagicMock(), MagicMock()
     )

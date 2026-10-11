@@ -166,13 +166,15 @@ class ServiceContext:
         self.runtime_config_hash = getattr(config, "effective_hash", None)
         logger.info(f"[{self.session_id}] Loading services from config...")
 
-        await self.init_asr(config.asr)
+        if self.voice_input_enabled(config):
+            await self.init_asr(config.asr)
         await self.init_tts(config.tts)
         if config.agent is not None:
             await self.init_llm(config.agent, config.get_persona(), app_config=config)
         await self.init_local_llm(config.local_llm, app_config=config)
-        await self.init_vad(config.vad)
-        await self.init_audio_processor()
+        if self.voice_input_enabled(config):
+            await self.init_vad(config.vad)
+            await self.init_audio_processor()
         if initialize_memory:
             await self.init_memory()
         await self.init_emotion_analyzer(config)
@@ -193,7 +195,12 @@ class ServiceContext:
             self._model_warmup_task = asyncio.create_task(self.model_manager.warmup())
 
         logger.info(f"[{self.session_id}] Services loaded")
-        logger.info(get_availability_summary())
+        if (
+            not isinstance(config, EffectiveConfig)
+            or config.runtime.enable_tools
+            or config.runtime.capabilities.minecraft
+        ):
+            logger.info(get_availability_summary())
 
         # Verify remote OpenAI-compatible engines in a tracked startup task.
         # Explicit mock/local development contexts remain pending instead of
@@ -226,6 +233,11 @@ class ServiceContext:
         self.llm_engine = llm_engine
         self.send_text = send_text
         logger.debug(f"[{self.session_id}] Loading service context from cache")
+
+    @staticmethod
+    def voice_input_enabled(config: EffectiveConfig | Any) -> bool:
+        """Legacy contexts retain their explicit service selection."""
+        return not isinstance(config, EffectiveConfig) or config.runtime.capabilities.voice_input
 
     async def init_asr(self, asr_config: ASRConfig) -> None:
         """Initialize ASR service"""

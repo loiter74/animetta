@@ -9,11 +9,16 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 HEADER = "# Generated from pyproject.toml and uv.lock; do not edit.\n# Update with: py -3.13 scripts/check_python_lock.py --write\n"
-EXPORTS = {"requirements.txt": ["--no-dev"], "requirements-dev.txt": ["--group", "dev"]}
+EXPORTS = {
+    "requirements.txt": ["--no-dev"],
+    "requirements-dev.txt": ["--group", "dev", "--all-extras"],
+    "requirements-bilibili.txt": ["--no-dev", "--extra", "bilibili"],
+    "requirements-search.txt": ["--no-dev", "--extra", "search"],
+}
 
 
 def export_requirements(root: Path, *, write: bool = False) -> None:
-    """Check the lock and both exports, or explicitly regenerate the exports."""
+    """Check the lock and core, development and feature exports."""
     uv = shutil.which("uv")
     if uv is None:
         raise RuntimeError("uv is required; install the version declared in pyproject.toml")
@@ -49,7 +54,7 @@ def export_requirements(root: Path, *, write: bool = False) -> None:
 def main() -> int:
     """Run the canonical dependency export contract."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--write", action="store_true", help="Regenerate both requirements files")
+    parser.add_argument("--write", action="store_true", help="Regenerate requirements files")
     args = parser.parse_args()
     try:
         export_requirements(ROOT, write=args.write)

@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock, MagicMock, mock_open, patch
 
 import pytest
 
+from animetta.config.manifest import load_effective_config
 from animetta.orchestration.graph.conversation_session import ConversationScope
 from animetta.orchestration.server.session import SessionManager
 from animetta.runtime.provider_pool import ProviderPool
@@ -19,6 +20,13 @@ def session_manager():
     """SessionManager with mocked model_manager."""
     mm = MagicMock()
     return SessionManager(model_manager=mm, provider_pool=ProviderPool())
+
+
+@pytest.fixture
+def core_config(monkeypatch):
+    monkeypatch.setenv("ANIMETTA_HOST", "127.0.0.1")
+    monkeypatch.setenv("ANIMETTA_PORT", "12394")
+    return load_effective_config(profile="test")
 
 
 @pytest.fixture
@@ -251,6 +259,53 @@ class TestGetOrCreateOrchestrator:
         )
 
         assert create_mock.await_args.kwargs["enable_tools"] is False
+
+    @pytest.mark.asyncio
+    async def test_canonical_tools_disabled_skips_optional_config(
+        self, session_manager, monkeypatch, core_config
+    ):
+        config = core_config
+        config = config.model_copy(
+            update={"runtime": config.runtime.model_copy(update={"enable_tools": False})}
+        )
+        create_mock = AsyncMock(return_value=MagicMock())
+        tools_loader = AsyncMock(side_effect=AssertionError("Disabled tools must not be loaded"))
+        monkeypatch.setattr(
+            "animetta.orchestration.graph.orchestrator.LangGraphOrchestrator.create", create_mock
+        )
+        monkeypatch.setattr(session_manager, "_load_tools_config", tools_loader)
+        ctx = SimpleNamespace(config=config, emotion_analyzer=None)
+
+        await session_manager.get_or_create_orchestrator("core", ctx, MagicMock(), MagicMock())
+
+        tools_loader.assert_not_awaited()
+        assert create_mock.await_args.kwargs["enable_tools"] is False
+        assert create_mock.await_args.kwargs["tools_config"] == {}
+        assert create_mock.await_args.kwargs["enable_memory"] is True
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("configured", [True, False])
+    async def test_explicit_tools_keeps_feature_settings(
+        self, session_manager, monkeypatch, core_config, configured
+    ):
+        config = core_config
+        config = config.model_copy(
+            update={"runtime": config.runtime.model_copy(update={"enable_tools": True})}
+        )
+        create_mock = AsyncMock(return_value=MagicMock())
+        tool_settings = {"enable_tools": configured, "config": {"tools": ["mc"]}}
+        tools_loader = AsyncMock(return_value=tool_settings)
+        monkeypatch.setattr(
+            "animetta.orchestration.graph.orchestrator.LangGraphOrchestrator.create", create_mock
+        )
+        monkeypatch.setattr(session_manager, "_load_tools_config", tools_loader)
+        ctx = SimpleNamespace(config=config, emotion_analyzer=None)
+
+        await session_manager.get_or_create_orchestrator("optional", ctx, MagicMock(), MagicMock())
+
+        tools_loader.assert_awaited_once()
+        assert create_mock.await_args.kwargs["enable_tools"] is configured
+        assert create_mock.await_args.kwargs["tools_config"] == tool_settings["config"]
 
     @pytest.mark.asyncio
     async def test_orchestrator_lock_prevents_duplicates(self, session_manager, monkeypatch):

@@ -61,5 +61,5 @@ def test_production_manifest_serializes_typed_pricing_date(monkeypatch) -> None:
 
     pricing = effective.providers["llm"].declaration["pricing"]
     assert pricing["verified_on"] == "2026-08-15"
-    assert effective.runtime.enable_tools is True
+    assert effective.runtime.enable_tools is False
     assert "http://127.0.0.1:12394" in effective.security.allowed_origins

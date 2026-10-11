@@ -135,8 +135,9 @@ def test_manifest_has_one_host_qwen_runtime_contract() -> None:
     assert set(qwen) == {"type", "contract", "api_key", "base_url"}
     assert smoke["services"]["tts"] == "qwen-host"
     assert smoke["runtime"]["tts_timeout_seconds"] == 120.0
-    assert production["services"]["tts"] == "dashscope-local-failover"
-    assert production["runtime"]["tts_timeout_seconds"] == 20.0
+    assert production["services"]["tts"] == "qwen-host"
+    assert production["runtime"]["tts_timeout_seconds"] == 120.0
+    assert not any(production["runtime"]["capabilities"].values())
 
 
 def test_release_browser_smoke_allows_a_slow_local_qwen_audio_budget() -> None:

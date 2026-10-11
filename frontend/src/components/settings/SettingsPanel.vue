@@ -33,6 +33,7 @@ interface ServiceInfo {
   configured: string
   resolved: string
   ready: boolean
+  disabled: boolean
   reason: string | null
 }
 
@@ -74,6 +75,7 @@ function serviceInfo(
     configured: formatIdentity(status.configured),
     resolved: formatIdentity(status.resolved),
     ready: status.ready,
+    disabled: status.state === 'disabled',
     reason: status.reason,
   }
 }
@@ -290,8 +292,16 @@ onUnmounted(() => {
                 <span class="text-xs text-c-text-dim">{{ svc.name }}</span>
                 <span
                   class="text-10px font-mono"
-                  :class="svc.ready ? 'text-c-success' : 'text-c-error'"
-                  >{{ svc.ready ? 'READY' : svc.reason || 'NOT READY' }}</span
+                  :class="
+                    svc.disabled
+                      ? 'text-c-text-muted'
+                      : svc.ready
+                        ? 'text-c-success'
+                        : 'text-c-error'
+                  "
+                  >{{
+                    svc.disabled ? '未启用' : svc.ready ? 'READY' : svc.reason || 'NOT READY'
+                  }}</span
                 >
               </div>
               <div class="grid gap-1 text-10px font-mono">

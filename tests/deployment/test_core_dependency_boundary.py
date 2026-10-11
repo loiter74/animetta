@@ -32,6 +32,8 @@ def test_runtime_requirements_exclude_local_model_runtimes() -> None:
 
     assert "starlette" in core
     assert "fastapi" not in core
+    assert "bilibili-api-python" not in core
+    assert "langchain-community" not in core
     for package in PROHIBITED_PACKAGES:
         assert package not in core
     assert "torch" in local
@@ -47,7 +49,7 @@ import sys
 blocked = (
     "torch", "torchaudio", "qwen_tts", "faster_whisper", "silero_vad",
     "funasr", "modelscope", "transformers", "peft", "accelerate",
-    "sentence_transformers", "chromadb",
+    "sentence_transformers", "chromadb", "bilibili_api", "langchain_community",
 )
 original_import = builtins.__import__
 

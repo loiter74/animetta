@@ -151,6 +151,8 @@ profiles:
       require_remote_identity: false
     runtime:
       debug: true
+      capabilities:
+        voice_input: true
       long_term_memory_mode: "off"
       enable_tools: false
       enable_subtitle_translation: false
@@ -195,15 +197,21 @@ profiles:
     services:
       llm: deepseek
       asr: mimo-asr
-      tts: dashscope-local-failover
+      tts: qwen-host
       vad: mimo-vad
     policy:
       allow_mock: false
       require_remote_identity: true
     runtime:
       debug: false
+      capabilities:
+        voice_input: false
+        bilibili: false
+        singing: false
+        minecraft: false
+        earth: false
       long_term_memory_mode: "off"
-      enable_tools: true
+      enable_tools: false
       enable_subtitle_translation: false
       enable_active_memes: false
-      tts_timeout_seconds: 20.0
+      tts_timeout_seconds: 120.0

@@ -29,7 +29,6 @@ from animetta.config.manifest import (
 from animetta.config.providers.asr import MimoASRConfig, MockASRConfig
 from animetta.config.providers.llm import DeepSeekLLMConfig, MockLLMConfig
 from animetta.config.providers.tts import (
-    FailoverTTSConfig,
     MimoTTSConfig,
     MockTTSConfig,
     RemoteTTSConfig,
@@ -545,7 +544,9 @@ def test_repository_manifest_resolves_every_declared_profile(
     )
 
     assert effective.profile == profile
-    assert set(effective.providers) == {"llm", "asr", "tts", "vad"}
+    assert set(effective.providers) == (
+        {"llm", "asr", "tts", "vad"} if profile == "test" else {"llm", "tts"}
+    )
 
 
 @pytest.mark.parametrize("profiles", [{"test", "smoke"}, {"test", "smoke", "production", "extra"}])
@@ -758,31 +759,30 @@ def test_default_manifest_entrypoints_are_independent_of_current_working_directo
     assert reloader.config_path == DEFAULT_MANIFEST_PATH
 
 
-def test_default_production_selects_dashscope_with_host_qwen_fallback(
+def test_default_production_selects_existing_host_qwen(
     manifest_secrets: pytest.MonkeyPatch,
 ) -> None:
     effective = load_effective_config(profile="production")
     selected = effective.providers["tts"]
     typed = effective.typed_provider("tts")
 
-    assert selected.name == "dashscope-local-failover"
+    assert selected.name == "qwen-host"
     assert selected.public_identity() == {
-        "name": "dashscope-local-failover",
-        "type": "failover",
-        "provider": "failover",
-        "model": None,
-        "voice": None,
+        "name": "qwen-host",
+        "type": "remote",
+        "provider": HOST_TTS_CONTRACT.provider,
+        "model": HOST_TTS_CONTRACT.model,
+        "voice": HOST_TTS_CONTRACT.voice,
     }
-    assert typed.type == "failover"
-    assert isinstance(typed, FailoverTTSConfig)
-    assert typed.primary.model == "qwen3-tts-instruct-flash-realtime"
-    assert typed.primary.voice == "Seren"
-    assert typed.fallback.model == HOST_TTS_CONTRACT.model
-    assert typed.fallback.voice == HOST_TTS_CONTRACT.voice
-    assert typed.fallback.base_url == "http://host.docker.internal:8767"
+    assert typed.type == "remote"
+    assert typed.model == HOST_TTS_CONTRACT.model
+    assert typed.voice == HOST_TTS_CONTRACT.voice
+    assert typed.base_url == "http://host.docker.internal:8767"
+    assert effective.runtime.enable_tools is False
+    assert not any(effective.runtime.capabilities.model_dump().values())
 
 
-def test_repository_smoke_and_selftest_use_local_qwen_without_changing_production(
+def test_repository_real_profiles_share_existing_host_qwen(
     manifest_secrets: pytest.MonkeyPatch,
 ) -> None:
     smoke = load_effective_config(profile="smoke")
@@ -805,7 +805,7 @@ def test_repository_smoke_and_selftest_use_local_qwen_without_changing_productio
         == HOST_TTS_CONTRACT.remote_declaration()
     )
     assert selftest.system.tts_timeout_seconds == 120.0
-    assert production.services.tts == "dashscope-local-failover"
+    assert production.services.tts == "qwen-host"
 
 
 def test_reloader_defaults_to_the_manifest_that_produced_effective_config(

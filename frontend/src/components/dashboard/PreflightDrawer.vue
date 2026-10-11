@@ -24,7 +24,9 @@ const closeButtonRef = ref<HTMLButtonElement | null>(null)
 const activeSection = ref('connection')
 const runtimeLoading = ref(false)
 const runtimeError = ref('')
-const services = ref<Array<{ name: string; ready: boolean; identity: string; reason: string }>>([])
+const services = ref<
+  Array<{ name: string; ready: boolean; disabled: boolean; identity: string; reason: string }>
+>([])
 const roomInput = ref<number | null>(null)
 const roomError = ref('')
 const selectedPersona = ref('')
@@ -66,8 +68,9 @@ async function loadRuntime(): Promise<void> {
       return {
         name: String(name),
         ready: typed.ready,
+        disabled: typed.state === 'disabled',
         identity: identity(typed),
-        reason: typed.reason || '',
+        reason: typed.state === 'disabled' ? '' : typed.reason || '',
       }
     })
   } catch (cause) {
@@ -252,8 +255,14 @@ watch(
                       <h3 class="text-xs font-medium">{{ service.name }}</h3>
                       <span
                         class="text-10px"
-                        :class="service.ready ? 'text-c-success' : 'text-c-error'"
-                        >{{ service.ready ? '就绪' : '不可用' }}</span
+                        :class="
+                          service.disabled
+                            ? 'text-c-text-muted'
+                            : service.ready
+                              ? 'text-c-success'
+                              : 'text-c-error'
+                        "
+                        >{{ service.disabled ? '未启用' : service.ready ? '就绪' : '不可用' }}</span
                       >
                     </div>
                     <p class="mt-2 truncate font-mono text-10px text-c-text-muted">

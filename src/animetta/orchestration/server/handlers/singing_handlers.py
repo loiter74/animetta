@@ -22,13 +22,14 @@ from animetta.services.command_inbox import (
     CommandKey,
 )
 from animetta.services.singing.interface import PipelineProgress
-from animetta.services.singing.svc_pipeline import SVCPipeline
 
 from ...socket_events import EVENTS
 from .base_handler import BaseSocketHandler
 
 if TYPE_CHECKING:
     from socketio import AsyncServer
+
+    from animetta.services.singing.svc_pipeline import SVCPipeline
 
     from ..desktop import DesktopClientManager
     from ..live2d import Live2DManager
@@ -159,6 +160,8 @@ class SingingHandlers(BaseSocketHandler):
             await self._command_inbox.mark_processing(key)
             try:
                 config = load_singing_config()
+
+                from animetta.services.singing.svc_pipeline import SVCPipeline
 
                 pipeline = SVCPipeline(
                     config,

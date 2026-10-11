@@ -1449,6 +1449,7 @@ components:
       - src/animetta/runtime/readiness.py
       - src/animetta/runtime/session_context.py
       - scripts/bench.py
+      - tests/smoke/test_main_path.py
     direct_groups:
       - backend-core-unit
       - backend-route-smoke
@@ -1934,6 +1935,14 @@ components:
     impacts: []
     risk: normal
 
+  core-install-benchmark:
+    domain: backend
+    paths:
+      - scripts/benchmark_core_install.py
+    direct_groups: [python-format, backend-static, backend-support-typecheck]
+    impacts: []
+    risk: normal
+
   operational-source-standards:
     domain: repository
     paths:
@@ -2008,6 +2017,8 @@ components:
       - uv.lock
       - requirements.txt
       - requirements-dev.txt
+      - requirements-bilibili.txt
+      - requirements-search.txt
       - scripts/check_python_lock.py
       - tests/scripts/test_python_lock.py
       - tests/conftest.py

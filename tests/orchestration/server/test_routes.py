@@ -60,6 +60,85 @@ class TestRouteHandlersInit:
         assert handlers.global_config is None
         assert handlers.user_settings is None
 
+    async def test_config_get_does_not_resolve_disabled_voice_providers(
+        self, mock_socketio, mock_session_manager, monkeypatch
+    ):
+        from animetta.config.manifest import RuntimeCapabilities, load_effective_config
+
+        monkeypatch.setenv("ANIMETTA_HOST", "127.0.0.1")
+        monkeypatch.setenv("ANIMETTA_PORT", "12394")
+        config = load_effective_config(profile="test")
+        config = config.model_copy(
+            update={
+                "runtime": config.runtime.model_copy(
+                    update={"capabilities": RuntimeCapabilities()}
+                ),
+                "provider_entries": tuple(
+                    p for p in config.provider_entries if p.category in {"llm", "tts"}
+                ),
+            }
+        )
+        handlers = RouteHandlers(mock_socketio, mock_session_manager)
+        handlers.global_config = config
+        await handlers.config_handlers.on_get_config("core-config-sid", {})
+        payload = mock_socketio.emit.call_args.args[1]
+        assert payload["active_services"]["asr"] is None
+        assert payload["active_services"]["vad"] is None
+        assert payload["active_services"]["tts"] == "mock"
+
+    @pytest.mark.parametrize(
+        "event",
+        ["bilibili:connect", "minecraft:connect", "sing:process", "earth:control", "chat:audio"],
+    )
+    async def test_disabled_capabilities_reject_before_optional_work(
+        self, event, mock_socketio, mock_session_manager, monkeypatch
+    ):
+        from animetta.config.manifest import RuntimeCapabilities, load_effective_config
+
+        monkeypatch.setenv("ANIMETTA_HOST", "127.0.0.1")
+        monkeypatch.setenv("ANIMETTA_PORT", "12394")
+        config = load_effective_config(profile="test")
+        config = config.model_copy(
+            update={
+                "runtime": config.runtime.model_copy(update={"capabilities": RuntimeCapabilities()})
+            }
+        )
+        handlers = register_routes(mock_socketio, mock_session_manager)
+        handlers.global_config = config
+        handlers.bilibili.on_bilibili_connect = AsyncMock()
+        handlers.minecraft.on_minecraft_connect = AsyncMock()
+        handlers.singing.on_sing_process = AsyncMock()
+        handlers.chat.on_raw_audio_data = AsyncMock()
+        registered = {call.args[0]: call.args[1] for call in mock_socketio.on.call_args_list}
+        result = await registered[event]("core-sid", {})
+        assert result["error"]["code"] == "CAPABILITY_DISABLED"
+        handlers.bilibili.on_bilibili_connect.assert_not_awaited()
+        handlers.minecraft.on_minecraft_connect.assert_not_awaited()
+        handlers.singing.on_sing_process.assert_not_awaited()
+        mock_session_manager.get_or_create_context.assert_not_awaited()
+
+    async def test_bilibili_remains_available_when_explicitly_enabled(
+        self, mock_socketio, mock_session_manager, monkeypatch
+    ):
+        from animetta.config.manifest import RuntimeCapabilities, load_effective_config
+
+        monkeypatch.setenv("ANIMETTA_HOST", "127.0.0.1")
+        monkeypatch.setenv("ANIMETTA_PORT", "12394")
+        config = load_effective_config(profile="test")
+        config = config.model_copy(
+            update={
+                "runtime": config.runtime.model_copy(
+                    update={"capabilities": RuntimeCapabilities(bilibili=True)}
+                )
+            }
+        )
+        handlers = register_routes(mock_socketio, mock_session_manager)
+        handlers.global_config = config
+        handlers.bilibili.on_bilibili_connect = AsyncMock(return_value={"ok": True})
+        registered = {call.args[0]: call.args[1] for call in mock_socketio.on.call_args_list}
+        assert await registered["bilibili:connect"]("opt-in-sid", {}) == {"ok": True}
+        handlers.bilibili.on_bilibili_connect.assert_awaited_once()
+
     def test_init_with_explicit_managers(self, mock_socketio, mock_session_manager):
         """Explicit desktop_manager and live2d_manager are used."""
         dcm = DesktopClientManager()

@@ -40,16 +40,15 @@ def test_animetta_up_requires_host_tts_before_build(monkeypatch) -> None:
 
     assert host_calls == [False]
     assert commands[0][0][-1] == "scripts/qwen_preflight.py"
-    assert commands[1][0][-1] == "scripts/rvc_preflight.py"
     production_environment = {
         "ANIMETTA_IMAGE": "animetta:local",
         "ANIMETTA_PROFILE": "production",
     }
-    assert commands[2] == (
+    assert commands[1] == (
         ["docker", "compose", "build", "animetta"],
         production_environment,
     )
-    assert commands[3] == (
+    assert commands[2] == (
         ["docker", "compose", "up", "-d", "--no-build", "animetta"],
         production_environment,
     )
@@ -73,8 +72,8 @@ def test_animetta_up_preserves_an_explicit_runtime_profile(monkeypatch) -> None:
         "ANIMETTA_IMAGE": "animetta:local",
         "ANIMETTA_PROFILE": "smoke",
     }
+    assert commands[1][1] == expected_environment
     assert commands[2][1] == expected_environment
-    assert commands[3][1] == expected_environment
 
 
 def test_animetta_selftest_up_waits_for_qwen_and_uses_profile_environment(monkeypatch) -> None:
@@ -96,16 +95,15 @@ def test_animetta_selftest_up_waits_for_qwen_and_uses_profile_environment(monkey
 
     assert host_calls == [False]
     assert commands[0][0][-2:] == ["scripts/qwen_preflight.py", "--wait"]
-    assert commands[1][0][-2:] == ["scripts/rvc_preflight.py", "--wait"]
     selftest_environment = {
         "ANIMETTA_IMAGE": "animetta:local",
         "ANIMETTA_PROFILE": "selftest",
     }
-    assert commands[2] == (
+    assert commands[1] == (
         ["docker", "compose", "build", "animetta"],
         selftest_environment,
     )
-    assert commands[3] == (
+    assert commands[2] == (
         ["docker", "compose", "up", "-d", "--no-build", "animetta"],
         selftest_environment,
     )
@@ -132,7 +130,7 @@ def test_animetta_deploy_pulls_and_starts_the_selected_image_without_build(
         "ANIMETTA_IMAGE": image,
         "ANIMETTA_PROFILE": "production",
     }
-    assert commands[2:] == [
+    assert commands[1:] == [
         (
             ["docker", "compose", "pull", "--include-deps", "animetta"],
             deploy_environment,
@@ -153,7 +151,7 @@ def test_animetta_deploy_pulls_and_starts_the_selected_image_without_build(
             deploy_environment,
         ),
     ]
-    assert all("build" not in command for command, _environment in commands[2:])
+    assert all("build" not in command for command, _environment in commands[1:])
 
 
 @pytest.mark.parametrize(

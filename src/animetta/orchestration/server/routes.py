@@ -232,6 +232,8 @@ class RouteHandlers:
         sessdata: str | None = None,
     ) -> dict[str, Any]:
         """Start Bilibili danmaku service — delegates to BilibiliHandlers."""
+        if not self.capability_enabled("bilibili"):
+            return _task_error("CAPABILITY_DISABLED", "Capability 'bilibili' is disabled")
         return await self.bilibili.start_bilibili(room_id, sessdata)
 
     async def stop_bilibili(self) -> dict[str, Any]:
@@ -242,7 +244,17 @@ class RouteHandlers:
         """Start async domain runtimes during the ASGI lifespan."""
         await self.command_inbox.start()
         await self.meme.restore_latest_collection()
-        await self.bilibili.start_configured()
+        if self.capability_enabled("bilibili"):
+            await self.bilibili.start_configured()
+
+    def capability_enabled(self, name: str) -> bool:
+        """Use the canonical snapshot; legacy test contexts remain explicit."""
+        from animetta.config.manifest import EffectiveConfig
+
+        config = self.global_config
+        return not isinstance(config, EffectiveConfig) or bool(
+            getattr(config.runtime.capabilities, name)
+        )
 
     async def stop_runtime(self) -> None:
         """Stop async domain runtimes during server shutdown."""
@@ -411,7 +423,7 @@ class RouteHandlers:
     async def on_connect(self, sid: str, environ: dict, *, read_only: bool = False) -> None:
         await self.lifecycle.on_connect(sid, environ, read_only=read_only)
         await self.bilibili.emit_current_snapshot(sid)
-        if read_only:
+        if read_only and self.capability_enabled("minecraft"):
             await self.minecraft.replay_public(sid)
 
     async def on_disconnect(self, sid: str) -> None:
@@ -622,9 +634,18 @@ def register_routes(
 
     security = security or SecurityRuntime.from_effective_config(None)
 
-    from .handlers.earth_handlers import EarthHandlers
+    earth = None
 
-    earth = EarthHandlers(sio, handlers.base, security)
+    def earth_action(action: str) -> Any:
+        async def adapter(sid: str, data: dict) -> Any:
+            nonlocal earth
+            if earth is None:
+                from .handlers.earth_handlers import EarthHandlers
+
+                earth = EarthHandlers(sio, handlers.base, security)
+            return await getattr(earth, action)(sid, data)
+
+        return adapter
 
     class ReadOnlyRegistrationServer:
         """Reject every client business event from the public live surface."""
@@ -709,7 +730,8 @@ def register_routes(
         return None
 
     async def disconnect_adapter(sid: str) -> None:
-        await earth.disconnect(sid)
+        if earth is not None:
+            await earth.disconnect(sid)
         security.unbind_socket(sid)
         await handlers.on_disconnect(sid)
 
@@ -753,7 +775,18 @@ def register_routes(
 
         return adapter
 
-    def control_guard(handler: Any) -> Any:
+    def capability_guard(handler: Any, capability: str) -> Any:
+        async def adapter(sid: str, data: Any = None) -> Any:
+            if not handlers.capability_enabled(capability):
+                return _task_error("CAPABILITY_DISABLED", f"Capability '{capability}' is disabled")
+            return await handler(sid, data)
+
+        return adapter
+
+    def control_guard(handler: Any, capability: str | None = None) -> Any:
+        if capability is not None:
+            handler = capability_guard(handler, capability)
+
         async def adapter(sid: str, data: dict | None = None) -> Any:
             limited = await _control_rate_error(security, sid)
             return limited if limited is not None else await handler(sid, data or {})
@@ -761,9 +794,9 @@ def register_routes(
         return adapter
 
     sio.on(developer_text_event, developer_text_adapter)
-    sio.on(event_name("earth", "control"), control_guard(earth.control))
-    sio.on(event_name("earth", "context"), control_guard(earth.context))
-    sio.on(event_name("earth", "result"), control_guard(earth.result))
+    sio.on(event_name("earth", "control"), control_guard(earth_action("control"), "earth"))
+    sio.on(event_name("earth", "context"), control_guard(earth_action("context"), "earth"))
+    sio.on(event_name("earth", "result"), control_guard(earth_action("result"), "earth"))
     sio.on(
         event_name("chat", "sandbox_request"),
         chat_guard(handlers.chat.on_sandbox_request),
@@ -772,10 +805,10 @@ def register_routes(
         event_name("chat", "sandbox_cancel"),
         control_guard(handlers.chat.on_sandbox_cancel),
     )
-    sio.on(event_name("chat", "audio"), handlers.on_raw_audio_data)
+    sio.on(event_name("chat", "audio"), capability_guard(handlers.on_raw_audio_data, "voice_input"))
     sio.on(
         event_name("chat", "audio_end"),
-        chat_guard(handlers.on_mic_audio_end),
+        chat_guard(capability_guard(handlers.on_mic_audio_end, "voice_input")),
     )
     sio.on(
         event_name("chat", "interrupt"),
@@ -838,44 +871,46 @@ def register_routes(
     )
     sio.on(
         event_name("desktop", "voice_start"),
-        control_guard(handlers.on_desktop_voice_start),
+        control_guard(handlers.on_desktop_voice_start, "voice_input"),
     )
     sio.on(
         event_name("desktop", "voice_stop"),
-        control_guard(handlers.on_desktop_voice_stop),
+        control_guard(handlers.on_desktop_voice_stop, "voice_input"),
     )
 
     # Bilibili frontend control events
     sio.on(
         event_name("bilibili", "connect"),
-        control_guard(handlers.on_bilibili_connect),
+        control_guard(handlers.on_bilibili_connect, "bilibili"),
     )
     sio.on(
         event_name("bilibili", "disconnect"),
-        control_guard(handlers.on_bilibili_disconnect),
+        control_guard(handlers.on_bilibili_disconnect, "bilibili"),
     )
     sio.on(
         event_name("bilibili", "update_room"),
-        control_guard(handlers.on_bilibili_update_room),
+        control_guard(handlers.on_bilibili_update_room, "bilibili"),
     )
 
     # Minecraft bot control events
     sio.on(
         event_name("minecraft", "connect"),
-        control_guard(handlers.on_minecraft_connect),
+        control_guard(handlers.on_minecraft_connect, "minecraft"),
     )
-    sio.on(event_name("minecraft", "status"), handlers.on_minecraft_status)
+    sio.on(
+        event_name("minecraft", "status"), control_guard(handlers.on_minecraft_status, "minecraft")
+    )
     sio.on(
         event_name("minecraft", "disconnect"),
-        control_guard(handlers.on_minecraft_disconnect),
+        control_guard(handlers.on_minecraft_disconnect, "minecraft"),
     )
     sio.on(
         event_name("minecraft", "shutdown"),
-        control_guard(handlers.on_minecraft_shutdown),
+        control_guard(handlers.on_minecraft_shutdown, "minecraft"),
     )
     sio.on(
         event_name("minecraft", "reattach_viewer"),
-        control_guard(handlers.on_minecraft_reattach_viewer),
+        control_guard(handlers.on_minecraft_reattach_viewer, "minecraft"),
     )
 
     # Translation configuration events
@@ -900,17 +935,20 @@ def register_routes(
     # Singing module events
     sio.on(
         event_name("sing", "process"),
-        control_guard(handlers.on_sing_process),
+        control_guard(handlers.on_sing_process, "singing"),
     )
     sio.on(
         event_name("sing", "confirm_lyrics"),
-        control_guard(handlers.on_sing_confirm_lyrics),
+        control_guard(handlers.on_sing_confirm_lyrics, "singing"),
     )
     sio.on(
         event_name("sing", "cancel"),
-        control_guard(handlers.on_sing_cancel),
+        control_guard(handlers.on_sing_cancel, "singing"),
     )
-    sio.on(event_name("sing", "subtitle_sync"), handlers.on_sing_subtitle_sync)
+    sio.on(
+        event_name("sing", "subtitle_sync"),
+        control_guard(handlers.on_sing_subtitle_sync, "singing"),
+    )
 
     # Memory: wiki pages (legacy compat — delegates to V2)
     sio.on(

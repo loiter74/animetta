@@ -196,6 +196,7 @@ class ProviderPool:
                 self._resolved_identities = {
                     category: identity
                     for category, engine in engines.items()
+                    if category in config.providers
                     if (
                         identity := resolve_service_identity(
                             category,

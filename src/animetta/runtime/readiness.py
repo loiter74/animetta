@@ -403,6 +403,17 @@ def _effective_config_snapshot(
     identities = resolved_identities if isinstance(resolved_identities, dict) else {}
     components: dict[str, dict[str, Any]] = {"pool": pool_component}
     for category in ("llm", "asr", "tts", "vad"):
+        if category not in config.runtime.required_services:
+            empty_identity = {field: None for field in ("type", "provider", "model", "voice")}
+            components[category] = {
+                "state": "disabled",
+                "ready": False,
+                "required": False,
+                "configured": empty_identity,
+                "resolved": dict(empty_identity),
+                "reason": "capability_disabled",
+            }
+            continue
         configured = config.providers[category].public_identity()
         supplied = identities.get(category)
         resolved = {
@@ -493,7 +504,7 @@ def _effective_config_snapshot(
                 component.update(_safe_failover_status(failover))
         components[category] = component
     components["frontend"] = frontend_component
-    services_ready = all(components[name]["ready"] for name in ("llm", "asr", "tts", "vad"))
+    services_ready = all(components[name]["ready"] for name in config.runtime.required_services)
     if pool_ready and not services_ready:
         pool_component.update(
             {

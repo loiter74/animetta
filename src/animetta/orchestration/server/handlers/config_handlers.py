@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from loguru import logger
 
 from animetta.config.live2d import get_live2d_config
+from animetta.config.manifest import EffectiveConfig
 from animetta.config.persona import list_available_personas
 from animetta.utils.logger_manager import logger_manager
 
@@ -95,6 +96,9 @@ class ConfigHandlers(BaseSocketHandler):
         logger.info(f"[{sid}] Requested config data")
 
         config = self.get_active_config()
+        voice_input_enabled = (
+            not isinstance(config, EffectiveConfig) or config.runtime.capabilities.voice_input
+        )
 
         available_personas = list_available_personas(fallback_to_default=False)
 
@@ -116,12 +120,12 @@ class ConfigHandlers(BaseSocketHandler):
                 "vad": config.services.vad,
             },
             "active_services": {
-                "asr": config.asr.type if config.asr else None,
+                "asr": config.asr.type if voice_input_enabled and config.asr else None,
                 "tts": config.tts.type if config.tts else None,
                 "llm": config.agent.llm_config.type
                 if config.agent and config.agent.llm_config
                 else None,
-                "vad": config.vad.type if config.vad else None,
+                "vad": config.vad.type if voice_input_enabled and config.vad else None,
             },
             "system": {
                 "host": config.system.host,

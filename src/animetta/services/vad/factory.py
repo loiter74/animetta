@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from importlib import import_module
+
 from animetta.config.core.registry import ProviderRegistry
 
 """
@@ -40,6 +42,8 @@ class VADFactory:
             ValueError: If no corresponding service implementation is found
         """
         try:
+            if config.type in {"silero", "mimo"}:
+                import_module(f".{config.type}_vad", __package__)
             vad = ProviderRegistry.create_service("vad", config)
             if strict and config.type != "mock" and isinstance(vad, MockVAD):
                 raise RuntimeError(

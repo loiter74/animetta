@@ -109,7 +109,7 @@ def manifest_data() -> dict[str, Any]:
             "test": {
                 "services": {"llm": "mock", "asr": "mock", "tts": "mock", "vad": "mock"},
                 "policy": {"allow_mock": True, "require_remote_identity": False},
-                "runtime": {"debug": True},
+                "runtime": {"debug": True, "capabilities": {"voice_input": True}},
             },
             "smoke": {
                 "services": {
@@ -119,7 +119,7 @@ def manifest_data() -> dict[str, Any]:
                     "vad": "mimo-vad",
                 },
                 "policy": {"allow_mock": False, "require_remote_identity": True},
-                "runtime": {"debug": False},
+                "runtime": {"debug": False, "capabilities": {"voice_input": True}},
             },
             "selftest": {
                 "services": {
@@ -129,7 +129,11 @@ def manifest_data() -> dict[str, Any]:
                     "vad": "mimo-vad",
                 },
                 "policy": {"allow_mock": False, "require_remote_identity": True},
-                "runtime": {"debug": False, "tts_timeout_seconds": 120.0},
+                "runtime": {
+                    "debug": False,
+                    "tts_timeout_seconds": 120.0,
+                    "capabilities": {"voice_input": True},
+                },
             },
             "production": {
                 "services": {
@@ -139,7 +143,7 @@ def manifest_data() -> dict[str, Any]:
                     "vad": "mimo-vad",
                 },
                 "policy": {"allow_mock": False, "require_remote_identity": True},
-                "runtime": {"debug": False},
+                "runtime": {"debug": False, "capabilities": {"voice_input": True}},
             },
         },
     }

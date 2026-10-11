@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+import yaml
 
 from animetta.config.manifest import EffectiveConfig, load_effective_config
 from animetta.core.readiness import resolve_service_identity
@@ -66,7 +68,7 @@ class _StaticFailoverTTS:
 
 
 @pytest.fixture
-def effective_config(monkeypatch: pytest.MonkeyPatch) -> callable:
+def effective_config(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> callable:
     for name in (
         "ANIMETTA_CONFIG",
         "ANIMETTA_LLM",
@@ -86,7 +88,20 @@ def effective_config(monkeypatch: pytest.MonkeyPatch) -> callable:
     monkeypatch.setenv("QWEN_HOST_TTS_URL", "http://qwen-host.internal:8767")
     monkeypatch.setenv("QWEN_HOST_TTS_URL", "http://host.docker.internal:8767")
 
-    def _load(profile: str) -> EffectiveConfig:
+    def _load(profile: str, *, tts: str | None = None) -> EffectiveConfig:
+        if tts is not None:
+            data = yaml.safe_load(Path("config/animetta.yaml").read_text(encoding="utf-8"))
+            data["profiles"][profile]["services"]["tts"] = tts
+            # Keep the canonical external contract in its original directory.
+            from animetta.host_tts_contract import load_host_tts_contract
+
+            data["providers"]["tts"]["qwen-host"].pop("contract")
+            data["providers"]["tts"]["qwen-host"].update(
+                load_host_tts_contract().remote_declaration()
+            )
+            path = tmp_path / "animetta.yaml"
+            path.write_text(yaml.safe_dump(data), encoding="utf-8")
+            return load_effective_config(path, profile=profile)
         return load_effective_config("config/animetta.yaml", profile=profile)
 
     return _load
@@ -150,7 +165,12 @@ def test_smoke_snapshot_publishes_one_config_identity_and_distinct_asr_tts_rows(
     assert payload["version"] == config.version
     assert payload["effective_hash"] == config.effective_hash
     assert payload["semantic_hash"] == config.semantic_hash
-    assert payload["components"]["asr"]["configured"]["model"] == "mimo-v2.5-asr"
+    for name in ("asr", "vad"):
+        component = payload["components"][name]
+        assert component["state"] == "disabled"
+        assert component["required"] is False
+        assert component["ready"] is False
+        assert not any(component["configured"].values())
     assert payload["components"]["tts"]["configured"]["model"] == config.tts.model
     assert payload["components"]["asr"] != payload["components"]["tts"]
 
@@ -159,7 +179,7 @@ def test_production_tts_exposes_exact_composite_and_child_status(
     pool,
     effective_config,
 ) -> None:
-    config = effective_config("production")
+    config = effective_config("production", tts="dashscope-local-failover")
     _seed_ready(pool, config)
 
     payload = pool.get_readiness_snapshot(
@@ -202,7 +222,7 @@ def test_production_composite_readiness_accepts_any_single_route(
     expected_ready: bool,
     active_backend: str | None,
 ) -> None:
-    config = effective_config("production")
+    config = effective_config("production", tts="dashscope-local-failover")
     _seed_ready(pool, config)
     pool._tts = _StaticFailoverTTS(
         primary_ready=primary_ready,
@@ -278,7 +298,7 @@ def test_production_dashscope_preload_failure_fails_pool_readiness(
     pool,
     effective_config,
 ) -> None:
-    config = effective_config("production")
+    config = effective_config("production", tts="dashscope-local-failover")
     _seed_ready(pool, config)
     pool._model_manager = _StaticModelManager(tts="error")
 

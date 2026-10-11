@@ -520,11 +520,23 @@ def _rvc_preflight(*, wait: bool) -> list[str]:
     return command
 
 
-def _prepare_host_runtimes(*, wait: bool) -> None:
-    _host_tts_up(best_effort=False)
-    _run(_preflight(wait=wait))
-    _host_rvc_up()
-    _run(_rvc_preflight(wait=wait))
+def _host_requirements(profile: str | None = None) -> tuple[str, ...]:
+    from animetta.config.manifest import load_host_service_requirements
+
+    return load_host_service_requirements(
+        ROOT / "config" / "animetta.yaml",
+        profile=profile or _compose_environment()["ANIMETTA_PROFILE"],
+    )
+
+
+def _prepare_host_runtimes(*, wait: bool, profile: str | None = None) -> None:
+    requirements = _host_requirements(profile)
+    if "tts" in requirements:
+        _host_tts_up(best_effort=False)
+        _run(_preflight(wait=wait))
+    if "rvc" in requirements:
+        _host_rvc_up()
+        _run(_rvc_preflight(wait=wait))
 
 
 def _compose_environment(*, image: str | None = None, profile: str | None = None) -> dict[str, str]:
@@ -616,7 +628,7 @@ def run_operation(operation: str, *, image: str | None = None) -> None:
             environment=deploy_environment,
         )
     elif operation == "anima-selftest-up":
-        _prepare_host_runtimes(wait=True)
+        _prepare_host_runtimes(wait=True, profile="selftest")
         selftest_environment = _compose_environment(
             profile="selftest",
         )
@@ -926,6 +938,7 @@ def _bounded_input_fingerprint(
         ).encode(),
         Path(__file__).read_bytes(),
         (ROOT / "tooling" / "execution_feedback" / "lifecycle.py").read_bytes(),
+        (ROOT / "config" / "animetta.yaml").read_bytes(),
     ]
     if image is not None:
         parts.append(image.encode())
@@ -1014,6 +1027,11 @@ async def run_bounded_operation(
         run_id=run_id,
         image=selected_image,
         http_base_url=_http_base_url(runtime_environment),
+        host_services=(
+            _host_requirements(runtime_environment["ANIMETTA_PROFILE"])
+            if operation in {"anima-up", "anima-dev", "anima-deploy"}
+            else ()
+        ),
     )
     store = IterationPlanStore(artifacts_root)
     store.write_plan(frozen.plan)

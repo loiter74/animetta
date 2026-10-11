@@ -113,4 +113,28 @@ describe('SettingsPanel runtime status', () => {
     expect(tts).toContain('test-voice')
     expect(asr).not.toEqual(tts)
   })
+
+  it('shows disabled voice input without presenting a startup failure', async () => {
+    const response = await fetch('/ready')
+    const payload = await response.json()
+    const identity = { type: null, provider: null, model: null, voice: null }
+    for (const category of ['asr', 'vad']) {
+      payload.components[category] = {
+        state: 'disabled',
+        ready: false,
+        required: false,
+        configured: identity,
+        resolved: identity,
+        reason: 'capability_disabled',
+      }
+    }
+    vi.mocked(fetch).mockResolvedValue({ json: async () => payload } as Response)
+    const wrapper = mount(SettingsPanel, { global: { plugins: [createPinia()] } })
+    await flushPromises()
+    for (const category of ['asr', 'vad']) {
+      expect(wrapper.get(`[data-service="${category}"]`).text()).toContain('未启用')
+      expect(wrapper.get(`[data-service="${category}"]`).text()).not.toContain('NOT READY')
+    }
+    expect(wrapper.get('[data-service="tts"]').text()).toContain('READY')
+  })
 })

@@ -105,7 +105,8 @@ class SessionManager:
             if pool:
                 logger.info(f"[{sid}] Using pooled engines (LLM/TTS/ASR)")
                 await ctx.load_cache(config=config, **pool)
-                await ctx.init_vad(config.vad)
+                if ServiceContext.voice_input_enabled(config):
+                    await ctx.init_vad(config.vad)
                 if self.memory_runtime is not None:
                     await self.memory_runtime.initialize()
                     ctx.attach_memory_system(self.memory_runtime.system, owned=False)
@@ -162,15 +163,16 @@ class SessionManager:
                 return self.orchestrators[sid]
             logger.info(f"[{sid}] Creating new LangGraphOrchestrator")
 
-            # Load tool settings from config
-            tools_config = await self._load_tools_config()
+            config = getattr(ctx, "config", None)
+            tools_allowed = not isinstance(config, EffectiveConfig) or config.runtime.enable_tools
+            tools_config = await self._load_tools_config() if tools_allowed else {}
 
             # Create LangGraph Orchestrator
             from ..graph.orchestrator import LangGraphOrchestrator
 
             # Ensure enable_tools is correctly passed
-            enable_tools = tools_config.get("enable_tools", False)
-            system = getattr(getattr(ctx, "config", None), "system", None)
+            enable_tools = tools_allowed and bool(tools_config.get("enable_tools", False))
+            system = getattr(config, "system", None)
             if getattr(system, "runtime_profile", None) == "golden":
                 enable_tools = False
             raw_config = tools_config.get("config", tools_config)
