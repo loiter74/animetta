@@ -1,0 +1,628 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-11T08:35:22.650660+00:00",
+  "status": "readonly_preparation_complete_waiting_release_authorization",
+  "reserved_run_id": "c-dc-distribution01",
+  "run_launched": false,
+  "actual_release_digest": null,
+  "source_revision_observed": "023eccf112e88db8bb448d10fc578ef4899e3969",
+  "CI_state_from_parent": {
+    "run_id": 38124858407,
+    "source_revision": "023eccf112e88db8bb448d10fc578ef4899e3969",
+    "will_publish": false,
+    "reason": "Linux earth/audio.py CREATE_NO_WINDOW typecheck; parent preparing guarded fix and affected"
+  },
+  "canonical_command_template": [
+    "py",
+    "-3.13",
+    "scripts/runtime_lifecycle.py",
+    "anima-deploy",
+    "--image",
+    "ghcr.io/loiter74/animetta@sha256:<ACTUAL_PUBLISHED_DIGEST>",
+    "--run-id",
+    "c-dc-distribution01",
+    "--wait",
+    "--artifacts-root",
+    "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans"
+  ],
+  "child_environment_whitelist": {
+    "COMPOSE_PROJECT_NAME": "anima",
+    "COMPOSE_FILE": "C:\\Users\\30262\\Project\\Anima\\docker-compose.yml",
+    "COMPOSE_ENV_FILES": "C:\\Users\\30262\\Project\\Anima\\.env",
+    "ANIMETTA_HTTP_PORT": "80",
+    "ANIMETTA_PORT": "12394",
+    "ANIMETTA_PROFILE": "production",
+    "ANIMETTA_IMAGE": "actual authorized immutable digest reference"
+  },
+  "private_env_import": "ROOT dotenv plus missing ROOT auth credentials inherited from actual container only in one dedicated child; never persist values. Recheck before authorized action.",
+  "private_env_sha256": "66d4ad7e31d2596374c115e3dbe47b0690a89b98513f6b7fd0e181161e977084",
+  "credentials_continuity": {
+    "ANIMETTA_ACCESS_TOKEN": {
+      "actual_present": true,
+      "ROOT_value_matches_if_set": true,
+      "inherit_in_dedicated_child_if_ROOT_absent": false
+    },
+    "QWEN_TTS_API_KEY": {
+      "actual_present": true,
+      "ROOT_value_matches_if_set": true,
+      "inherit_in_dedicated_child_if_ROOT_absent": false
+    },
+    "ANIMETTA_AUTH_USERNAME": {
+      "actual_present": true,
+      "ROOT_value_matches_if_set": true,
+      "inherit_in_dedicated_child_if_ROOT_absent": true
+    },
+    "ANIMETTA_AUTH_PASSWORD_HASH": {
+      "actual_present": true,
+      "ROOT_value_matches_if_set": true,
+      "inherit_in_dedicated_child_if_ROOT_absent": true
+    },
+    "DEEPSEEK_API_KEY": {
+      "actual_present": true,
+      "ROOT_value_matches_if_set": true,
+      "inherit_in_dedicated_child_if_ROOT_absent": false
+    },
+    "DASHSCOPE_API_KEY": {
+      "actual_present": true,
+      "ROOT_value_matches_if_set": true,
+      "inherit_in_dedicated_child_if_ROOT_absent": false
+    },
+    "MIMO_API_KEY": {
+      "actual_present": true,
+      "ROOT_value_matches_if_set": true,
+      "inherit_in_dedicated_child_if_ROOT_absent": false
+    },
+    "MC_MCP_AUTH_TOKEN": {
+      "actual_present": false,
+      "ROOT_value_matches_if_set": true,
+      "inherit_in_dedicated_child_if_ROOT_absent": false
+    },
+    "redis_password": {
+      "same_app_redis_ROOT": true,
+      "values_persisted": false
+    }
+  },
+  "current_containers": [
+    {
+      "name": "/anima-animetta-1",
+      "id": "1f248f6a0ac7b556a61facdb68cd2bc4085b4ec38fcc24d222639a1a1f7a6434",
+      "image_id": "sha256:569b1ded734e021c5f87f6b822ffd7a422a608bfd8280fa89469233444a7703a",
+      "image_tag": "animetta:deployment-core-core-r4-f8dcd2e7acf6-3bfb7799",
+      "started_at": "2026-10-11T08:09:48.784039045Z",
+      "status": "running",
+      "health": "healthy",
+      "project": "anima",
+      "working_dir": "C:\\Users\\30262\\Project\\Anima",
+      "config_files": "C:\\Users\\30262\\Project\\Anima\\docker-compose.yml",
+      "ports": {
+        "12394/tcp": [
+          {
+            "HostIp": "",
+            "HostPort": "12394"
+          }
+        ],
+        "80/tcp": [
+          {
+            "HostIp": "",
+            "HostPort": "80"
+          }
+        ]
+      },
+      "mounts": [
+        {
+          "type": "volume",
+          "name": "anima_animetta-data",
+          "destination": "/app/data"
+        },
+        {
+          "type": "volume",
+          "name": "anima_animetta-memory-db",
+          "destination": "/app/memory_db"
+        }
+      ]
+    },
+    {
+      "name": "/anima-redis-1",
+      "id": "90e1205d786eee233f716f91c7488fb89304adf9735d845a139a49be3be33a0d",
+      "image_id": "sha256:8096655e437712b07503796fb64d81359256cfcff0ab29d95a7da72863786efb",
+      "image_tag": "redis:8.8.1-alpine",
+      "started_at": "2026-10-11T08:09:41.96618555Z",
+      "status": "running",
+      "health": "healthy",
+      "project": "anima",
+      "working_dir": "C:\\Users\\30262\\Project\\Anima",
+      "config_files": "C:\\Users\\30262\\Project\\Anima\\docker-compose.yml",
+      "ports": {},
+      "mounts": [
+        {
+          "type": "volume",
+          "name": "anima_animetta-redis",
+          "destination": "/data"
+        }
+      ]
+    }
+  ],
+  "Qwen_processes": [
+    {
+      "pid": 14240,
+      "creation_time": 1791686620.901652,
+      "command_line": [
+        "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\venv\\Scripts\\python.exe",
+        "-m",
+        "animetta_qwen_tts"
+      ]
+    },
+    {
+      "pid": 16104,
+      "creation_time": 1791686620.775384,
+      "command_line": [
+        "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\venv\\Scripts\\python.exe",
+        "-m",
+        "animetta_qwen_tts"
+      ]
+    }
+  ],
+  "Qwen_identity": {
+    "/ready": {
+      "ready": true,
+      "service": "qwen-tts",
+      "api_version": "v1",
+      "provider": "qwen3-tts-gguf-host",
+      "model": "Qwen3-TTS-1.7B-Base",
+      "revision": "0eb32e283ee46b86820c67843abb04cf12bc58d7",
+      "voice": "tosaka-rin-cn",
+      "sample_rate": 24000,
+      "quantization": "talker=Q5_K,predictor=Q8_0,onnx=FP16",
+      "runtime_commit": "0eb32e283ee46b86820c67843abb04cf12bc58d7"
+    },
+    "/v1/identity": {
+      "ready": true,
+      "service": "qwen-tts",
+      "api_version": "v1",
+      "provider": "qwen3-tts-gguf-host",
+      "model": "Qwen3-TTS-1.7B-Base",
+      "revision": "0eb32e283ee46b86820c67843abb04cf12bc58d7",
+      "voice": "tosaka-rin-cn",
+      "sample_rate": 24000,
+      "quantization": "talker=Q5_K,predictor=Q8_0,onnx=FP16",
+      "runtime_commit": "0eb32e283ee46b86820c67843abb04cf12bc58d7"
+    }
+  },
+  "Qwen_no_restart_guard": "Abort before deploy if current PID/create/cmdline/identity/ready differs. Canonical _host_tts_up returns immediately when ready; verify identical ownership afterwards, do not enter its restart recovery branch.",
+  "RVC_8769_unavailable": true,
+  "current_public_http": {
+    "/health": {
+      "status": 200,
+      "bytes": 63,
+      "sha256": "20d2b5ea438b597136e04eef5d21acb46bdb3fcdc1477e5e4f2a00ca73d70336",
+      "content_type": "application/json",
+      "body": {
+        "status": "ok",
+        "service": "anima",
+        "timestamp": 1791707722.208774
+      },
+      "assets": []
+    },
+    "/ready": {
+      "status": 200,
+      "bytes": 2336,
+      "sha256": "7523d001983391ae46b918d22fd2364a05e65f45da16b4f3566f1b69b95f4dc9",
+      "content_type": "application/json",
+      "body": {
+        "schema_version": 1,
+        "status": "ready",
+        "ready": true,
+        "service": "anima",
+        "profile": "production",
+        "version": 1,
+        "persona": "anima.v0.1",
+        "effective_hash": "4be171239c60ddc83a414f8c0a3a6ba4f3be658864d55985cfc5a2d92b6325db",
+        "semantic_hash": "293cd32f315131c15aff8e0a2a9ee41f7963899c9715f9baab80c3d0767b1558",
+        "acceptance_eligible": true,
+        "components": {
+          "pool": {
+            "state": "ready",
+            "ready": true,
+            "reason": null
+          },
+          "llm": {
+            "state": "ready",
+            "ready": true,
+            "configured": {
+              "name": "deepseek",
+              "type": "deepseek",
+              "provider": "deepseek",
+              "model": "deepseek-v4-flash",
+              "voice": null
+            },
+            "resolved": {
+              "type": "deepseek",
+              "provider": "deepseek",
+              "model": "deepseek-v4-flash",
+              "voice": null
+            },
+            "reason": null
+          },
+          "asr": {
+            "state": "disabled",
+            "ready": false,
+            "required": false,
+            "configured": {
+              "type": null,
+              "provider": null,
+              "model": null,
+              "voice": null
+            },
+            "resolved": {
+              "type": null,
+              "provider": null,
+              "model": null,
+              "voice": null
+            },
+            "reason": "capability_disabled"
+          },
+          "tts": {
+            "state": "ready",
+            "ready": true,
+            "configured": {
+              "name": "qwen-host",
+              "type": "remote",
+              "provider": "qwen3-tts-gguf-host",
+              "model": "Qwen3-TTS-1.7B-Base",
+              "voice": "tosaka-rin-cn"
+            },
+            "resolved": {
+              "type": "remote",
+              "provider": "qwen3-tts-gguf-host",
+              "model": "Qwen3-TTS-1.7B-Base",
+              "voice": "tosaka-rin-cn"
+            },
+            "reason": null
+          },
+          "vad": {
+            "state": "disabled",
+            "ready": false,
+            "required": false,
+            "configured": {
+              "type": null,
+              "provider": null,
+              "model": null,
+              "voice": null
+            },
+            "resolved": {
+              "type": null,
+              "provider": null,
+              "model": null,
+              "voice": null
+            },
+            "reason": "capability_disabled"
+          },
+          "frontend": {
+            "state": "ready",
+            "ready": true,
+            "required": true,
+            "reason": null
+          },
+          "checkpoint": {
+            "state": "ready",
+            "ready": true,
+            "degraded": false,
+            "reason": null,
+            "required": false
+          },
+          "auth_session": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "required": true
+          },
+          "auth_user": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "required": true
+          },
+          "memory_runtime": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "ingestion_queue": 0,
+            "index_backlog": 0,
+            "ingestion_failed": 0,
+            "required": true
+          },
+          "remote_tts": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "contract_valid": true,
+            "required": true
+          },
+          "observation_ledger": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "queue_depth": 0,
+            "dropped_records": 0,
+            "writer_errors": 0,
+            "schema_version": 2,
+            "write_probe": true,
+            "required": true
+          },
+          "metrics_projection": {
+            "state": "ready",
+            "ready": true,
+            "reason": null,
+            "has_anima_readiness_probe_total": true,
+            "anima_readiness_probe_total_delta": 2.0,
+            "required": true
+          }
+        },
+        "degraded": false,
+        "component_status_age_seconds": 24.971
+      },
+      "assets": []
+    },
+    "/api/auth/session": {
+      "status": 200,
+      "bytes": 95,
+      "sha256": "551a5229465ee45b5d83d1b09cbf0c396e7410692392f74679ce5aded0dab8cb",
+      "content_type": "application/json",
+      "body": {
+        "ok": true,
+        "authenticated": true,
+        "source": "bearer",
+        "user": null,
+        "password_change_required": false
+      },
+      "assets": []
+    },
+    "/dashboard": {
+      "status": 200,
+      "bytes": 1665,
+      "sha256": "4de4bdd48d24ec9d81fba9c558b3d82f23a6caceb94a8ea825aea34d572f77fd",
+      "content_type": "text/html",
+      "body": null,
+      "assets": [
+        "/live2d/live2dcubismcore.min.js",
+        "/assets/app-CNn01Dr6.js",
+        "/assets/__uno-DFSx-zmg.js",
+        "/assets/__uno-Cz082Y8U.css",
+        "/assets/app-fk-jzbIZ.css"
+      ]
+    },
+    "/live.html": {
+      "status": 200,
+      "bytes": 4136,
+      "sha256": "96322d8b4a66a2fde26a1de0cff68970a234b494313fa7aafea14008cf2ff32f",
+      "content_type": "text/html",
+      "body": null,
+      "assets": [
+        "/live2d/live2dcubismcore.min.js",
+        "/assets/live-CKJ0rQ56.js",
+        "/assets/__uno-DFSx-zmg.js",
+        "/assets/playback-sync-BIYR2RVW.js",
+        "/assets/public-activity-Dgr1AmUL.js",
+        "/assets/__uno-Cz082Y8U.css",
+        "/assets/public-activity-DB2PvEIL.css",
+        "/assets/live-BowdoQJv.css"
+      ]
+    }
+  },
+  "current_frontend_resource_fingerprints": [
+    {
+      "url": "http://localhost/assets/__uno-Cz082Y8U.css",
+      "status": 200,
+      "bytes": 32036,
+      "sha256": "eb9f9eaf6382157bf692029d565bf7e69721f3e1b52a1b5ad8a16a4664e0f5d3",
+      "content_type": "text/css"
+    },
+    {
+      "url": "http://localhost/assets/__uno-DFSx-zmg.js",
+      "status": 200,
+      "bytes": 65610,
+      "sha256": "d9e0baaa51c2715a36ac3c379fd621185c991f1b1708aa7bc2411b04eeafe530",
+      "content_type": "application/javascript"
+    },
+    {
+      "url": "http://localhost/assets/app-CNn01Dr6.js",
+      "status": 200,
+      "bytes": 230533,
+      "sha256": "27d06b488d5841ceb98275c649f7707a1b503f18f9b2e34da510ac83277bbc2b",
+      "content_type": "application/javascript"
+    },
+    {
+      "url": "http://localhost/assets/app-fk-jzbIZ.css",
+      "status": 200,
+      "bytes": 4213,
+      "sha256": "fc8f678eedad3c06082e286fec3df9eff8e60ba78ea2231baf9d4e6e51935d88",
+      "content_type": "text/css"
+    },
+    {
+      "url": "http://localhost/assets/live-BowdoQJv.css",
+      "status": 200,
+      "bytes": 10196,
+      "sha256": "979bec121d8195241228676d0a3d30e817f5bc09e6e5d74fc8429e63b30e4f25",
+      "content_type": "text/css"
+    },
+    {
+      "url": "http://localhost/assets/live-CKJ0rQ56.js",
+      "status": 200,
+      "bytes": 18367,
+      "sha256": "ace2d3373c7e29d9db92fd234b57b14d6757e8edfeff32b45f58ec16e1c11702",
+      "content_type": "application/javascript"
+    },
+    {
+      "url": "http://localhost/assets/playback-sync-BIYR2RVW.js",
+      "status": 200,
+      "bytes": 7498,
+      "sha256": "e9185192bc4a0a2614ed8a0515c0d8f76bf1c0311886befd63318bab80f102a2",
+      "content_type": "application/javascript"
+    },
+    {
+      "url": "http://localhost/assets/public-activity-DB2PvEIL.css",
+      "status": 200,
+      "bytes": 3192,
+      "sha256": "bb082a828e3acdb4530cd2d38740855cea155d5b3edabc29767bdf4558f06dd0",
+      "content_type": "text/css"
+    },
+    {
+      "url": "http://localhost/assets/public-activity-Dgr1AmUL.js",
+      "status": 200,
+      "bytes": 674904,
+      "sha256": "7bc5f77a6b24147c2c504f43ed2b9e69cc95fe2673791d5d9ab9f04e14af6cd9",
+      "content_type": "application/javascript"
+    },
+    {
+      "url": "http://localhost/live2d/live2dcubismcore.min.js",
+      "status": 200,
+      "bytes": 207155,
+      "sha256": "25ae938cb4fe282ce189b357bcc97e603d1e1f7ec78bf04150d401c23cdc792f",
+      "content_type": "application/javascript"
+    }
+  ],
+  "pure_plan_steps": [
+    {
+      "id": "host-tts-start",
+      "kind": "command",
+      "command": [
+        "host-tts-start"
+      ],
+      "target": null
+    },
+    {
+      "id": "host-tts-preflight",
+      "kind": "command",
+      "command": [
+        "host-tts-preflight"
+      ],
+      "target": null
+    },
+    {
+      "id": "animetta-pull",
+      "kind": "command",
+      "command": [
+        "docker",
+        "compose",
+        "pull",
+        "--include-deps",
+        "animetta"
+      ],
+      "target": null
+    },
+    {
+      "id": "animetta-image-status",
+      "kind": "command",
+      "command": [
+        "docker",
+        "image",
+        "inspect",
+        "ghcr.io/loiter74/animetta@sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "--format",
+        "{{json .RepoDigests}}"
+      ],
+      "target": null
+    },
+    {
+      "id": "animetta-start",
+      "kind": "command",
+      "command": [
+        "docker",
+        "compose",
+        "up",
+        "-d",
+        "--no-build",
+        "animetta"
+      ],
+      "target": null
+    },
+    {
+      "id": "animetta-health",
+      "kind": "http-check",
+      "command": [],
+      "target": "http://localhost/health"
+    },
+    {
+      "id": "animetta-ready",
+      "kind": "http-check",
+      "command": [],
+      "target": "http://localhost/ready"
+    },
+    {
+      "id": "frontend-readiness",
+      "kind": "http-check",
+      "command": [],
+      "target": "http://localhost"
+    },
+    {
+      "id": "default-log-check",
+      "kind": "log-check",
+      "command": [
+        "docker",
+        "compose",
+        "logs",
+        "animetta"
+      ],
+      "target": null
+    }
+  ],
+  "pure_plan_image_is_unpublished_placeholder": true,
+  "controller_call_path": {
+    "path": "main -> operation_lock -> _run_cli -> bounded worker -> run_bounded_operation -> freeze_lifecycle_plan -> LifecycleStepExecutor -> _SystemLifecycleDriver",
+    "deploy_StartupContext": null,
+    "startup_prepare_invoked": false,
+    "initial_build_controller_run_invoked": false,
+    "BUILD_step_present": false,
+    "build_controller_object_created_but_not_invoked": true,
+    "node_pnpm_source_build_commands": [],
+    "actual_proof_required": "After authorization inspect all real executed commands/step receipts, not only this pure plan. Browser proof harness can use Node separately from deploy controller."
+  },
+  "source_contract_hashes": {
+    "scripts/runtime_lifecycle.py": "ef59fd050017e244dbe444a97972c418a27c3fa8cbcf66cfc58f5508a3a38c36",
+    "tooling/execution_feedback/lifecycle.py": "8c8c491ed4cc563acee0b1e5abdd877c6ba11bfde6f464c6cfd1f1e461731098",
+    "tooling/runtime_startup.py": "56a4280c699d152271870ada5b47818a47a31217bf2990cf6b31986293ed634f",
+    "docker-compose.yml": "f4f030410292aa96d1354e89b27324671e54492ad88308a431b0379de0a7b09f",
+    "config/animetta.yaml": "53e710fb65cecba5b372b3a6bf55f6b5b78513fb7e79caf7abf5c5865b668357"
+  },
+  "retained_rollback_images": [
+    {
+      "tag": "animetta:deployment-core-core-r4-f8dcd2e7acf6-3bfb7799",
+      "image_id": "sha256:569b1ded734e021c5f87f6b822ffd7a422a608bfd8280fa89469233444a7703a",
+      "size_bytes": 614348725,
+      "repo_digests": [
+        "animetta@sha256:569b1ded734e021c5f87f6b822ffd7a422a608bfd8280fa89469233444a7703a"
+      ],
+      "build_input_fingerprint": "f8dcd2e7acf6e31fe0a50f900f9c18cb086791619d999a5a1f12ac2bf83c24b0"
+    },
+    {
+      "tag": "animetta:deployment-core-core-r3-e9a02ad56a75",
+      "image_id": "sha256:2947e4318fff367438fe98ef98bb006825dc1772eaf7a1c60f05efddbd978d25",
+      "size_bytes": 1274643121,
+      "repo_digests": [
+        "animetta@sha256:2947e4318fff367438fe98ef98bb006825dc1772eaf7a1c60f05efddbd978d25"
+      ],
+      "build_input_fingerprint": "d311c1eaf2800108ba8ee3ddd137a4e766f5e4205cd6b26b908d168f113f3e13"
+    }
+  ],
+  "rollback_boundary": {
+    "canonical_deploy_only_accepts_GHCR_main_sha_or_digest": true,
+    "local_r4_r3_tags_accepted": false,
+    "immutable_zero_build_rollback": "Same canonical anima-deploy with a previously published authorized GHCR immutable digest, same project/credentials/volumes/hosts; no direct Compose workaround.",
+    "local_r4_source_up": "Canonical anima-up could reuse only exact verified current r4 input/cache. This is a source-build path and cannot be promised as no-build ordinary rollback; currently not authorized.",
+    "local_r3_source_up": "Current ROOT differs from old r3 input and old Temp source was removed. Never point anima-up at old r3 tag: cache miss may rebuild/overwrite it.",
+    "retain_exact_local_tag_and_image_ids": true,
+    "rollback_executed": false
+  },
+  "post_deploy_acceptance_plan": [
+    "Validate actual successful CI commit/provenance and published manifest digest; RepoDigest is distinct from Docker config image ID",
+    "Keep ROOT Compose labels/project, three named volumes/private credentials/ports and unchanged Qwen PID/create/model/voice; no optional host start/preflight",
+    "Lightweight real formal URLs health/ready/HTML+asset fingerprints; API/token/unauth and Socket/Origin boundaries; core heavy packages/ffmpeg/Cesium absent and memory FTS ready",
+    "If app container or resources change, one corrected NativeHTML real role/WAV-RMS/natural ended/persistent task playback+Live2D+ordinary same-thread fact two-round continuity; no synthetic events or account reset",
+    "Do not repeat six startup/performance samples; not a performance comparison",
+    "Preserve old failed API evidence and Dashboard account-login limitation, freeze compact sanitized raw evidence bytes; parent handles archive/commit/cleanup"
+  ],
+  "readonly_actions_only": true,
+  "lifecycle_pull_build_quality_browser_GPU_model_cleanup_Git_write_executed": false,
+  "metadata_preparation_recovery": "Only fixed local pure-plan input fingerprint schema from descriptive string to SHA256; no executor launched",
+  "next_action": "Wait for parent NEW successful CI publication digest plus explicit lifecycle authorization. Then reread this reserved run/state and recheck current private/host identity before canonical execution."
+}

@@ -13,6 +13,12 @@
       "sha256": "1759d9de761ee1bd350bfe184b8a97ff37e4cbf98c4e89a76b0ac01627118927"
     },
     {
+      "file": "ci-595cd477-release.json",
+      "source": "actual CI/registry receipt",
+      "bytes": 5738,
+      "sha256": "41701b7ca6b5df63a811a5eb5d391858166baf0ccbc74610c7a37303a51843e8"
+    },
+    {
       "file": "ci-de26-failure.json",
       "source": "current read-only audit",
       "sha256": "3996f5f552acb75822f5b300fbc27a2fb2c30683f489c4131f7fcb4a71ab1002",
@@ -23,6 +29,18 @@
       "source": "cleanup-failed01.json",
       "sha256": "78ed315814f4c0dceaf8325357d5d8412c0fc544aec20ab6f4bcb4ee928e6eaa",
       "bytes": 424184
+    },
+    {
+      "file": "cleanup-final-receipt.json",
+      "source": "actual final exact-owned-root cleanup after distribution smoke",
+      "bytes": 1828,
+      "sha256": "51b66b6697921fc7a9bc5a0bcc1bc3daf41d6613f80e2c416ae68ee139d0beb9"
+    },
+    {
+      "file": "cleanup-final-source.txt",
+      "source": "cleanup-final.ps1 exact source bytes",
+      "bytes": 6251,
+      "sha256": "7cb72c077fc479b61844eadf93d66166d4086e1f97af779cf54dfe47cdea7fc4"
     },
     {
       "file": "cleanup-owned-source.txt",
@@ -71,6 +89,234 @@
       "source": "deploy-control-probe.py",
       "sha256": "d1ac7a62f6024644f94263c3e08e4b33aaa788f3eacd6a2af64db0c6921ad5b0",
       "bytes": 1106
+    },
+    {
+      "file": "distribution-final/18e27993-de13-472a-9095-560944b2eaad-turn.json",
+      "source": "distribution-final/18e27993-de13-472a-9095-560944b2eaad-turn.json",
+      "bytes": 9822,
+      "sha256": "3661aa76bcdae4fc834a0a21725debf1a86b01da045d761d4b92bf6fe17d9eba"
+    },
+    {
+      "file": "distribution-final/6354e680-a10d-456b-864e-7ff838cfbcdb-turn.json",
+      "source": "distribution-final/6354e680-a10d-456b-864e-7ff838cfbcdb-turn.json",
+      "bytes": 9772,
+      "sha256": "9e4ab6ca12bb4d3269e4a470e96ef3f3543a538079bc52a6b48f91ce8e23373a"
+    },
+    {
+      "file": "distribution-final/b1bd8a76-038f-4c1e-bb2d-6bc2ada4aa50-turn.json",
+      "source": "distribution-final/b1bd8a76-038f-4c1e-bb2d-6bc2ada4aa50-turn.json",
+      "bytes": 9896,
+      "sha256": "cd9bb240135e262810b296a438fde2784c1d66b015fdeecf15597a4b438d8f97"
+    },
+    {
+      "file": "distribution-final/canonical-cli.json",
+      "source": "distribution-final/canonical-cli.json",
+      "bytes": 945,
+      "sha256": "4c7945e05acef97b2da21765e3a6f4d401aa311c7b2ad35e72e3a192bf293c3b"
+    },
+    {
+      "file": "distribution-final/canonical-receipts-corrected.json",
+      "source": "distribution-final/canonical-receipts-corrected.json",
+      "bytes": 13268,
+      "sha256": "969999f8fd03aa985eb2970d04032280d31277f3f5c53d0bd437b7597303b68a"
+    },
+    {
+      "file": "distribution-final/canonical-receipts.json",
+      "source": "distribution-final/canonical-receipts.json",
+      "bytes": 2939,
+      "sha256": "8bb3b1a16cc853a85f0d27577c6c0c98b291db011d49b06feff5d4870c32b0cc"
+    },
+    {
+      "file": "distribution-final/canonical-stderr.log",
+      "source": "distribution-final/canonical-stderr.log",
+      "bytes": 6399,
+      "sha256": "9265fdd1cf34821c00f31f4ea458262c805839a7da63c42a1e13267ac49b6a51"
+    },
+    {
+      "file": "distribution-final/collector-HOLD-original.json",
+      "source": "distribution-final/collector-HOLD-original.json",
+      "bytes": 2642,
+      "sha256": "858bee2563f198184d4fd70559e5c425ac49dff651be2a87a7a9a9a9d53cd815"
+    },
+    {
+      "file": "distribution-final/collector-command-binding-HOLD.json",
+      "source": "distribution-final/collector-command-binding-HOLD.json",
+      "bytes": 1098,
+      "sha256": "0a61e1a6966d398a9f7cdb3a7be6ff682c8c5676a35dd4539b06d0320ad152ee"
+    },
+    {
+      "file": "distribution-final/collector-diagnostic-corrected.json",
+      "source": "distribution-final/collector-diagnostic-corrected.json",
+      "bytes": 1237,
+      "sha256": "3a9765bce6ca6a1f90c5a0daf44a822ee76f26dd27312383eb3ba29994dbe59d"
+    },
+    {
+      "file": "distribution-final/collector-diagnostic.json",
+      "source": "distribution-final/collector-diagnostic.json",
+      "bytes": 785,
+      "sha256": "0d92154b252993eed9a97ff278fb7269d020bada5f082b75fc5dba886ab4c59d"
+    },
+    {
+      "file": "distribution-final/core-boundary.json",
+      "source": "distribution-final/core-boundary.json",
+      "bytes": 14764,
+      "sha256": "751a648417d23e2c0d0e564255fcd78b28662e62f15eb6c67530e79489d6b4c5"
+    },
+    {
+      "file": "distribution-final/core-packages.json",
+      "source": "distribution-final/core-packages.json",
+      "bytes": 9973,
+      "sha256": "8a703c97e0c9ec80505ab0959a2903e100bab3963e6baa4fed4a6a4e5ccd1480"
+    },
+    {
+      "file": "distribution-final/core-role-probe-distribution.mjs.json",
+      "source": "distribution-final/core-role-probe-distribution.mjs.json",
+      "bytes": 17814,
+      "sha256": "89ce75510aeec850ec50f19c017426f55e7b73a68e07301273a595170cde368d"
+    },
+    {
+      "file": "distribution-final/core-role-probe-distribution.mjs.stderr.log",
+      "source": "distribution-final/core-role-probe-distribution.mjs.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "distribution-final/distribution-driver.py.txt",
+      "source": "distribution-final/distribution-driver.py",
+      "bytes": 27260,
+      "sha256": "4cc2459fb89526deae830550bc4ad1cb02b5231220585b2bc165aa4a6f24ddcc"
+    },
+    {
+      "file": "distribution-final/distribution-log.md",
+      "source": "distribution-final/distribution-log.md",
+      "bytes": 2723,
+      "sha256": "f51eb62ded9c15b9c576d9243b9837dbbd9c7c455d9b43b99d7638d6ef5c73c1"
+    },
+    {
+      "file": "distribution-final/distribution-postdeploy.py.txt",
+      "source": "distribution-final/distribution-postdeploy.py",
+      "bytes": 7437,
+      "sha256": "3fabcd91264b3a3262fc3aa7ab79b9d081a0f6416832524f72b7ed77b5046704"
+    },
+    {
+      "file": "distribution-final/distribution-role-finish.py.txt",
+      "source": "distribution-final/distribution-role-finish.py",
+      "bytes": 5008,
+      "sha256": "10e5d6ab2e3cbe28dbb95794dc38217dfcb77b23e79643d8390a9430dd0d8f66"
+    },
+    {
+      "file": "distribution-final/evidence-index.json",
+      "source": "distribution-final/evidence-index.json; original whitelist names mapped by parent archive index",
+      "bytes": 7091,
+      "sha256": "0f8f14766a4eb906433f42fa979183e373903f15e72408f508c5f26de236d642"
+    },
+    {
+      "file": "distribution-final/external-references.json",
+      "source": "distribution-final/external-references.json",
+      "bytes": 2558,
+      "sha256": "c5074895a9c74bcda3fe197badbc50db8b7d54b1698a4b907046f98c3d166b8a"
+    },
+    {
+      "file": "distribution-final/final-identity.json",
+      "source": "distribution-final/final-identity.json",
+      "bytes": 6100,
+      "sha256": "9aeb26ee809be63fa2bc4cfb15916d65ef85a10661ce4a5e25b55341fa8e100a"
+    },
+    {
+      "file": "distribution-final/formal-permissions-corrected.json",
+      "source": "distribution-final/formal-permissions-corrected.json",
+      "bytes": 7901,
+      "sha256": "6d67d94665be0fcc842155bf6ff00ec8833e6167d1eff5e92ca3b7c91d756557"
+    },
+    {
+      "file": "distribution-final/formal-permissions.json",
+      "source": "distribution-final/formal-permissions.json",
+      "bytes": 6599,
+      "sha256": "4ebb6885e6f1d69368c46b6a6cbfe7150428e60b0bf632689149b6969c7b33cf"
+    },
+    {
+      "file": "distribution-final/freeze-evidence.py.txt",
+      "source": "distribution-final/freeze-evidence.py",
+      "bytes": 14031,
+      "sha256": "334edf46a16fd8da2825b8a7e204922bc2806a89ae83452c9cda9b6712d4331f"
+    },
+    {
+      "file": "distribution-final/permissions-HOLD-original.json",
+      "source": "distribution-final/permissions-HOLD-original.json",
+      "bytes": 4678,
+      "sha256": "3ed9b8bdc2773273fc47e886ede1cc996815b6deb68bf14d66c3c1932e1ae34f"
+    },
+    {
+      "file": "distribution-final/permissions-collector-diagnostic.json",
+      "source": "distribution-final/permissions-collector-diagnostic.json",
+      "bytes": 1240,
+      "sha256": "2456427b07b8512b8d9279239cc66b7e7f7130932df3ddd874a8d36c69b2caab"
+    },
+    {
+      "file": "distribution-final/permissions-distribution.mjs.json",
+      "source": "distribution-final/permissions-distribution.mjs.json",
+      "bytes": 90,
+      "sha256": "0b16eaeeb171138abed6ce31fd920643151f3ef5424ba30301ce6afd183471c9"
+    },
+    {
+      "file": "distribution-final/permissions-distribution.mjs.stderr.log",
+      "source": "distribution-final/permissions-distribution.mjs.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "distribution-final/preflight.json",
+      "source": "distribution-final/preflight.json",
+      "bytes": 14265,
+      "sha256": "72dc4093287b0782d80ceef02ad4e4b37e12b30c71df8b7606b56579b2dfdadd"
+    },
+    {
+      "file": "distribution-final/preparation.json",
+      "source": "distribution-final/preparation.json",
+      "bytes": 21500,
+      "sha256": "8d6c653a566cc50dead7f44ee5c82dbe0378e1049b5f010212ce2aaad88e1378"
+    },
+    {
+      "file": "distribution-final/probe-reuse.json",
+      "source": "distribution-final/probe-reuse.json",
+      "bytes": 1111,
+      "sha256": "b27418078e7a779b06a0d541740e176ba1e7472e089c8941a0eabb8a19a79ad2"
+    },
+    {
+      "file": "distribution-final/probes/core-role-probe-distribution.mjs.txt",
+      "source": "distribution-final/probes/core-role-probe-distribution.mjs",
+      "bytes": 18145,
+      "sha256": "7f4582efdcffec5cdc552d0acb455f2ed24eb4cf9b8fd1019cecc1d7589ce25c"
+    },
+    {
+      "file": "distribution-final/probes/permissions-distribution.mjs.txt",
+      "source": "distribution-final/probes/permissions-distribution.mjs",
+      "bytes": 972,
+      "sha256": "a7b361f553056366febcbf8ed9b9637cba015fe7e8274f7266e4006535a55e2b"
+    },
+    {
+      "file": "distribution-final/role-graph-tools.json",
+      "source": "distribution-final/role-graph-tools.json",
+      "bytes": 18164,
+      "sha256": "46be51a25e5e3fa89ce847e4d6be1aece1c6829097652384dce23222bad89afc"
+    },
+    {
+      "file": "distribution-final/role-provider-timing.json",
+      "source": "distribution-final/role-provider-timing.json",
+      "bytes": 1370,
+      "sha256": "b1b6bc4c9486d6ed88a2c22505dedf19c46f14f0befb504215918f615672a6ae"
+    },
+    {
+      "file": "distribution-final/runtime-distribution.json",
+      "source": "distribution-final/runtime-distribution.json",
+      "bytes": 10663,
+      "sha256": "58d79f283e852ea627088a2bd0c4e1f5a2d69c82e7334249fc96f6e5ebb057fd"
+    },
+    {
+      "file": "distribution-final/secret-scan.json",
+      "source": "distribution-final/secret-scan.json",
+      "bytes": 348,
+      "sha256": "9b1c1c2ef88b2022aaa037783d3d3e2f903a3efea5dfa642fb42562eb4105397"
     },
     {
       "file": "earth-1.log",
@@ -575,6 +821,30 @@
       "source": "ci-clean-repair-quality/summary.json",
       "bytes": 2495,
       "sha256": "ae1b2f292b24ca090d6661e479b9334a3ab5551af21e747df7451348fecf9155"
+    },
+    {
+      "file": "quality-final-metadata-backend-route-smoke.json",
+      "source": "final-metadata-quality/backend-route-smoke.json",
+      "bytes": 12256,
+      "sha256": "c6cb599471c610fbd0d5228f7e0e5f0b2f51df259dae561e19e69686055a9cda"
+    },
+    {
+      "file": "quality-final-metadata-docs-contract.json",
+      "source": "final-metadata-quality/docs-contract.json",
+      "bytes": 865,
+      "sha256": "e4bab76bae9a765534e3dabda414c317bbf543bf648aa9c8e14d38e5dd969c99"
+    },
+    {
+      "file": "quality-final-metadata-operational-source-contract.json",
+      "source": "final-metadata-quality/operational-source-contract.json",
+      "bytes": 900,
+      "sha256": "9410de136568a17d8a8a3448525c3be04a516ad451a208242f705d0a4f3b9ff4"
+    },
+    {
+      "file": "quality-final-metadata-summary.json",
+      "source": "final-metadata-quality/summary.json",
+      "bytes": 907,
+      "sha256": "8325c94aff84cba9fd8e414cc4a12eed92c8122933a7d5ff23762ceaf8504660"
     },
     {
       "file": "quality-r1-backend-full.json",

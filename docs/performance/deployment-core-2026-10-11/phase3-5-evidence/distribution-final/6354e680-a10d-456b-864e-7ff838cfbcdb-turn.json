@@ -1,0 +1,335 @@
+{
+  "api_version": "1",
+  "trace_id": "6354e680-a10d-456b-864e-7ff838cfbcdb",
+  "message_id": "b1678d3e-f1a8-4126-bcd3-68e730f48559",
+  "conversation_id": "ce0e4e32-5d77-4212-8927-41993ec43a66",
+  "started_at": 1791710041.2118318,
+  "finished_at": 1791710046.2307203,
+  "duration_ms": 5018.888473510742,
+  "outcome": "success",
+  "privacy_mode": "full",
+  "content": {
+    "user": {
+      "text": "我刚才午饭吃的是什么面？请说完整口味。",
+      "character_count": 19,
+      "byte_count": 57,
+      "digest": "4cb1c35125dab19d8536349bb04880f1519413b73df0c7a01252d08d0fbcc146"
+    },
+    "assistant": {
+      "text": "南瓜芝麻荞麦面，一个字没记错。刚说完就考我，家人们这波是想验证我有没有在认真听吗？",
+      "character_count": 41,
+      "byte_count": 123,
+      "digest": "f7e4a23aa18b77b36f08acc9fe9d30be458dda91af8dcef592d811f8fc23df15"
+    }
+  },
+  "activities": [
+    {
+      "id": "b6aede3beb024fec99858605c07cbea6",
+      "kind": "stage",
+      "label": "conversation_start",
+      "name": "conversation_start",
+      "layer": "workflow",
+      "status": "success",
+      "started_at": 1791710041.262047,
+      "duration_ms": 1.0280609130859375,
+      "provider": null,
+      "model": null,
+      "error": null,
+      "attributes": {}
+    },
+    {
+      "id": "e7d8dddf6c9d4e59902bd99d5c528f7a",
+      "kind": "stage",
+      "label": "personality",
+      "name": "personality",
+      "layer": "workflow",
+      "status": "success",
+      "started_at": 1791710041.2639585,
+      "duration_ms": 0.3173351287841797,
+      "provider": null,
+      "model": null,
+      "error": null,
+      "attributes": {}
+    },
+    {
+      "id": "648c5fd1673947dc91e6980e3a00f7f4",
+      "kind": "model",
+      "label": "模型规划",
+      "name": "llm",
+      "layer": "workflow",
+      "status": "success",
+      "started_at": 1791710041.265266,
+      "duration_ms": 1886.0783576965332,
+      "provider": null,
+      "model": null,
+      "error": null,
+      "attributes": {}
+    },
+    {
+      "id": "c823be7bdf1b4804ba7da07f7faf500d",
+      "kind": "stage",
+      "label": "memory.recall",
+      "name": "memory.recall",
+      "layer": "memory",
+      "status": "success",
+      "started_at": 1791710041.2659202,
+      "duration_ms": 1.9326210021972656,
+      "provider": null,
+      "model": null,
+      "error": null,
+      "attributes": {}
+    },
+    {
+      "id": "b6b448ead7704ce0a2756d3e75010113",
+      "kind": "model",
+      "label": "模型规划",
+      "name": "llm.chat_messages_stream",
+      "layer": "service",
+      "status": "success",
+      "started_at": 1791710041.27096,
+      "duration_ms": 1879.1639804840088,
+      "provider": "deepseek",
+      "model": "deepseek-v4-flash",
+      "error": null,
+      "attributes": {
+        "usage_cached_input_cost_usd": 5.7344e-06,
+        "usage_cached_input_tokens": 2048,
+        "usage_estimated": false,
+        "usage_input_cost_usd": 2.9120000000000006e-05,
+        "usage_input_tokens": 2256,
+        "usage_model": "deepseek-v4-flash",
+        "usage_output_cost_usd": 1.4000000000000001e-05,
+        "usage_output_tokens": 50,
+        "usage_provider": "deepseek",
+        "usage_schema_version": 1,
+        "usage_total_cost_usd": 4.8854400000000004e-05
+      }
+    },
+    {
+      "id": "ddd6a3ab99054eeb93020ed34dee253b",
+      "kind": "stage",
+      "label": "humor_rewrite",
+      "name": "humor_rewrite",
+      "layer": "workflow",
+      "status": "success",
+      "started_at": 1791710043.1537426,
+      "duration_ms": 0.17976760864257812,
+      "provider": null,
+      "model": null,
+      "error": null,
+      "attributes": {}
+    },
+    {
+      "id": "75bc0edaf09b4a76ae7ff2440c12f7fd",
+      "kind": "stage",
+      "label": "humor_validation",
+      "name": "humor_validation",
+      "layer": "workflow",
+      "status": "success",
+      "started_at": 1791710043.155946,
+      "duration_ms": 0.18930435180664062,
+      "provider": null,
+      "model": null,
+      "error": null,
+      "attributes": {}
+    },
+    {
+      "id": "cddef8cf980246b99468f68879d31742",
+      "kind": "delivery",
+      "label": "公开投递",
+      "name": "reply_output",
+      "layer": "workflow",
+      "status": "success",
+      "started_at": 1791710043.1577337,
+      "duration_ms": 3.255605697631836,
+      "provider": null,
+      "model": null,
+      "error": null,
+      "attributes": {}
+    },
+    {
+      "id": "adef885012d141b0b1c897ed4235610d",
+      "kind": "stage",
+      "label": "emotion",
+      "name": "emotion",
+      "layer": "workflow",
+      "status": "success",
+      "started_at": 1791710043.1630013,
+      "duration_ms": 0.9109973907470703,
+      "provider": null,
+      "model": null,
+      "error": null,
+      "attributes": {}
+    },
+    {
+      "id": "32f879e26f81470fb95d2e15c917b86c",
+      "kind": "delivery",
+      "label": "公开投递",
+      "name": "tts",
+      "layer": "workflow",
+      "status": "success",
+      "started_at": 1791710043.1653428,
+      "duration_ms": 2879.7740936279297,
+      "provider": null,
+      "model": null,
+      "error": null,
+      "attributes": {}
+    },
+    {
+      "id": "914d4f49b73142a0b0a9fd3cdda16ece",
+      "kind": "delivery",
+      "label": "公开投递",
+      "name": "tts.synthesize",
+      "layer": "service",
+      "status": "success",
+      "started_at": 1791710043.166379,
+      "duration_ms": 2878.1752586364746,
+      "provider": "qwen3-tts-gguf-host",
+      "model": "Qwen3-TTS-1.7B-Base",
+      "error": null,
+      "attributes": {}
+    },
+    {
+      "id": "7394d66e634a44d081c33738c24c3d77",
+      "kind": "delivery",
+      "label": "公开投递",
+      "name": "output",
+      "layer": "workflow",
+      "status": "success",
+      "started_at": 1791710046.0466723,
+      "duration_ms": 179.67605590820312,
+      "provider": null,
+      "model": null,
+      "error": null,
+      "attributes": {}
+    },
+    {
+      "id": "a936c21599b744cd8d5c09d3a6a23fa7",
+      "kind": "stage",
+      "label": "conversation_finalizer",
+      "name": "conversation_finalizer",
+      "layer": "workflow",
+      "status": "success",
+      "started_at": 1791710046.2281876,
+      "duration_ms": 0.2155303955078125,
+      "provider": null,
+      "model": null,
+      "error": null,
+      "attributes": {}
+    }
+  ],
+  "events": [
+    {
+      "event_id": "8ae614d74ab74a5790cd7642d5fddfee",
+      "trace_id": "6354e680-a10d-456b-864e-7ff838cfbcdb",
+      "operation_id": null,
+      "direction": "ingress",
+      "name": "chat:input",
+      "phase": "accepted",
+      "occurred_at": 1791710041.258568,
+      "payload_size": 57,
+      "identity_valid": true,
+      "attributes": {
+        "event_name": "chat:input",
+        "payload_size": 57,
+        "phase": "accepted"
+      }
+    },
+    {
+      "event_id": "69438c09a6e1467d89e6e973a5b7b565",
+      "trace_id": "6354e680-a10d-456b-864e-7ff838cfbcdb",
+      "operation_id": "b6aede3beb024fec99858605c07cbea6",
+      "direction": "egress",
+      "name": "chat:control",
+      "phase": "delivered",
+      "occurred_at": 1791710041.2630196,
+      "payload_size": 207,
+      "identity_valid": true,
+      "attributes": {
+        "error_type": null,
+        "event_name": "chat:control",
+        "phase": "delivered"
+      }
+    },
+    {
+      "event_id": "ef5b9b1b79e94223a3b76b9ee933208e",
+      "trace_id": "6354e680-a10d-456b-864e-7ff838cfbcdb",
+      "operation_id": "cddef8cf980246b99468f68879d31742",
+      "direction": "egress",
+      "name": "chat:sentence",
+      "phase": "delivered",
+      "occurred_at": 1791710043.1594331,
+      "payload_size": 320,
+      "identity_valid": true,
+      "attributes": {
+        "error_type": null,
+        "event_name": "chat:sentence",
+        "phase": "delivered"
+      }
+    },
+    {
+      "event_id": "3081b965efeb4b9dbed37edb54029f2a",
+      "trace_id": "6354e680-a10d-456b-864e-7ff838cfbcdb",
+      "operation_id": "cddef8cf980246b99468f68879d31742",
+      "direction": "egress",
+      "name": "chat:sentence",
+      "phase": "delivered",
+      "occurred_at": 1791710043.1606584,
+      "payload_size": 212,
+      "identity_valid": true,
+      "attributes": {
+        "error_type": null,
+        "event_name": "chat:sentence",
+        "phase": "delivered"
+      }
+    },
+    {
+      "event_id": "966401cdd10242a8832e1084ff071200",
+      "trace_id": "6354e680-a10d-456b-864e-7ff838cfbcdb",
+      "operation_id": "7394d66e634a44d081c33738c24c3d77",
+      "direction": "egress",
+      "name": "chat:expression",
+      "phase": "delivered",
+      "occurred_at": 1791710046.0483327,
+      "payload_size": 197,
+      "identity_valid": true,
+      "attributes": {
+        "error_type": null,
+        "event_name": "chat:expression",
+        "phase": "delivered"
+      }
+    },
+    {
+      "event_id": "f3029ac699a24491a59f86d261c61a4d",
+      "trace_id": "6354e680-a10d-456b-864e-7ff838cfbcdb",
+      "operation_id": "7394d66e634a44d081c33738c24c3d77",
+      "direction": "egress",
+      "name": "chat:audio_with_expression",
+      "phase": "delivered",
+      "occurred_at": 1791710046.2220147,
+      "payload_size": 518360,
+      "identity_valid": true,
+      "attributes": {
+        "error_type": null,
+        "event_name": "chat:audio_with_expression",
+        "phase": "delivered"
+      }
+    },
+    {
+      "event_id": "ffb91bf880924b64b5e2fddf136fb3ce",
+      "trace_id": "6354e680-a10d-456b-864e-7ff838cfbcdb",
+      "operation_id": "7394d66e634a44d081c33738c24c3d77",
+      "direction": "egress",
+      "name": "chat:control",
+      "phase": "delivered",
+      "occurred_at": 1791710046.225137,
+      "payload_size": 205,
+      "identity_valid": true,
+      "attributes": {
+        "error_type": null,
+        "event_name": "chat:control",
+        "phase": "delivered"
+      }
+    }
+  ]
+}

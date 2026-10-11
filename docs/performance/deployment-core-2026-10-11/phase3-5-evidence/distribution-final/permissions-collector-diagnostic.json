@@ -1,0 +1,20 @@
+{
+  "root": "Harness compared raw Socket.IO message to bare string; actual message serializes the structured {code: UNAUTHORIZED} dictionary.",
+  "original_HOLD_path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\distribution-final\\permissions-HOLD-original.json",
+  "original_HOLD_sha256": "3ed9b8bdc2773273fc47e886ede1cc996815b6deb68bf14d66c3c1932e1ae34f",
+  "semantic_permission_failure": false,
+  "probe_repeated": false,
+  "actual_rejection_code": "UNAUTHORIZED",
+  "field_comparison": {
+    "raw_message_expected": "UNAUTHORIZED",
+    "actual_raw_message": "{'code': 'UNAUTHORIZED'}",
+    "actual_parsed_code": "UNAUTHORIZED",
+    "invalid_token_connected": false
+  },
+  "secondary_resume_assertion": {
+    "expected": "numeric status for every saved entry",
+    "actual": "health body status ok / ready body status ready shadowed saved numeric HTTP status",
+    "root": "HTTP and JSON body both use status; original request guard checked numeric status successfully before serialization shadow.",
+    "limit": "Original raw kept unchanged. Corrected health/ready entries expose body_status; missing numeric field is explicitly labeled, not synthesized. No successful request/probe rerun."
+  }
+}

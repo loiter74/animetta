@@ -1,0 +1,89 @@
+param([switch]$Apply)
+$ErrorActionPreference = 'Stop'
+$repositoryRoot = 'C:\Users\30262\Project\Anima'
+$taskRoot = 'C:\Users\30262\Project\Anima\.zcode\performance\deployment-core-20261011'
+$archiveRoot = Join-Path $repositoryRoot 'docs\performance\deployment-core-2026-10-11\phase3-5-evidence'
+$receiptPath = Join-Path $archiveRoot 'cleanup-final-receipt.json'
+$expectedParent = Join-Path $repositoryRoot '.zcode\performance'
+if ([IO.Path]::GetFullPath($taskRoot) -ne $taskRoot -or [IO.Path]::GetDirectoryName($taskRoot) -ne $expectedParent) { throw 'Unexpected final cleanup target' }
+if (-not (Test-Path -LiteralPath $taskRoot)) { throw 'Expected owned task root is already absent; inspect original receipt' }
+$rootItem = Get-Item -LiteralPath $taskRoot -Force
+if (-not $rootItem.PSIsContainer -or ($rootItem.Attributes -band [IO.FileAttributes]::ReparsePoint) -or (Resolve-Path -LiteralPath $taskRoot).ProviderPath -ne $taskRoot) { throw 'Cleanup root must be the exact ordinary owned directory' }
+if (-not (Test-Path -LiteralPath $archiveRoot -PathType Container)) { throw 'Stable archive unavailable' }
+$processReferences = @()
+foreach ($process in Get-CimInstance Win32_Process) {
+    if ($process.ProcessId -eq $PID -or -not $process.CommandLine) { continue }
+    if ($process.CommandLine.IndexOf($taskRoot, [StringComparison]::OrdinalIgnoreCase) -ge 0 -or $process.CommandLine.IndexOf($taskRoot.Replace('\', '/'), [StringComparison]::OrdinalIgnoreCase) -ge 0) {
+        $processReferences += [ordered]@{ pid = $process.ProcessId; name = $process.Name }
+    }
+}
+$containerReferences = @()
+$containerIds = @(& docker ps -aq)
+if ($LASTEXITCODE -ne 0) { throw 'Cannot inventory containers' }
+if ($containerIds.Count) {
+    $containerJson = & docker inspect @containerIds
+    if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect container references' }
+    foreach ($container in ($containerJson | ConvertFrom-Json)) {
+        $references = @($container.Mounts | ForEach-Object { $_.Source })
+        $references += @($container.Config.Labels.'com.docker.compose.project.working_dir', $container.Config.Labels.'com.docker.compose.project.config_files')
+        $tail = $taskRoot.Substring(3)
+        $variants = @($taskRoot, "\run\desktop\mnt\host\c\$tail", "\host_mnt\c\$tail", "\c\$tail")
+        foreach ($reference in $references) {
+            if (-not $reference) { continue }
+            $normalReference = $reference.Replace('/', '\')
+            foreach ($variant in $variants) {
+                if ($normalReference.IndexOf($variant, [StringComparison]::OrdinalIgnoreCase) -ge 0) {
+                    $containerReferences += [ordered]@{ container = $container.Name; reference = $reference }
+                }
+            }
+        }
+    }
+}
+$stack = [Collections.Generic.Stack[IO.DirectoryInfo]]::new()
+$stack.Push([IO.DirectoryInfo]::new($taskRoot))
+[long]$bytes = 0
+[long]$files = 0
+[long]$directories = 1
+$links = @()
+while ($stack.Count) {
+    foreach ($entry in $stack.Pop().EnumerateFileSystemInfos()) {
+        if ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) { $links += $entry.FullName; continue }
+        if ($entry -is [IO.DirectoryInfo]) { $directories++; $stack.Push($entry) }
+        else { $files++; $bytes += $entry.Length }
+    }
+}
+$moduleMarker = Join-Path $repositoryRoot 'frontend\node_modules\.modules.yaml'
+$markerHash = (Get-FileHash -LiteralPath $moduleMarker -Algorithm SHA256).Hash
+$permanentEnvironment = 'C:\Users\30262\RVC20240604Nvidia\.venv-animetta\Scripts\python.exe'
+if (-not (Test-Path -LiteralPath $permanentEnvironment -PathType Leaf)) { throw 'Expected permanent RVC environment missing before cleanup' }
+$receipt = [ordered]@{
+    status = 'audited_no_deletion'; time_utc = [DateTime]::UtcNow.ToString('o'); target = $taskRoot;
+    logical_bytes = $bytes; ordinary_files = $files; ordinary_directories = $directories;
+    reparse_points = $links; process_references = $processReferences; container_references = $containerReferences;
+    excluded_process = [ordered]@{ pid = $PID; reason = 'this exact cleanup process; no other process excluded' };
+    archive_root = $archiveRoot; frontend_marker_sha256_before = $markerHash;
+    method = 'Exact absolute root; unlink owned reparse entries without recursion, then ordinary Directory.Delete';
+    size_limit = 'Logical file lengths; no physical freed-byte claim';
+    protected = @('user data and memory_db', 'Docker named volumes', 'Qwen and RVC models', 'permanent RVC venv', 'shared uv/pip caches', 'frontend node_modules', 'unrelated train/song work', 'other .zcode tasks', 'automatic runtime recovery artifacts/evidence')
+}
+$receipt | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $receiptPath -Encoding utf8NoBOM
+if ($processReferences.Count -or $containerReferences.Count) { throw 'Task root still referenced; audit receipt preserved' }
+if ($Apply) {
+    foreach ($link in $links) {
+        $absoluteLink = [IO.Path]::GetFullPath($link)
+        if (-not $absoluteLink.StartsWith($taskRoot + '\', [StringComparison]::OrdinalIgnoreCase)) { throw 'Reparse entry outside exact owned root' }
+        if (-not ((Get-Item -LiteralPath $absoluteLink -Force).Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw 'Reparse entry changed' }
+        Remove-Item -LiteralPath $absoluteLink -Force -Confirm:$false
+    }
+    [IO.Directory]::Delete($taskRoot, $true)
+    if (Test-Path -LiteralPath $taskRoot) { throw 'Final task root deletion was not terminal' }
+    $markerAfter = (Get-FileHash -LiteralPath $moduleMarker -Algorithm SHA256).Hash
+    if ($markerAfter -ne $markerHash -or -not (Test-Path -LiteralPath $permanentEnvironment -PathType Leaf)) { throw 'Protected dependency state differs after cleanup' }
+    $receipt.status = 'completed'
+    $receipt.target_absent = $true
+    $receipt.frontend_marker_sha256_after = $markerAfter
+    $receipt.permanent_rvc_environment_present = $true
+    $receipt.completed_at_utc = [DateTime]::UtcNow.ToString('o')
+    $receipt | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $receiptPath -Encoding utf8NoBOM
+}
+[ordered]@{ status = $receipt.status; target_absent = $receipt.target_absent; logical_bytes = $bytes; ordinary_files = $files; receipt = $receiptPath } | ConvertTo-Json

@@ -1,6 +1,6 @@
 # 核心部署精简：阶段 3–5
 
-本轮从 `de26e176` 的阶段 0–2 成果继续，保留角色对话、Live2D、记忆 v2 和现有 Qwen 声线。原阶段记录、预测与失败样本保持不变。本文件只记录后续实施和实际验收；未完成项明确保留状态。
+本轮从 `de26e176` 的阶段 0–2 成果继续，保留角色对话、Live2D、记忆 v2 和现有 Qwen 声线。阶段 0–5 的实施、真实镜像分发和核心冒烟已完成。原阶段记录、预测与失败样本保持不变，验收限制单独说明。
 
 ## 已完成的源码边界
 
@@ -34,7 +34,7 @@ Knip 的根 entry/project 已迁入根 workspace，继续检查全部源码与�
 
 ## 独立服务、最终验收与清理
 
-收尾时核对到阶段 0–2 提交 `de26e176` 的远端 CI 未通过，GHCR 发布被跳过。解码日志显示开发规格漏装 Torch、SoundFile 和 YAML 类型包，另有 Windows 存储探针的 `os.name` 判断无法为 Linux 类型检查排除 Windows API。已补充开发专用的 CPU Torch、SoundFile 和类型包，requirements 导出从锁文件保留选中包的自定义索引，平台保护改为 `sys.platform`。核心 requirements 字节不变；Linux 单文件类型检查和索引导出回归通过。原失败见 [CI 证据](phase3-5-evidence/ci-de26-failure.json)，最终发布仍须等待新提交的完整 CI。上一成功本机镜像保留，不能称为已发布的 GHCR 镜像。
+收尾时核对到阶段 0–2 提交 `de26e176` 的远端 CI 未通过，GHCR 发布被跳过。解码日志显示开发规格漏装 Torch、SoundFile 和 YAML 类型包，另有 Windows 存储探针的 `os.name` 判断无法为 Linux 类型检查排除 Windows API。已补充开发专用的 CPU Torch、SoundFile 和类型包，requirements 导出从锁文件保留选中包的自定义索引，平台保护改为 `sys.platform`。核心 requirements 字节不变；Linux 单文件类型检查和索引导出回归通过。原失败见 [CI 证据](phase3-5-evidence/ci-de26-failure.json)，当时尚未达到发布门槛，后续成功发布见下文。上一成功本机镜像保留，不能称为已发布的 GHCR 镜像。
 
 Qwen 的 35 包独立哈希锁在新隔离环境安装、`pip check` 和包归属检查通过；现有服务与模型没有重启。RVC 的原隔离快照只有本地包，正常服务还借用主用户 site 的 325 个包，存在元数据冲突。已按实际选中路径形成 72 包独立锁，在永久 venv 完成哈希校验安装、`pip check` 和所有包归属检查，转换与分离指向同一解释器；原解释器、模型与声线资产保留。6 项锁与资产契约测试通过。此验证不导入模型、不执行 GPU 推理，不能代替原生 ABI、模型加载或唱歌质量验收。
 
@@ -44,7 +44,7 @@ RVC 第一次安装触发 900 s 下载超时；第二次根据父智能体的共
 
 上一成功发布 `b422c70a` 的远端 CI、GHCR 发布和不可变 digest 已实际核对可取得，见 [回退镜像证据](phase3-5-evidence/rollback-registry-proof.json)。没有执行回退部署，回退必须配对原发布配置；也不把上一镜像的可用性当作本轮已发布。
 
-源码提交 `023eccf1` 的干净 Linux CI 又检出一处地图音频 Windows 常量类型保护，以及两项单测环境依赖：GLM 纯单测直接导入未安装的厂商 SDK，Qwen 单测直接读取本机 D 盘声线。平台保护改为显式 `sys.platform` 分支；GLM／Ollama 复用同一测试 SDK 导入夹具，仍检查原消息顺序与共享历史；Qwen 使用临时文件和真实共享合约的副本。23 项定向回归通过，另有 8 项在明确阻止 SDK 导入时通过。旧 SDK 的 PyJWT 约束与核心锁冲突，因此没有将它加入安装规格，也没有改动生产声线／SDK 行为；依赖文件与锁保持 `023eccf1` 字节。失败原文见 [类型检查](phase3-5-evidence/ci-023eccf1-typecheck-failure.json) 和 [干净环境记录](phase3-5-evidence/ci-023eccf1-clean-run-failures.json)，继续以新提交的 CI 为发布门槛。
+源码提交 `023eccf1` 的干净 Linux CI 又检出一处地图音频 Windows 常量类型保护，以及两项单测环境依赖：GLM 纯单测直接导入未安装的厂商 SDK，Qwen 单测直接读取本机 D 盘声线。平台保护改为显式 `sys.platform` 分支；GLM／Ollama 复用同一测试 SDK 导入夹具，仍检查原消息顺序与共享历史；Qwen 使用临时文件和真实共享合约的副本。23 项定向回归通过，另有 8 项在明确阻止 SDK 导入时通过。旧 SDK 的 PyJWT 约束与核心锁冲突，因此没有将它加入安装规格，也没有改动生产声线／SDK 行为；核心 requirements 和 `uv.lock` 保持 `023eccf1` 字节，项目依赖声明未变。失败原文见 [类型检查](phase3-5-evidence/ci-023eccf1-typecheck-failure.json) 和 [干净环境记录](phase3-5-evidence/ci-023eccf1-clean-run-failures.json)，继续以新提交的 CI 为发布门槛。
 
 正式 ROOT 部署和核心冒烟已完成，见 [完整运行记录](phase3-5-evidence/runtime-r4/runtime-core-r4.json)。镜像实际大小 **614,348,725 B**，相对阶段 0 的 1,447,480,052 B 减少 **57.56%**，相对阶段 2 的 1,274,643,121 B 减少 **51.80%**。这是本机镜像大小，不是压缩下载字节。Linux 容器有 88 个安装包，未发现 Torch、Transformers、Chroma、Demucs、Torchaudio、Faiss、Bilibili 或 langchain-community，没有 ffmpeg 或 Cesium 产物；不将该平台计数与 Windows 的 91 包当作同平台增减。
 
@@ -59,10 +59,22 @@ RVC 第一次安装触发 900 s 下载超时；第二次根据父智能体的共
 
 首个浏览器 auth/session 请求曾超时 30 s，失败保留且浏览器成功样本数为 0。后续当前 80／12394、同 BrowserContext、Redis、权限边界和真实播放通过；原容器在独立后续样本中已移除，缺少原服务器日志，原超时机制仍未确定，没有声称修复产品源码。Dashboard 账号登录及其对话 UI 未验收；有效 machine token 的 API／Socket 与未认证边界已验收。长期写入策略仍为 off，两轮连续性只证明短期同线程记忆。未测物理扬声器可闻性、模型冷加载或 RVC GPU 推理。
 
-核心冒烟后已清理 17 个精确拥有的临时目录，包括安装环境、旧源码副本和隔离测试数据；初始普通文件逻辑长度约 13.95 GB，不去重硬链接，不宣称这些字节全部物理释放。首轮 .NET 删除共享 node_modules 链接时拒绝访问，后续以 LiteralPath 单独删除链接后完成；工作区依赖标记、永久 RVC 环境、共享 UV 缓存均保留。新提交的远端 CI 与 GHCR 发布仍待最终核验。
+核心冒烟后已清理 17 个精确拥有的临时目录，包括安装环境、旧源码副本和隔离测试数据；初始普通文件逻辑长度约 13.95 GB，不去重硬链接，不宣称这些字节全部物理释放。首轮 .NET 删除共享 node_modules 链接时拒绝访问，后续以 LiteralPath 单独删除链接后完成；工作区依赖标记、永久 RVC 环境、共享 UV 缓存均保留。该轮清理的原始回执已归档；后续成功分发见下文。
 
-安装、能力开启、镜像分发和回退的统一入口见 [核心部署指南](../../development/core-deployment.md)。最终证据会保留到本目录；只删除本任务拥有且已无进程／挂载引用的临时安装环境、源码副本和测试数据，不删除用户运行数据、模型、共享缓存或未提交训练工作。
+最终分发证据冻结归档后，最后的 `.zcode/performance/deployment-core-20261011` 任务目录也已删除：845 个普通文件、逻辑长度 58,119,348 B。清理前无其他进程／容器引用，清理后目录确实不存在，前端依赖标记哈希不变、永久 RVC 解释器仍存在。自动生成的运行恢复 artifacts、用户数据、模型、共享缓存及其他任务没有清理。见 [最终清理回执](phase3-5-evidence/cleanup-final-receipt.json)。收尾文档／指引的 3 组影响门禁通过，见 [收尾门禁](phase3-5-evidence/quality-final-metadata-summary.json)。
+
+后续修复提交 `595cd4770afe74ff2f8b2fc769cf30f6d8a3c9a2` 的 [干净 CI](https://github.com/loiter74/animetta/actions/runs/38126403988) 全部成功，GHCR 发布和 main 标签提升也成功；前文两轮 CI 的发布阻塞已经关闭。修复后的 12 组本机影响门禁全部通过，见 [修复门禁](phase3-5-evidence/quality-ci-repair-summary.json)。核心 requirements 和 `uv.lock` 与 `023eccf1` 字节一致，`pyproject.toml` 没有依赖差异。实际发布和注册表可取得性见 [CI／镜像证据](phase3-5-evidence/ci-595cd477-release.json)。
+
+不可变发布镜像为 `ghcr.io/loiter74/animetta@sha256:a6a41059d3adfa51792c864fedd8ee7d81128948c4bba6581f26774d9dd89ed4`。唯一正式分发 run `c-dc-distribution01` 使用 ROOT 的 `anima-deploy`，九个实际步骤通过；命令链为 pull、镜像检查、`up --no-build`、就绪与前端资源检查，没有 Node、pnpm、源码构建或 RVC 启动。规范命令 94.98 s 包含镜像拉取，不计入前文应用启动性能样本。发布镜像实际大小 **613,588,481 B**，有 88 个 Python 包，重依赖、ffmpeg 和 Cesium 缺席。见 [部署回执](phase3-5-evidence/distribution-final/canonical-receipts-corrected.json) 与 [完整分发记录](phase3-5-evidence/distribution-final/runtime-distribution.json)。
+
+同一发布容器的 20 项正式／直连 API 检查、非法 Origin 400 和未授权 Socket 拒绝通过。真实角色首回复 2.606 s、Qwen 合成跨度 3.843 s、首次原生播放 8.819 s；WAV RMS 0.06050。自然播放完成时持久 count 为 1，Live2D 口型应用 394 次，二者使用同一任务 `18e27993-de13-472a-9095-560944b2eaad`。随后两轮同线程普通事实对话连续性通过。Qwen PID `14240/16104`、创建时间、声线、私密凭据与三个卷保持；旧本机镜像和旧 GHCR digest 保留。本次没有重复六个性能样本，Dashboard 账号登录 UI、物理扬声器及 RVC 推理仍是前文所列限制。
+
+分发验收采集器曾把静态 `plan.json` 当执行结果，又对日志命令和 Socket 回执字段作错误假设。原始 HOLD 和更正诊断全部保留；读取同一 run 的 checkpoint／result 后恢复，没有重跑成功生命周期或探针。这些是任务验证脚本错误，未改产品源码来迎合断言。37 项分发证据与原始索引逐字节归档、SHA256 复核，并通过脱敏检查。
+
+安装、能力开启、镜像分发和回退的统一入口见 [核心部署指南](../../development/core-deployment.md)。证据保留在本目录；只删除本任务拥有且已无进程／挂载引用的临时安装环境、源码副本和测试数据，不删除用户运行数据、模型、共享缓存或未提交训练工作。
 
 ## 执行效率反思
 
 主要可避免绕路是继续使用旧文件名，以及忽略 `recursiveInstall: false` 下 pnpm 从仓库根目录生成的自动 filter。已把明确包名 filter 固化到 Docker、CI 和安装文档；根 workspace 的质量配置同步迁移。两项旧安装契约直到完整回归后段才暴露，现已将 Docker 安装 smoke 纳入早期生命周期测试组，并补齐文档测试路径及缓存输入映射。后续先检查计划无未映射路径，安装使用已确认包名，读取证据只投影必要字段；不重复获取完整依赖快照或重跑已完成的性能样本。
+
+分发收尾中最高收益的改进是避免将采集器失败扩大为重复部署：静态计划没有终态，真实状态在 `steps/<step_id>/checkpoint.json` 及其 `result_reference`。已在现有运行恢复指引中明确这一位置，并要求先对照原始字段、只修采集器。下次路径是读取既有 checkpoint／result、验证真实命令、继续尚未完成的冒烟；不重跑成功步骤。

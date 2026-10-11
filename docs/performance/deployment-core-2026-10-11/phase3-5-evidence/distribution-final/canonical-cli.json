@@ -1,0 +1,26 @@
+{
+  "run_id": "c-dc-distribution01",
+  "command": [
+    "py",
+    "-3.13",
+    "scripts/runtime_lifecycle.py",
+    "anima-deploy",
+    "--image",
+    "ghcr.io/loiter74/animetta@sha256:a6a41059d3adfa51792c864fedd8ee7d81128948c4bba6581f26774d9dd89ed4",
+    "--run-id",
+    "c-dc-distribution01",
+    "--wait",
+    "--artifacts-root",
+    "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans"
+  ],
+  "cwd": "C:\\Users\\30262\\Project\\Anima",
+  "exit_code": 0,
+  "elapsed_seconds": 94.98493950000193,
+  "stdout_bytes": 5522,
+  "stdout_sha256": "363d7af09aeeffe79027ac74ba12edd613885254474fccd233e8e0928fc6980c",
+  "stderr_bytes": 6399,
+  "stderr_sha256": "9265fdd1cf34821c00f31f4ea458262c805839a7da63c42a1e13267ac49b6a51",
+  "automatic_artifact_root": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\c-dc-distribution01",
+  "controller_uses_node_pnpm_build": false,
+  "browser_harness_not_started_during_controller": true
+}

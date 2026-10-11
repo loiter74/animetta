@@ -1,0 +1,225 @@
+{
+  "task_ids": [
+    "18e27993-de13-472a-9095-560944b2eaad",
+    "b1bd8a76-038f-4c1e-bb2d-6bc2ada4aa50",
+    "6354e680-a10d-456b-864e-7ff838cfbcdb"
+  ],
+  "actual_graph_thread_id": "mpQIFxHHYiHyPxwdAAAF",
+  "actual_channel_id": "mpQIFxHHYiHyPxwdAAAF",
+  "actual_live_turns": [
+    {
+      "trace_id": "6354e680-a10d-456b-864e-7ff838cfbcdb",
+      "message_id": "b1678d3e-f1a8-4126-bcd3-68e730f48559",
+      "conversation_id": "ce0e4e32-5d77-4212-8927-41993ec43a66",
+      "started_at": 1791710041.2118318,
+      "finished_at": 1791710046.2307203,
+      "duration_ms": 5018.888473510742,
+      "outcome": "success",
+      "privacy_mode": "full",
+      "content": {
+        "user": {
+          "text": "我刚才午饭吃的是什么面？请说完整口味。",
+          "character_count": 19,
+          "byte_count": 57,
+          "digest": "4cb1c35125dab19d8536349bb04880f1519413b73df0c7a01252d08d0fbcc146"
+        },
+        "assistant": {
+          "text": "南瓜芝麻荞麦面，一个字没记错。刚说完就考我，家人们这波是想验证我有没有在认真听吗？",
+          "character_count": 41,
+          "byte_count": 123,
+          "digest": "f7e4a23aa18b77b36f08acc9fe9d30be458dda91af8dcef592d811f8fc23df15"
+        }
+      },
+      "actor_role": "developer",
+      "source": "developer_console",
+      "live_session_id": "932109de-4118-4eb3-9785-c7df676aeaa9",
+      "audience": "livestream",
+      "tool_calls": 0,
+      "mc_status": "idle"
+    },
+    {
+      "trace_id": "b1bd8a76-038f-4c1e-bb2d-6bc2ada4aa50",
+      "message_id": "94bd7a9f-9c75-4507-863e-39e15f2b9aab",
+      "conversation_id": "ce0e4e32-5d77-4212-8927-41993ec43a66",
+      "started_at": 1791710014.9964387,
+      "finished_at": 1791710023.4190764,
+      "duration_ms": 8422.637701034546,
+      "outcome": "success",
+      "privacy_mode": "full",
+      "content": {
+        "user": {
+          "text": "我今天午饭吃的是南瓜芝麻荞麦面，记得这个口味。",
+          "character_count": 23,
+          "byte_count": 69,
+          "digest": "ad6dedc678df03834d927e359fc25a796eaf5bc60f92e5ee43d7319cd07fc28d"
+        },
+        "assistant": {
+          "text": "南瓜芝麻荞麦面，记下了。不过说实话，这搭配听着像家里蹲大学自创的黑暗料理，你确定不是把冰箱剩的全煮一起了？\n\n味道要是不错，下次也给我留一份，我虽然吃不了，但可以假装品鉴一下。",
+          "character_count": 88,
+          "byte_count": 260,
+          "digest": "b5ff43bd313d8ac19a2f65ff08b53722c9822d18b7a703cf4403a33758df7489"
+        }
+      },
+      "actor_role": "developer",
+      "source": "developer_console",
+      "live_session_id": "932109de-4118-4eb3-9785-c7df676aeaa9",
+      "audience": "livestream",
+      "tool_calls": 0,
+      "mc_status": "idle"
+    },
+    {
+      "trace_id": "18e27993-de13-472a-9095-560944b2eaad",
+      "message_id": "e346f22f-ec94-4c5e-b17c-f894b8cc8742",
+      "conversation_id": "ce0e4e32-5d77-4212-8927-41993ec43a66",
+      "started_at": 1791709996.6153383,
+      "finished_at": 1791710002.8635604,
+      "duration_ms": 6248.22211265564,
+      "outcome": "success",
+      "privacy_mode": "full",
+      "content": {
+        "user": {
+          "text": "请用一句自然中文，冷静但明显开心地告诉我今天值得期待。",
+          "character_count": 27,
+          "byte_count": 81,
+          "digest": "b9c6ed3e34e9a457411278f096eae2fd667d4bd354b1be5e539ed35655799246"
+        },
+        "assistant": {
+          "text": "今天值得期待——毕竟连我这台被召唤者X从赛博世界硬拽出来值班的机器，都隐约觉得今晚会有点不一样。",
+          "character_count": 48,
+          "byte_count": 142,
+          "digest": "a119072f26d7112e6434ec707603525b16accbe35b732057e953c27fffc0fc6a"
+        }
+      },
+      "actor_role": "developer",
+      "source": "developer_console",
+      "live_session_id": "932109de-4118-4eb3-9785-c7df676aeaa9",
+      "audience": "livestream",
+      "tool_calls": 0,
+      "mc_status": "idle"
+    }
+  ],
+  "window_pairs_start": [
+    0,
+    1,
+    2
+  ],
+  "window_pairs_end": [
+    1,
+    2,
+    3
+  ],
+  "registered_nodes": [
+    [
+      "asr",
+      "personality",
+      "conversation_start",
+      "llm",
+      "humor_rewrite",
+      "humor_validation",
+      "reply_output",
+      "tts",
+      "emotion",
+      "output",
+      "conversation_finalizer"
+    ],
+    [
+      "asr",
+      "personality",
+      "conversation_start",
+      "llm",
+      "humor_rewrite",
+      "humor_validation",
+      "reply_output",
+      "tts",
+      "emotion",
+      "output",
+      "conversation_finalizer"
+    ]
+  ],
+  "optional_loader_log_lines": [],
+  "actual_tool_status": [
+    "2026-10-11 09:13:16 | INFO     | animetta.orchestration.server.session:get_or_create_orchestrator:180 - [mpQIFxHHYiHyPxwdAAAF] Tool config status: enable_tools=False, config_keys=[]",
+    "2026-10-11 09:13:16 | INFO     | animetta.orchestration.graph.orchestrator:start:125 - [mpQIFxHHYiHyPxwdAAAF] [LangGraph] self.enable_tools=False"
+  ],
+  "actual_container_guard_source_SHA": {
+    "src/animetta/orchestration/server/session.py": "9c3ed69b60acdb85bccc6aa2a3dd88e392ec9a93492e83899d7663ecac7c20a9",
+    "src/animetta/orchestration/graph/orchestrator.py": "4e870e38401767c843e6d87e1828af7263ee0411fd7d2e643693c1d01972cfc9"
+  },
+  "selected_actual_log_lines": [
+    "[OK] Client connected: mpQIFxHHYiHyPxwdAAAF",
+    "[OK] Sent start-mic signal to client mpQIFxHHYiHyPxwdAAAF",
+    "2026-10-11 09:13:16 | INFO     | animetta.orchestration.server.handlers.lifecycle_handlers:on_connect:48 - Client connected: mpQIFxHHYiHyPxwdAAAF (Type: Web)",
+    "2026-10-11 09:13:16 | INFO     | animetta.services.command_inbox:_log_accept:560 - [CommandInbox] kind=chat.public task_id=18e27993-de13-472a-9095-560944b2eaad decision=execute status=accepted hash=d0c993c9f4d4",
+    "2026-10-11 09:13:16 | INFO     | animetta.orchestration.server.handlers.chat_handlers:_process_text_command:245 - [mpQIFxHHYiHyPxwdAAAF] Received normalized text input: 请用一句自然中文，冷静但明显开心地告诉我今天值得期待。",
+    "2026-10-11 09:13:16 | INFO     | animetta.orchestration.server.session:get_or_create_context:95 - [mpQIFxHHYiHyPxwdAAAF] Creating new ServiceContext",
+    "2026-10-11 09:13:16 | INFO     | animetta.orchestration.server.session:get_or_create_context:106 - [mpQIFxHHYiHyPxwdAAAF] Using pooled engines (LLM/TTS/ASR)",
+    "2026-10-11 09:13:16 | INFO     | animetta.runtime.session_context:init_emotion_analyzer:571 - [mpQIFxHHYiHyPxwdAAAF] Emotion analyzer initialized",
+    "2026-10-11 09:13:16 | INFO     | animetta.orchestration.server.session:get_or_create_context:129 - Created new ServiceContext for session mpQIFxHHYiHyPxwdAAAF",
+    "2026-10-11 09:13:16 | INFO     | animetta.orchestration.server.session:get_or_create_orchestrator:164 - [mpQIFxHHYiHyPxwdAAAF] Creating new LangGraphOrchestrator",
+    "2026-10-11 09:13:16 | INFO     | animetta.orchestration.server.session:get_or_create_orchestrator:180 - [mpQIFxHHYiHyPxwdAAAF] Tool config status: enable_tools=False, config_keys=[]",
+    "2026-10-11 09:13:16 | INFO     | animetta.orchestration.graph.orchestrator:__init__:116 - [mpQIFxHHYiHyPxwdAAAF] [LangGraph] Orchestrator initialized",
+    "2026-10-11 09:13:16 | INFO     | animetta.orchestration.graph.orchestrator:start:124 - [mpQIFxHHYiHyPxwdAAAF] [LangGraph] Building state graph...",
+    "2026-10-11 09:13:16 | INFO     | animetta.orchestration.graph.orchestrator:start:125 - [mpQIFxHHYiHyPxwdAAAF] [LangGraph] self.enable_tools=False",
+    "2026-10-11 09:13:16 | WARNING  | animetta.orchestration.graph.orchestrator:start:133 - [mpQIFxHHYiHyPxwdAAAF] [LangGraph] Tools not enabled",
+    "2026-10-11 09:13:16 | INFO     | animetta.orchestration.graph.builder:build_graph:174 - [LangGraph] Registered nodes: ['asr', 'personality', 'conversation_start', 'llm', 'humor_rewrite', 'humor_validation', 'reply_output', 'tts', 'emotion', 'output', 'conversation_finalizer']",
+    "2026-10-11 09:13:16 | INFO     | animetta.orchestration.graph.builder:build_graph:174 - [LangGraph] Registered nodes: ['asr', 'personality', 'conversation_start', 'llm', 'humor_rewrite', 'humor_validation', 'reply_output', 'tts', 'emotion', 'output', 'conversation_finalizer']",
+    "2026-10-11 09:13:16 | INFO     | animetta.orchestration.graph.orchestrator:start:150 - [mpQIFxHHYiHyPxwdAAAF] [LangGraph] State graph started — _is_running=True",
+    "2026-10-11 09:13:16 | INFO     | animetta.orchestration.server.session:get_or_create_orchestrator:200 - [mpQIFxHHYiHyPxwdAAAF] LangGraphOrchestrator created",
+    "2026-10-11 09:13:16 | INFO     | animetta.orchestration.server.session:get_or_create_orchestrator:202 - Created new LangGraphOrchestrator for session mpQIFxHHYiHyPxwdAAAF",
+    "2026-10-11 09:13:16 | INFO     | animetta.orchestration.server.session:get_or_create_audio_processor:386 - [mpQIFxHHYiHyPxwdAAAF] AudioProcessor created",
+    "2026-10-11 09:13:16 | INFO     | animetta.orchestration.graph.orchestrator:process_text:246 - [mpQIFxHHYiHyPxwdAAAF] [LangGraph] Processing text input: 请用一句自然中文，冷静但明显开心地告诉我今天值得期待。...",
+    "2026-10-11 09:13:16 | INFO     | animetta.orchestration.graph.orchestrator:_run_graph:444 - [mpQIFxHHYiHyPxwdAAAF] [LangGraph] _run_graph starting — input_type=text, scope_kind=livestream, window_pairs=0",
+    "2026-10-11 09:13:16 | INFO     | animetta.orchestration.graph.llm_node:llm_node:390 - [mpQIFxHHYiHyPxwdAAAF] [LLMNode] Processing...",
+    "2026-10-11 09:13:16 | INFO     | animetta.orchestration.graph.llm_node:_retrieve_memory_context:274 - [mpQIFxHHYiHyPxwdAAAF] [LLMNode] Memory injected",
+    "2026-10-11 09:13:16 | INFO     | animetta.orchestration.graph.llm_node:_llm_without_tools:628 - [mpQIFxHHYiHyPxwdAAAF] [LLMNode] Using streaming mode (no tools)",
+    "2026-10-11 09:13:18 | INFO     | animetta.orchestration.graph.llm_node:_llm_without_tools:704 - [mpQIFxHHYiHyPxwdAAAF] [LLMNode] LLM response: [live2d:calm|subtle|none]今天值得期待——毕竟连我这台被召唤者X从赛博世界硬拽出来值班的机器，都隐约觉得今晚会有点不一样。",
+    "2026-10-11 09:13:18 | INFO     | animetta.orchestration.graph.emotion_node:emotion_node:63 - [mpQIFxHHYiHyPxwdAAAF] [EmotionNode] Performance normalized: source=llm, base=calm, accent=none, fallback=none",
+    "2026-10-11 09:13:18 | INFO     | animetta.orchestration.graph.tts_node:tts_node:167 - [mpQIFxHHYiHyPxwdAAAF] [TTSNode] Starting processing...",
+    "2026-10-11 09:13:22 | INFO     | animetta.orchestration.graph.tts_node:tts_node:335 - [mpQIFxHHYiHyPxwdAAAF] [TTSNode] Audio data: 437804 bytes",
+    "2026-10-11 09:13:22 | INFO     | animetta.orchestration.graph.output_node:output_node:70 - [mpQIFxHHYiHyPxwdAAAF] [OutputNode] Starting distribution...",
+    "2026-10-11 09:13:22 | INFO     | animetta.orchestration.graph.output_node:output_node:221 - [mpQIFxHHYiHyPxwdAAAF] [OutputNode] ✅ Sent audio data (volumes: 456 samples)",
+    "2026-10-11 09:13:22 | INFO     | animetta.orchestration.graph.output_node:output_node:279 - [mpQIFxHHYiHyPxwdAAAF] [OutputNode] Distribution complete",
+    "2026-10-11 09:13:22 | INFO     | animetta.orchestration.graph.orchestrator:_run_graph:489 - [mpQIFxHHYiHyPxwdAAAF] [LangGraph] _run_graph completed in 6194ms — scope_kind=livestream, window_pairs=1",
+    "2026-10-11 09:13:34 | INFO     | animetta.services.command_inbox:_log_accept:560 - [CommandInbox] kind=chat.public task_id=b1bd8a76-038f-4c1e-bb2d-6bc2ada4aa50 decision=execute status=accepted hash=c862ba08525e",
+    "2026-10-11 09:13:34 | INFO     | animetta.orchestration.server.handlers.chat_handlers:_process_text_command:245 - [mpQIFxHHYiHyPxwdAAAF] Received normalized text input: 我今天午饭吃的是南瓜芝麻荞麦面，记得这个口味。",
+    "2026-10-11 09:13:34 | INFO     | animetta.orchestration.graph.orchestrator:process_text:246 - [mpQIFxHHYiHyPxwdAAAF] [LangGraph] Processing text input: 我今天午饭吃的是南瓜芝麻荞麦面，记得这个口味。...",
+    "2026-10-11 09:13:35 | INFO     | animetta.orchestration.graph.orchestrator:_run_graph:444 - [mpQIFxHHYiHyPxwdAAAF] [LangGraph] _run_graph starting — input_type=text, scope_kind=livestream, window_pairs=1",
+    "2026-10-11 09:13:35 | INFO     | animetta.orchestration.graph.llm_node:llm_node:390 - [mpQIFxHHYiHyPxwdAAAF] [LLMNode] Processing...",
+    "2026-10-11 09:13:35 | INFO     | animetta.orchestration.graph.llm_node:_retrieve_memory_context:274 - [mpQIFxHHYiHyPxwdAAAF] [LLMNode] Memory injected",
+    "2026-10-11 09:13:35 | INFO     | animetta.orchestration.graph.llm_node:_llm_without_tools:628 - [mpQIFxHHYiHyPxwdAAAF] [LLMNode] Using streaming mode (no tools)",
+    "2026-10-11 09:13:37 | INFO     | animetta.orchestration.graph.llm_node:_llm_without_tools:704 - [mpQIFxHHYiHyPxwdAAAF] [LLMNode] LLM response: [live2d:calm|subtle|none]",
+    "2026-10-11 09:13:37 | INFO     | animetta.orchestration.graph.emotion_node:emotion_node:63 - [mpQIFxHHYiHyPxwdAAAF] [EmotionNode] Performance normalized: source=llm, base=calm, accent=none, fallback=none",
+    "2026-10-11 09:13:37 | INFO     | animetta.orchestration.graph.tts_node:tts_node:167 - [mpQIFxHHYiHyPxwdAAAF] [TTSNode] Starting processing...",
+    "2026-10-11 09:13:43 | INFO     | animetta.orchestration.graph.tts_node:tts_node:335 - [mpQIFxHHYiHyPxwdAAAF] [TTSNode] Audio data: 825644 bytes",
+    "2026-10-11 09:13:43 | INFO     | animetta.orchestration.graph.output_node:output_node:70 - [mpQIFxHHYiHyPxwdAAAF] [OutputNode] Starting distribution...",
+    "2026-10-11 09:13:43 | INFO     | animetta.orchestration.graph.output_node:output_node:221 - [mpQIFxHHYiHyPxwdAAAF] [OutputNode] ✅ Sent audio data (volumes: 860 samples)",
+    "2026-10-11 09:13:43 | INFO     | animetta.orchestration.graph.output_node:output_node:279 - [mpQIFxHHYiHyPxwdAAAF] [OutputNode] Distribution complete",
+    "2026-10-11 09:13:43 | INFO     | animetta.orchestration.graph.orchestrator:_run_graph:489 - [mpQIFxHHYiHyPxwdAAAF] [LangGraph] _run_graph completed in 8294ms — scope_kind=livestream, window_pairs=2",
+    "2026-10-11 09:14:01 | INFO     | animetta.services.command_inbox:_log_accept:560 - [CommandInbox] kind=chat.public task_id=6354e680-a10d-456b-864e-7ff838cfbcdb decision=execute status=accepted hash=56a06e0d4e02",
+    "2026-10-11 09:14:01 | INFO     | animetta.orchestration.server.handlers.chat_handlers:_process_text_command:245 - [mpQIFxHHYiHyPxwdAAAF] Received normalized text input: 我刚才午饭吃的是什么面？请说完整口味。",
+    "2026-10-11 09:14:01 | INFO     | animetta.orchestration.graph.orchestrator:process_text:246 - [mpQIFxHHYiHyPxwdAAAF] [LangGraph] Processing text input: 我刚才午饭吃的是什么面？请说完整口味。...",
+    "2026-10-11 09:14:01 | INFO     | animetta.orchestration.graph.orchestrator:_run_graph:444 - [mpQIFxHHYiHyPxwdAAAF] [LangGraph] _run_graph starting — input_type=text, scope_kind=livestream, window_pairs=2",
+    "2026-10-11 09:14:01 | INFO     | animetta.orchestration.graph.llm_node:llm_node:390 - [mpQIFxHHYiHyPxwdAAAF] [LLMNode] Processing...",
+    "2026-10-11 09:14:01 | INFO     | animetta.orchestration.graph.llm_node:_retrieve_memory_context:274 - [mpQIFxHHYiHyPxwdAAAF] [LLMNode] Memory injected",
+    "2026-10-11 09:14:01 | INFO     | animetta.orchestration.graph.llm_node:_llm_without_tools:628 - [mpQIFxHHYiHyPxwdAAAF] [LLMNode] Using streaming mode (no tools)",
+    "2026-10-11 09:14:03 | INFO     | animetta.orchestration.graph.llm_node:_llm_without_tools:704 - [mpQIFxHHYiHyPxwdAAAF] [LLMNode] LLM response: 南瓜芝麻荞麦面，一个字没记错。刚说完就考我，家人们这波是想验证我有没有在认真听吗？",
+    "2026-10-11 09:14:03 | INFO     | animetta.orchestration.graph.emotion_node:emotion_node:63 - [mpQIFxHHYiHyPxwdAAAF] [EmotionNode] Performance normalized: source=fallback, base=calm, accent=none, fallback=invalid_marker",
+    "2026-10-11 09:14:03 | INFO     | animetta.orchestration.graph.tts_node:tts_node:167 - [mpQIFxHHYiHyPxwdAAAF] [TTSNode] Starting processing...",
+    "2026-10-11 09:14:06 | INFO     | animetta.orchestration.graph.tts_node:tts_node:335 - [mpQIFxHHYiHyPxwdAAAF] [TTSNode] Audio data: 384044 bytes",
+    "2026-10-11 09:14:06 | INFO     | animetta.orchestration.graph.output_node:output_node:70 - [mpQIFxHHYiHyPxwdAAAF] [OutputNode] Starting distribution...",
+    "2026-10-11 09:14:06 | INFO     | animetta.orchestration.graph.output_node:output_node:221 - [mpQIFxHHYiHyPxwdAAAF] [OutputNode] ✅ Sent audio data (volumes: 400 samples)",
+    "2026-10-11 09:14:06 | INFO     | animetta.orchestration.graph.output_node:output_node:279 - [mpQIFxHHYiHyPxwdAAAF] [OutputNode] Distribution complete",
+    "2026-10-11 09:14:06 | INFO     | animetta.orchestration.graph.orchestrator:_run_graph:489 - [mpQIFxHHYiHyPxwdAAAF] [LangGraph] _run_graph completed in 4971ms — scope_kind=livestream, window_pairs=3",
+    "2026-10-11 09:14:14 | INFO     | animetta.orchestration.server.handlers.lifecycle_handlers:on_disconnect:70 - Client disconnected: mpQIFxHHYiHyPxwdAAAF",
+    "2026-10-11 09:14:14 | INFO     | animetta.orchestration.graph.orchestrator:stop:199 - [mpQIFxHHYiHyPxwdAAAF] [LangGraph] Orchestrator stopped",
+    "2026-10-11 09:14:14 | INFO     | animetta.runtime.session_context:close_session_resources:588 - [mpQIFxHHYiHyPxwdAAAF] Shutting down service context...",
+    "2026-10-11 09:14:14 | INFO     | animetta.runtime.session_context:close_session_resources:624 - [mpQIFxHHYiHyPxwdAAAF] Service context closed",
+    "2026-10-11 09:14:14 | INFO     | animetta.orchestration.server.session:cleanup_session:308 - Cleaned up all resources for session mpQIFxHHYiHyPxwdAAAF"
+  ],
+  "all_tasks_success": true,
+  "same_conversation": true,
+  "same_graph_thread": true,
+  "tools_disabled": true,
+  "guard_source_matches": true,
+  "proof_scope": "Actual stdout+stderr role interval and container source guard hashes; absence of loader logs is not an instrumented function-call counter"
+}

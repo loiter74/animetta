@@ -1,0 +1,38 @@
+{
+  "status": "completed",
+  "time_utc": "2026-10-11T09:21:56.6262714Z",
+  "target": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011",
+  "logical_bytes": 58119348,
+  "ordinary_files": 845,
+  "ordinary_directories": 23,
+  "reparse_points": [
+    "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\r4-runtime\\probes\\node_modules\\playwright",
+    "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\r4-runtime\\probes\\node_modules\\socket.io-client",
+    "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\distribution-final\\probes\\node_modules"
+  ],
+  "process_references": [],
+  "container_references": [],
+  "excluded_process": {
+    "pid": 9976,
+    "reason": "this exact cleanup process; no other process excluded"
+  },
+  "archive_root": "C:\\Users\\30262\\Project\\Anima\\docs\\performance\\deployment-core-2026-10-11\\phase3-5-evidence",
+  "frontend_marker_sha256_before": "5ABFBE622FF7A24C70C3C2ADE73BA9783E096EC90E19645201B8DA5F0C629217",
+  "method": "Exact absolute root; unlink owned reparse entries without recursion, then ordinary Directory.Delete",
+  "size_limit": "Logical file lengths; no physical freed-byte claim",
+  "protected": [
+    "user data and memory_db",
+    "Docker named volumes",
+    "Qwen and RVC models",
+    "permanent RVC venv",
+    "shared uv/pip caches",
+    "frontend node_modules",
+    "unrelated train/song work",
+    "other .zcode tasks",
+    "automatic runtime recovery artifacts/evidence"
+  ],
+  "target_absent": true,
+  "frontend_marker_sha256_after": "5ABFBE622FF7A24C70C3C2ADE73BA9783E096EC90E19645201B8DA5F0C629217",
+  "permanent_rvc_environment_present": true,
+  "completed_at_utc": "2026-10-11T09:21:57.0248649Z"
+}

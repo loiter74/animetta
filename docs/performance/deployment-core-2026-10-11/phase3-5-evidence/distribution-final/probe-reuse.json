@@ -1,0 +1,16 @@
+[
+  {
+    "source": "docs\\performance\\deployment-core-2026-10-11\\phase3-5-evidence\\runtime-r4\\probes\\core-role-probe-r4.mjs",
+    "source_sha256": "19f4c02b057a94eda93e0ca4fb7159fb10f5bfe797b16f22c64288cfc1328abf",
+    "target": ".zcode\\performance\\deployment-core-20261011\\distribution-final\\probes\\core-role-probe-distribution.mjs",
+    "target_sha256": "7f4582efdcffec5cdc552d0acb455f2ed24eb4cf9b8fd1019cecc1d7589ce25c",
+    "change": "run id/invalid-token descriptive label only; actual protocol and native/continuity assertions identical"
+  },
+  {
+    "source": "docs\\performance\\deployment-core-2026-10-11\\phase3-5-evidence\\runtime-r4\\probes\\permissions-r4.mjs",
+    "source_sha256": "85588ea436d8bf8b20e53bd636fe92e68c85adc9c9eab4153950f0368d5498fd",
+    "target": ".zcode\\performance\\deployment-core-20261011\\distribution-final\\probes\\permissions-distribution.mjs",
+    "target_sha256": "a7b361f553056366febcbf8ed9b9637cba015fe7e8274f7266e4006535a55e2b",
+    "change": "run id/invalid-token descriptive label only; actual protocol and native/continuity assertions identical"
+  }
+]

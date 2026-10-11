@@ -1,0 +1,402 @@
+"""Task-local sole-owner distribution acceptance. Never retry a launched lifecycle."""
+import ast
+import hashlib
+import importlib.util
+import json
+import os
+import re
+import subprocess
+import sys
+import time
+from datetime import UTC, datetime
+from pathlib import Path
+from urllib.error import HTTPError
+from urllib.parse import urlparse, unquote
+from urllib.request import Request, urlopen
+
+ROOT = Path(r'C:\Users\30262\Project\Anima')
+OUT = Path(__file__).parent
+RUN = 'c-dc-distribution01'
+ROLE = 'c-dc-distribution-role01'
+IMAGE = 'ghcr.io/loiter74/animetta@sha256:a6a41059d3adfa51792c864fedd8ee7d81128948c4bba6581f26774d9dd89ed4'
+REV = '595cd4770afe74ff2f8b2fc769cf30f6d8a3c9a2'
+FP = '6385b98a0ec4b8e1aa7f03d6f1305478a4867fe6b913c47181b3deb84c7a4bb0'
+STATE = OUT.parent / 'finalization-state.json'
+RECORD = OUT / 'runtime-distribution.json'
+ART = ROOT / 'artifacts/iteration-plans' / RUN
+spec = importlib.util.spec_from_file_location('historical_readonly_helpers', OUT.parent/'r4-runtime/r4-runner.py')
+r = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(r)
+ENV = r.ENV
+ENV['ANIMETTA_IMAGE'] = IMAGE
+SECRETS = r.SECRETS
+record = {'schema_version': 1, 'run_id': RUN, 'image': IMAGE, 'source_revision': REV,
+          'status': 'preflight', 'started_at': datetime.now(UTC).isoformat(), 'completed': [],
+          'performance_retest': False, 'quality_install_source_build_executed': False,
+          'limits': ['Dashboard account login/UI writer not accepted: account password unavailable; no account reset',
+                     'Native headless browser audio proof does not measure physical speaker output',
+                     'Short-term same-thread continuity only; production long_term_memory_mode remains off',
+                     'Prior r4 app01 auth-session timeout remains historical; no historical evidence rewritten']}
+
+
+def sha(b):
+    return hashlib.sha256(b).hexdigest()
+
+
+def sanitize(b):
+    for s in SECRETS:
+        if len(s) >= 8:
+            b = b.replace(s.encode(), b'<redacted>')
+    return b
+
+
+def write(path, value):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(sanitize((json.dumps(value, ensure_ascii=False, indent=2)+'\n').encode()))
+
+
+def checkpoint(step, **kw):
+    record.update(current_step=step, updated_at=datetime.now(UTC).isoformat(), **kw)
+    write(RECORD, record)
+    # Re-read and merge only this owner's namespace; preserve parent's concurrent fields.
+    for _ in range(3):
+        original = STATE.read_bytes()
+        d = json.loads(original)
+        section = d.setdefault('distribution_final', {})
+        section.update(status=record['status'], current_step=step, run_id=RUN,
+                       image_digest=IMAGE, expected_release_revision=REV,
+                       publication_status='CI38126403988 completed/success; published digest verified by parent',
+                       updated_at=record['updated_at'], record_path=str(RECORD), evidence_root=str(OUT),
+                       completed=list(record['completed']), next_action=record.get('next_action'),
+                       canonical_pid=record.get('canonical_pid'), active_probe_pid=record.get('active_probe_pid'),
+                       driver_pid=os.getpid(), active_session=record.get('active_session'),
+                       lifecycle_or_pull_executed=record.get('lifecycle_launched', False),
+                       run_id_status='launched_once' if record.get('lifecycle_launched') else 'reserved_not_launched')
+        raw = sanitize((json.dumps(d, ensure_ascii=False, indent=2)+'\n').encode())
+        if b'\r\n' in original:
+            raw = raw.replace(b'\n', b'\r\n')
+        if STATE.read_bytes() == original:
+            STATE.write_bytes(raw)
+            break
+    else:
+        raise RuntimeError('Concurrent state update: do not overwrite parent')
+    print(json.dumps({'run_id': RUN, 'status': record['status'], 'step': step,
+                      'canonical_pid': record.get('canonical_pid'), 'probe_pid': record.get('active_probe_pid')}, ensure_ascii=False), flush=True)
+
+
+def command(argv, timeout=30):
+    c = subprocess.run(argv, cwd=ROOT, env=ENV, capture_output=True, timeout=timeout)
+    if c.returncode:
+        raise RuntimeError('Read-only command failed: '+str(argv[:3])+' '+sanitize(c.stderr).decode('utf-8','replace')[:500])
+    return c.stdout.decode('utf-8', 'replace')
+
+
+def http(url, authenticated=True, key='ANIMETTA_ACCESS_TOKEN', headers=None):
+    h = {'Authorization': 'Bearer '+ENV[key]} if authenticated else {}
+    h.update(headers or {})
+    start = time.perf_counter()
+    try:
+        response = urlopen(Request(url, headers=h), timeout=15)
+    except HTTPError as e:
+        response = e
+    with response:
+        raw = response.read()
+        ct = response.headers.get('Content-Type', '')
+        return {'url': url, 'status': response.status, 'bytes': len(raw), 'sha256': sha(raw),
+                'elapsed_seconds': time.perf_counter()-start, 'content_type': ct,
+                'body': json.loads(raw) if 'json' in ct else None,
+                'assets': re.findall(r'(?:src|href)=[\"\']([^\"\']+\.(?:js|css)[^\"\']*)', raw.decode('utf-8','replace'))}
+
+
+def containers():
+    actual = json.loads(command(['docker', 'inspect', 'anima-animetta-1', 'anima-redis-1']))
+    public = []
+    for c in actual:
+        ls = c['Config']['Labels']
+        assert ls['com.docker.compose.project'] == 'anima'
+        assert Path(ls['com.docker.compose.project.working_dir']).resolve() == ROOT
+        assert Path(ls['com.docker.compose.project.config_files']).resolve() == ROOT/'docker-compose.yml'
+        assert all(m['Type'] == 'volume' for m in c['Mounts'])
+        public.append({'name': c['Name'], 'id': c['Id'], 'image_id': c['Image'],
+                       'image_reference': c['Config']['Image'], 'created_at': c['Created'],
+                       'started_at': c['State']['StartedAt'], 'status': c['State']['Status'],
+                       'labels': {k: v for k,v in ls.items() if k.startswith(('com.docker.compose.project','org.opencontainers.image','org.animetta'))},
+                       'ports': c['NetworkSettings']['Ports'],
+                       'mounts': [{'type': m['Type'],'name': m['Name'],'destination':m['Destination']} for m in c['Mounts']]})
+    assert {m['name'] for c in public for m in c['mounts']} == {'anima_animetta-data','anima_animetta-memory-db','anima_animetta-redis'}
+    return actual, public
+
+
+def retained_images(prep):
+    result = []
+    for old in prep['retained_rollback_images']:
+        c = json.loads(command(['docker','image','inspect',old['tag']]))[0]
+        assert c['Id'] == old['image_id']
+        result.append({'tag':old['tag'],'image_id':c['Id'],'size_bytes':c['Size'],'repo_digests':c['RepoDigests']})
+    return result
+
+
+def preflight():
+    assert sys.version_info >= (3,13)
+    assert not ART.exists(), 'Reserved canonical run already has artifacts; read original, do not repeat'
+    prep = json.loads((OUT/'preparation.json').read_bytes())
+    assert command(['git','rev-parse','HEAD']).strip() == REV
+    assert sha((ROOT/'.env').read_bytes()) == prep['private_env_sha256']
+    for p,h in prep['source_contract_hashes'].items():
+        assert sha((ROOT/p).read_bytes()) == h, 'Prepared runtime contract changed: '+p
+    ci_path = ROOT/'docs/performance/deployment-core-2026-10-11/phase3-5-evidence/ci-595cd477-release.json'
+    ci = json.loads(ci_path.read_bytes())
+    assert ci['source_revision']==REV and ci['image']==IMAGE and ci['conclusion']=='success' and ci['registry_check']['exit_code']==0
+    auth = r.preserve_auth()
+    actual, public = containers()
+    envs = [dict(x.split('=',1) for x in c['Config']['Env'] if '=' in x) for c in actual]
+    for k in ['ANIMETTA_ACCESS_TOKEN','QWEN_TTS_API_KEY','ANIMETTA_AUTH_USERNAME','ANIMETTA_AUTH_PASSWORD_HASH','DEEPSEEK_API_KEY','DASHSCOPE_API_KEY','MIMO_API_KEY','MC_MCP_AUTH_TOKEN']:
+        value = envs[0].get(k)
+        if ENV.get(k):
+            assert ENV[k] == value, 'Private environment continuity mismatch: '+k
+        elif value:
+            ENV[k] = value
+            if len(value)>=8:
+                SECRETS.append(value)
+        auth[k] = {'present':bool(value),'continuous':True}
+    redis_url = next((v for k,v in envs[0].items() if k=='REDIS_URL' or k=='ANIMETTA_REDIS_URL'), '')
+    assert redis_url and unquote(urlparse(redis_url).password or '') == envs[1].get('REDIS_PASSWORD') == ENV['ANIMETTA_REDIS_PASSWORD']
+    owned = r.ownership()
+    assert owned['qwen_identity'] == prep['Qwen_identity']
+    command(['docker','compose','config','--quiet'])
+    images = retained_images(prep)
+    health = {x:http('http://localhost'+x) for x in ['/health','/ready','/api/auth/session']}
+    assert all(x['status']==200 for x in health.values()) and health['/ready']['body']['ready'] is True
+    before = {'recorded_at':datetime.now(UTC).isoformat(),'status':'passed','source_revision':REV,
+              'publication_evidence':{'path':str(ci_path),'sha256':sha(ci_path.read_bytes()),'ci_run_id':ci['ci_run_id'],'index_digest':ci['registry_check']['digest'],'amd64_manifest':ci['registry_check']['linux_amd64_manifest']},
+              'private_env_sha256':prep['private_env_sha256'],'credentials_continuity':auth,
+              'containers':public,'host_ownership':owned,'retained_rollback_images':images,
+              'old_immutable_rollback':json.loads((ROOT/'docs/performance/deployment-core-2026-10-11/phase3-5-evidence/rollback-registry-proof.json').read_bytes()),
+              'compose_config_quiet_exit_code':0,'current_public_health':health,
+              'source_contract_hashes':prep['source_contract_hashes']}
+    write(OUT/'preflight.json',before)
+    record['completed'].append('fresh identity/concurrency/private credentials/publication/root/project/volumes preflight')
+    checkpoint('preflight_passed',status='preflight_passed',next_action='Single canonical anima-deploy of authorized digest; --wait handles its own continuations')
+    return prep, before
+
+
+def deploy():
+    argv = ['py','-3.13','scripts/runtime_lifecycle.py','anima-deploy','--image',IMAGE,'--run-id',RUN,'--wait','--artifacts-root',str(ART.parent)]
+    # All output held in memory until known secrets are redacted; no giant feedback plan copied.
+    checkpoint('canonical_pull_inspect_up_no_build',status='deploying',lifecycle_launched=True,command=argv,
+               next_action='Read same run actual receipts; no competing lifecycle or retry')
+    start = time.perf_counter()
+    child = subprocess.Popen(argv,cwd=ROOT,env=ENV,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    checkpoint('canonical_pull_inspect_up_no_build',canonical_pid=child.pid)
+    stdout, stderr = child.communicate()
+    raw = {'run_id':RUN,'command':argv,'cwd':str(ROOT),'exit_code':child.returncode,
+           'elapsed_seconds':time.perf_counter()-start,'stdout_bytes':len(stdout),'stdout_sha256':sha(sanitize(stdout)),
+           'stderr_bytes':len(stderr),'stderr_sha256':sha(sanitize(stderr)), 'automatic_artifact_root':str(ART),
+           'controller_uses_node_pnpm_build':False,'browser_harness_not_started_during_controller':True}
+    write(OUT/'canonical-cli.json',raw)
+    (OUT/'canonical-stderr.log').write_bytes(sanitize(stderr)[:20000])
+    record['canonical_cli']=raw
+    checkpoint('canonical_cli_terminal',canonical_pid=None,next_action='Verify original terminal receipts before smoke' if child.returncode==0 else 'HOLD; inspect original failure, no later lifecycle')
+    assert child.returncode == 0, 'Canonical deploy failed; HOLD original run'
+    # Inspect actual feedback plan and independent command receipts, whitelist compact fields only.
+    summaries=[]; receipts=[]
+    for p in sorted(ART.rglob('*.json')):
+        try: d=json.loads(p.read_bytes())
+        except (ValueError,OSError): continue
+        if isinstance(d,dict) and isinstance(d.get('steps'),list):
+            summaries.append({'path':str(p),'bytes':p.stat().st_size,'sha256':sha(p.read_bytes()),
+                              'status':d.get('status'),'steps':[{k:s.get(k) for k in ('id','step_id','kind','status','command','target','started_at','finished_at','evidence')} for s in d['steps']]})
+        elif isinstance(d,dict) and any(k in d for k in ('exit_code','returncode','command')):
+            receipts.append({'path':str(p),'bytes':p.stat().st_size,'sha256':sha(p.read_bytes()),
+                             **{k:d[k] for k in ('command','exit_code','returncode','status','step_id','started_at','finished_at') if k in d}})
+    proof={'run_id':RUN,'plan_summaries':summaries,'command_receipts':receipts,'canonical_exit_code':0,
+           'no_BUILD_steps':True,'no_node_pnpm_source_build_commands':True}
+    write(OUT/'canonical-receipts.json',proof)
+    assert summaries, 'Need actual canonical plan receipt'
+    allsteps=[s for plan in summaries for s in plan['steps']]
+    assert not any(str(s.get('kind','')).lower()=='build' for s in allsteps)
+    cmds=[s.get('command') or [] for s in allsteps]+[s.get('command') or [] for s in receipts]
+    assert not any(any(str(x).lower() in {'node','node.exe','pnpm','pnpm.exe','build'} for x in c) for c in cmds)
+    ids={s.get('id') or s.get('step_id') for s in allsteps}
+    assert {'animetta-pull','animetta-image-status','animetta-start'} <= ids
+    assert not any('rvc' in str(s.get('id') or s.get('step_id') or '').lower() for s in allsteps)
+    # Preserve actual terminal statuses, do not infer success only from exit code.
+    assert any(all(s.get('status') in ('passed','completed','success','succeeded') for s in plan['steps']) for plan in summaries), 'Canonical plan did not record all steps passed'
+    record['completed'].append('canonical pull/inspect/up --no-build terminal passed')
+    checkpoint('deployment_receipts_passed',status='deployed',next_action='Read-only core/package/formal URL/permissions then one role probe')
+
+
+def boundary(prep):
+    _, public=containers()
+    app=public[0]
+    assert app['image_reference']==IMAGE
+    im=json.loads(command(['docker','image','inspect',IMAGE]))[0]
+    ls=im['Config']['Labels']
+    assert im['Id']==app['image_id'] and ls['org.opencontainers.image.revision']==REV and ls['org.animetta.build-fingerprint']==FP
+    assert IMAGE in im['RepoDigests']
+    code='''import importlib.metadata as m,importlib.util as u,json,sys,shutil,re;from pathlib import Path
+names=['bilibili-api-python','langchain-community','torch','transformers','chromadb','demucs','torchaudio','faiss-cpu']
+versions={}
+for n in names:
+ try:versions[n]=m.version(n)
+ except m.PackageNotFoundError:versions[n]=None
+pkgs=sorted([{'name':d.metadata['Name'],'normalized_name':re.sub(r'[-_.]+','-',d.metadata['Name']).lower(),'version':d.version} for d in m.distributions()],key=lambda x:x['normalized_name'])
+print(json.dumps({'python':sys.version,'packages':pkgs,'installed_package_count':len(pkgs),'absent_distribution_versions':versions,'module_discoverability':{n:u.find_spec(n) is not None for n in ['bilibili_api','langchain_community','torch','transformers','chromadb','demucs','torchaudio']},'ffmpeg':shutil.which('ffmpeg'),'cesium_paths':[str(p) for p in Path('/app/frontend/dist').rglob('*') if 'cesium' in p.name.lower()]}))'''
+    packages=json.loads(command(['docker','exec','anima-animetta-1','python','-c',code]))
+    write(OUT/'core-packages.json',packages)
+    assert packages['installed_package_count']==88
+    assert all(v is None for v in packages['absent_distribution_versions'].values()) and not any(packages['module_discoverability'].values())
+    assert packages['ffmpeg'] is None and not packages['cesium_paths']
+    ready=http('http://localhost/ready');c=ready['body']['components']
+    assert ready['status']==200 and ready['body']['ready'] is True
+    assert all(c[n]['state']=='disabled' and c[n]['required'] is False for n in ['asr','vad'])
+    assert all(c[n]['ready'] is True for n in ['memory_runtime','checkpoint'])
+    assert c['tts']['resolved']['voice']=='tosaka-rin-cn'
+    config_code='''import json,sqlite3;from pathlib import Path;from animetta.config.manifest import load_effective_config
+c=load_effective_config(profile='production');p=Path('/app/memory_db/living_memory.sqlite');con=sqlite3.connect(p.as_uri()+'?mode=ro',uri=True)
+fts=[x[0] for x in con.execute("select name from sqlite_master where type='table' and lower(sql) like '%using fts5%'")];con.close()
+print(json.dumps({'capabilities':c.runtime.capabilities.model_dump(),'enable_tools':c.runtime.enable_tools,'required_services':list(c.runtime.required_services),'memory_retrieval_mode':c.runtime.memory_retrieval_mode,'long_term_memory_mode':c.runtime.long_term_memory_mode,'fts5_virtual_tables':fts,'database_open_mode':'ro'}))'''
+    config=json.loads(command(['docker','exec','anima-animetta-1','python','-c',config_code]).strip().splitlines()[-1])
+    assert not any(config['capabilities'].values()) and not config['enable_tools']
+    assert config['memory_retrieval_mode']=='fts' and config['long_term_memory_mode']=='off' and config['fts5_virtual_tables']
+    pages={ep:http('http://localhost'+ep) for ep in ['/dashboard','/live.html']}
+    assets=[]
+    for a in sorted({a for p in pages.values() for a in p['assets']}):
+        response=http('http://localhost'+a)
+        assert response['status']==200
+        assets.append({k:response[k] for k in ['url','status','sha256','bytes','content_type']})
+    assert all(p['status']==200 for p in pages.values()) and assets
+    result={'status':'passed','recorded_at':datetime.now(UTC).isoformat(),'containers':public,
+            'actual_image':{'reference':IMAGE,'id':im['Id'],'size_bytes':im['Size'],'repo_digests':im['RepoDigests'],'revision':ls['org.opencontainers.image.revision'],'build_fingerprint':ls['org.animetta.build-fingerprint']},
+            'ready':ready,'actual_core_config_FTS':config,'formal_pages':pages,'assets':assets,
+            'host_ownership':r.ownership(),'retained_rollback_images':retained_images(prep)}
+    write(OUT/'core-boundary.json',result)
+    record['actual_image']=result['actual_image'];record['completed'].append('88-package/core/FTS/ready/ROOT/volumes/URL assets/Qwen identity boundary')
+    checkpoint('core_boundary_passed',next_action='Formal API token/unauth/Origin/Socket permission checks')
+
+
+def node_probe(name, timeout):
+    script=OUT/'probes'/name
+    child=subprocess.Popen(['node',str(script)],cwd=script.parent,env=ENV,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    checkpoint('actual_browser_probe' if name.startswith('core-role') else 'socket_permission_probe',active_probe_pid=child.pid)
+    try:
+        out,err=child.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        # Only this owned evidence helper is ended; never touch product or host services.
+        child.kill();out,err=child.communicate()
+        (OUT/(name+'.partial.log')).write_bytes(sanitize(out+err))
+        raise RuntimeError('Owned browser helper exceeded bounded timeout; original partial output preserved')
+    out,err=sanitize(out),sanitize(err)
+    (OUT/(name+'.stderr.log')).write_bytes(err)
+    (OUT/(name+'.json')).write_bytes(out)
+    checkpoint('browser_probe_terminal',active_probe_pid=None)
+    assert child.returncode==0, 'Probe process failed; preserve terminal result'
+    return json.loads(out)
+
+
+def permissions():
+    evidence={'run_id':'c-dc-distribution-permissions01','status':'running','requests':[]}
+    path=OUT/'formal-permissions.json'
+    for port in (80,12394):
+        for authenticated in (True,False):
+            for ep in ['/health','/ready','/api/auth/session','/api/stats/live','/metrics']:
+                v=http(f'http://localhost{":"+str(port) if port!=80 else ""}{ep}',authenticated)
+                entry={k:v[k] for k in ['url','status','elapsed_seconds','bytes','sha256','content_type']}
+                entry['authenticated_request']=authenticated
+                if isinstance(v['body'],dict):
+                    entry.update({k:v['body'][k] for k in ['authenticated','source','ready','status'] if k in v['body']})
+                evidence['requests'].append(entry);write(path,evidence)
+                assert v['status']==(200 if authenticated or ep=='/health' else 401) and 'text/html' not in v['content_type'], 'Formal API/proxy permission mismatch'
+                if authenticated and ep=='/api/auth/session':
+                    assert v['body']['authenticated'] is True and v['body']['source']=='bearer'
+    v=http('http://localhost/socket.io/?EIO=4&transport=polling',False,headers={'Origin':'https://invalid-distribution.example'})
+    evidence['invalid_origin']={k:v[k] for k in ['status','bytes','sha256']};write(path,evidence)
+    assert v['status']==400
+    evidence['invalid_socket_token']=node_probe('permissions-distribution.mjs',15)
+    assert evidence['invalid_socket_token']['status']=='passed' and evidence['invalid_socket_token']['rejection']=='UNAUTHORIZED'
+    evidence['status']='passed';write(path,evidence)
+    record['completed'].append('20 actual formal/direct API permission checks plus invalid Origin/Socket token rejected')
+    checkpoint('permissions_passed',next_action='Single real role, native WAV, Live2D and ordinary same-thread fact two rounds')
+
+
+def role():
+    before=datetime.now(UTC).isoformat()
+    record['role_started_at']=before
+    checkpoint('role_native_and_continuity_executing',next_action='Observe same probe natural playback and terminal; no repeat')
+    value=node_probe('core-role-probe-distribution.mjs',450)
+    record['role_summary']={k:value.get(k) for k in ['status','first_reply_seconds','first_native_audio_start_seconds','live_persistent_playback','native_nonzero_audio_completed','actual_native_playback_path','live2d_model_runtime_loaded','live2d_real_task_mouth_applied']}
+    record['continuity_status']=value.get('continuity',{}).get('status')
+    assert value['status']=='passed' and value['continuity']['status']=='passed' and value['live2d_model_runtime_loaded'] and value['live2d_real_task_mouth_applied'], 'Real native/Live2D/continuity probe failed; HOLD'
+    tasks=[value['command']['task_id']]+[x['command']['task_id'] for x in value['continuity']['rounds']]
+    stats=http('http://localhost/api/stats/live')['body'];turns=[]
+    def walk(x):
+        if isinstance(x,dict):
+            if x.get('trace_id') in tasks:turns.append(x)
+            else:
+                for v in x.values():walk(v)
+        elif isinstance(x,list):
+            for v in x:walk(v)
+    walk(stats)
+    captured=subprocess.run(['docker','logs','--since',before,'--tail','500','anima-animetta-1'],cwd=ROOT,env=ENV,capture_output=True,timeout=30)
+    lines=[re.sub(r'\x1b\[[0-9;]*m','',s) for s in sanitize(captured.stdout+captured.stderr).decode('utf-8','replace').splitlines()]
+    socket=value['continuity']['socket_id']
+    starts=[s for s in lines if socket in s and '_run_graph starting' in s]
+    ends=[s for s in lines if socket in s and '_run_graph completed' in s]
+    ws=[int(re.search(r'window_pairs=(\d+)',s)[1]) for s in starts]
+    we=[int(re.search(r'window_pairs=(\d+)',s)[1]) for s in ends]
+    node_lists=[ast.literal_eval(s.split('Registered nodes: ',1)[1]) for s in lines if 'Registered nodes: ' in s]
+    loaders=[s for s in lines if '_load_tools_config' in s or 'orchestrator:_load_tools:' in s]
+    toolstatus=[s for s in lines if socket in s and ('Tool config status:' in s or 'self.enable_tools=' in s)]
+    selected=[s for s in lines if any(t in s for t in tasks) or socket in s or 'Registered nodes:' in s or s in loaders]
+    source_code="from pathlib import Path;import hashlib,json;ps=['src/animetta/orchestration/server/session.py','src/animetta/orchestration/graph/orchestrator.py'];print(json.dumps({p:hashlib.sha256(Path('/app',p).read_bytes()).hexdigest() for p in ps}))"
+    hashes=json.loads(command(['docker','exec','anima-animetta-1','python','-c',source_code]))
+    graph={'task_ids':tasks,'actual_graph_thread_id':socket,'actual_channel_id':socket,'actual_live_turns':turns,
+           'window_pairs_start':ws,'window_pairs_end':we,'registered_nodes':node_lists,'optional_loader_log_lines':loaders,
+           'actual_tool_status':toolstatus,'actual_container_guard_source_SHA':hashes,'selected_actual_log_lines':selected,
+           'all_tasks_success':len(turns)==3 and all(x['outcome']=='success' for x in turns),
+           'same_conversation':len({x['conversation_id'] for x in turns})==1,
+           'same_graph_thread':len(ws)==3 and len(we)==3 and ws[2]==we[1] and ws[2]>0,
+           'tools_disabled':bool(node_lists) and all('tools' not in x for x in node_lists) and not loaders and any('enable_tools=False, config_keys=[]' in s for s in toolstatus),
+           'guard_source_matches':all(sha((ROOT/p).read_bytes())==h for p,h in hashes.items()),
+           'proof_scope':'Actual stdout+stderr role interval and container source guard hashes; absence of loader logs is not an instrumented function-call counter'}
+    write(OUT/'role-graph-tools.json',graph)
+    provider=[]
+    for task in tasks:
+        v=http('http://localhost/api/stats/live/turns/'+task)
+        write(OUT/(task+'-turn.json'),v['body'])
+        def activities(x):
+            if isinstance(x,dict):
+                if x.get('name')=='tts.synthesize':provider.append(x)
+                for y in x.values():activities(y)
+            elif isinstance(x,list):
+                for y in x:activities(y)
+        activities(v['body'])
+    write(OUT/'role-provider-timing.json',{'activities':provider,'definition':'Actual role tts.synthesize service activity; separate from browser native start; not GPU-kernel-only timing'})
+    assert all(graph[x] for x in ['all_tasks_success','same_conversation','same_graph_thread','tools_disabled','guard_source_matches'])
+    record['completed'].append('one role plus two same graph-thread ordinary fact turns; actual natural WAV/persistent count/task/Live2D mouth and tools disabled')
+    checkpoint('role_graph_acceptance_passed',next_action='Final identity continuity and small evidence bytehash/secret scan; no lifecycle')
+
+
+def main():
+    assert not RECORD.exists(), 'Read original record, never reset or relaunch'
+    checkpoint('fresh_preflight',next_action='Verify exact identity then canonical deploy')
+    try:
+        prep, before=preflight()
+        deploy()
+        boundary(prep)
+        permissions()
+        role()
+        after={'status':'passed','host_ownership':r.ownership(),'containers':containers()[1],
+               'retained_rollback_images':retained_images(prep),'credentials_continuity':r.preserve_auth()}
+        write(OUT/'final-identity.json',after)
+        record['completed'].append('final Qwen PID/create/voice/private identity and rollback image retention')
+        checkpoint('complete',status='acceptance_passed',canonical_pid=None,active_probe_pid=None,
+                   next_action='Parent archive exact small raw bytes and index; no cleanup/commit by runtime owner')
+    except Exception as e:
+        checkpoint('HOLD_original_failure',status='HOLD',error_type=type(e).__name__,error=str(e),
+                   next_action='Read original diagnostics; no repeat lifecycle or successful probe; report precise root first')
+        raise
+
+
+if __name__=='__main__':
+    main()

@@ -1,0 +1,50 @@
+{
+  "references": [
+    {
+      "path": "C:\\Users\\30262\\Project\\Anima\\docs\\performance\\deployment-core-2026-10-11\\phase3-5-evidence\\ci-595cd477-release.json",
+      "bytes": 5738,
+      "sha256": "41701b7ca6b5df63a811a5eb5d391858166baf0ccbc74610c7a37303a51843e8",
+      "copied": false
+    },
+    {
+      "path": "C:\\Users\\30262\\Project\\Anima\\docs\\performance\\deployment-core-2026-10-11\\phase3-5-evidence\\rollback-registry-proof.json",
+      "bytes": 1341,
+      "sha256": "b2658557ac326d918eecf9bee5844342f2471a37fb5fe2d19128f91d106f08d8",
+      "copied": false
+    },
+    {
+      "path": "C:\\Users\\30262\\Project\\Anima\\docs\\performance\\deployment-core-2026-10-11\\phase3-5-evidence\\runtime-r4\\r4-runner.py",
+      "bytes": 14416,
+      "sha256": "026960bf72fba9944f251802e4db565d6aa13d05099e17e4aeb8748975b0a6f8",
+      "copied": false
+    },
+    {
+      "path": "C:\\Users\\30262\\Project\\Anima\\docs\\performance\\deployment-core-2026-10-11\\phase3-5-evidence\\runtime-r4\\probes\\core-role-probe-r4.mjs",
+      "bytes": 18133,
+      "sha256": "19f4c02b057a94eda93e0ca4fb7159fb10f5bfe797b16f22c64288cfc1328abf",
+      "copied": false
+    },
+    {
+      "path": "C:\\Users\\30262\\Project\\Anima\\docs\\performance\\deployment-core-2026-10-11\\phase3-5-evidence\\runtime-r4\\probes\\permissions-r4.mjs",
+      "bytes": 962,
+      "sha256": "85588ea436d8bf8b20e53bd636fe92e68c85adc9c9eab4153950f0368d5498fd",
+      "copied": false
+    },
+    {
+      "path": "C:\\Users\\30262\\Project\\Anima\\docs\\performance\\deployment-core-2026-10-11\\runtime-baseline.json",
+      "bytes": 468298,
+      "sha256": "a6faf0acad714dd1ac62fa094c8bf1526e9eec78d187977eb86ed169b269ef78",
+      "copied": false
+    },
+    {
+      "path": "C:\\Users\\30262\\Project\\Anima\\docs\\performance\\deployment-core-2026-10-11\\runtime-core-r3.json",
+      "bytes": 327200,
+      "sha256": "1f838e6e8fc1f9bf5983e97d6ea4bb1a40985be4e70a26631ea605f870b5baa2",
+      "copied": false
+    }
+  ],
+  "borrowed_helper_actual_runtime_path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\deployment-core-20261011\\r4-runtime\\r4-runner.py",
+  "archive_has_identical_helper_bytes": true,
+  "automatic_artifact_refs": "Compact actual results/command evidence SHA256 and paths are in canonical-receipts-corrected.json; automatic artifacts untouched and not copied",
+  "HTTP_turn_detail_representation": "*-turn.json holds actual API decoded JSON re-encoded by collector, not byte-exact original HTTP transfer. Native role probe stdout bytes are retained."
+}

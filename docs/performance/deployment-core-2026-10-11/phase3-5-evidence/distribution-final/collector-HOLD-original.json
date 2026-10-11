@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "run_id": "c-dc-distribution01",
+  "image": "ghcr.io/loiter74/animetta@sha256:a6a41059d3adfa51792c864fedd8ee7d81128948c4bba6581f26774d9dd89ed4",
+  "source_revision": "595cd4770afe74ff2f8b2fc769cf30f6d8a3c9a2",
+  "status": "HOLD",
+  "started_at": "2026-10-11T09:07:15.920995+00:00",
+  "completed": [
+    "fresh identity/concurrency/private credentials/publication/root/project/volumes preflight"
+  ],
+  "performance_retest": false,
+  "quality_install_source_build_executed": false,
+  "limits": [
+    "Dashboard account login/UI writer not accepted: account password unavailable; no account reset",
+    "Native headless browser audio proof does not measure physical speaker output",
+    "Short-term same-thread continuity only; production long_term_memory_mode remains off",
+    "Prior r4 app01 auth-session timeout remains historical; no historical evidence rewritten"
+  ],
+  "current_step": "HOLD_original_failure",
+  "updated_at": "2026-10-11T09:08:53.896316+00:00",
+  "next_action": "Read original diagnostics; no repeat lifecycle or successful probe; report precise root first",
+  "lifecycle_launched": true,
+  "command": [
+    "py",
+    "-3.13",
+    "scripts/runtime_lifecycle.py",
+    "anima-deploy",
+    "--image",
+    "ghcr.io/loiter74/animetta@sha256:a6a41059d3adfa51792c864fedd8ee7d81128948c4bba6581f26774d9dd89ed4",
+    "--run-id",
+    "c-dc-distribution01",
+    "--wait",
+    "--artifacts-root",
+    "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans"
+  ],
+  "canonical_pid": null,
+  "canonical_cli": {
+    "run_id": "c-dc-distribution01",
+    "command": [
+      "py",
+      "-3.13",
+      "scripts/runtime_lifecycle.py",
+      "anima-deploy",
+      "--image",
+      "ghcr.io/loiter74/animetta@sha256:a6a41059d3adfa51792c864fedd8ee7d81128948c4bba6581f26774d9dd89ed4",
+      "--run-id",
+      "c-dc-distribution01",
+      "--wait",
+      "--artifacts-root",
+      "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans"
+    ],
+    "cwd": "C:\\Users\\30262\\Project\\Anima",
+    "exit_code": 0,
+    "elapsed_seconds": 94.98493950000193,
+    "stdout_bytes": 5522,
+    "stdout_sha256": "363d7af09aeeffe79027ac74ba12edd613885254474fccd233e8e0928fc6980c",
+    "stderr_bytes": 6399,
+    "stderr_sha256": "9265fdd1cf34821c00f31f4ea458262c805839a7da63c42a1e13267ac49b6a51",
+    "automatic_artifact_root": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\c-dc-distribution01",
+    "controller_uses_node_pnpm_build": false,
+    "browser_harness_not_started_during_controller": true
+  },
+  "error_type": "AssertionError",
+  "error": "Canonical plan did not record all steps passed"
+}

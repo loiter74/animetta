@@ -1,0 +1,47 @@
+{
+  "activities": [
+    {
+      "id": "b20b5c03c67f4ed4a7c014aeeff9cd9e",
+      "kind": "delivery",
+      "label": "公开投递",
+      "name": "tts.synthesize",
+      "layer": "service",
+      "status": "success",
+      "started_at": 1791709998.8081791,
+      "duration_ms": 3843.334197998047,
+      "provider": "qwen3-tts-gguf-host",
+      "model": "Qwen3-TTS-1.7B-Base",
+      "error": null,
+      "attributes": {}
+    },
+    {
+      "id": "2e18269f6deb4afdb541c068c66b3838",
+      "kind": "delivery",
+      "label": "公开投递",
+      "name": "tts.synthesize",
+      "layer": "service",
+      "status": "success",
+      "started_at": 1791710017.4220915,
+      "duration_ms": 5623.304128646851,
+      "provider": "qwen3-tts-gguf-host",
+      "model": "Qwen3-TTS-1.7B-Base",
+      "error": null,
+      "attributes": {}
+    },
+    {
+      "id": "914d4f49b73142a0b0a9fd3cdda16ece",
+      "kind": "delivery",
+      "label": "公开投递",
+      "name": "tts.synthesize",
+      "layer": "service",
+      "status": "success",
+      "started_at": 1791710043.166379,
+      "duration_ms": 2878.1752586364746,
+      "provider": "qwen3-tts-gguf-host",
+      "model": "Qwen3-TTS-1.7B-Base",
+      "error": null,
+      "attributes": {}
+    }
+  ],
+  "definition": "Actual role tts.synthesize service activity; separate from browser native start; not GPU-kernel-only timing"
+}

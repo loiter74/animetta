@@ -1,6 +1,6 @@
 {
   "objective": "完成部署精简阶段0至5，真实核心冒烟，然后清理任务临时数据与文件",
-  "status": "in_progress",
+  "status": "completed_with_recorded_limits",
   "requirements": [
     {
       "id": "phase0_baseline",
@@ -92,11 +92,12 @@
     },
     {
       "id": "phase4_reusable_image_and_ordinary_deploy",
-      "status": "pending_final_gate",
+      "status": "verified_with_recorded_limits",
       "evidence": [
-        "phase3-5-evidence/deploy-control-probe-r4.log"
-      ],
-      "remaining": "CI契约检查、规范生命周期部署；不把控制器导入成功当部署成功"
+        "phase3-5-evidence/ci-595cd477-release.json",
+        "phase3-5-evidence/distribution-final/runtime-distribution.json",
+        "phase3-5-evidence/distribution-final/canonical-receipts-corrected.json"
+      ]
     },
     {
       "id": "phase4_system_media_packages",
@@ -142,7 +143,10 @@
       "id": "phase5_required_quality_groups",
       "status": "verified",
       "evidence": [
-        "phase3-5-evidence/quality-r4-summary.json"
+        "phase3-5-evidence/quality-r4-summary.json",
+        "phase3-5-evidence/quality-ci-repair-summary.json",
+        "phase3-5-evidence/ci-595cd477-release.json",
+        "phase3-5-evidence/quality-final-metadata-summary.json"
       ],
       "groups": 25,
       "unmapped_paths": []
@@ -158,26 +162,46 @@
     },
     {
       "id": "cleanup_after_smoke",
-      "status": "large_temporary_roots_removed",
-      "remaining": "提交和远端分发核验后归档并清理小型任务状态目录",
+      "status": "verified",
       "evidence": [
-        "phase3-5-evidence/cleanup-summary.json"
+        "phase3-5-evidence/cleanup-summary.json",
+        "phase3-5-evidence/cleanup-final-receipt.json"
       ]
     },
     {
       "id": "preserve_user_work_models_and_runtime_data",
-      "status": "pending_final_status_audit",
-      "remaining": "训练与song未提交修改不暂存；模型、共享cache、永久RVC环境及运行数据不清理"
+      "status": "verified",
+      "evidence": [
+        "phase3-5-evidence/distribution-final/final-identity.json",
+        "phase3-5-evidence/cleanup-summary.json",
+        "phase3-5-evidence/cleanup-final-receipt.json"
+      ]
     },
     {
       "id": "task_only_commit_safe_push_main",
-      "status": "pending",
-      "remaining": "精确暂存、检查实际提交字节、单次fetch、可快进普通推送"
+      "status": "verified_source_delivery",
+      "source_commits": [
+        "023eccf112e88db8bb448d10fc578ef4899e3969",
+        "595cd4770afe74ff2f8b2fc769cf30f6d8a3c9a2"
+      ],
+      "evidence": [
+        "phase3-5-evidence/ci-595cd477-release.json"
+      ]
     }
   ],
   "conditional_exclusions": [
     "Redis移除仅为条件性后续，本轮不执行",
     "未证实收益的ASR或embedding模型替换不另建服务",
     "不以RVC可选模型推理替代默认核心冒烟"
+  ],
+  "final_deployed_source_revision": "595cd4770afe74ff2f8b2fc769cf30f6d8a3c9a2",
+  "final_deployed_image": "ghcr.io/loiter74/animetta@sha256:a6a41059d3adfa51792c864fedd8ee7d81128948c4bba6581f26774d9dd89ed4",
+  "preserved_unrelated_work": [
+    "scripts/train/README.md",
+    "songs/.gitignore",
+    "scripts/train/review_data.py",
+    "scripts/train/review_ui.html",
+    "songs/review/",
+    "tests/scripts/train/test_review_data.py"
   ]
 }
