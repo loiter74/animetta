@@ -5,6 +5,7 @@ from pathlib import Path
 
 import yaml
 
+from animetta.orchestration.server.auth_password import INITIAL_ADMIN_PASSWORD_HASH
 from animetta.orchestration.server.handlers.singing_handlers import MAX_SINGING_UPLOAD_BYTES
 from animetta.orchestration.server.websocket import SINGING_SOCKET_MAX_BUFFER_BYTES
 from animetta_rvc_host.app import MAX_RVC_AUDIO_BYTES
@@ -240,7 +241,7 @@ def test_compose_services_inject_only_explicit_least_privilege_environment() -> 
         "ANIMETTA_DATA_DIR=/app/data",
         "ANIMETTA_ACCESS_TOKEN=${ANIMETTA_ACCESS_TOKEN:?ANIMETTA_ACCESS_TOKEN is required}",
         "ANIMETTA_AUTH_USERNAME=${ANIMETTA_AUTH_USERNAME:-admin}",
-        "ANIMETTA_AUTH_PASSWORD_HASH=${ANIMETTA_AUTH_PASSWORD_HASH:-scrypt-v1:26c5Is2zGZm4xRqKSTvRqQ:ntOgMo49QXyM4gLX8TvWtmAunKLamrv13QpUoERssio}",
+        f"ANIMETTA_AUTH_PASSWORD_HASH=${{ANIMETTA_AUTH_PASSWORD_HASH:-{INITIAL_ADMIN_PASSWORD_HASH}}}",
         "ANIMETTA_REDIS_URL=${ANIMETTA_REDIS_URL:-redis://:${ANIMETTA_REDIS_PASSWORD}@redis:6379/0}",
         "DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}",
         "DASHSCOPE_API_KEY=${DASHSCOPE_API_KEY:-}",
