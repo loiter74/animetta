@@ -93,6 +93,31 @@ def _seed_group_files(root: Path) -> None:
     _write(root / "scripts/prerequisite.py", "print('ok')\n")
 
 
+@pytest.mark.parametrize(
+    "path",
+    ["src/a/module.py", "src/shared/base.py", "tests/a/test_a.py", "config/voice.json"],
+)
+def test_covering_group_cache_tracks_transitive_covered_inputs(tmp_path: Path, path: str) -> None:
+    _seed_group_files(tmp_path)
+    _write(tmp_path / "config/voice.json", '{"voice": "original"}\n')
+    data = _catalog().model_dump(mode="python")
+    data["input_sets"]["voice"] = {"paths": ["config/voice.json"]}
+    data["groups"]["prerequisite"].update(
+        runner="pytest", targets=["tests/a"], entrypoint=None, input_sets=["voice"]
+    )
+    data["groups"]["group-a"]["covers"] = ["prerequisite"]
+    data["groups"]["group-b"]["targets"] = ["tests"]
+    data["groups"]["group-b"]["covers"] = ["group-a"]
+    catalog = Catalog.model_validate(data)
+
+    before = fingerprint_group(_context(tmp_path), catalog, "manifest", "group-b", {})
+    target = tmp_path / path
+    _write(target, target.read_text(encoding="utf-8") + "changed\n")
+    after = fingerprint_group(_context(tmp_path), catalog, "manifest", "group-b", {})
+
+    assert after.digest != before.digest
+
+
 def test_pattern_fingerprint_is_ordered_deduplicated_and_separator_stable(
     tmp_path: Path,
 ) -> None:

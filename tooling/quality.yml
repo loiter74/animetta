@@ -394,7 +394,8 @@ groups:
       - tests/scripts/test_release_runtime_gate.py
       - tests/smoke/test_python_runtime_policy.py
       - tests/smoke/test_docker_frontend.py
-    args: [-q, -o, addopts=]
+      - tests/deployment/test_runtime_topology.py
+    args: &daily-pytest [-q, -o, addopts=, -m, not slow and not integration]
     timeout_seconds: 240
     include_in_full: true
     cacheable: true
@@ -411,7 +412,7 @@ groups:
       - tests/services/tts/test_qwen_gguf_host_engine.py
       - tests/scripts/test_qwen_preflight.py
       - tests/scripts/test_benchmark_host_tts.py
-    args: [-q, -o, addopts=]
+    args: *daily-pytest
     timeout_seconds: 120
     cacheable: true
     resource_class: cpu
@@ -429,7 +430,7 @@ groups:
       - tests/services/singing/test_rvc_bridge.py
       - tests/services/singing/test_svc_pipeline_rvc.py
       - tests/scripts/test_rvc_preflight.py
-    args: [-q, -o, addopts=]
+    args: *daily-pytest
     timeout_seconds: 120
     cacheable: true
     resource_class: cpu
@@ -441,7 +442,7 @@ groups:
     kind: unit
     runner: pytest
     targets: [tests/core]
-    args: [-q, -o, addopts=, -m, not slow and not integration]
+    args: *daily-pytest
     timeout_seconds: 300
     cacheable: true
     resource_class: cpu
@@ -453,7 +454,7 @@ groups:
     kind: unit
     runner: pytest
     targets: [tests/config]
-    args: [-q, -o, addopts=, -m, not slow and not integration]
+    args: *daily-pytest
     timeout_seconds: 300
     cacheable: true
     resource_class: cpu
@@ -468,7 +469,7 @@ groups:
       - tests/config/test_security_config.py
       - tests/orchestration/server/test_security.py
       - tests/orchestration/graph/test_tool_execution_policy.py
-    args: [-q, -o, addopts=, -m, not slow and not integration]
+    args: *daily-pytest
     timeout_seconds: 180
     cacheable: true
     resource_class: light
@@ -484,7 +485,7 @@ groups:
       - tests/orchestration/graph/test_builder.py
       - tests/orchestration/graph/test_orchestrator.py
       - tests/services/test_command_inbox.py
-    args: [-q, -o, addopts=, -m, not slow and not integration]
+    args: *daily-pytest
     timeout_seconds: 240
     cacheable: true
     resource_class: cpu
@@ -498,7 +499,7 @@ groups:
     targets:
       - tests/orchestration/graph/test_tool_approval.py
       - tests/orchestration/server/test_tool_approval_routes.py
-    args: [-q, -o, addopts=, -m, not slow and not integration]
+    args: *daily-pytest
     timeout_seconds: 180
     cacheable: true
     resource_class: light
@@ -510,7 +511,7 @@ groups:
     kind: contract
     runner: pytest
     targets: [tests/evaluations/agent/test_agent_evaluation.py]
-    args: [-q, -o, addopts=, -m, not slow and not integration]
+    args: *daily-pytest
     timeout_seconds: 180
     include_in_nightly: true
     cacheable: true
@@ -525,7 +526,7 @@ groups:
     targets:
       - tests/services/llm/test_usage.py
       - tests/evaluations/agent/test_agent_evaluation.py
-    args: [-q, -o, addopts=, -m, not slow and not integration]
+    args: *daily-pytest
     timeout_seconds: 180
     include_in_nightly: true
     cacheable: true
@@ -541,7 +542,7 @@ groups:
       - tests/config/test_persona.py
       - tests/orchestration/graph/test_anima_v01_regression.py
       - tests/orchestration/graph/test_prompt_pipeline.py
-    args: [-q, -o, addopts=, -m, not slow and not integration]
+    args: *daily-pytest
     timeout_seconds: 300
     cacheable: true
     resource_class: cpu
@@ -553,7 +554,7 @@ groups:
     kind: unit
     runner: pytest
     targets: [tests/orchestration/server]
-    args: [-q, -o, addopts=, -m, not slow and not integration]
+    args: *daily-pytest
     timeout_seconds: 300
     cacheable: true
     resource_class: cpu
@@ -565,7 +566,7 @@ groups:
     kind: contract
     runner: pytest
     targets: [tests/orchestration/graph]
-    args: [-q, -o, addopts=, -m, not slow and not integration]
+    args: *daily-pytest
     timeout_seconds: 420
     cacheable: true
     resource_class: cpu
@@ -579,7 +580,7 @@ groups:
     targets:
       - tests/services
       - tests/smoke/test_singing_pipeline.py
-    args: [-q, -o, addopts=, -m, not slow and not integration]
+    args: *daily-pytest
     timeout_seconds: 420
     cacheable: true
     resource_class: cpu
@@ -591,7 +592,7 @@ groups:
     kind: unit
     runner: pytest
     targets: [tests/scripts/train]
-    args: [-q, -o, addopts=, -m, not slow and not integration]
+    args: *daily-pytest
     timeout_seconds: 120
     cacheable: true
     resource_class: light
@@ -603,7 +604,7 @@ groups:
     kind: unit
     runner: pytest
     targets: [tests/memory_v2]
-    args: [-q, -o, addopts=, -m, not slow and not integration]
+    args: *daily-pytest
     timeout_seconds: 300
     cacheable: true
     resource_class: cpu
@@ -615,7 +616,7 @@ groups:
     kind: unit
     runner: pytest
     targets: [tests/tools]
-    args: [-q, -o, addopts=, -m, not slow and not integration]
+    args: *daily-pytest
     timeout_seconds: 600
     cacheable: true
     resource_class: cpu
@@ -651,7 +652,7 @@ groups:
     kind: contract
     runner: pytest
     targets: [tests/tools/minecraft/core/test_gamebot_v2_adapter.py]
-    args: [-q, -o, addopts=, -m, not slow and not integration]
+    args: *daily-pytest
     timeout_seconds: 180
     cacheable: true
     resource_class: light
@@ -663,7 +664,7 @@ groups:
     kind: unit
     runner: pytest
     targets: [tests/tools/minecraft/voyager]
-    args: [-q, -o, addopts=, -m, not slow and not integration]
+    args: *daily-pytest
     timeout_seconds: 300
     cacheable: true
     resource_class: cpu
@@ -678,7 +679,7 @@ groups:
       - tests/tools/minecraft/skill
       - tests/tools/minecraft/survival
       - tests/tools/minecraft/tech_tree
-    args: [-q, -o, addopts=, -m, not slow and not integration]
+    args: *daily-pytest
     timeout_seconds: 300
     cacheable: true
     resource_class: cpu
@@ -692,7 +693,7 @@ groups:
     targets:
       - tests/tools/minecraft/core
       - tests/orchestration/server/handlers/test_minecraft_voyager_wiring.py
-    args: [-q, -o, addopts=, -m, not slow and not integration]
+    args: *daily-pytest
     timeout_seconds: 300
     cacheable: true
     resource_class: cpu
@@ -732,7 +733,7 @@ groups:
     targets:
       - tests/tools/minecraft/mission
       - tests/tools/minecraft/showcase
-    args: [-q, -o, addopts=, -m, not slow and not integration]
+    args: *daily-pytest
     timeout_seconds: 300
     cacheable: true
     resource_class: cpu
@@ -744,7 +745,7 @@ groups:
     kind: unit
     runner: pytest
     targets: [tests/tools/minecraft/discovery]
-    args: [-q, -o, addopts=, -m, not slow and not integration]
+    args: *daily-pytest
     timeout_seconds: 300
     cacheable: true
     resource_class: cpu
@@ -759,7 +760,7 @@ groups:
       - tests/tools/gamebot/contracts/v2
       - tests/tools/minecraft/core/test_gamebot_v2_adapter.py
       - tests/tools/minecraft/voyager/test_mocked_cross_runtime.py
-    args: [-q, -o, addopts=, -m, not slow and not integration]
+    args: *daily-pytest
     timeout_seconds: 300
     cacheable: true
     resource_class: cpu
@@ -803,7 +804,7 @@ groups:
     targets:
       - tests/tools/minecraft/showcase/test_presentation.py
       - tests/tools/minecraft/showcase/test_runner.py
-    args: [-q, -o, addopts=, -m, not slow and not integration]
+    args: *daily-pytest
     timeout_seconds: 180
     cacheable: true
     resource_class: light
@@ -815,7 +816,7 @@ groups:
     kind: contract
     runner: pytest
     targets: [tests/observability, tests/tracing, tests/inspection]
-    args: [-q, -o, addopts=, -m, not slow and not integration]
+    args: *daily-pytest
     timeout_seconds: 300
     cacheable: true
     resource_class: cpu
@@ -827,7 +828,7 @@ groups:
     kind: unit
     runner: pytest
     targets: [tests/acceptance]
-    args: [-q, -o, addopts=, -m, not slow and not integration]
+    args: *daily-pytest
     timeout_seconds: 300
     cacheable: true
     resource_class: cpu
@@ -840,7 +841,7 @@ groups:
     kind: contract
     runner: pytest
     targets: [tests/acceptance/test_livestream_conversation_continuity.py]
-    args: [-q, -o, addopts=, -m, not slow and not integration]
+    args: *daily-pytest
     timeout_seconds: 180
     cacheable: true
     resource_class: cpu
@@ -852,7 +853,7 @@ groups:
     kind: unit
     runner: pytest
     targets: [tests/avatar]
-    args: [-q, -o, addopts=, -m, not slow and not integration]
+    args: *daily-pytest
     timeout_seconds: 180
     cacheable: true
     resource_class: cpu
@@ -961,6 +962,9 @@ groups:
       - agent-approval-unit
       - agent-trajectory-unit
       - agent-cost-unit
+      - host-tts-contract-unit
+      - host-rvc-contract-unit
+      - runtime-lifecycle-unit
 
   backend-deadcode:
     domain: repository

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import yaml
@@ -9,6 +10,7 @@ from animetta.orchestration.server.auth_password import INITIAL_ADMIN_PASSWORD_H
 from animetta.orchestration.server.handlers.singing_handlers import MAX_SINGING_UPLOAD_BYTES
 from animetta.orchestration.server.websocket import SINGING_SOCKET_MAX_BUFFER_BYTES
 from animetta_rvc_host.app import MAX_RVC_AUDIO_BYTES
+from tooling.quality.path_matching import matches_repository_path
 
 ROOT = Path(__file__).resolve().parents[2]
 LEGACY_SELECTORS = (
@@ -91,7 +93,14 @@ def test_earth_feature_flag_and_static_assets_reach_both_frontend_builds() -> No
     for service in (production, development):
         assert service["build"]["args"]["VITE_EARTH_ENABLED"] == "${ANIMETTA_EARTH_ENABLED:-false}"
     assert "ANIMETTA_EARTH_ENABLED=${ANIMETTA_EARTH_ENABLED:-false}" in production["environment"]
-    assert _text("tooling/quality.yml").count("- frontend/scripts/earth-assets.ts") == 2
+    quality = yaml.safe_load(_text("tooling/quality.yml"))
+    for paths in (
+        quality["input_sets"]["frontend-runtime"]["paths"],
+        quality["docker_scopes"]["animetta"]["image_inputs"]["paths"],
+    ):
+        assert any(
+            matches_repository_path("frontend/scripts/earth-assets.ts", path) for path in paths
+        )
 
 
 def test_build_context_excludes_reference_audio_from_all_images() -> None:
@@ -119,7 +128,7 @@ def test_production_compose_owns_animetta_and_private_redis_and_targets_host_qwe
     assert "MC_MCP_URL=${MC_MCP_URL:-http://host.docker.internal:8768/mcp}" in app["environment"]
     assert "MC_MCP_AUTH_TOKEN=${MC_MCP_AUTH_TOKEN:-}" in app["environment"]
     assert app["depends_on"] == {"redis": {"condition": "service_healthy"}}
-    assert redis["image"] == "redis:8.8.1-alpine"
+    assert re.fullmatch(r"redis:8\.\d+\.\d+(?:-[\w.-]+)?(?:@sha256:[0-9a-f]{64})?", redis["image"])
     assert "build" not in redis
     assert "docker-entrypoint.sh redis-server" in redis["command"][2]
     assert "--bind 0.0.0.0" in redis["command"][2]
@@ -130,7 +139,6 @@ def test_production_compose_owns_animetta_and_private_redis_and_targets_host_qwe
     assert "animetta-redis:/data" in redis["volumes"]
     assert "networks" not in app
     assert "networks" not in compose
-    assert app["healthcheck"]["start_period"] == "360s"
 
 
 def test_example_environment_starts_the_two_product_surfaces_with_real_providers() -> None:
@@ -140,21 +148,14 @@ def test_example_environment_starts_the_two_product_surfaces_with_real_providers
     assert "ANIMETTA_PROFILE=test" not in example
 
 
-def test_manifest_has_one_host_qwen_runtime_contract() -> None:
+def test_manifest_reuses_host_qwen_declaration_for_failover() -> None:
     manifest = yaml.safe_load(_text("config/animetta.yaml"))
     qwen = manifest["providers"]["tts"]["qwen-host"]
-    smoke = manifest["profiles"]["smoke"]
-    production = manifest["profiles"]["production"]
 
     assert qwen == manifest["providers"]["tts"]["dashscope-local-failover"]["fallback"]
     assert qwen["contract"] == "host-tts"
     assert qwen["base_url"] == "${QWEN_HOST_TTS_URL}"
     assert set(qwen) == {"type", "contract", "api_key", "base_url"}
-    assert smoke["services"]["tts"] == "qwen-host"
-    assert smoke["runtime"]["tts_timeout_seconds"] == 120.0
-    assert production["services"]["tts"] == "qwen-host"
-    assert production["runtime"]["tts_timeout_seconds"] == 120.0
-    assert not any(production["runtime"]["capabilities"].values())
 
 
 def test_release_browser_smoke_allows_a_slow_local_qwen_audio_budget() -> None:

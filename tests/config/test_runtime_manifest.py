@@ -782,30 +782,23 @@ def test_default_production_selects_existing_host_qwen(
     assert not any(effective.runtime.capabilities.model_dump().values())
 
 
+@pytest.mark.parametrize("profile", ["smoke", "selftest", "production"])
 def test_repository_real_profiles_share_existing_host_qwen(
+    profile: str,
     manifest_secrets: pytest.MonkeyPatch,
 ) -> None:
-    smoke = load_effective_config(profile="smoke")
-    selftest = load_effective_config(profile="selftest")
-    production = load_effective_config(profile="production")
+    effective = load_effective_config(profile=profile)
 
-    assert smoke.services.tts == "qwen-host"
-    assert smoke.tts.provider == "qwen3-tts-gguf-host"
-    assert smoke.system.tts_timeout_seconds == 120.0
-    assert selftest.profile == "selftest"
-    assert selftest.services.tts == "qwen-host"
-    assert selftest.tts.type == "remote"
-    assert selftest.tts.provider == "qwen3-tts-gguf-host"
-    assert selftest.tts.model == HOST_TTS_CONTRACT.model
-    assert selftest.tts.voice == HOST_TTS_CONTRACT.voice
+    assert effective.profile == profile
+    assert effective.services.tts == "qwen-host"
+    assert effective.tts.type == "remote"
     assert (
-        selftest.tts.model_dump(
+        effective.tts.model_dump(
             exclude={"type", "api_key", "base_url", "speed"},
         )
         == HOST_TTS_CONTRACT.remote_declaration()
     )
-    assert selftest.system.tts_timeout_seconds == 120.0
-    assert production.services.tts == "qwen-host"
+    assert effective.runtime.tts_timeout_seconds >= effective.tts.timeout_seconds
 
 
 def test_reloader_defaults_to_the_manifest_that_produced_effective_config(

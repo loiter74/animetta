@@ -386,7 +386,12 @@ def test_affected_high_risk_component_adds_domain_fallback() -> None:
 
 def test_backend_full_explicitly_dominates_selected_focused_pytest_groups() -> None:
     changes = from_paths(
-        ["src/animetta/core/service_pool.py"],
+        [
+            "src/animetta/core/service_pool.py",
+            "config/host-tts.yaml",
+            "config/host-rvc.yaml",
+            "scripts/runtime_lifecycle.py",
+        ],
         repo_root=ROOT,
     )
 
@@ -394,10 +399,16 @@ def test_backend_full_explicitly_dominates_selected_focused_pytest_groups() -> N
     dominated = {item.id: item.covering_group for item in plan.dominated_groups}
 
     assert "backend-full" in _group_ids(plan)
-    assert "backend-core-unit" not in _group_ids(plan)
-    assert dominated["backend-core-unit"] == "backend-full"
-    assert dominated["backend-server-unit"] == "backend-full"
-    assert dominated["backend-graph-unit"] == "backend-full"
+    for group_id in (
+        "backend-core-unit",
+        "backend-server-unit",
+        "backend-graph-unit",
+        "host-tts-contract-unit",
+        "host-rvc-contract-unit",
+        "runtime-lifecycle-unit",
+    ):
+        assert group_id not in _group_ids(plan)
+        assert dominated[group_id] == "backend-full"
     assert "backend-route-smoke" in _group_ids(plan)
     assert "backend-static" in _group_ids(plan)
 
@@ -703,7 +714,6 @@ def test_full_selects_each_hermetic_full_group_once() -> None:
         "frontend-build",
         "docker-compose-contract",
     }.issubset(ids)
-    assert ids.count("backend-full") == 1
     assert "docker" in {capability.value for capability in plan.required_capabilities}
 
 

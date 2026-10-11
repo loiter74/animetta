@@ -486,13 +486,22 @@ def _component_input_patterns(catalog: Catalog, group_id: str) -> tuple[str, ...
 
 
 def group_input_patterns(catalog: Catalog, group_id: str) -> tuple[str, ...]:
-    group = catalog.groups[group_id]
-    patterns = set(_component_input_patterns(catalog, group_id))
-    patterns.update(group.targets)
-    if group.entrypoint:
-        patterns.add(group.entrypoint)
-    for input_set_id in (*catalog.default_input_sets, *group.input_sets):
-        patterns.update(catalog.input_sets[input_set_id].paths)
+    patterns: set[str] = set()
+    pending = [group_id]
+    visited: set[str] = set()
+    while pending:
+        current_id = pending.pop()
+        if current_id in visited:
+            continue
+        visited.add(current_id)
+        group = catalog.groups[current_id]
+        patterns.update(_component_input_patterns(catalog, current_id))
+        patterns.update(group.targets)
+        if group.entrypoint:
+            patterns.add(group.entrypoint)
+        for input_set_id in (*catalog.default_input_sets, *group.input_sets):
+            patterns.update(catalog.input_sets[input_set_id].paths)
+        pending.extend(group.covers)
     return tuple(sorted(patterns))
 
 
