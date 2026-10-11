@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any
 
 from loguru import logger
 
+from .readiness import TRANSIENT_LLM_CONNECTIVITY_REASONS
 from .session_context import ServiceContext
 
 if TYPE_CHECKING:
@@ -214,6 +215,30 @@ class ProviderPool:
                 raise asyncio.CancelledError
             self._init_state = "ready"
             self._ready = self._compute_engine_readiness()
+
+            # Keep the existing initialization task and engines alive while
+            # retrying transient connectivity failures. Readiness remains a
+            # cached result of real probes; its HTTP handler never makes I/O.
+            retry_delay = 1.0
+            while (
+                strict_runtime
+                and not self._ready
+                and self._llm_connectivity.get("reason") in TRANSIENT_LLM_CONNECTIVITY_REASONS
+            ):
+                logger.warning(
+                    "[ServicePool] Retrying LLM connectivity in {}s (reason={})",
+                    retry_delay,
+                    self._llm_connectivity["reason"],
+                )
+                await asyncio.sleep(retry_delay)
+                if self._shutdown_requested:
+                    raise asyncio.CancelledError
+                result = dict(await ctx.wait_for_llm_connectivity())
+                if self._shutdown_requested:
+                    raise asyncio.CancelledError
+                self._llm_connectivity = result
+                self._ready = self._compute_engine_readiness()
+                retry_delay = min(retry_delay * 2, 30.0)
 
             elapsed = (_time.perf_counter() - t0) * 1000
             if self._ready:

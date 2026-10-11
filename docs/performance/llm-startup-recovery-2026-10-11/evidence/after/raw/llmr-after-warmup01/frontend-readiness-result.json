@@ -1,0 +1,19 @@
+{
+  "checkpoint": null,
+  "cleanup_pending": false,
+  "elapsed_seconds": 0.012824699999328004,
+  "evidence_refs": [
+    "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-after-warmup01/evidence/http-8605b8ba08c2.log"
+  ],
+  "failure_fingerprint": null,
+  "feedback_at": "2026-10-11T11:19:49.495321Z",
+  "lease": null,
+  "next_action": "advance after frontend-readiness",
+  "progress_summary": "HTTP 200 from http://localhost",
+  "run_id": "llmr-after-warmup01",
+  "schema_version": 1,
+  "started_at": "2026-10-11T11:19:49.482504Z",
+  "status": "passed",
+  "step_id": "frontend-readiness",
+  "window_sequence": 1
+}

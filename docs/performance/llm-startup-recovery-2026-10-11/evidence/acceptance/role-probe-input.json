@@ -1,0 +1,9 @@
+{
+  "run_id": "llmr-fault-role01",
+  "source_path": "C:\\Users\\30262\\Project\\Anima\\docs\\performance\\deployment-core-2026-10-11\\phase3-5-evidence\\distribution-final\\probes\\core-role-probe-distribution.mjs.txt",
+  "source_SHA256": "7f4582efdcffec5cdc552d0acb455f2ed24eb4cf9b8fd1019cecc1d7589ce25c",
+  "executed_SHA256": "5fe20f4fd2e83ff4cac53bae896519fd62a81431f85884ea9d3eb116a9ab8686",
+  "changes": "run ID and existing installed module paths only; assertions unchanged",
+  "url": "http://localhost/live.html",
+  "status": "prepared_not_executed"
+}

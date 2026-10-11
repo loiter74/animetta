@@ -1,0 +1,185 @@
+{
+  "status": "passed",
+  "run_id": "llmr-fault01",
+  "evidence_mode": "Recovered original ASGI access logs + native shim logs + canonical actual receipts + existing current same-container/PID proof; observer HOLD retained unchanged",
+  "observations": [
+    {
+      "timestamp": "2026-10-11T11:22:19.384902875Z",
+      "status": 503,
+      "source_file": "failed-first\\fault01-app.stdout.log",
+      "response_body_retained": false
+    },
+    {
+      "timestamp": "2026-10-11T11:22:19.892656049Z",
+      "status": 503,
+      "source_file": "failed-first\\fault01-app.stdout.log",
+      "response_body_retained": false
+    },
+    {
+      "timestamp": "2026-10-11T11:22:20.399524177Z",
+      "status": 503,
+      "source_file": "failed-first\\fault01-app.stdout.log",
+      "response_body_retained": false
+    },
+    {
+      "timestamp": "2026-10-11T11:22:20.907706762Z",
+      "status": 503,
+      "source_file": "failed-first\\fault01-app.stdout.log",
+      "response_body_retained": false
+    },
+    {
+      "timestamp": "2026-10-11T11:22:21.415286983Z",
+      "status": 503,
+      "source_file": "failed-first\\fault01-app.stdout.log",
+      "response_body_retained": false
+    },
+    {
+      "timestamp": "2026-10-11T11:22:21.921582909Z",
+      "status": 503,
+      "source_file": "failed-first\\fault01-app.stdout.log",
+      "response_body_retained": false
+    },
+    {
+      "timestamp": "2026-10-11T11:22:22.428957398Z",
+      "status": 503,
+      "source_file": "failed-first\\fault01-app.stdout.log",
+      "response_body_retained": false
+    },
+    {
+      "timestamp": "2026-10-11T11:22:22.936234400Z",
+      "status": 503,
+      "source_file": "failed-first\\fault01-app.stdout.log",
+      "response_body_retained": false
+    },
+    {
+      "timestamp": "2026-10-11T11:22:23.445701392Z",
+      "status": 503,
+      "source_file": "failed-first\\fault01-app.stdout.log",
+      "response_body_retained": false
+    },
+    {
+      "timestamp": "2026-10-11T11:22:23.955745022Z",
+      "status": 503,
+      "source_file": "failed-first\\fault01-app.stdout.log",
+      "response_body_retained": false
+    },
+    {
+      "timestamp": "2026-10-11T11:22:24.462352251Z",
+      "status": 503,
+      "source_file": "failed-first\\fault01-app.stdout.log",
+      "response_body_retained": false
+    },
+    {
+      "timestamp": "2026-10-11T11:22:24.968040100Z",
+      "status": 503,
+      "source_file": "failed-first\\fault01-app.stdout.log",
+      "response_body_retained": false
+    },
+    {
+      "timestamp": "2026-10-11T11:22:25.474821514Z",
+      "status": 503,
+      "source_file": "failed-first\\fault01-app.stdout.log",
+      "response_body_retained": false
+    },
+    {
+      "timestamp": "2026-10-11T11:22:25.981161058Z",
+      "status": 503,
+      "source_file": "failed-first\\fault01-app.stdout.log",
+      "response_body_retained": false
+    },
+    {
+      "timestamp": "2026-10-11T11:22:26.490011590Z",
+      "status": 503,
+      "source_file": "failed-first\\fault01-app.stdout.log",
+      "response_body_retained": false
+    },
+    {
+      "timestamp": "2026-10-11T11:22:26.996899076Z",
+      "status": 503,
+      "source_file": "failed-first\\fault01-app.stdout.log",
+      "response_body_retained": false
+    },
+    {
+      "timestamp": "2026-10-11T11:22:27.502686925Z",
+      "status": 503,
+      "source_file": "failed-first\\fault01-app.stdout.log",
+      "response_body_retained": false
+    },
+    {
+      "timestamp": "2026-10-11T11:22:28.009610905Z",
+      "status": 200,
+      "source_file": "failed-first\\fault01-app.stdout.log",
+      "response_body_retained": false
+    }
+  ],
+  "container": {
+    "Id": "b143c9c6692a5e71ccdd4a11081fb146a3f868400d83d31f008395df2df446a3",
+    "Image": "sha256:4da7d71c5c9c339935c37a9d061979a1658c75f92a3a1ef7506ef03126c66233",
+    "RestartCount": 0,
+    "StartedAt": "2026-10-11T11:22:13.047223769Z"
+  },
+  "backend_pid": 22,
+  "shim_events": [
+    {
+      "event": "first_delay_start",
+      "pid": 22,
+      "epoch_seconds": 1791717739.3571687,
+      "delay_seconds": 10
+    },
+    {
+      "event": "first_delay_cancelled",
+      "pid": 22,
+      "epoch_seconds": 1791717744.3122082,
+      "elapsed_seconds": 4.955033246998937
+    },
+    {
+      "event": "native_send_start",
+      "pid": 22,
+      "epoch_seconds": 1791717745.3153734
+    },
+    {
+      "event": "native_send_complete",
+      "pid": 22,
+      "epoch_seconds": 1791717746.658232,
+      "status_code": 200
+    },
+    {
+      "event": "native_send_start",
+      "pid": 22,
+      "epoch_seconds": 1791717746.6630278
+    },
+    {
+      "event": "native_send_complete",
+      "pid": 22,
+      "epoch_seconds": 1791717747.4471452,
+      "status_code": 200
+    }
+  ],
+  "cancel_seconds": 4.955033246998937,
+  "first503": {
+    "timestamp": "2026-10-11T11:22:19.384902875Z",
+    "status": 503,
+    "source_file": "failed-first\\fault01-app.stdout.log",
+    "response_body_retained": false
+  },
+  "first200": {
+    "timestamp": "2026-10-11T11:22:28.009610905Z",
+    "status": 200,
+    "source_file": "failed-first\\fault01-app.stdout.log",
+    "response_body_retained": false
+  },
+  "timeout_to_ready_seconds": 3.697401762008667,
+  "normal_runtime_fingerprint": "e5ec6eaceb53ffa31427f64e045c8c77ea7eee7c8a987287ed31888f85f11914",
+  "fault_runtime_fingerprint": "5d27e9ec39a9a78960b1fd5377f65a580118bd54c03feb8814579019237de0bb",
+  "build_fingerprint": "0db686508c7aca6d417b6430d07c2942a357b5bb334e879ef6533528d2af5d2b",
+  "shim_source_SHA256": "0b6cb5e113c888eec695522f983caf6a1ebb03289cf03f886e7fed624551a940",
+  "restarting_or_synthetic_responses": false,
+  "source_evidence_SHA256": {
+    "fault-observation.json": "bfb179d50db0f04c480a03ac5c6391104fd788e3c63a459214f03364f7dbff54",
+    "failed-first/fault01-preservation.json": "d2d9c3d5eb4958311fab1a3e549f92971585f555661b93208c2f34db3f84a28c",
+    "failed-first/fault01-app.stdout.log": "de8ede5351d6cf07bf8af9f63e46a636d7798f7558f24e3ce6f1dbc38b5d75b8",
+    "failed-first/fault01-app.stderr.log": "fa8d338633afe0cb1497b1348e23e3bdc73db2fad4a817f4c28a05c133e7a197",
+    "fault-current-readonly01.json": "125ec3ba24bb23bf3f341a86db6124d22136642d4a453a5e0173e272808db4c2"
+  },
+  "limitation": "503 response bodies were not retained by the failed observer; actual status/time comes from original ASGI access logs, strict final readiness is retained in canonical/current evidence"
+}

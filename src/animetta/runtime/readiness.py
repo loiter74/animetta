@@ -19,7 +19,11 @@ _QWEN_MODEL = "Qwen/Qwen3-TTS-12Hz-0.6B-Base"
 _DEEPSEEK_MODEL = "deepseek-v4-flash"
 _PRELOAD_STATES = {"pending", "loading", "ready", "failed", "closing", "closed"}
 _CONNECTIVITY_STATES = {"pending", "loading", "ready", "failed"}
+TRANSIENT_LLM_CONNECTIVITY_REASONS = frozenset(
+    {"timeout", "connection_error", "rate_limited", "provider_unavailable"}
+)
 _SAFE_CONNECTIVITY_REASONS = {
+    *TRANSIENT_LLM_CONNECTIVITY_REASONS,
     "endpoint_mismatch",
     "endpoint_missing",
     "endpoint_policy",
@@ -27,7 +31,6 @@ _SAFE_CONNECTIVITY_REASONS = {
     "no_api_key",
     "probe_unavailable",
     "request_failed",
-    "timeout",
     "unauthorized",
 }
 _SAFE_FRONTEND_REASONS = {

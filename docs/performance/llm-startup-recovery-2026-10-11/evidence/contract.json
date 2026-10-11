@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-10-11T10:52:36.927709+00:00",
+  "purpose": "current implementation baseline only",
+  "source_commit": "43cbfe293a548d65c4b0018e226bc1fbe810730c",
+  "source_manifest_SHA256": "83ebe73ad35f8878ec21768d28b3b42e8b6e76e54775dddb26a4663e6aed21fe",
+  "image_tag": "animetta:startup-speed-optimized-20261011",
+  "image_id": "sha256:74da0dbe9974e9c674ec61b843e507d9681df87f0da9aacc7a18da10c719ecd8",
+  "project": "anima",
+  "profile": "production",
+  "ports": [
+    80,
+    12394
+  ],
+  "volumes": [
+    "anima_animetta-data",
+    "anima_animetta-memory-db",
+    "anima_animetta-redis"
+  ],
+  "credentials_retained": true,
+  "Qwen_PIDs": [
+    14240,
+    16104
+  ],
+  "Qwen_retained": true,
+  "RVC_off": true,
+  "sample_runs": [
+    "llmr-base01",
+    "llmr-base02"
+  ],
+  "down_runs": [
+    "llmr-base01-down",
+    "llmr-base02-down"
+  ],
+  "max_attempts": 2,
+  "warmup": null,
+  "cached_build_required": true,
+  "primary": "actual animetta-start result.started_at to actual animetta-ready result.feedback_at",
+  "secondary": [
+    "CLI request to completion",
+    "container StartedAt to ready feedback_at",
+    "actual step elapsed/timestamps",
+    "startup log timeline"
+  ],
+  "conditions": "Fresh app/Redis canonical down/up; retain image/OS/model cache, named volumes, production configuration and credentials; no quality/install/build/browser/probe concurrency",
+  "failure": "Immediate HOLD, preserve failed container/results; no next cycle/replacement or additional diagnosis probe",
+  "helper_path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\startup-speed-20261011\\baseline-runner.py",
+  "helper_SHA256": "92d35e4bbaa6e7b651facedd98b969c889399e40ee61e9bd81ea5b0369ddfea8"
+}

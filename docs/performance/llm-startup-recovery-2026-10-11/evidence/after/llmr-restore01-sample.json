@@ -1,0 +1,185 @@
+{
+  "run_id": "llmr-restore01",
+  "CLI_elapsed_seconds": 24.95791620000091,
+  "application_start_to_ready_seconds": 16.611372,
+  "container_start_to_ready_seconds": 8.478339,
+  "containers": [
+    {
+      "name": "/anima-animetta-1",
+      "id": "3c248dcd7b7e0374ebb4771380d37f9e58123cab33fe763ad821c6e668d59ee8",
+      "image": "sha256:4da7d71c5c9c339935c37a9d061979a1658c75f92a3a1ef7506ef03126c66233",
+      "StartedAt": "2026-10-11T11:31:49.472861195Z",
+      "volumes": [
+        {
+          "name": "anima_animetta-data",
+          "destination": "/app/data"
+        },
+        {
+          "name": "anima_animetta-memory-db",
+          "destination": "/app/memory_db"
+        }
+      ]
+    },
+    {
+      "name": "/anima-redis-1",
+      "id": "fa6bf63aa128f25011c9f7c762d284cb22409e6e0516f4aaca749ffbbea78d12",
+      "image": "sha256:8096655e437712b07503796fb64d81359256cfcff0ab29d95a7da72863786efb",
+      "StartedAt": "2026-10-11T11:31:46.611271124Z",
+      "volumes": [
+        {
+          "name": "anima_animetta-redis",
+          "destination": "/data"
+        }
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "step_id": "host-tts-start",
+      "status": "passed",
+      "started_at": "2026-10-11T11:31:38.329944Z",
+      "feedback_at": "2026-10-11T11:31:39.737449Z",
+      "elapsed_seconds": 1.4075124000009964,
+      "progress_summary": "Host TTS is ready",
+      "evidence_refs": [
+        "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-restore01/evidence/host-tts-readiness.log"
+      ],
+      "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-restore01\\steps\\host-tts-start\\checkpoint.json",
+      "checkpoint_SHA": "cdba2cb099a20a2a6bc20bdb44d3c07e4c16c3e96f87196386b68659a5373f4d",
+      "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-restore01\\steps\\host-tts-start\\windows\\000001\\result.json",
+      "result_SHA": "26a229e487b1ae6bf358a12ada729adfae7aa6c0bdbcda3f922a7398c52c10d6"
+    },
+    {
+      "step_id": "host-tts-preflight",
+      "status": "passed",
+      "started_at": "2026-10-11T11:31:39.745587Z",
+      "feedback_at": "2026-10-11T11:31:40.111034Z",
+      "elapsed_seconds": 0.36545500000283937,
+      "progress_summary": "command completed with exit code 0",
+      "evidence_refs": [
+        "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-restore01/evidence/command-a9629353fa5e.log"
+      ],
+      "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-restore01\\steps\\host-tts-preflight\\checkpoint.json",
+      "checkpoint_SHA": "f64a50b94923f63ebc9b40ee57b111f1bf3dfc1dcdbbae1f0754cff14ea74284",
+      "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-restore01\\steps\\host-tts-preflight\\windows\\000001\\result.json",
+      "result_SHA": "6f04dabcfcabf60a41a7a013086410a0aa697ef3282875e3b00f8b714e11650f"
+    },
+    {
+      "step_id": "animetta-build",
+      "status": "passed",
+      "started_at": "2026-10-11T11:31:40.117510Z",
+      "feedback_at": "2026-10-11T11:31:41.331817Z",
+      "elapsed_seconds": 1.21431450000091,
+      "progress_summary": "Reused images with matching source content",
+      "evidence_refs": [],
+      "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-restore01\\steps\\animetta-build\\checkpoint.json",
+      "checkpoint_SHA": "38cc325d995d02435223c3bfa6a9ef353af7978c6917b6e22ca6bb5d385cf9e8",
+      "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-restore01\\steps\\animetta-build\\windows\\000001\\result.json",
+      "result_SHA": "02d03cdc88c6d1435f1b8d094f13d77883375dbd6e0b6eedd5848095d559ffa8"
+    },
+    {
+      "step_id": "animetta-start",
+      "status": "passed",
+      "started_at": "2026-10-11T11:31:41.339828Z",
+      "feedback_at": "2026-10-11T11:31:50.373220Z",
+      "elapsed_seconds": 9.03340069999831,
+      "progress_summary": "command completed with exit code 0",
+      "evidence_refs": [
+        "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-restore01/evidence/command-a84b3fe2a39f.log"
+      ],
+      "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-restore01\\steps\\animetta-start\\checkpoint.json",
+      "checkpoint_SHA": "a8f3ca82f0d586ad927a80d88c58cc281c30573a8a6a03b026aa5bf38c1327f9",
+      "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-restore01\\steps\\animetta-start\\windows\\000001\\result.json",
+      "result_SHA": "e0ab59e94060a0d914eb22ad4037f420fd5e0bf2023d53503b715248e9f504fb"
+    },
+    {
+      "step_id": "animetta-health",
+      "status": "passed",
+      "started_at": "2026-10-11T11:31:50.381273Z",
+      "feedback_at": "2026-10-11T11:31:55.392564Z",
+      "elapsed_seconds": 5.011300800000754,
+      "progress_summary": "HTTP 200 from http://localhost/health",
+      "evidence_refs": [
+        "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-restore01/evidence/http-91234995d891.log"
+      ],
+      "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-restore01\\steps\\animetta-health\\checkpoint.json",
+      "checkpoint_SHA": "9c9b6eef6601525bf394271abf9a74671749bf4bd79f42dd6a825006ca453657",
+      "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-restore01\\steps\\animetta-health\\windows\\000001\\result.json",
+      "result_SHA": "c434ed90841c0411aeaf40725a0cf8bb491ceaaa2af2e839fa709797b6dfb294"
+    },
+    {
+      "step_id": "animetta-ready",
+      "status": "passed",
+      "started_at": "2026-10-11T11:31:55.400937Z",
+      "feedback_at": "2026-10-11T11:31:57.951200Z",
+      "elapsed_seconds": 2.5502720000004047,
+      "progress_summary": "HTTP 200 from http://localhost/ready",
+      "evidence_refs": [
+        "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-restore01/evidence/http-1c2d6f651f30.log"
+      ],
+      "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-restore01\\steps\\animetta-ready\\checkpoint.json",
+      "checkpoint_SHA": "6499d78f72419c891eb89c26527d8a8500ad091595541afa5f74e89c89b9459b",
+      "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-restore01\\steps\\animetta-ready\\windows\\000001\\result.json",
+      "result_SHA": "069f7b33cd416cca2ec7303bb76f827cf96396250d509ef1aeb9d8c031f25a05"
+    },
+    {
+      "step_id": "frontend-readiness",
+      "status": "passed",
+      "started_at": "2026-10-11T11:31:57.957920Z",
+      "feedback_at": "2026-10-11T11:31:57.970538Z",
+      "elapsed_seconds": 0.012625899998965906,
+      "progress_summary": "HTTP 200 from http://localhost",
+      "evidence_refs": [
+        "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-restore01/evidence/http-8605b8ba08c2.log"
+      ],
+      "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-restore01\\steps\\frontend-readiness\\checkpoint.json",
+      "checkpoint_SHA": "7588ba05808e782d1fd51e6dabc53866dd979f12dd6da72d95f5e3e70798c3ef",
+      "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-restore01\\steps\\frontend-readiness\\windows\\000001\\result.json",
+      "result_SHA": "54dbe91fec7b61224c90622b3307319ddc823bc6134699b5b4263a4c6bab675a"
+    },
+    {
+      "step_id": "default-log-check",
+      "status": "passed",
+      "started_at": "2026-10-11T11:31:57.976768Z",
+      "feedback_at": "2026-10-11T11:31:58.253095Z",
+      "elapsed_seconds": 0.2763358000011067,
+      "progress_summary": "logs contain no Traceback or ERROR",
+      "evidence_refs": [
+        "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-restore01/evidence/command-fabef52c5ac9.log"
+      ],
+      "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-restore01\\steps\\default-log-check\\checkpoint.json",
+      "checkpoint_SHA": "d61292ca6848c4c55fabcd3ea49ca5132ccff7aa15ab3c35f64f736e70accd13",
+      "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-restore01\\steps\\default-log-check\\windows\\000001\\result.json",
+      "result_SHA": "1a2680e328326f61196f2e1ef557aa9419538781dd041c4224c56e014ab3d5fd"
+    }
+  ],
+  "startup_logs": {
+    "/anima-animetta-1": {
+      "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\llm-startup-recovery-20261011\\after\\llmr-restore01-app.log",
+      "SHA": "9061b2a16b79fb54bb70c7ba31f5c5b1713c7065d5d493f128f1c61affd5ef51",
+      "bytes": 23977,
+      "key_lines": [
+        "2026-10-11T11:31:50.187959097Z [entrypoint] Validating config/animetta.yaml for profile production...",
+        "2026-10-11T11:31:51.096289936Z [entrypoint] Config ready: production 1 293cd32f315131c15aff8e0a2a9ee41f7963899c9715f9baab80c3d0767b1558",
+        "2026-10-11T11:31:51.156502565Z [entrypoint] Starting nginx...",
+        "2026-10-11T11:31:51.168852680Z [entrypoint] Starting Animetta backend on port 12394...",
+        "2026-10-11T11:31:54.621820994Z INFO:     Started server process [16]",
+        "2026-10-11T11:31:54.776612146Z INFO:     Application startup complete.",
+        "2026-10-11T11:31:54.777494330Z 2026-10-11 11:31:54 | INFO     | animetta.runtime.provider_pool:_init_once:121 - [ServicePool] Initializing shared service instances...",
+        "2026-10-11T11:31:54.867947908Z INFO:     Uvicorn running on http://0.0.0.0:12394 (Press CTRL+C to quit)",
+        "2026-10-11T11:31:55.092284312Z 2026-10-11 11:31:55 | INFO     | animetta.runtime.session_context:_preload_tokenizers:289 - [__pool__] tiktoken tokenizer preloaded",
+        "2026-10-11T11:31:57.748576997Z 2026-10-11 11:31:57 | INFO     | animetta.runtime.session_context:verify_llm_connectivity:833 - [health] LLM connectivity ready (2397ms)",
+        "2026-10-11T11:31:57.749316619Z 2026-10-11 11:31:57 | INFO     | animetta.runtime.provider_pool:_init_once:245 - [ServicePool] Ready (2972ms) — shared LLM/TTS/ASR"
+      ]
+    },
+    "/anima-redis-1": {
+      "path": "C:\\Users\\30262\\Project\\Anima\\.zcode\\performance\\llm-startup-recovery-20261011\\after\\llmr-restore01-redis.log",
+      "SHA": "a094914fb6bdb0e82d672ac98f47cc29f71b95ac8f06410f040c964d09b79123",
+      "bytes": 9306,
+      "key_lines": [
+        "2026-10-11T11:31:47.791362027Z 1:M 11 Oct 2026 11:31:47.790 * DB loaded from append only file: 0.463 seconds",
+        "2026-10-11T11:31:47.920597602Z 1:M 11 Oct 2026 11:31:47.920 * Ready to accept connections tcp"
+      ]
+    }
+  }
+}

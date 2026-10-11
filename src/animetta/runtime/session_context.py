@@ -22,6 +22,7 @@ from animetta.config.providers.vad import VADConfig
 from animetta.observability.ports import NoOpObservationRecorder, ObservationRecorder
 from animetta.runtime.model_loading import ModelLoadingManager
 from animetta.runtime.readiness import (
+    TRANSIENT_LLM_CONNECTIVITY_REASONS,
     canonical_deepseek_endpoint,
     unwrap_tracing_proxy,
 )
@@ -629,8 +630,11 @@ class ServiceContext:
         return dict(self._llm_connectivity_status)
 
     def start_llm_connectivity_probe(self) -> asyncio.Task[dict[str, Any]]:
-        """Start the explicit startup probe once and retain its task."""
-        if self._llm_connectivity_task is None:
+        """Share one probe; allow an explicit retry after a transient failure."""
+        if self._llm_connectivity_task is None or (
+            self._llm_connectivity_task.done()
+            and self._llm_connectivity_status.get("reason") in TRANSIENT_LLM_CONNECTIVITY_REASONS
+        ):
             self._llm_connectivity_task = asyncio.create_task(self.verify_llm_connectivity())
         return self._llm_connectivity_task
 
@@ -796,9 +800,20 @@ class ServiceContext:
                 reason="timeout",
             )
         except Exception as exc:
-            reason = (
-                "unauthorized" if getattr(exc, "status_code", None) == 401 else "request_failed"
-            )
+            from httpx import TransportError
+            from openai import APIConnectionError
+
+            status_code = getattr(exc, "status_code", None)
+            if status_code == 401:
+                reason = "unauthorized"
+            elif status_code == 429:
+                reason = "rate_limited"
+            elif isinstance(status_code, int) and 500 <= status_code < 600:
+                reason = "provider_unavailable"
+            elif isinstance(exc, (TransportError, APIConnectionError)):
+                reason = "connection_error"
+            else:
+                reason = "request_failed"
             logger.warning("[health] LLM connectivity failed: {}", reason)
             return self._set_llm_connectivity_status(
                 state="failed",

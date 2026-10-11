@@ -1,0 +1,148 @@
+{
+  "run_id": "llmr-after-warmup01",
+  "action": "anima-up",
+  "command": [
+    "py",
+    "-3.13",
+    "scripts/runtime_lifecycle.py",
+    "anima-up",
+    "--run-id",
+    "llmr-after-warmup01",
+    "--wait",
+    "--artifacts-root",
+    "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans"
+  ],
+  "exit_code": 0,
+  "CLI_elapsed_seconds": 106.41021339999861,
+  "stdout_bytes": 26049,
+  "stdout_SHA": "6fdf97c5ef29330a5c812652f725c57bd6581c60f102d9a1c9f07b027f75cdde",
+  "stderr_SHA": "81bfaf5a198d0208903290f793b63f5fadba6e6e787d76657d07d7d0988e1ce0",
+  "steps": [
+    {
+      "step_id": "host-tts-start",
+      "status": "passed",
+      "started_at": "2026-10-11T11:19:26.424976Z",
+      "feedback_at": "2026-10-11T11:19:27.749960Z",
+      "elapsed_seconds": 1.324989500000811,
+      "progress_summary": "Host TTS is ready",
+      "evidence_refs": [
+        "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-after-warmup01/evidence/host-tts-readiness.log"
+      ],
+      "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-after-warmup01\\steps\\host-tts-start\\checkpoint.json",
+      "checkpoint_SHA": "e47faa923ff4a816080f6ca3e9438f0ac4edc2aa38ff86d9d8027e05663b2ba2",
+      "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-after-warmup01\\steps\\host-tts-start\\windows\\000012\\result.json",
+      "result_SHA": "cf0b3b45effbf135f09aad383f40f0fa0969432ce64fc18c981b3fb0241f3e39"
+    },
+    {
+      "step_id": "host-tts-preflight",
+      "status": "passed",
+      "started_at": "2026-10-11T11:19:27.760752Z",
+      "feedback_at": "2026-10-11T11:19:28.117880Z",
+      "elapsed_seconds": 0.35713400000167894,
+      "progress_summary": "command completed with exit code 0",
+      "evidence_refs": [
+        "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-after-warmup01/evidence/command-a9629353fa5e.log"
+      ],
+      "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-after-warmup01\\steps\\host-tts-preflight\\checkpoint.json",
+      "checkpoint_SHA": "f95bde1701072b1c6bb344658a4496dc68ecf1bb80bf90d9e14b14aaf18887f0",
+      "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-after-warmup01\\steps\\host-tts-preflight\\windows\\000012\\result.json",
+      "result_SHA": "a6cd0744156a72ee2b63f5987d94b289c292014ca0a1073167fb2e4cee454fdf"
+    },
+    {
+      "step_id": "animetta-build",
+      "status": "passed",
+      "started_at": "2026-10-11T11:19:28.127198Z",
+      "feedback_at": "2026-10-11T11:19:29.921312Z",
+      "elapsed_seconds": 1.794121400002041,
+      "progress_summary": "BuildKit process completed successfully",
+      "evidence_refs": [
+        "llmr-after-warmup01/animetta-build.log"
+      ],
+      "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-after-warmup01\\steps\\animetta-build\\checkpoint.json",
+      "checkpoint_SHA": "d061876225aad9e3535c3f8a0224aef027108315d5aa9d93a9e9697724b1ed78",
+      "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-after-warmup01\\steps\\animetta-build\\windows\\000012\\result.json",
+      "result_SHA": "6f731a6948593beb6c55644eccc1453f0a25a435158695bf39c7b7e25e1cc576"
+    },
+    {
+      "step_id": "animetta-start",
+      "status": "passed",
+      "started_at": "2026-10-11T11:19:29.927902Z",
+      "feedback_at": "2026-10-11T11:19:41.418936Z",
+      "elapsed_seconds": 11.491043899997749,
+      "progress_summary": "command completed with exit code 0",
+      "evidence_refs": [
+        "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-after-warmup01/evidence/command-a84b3fe2a39f.log"
+      ],
+      "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-after-warmup01\\steps\\animetta-start\\checkpoint.json",
+      "checkpoint_SHA": "d62209c2bb158d52ad61347a95f5d29b4d5cdcf1b6c41810f8c2e37ed6cd2bd5",
+      "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-after-warmup01\\steps\\animetta-start\\windows\\000001\\result.json",
+      "result_SHA": "df0fc9461559c5bb130a283072f00a9da982fb4407927f24e64672725d2a1ed5"
+    },
+    {
+      "step_id": "animetta-health",
+      "status": "passed",
+      "started_at": "2026-10-11T11:19:41.425652Z",
+      "feedback_at": "2026-10-11T11:19:46.914193Z",
+      "elapsed_seconds": 5.488552400001936,
+      "progress_summary": "HTTP 200 from http://localhost/health",
+      "evidence_refs": [
+        "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-after-warmup01/evidence/http-91234995d891.log"
+      ],
+      "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-after-warmup01\\steps\\animetta-health\\checkpoint.json",
+      "checkpoint_SHA": "08058f44ab50c2a5457bebef084b4a70e00a9050943d33049a21a7312dee03e9",
+      "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-after-warmup01\\steps\\animetta-health\\windows\\000001\\result.json",
+      "result_SHA": "19dd2fe0bc4a077a05ad658297927e31a58286153bab576454c4515b7c6c51e1"
+    },
+    {
+      "step_id": "animetta-ready",
+      "status": "passed",
+      "started_at": "2026-10-11T11:19:46.922727Z",
+      "feedback_at": "2026-10-11T11:19:49.475369Z",
+      "elapsed_seconds": 2.5526489000003494,
+      "progress_summary": "HTTP 200 from http://localhost/ready",
+      "evidence_refs": [
+        "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-after-warmup01/evidence/http-1c2d6f651f30.log"
+      ],
+      "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-after-warmup01\\steps\\animetta-ready\\checkpoint.json",
+      "checkpoint_SHA": "71ff068b3fc75ebf8d91a796a378096384f5a60e8edde7b55b00ee7161aed933",
+      "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-after-warmup01\\steps\\animetta-ready\\windows\\000001\\result.json",
+      "result_SHA": "3768dd69fccd56a8e98319ca4472c66f16e8d3ef76133fd95364ed97f23f4f01"
+    },
+    {
+      "step_id": "frontend-readiness",
+      "status": "passed",
+      "started_at": "2026-10-11T11:19:49.482504Z",
+      "feedback_at": "2026-10-11T11:19:49.495321Z",
+      "elapsed_seconds": 0.012824699999328004,
+      "progress_summary": "HTTP 200 from http://localhost",
+      "evidence_refs": [
+        "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-after-warmup01/evidence/http-8605b8ba08c2.log"
+      ],
+      "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-after-warmup01\\steps\\frontend-readiness\\checkpoint.json",
+      "checkpoint_SHA": "d15f5d13feffe313d3d397c989891abd539e7792d17a23b24ee8b96cc42b0f77",
+      "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-after-warmup01\\steps\\frontend-readiness\\windows\\000001\\result.json",
+      "result_SHA": "58d58c2fe18dd9ac6945e699c273fab8cdb03992ca1214bc70e0511a9d9e0875"
+    },
+    {
+      "step_id": "default-log-check",
+      "status": "passed",
+      "started_at": "2026-10-11T11:19:49.502674Z",
+      "feedback_at": "2026-10-11T11:19:49.779810Z",
+      "elapsed_seconds": 0.2771461000011186,
+      "progress_summary": "logs contain no Traceback or ERROR",
+      "evidence_refs": [
+        "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-after-warmup01/evidence/command-a830e61ae610.log"
+      ],
+      "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-after-warmup01\\steps\\default-log-check\\checkpoint.json",
+      "checkpoint_SHA": "0e054cd22874aa2015a317736491e294518774da4cdcc686ed6211633a2d4ab5",
+      "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-after-warmup01\\steps\\default-log-check\\windows\\000001\\result.json",
+      "result_SHA": "90accb5873cf02bded8872ef96afa2460eb89988904b32015acfdba77316ceda"
+    }
+  ],
+  "build_receipt": {
+    "elapsed_seconds": 75.0159808999997,
+    "exit_code": 0,
+    "finished_at": "2026-10-11T11:19:24.124390+00:00",
+    "started_at": "2026-10-11T11:18:09.107361+00:00"
+  }
+}

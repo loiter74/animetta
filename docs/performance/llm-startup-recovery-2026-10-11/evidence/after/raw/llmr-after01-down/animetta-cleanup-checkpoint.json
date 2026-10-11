@@ -1,0 +1,12 @@
+{
+  "committed_at": "2026-10-11T11:20:14.695725Z",
+  "evidence_refs": [
+    "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-after01-down/evidence/command-658be53f288e.log"
+  ],
+  "result_reference": "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-after01-down/steps/animetta-cleanup/windows/000001/result.json",
+  "reuse_fingerprint": "3d1ef40f8ed7623b1c49ea5a25ecb5933e5bae9f6d2a9aec8986af9b8e1caf96",
+  "run_id": "llmr-after01-down",
+  "schema_version": 1,
+  "status": "passed",
+  "step_id": "animetta-cleanup"
+}

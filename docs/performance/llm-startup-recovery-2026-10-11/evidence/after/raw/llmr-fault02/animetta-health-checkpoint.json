@@ -1,0 +1,12 @@
+{
+  "committed_at": "2026-10-11T11:30:11.978782Z",
+  "evidence_refs": [
+    "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-fault02/evidence/http-91234995d891.log"
+  ],
+  "result_reference": "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-fault02/steps/animetta-health/windows/000001/result.json",
+  "reuse_fingerprint": "07afe049f427ef754cea44f8ed013cdf52410822aefdd3efd91ae983f8024bb5",
+  "run_id": "llmr-fault02",
+  "schema_version": 1,
+  "status": "passed",
+  "step_id": "animetta-health"
+}

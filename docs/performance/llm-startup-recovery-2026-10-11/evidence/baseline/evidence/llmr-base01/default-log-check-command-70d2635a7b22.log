@@ -1,0 +1,147 @@
+animetta-1  | [entrypoint] Validating config/animetta.yaml for profile production...
+animetta-1  | 2026-10-11 10:53:06.431 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: asr.faster_whisper -> FasterWhisperASRConfig
+animetta-1  | 2026-10-11 10:53:06.433 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: asr.funasr -> FunASRConfig
+animetta-1  | 2026-10-11 10:53:06.435 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: asr.glm -> GLMASRConfig
+animetta-1  | 2026-10-11 10:53:06.437 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: asr.mimo -> MimoASRConfig
+animetta-1  | 2026-10-11 10:53:06.438 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: asr.mock -> MockASRConfig
+animetta-1  | 2026-10-11 10:53:06.439 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: asr.openai -> OpenAIASRConfig
+animetta-1  | 2026-10-11 10:53:06.447 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: llm.deepseek -> DeepSeekLLMConfig
+animetta-1  | 2026-10-11 10:53:06.450 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: llm.glm -> GLMLLMConfig
+animetta-1  | 2026-10-11 10:53:06.452 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: llm.local_lora -> LocalLoraLLMConfig
+animetta-1  | 2026-10-11 10:53:06.454 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: llm.mock -> MockLLMConfig
+animetta-1  | 2026-10-11 10:53:06.455 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: llm.ollama -> OllamaLLMConfig
+animetta-1  | 2026-10-11 10:53:06.458 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: llm.openai -> OpenAILLMConfig
+animetta-1  | 2026-10-11 10:53:06.461 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: tts.chattts -> ChatTTSConfig
+animetta-1  | 2026-10-11 10:53:06.463 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: tts.dashscope -> DashScopeTTSConfig
+animetta-1  | 2026-10-11 10:53:06.465 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: tts.edge -> EdgeTTSConfig
+animetta-1  | 2026-10-11 10:53:06.468 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: tts.remote -> RemoteTTSConfig
+animetta-1  | 2026-10-11 10:53:06.470 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: tts.failover -> FailoverTTSConfig
+animetta-1  | 2026-10-11 10:53:06.472 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: tts.glm -> GLMTTSConfig
+animetta-1  | 2026-10-11 10:53:06.474 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: tts.gpt_sovits -> GPTSoVITSConfig
+animetta-1  | 2026-10-11 10:53:06.476 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: tts.kokoro -> KokoroTTSConfig
+animetta-1  | 2026-10-11 10:53:06.478 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: tts.mimo -> MimoTTSConfig
+animetta-1  | 2026-10-11 10:53:06.479 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: tts.mock -> MockTTSConfig
+animetta-1  | 2026-10-11 10:53:06.481 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: tts.openai -> OpenAITTSConfig
+animetta-1  | 2026-10-11 10:53:06.484 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: tts.qwen3 -> Qwen3TTSConfig
+animetta-1  | 2026-10-11 10:53:06.486 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: tts.vibe_voice -> VibeVoiceTTSConfig
+animetta-1  | 2026-10-11 10:53:06.564 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: separation.demucs -> DemucsSeparationConfig
+animetta-1  | 2026-10-11 10:53:06.565 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: separation.mock -> MockSeparationConfig
+animetta-1  | 2026-10-11 10:53:06.568 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: vad.mimo -> MimoVADConfig
+animetta-1  | 2026-10-11 10:53:06.569 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: vad.mock -> MockVADConfig
+animetta-1  | 2026-10-11 10:53:06.570 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: vad.silero -> SileroVADConfig
+animetta-1  | 2026-10-11 10:53:06.572 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: vc.mock -> MockVCConfig
+animetta-1  | 2026-10-11 10:53:06.575 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: vc.rvc -> RVCConfig
+animetta-1  | [entrypoint] Config ready: production 1 293cd32f315131c15aff8e0a2a9ee41f7963899c9715f9baab80c3d0767b1558
+animetta-1  | [entrypoint] Starting nginx...
+animetta-1  | nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+animetta-1  | nginx: configuration file /etc/nginx/nginx.conf test is successful
+animetta-1  | [entrypoint] Starting Animetta backend on port 12394...
+animetta-1  | 2026-10-11 10:53:06.879 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: asr.faster_whisper -> FasterWhisperASRConfig
+animetta-1  | 2026-10-11 10:53:06.882 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: asr.funasr -> FunASRConfig
+animetta-1  | 2026-10-11 10:53:06.883 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: asr.glm -> GLMASRConfig
+animetta-1  | 2026-10-11 10:53:06.885 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: asr.mimo -> MimoASRConfig
+animetta-1  | 2026-10-11 10:53:06.886 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: asr.mock -> MockASRConfig
+animetta-1  | 2026-10-11 10:53:06.888 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: asr.openai -> OpenAIASRConfig
+animetta-1  | 2026-10-11 10:53:06.896 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: llm.deepseek -> DeepSeekLLMConfig
+animetta-1  | 2026-10-11 10:53:06.898 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: llm.glm -> GLMLLMConfig
+animetta-1  | 2026-10-11 10:53:06.901 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: llm.local_lora -> LocalLoraLLMConfig
+animetta-1  | 2026-10-11 10:53:06.902 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: llm.mock -> MockLLMConfig
+animetta-1  | 2026-10-11 10:53:06.904 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: llm.ollama -> OllamaLLMConfig
+animetta-1  | 2026-10-11 10:53:06.906 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: llm.openai -> OpenAILLMConfig
+animetta-1  | 2026-10-11 10:53:06.910 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: tts.chattts -> ChatTTSConfig
+animetta-1  | 2026-10-11 10:53:06.912 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: tts.dashscope -> DashScopeTTSConfig
+animetta-1  | 2026-10-11 10:53:06.914 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: tts.edge -> EdgeTTSConfig
+animetta-1  | 2026-10-11 10:53:06.916 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: tts.remote -> RemoteTTSConfig
+animetta-1  | 2026-10-11 10:53:06.918 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: tts.failover -> FailoverTTSConfig
+animetta-1  | 2026-10-11 10:53:06.919 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: tts.glm -> GLMTTSConfig
+animetta-1  | 2026-10-11 10:53:06.922 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: tts.gpt_sovits -> GPTSoVITSConfig
+animetta-1  | 2026-10-11 10:53:06.924 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: tts.kokoro -> KokoroTTSConfig
+animetta-1  | 2026-10-11 10:53:06.925 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: tts.mimo -> MimoTTSConfig
+animetta-1  | 2026-10-11 10:53:06.927 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: tts.mock -> MockTTSConfig
+animetta-1  | 2026-10-11 10:53:06.928 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: tts.openai -> OpenAITTSConfig
+animetta-1  | 2026-10-11 10:53:06.932 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: tts.qwen3 -> Qwen3TTSConfig
+animetta-1  | 2026-10-11 10:53:06.936 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: tts.vibe_voice -> VibeVoiceTTSConfig
+animetta-1  | 2026-10-11 10:53:07.004 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: separation.demucs -> DemucsSeparationConfig
+animetta-1  | 2026-10-11 10:53:07.005 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: separation.mock -> MockSeparationConfig
+animetta-1  | 2026-10-11 10:53:07.010 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: vad.mimo -> MimoVADConfig
+animetta-1  | 2026-10-11 10:53:07.011 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: vad.mock -> MockVADConfig
+animetta-1  | 2026-10-11 10:53:07.013 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: vad.silero -> SileroVADConfig
+animetta-1  | 2026-10-11 10:53:07.015 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: vc.mock -> MockVCConfig
+animetta-1  | 2026-10-11 10:53:07.017 | DEBUG    | animetta.config.core.registry:decorator:56 - Registered config class: vc.rvc -> RVCConfig
+animetta-1  | 2026-10-11 10:53:08.072 | DEBUG    | animetta.config.core.registry:decorator:79 - Registered service class: llm.mock -> MockLLM
+animetta-1  | 2026-10-11 10:53:08.455 | WARNING  | animetta.avatar.analyzers.audio:<module>:19 - [AudioAnalyzer] pydub not available, please run: pip install pydub
+animetta-1  | [32m2026-10-11 10:53:09[0m | [33m[1mWARNING [0m | [36m__main__[0m:[36m<module>[0m:[36m40[0m - [33m[1m.env file not found: /app/.env, using system environment variables[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.utils.logger_manager[0m:[36mset_level[0m:[36m49[0m - [1mLog level updated to: INFO[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36m__main__[0m:[36m<module>[0m:[36m77[0m - [1mApplying user log level configuration: INFO[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36m__main__[0m:[36minit_config[0m:[36m97[0m - [1mConfiguration loaded: 0.0.0.0:12394[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36m__main__[0m:[36mrun_server[0m:[36m107[0m - [1m==================================================[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36m__main__[0m:[36mrun_server[0m:[36m108[0m - [1mStarting Socket.IO server...[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36m__main__[0m:[36mrun_server[0m:[36m109[0m - [1mHost: 0.0.0.0[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36m__main__[0m:[36mrun_server[0m:[36m110[0m - [1mPort: 12394[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36m__main__[0m:[36mrun_server[0m:[36m111[0m - [1mSocket.IO async_mode: asgi (uvicorn)[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36m__main__[0m:[36mrun_server[0m:[36m112[0m - [1m==================================================[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36m__main__[0m:[36mrun_server[0m:[36m113[0m - [1mVisit http://0.0.0.0:12394 to test[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36m__main__[0m:[36mrun_server[0m:[36m114[0m - [1mWebSocket URL: ws://0.0.0.0:12394/socket.io/[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [33m[1mWARNING [0m | [36manimetta.core.socketio_server[0m:[36m<module>[0m:[36m40[0m - [33m[1m.env file not found: /app/.env, using system environment variables[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.utils.logger_manager[0m:[36mset_level[0m:[36m49[0m - [1mLog level updated to: INFO[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.core.socketio_server[0m:[36m<module>[0m:[36m77[0m - [1mApplying user log level configuration: INFO[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.core.socketio_server[0m:[36minit_config[0m:[36m97[0m - [1mConfiguration loaded: 0.0.0.0:12394[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.orchestration.server.websocket[0m:[36m__init__[0m:[36m278[0m - [1m[Socket.IO] Frontend static files mounted at /app from /app/frontend/dist[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.orchestration.server.websocket[0m:[36m__init__[0m:[36m408[0m - [1m[Socket.IO] Server created with async_mode='asgi'[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.orchestration.server.websocket[0m:[36m__init__[0m:[36m409[0m - [1m[Socket.IO] CORS enabled for 6 exact origin(s)[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.orchestration.server.routes[0m:[36mregister_routes[0m:[36m992[0m - [1mWebSocket routes registered[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.orchestration.server.websocket[0m:[36msetup_routes[0m:[36m683[0m - [1mWebSocket routes registered[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.orchestration.server.websocket[0m:[36msetup_lifecycle[0m:[36m692[0m - [1mLifecycle manager set up[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.core.socketio_server[0m:[36mget_asgi_app[0m:[36m181[0m - [1mStarting background model warmup...[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.core.socketio_server[0m:[36mget_asgi_app[0m:[36m191[0m - [1mStarting service pre-warmup (cold-start mitigation)...[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.core.socketio_server[0m:[36mget_asgi_app[0m:[36m210[0m - [1m[Inspection] Daily inspection scheduler registered[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.core.socketio_server[0m:[36m_wrap_with_frontend_serving[0m:[36m246[0m - [1m[Frontend] Serving static files from: /app/frontend/dist[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.core.socketio_server[0m:[36m_wrap_with_frontend_serving[0m:[36m291[0m - [1m[Frontend] SPA middleware registered — /api/ and /socket.io/ pass through[0m
+animetta-1  | INFO:     Started server process [17]
+animetta-1  | INFO:     Waiting for application startup.
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.runtime.model_loading[0m:[36mwarmup[0m:[36m151[0m - [1mStarting warmup for 0 registered model(s)[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.runtime.model_loading[0m:[36mwarmup[0m:[36m171[0m - [1mWarmup complete[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.inspection.scheduler[0m:[36mstart[0m:[36m53[0m - [1m[inspection:scheduler] Started (interval=24h)[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.runtime.checkpoint[0m:[36mstart[0m:[36m54[0m - [1m[Checkpoint] Official Redis checkpointer is ready[0m
+animetta-1  | INFO:     Application startup complete.
+animetta-1  | INFO:     Uvicorn running on http://0.0.0.0:12394 (Press CTRL+C to quit)
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.runtime.shared_memory[0m:[36minitialize[0m:[36m124[0m - [1m[SharedMemoryRuntime] Ready: memory_db/living_memory.sqlite[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.runtime.provider_pool[0m:[36m_init_once[0m:[36m120[0m - [1m[ServicePool] Initializing shared service instances...[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.runtime.session_context[0m:[36mload_from_config[0m:[36m167[0m - [1m[__pool__] Loading services from config...[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.runtime.session_context[0m:[36minit_tts[0m:[36m308[0m - [1m[__pool__] Initializing TTS: remote/Qwen3-TTS-1.7B-Base[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.runtime.model_loading[0m:[36mregister[0m:[36m114[0m - [1mRegistering model: tts (tts)[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.runtime.session_context[0m:[36minit_llm[0m:[36m400[0m - [1m[__pool__] Initializing LLM: deepseek/deepseek-v4-flash[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.runtime.session_context[0m:[36minit_llm[0m:[36m406[0m - [1m[__pool__] Using persona: anima.v0.1[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.services.llm.openai_llm[0m:[36m__init__[0m:[36m105[0m - [1mOpenAILLM initialized: model=deepseek-v4-flash, base_url=https://api.deepseek.com/v1[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.services.llm.factory[0m:[36mcreate_from_config[0m:[36m108[0m - [1mLLM service created successfully: type=deepseek, instance=OpenAILLM[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.runtime.session_context[0m:[36minit_llm[0m:[36m419[0m - [1m[__pool__] LLM created: InstrumentedServiceProxy[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.runtime.session_context[0m:[36minit_local_llm[0m:[36m435[0m - [1m[__pool__] Local LLM config is empty, skipping initialization[0m
+animetta-1  | [32m2026-10-11 10:53:09[0m | [1mINFO    [0m | [36manimetta.runtime.session_context[0m:[36minit_emotion_analyzer[0m:[36m571[0m - [1m[__pool__] Emotion analyzer initialized[0m
+animetta-1  | [32m2026-10-11 10:53:10[0m | [1mINFO    [0m | [36manimetta.runtime.session_context[0m:[36m_preload_tokenizers[0m:[36m288[0m - [1m[__pool__] tiktoken tokenizer preloaded[0m
+animetta-1  | [32m2026-10-11 10:53:10[0m | [1mINFO    [0m | [36manimetta.runtime.session_context[0m:[36mload_from_config[0m:[36m197[0m - [1m[__pool__] Services loaded[0m
+animetta-1  | [32m2026-10-11 10:53:10[0m | [1mINFO    [0m | [36manimetta.runtime.model_loading[0m:[36mwarmup[0m:[36m151[0m - [1mStarting warmup for 1 registered model(s)[0m
+animetta-1  | [32m2026-10-11 10:53:10[0m | [1mINFO    [0m | [36manimetta.runtime.model_loading[0m:[36m_load_one[0m:[36m188[0m - [1mLoading model: tts (tts)[0m
+animetta-1  | INFO:     127.0.0.1:42836 - "GET /health HTTP/1.0" 200 OK
+animetta-1  | INFO:     172.18.0.1:0 - "WebSocket /socket.io/?EIO=4&transport=websocket" [accepted]
+animetta-1  | INFO:     connection open
+animetta-1  | INFO:     127.0.0.1:42848 - "GET /health HTTP/1.0" 200 OK
+animetta-1  | 
+animetta-1  | ============================================================
+animetta-1  | [OK] Client connected: h5SbyCO4_YLIoFlTAAAB
+animetta-1  |      Type: Web
+animetta-1  | ============================================================
+animetta-1  | 
+animetta-1  | [32m2026-10-11 10:53:10[0m | [1mINFO    [0m | [36manimetta.orchestration.server.handlers.lifecycle_handlers[0m:[36mon_connect[0m:[36m48[0m - [1mClient connected: h5SbyCO4_YLIoFlTAAAB (Type: Web)[0m
+animetta-1  | [32m2026-10-11 10:53:10[0m | [1mINFO    [0m | [36manimetta.runtime.model_loading[0m:[36m_load_one[0m:[36m198[0m - [1mModel 'tts' loaded successfully[0m
+animetta-1  | [32m2026-10-11 10:53:10[0m | [1mINFO    [0m | [36manimetta.runtime.model_loading[0m:[36mwarmup[0m:[36m171[0m - [1mWarmup complete[0m
+animetta-1  | [32m2026-10-11 10:53:10[0m | [1mINFO    [0m | [36manimetta.runtime.model_loading[0m:[36mwarmup[0m:[36m151[0m - [1mStarting warmup for 1 registered model(s)[0m
+animetta-1  | [32m2026-10-11 10:53:10[0m | [1mINFO    [0m | [36manimetta.runtime.model_loading[0m:[36mwarmup[0m:[36m171[0m - [1mWarmup complete[0m
+animetta-1  | INFO:     127.0.0.1:42872 - "GET /ready HTTP/1.0" 503 Service Unavailable
+animetta-1  | INFO:     127.0.0.1:42874 - "GET /ready HTTP/1.0" 503 Service Unavailable
+animetta-1  | INFO:     127.0.0.1:42880 - "GET /ready HTTP/1.0" 503 Service Unavailable
+animetta-1  | INFO:     127.0.0.1:42894 - "GET /ready HTTP/1.0" 503 Service Unavailable
+animetta-1  | INFO:     127.0.0.1:42904 - "GET /ready HTTP/1.0" 503 Service Unavailable
+animetta-1  | [32m2026-10-11 10:53:12[0m | [1mINFO    [0m | [36manimetta.runtime.session_context[0m:[36mverify_llm_connectivity[0m:[36m790[0m - [1m[health] LLM catalog alias verified by configured-model request[0m
+animetta-1  | [32m2026-10-11 10:53:12[0m | [1mINFO    [0m | [36manimetta.runtime.session_context[0m:[36mverify_llm_connectivity[0m:[36m818[0m - [1m[health] LLM connectivity ready (2386ms)[0m
+animetta-1  | [32m2026-10-11 10:53:12[0m | [1mINFO    [0m | [36manimetta.runtime.provider_pool[0m:[36m_init_once[0m:[36m220[0m - [1m[ServicePool] Ready (2890ms) — shared LLM/TTS/ASR[0m
+animetta-1  | INFO:     127.0.0.1:42920 - "GET /ready HTTP/1.0" 200 OK

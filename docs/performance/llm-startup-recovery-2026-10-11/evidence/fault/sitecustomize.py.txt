@@ -1,0 +1,39 @@
+"""Test image only: first real DeepSeek send is delayed, never substituted."""
+import asyncio
+import json
+import os
+import sys
+import time
+
+import httpx
+
+_native_send = httpx.AsyncClient.send
+_first_used = False
+
+
+def _event(kind, **fields):
+    print('LLMR_FAULT ' + json.dumps({'event': kind, 'pid': os.getpid(), 'epoch_seconds': time.time(), **fields}), file=sys.stderr, flush=True)
+
+
+async def _send(self, request, *args, **kwargs):
+    global _first_used
+    target = request.url.host.lower() == 'api.deepseek.com'
+    if target and not _first_used:
+        _first_used = True
+        started = time.monotonic()
+        _event('first_delay_start', delay_seconds=10)
+        try:
+            await asyncio.sleep(10)
+        except asyncio.CancelledError:
+            _event('first_delay_cancelled', elapsed_seconds=time.monotonic() - started)
+            raise
+        _event('first_delay_uncancelled', elapsed_seconds=time.monotonic() - started)
+    if target:
+        _event('native_send_start')
+    result = await _native_send(self, request, *args, **kwargs)
+    if target:
+        _event('native_send_complete', status_code=result.status_code)
+    return result
+
+
+httpx.AsyncClient.send = _send

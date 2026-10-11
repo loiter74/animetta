@@ -1,0 +1,12 @@
+{
+  "committed_at": "2026-10-11T10:53:30.955537Z",
+  "evidence_refs": [
+    "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-base02/steps/animetta-build/windows/000001/result.json"
+  ],
+  "result_reference": "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-base02/steps/animetta-build/windows/000001/result.json",
+  "reuse_fingerprint": "38b93472de6bd9eb3caf55a4456c5c485d6cad109b51de439320dacf1d6e4836",
+  "run_id": "llmr-base02",
+  "schema_version": 1,
+  "status": "passed",
+  "step_id": "animetta-build"
+}

@@ -1,0 +1,12 @@
+{
+  "committed_at": "2026-10-11T11:20:32.585102Z",
+  "evidence_refs": [
+    "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-after01/evidence/command-a84b3fe2a39f.log"
+  ],
+  "result_reference": "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-after01/steps/animetta-start/windows/000001/result.json",
+  "reuse_fingerprint": "8d6de77eaa74b1ccdf46b025bcab62c823650c2110d6802098f74ac929617805",
+  "run_id": "llmr-after01",
+  "schema_version": 1,
+  "status": "passed",
+  "step_id": "animetta-start"
+}

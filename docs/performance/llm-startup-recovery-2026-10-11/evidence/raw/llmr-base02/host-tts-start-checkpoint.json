@@ -1,0 +1,12 @@
+{
+  "committed_at": "2026-10-11T10:53:29.637239Z",
+  "evidence_refs": [
+    "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-base02/evidence/host-tts-readiness.log"
+  ],
+  "result_reference": "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-base02/steps/host-tts-start/windows/000001/result.json",
+  "reuse_fingerprint": "ed52b6d5c1f9901ff2cf99c8bb1b1b5f8dd481f33ca4287da687ed882b572a85",
+  "run_id": "llmr-base02",
+  "schema_version": 1,
+  "status": "passed",
+  "step_id": "host-tts-start"
+}

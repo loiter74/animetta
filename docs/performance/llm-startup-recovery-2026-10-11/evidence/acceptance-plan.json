@@ -1,0 +1,48 @@
+{
+  "status": "prepared_pending_quality_PASS_and_explicit_lifecycle_authorization",
+  "prediction_SHA256": "55806e4a593bba2aaf962e426339d53f30a7717edce0cdd9e94547d5b4399638",
+  "normal_image": "animetta:llm-startup-recovery-normal-20261011",
+  "normal_stages": [
+    "freeze",
+    "warmup (llmr-after-warmup01, outside samples)",
+    "after01 (llmr-after01-down/up, cached)",
+    "after02 (llmr-after02-down/up, cached)"
+  ],
+  "fault_stages": [
+    "After normal after02: llmr-fault01 canonical down/up with root+read-only bind override; cached image only",
+    "Bounded observer:503->200 samecontainer/PID; image/buildfingerprint unchanged, runtimefingerprint distinct; real native send200 within60s of cancellation",
+    "One llmr-fault-role01 original native role/Live2D/Qwen/ordinary continuity",
+    "llmr-restore01 canonical down/up with root only; no bind, same normal image, strict ready"
+  ],
+  "continuation": "after.json stages are terminal receipts; completed stages never rerun; existing incomplete runs must be inspected using their original run IDs",
+  "failure": "HOLD; retain current image/container/failed raw evidence; no automatic next stage",
+  "checks": {
+    "python_ast": "passed",
+    "browser_executed": false,
+    "lifecycle_executed_this_preparation": false,
+    "build_executed": false,
+    "simplify": "Reused original lifecycle helper and unchanged native probe; normal/restore share one stage runner; observer captures PID only on first HTTP observation and final recovery"
+  },
+  "files": {
+    "run-after.py": "b4fa62f4c96fd77b3ca11b1c89cd71188f3c642305e153061979495ec9a5740a",
+    "observe-fault.py": "a669f8acb2c02785c41a33b383c8bbdcc94f8bc26e05b1d35b1cd913180530f7",
+    "run-role-recovered.py": "14255730aca978fd1abe60c79782d3526039814f5db8e3b39b870547b1247db7",
+    "fault/sitecustomize.py": "0b6cb5e113c888eec695522f983caf6a1ebb03289cf03f886e7fed624551a940",
+    "fault/compose.override.yml": "475dcb59942a2081ac6b647b2e1b0e546c0825236ed279f0b03e3eb3ac7bdf06",
+    "acceptance/core-role-probe-recovered.mjs": "5fe20f4fd2e83ff4cac53bae896519fd62a81431f85884ea9d3eb116a9ab8686",
+    "acceptance/role-probe-input.json": "31406543953394415b2e93e1c387e00ea36b8a0772772c8f15f6432156a8bcc2",
+    "prediction-amendment.json": "7b06efe01044dc05a945bc265229fc103e0e4a0ead5d528736a64b3f826e7a2e"
+  },
+  "fault_carrier": "Same fixed normal image + read-only bind to /app/src/sitecustomize.py; existing PYTHONPATH loads safe shim",
+  "prediction_amendment_SHA256": "7b06efe01044dc05a945bc265229fc103e0e4a0ead5d528736a64b3f826e7a2e",
+  "unused_historical_inputs": {
+    "fault/fault.Dockerfile": {
+      "SHA256": "5b8cd0ad433dd6237d0277a754ed08d5dc83740eb3026ae6130360ef3a8418c0",
+      "used": false,
+      "reason": "Superseded by read-only startup shim amendment; no custom image build"
+    }
+  },
+  "observer_startup_handling": "Records non-JSON proxy startup status without treating it as ready; requires actual LLM-nonready503 then strict ready200 unchanged",
+  "latest_parent_decision_SHA256": "dd0f6f59eddbfdaf0f9ab61be0d3d8b746cdea41cb315462a9dd464fbef55718",
+  "final_fault_run_id": "llmr-fault02"
+}

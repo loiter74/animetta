@@ -1,0 +1,209 @@
+{
+  "status": "passed",
+  "quality_plan": "227933bd10f5",
+  "samples": [
+    {
+      "run_id": "llmr-after01",
+      "application_start_to_ready_seconds": 17.074453,
+      "CLI_elapsed_seconds": 25.81370419999803,
+      "container_start_to_ready_seconds": 8.739906
+    },
+    {
+      "run_id": "llmr-after02",
+      "application_start_to_ready_seconds": 16.809628,
+      "CLI_elapsed_seconds": 25.504076900000655,
+      "container_start_to_ready_seconds": 8.587093
+    }
+  ],
+  "after_primary_median_seconds": 16.942040499999997,
+  "fault_primary": "fault01-recovered-observation.json",
+  "fault_supplement": "fault02-observation.json",
+  "single_role": "acceptance/llmr-fault-role01.json",
+  "role_repeat": false,
+  "final_identity": "final-identity-ready.json",
+  "restore_run_id": "llmr-restore01",
+  "limitations": [
+    "Original fault01 observer HOLD retained; its503 bodies missing, access status/time recovered from original server logs",
+    "fault02 began under explicit intervening Parent authorization, retained as supplemental fault evidence, not a speed sample",
+    "No Dashboard account password; native machine-token branch accepted, account login UI not tested",
+    "n=2 normal samples; uncontrolled real upstream latency; no startup-speed improvement claim"
+  ],
+  "canonical_commands": [
+    {
+      "run_id": "llmr-after-warmup01",
+      "command": [
+        "py",
+        "-3.13",
+        "scripts/runtime_lifecycle.py",
+        "anima-up",
+        "--run-id",
+        "llmr-after-warmup01",
+        "--wait",
+        "--artifacts-root",
+        "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans"
+      ],
+      "exit_code": 0,
+      "CLI_seconds": 106.41021339999861
+    },
+    {
+      "run_id": "llmr-after01-down",
+      "command": [
+        "py",
+        "-3.13",
+        "scripts/runtime_lifecycle.py",
+        "anima-down",
+        "--run-id",
+        "llmr-after01-down",
+        "--wait",
+        "--artifacts-root",
+        "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans"
+      ],
+      "exit_code": 0,
+      "CLI_seconds": 9.158771700000216
+    },
+    {
+      "run_id": "llmr-after01",
+      "command": [
+        "py",
+        "-3.13",
+        "scripts/runtime_lifecycle.py",
+        "anima-up",
+        "--run-id",
+        "llmr-after01",
+        "--wait",
+        "--artifacts-root",
+        "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans"
+      ],
+      "exit_code": 0,
+      "CLI_seconds": 25.81370419999803
+    },
+    {
+      "run_id": "llmr-after02-down",
+      "command": [
+        "py",
+        "-3.13",
+        "scripts/runtime_lifecycle.py",
+        "anima-down",
+        "--run-id",
+        "llmr-after02-down",
+        "--wait",
+        "--artifacts-root",
+        "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans"
+      ],
+      "exit_code": 0,
+      "CLI_seconds": 9.087256199996773
+    },
+    {
+      "run_id": "llmr-after02",
+      "command": [
+        "py",
+        "-3.13",
+        "scripts/runtime_lifecycle.py",
+        "anima-up",
+        "--run-id",
+        "llmr-after02",
+        "--wait",
+        "--artifacts-root",
+        "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans"
+      ],
+      "exit_code": 0,
+      "CLI_seconds": 25.504076900000655
+    },
+    {
+      "run_id": "llmr-fault01-down",
+      "command": [
+        "py",
+        "-3.13",
+        "scripts/runtime_lifecycle.py",
+        "anima-down",
+        "--run-id",
+        "llmr-fault01-down",
+        "--wait",
+        "--artifacts-root",
+        "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans"
+      ],
+      "exit_code": 0,
+      "CLI_seconds": 8.984430399999837
+    },
+    {
+      "run_id": "llmr-fault01",
+      "command": [
+        "py",
+        "-3.13",
+        "scripts/runtime_lifecycle.py",
+        "anima-up",
+        "--run-id",
+        "llmr-fault01",
+        "--wait",
+        "--artifacts-root",
+        "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans"
+      ],
+      "exit_code": 0,
+      "CLI_seconds": 32.04361599999902
+    },
+    {
+      "run_id": "llmr-fault02-down",
+      "command": [
+        "py",
+        "-3.13",
+        "scripts/runtime_lifecycle.py",
+        "anima-down",
+        "--run-id",
+        "llmr-fault02-down",
+        "--wait",
+        "--artifacts-root",
+        "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans"
+      ],
+      "exit_code": 0,
+      "CLI_seconds": 8.991841799997928
+    },
+    {
+      "run_id": "llmr-fault02",
+      "command": [
+        "py",
+        "-3.13",
+        "scripts/runtime_lifecycle.py",
+        "anima-up",
+        "--run-id",
+        "llmr-fault02",
+        "--wait",
+        "--artifacts-root",
+        "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans"
+      ],
+      "exit_code": 0,
+      "CLI_seconds": 32.75471979999929
+    },
+    {
+      "run_id": "llmr-restore01-down",
+      "command": [
+        "py",
+        "-3.13",
+        "scripts/runtime_lifecycle.py",
+        "anima-down",
+        "--run-id",
+        "llmr-restore01-down",
+        "--wait",
+        "--artifacts-root",
+        "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans"
+      ],
+      "exit_code": 0,
+      "CLI_seconds": 8.935138000000734
+    },
+    {
+      "run_id": "llmr-restore01",
+      "command": [
+        "py",
+        "-3.13",
+        "scripts/runtime_lifecycle.py",
+        "anima-up",
+        "--run-id",
+        "llmr-restore01",
+        "--wait",
+        "--artifacts-root",
+        "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans"
+      ],
+      "exit_code": 0,
+      "CLI_seconds": 24.95791620000091
+    }
+  ]
+}

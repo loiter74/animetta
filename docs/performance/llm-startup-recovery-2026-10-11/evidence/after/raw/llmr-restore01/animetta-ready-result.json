@@ -1,0 +1,19 @@
+{
+  "checkpoint": null,
+  "cleanup_pending": false,
+  "elapsed_seconds": 2.5502720000004047,
+  "evidence_refs": [
+    "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-restore01/evidence/http-1c2d6f651f30.log"
+  ],
+  "failure_fingerprint": null,
+  "feedback_at": "2026-10-11T11:31:57.951200Z",
+  "lease": null,
+  "next_action": "advance after animetta-ready",
+  "progress_summary": "HTTP 200 from http://localhost/ready",
+  "run_id": "llmr-restore01",
+  "schema_version": 1,
+  "started_at": "2026-10-11T11:31:55.400937Z",
+  "status": "passed",
+  "step_id": "animetta-ready",
+  "window_sequence": 1
+}

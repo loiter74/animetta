@@ -1,0 +1,7 @@
+{
+  "run_id": "llmr-fault02-role01",
+  "source_SHA256": "5fe20f4fd2e83ff4cac53bae896519fd62a81431f85884ea9d3eb116a9ab8686",
+  "executed_SHA256": "f87517e7f3bb3147ada1e81e77b24ebe56b213538b44a6626b644c434af61f4f",
+  "changes": "Run ID only; native/playback/Live2D/continuity assertions unchanged",
+  "source_run": "historical llmr-fault-role01; final acceptance is independent after fault02"
+}

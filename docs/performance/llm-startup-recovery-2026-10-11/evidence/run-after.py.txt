@@ -1,0 +1,117 @@
+"""Explicit normal stages; reuse the original lifecycle helpers without a controller."""
+import argparse
+import importlib.util
+import json
+import re
+import subprocess
+from pathlib import Path
+
+O = Path(__file__).parent
+OLD = O.parent / 'startup-speed-20261011'
+NORMAL = 'animetta:llm-startup-recovery-normal-20261011'
+PREDICTION = '55806e4a593bba2aaf962e426339d53f30a7717edce0cdd9e94547d5b4399638'
+
+
+def helpers(*, current_credentials=True):
+    spec = importlib.util.spec_from_file_location('baseline_helpers', OLD / 'baseline-runner.py')
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    g = m.run.__globals__
+    d = O / 'after'
+    d.mkdir(exist_ok=True)
+    g.update(OUT=d, STATE=O / 'state.json', RECORD=O / 'after.json', IMAGE=NORMAL)
+    g['ENV']['ANIMETTA_IMAGE'] = NORMAL
+    if g['RECORD'].exists():
+        g['record'] = json.loads(g['RECORD'].read_bytes())
+    else:
+        g['record'] = {'variant': 'after', 'status': 'preparing', 'runs': [], 'samples': [], 'warmup': None, 'stages': {}}
+    actual = dict(x.split('=', 1) for x in json.loads(g['cmd'](['docker', 'inspect', 'anima-animetta-1']))[0]['Config']['Env'] if '=' in x) if current_credentials else {}
+    for k in ['ANIMETTA_ACCESS_TOKEN', 'QWEN_TTS_API_KEY', 'ANIMETTA_AUTH_USERNAME', 'ANIMETTA_AUTH_PASSWORD_HASH', 'DEEPSEEK_API_KEY', 'DASHSCOPE_API_KEY', 'MIMO_API_KEY', 'MC_MCP_AUTH_TOKEN']:
+        if g['ENV'].get(k):
+            assert g['ENV'][k] == actual.get(k, g['ENV'][k]), 'Credential mismatch: ' + k
+        elif actual.get(k):
+            g['ENV'][k] = actual[k]
+    g['SECRETS'].extend(v for k, v in g['ENV'].items() if v and re.search('PASSWORD|TOKEN|SECRET|API_KEY|COOKIE', k, re.I))
+    return g
+
+
+def main():
+    p = argparse.ArgumentParser()
+    p.add_argument('stage', choices=['freeze', 'warmup', 'after01', 'after02', 'fault', 'restore'])
+    p.add_argument('--authorized-quality-plan', required=True, help='Only supply after Parent explicitly reports quality PASS and authorizes lifecycle')
+    p.add_argument('--fault-run-id', choices=['llmr-fault01', 'llmr-fault02'], default='llmr-fault01')
+    a = p.parse_args()
+    g = helpers()
+    observer = None
+    try:
+        assert g['sha']((O / 'prediction.json').read_bytes()) == PREDICTION, 'Prediction changed'
+        completed = g['record']['stages']
+        stage_key = 'fault02' if a.stage == 'fault' and a.fault_run_id == 'llmr-fault02' else a.stage
+        assert stage_key not in completed, 'Stage already completed; read original evidence, never repeat'
+        g['record']['authorized_quality_plan'] = a.authorized_quality_plan
+        if a.stage == 'freeze':
+            original = json.loads((O / 'frozen-source-input.json').read_bytes())
+            manifest = {'commit': g['cmd'](['git', 'rev-parse', 'HEAD']).decode().strip(),
+                        'files': {n: g['sha']((g['ROOT'] / n).read_bytes()) for n in original['files']},
+                        'env_sha256': original['env_sha256'], 'image_tag': NORMAL,
+                        'prediction_SHA256': PREDICTION, 'user_training_songs_data_excluded': True}
+            g['write'](g['OUT'] / 'frozen-source-input.json', manifest)
+            (g['OUT'] / 'current-inventory.json').write_bytes((O / 'current-inventory.json').read_bytes())
+            g['verify']()
+            g['write'](O / 'after-source-input.json', manifest)
+            g['record']['source_manifest_SHA256'] = g['sha']((O / 'after-source-input.json').read_bytes())
+            g['record']['prediction_SHA256'] = PREDICTION
+        else:
+            previous = {'warmup': 'freeze', 'after01': 'warmup', 'after02': 'after01', 'fault': 'after02', 'restore': g['record'].get('required_role_stage', 'role')}[a.stage]
+            assert previous in completed, 'Previous stage has not passed'
+            g['verify']()
+            rid = {'warmup': 'llmr-after-warmup01', 'fault': a.fault_run_id, 'restore': 'llmr-restore01'}.get(a.stage, 'llmr-' + a.stage)
+            if a.stage == 'fault':
+                if rid == 'llmr-fault02':
+                    assert json.loads((O / 'retest-decision.json').read_bytes())['authorized_run_id'] == rid, 'Explicit retest decision missing'
+                    g['record']['required_role_stage'] = 'role02'
+                assert json.loads(g['cmd'](['docker', 'image', 'inspect', NORMAL]))[0]['Id'] == g['record']['normal_identity']['image_id'], 'Frozen normal image changed'
+                g['ENV']['COMPOSE_FILE'] = str(g['ROOT'] / 'docker-compose.yml') + ';' + str(O / 'fault/compose.override.yml')
+            if a.stage != 'warmup':
+                g['run']('anima-down', rid + '-down')
+            if a.stage == 'fault':
+                observer = subprocess.Popen(['py', '-3.13', str(O / 'observe-fault.py'), '--run-id', rid], cwd=g['ROOT'], env=g['ENV'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                s = json.loads(g['STATE'].read_bytes()); s['observer_pid'] = observer.pid; g['write'](g['STATE'], s)
+            raw = g['run']('anima-up', rid)
+            if a.stage != 'warmup':
+                build = next(x for x in raw['steps'] if x['step_id'] == 'animetta-build')
+                assert build['progress_summary'] == 'Reused images with matching source content' and 'build_receipt' not in raw, 'Timed build cache mismatch; HOLD'
+            if a.stage == 'fault':
+                out, err = observer.communicate(timeout=120)
+                prefix = 'fault02' if rid == 'llmr-fault02' else 'fault'
+                (O / (prefix + '-observer.stderr.log')).write_bytes(g['clean'](err))
+                accepted = prefix + '-observation.json'
+                assert observer.returncode == 0 and json.loads((O / accepted).read_bytes())['status'] == 'passed', 'Original fault observation failed; HOLD'
+                g['record']['accepted_fault_observation'] = accepted
+            else:
+                sample = g['snapshot'](rid, raw)
+                g['write'](g['OUT'] / (rid + '-sample.json'), sample)
+                if a.stage == 'warmup':
+                    g['record']['warmup'] = sample
+                    c = json.loads(g['cmd'](['docker', 'inspect', 'anima-animetta-1']))[0]
+                    g['record']['normal_identity'] = {'image_id': c['Image'], 'build_fingerprint': c['Config']['Labels']['org.animetta.build-fingerprint'], 'runtime_fingerprint': c['Config']['Labels']['org.animetta.runtime-fingerprint']}
+                elif a.stage != 'restore':
+                    g['record']['samples'].append(sample)
+            g['verify']()
+        completed[stage_key] = {'status': 'passed', 'finished_at': g['now']()}
+        g['state'](a.stage + '_complete', status='stage_complete_HOLD', active_pid=None, active_run_id=None,
+                   next_action={'freeze': 'warmup only', 'warmup': 'after01 only', 'after01': 'after02 only', 'after02': 'Fault phase uses same fixed normal image and read-only shim override; no image build', 'fault': 'One recovered native role probe only', 'restore': 'Final normal-image strict readiness captured; return evidence, no further lifecycle'}[a.stage])
+    except Exception as ex:
+        g['state']('HOLD_after_stage', status='HOLD', active_pid=None, error_type=type(ex).__name__, error=str(ex),
+                   next_action='Retain original run/container; no automatic next stage/retry')
+        raise
+    finally:
+        s = json.loads(g['STATE'].read_bytes())
+        s.update(driver_pid=None, active_pid=None, active_tool_session=None)
+        if observer is not None:
+            s['observer_pid'] = observer.pid if observer.poll() is None else None
+        g['write'](g['STATE'], s)
+
+
+if __name__ == '__main__':
+    main()

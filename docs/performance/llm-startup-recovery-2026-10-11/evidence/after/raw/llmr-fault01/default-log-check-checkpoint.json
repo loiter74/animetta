@@ -1,0 +1,12 @@
+{
+  "committed_at": "2026-10-11T11:22:28.342897Z",
+  "evidence_refs": [
+    "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-fault01/evidence/command-c65dc336c128.log"
+  ],
+  "result_reference": "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-fault01/steps/default-log-check/windows/000001/result.json",
+  "reuse_fingerprint": "9d1f7ed3a359b33be3987aa5884d8d000a4db378c116d574504daf10ee8afb09",
+  "run_id": "llmr-fault01",
+  "schema_version": 1,
+  "status": "passed",
+  "step_id": "default-log-check"
+}

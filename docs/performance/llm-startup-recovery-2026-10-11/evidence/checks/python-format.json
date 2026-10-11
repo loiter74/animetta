@@ -1,0 +1,23 @@
+{
+  "schema_version": 2,
+  "group_id": "python-format",
+  "required": true,
+  "status": "passed",
+  "exit_code": 0,
+  "duration_seconds": 0.24745339999935823,
+  "failure_kind": null,
+  "artifacts": [],
+  "plan_hash": "227933bd10f575f20a0706e741c9e682f9302c98da321c03223e2fcc21aa7f85",
+  "manifest_hash": "d32af627ce3fe26356eb8cbd885b79b7cc29b039bb263fcc044ab4be801c005d",
+  "output": "1170 files already formatted\n",
+  "remediation": "",
+  "execution_mode": "executed",
+  "input_fingerprint": "1610b3f4a3597454c25fbbe137ae8ad0eb02748e1231ebee0cd5b4c8c744561a",
+  "trust_scope": "local",
+  "cache_reason": "miss:not-found;write:stored",
+  "cache_source": null,
+  "queue_seconds": 0.0,
+  "run_seconds": 0.24745339999935823,
+  "cache_seconds": 0.0,
+  "artifact_digests": {}
+}

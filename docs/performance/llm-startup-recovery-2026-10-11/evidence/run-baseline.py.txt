@@ -1,0 +1,112 @@
+"""Two authorized cached starts using the unchanged startup baseline helpers."""
+import importlib.util
+import json
+import os
+import re
+from pathlib import Path
+
+OUT = Path(__file__).parent
+OLD = OUT.parent / 'startup-speed-20261011'
+spec = importlib.util.spec_from_file_location('previous_baseline', OLD / 'baseline-runner.py')
+m = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(m)
+g = m.run.__globals__
+assert not (OUT / 'baseline.json').exists(), 'Read the existing record/handle; do not restart'
+g.update(OUT=OUT, STATE=OUT / 'state.json', RECORD=OUT / 'baseline.json',
+         IMAGE='animetta:startup-speed-optimized-20261011')
+g['ENV']['ANIMETTA_IMAGE'] = g['IMAGE']
+g['record'] = {'variant': 'current_implementation', 'status': 'preparing',
+               'runs': [], 'samples': [], 'warmup': None,
+               'driver_pid': os.getpid(), 'max_attempts': 2,
+               'parent_decision': 'Two fresh cached baseline attempts only; failure HOLD; no replacements or warmup'}
+g['write'](g['STATE'], {'status': 'preparing', 'driver_pid': os.getpid(),
+                      'active_pid': None, 'active_tool_session': None,
+                      'lifecycle_authorized': True, 'lifecycle_executed': False,
+                      'next_action': 'Freeze HEAD43cbfe29/source/env/Qwen/volumes, then llmr-base01/02 only'})
+
+try:
+    head = g['cmd'](['git', 'rev-parse', 'HEAD']).decode().strip()
+    assert head == '43cbfe293a548d65c4b0018e226bc1fbe810730c', 'HEAD changed'
+    containers = json.loads(g['cmd'](['docker', 'inspect', 'anima-animetta-1', 'anima-redis-1']))
+    actual = dict(x.split('=', 1) for x in containers[0]['Config']['Env'] if '=' in x)
+    for key in ['ANIMETTA_ACCESS_TOKEN', 'QWEN_TTS_API_KEY', 'ANIMETTA_AUTH_USERNAME',
+                'ANIMETTA_AUTH_PASSWORD_HASH', 'DEEPSEEK_API_KEY', 'DASHSCOPE_API_KEY',
+                'MIMO_API_KEY', 'MC_MCP_AUTH_TOKEN']:
+        if g['ENV'].get(key):
+            assert g['ENV'][key] == actual.get(key, g['ENV'][key]), 'Credential mismatch: ' + key
+        elif actual.get(key):
+            g['ENV'][key] = actual[key]
+    g['SECRETS'].extend(v for k, v in g['ENV'].items() if v and re.search('PASSWORD|TOKEN|SECRET|API_KEY|COOKIE', k, re.I))
+    previous = json.loads((OLD / 'optimized-source-input.json').read_bytes())
+    mapping = {p: g['sha']((g['ROOT'] / p).read_bytes()) for p in previous['files']}
+    assert mapping == previous['files'], 'Previously built source inputs changed'
+    assert g['sha']((g['ROOT'] / '.env').read_bytes()) == previous['env_sha256'], 'Private env changed'
+    image = json.loads(g['cmd'](['docker', 'image', 'inspect', g['IMAGE']]))[0]
+    expected_image = 'sha256:74da0dbe9974e9c674ec61b843e507d9681df87f0da9aacc7a18da10c719ecd8'
+    assert image['Id'] == expected_image == containers[0]['Image'], 'Current/cached image changed'
+    assert containers[0]['Config']['Image'] == g['IMAGE'], 'Current image reference changed'
+    volumes = {x.get('Name') for c in containers for x in c['Mounts']}
+    assert volumes == {'anima_animetta-data', 'anima_animetta-memory-db', 'anima_animetta-redis'}, 'Volume mismatch'
+    for c in containers:
+        assert c['Config']['Labels']['com.docker.compose.project'] == 'anima'
+        assert Path(c['Config']['Labels']['com.docker.compose.project.working_dir']) == g['ROOT']
+    bindings = containers[0]['HostConfig']['PortBindings']
+    assert {x['HostPort'] for group in bindings.values() if group for x in group} == {'80', '12394'}, 'Ports changed'
+    listeners = m.psutil.net_connections(kind='tcp')
+    assert not any(x.status == m.psutil.CONN_LISTEN and x.laddr.port == 8769 for x in listeners), 'RVC is not off'
+    inv = json.loads((OLD / 'current-inventory.json').read_bytes())
+    inv = {k: inv[k] for k in ['Qwen_processes', 'Qwen_http']}
+    inv.update(collected_at=g['now'](), containers=[{
+        'name': c['Name'], 'id': c['Id'], 'image': c['Image'],
+        'StartedAt': c['State']['StartedAt'],
+        'labels': {k: v for k, v in c['Config']['Labels'].items() if k.startswith('com.docker.compose.project')},
+        'volumes': [{'name': x.get('Name'), 'destination': x['Destination']} for x in c['Mounts']]
+    } for c in containers], image_id=image['Id'], image_size_bytes=image['Size'], RVC8769_unavailable=True,
+        credentials_equal=True, env_sha256=previous['env_sha256'])
+    g['write'](OUT / 'current-inventory.json', inv)
+    manifest = {'commit': head, 'files': mapping, 'env_sha256': previous['env_sha256'],
+                'user_training_songs_data_excluded': True, 'image_tag': g['IMAGE'], 'image_id': image['Id']}
+    g['write'](OUT / 'frozen-source-input.json', manifest)
+    contract = {'schema_version': 1, 'frozen_at': g['now'](), 'purpose': 'current implementation baseline only',
+                'source_commit': head, 'source_manifest_SHA256': g['sha']((OUT / 'frozen-source-input.json').read_bytes()),
+                'image_tag': g['IMAGE'], 'image_id': image['Id'], 'project': 'anima', 'profile': 'production',
+                'ports': [80, 12394], 'volumes': sorted(volumes), 'credentials_retained': True,
+                'Qwen_PIDs': [x['pid'] for x in inv['Qwen_processes']], 'Qwen_retained': True, 'RVC_off': True,
+                'sample_runs': ['llmr-base01', 'llmr-base02'], 'down_runs': ['llmr-base01-down', 'llmr-base02-down'],
+                'max_attempts': 2, 'warmup': None, 'cached_build_required': True,
+                'primary': 'actual animetta-start result.started_at to actual animetta-ready result.feedback_at',
+                'secondary': ['CLI request to completion', 'container StartedAt to ready feedback_at', 'actual step elapsed/timestamps', 'startup log timeline'],
+                'conditions': 'Fresh app/Redis canonical down/up; retain image/OS/model cache, named volumes, production configuration and credentials; no quality/install/build/browser/probe concurrency',
+                'failure': 'Immediate HOLD, preserve failed container/results; no next cycle/replacement or additional diagnosis probe',
+                'helper_path': str(OLD / 'baseline-runner.py'), 'helper_SHA256': g['sha']((OLD / 'baseline-runner.py').read_bytes())}
+    g['write'](OUT / 'contract.json', contract)
+    g['record'].update(source_commit=head, image_id=image['Id'], started_at=g['now'](),
+                       contract_SHA256=g['sha']((OUT / 'contract.json').read_bytes()))
+    g['verify']()
+    g['cmd'](['docker', 'compose', 'config', '--quiet'])
+    g['state']('contract_frozen', status='baseline_running', next_action='llmr-base01 fresh cached canonical down/up; no warmup')
+    for rid in contract['sample_runs']:
+        assert g['cmd'](['git', 'rev-parse', 'HEAD']).decode().strip() == head, 'HEAD changed'
+        s = json.loads(g['STATE'].read_bytes()); s['lifecycle_executed'] = True; g['write'](g['STATE'], s)
+        g['run']('anima-down', rid + '-down')
+        raw = g['run']('anima-up', rid)
+        build = next(x for x in raw['steps'] if x['step_id'] == 'animetta-build')
+        assert build['progress_summary'] == 'Reused images with matching source content' and 'build_receipt' not in raw, 'Cache mismatch; sample invalid, HOLD'
+        sample = g['snapshot'](rid, raw)
+        g['record']['samples'].append(sample)
+        g['write'](OUT / (rid + '-sample.json'), sample)
+        g['verify']()
+        assert g['cmd'](['git', 'rev-parse', 'HEAD']).decode().strip() == head, 'HEAD changed'
+        g['state'](rid + '_sample_complete', next_action='llmr-base02 only' if rid == 'llmr-base01' else 'Return baseline results; hold for Parent source/recovery acceptance authorization')
+    summary = {'status': 'passed', 'source_commit': head, 'image_id': image['Id'], 'samples': [
+        {k: x[k] for k in ['run_id', 'application_start_to_ready_seconds', 'CLI_elapsed_seconds', 'container_start_to_ready_seconds']}
+        for x in g['record']['samples']], 'contract_SHA256': g['record']['contract_SHA256']}
+    g['write'](OUT / 'baseline-summary.json', summary)
+    g['state']('two_baseline_samples_complete', status='baseline_complete_HOLD_for_Parent', active_pid=None, active_run_id=None,
+               next_action='Return immediately; no further lifecycle/probe/analysis. Parent handles source and separately authorizes recovery acceptance')
+except Exception as ex:
+    g['state']('HOLD_baseline_failure', status='HOLD', active_pid=None, active_run_id=None,
+               error_type=type(ex).__name__, error=str(ex), next_action='Preserve original container/raw run; return exact failure. No next cycle/probe')
+    raise
+finally:
+    s = json.loads(g['STATE'].read_bytes()); s.update(driver_pid=None, active_pid=None, active_tool_session=None); g['write'](g['STATE'], s)

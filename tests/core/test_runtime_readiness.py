@@ -5,7 +5,9 @@ import json
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import httpx
 import pytest
+from openai import APIConnectionError, APIStatusError
 
 from animetta.core.model_loading_manager import ModelLoadingManager
 from animetta.core.service_context import ServiceContext
@@ -1275,6 +1277,230 @@ async def test_shutdown_is_best_effort_and_clears_runtime_references(pool) -> No
     assert pool._init_state == "closed"
     assert pool._shutdown_errors == ("llm:RuntimeError",)
     assert "password" not in repr(pool._shutdown_errors)
+
+
+@pytest.fixture
+def recovery_context() -> ServiceContext:
+    context = ServiceContext()
+    context.config = _config()
+    llm = _DeepSeek()
+    llm.close = AsyncMock()
+    llm.client = SimpleNamespace(
+        models=SimpleNamespace(list=AsyncMock(return_value={"data": [{"id": "deepseek-flash"}]})),
+        chat=SimpleNamespace(
+            completions=SimpleNamespace(
+                create=AsyncMock(
+                    return_value=SimpleNamespace(
+                        model="deepseek-flash",
+                        choices=[SimpleNamespace(message=SimpleNamespace(content="OK"))],
+                    )
+                )
+            )
+        ),
+    )
+    context.llm_engine = llm
+    context.tts_engine = _AliceQwen()
+    context.tts_engine.close = AsyncMock()
+    context.load_from_config = AsyncMock()
+    return context
+
+
+@pytest.mark.parametrize(
+    ("failure_n", "expected_delays"),
+    [(0, []), (1, [1.0]), (8, [1.0, 2.0, 4.0, 8.0, 16.0, 30.0, 30.0, 30.0])],
+)
+async def test_pool_recovers_with_same_engines_and_capped_backoff(
+    pool, recovery_context, failure_n, expected_delays
+) -> None:
+    context = recovery_context
+    catalog = {"data": [{"id": "deepseek-flash"}]}
+    context.llm_engine.client.models.list.side_effect = [
+        *[TimeoutError("private request") for _ in range(failure_n)],
+        catalog,
+    ]
+    manager = SimpleNamespace(warmup=AsyncMock(), get_status=lambda: {"tts": "loaded"})
+    delays = []
+
+    async def backoff(seconds: float) -> None:
+        delays.append(seconds)
+        assert pool.is_ready() is False
+        assert _snapshot(pool, config=context.config, manager=manager)["ready"] is False
+        with pytest.raises(RuntimeError, match="not ready"):
+            pool.get_context()
+        assert pool._ctx is context
+        assert pool._llm is context.llm_engine
+        context.llm_engine.close.assert_not_awaited()
+        context.tts_engine.close.assert_not_awaited()
+
+    with (
+        patch("animetta.runtime.provider_pool.ServiceContext", return_value=context),
+        patch("animetta.runtime.provider_pool.asyncio.sleep", side_effect=backoff),
+    ):
+        try:
+            await pool.init(context.config, model_manager=manager)
+            assert delays == expected_delays
+            assert pool.is_ready() is True
+            assert _snapshot(pool, config=context.config, manager=manager)["ready"] is True
+            context.load_from_config.assert_awaited_once()
+            manager.warmup.assert_awaited_once()
+            assert context.llm_engine.client.models.list.await_count == failure_n + 1
+            context.llm_engine.client.chat.completions.create.assert_awaited_once()
+            # The retained task must now contain the successful probe, with no extra I/O.
+            assert (await context.wait_for_llm_connectivity())["ready"] is True
+            assert context.llm_engine.client.models.list.await_count == failure_n + 1
+        finally:
+            await pool.shutdown()
+
+
+async def test_concurrent_init_shares_recovery_instead_of_recreating_engines(
+    pool, recovery_context
+) -> None:
+    context = recovery_context
+    context.llm_engine.client.models.list.side_effect = [
+        TimeoutError(),
+        {"data": [{"id": "deepseek-flash"}]},
+    ]
+    manager = SimpleNamespace(warmup=AsyncMock(), get_status=lambda: {"tts": "loaded"})
+    waiting, resume = asyncio.Event(), asyncio.Event()
+
+    async def backoff(_: float) -> None:
+        waiting.set()
+        await resume.wait()
+
+    with (
+        patch("animetta.runtime.provider_pool.ServiceContext", return_value=context) as factory,
+        patch("animetta.runtime.provider_pool.asyncio.sleep", side_effect=backoff),
+    ):
+        first = asyncio.create_task(pool.init(context.config, model_manager=manager))
+        try:
+            await waiting.wait()
+            second = asyncio.create_task(pool.init(context.config, model_manager=manager))
+            _, pending = await asyncio.wait({second}, timeout=0)
+            assert second in pending
+            assert not first.done()
+            assert pool.is_ready() is False
+            resume.set()
+            await asyncio.gather(first, second)
+            factory.assert_called_once()
+            context.load_from_config.assert_awaited_once()
+            assert pool.is_ready() is True
+        finally:
+            await pool.shutdown()
+
+
+@pytest.mark.parametrize("stage", ["backoff", "request"])
+async def test_shutdown_cancels_recovery_without_late_ready_or_leaked_engines(
+    pool, recovery_context, stage
+) -> None:
+    context = recovery_context
+    llm, tts = context.llm_engine, context.tts_engine
+    manager = SimpleNamespace(warmup=AsyncMock(), get_status=lambda: {"tts": "loaded"})
+    waiting, blocker = asyncio.Event(), asyncio.Event()
+    calls = 0
+
+    async def list_models() -> None:
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            raise TimeoutError()
+        waiting.set()
+        await blocker.wait()
+
+    async def backoff(_: float) -> None:
+        if stage == "backoff":
+            waiting.set()
+            await blocker.wait()
+
+    llm.client.models.list.side_effect = list_models
+    with (
+        patch("animetta.runtime.provider_pool.ServiceContext", return_value=context),
+        patch("animetta.runtime.provider_pool.asyncio.sleep", side_effect=backoff),
+    ):
+        initializing = asyncio.create_task(pool.init(context.config, model_manager=manager))
+        try:
+            await waiting.wait()
+            assert pool.is_ready() is False
+            await pool.shutdown()
+            assert initializing.cancelled()
+            assert pool._init_state == "closed"
+            assert pool.is_ready() is False
+            assert pool._ctx is None
+            assert context._llm_connectivity_task is None
+            llm.close.assert_awaited_once()
+            tts.close.assert_awaited_once()
+            assert calls == (1 if stage == "backoff" else 2)
+        finally:
+            await pool.shutdown()
+
+
+@pytest.mark.parametrize(
+    ("failure", "reason"),
+    [
+        ("sdk_connection", "connection_error"),
+        ("transport_connection", "connection_error"),
+        (429, "rate_limited"),
+        (500, "provider_unavailable"),
+        (503, "provider_unavailable"),
+        (401, "unauthorized"),
+        (403, "request_failed"),
+        (400, "request_failed"),
+    ],
+)
+async def test_connectivity_classifies_transient_failures_without_leaking_response(
+    pool, recovery_context, failure, reason
+) -> None:
+    context = recovery_context
+    request = httpx.Request("GET", "https://api.deepseek.com/v1/models")
+    if failure == "sdk_connection":
+        error = APIConnectionError(request=request, message="private credential")
+    elif failure == "transport_connection":
+        error = httpx.ConnectError("private credential", request=request)
+    else:
+        error = APIStatusError(
+            "private credential",
+            response=httpx.Response(failure, request=request),
+            body={"secret": "private credential"},
+        )
+    context.llm_engine.client.models.list.side_effect = error
+    result = await context.verify_llm_connectivity()
+    assert result == {"state": "failed", "ready": False, "reason": reason}
+    assert "private" not in json.dumps(result)
+    assert "super-secret" not in json.dumps(context.llm_connectivity_status)
+    _seed_pool(pool, connectivity=result)
+    assert _snapshot(pool)["components"]["llm"]["reason"] == reason
+
+
+@pytest.mark.parametrize("failure", [401, 403, "missing_model", "no_api_key"])
+async def test_pool_keeps_fatal_failure_nonready_without_retry(
+    pool, recovery_context, failure
+) -> None:
+    context = recovery_context
+    if isinstance(failure, int):
+        request = httpx.Request("GET", "https://api.deepseek.com/v1/models")
+        context.llm_engine.client.models.list.side_effect = APIStatusError(
+            "private credential", response=httpx.Response(failure, request=request), body=None
+        )
+    elif failure == "missing_model":
+        context.llm_engine.client.models.list.return_value = {"data": [{"id": "other-model"}]}
+    else:
+        context.llm_engine.api_key = ""
+    manager = SimpleNamespace(warmup=AsyncMock(), get_status=lambda: {"tts": "loaded"})
+    with (
+        patch("animetta.runtime.provider_pool.ServiceContext", return_value=context),
+        patch("animetta.runtime.provider_pool.asyncio.sleep", new_callable=AsyncMock) as backoff,
+    ):
+        try:
+            await pool.init(context.config, model_manager=manager)
+            assert pool.is_ready() is False
+            assert _snapshot(pool, config=context.config, manager=manager)["ready"] is False
+            backoff.assert_not_awaited()
+            context.load_from_config.assert_awaited_once()
+            assert context.llm_engine.client.models.list.await_count == (
+                0 if failure == "no_api_key" else 1
+            )
+            context.llm_engine.client.chat.completions.create.assert_not_awaited()
+        finally:
+            await pool.shutdown()
 
 
 async def test_late_registration_after_empty_warmup_is_loaded_by_next_warmup() -> None:

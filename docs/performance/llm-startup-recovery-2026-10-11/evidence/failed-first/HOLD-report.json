@@ -1,0 +1,122 @@
+{
+  "status": "HOLD",
+  "completed_stages": [
+    "freeze",
+    "warmup",
+    "after01",
+    "after02"
+  ],
+  "fault_canonical": {
+    "run_id": "llmr-fault01",
+    "exit_code": 0,
+    "steps_passed": true,
+    "CLI_seconds": 32.04361599999902,
+    "build": "cached normal image; no custom build"
+  },
+  "failure": {
+    "component": "read-only observer",
+    "error_type": "RemoteDisconnected",
+    "message": "Remote end closed connection without response",
+    "root": "http.client.RemoteDisconnected on first /ready connection before a response; observer only caught URLError/TimeoutError, so it exited before recording HTTP statuses",
+    "boundary": "Not a canonical deployment failure. Missing503->200 observer evidence cannot be inferred or fabricated."
+  },
+  "samples": [
+    {
+      "run_id": "llmr-after01",
+      "application_start_to_ready_seconds": 17.074453,
+      "CLI_elapsed_seconds": 25.81370419999803,
+      "container_start_to_ready_seconds": 8.739906
+    },
+    {
+      "run_id": "llmr-after02",
+      "application_start_to_ready_seconds": 16.809628,
+      "CLI_elapsed_seconds": 25.504076900000655,
+      "container_start_to_ready_seconds": 8.587093
+    }
+  ],
+  "fault_identity": {
+    "Id": "b143c9c6692a5e71ccdd4a11081fb146a3f868400d83d31f008395df2df446a3",
+    "Image": "sha256:4da7d71c5c9c339935c37a9d061979a1658c75f92a3a1ef7506ef03126c66233",
+    "RestartCount": 0,
+    "StartedAt": "2026-10-11T11:22:13.047223769Z"
+  },
+  "native_events_from_original_canonical_log": [
+    {
+      "event": "first_delay_start",
+      "pid": 22,
+      "epoch_seconds": 1791717739.3571687,
+      "delay_seconds": 10
+    },
+    {
+      "event": "first_delay_cancelled",
+      "pid": 22,
+      "epoch_seconds": 1791717744.3122082,
+      "elapsed_seconds": 4.955033246998937
+    },
+    {
+      "event": "native_send_start",
+      "pid": 22,
+      "epoch_seconds": 1791717745.3153734
+    },
+    {
+      "event": "native_send_complete",
+      "pid": 22,
+      "epoch_seconds": 1791717746.658232,
+      "status_code": 200
+    },
+    {
+      "event": "native_send_start",
+      "pid": 22,
+      "epoch_seconds": 1791717746.6630278
+    },
+    {
+      "event": "native_send_complete",
+      "pid": 22,
+      "epoch_seconds": 1791717747.4471452,
+      "status_code": 200
+    }
+  ],
+  "evidence_copies": [
+    {
+      "source_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-fault01\\evidence\\host-tts-readiness.log",
+      "path": "diagnosis\\host-tts-start-host-tts-readiness.log",
+      "SHA256": "cba25a29e035757901e524bd21389a6a747826da3a38043cc7b8a4c6d066c268"
+    },
+    {
+      "source_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-fault01\\evidence\\command-a9629353fa5e.log",
+      "path": "diagnosis\\host-tts-preflight-command-a9629353fa5e.log",
+      "SHA256": "b810449f5ac5ee6c9473ab6d530c144d729282272c8100549e1ac06508a6da82"
+    },
+    {
+      "source_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-fault01\\evidence\\command-a84b3fe2a39f.log",
+      "path": "diagnosis\\animetta-start-command-a84b3fe2a39f.log",
+      "SHA256": "de1d2dbec3ec8fb4ef7e8521319bbdb4fd6ea83679cf904306626425058646cd"
+    },
+    {
+      "source_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-fault01\\evidence\\http-91234995d891.log",
+      "path": "diagnosis\\animetta-health-http-91234995d891.log",
+      "SHA256": "fbe03d47cc19ce36d7d9b041fb128c893ce252515a385d0c9097de476de16a75"
+    },
+    {
+      "source_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-fault01\\evidence\\http-1c2d6f651f30.log",
+      "path": "diagnosis\\animetta-ready-http-1c2d6f651f30.log",
+      "SHA256": "87ccc14c32e79df668e57b6b7b38cc1981f1e2288e36faea09a8bccbe3768df2"
+    },
+    {
+      "source_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-fault01\\evidence\\http-8605b8ba08c2.log",
+      "path": "diagnosis\\frontend-readiness-http-8605b8ba08c2.log",
+      "SHA256": "fe9ce9dc0dd67db82bee9548d5e85a8057c74efe76a07fa96951f0702e3ec5cd"
+    },
+    {
+      "source_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-fault01\\evidence\\command-c65dc336c128.log",
+      "path": "diagnosis\\default-log-check-command-c65dc336c128.log",
+      "SHA256": "7e77b1377c644bbc85c41fa4c59452326fc869e6462c40d1ef18d76855f2b92d"
+    }
+  ],
+  "not_executed": [
+    "role",
+    "restore"
+  ],
+  "next_action": "Parent decision on bounded observer correction/recovery; no successful stage rerun or lifecycle now",
+  "recorded_at": "2026-10-11T11:23:47.231107+00:00"
+}

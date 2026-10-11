@@ -1,0 +1,83 @@
+2026-10-11T11:31:47.307937376Z Starting Redis Server
+2026-10-11T11:31:47.316075928Z 1:C 11 Oct 2026 11:31:47.315 * oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+2026-10-11T11:31:47.316111247Z 1:C 11 Oct 2026 11:31:47.315 * Redis version=8.8.1, bits=64, commit=00000000, modified=1, pid=1, just started
+2026-10-11T11:31:47.316114055Z 1:C 11 Oct 2026 11:31:47.315 * Configuration loaded
+2026-10-11T11:31:47.316258394Z 1:M 11 Oct 2026 11:31:47.316 * monotonic clock: POSIX clock_gettime
+2026-10-11T11:31:47.317508430Z 1:M 11 Oct 2026 11:31:47.317 * Running mode=standalone, port=6379.
+2026-10-11T11:31:47.318025665Z 1:M 11 Oct 2026 11:31:47.317 * <bf> RedisBloom version 8.8.2 (Git=unknown)
+2026-10-11T11:31:47.318044230Z 1:M 11 Oct 2026 11:31:47.317 * <bf> Registering configuration options: [
+2026-10-11T11:31:47.318046831Z 1:M 11 Oct 2026 11:31:47.317 * <bf> 	{ bf-error-rate       :      0.01 }
+2026-10-11T11:31:47.318048814Z 1:M 11 Oct 2026 11:31:47.317 * <bf> 	{ bf-initial-size     :       100 }
+2026-10-11T11:31:47.318050441Z 1:M 11 Oct 2026 11:31:47.317 * <bf> 	{ bf-expansion-factor :         2 }
+2026-10-11T11:31:47.318051938Z 1:M 11 Oct 2026 11:31:47.317 * <bf> 	{ cf-bucket-size      :         2 }
+2026-10-11T11:31:47.318053533Z 1:M 11 Oct 2026 11:31:47.317 * <bf> 	{ cf-initial-size     :      1024 }
+2026-10-11T11:31:47.318055092Z 1:M 11 Oct 2026 11:31:47.317 * <bf> 	{ cf-max-iterations   :        20 }
+2026-10-11T11:31:47.318059806Z 1:M 11 Oct 2026 11:31:47.317 * <bf> 	{ cf-expansion-factor :         1 }
+2026-10-11T11:31:47.318061340Z 1:M 11 Oct 2026 11:31:47.317 * <bf> 	{ cf-max-expansions   :        32 }
+2026-10-11T11:31:47.318062890Z 1:M 11 Oct 2026 11:31:47.317 * <bf> ]
+2026-10-11T11:31:47.318307919Z 1:M 11 Oct 2026 11:31:47.318 * Module 'bf' loaded from /usr/local/lib/redis/modules//redisbloom.so
+2026-10-11T11:31:47.322455625Z 1:M 11 Oct 2026 11:31:47.322 * <search> search-workers default: 10 (min of MAX_WORKER_THREADS=16 and CPU cores)
+2026-10-11T11:31:47.322485234Z 1:M 11 Oct 2026 11:31:47.322 * <search> Redis version found by RedisSearch : 8.8.1 - oss
+2026-10-11T11:31:47.322487835Z 1:M 11 Oct 2026 11:31:47.322 * <search> RediSearch version 8.8.0 (Git=d2ae026)
+2026-10-11T11:31:47.322604030Z 1:M 11 Oct 2026 11:31:47.322 * <search> Low level api version 1 initialized successfully
+2026-10-11T11:31:47.322617825Z 1:M 11 Oct 2026 11:31:47.322 * <search> gc: ON, prefix min length: 2, min word length to stem: 4, prefix max expansions: 200, query timeout (ms): 500, timeout policy: return, oom policy: return, cursor read size: 1000, cursor max idle (ms): 300000, max doctable size: 1000000, max number of search results:  1000000, default scorer: BM25STD, 
+2026-10-11T11:31:47.322620814Z 1:M 11 Oct 2026 11:31:47.322 * <search> Initialized thread pools!
+2026-10-11T11:31:47.322622698Z 1:M 11 Oct 2026 11:31:47.322 * <search> Enabled workers threadpool of size 10
+2026-10-11T11:31:47.323490323Z 1:M 11 Oct 2026 11:31:47.323 * <search> Subscribe to config changes
+2026-10-11T11:31:47.323650327Z 1:M 11 Oct 2026 11:31:47.323 * <search> Subscribe to cluster slot migration events
+2026-10-11T11:31:47.323657962Z 1:M 11 Oct 2026 11:31:47.323 * <search> Enabled role change notification
+2026-10-11T11:31:47.324455594Z 1:M 11 Oct 2026 11:31:47.324 * <search> Cluster configuration: AUTO partitions, type: 0, coordinator timeout: 0ms
+2026-10-11T11:31:47.325146654Z 1:M 11 Oct 2026 11:31:47.325 * Module 'search' loaded from /usr/local/lib/redis/modules//redisearch.so
+2026-10-11T11:31:47.328175755Z 1:M 11 Oct 2026 11:31:47.325 * <timeseries> RedisTimeSeries version 80800, git_sha=42ca4f1078fca732b7f9256adbf25914d67e1cc9
+2026-10-11T11:31:47.328206062Z 1:M 11 Oct 2026 11:31:47.325 * <timeseries> Redis version found by RedisTimeSeries : 8.8.1 - oss
+2026-10-11T11:31:47.328209646Z 1:M 11 Oct 2026 11:31:47.325 * <timeseries> Registering configuration options: [
+2026-10-11T11:31:47.328212367Z 1:M 11 Oct 2026 11:31:47.325 * <timeseries> 	{ ts-compaction-policy   :              }
+2026-10-11T11:31:47.328229276Z 1:M 11 Oct 2026 11:31:47.325 * <timeseries> 	{ ts-num-threads         :            3 }
+2026-10-11T11:31:47.328231897Z 1:M 11 Oct 2026 11:31:47.325 * <timeseries> 	{ ts-libmr-protocol      :     INTERNAL }
+2026-10-11T11:31:47.328236115Z 1:M 11 Oct 2026 11:31:47.325 * <timeseries> 	{ ts-retention-policy    :            0 }
+2026-10-11T11:31:47.328238739Z 1:M 11 Oct 2026 11:31:47.325 * <timeseries> 	{ ts-duplicate-policy    :        block }
+2026-10-11T11:31:47.328240980Z 1:M 11 Oct 2026 11:31:47.325 * <timeseries> 	{ ts-chunk-size-bytes    :         4096 }
+2026-10-11T11:31:47.328243358Z 1:M 11 Oct 2026 11:31:47.325 * <timeseries> 	{ ts-encoding            :   compressed }
+2026-10-11T11:31:47.328245660Z 1:M 11 Oct 2026 11:31:47.325 * <timeseries> 	{ ts-ignore-max-time-diff:            0 }
+2026-10-11T11:31:47.328248274Z 1:M 11 Oct 2026 11:31:47.325 * <timeseries> 	{ ts-ignore-max-val-diff :     0.000000 }
+2026-10-11T11:31:47.328250907Z 1:M 11 Oct 2026 11:31:47.325 * <timeseries> ]
+2026-10-11T11:31:47.328253598Z 1:M 11 Oct 2026 11:31:47.325 * <timeseries> Detected redis oss
+2026-10-11T11:31:47.328256366Z 1:M 11 Oct 2026 11:31:47.326 * <timeseries> Subscribe to ASM events
+2026-10-11T11:31:47.328258854Z 1:M 11 Oct 2026 11:31:47.326 * <timeseries> Enabled diskless replication
+2026-10-11T11:31:47.328261356Z 1:M 11 Oct 2026 11:31:47.326 * Module 'timeseries' loaded from /usr/local/lib/redis/modules//redistimeseries.so
+2026-10-11T11:31:47.328264138Z 1:M 11 Oct 2026 11:31:47.327 * <ReJSON> Created new data type 'ReJSON-RL'
+2026-10-11T11:31:47.328267036Z 1:M 11 Oct 2026 11:31:47.327 * <ReJSON> version: 80800 git sha: unknown branch: unknown
+2026-10-11T11:31:47.328269738Z 1:M 11 Oct 2026 11:31:47.327 * <ReJSON> Exported RedisJSON_V1 API
+2026-10-11T11:31:47.328309133Z 1:M 11 Oct 2026 11:31:47.327 * <ReJSON> Exported RedisJSON_V2 API
+2026-10-11T11:31:47.328311584Z 1:M 11 Oct 2026 11:31:47.327 * <ReJSON> Exported RedisJSON_V3 API
+2026-10-11T11:31:47.328313769Z 1:M 11 Oct 2026 11:31:47.327 * <ReJSON> Exported RedisJSON_V4 API
+2026-10-11T11:31:47.328315799Z 1:M 11 Oct 2026 11:31:47.327 * <ReJSON> Exported RedisJSON_V5 API
+2026-10-11T11:31:47.328318434Z 1:M 11 Oct 2026 11:31:47.327 * <ReJSON> Exported RedisJSON_V6 API
+2026-10-11T11:31:47.328321737Z 1:M 11 Oct 2026 11:31:47.327 * <ReJSON> Exported RedisJSON_V7 API
+2026-10-11T11:31:47.328324217Z 1:M 11 Oct 2026 11:31:47.327 * <ReJSON> Enabled diskless replication
+2026-10-11T11:31:47.328326474Z 1:M 11 Oct 2026 11:31:47.327 * <ReJSON> Initialized shared string cache, thread safe: true.
+2026-10-11T11:31:47.328328589Z 1:M 11 Oct 2026 11:31:47.327 * Module 'ReJSON' loaded from /usr/local/lib/redis/modules//rejson.so
+2026-10-11T11:31:47.328330873Z 1:M 11 Oct 2026 11:31:47.327 * <search> Acquired RedisJSON_V7 API
+2026-10-11T11:31:47.328333136Z 1:M 11 Oct 2026 11:31:47.327 * Server initialized
+2026-10-11T11:31:47.328335212Z 1:M 11 Oct 2026 11:31:47.327 * <search> Loading event started
+2026-10-11T11:31:47.347544618Z 1:M 11 Oct 2026 11:31:47.347 * Reading RDB base file on AOF loading...
+2026-10-11T11:31:47.347692219Z 1:M 11 Oct 2026 11:31:47.347 * Loading RDB produced by version 8.8.1
+2026-10-11T11:31:47.347797519Z 1:M 11 Oct 2026 11:31:47.347 * RDB age 2463430 seconds
+2026-10-11T11:31:47.347848963Z 1:M 11 Oct 2026 11:31:47.347 * RDB memory usage when created 1.27 Mb
+2026-10-11T11:31:47.347909010Z 1:M 11 Oct 2026 11:31:47.347 * RDB is base AOF
+2026-10-11T11:31:47.347996553Z 1:M 11 Oct 2026 11:31:47.347 * Done loading RDB, keys loaded: 0, keys expired: 0.
+2026-10-11T11:31:47.348313450Z 1:M 11 Oct 2026 11:31:47.348 * <search> Draining workers thread pool with threshold 100
+2026-10-11T11:31:47.348452252Z 1:M 11 Oct 2026 11:31:47.348 * DB loaded from base file appendonly.aof.1.base.rdb: 0.020 seconds
+2026-10-11T11:31:47.411701795Z 1:M 11 Oct 2026 11:31:47.411 * <search> Successfully created index checkpoint
+2026-10-11T11:31:47.411744650Z 1:M 11 Oct 2026 11:31:47.411 * <search> Successfully created index checkpoint_write
+2026-10-11T11:31:47.580727132Z 1:M 11 Oct 2026 11:31:47.580 * <search> Draining workers thread pool with threshold 100
+2026-10-11T11:31:47.699139960Z 1:M 11 Oct 2026 11:31:47.698 * <search> Draining workers thread pool with threshold 100
+2026-10-11T11:31:47.723589479Z 1:M 11 Oct 2026 11:31:47.723 * <search> DocTable capacity increase from 1000 to 1501
+2026-10-11T11:31:47.745683897Z 1:M 11 Oct 2026 11:31:47.745 * <search> DocTable capacity increase from 1000 to 1501
+2026-10-11T11:31:47.755291613Z 1:M 11 Oct 2026 11:31:47.754 * <search> DocTable capacity increase from 1501 to 2252
+2026-10-11T11:31:47.777087089Z 1:M 11 Oct 2026 11:31:47.776 * <search> DocTable capacity increase from 1501 to 2252
+2026-10-11T11:31:47.791306541Z 1:M 11 Oct 2026 11:31:47.790 * DB loaded from incr file appendonly.aof.1.incr.aof: 0.442 seconds
+2026-10-11T11:31:47.791358506Z 1:M 11 Oct 2026 11:31:47.790 * <search> Loading event ended successfully
+2026-10-11T11:31:47.791362027Z 1:M 11 Oct 2026 11:31:47.790 * DB loaded from append only file: 0.463 seconds
+2026-10-11T11:31:47.920564263Z 1:M 11 Oct 2026 11:31:47.920 * Opening AOF incr file appendonly.aof.1.incr.aof on server start
+2026-10-11T11:31:47.920597602Z 1:M 11 Oct 2026 11:31:47.920 * Ready to accept connections tcp

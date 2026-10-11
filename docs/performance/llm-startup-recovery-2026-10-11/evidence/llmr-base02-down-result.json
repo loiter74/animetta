@@ -1,0 +1,37 @@
+{
+  "run_id": "llmr-base02-down",
+  "action": "anima-down",
+  "command": [
+    "py",
+    "-3.13",
+    "scripts/runtime_lifecycle.py",
+    "anima-down",
+    "--run-id",
+    "llmr-base02-down",
+    "--wait",
+    "--artifacts-root",
+    "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans"
+  ],
+  "exit_code": 0,
+  "CLI_elapsed_seconds": 9.388464600000589,
+  "stdout_bytes": 640,
+  "stdout_SHA": "bee96467858fc34350e1676f216db6bd41eb7b18165243d9fcc59fed81d6f4ac",
+  "stderr_SHA": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "steps": [
+    {
+      "step_id": "animetta-cleanup",
+      "status": "passed",
+      "started_at": "2026-10-11T10:53:15.146926Z",
+      "feedback_at": "2026-10-11T10:53:23.786779Z",
+      "elapsed_seconds": 8.639867900001263,
+      "progress_summary": "command completed with exit code 0",
+      "evidence_refs": [
+        "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-base02-down/evidence/command-658be53f288e.log"
+      ],
+      "checkpoint_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-base02-down\\steps\\animetta-cleanup\\checkpoint.json",
+      "checkpoint_SHA": "6e10ce3f6ddbec20b6936bdcb52d74bea73bdc762730e6f951333a6508c2a4af",
+      "result_path": "C:\\Users\\30262\\Project\\Anima\\artifacts\\iteration-plans\\llmr-base02-down\\steps\\animetta-cleanup\\windows\\000001\\result.json",
+      "result_SHA": "596442220dfbee200c544dd1a89c339b09c2b7686e698941936c6acf25921c83"
+    }
+  ]
+}

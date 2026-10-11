@@ -1,0 +1,110 @@
+{
+  "Qwen_processes": [
+    {
+      "pid": 14240,
+      "creation_time": 1791686620.901652,
+      "command_line": [
+        "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\venv\\Scripts\\python.exe",
+        "-m",
+        "animetta_qwen_tts"
+      ],
+      "rss_bytes": 1063387136
+    },
+    {
+      "pid": 16104,
+      "creation_time": 1791686620.775384,
+      "command_line": [
+        "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\venv\\Scripts\\python.exe",
+        "-m",
+        "animetta_qwen_tts"
+      ],
+      "rss_bytes": 7335936
+    }
+  ],
+  "Qwen_http": {
+    "/ready": {
+      "status": 200,
+      "elapsed_seconds": 0.055825600000389386,
+      "bytes": 329,
+      "sha256": "a20c3011698586f54171ff97f52ee19f7d1fe4e0c21d3e8b60bb6bf2061f9afe",
+      "body": {
+        "ready": true,
+        "service": "qwen-tts",
+        "api_version": "v1",
+        "provider": "qwen3-tts-gguf-host",
+        "model": "Qwen3-TTS-1.7B-Base",
+        "revision": "0eb32e283ee46b86820c67843abb04cf12bc58d7",
+        "voice": "tosaka-rin-cn",
+        "sample_rate": 24000,
+        "quantization": "talker=Q5_K,predictor=Q8_0,onnx=FP16",
+        "runtime_commit": "0eb32e283ee46b86820c67843abb04cf12bc58d7"
+      }
+    },
+    "/v1/identity": {
+      "status": 200,
+      "elapsed_seconds": 0.0017967999992833938,
+      "bytes": 329,
+      "sha256": "a20c3011698586f54171ff97f52ee19f7d1fe4e0c21d3e8b60bb6bf2061f9afe",
+      "body": {
+        "ready": true,
+        "service": "qwen-tts",
+        "api_version": "v1",
+        "provider": "qwen3-tts-gguf-host",
+        "model": "Qwen3-TTS-1.7B-Base",
+        "revision": "0eb32e283ee46b86820c67843abb04cf12bc58d7",
+        "voice": "tosaka-rin-cn",
+        "sample_rate": 24000,
+        "quantization": "talker=Q5_K,predictor=Q8_0,onnx=FP16",
+        "runtime_commit": "0eb32e283ee46b86820c67843abb04cf12bc58d7"
+      }
+    }
+  },
+  "collected_at": "2026-10-11T10:52:36.924029+00:00",
+  "containers": [
+    {
+      "name": "/anima-animetta-1",
+      "id": "2d336ae4218d5f7e438df4493264ee51f4c20578cd7d9cfe59d0d893d02e3b81",
+      "image": "sha256:74da0dbe9974e9c674ec61b843e507d9681df87f0da9aacc7a18da10c719ecd8",
+      "StartedAt": "2026-10-11T10:11:25.485399455Z",
+      "labels": {
+        "com.docker.compose.project": "anima",
+        "com.docker.compose.project.config_files": "C:\\Users\\30262\\Project\\Anima\\docker-compose.yml",
+        "com.docker.compose.project.environment_file": "C:\\Users\\30262\\Project\\Anima\\.env",
+        "com.docker.compose.project.working_dir": "C:\\Users\\30262\\Project\\Anima"
+      },
+      "volumes": [
+        {
+          "name": "anima_animetta-data",
+          "destination": "/app/data"
+        },
+        {
+          "name": "anima_animetta-memory-db",
+          "destination": "/app/memory_db"
+        }
+      ]
+    },
+    {
+      "name": "/anima-redis-1",
+      "id": "2cab0ebff1b6626fba7841c0e38dcae57f788d527d3f19baccdc59ab307ff961",
+      "image": "sha256:8096655e437712b07503796fb64d81359256cfcff0ab29d95a7da72863786efb",
+      "StartedAt": "2026-10-11T10:11:22.723022102Z",
+      "labels": {
+        "com.docker.compose.project": "anima",
+        "com.docker.compose.project.config_files": "C:\\Users\\30262\\Project\\Anima\\docker-compose.yml",
+        "com.docker.compose.project.environment_file": "C:\\Users\\30262\\Project\\Anima\\.env",
+        "com.docker.compose.project.working_dir": "C:\\Users\\30262\\Project\\Anima"
+      },
+      "volumes": [
+        {
+          "name": "anima_animetta-redis",
+          "destination": "/data"
+        }
+      ]
+    }
+  ],
+  "image_id": "sha256:74da0dbe9974e9c674ec61b843e507d9681df87f0da9aacc7a18da10c719ecd8",
+  "image_size_bytes": 616822142,
+  "RVC8769_unavailable": true,
+  "credentials_equal": true,
+  "env_sha256": "66d4ad7e31d2596374c115e3dbe47b0690a89b98513f6b7fd0e181161e977084"
+}

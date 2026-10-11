@@ -1,0 +1,39 @@
+{
+  "source_files": [
+    "src/animetta/runtime/provider_pool.py",
+    "src/animetta/runtime/readiness.py",
+    "src/animetta/runtime/session_context.py",
+    "tests/core/test_runtime_readiness.py"
+  ],
+  "python_preflight": "Python 3.13 assertion passed before tests",
+  "targeted_diagnostic": {
+    "status": "passed",
+    "passed": 14,
+    "deselected": 61,
+    "pytest_seconds": 3.07,
+    "selection": "pool_recovers_with_same or concurrent_init_shares_recovery or shutdown_cancels_recovery or classifies_transient"
+  },
+  "final_affected": {
+    "status": "passed",
+    "plan_hash": "227933bd10f575f20a0706e741c9e682f9302c98da321c03223e2fcc21aa7f85",
+    "exit_code": 0,
+    "groups": 9,
+    "cache_hits": 0,
+    "backend_full_shards": 26,
+    "backend_full_passed": 5736,
+    "coverage_percent": 81,
+    "new_recovery_cases": 18,
+    "evidence": "summary.json and original group result JSON files"
+  },
+  "simplify": {
+    "shared_policy": "One transient-reason definition serves probe retry and readiness sanitization",
+    "ownership": "Reuse the tracked connectivity probe and existing initialization task; retain engines",
+    "invariants": "Successful initial probe adds no request or sleep; strict nonready before real proof; existing shutdown cancels recovery"
+  },
+  "efficiency": {
+    "waste": "First fault observer stopped on an expected startup transport disconnect, losing HTTP transition evidence",
+    "root_cause": "RemoteDisconnected was omitted from the observer's transient connection exception handling",
+    "fix": "Catch ConnectionError in the bounded observer; preserve the failed attempt and keep a distinct accepted observation pointer",
+    "next_path": "Freeze inputs, classify startup connection exceptions, observe real 503 then 200 with stable process identity, restore normal runtime; do not repeat successful normal samples"
+  }
+}

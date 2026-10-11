@@ -1,0 +1,7 @@
+services:
+  animetta:
+    volumes:
+      - type: bind
+        source: C:/Users/30262/Project/Anima/.zcode/performance/llm-startup-recovery-20261011/fault/sitecustomize.py
+        target: /app/src/sitecustomize.py
+        read_only: true

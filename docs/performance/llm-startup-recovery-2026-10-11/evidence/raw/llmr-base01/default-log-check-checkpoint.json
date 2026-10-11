@@ -1,0 +1,12 @@
+{
+  "committed_at": "2026-10-11T10:53:13.385109Z",
+  "evidence_refs": [
+    "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-base01/evidence/command-70d2635a7b22.log"
+  ],
+  "result_reference": "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-base01/steps/default-log-check/windows/000001/result.json",
+  "reuse_fingerprint": "aff8c4f2691bfa7da5e062c89ff156068c887afbb83249ae6cb60e79a787b69e",
+  "run_id": "llmr-base01",
+  "schema_version": 1,
+  "status": "passed",
+  "step_id": "default-log-check"
+}

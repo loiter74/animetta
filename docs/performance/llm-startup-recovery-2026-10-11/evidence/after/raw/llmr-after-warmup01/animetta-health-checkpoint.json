@@ -1,0 +1,12 @@
+{
+  "committed_at": "2026-10-11T11:19:46.914193Z",
+  "evidence_refs": [
+    "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-after-warmup01/evidence/http-91234995d891.log"
+  ],
+  "result_reference": "C:/Users/30262/Project/Anima/artifacts/iteration-plans/llmr-after-warmup01/steps/animetta-health/windows/000001/result.json",
+  "reuse_fingerprint": "195d631af51842b1981220b40a58781878082bfeaa9a84be44db70f3cdb8374a",
+  "run_id": "llmr-after-warmup01",
+  "schema_version": 1,
+  "status": "passed",
+  "step_id": "animetta-health"
+}

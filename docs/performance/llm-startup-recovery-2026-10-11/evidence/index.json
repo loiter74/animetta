@@ -1,0 +1,1992 @@
+{
+  "schema_version": 1,
+  "files": [
+    {
+      "source": "HOLD-report.json",
+      "archive": "HOLD-report.json",
+      "bytes": 4619,
+      "SHA256": "1e447ff90568d74d1cc7f0667a8d98bdf9cc7a538d308b7c38b48fa2d2f9daa3"
+    },
+    {
+      "source": "acceptance-plan.json",
+      "archive": "acceptance-plan.json",
+      "bytes": 3138,
+      "SHA256": "8abd48280ec01fbae8a49eedaa0c6bb6601a5aa0ad146034f24dd03992b2f617"
+    },
+    {
+      "source": "acceptance/core-role-probe-fault02.mjs",
+      "archive": "acceptance/core-role-probe-fault02.mjs.txt",
+      "bytes": 18376,
+      "SHA256": "f87517e7f3bb3147ada1e81e77b24ebe56b213538b44a6626b644c434af61f4f"
+    },
+    {
+      "source": "acceptance/core-role-probe-recovered.mjs",
+      "archive": "acceptance/core-role-probe-recovered.mjs.txt",
+      "bytes": 18374,
+      "SHA256": "5fe20f4fd2e83ff4cac53bae896519fd62a81431f85884ea9d3eb116a9ab8686"
+    },
+    {
+      "source": "acceptance/llmr-fault-role01.json",
+      "archive": "acceptance/llmr-fault-role01.json",
+      "bytes": 17348,
+      "SHA256": "ad95aecf6d6705d6623063195ca0211aae9c805d9358a59c22e0a3b33ff01bab"
+    },
+    {
+      "source": "acceptance/llmr-fault-role01.stderr.log",
+      "archive": "acceptance/llmr-fault-role01.stderr.log",
+      "bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "acceptance/role-probe-fault02-input.json",
+      "archive": "acceptance/role-probe-fault02-input.json",
+      "bytes": 393,
+      "SHA256": "db4daae7444b2254748a62e941b2aa07aeeececc7777d03337f90b730844f79c"
+    },
+    {
+      "source": "acceptance/role-probe-input.json",
+      "archive": "acceptance/role-probe-input.json",
+      "bytes": 559,
+      "SHA256": "31406543953394415b2e93e1c387e00ea36b8a0772772c8f15f6432156a8bcc2"
+    },
+    {
+      "source": "after-source-input.json",
+      "archive": "after-source-input.json",
+      "bytes": 99844,
+      "SHA256": "a30733cfcb2e656845c3099044b1f967fce33fc8b2b39185230fe55b880d7c3e"
+    },
+    {
+      "source": "after.json",
+      "archive": "after.json",
+      "bytes": 94492,
+      "SHA256": "ad29b146c54e4afc4161bfda451d94d6ab53af0e657d88643562c21728db0d3e"
+    },
+    {
+      "source": "after/current-inventory.json",
+      "archive": "after/current-inventory.json",
+      "bytes": 3863,
+      "SHA256": "a96efeaafabff5ba9d168af2e34e630559ded53aa82737f532bff56d0682c842"
+    },
+    {
+      "source": "after/evidence/llmr-after-warmup01/animetta-health-http-91234995d891.log",
+      "archive": "after/evidence/llmr-after-warmup01/animetta-health-http-91234995d891.log",
+      "bytes": 64,
+      "SHA256": "d777e8643ad7caeb85280438a842620fbb1e900bfcdbfd7fc86d68d003a1f731"
+    },
+    {
+      "source": "after/evidence/llmr-after-warmup01/animetta-ready-http-1c2d6f651f30.log",
+      "archive": "after/evidence/llmr-after-warmup01/animetta-ready-http-1c2d6f651f30.log",
+      "bytes": 2335,
+      "SHA256": "9fb7014d7a38b7bb0e6c318ccf0a73ffe250973ff901aa6c67a8365f99cc2b8a"
+    },
+    {
+      "source": "after/evidence/llmr-after-warmup01/animetta-start-command-a84b3fe2a39f.log",
+      "archive": "after/evidence/llmr-after-warmup01/animetta-start-command-a84b3fe2a39f.log",
+      "bytes": 261,
+      "SHA256": "73b9fbb93595aa65041d9207c35df85b7006e0b28d7ddd92df7c11279abfdd0a"
+    },
+    {
+      "source": "after/evidence/llmr-after-warmup01/default-log-check-command-a830e61ae610.log",
+      "archive": "after/evidence/llmr-after-warmup01/default-log-check-command-a830e61ae610.log",
+      "bytes": 22393,
+      "SHA256": "2aea0c585a65c810486e9961babbccfa2fd311f6627876574a6e8acbfc840551"
+    },
+    {
+      "source": "after/evidence/llmr-after-warmup01/frontend-readiness-http-8605b8ba08c2.log",
+      "archive": "after/evidence/llmr-after-warmup01/frontend-readiness-http-8605b8ba08c2.log",
+      "bytes": 1695,
+      "SHA256": "fe9ce9dc0dd67db82bee9548d5e85a8057c74efe76a07fa96951f0702e3ec5cd"
+    },
+    {
+      "source": "after/evidence/llmr-after-warmup01/host-tts-preflight-command-a9629353fa5e.log",
+      "archive": "after/evidence/llmr-after-warmup01/host-tts-preflight-command-a9629353fa5e.log",
+      "bytes": 493,
+      "SHA256": "b810449f5ac5ee6c9473ab6d530c144d729282272c8100549e1ac06508a6da82"
+    },
+    {
+      "source": "after/evidence/llmr-after-warmup01/host-tts-start-host-tts-readiness.log",
+      "archive": "after/evidence/llmr-after-warmup01/host-tts-start-host-tts-readiness.log",
+      "bytes": 12,
+      "SHA256": "cba25a29e035757901e524bd21389a6a747826da3a38043cc7b8a4c6d066c268"
+    },
+    {
+      "source": "after/evidence/llmr-after01-down/animetta-cleanup-command-658be53f288e.log",
+      "archive": "after/evidence/llmr-after01-down/animetta-cleanup-command-658be53f288e.log",
+      "bytes": 363,
+      "SHA256": "3680a807f4e7bc448f62a7558171ca9152efc4185b3180cc9db0c385f12f66a5"
+    },
+    {
+      "source": "after/evidence/llmr-after01/animetta-health-http-91234995d891.log",
+      "archive": "after/evidence/llmr-after01/animetta-health-http-91234995d891.log",
+      "bytes": 64,
+      "SHA256": "c5d5d65cf5eb2cbcf9193f1fb10e58ca3397ee0c03340a0d12fc602d42a38d73"
+    },
+    {
+      "source": "after/evidence/llmr-after01/animetta-ready-http-1c2d6f651f30.log",
+      "archive": "after/evidence/llmr-after01/animetta-ready-http-1c2d6f651f30.log",
+      "bytes": 2334,
+      "SHA256": "4e3e87c5c399924e32ca376aa1ada859966f33e4c3fa8639123a4da81a1f2be5"
+    },
+    {
+      "source": "after/evidence/llmr-after01/animetta-start-command-a84b3fe2a39f.log",
+      "archive": "after/evidence/llmr-after01/animetta-start-command-a84b3fe2a39f.log",
+      "bytes": 500,
+      "SHA256": "de1d2dbec3ec8fb4ef7e8521319bbdb4fd6ea83679cf904306626425058646cd"
+    },
+    {
+      "source": "after/evidence/llmr-after01/default-log-check-command-a32b1c1d2d8a.log",
+      "archive": "after/evidence/llmr-after01/default-log-check-command-a32b1c1d2d8a.log",
+      "bytes": 21850,
+      "SHA256": "c5e25b69ad20d35d51af6c2cd4c3b1927ec9e5cb526fe5f12a36e64a2fcba254"
+    },
+    {
+      "source": "after/evidence/llmr-after01/frontend-readiness-http-8605b8ba08c2.log",
+      "archive": "after/evidence/llmr-after01/frontend-readiness-http-8605b8ba08c2.log",
+      "bytes": 1695,
+      "SHA256": "fe9ce9dc0dd67db82bee9548d5e85a8057c74efe76a07fa96951f0702e3ec5cd"
+    },
+    {
+      "source": "after/evidence/llmr-after01/host-tts-preflight-command-a9629353fa5e.log",
+      "archive": "after/evidence/llmr-after01/host-tts-preflight-command-a9629353fa5e.log",
+      "bytes": 493,
+      "SHA256": "b810449f5ac5ee6c9473ab6d530c144d729282272c8100549e1ac06508a6da82"
+    },
+    {
+      "source": "after/evidence/llmr-after01/host-tts-start-host-tts-readiness.log",
+      "archive": "after/evidence/llmr-after01/host-tts-start-host-tts-readiness.log",
+      "bytes": 12,
+      "SHA256": "cba25a29e035757901e524bd21389a6a747826da3a38043cc7b8a4c6d066c268"
+    },
+    {
+      "source": "after/evidence/llmr-after02-down/animetta-cleanup-command-658be53f288e.log",
+      "archive": "after/evidence/llmr-after02-down/animetta-cleanup-command-658be53f288e.log",
+      "bytes": 363,
+      "SHA256": "3680a807f4e7bc448f62a7558171ca9152efc4185b3180cc9db0c385f12f66a5"
+    },
+    {
+      "source": "after/evidence/llmr-after02/animetta-health-http-91234995d891.log",
+      "archive": "after/evidence/llmr-after02/animetta-health-http-91234995d891.log",
+      "bytes": 64,
+      "SHA256": "609775f4bbf8b0fda63c94ec6fe9bcc39f0735f64217f8efac6b4f952dd710b8"
+    },
+    {
+      "source": "after/evidence/llmr-after02/animetta-ready-http-1c2d6f651f30.log",
+      "archive": "after/evidence/llmr-after02/animetta-ready-http-1c2d6f651f30.log",
+      "bytes": 2335,
+      "SHA256": "f39cfdd03723df502960174d260f58e451768773c189d278ae7a99befe3c74a3"
+    },
+    {
+      "source": "after/evidence/llmr-after02/animetta-start-command-a84b3fe2a39f.log",
+      "archive": "after/evidence/llmr-after02/animetta-start-command-a84b3fe2a39f.log",
+      "bytes": 500,
+      "SHA256": "de1d2dbec3ec8fb4ef7e8521319bbdb4fd6ea83679cf904306626425058646cd"
+    },
+    {
+      "source": "after/evidence/llmr-after02/default-log-check-command-475d73db8da7.log",
+      "archive": "after/evidence/llmr-after02/default-log-check-command-475d73db8da7.log",
+      "bytes": 21850,
+      "SHA256": "5b9a733b4258ba4f4758de17cd535d521e721a7e4004f5785f417c4009efdad7"
+    },
+    {
+      "source": "after/evidence/llmr-after02/frontend-readiness-http-8605b8ba08c2.log",
+      "archive": "after/evidence/llmr-after02/frontend-readiness-http-8605b8ba08c2.log",
+      "bytes": 1695,
+      "SHA256": "fe9ce9dc0dd67db82bee9548d5e85a8057c74efe76a07fa96951f0702e3ec5cd"
+    },
+    {
+      "source": "after/evidence/llmr-after02/host-tts-preflight-command-a9629353fa5e.log",
+      "archive": "after/evidence/llmr-after02/host-tts-preflight-command-a9629353fa5e.log",
+      "bytes": 493,
+      "SHA256": "b810449f5ac5ee6c9473ab6d530c144d729282272c8100549e1ac06508a6da82"
+    },
+    {
+      "source": "after/evidence/llmr-after02/host-tts-start-host-tts-readiness.log",
+      "archive": "after/evidence/llmr-after02/host-tts-start-host-tts-readiness.log",
+      "bytes": 12,
+      "SHA256": "cba25a29e035757901e524bd21389a6a747826da3a38043cc7b8a4c6d066c268"
+    },
+    {
+      "source": "after/evidence/llmr-fault01-down/animetta-cleanup-command-658be53f288e.log",
+      "archive": "after/evidence/llmr-fault01-down/animetta-cleanup-command-658be53f288e.log",
+      "bytes": 363,
+      "SHA256": "3680a807f4e7bc448f62a7558171ca9152efc4185b3180cc9db0c385f12f66a5"
+    },
+    {
+      "source": "after/evidence/llmr-fault01/animetta-health-http-91234995d891.log",
+      "archive": "after/evidence/llmr-fault01/animetta-health-http-91234995d891.log",
+      "bytes": 64,
+      "SHA256": "fbe03d47cc19ce36d7d9b041fb128c893ce252515a385d0c9097de476de16a75"
+    },
+    {
+      "source": "after/evidence/llmr-fault01/animetta-ready-http-1c2d6f651f30.log",
+      "archive": "after/evidence/llmr-fault01/animetta-ready-http-1c2d6f651f30.log",
+      "bytes": 2335,
+      "SHA256": "87ccc14c32e79df668e57b6b7b38cc1981f1e2288e36faea09a8bccbe3768df2"
+    },
+    {
+      "source": "after/evidence/llmr-fault01/animetta-start-command-a84b3fe2a39f.log",
+      "archive": "after/evidence/llmr-fault01/animetta-start-command-a84b3fe2a39f.log",
+      "bytes": 500,
+      "SHA256": "de1d2dbec3ec8fb4ef7e8521319bbdb4fd6ea83679cf904306626425058646cd"
+    },
+    {
+      "source": "after/evidence/llmr-fault01/default-log-check-command-c65dc336c128.log",
+      "archive": "after/evidence/llmr-fault01/default-log-check-command-c65dc336c128.log",
+      "bytes": 25019,
+      "SHA256": "7e77b1377c644bbc85c41fa4c59452326fc869e6462c40d1ef18d76855f2b92d"
+    },
+    {
+      "source": "after/evidence/llmr-fault01/frontend-readiness-http-8605b8ba08c2.log",
+      "archive": "after/evidence/llmr-fault01/frontend-readiness-http-8605b8ba08c2.log",
+      "bytes": 1695,
+      "SHA256": "fe9ce9dc0dd67db82bee9548d5e85a8057c74efe76a07fa96951f0702e3ec5cd"
+    },
+    {
+      "source": "after/evidence/llmr-fault01/host-tts-preflight-command-a9629353fa5e.log",
+      "archive": "after/evidence/llmr-fault01/host-tts-preflight-command-a9629353fa5e.log",
+      "bytes": 493,
+      "SHA256": "b810449f5ac5ee6c9473ab6d530c144d729282272c8100549e1ac06508a6da82"
+    },
+    {
+      "source": "after/evidence/llmr-fault01/host-tts-start-host-tts-readiness.log",
+      "archive": "after/evidence/llmr-fault01/host-tts-start-host-tts-readiness.log",
+      "bytes": 12,
+      "SHA256": "cba25a29e035757901e524bd21389a6a747826da3a38043cc7b8a4c6d066c268"
+    },
+    {
+      "source": "after/evidence/llmr-fault02-down/animetta-cleanup-command-658be53f288e.log",
+      "archive": "after/evidence/llmr-fault02-down/animetta-cleanup-command-658be53f288e.log",
+      "bytes": 363,
+      "SHA256": "3680a807f4e7bc448f62a7558171ca9152efc4185b3180cc9db0c385f12f66a5"
+    },
+    {
+      "source": "after/evidence/llmr-fault02/animetta-health-http-91234995d891.log",
+      "archive": "after/evidence/llmr-fault02/animetta-health-http-91234995d891.log",
+      "bytes": 62,
+      "SHA256": "6fe95eb358b069a06aa04e481febc90698a0a23387aaf39a36a0b0660bbbf197"
+    },
+    {
+      "source": "after/evidence/llmr-fault02/animetta-ready-http-1c2d6f651f30.log",
+      "archive": "after/evidence/llmr-fault02/animetta-ready-http-1c2d6f651f30.log",
+      "bytes": 2335,
+      "SHA256": "24de0ffa5085c050e11d0b18c057d0089404c1903b38f5861c0de0f7814cacd9"
+    },
+    {
+      "source": "after/evidence/llmr-fault02/animetta-start-command-a84b3fe2a39f.log",
+      "archive": "after/evidence/llmr-fault02/animetta-start-command-a84b3fe2a39f.log",
+      "bytes": 500,
+      "SHA256": "de1d2dbec3ec8fb4ef7e8521319bbdb4fd6ea83679cf904306626425058646cd"
+    },
+    {
+      "source": "after/evidence/llmr-fault02/default-log-check-command-4455c8b8c24d.log",
+      "archive": "after/evidence/llmr-fault02/default-log-check-command-4455c8b8c24d.log",
+      "bytes": 27410,
+      "SHA256": "1e0ecf8106f0c941c1018b200ef91e3f275378fcf2db6f7fa30851a3be1b8835"
+    },
+    {
+      "source": "after/evidence/llmr-fault02/frontend-readiness-http-8605b8ba08c2.log",
+      "archive": "after/evidence/llmr-fault02/frontend-readiness-http-8605b8ba08c2.log",
+      "bytes": 1695,
+      "SHA256": "fe9ce9dc0dd67db82bee9548d5e85a8057c74efe76a07fa96951f0702e3ec5cd"
+    },
+    {
+      "source": "after/evidence/llmr-fault02/host-tts-preflight-command-a9629353fa5e.log",
+      "archive": "after/evidence/llmr-fault02/host-tts-preflight-command-a9629353fa5e.log",
+      "bytes": 493,
+      "SHA256": "b810449f5ac5ee6c9473ab6d530c144d729282272c8100549e1ac06508a6da82"
+    },
+    {
+      "source": "after/evidence/llmr-fault02/host-tts-start-host-tts-readiness.log",
+      "archive": "after/evidence/llmr-fault02/host-tts-start-host-tts-readiness.log",
+      "bytes": 12,
+      "SHA256": "cba25a29e035757901e524bd21389a6a747826da3a38043cc7b8a4c6d066c268"
+    },
+    {
+      "source": "after/evidence/llmr-restore01-down/animetta-cleanup-command-658be53f288e.log",
+      "archive": "after/evidence/llmr-restore01-down/animetta-cleanup-command-658be53f288e.log",
+      "bytes": 363,
+      "SHA256": "3680a807f4e7bc448f62a7558171ca9152efc4185b3180cc9db0c385f12f66a5"
+    },
+    {
+      "source": "after/evidence/llmr-restore01/animetta-health-http-91234995d891.log",
+      "archive": "after/evidence/llmr-restore01/animetta-health-http-91234995d891.log",
+      "bytes": 64,
+      "SHA256": "18372dde1146cb21813f8baddc76195e63237c4dc760e16adbc2a20fa8433859"
+    },
+    {
+      "source": "after/evidence/llmr-restore01/animetta-ready-http-1c2d6f651f30.log",
+      "archive": "after/evidence/llmr-restore01/animetta-ready-http-1c2d6f651f30.log",
+      "bytes": 2334,
+      "SHA256": "ecce836d1736310b9007b80ab5afeeb1b1fd0eda2996636c9d954cfff51946e6"
+    },
+    {
+      "source": "after/evidence/llmr-restore01/animetta-start-command-a84b3fe2a39f.log",
+      "archive": "after/evidence/llmr-restore01/animetta-start-command-a84b3fe2a39f.log",
+      "bytes": 500,
+      "SHA256": "de1d2dbec3ec8fb4ef7e8521319bbdb4fd6ea83679cf904306626425058646cd"
+    },
+    {
+      "source": "after/evidence/llmr-restore01/default-log-check-command-fabef52c5ac9.log",
+      "archive": "after/evidence/llmr-restore01/default-log-check-command-fabef52c5ac9.log",
+      "bytes": 21850,
+      "SHA256": "f79bb47388372dd91f790b749a19c6fd2f89edceb1284a0998106a8a7c1a70be"
+    },
+    {
+      "source": "after/evidence/llmr-restore01/frontend-readiness-http-8605b8ba08c2.log",
+      "archive": "after/evidence/llmr-restore01/frontend-readiness-http-8605b8ba08c2.log",
+      "bytes": 1695,
+      "SHA256": "fe9ce9dc0dd67db82bee9548d5e85a8057c74efe76a07fa96951f0702e3ec5cd"
+    },
+    {
+      "source": "after/evidence/llmr-restore01/host-tts-preflight-command-a9629353fa5e.log",
+      "archive": "after/evidence/llmr-restore01/host-tts-preflight-command-a9629353fa5e.log",
+      "bytes": 493,
+      "SHA256": "b810449f5ac5ee6c9473ab6d530c144d729282272c8100549e1ac06508a6da82"
+    },
+    {
+      "source": "after/evidence/llmr-restore01/host-tts-start-host-tts-readiness.log",
+      "archive": "after/evidence/llmr-restore01/host-tts-start-host-tts-readiness.log",
+      "bytes": 12,
+      "SHA256": "cba25a29e035757901e524bd21389a6a747826da3a38043cc7b8a4c6d066c268"
+    },
+    {
+      "source": "after/frozen-source-input.json",
+      "archive": "after/frozen-source-input.json",
+      "bytes": 99844,
+      "SHA256": "a30733cfcb2e656845c3099044b1f967fce33fc8b2b39185230fe55b880d7c3e"
+    },
+    {
+      "source": "after/llmr-after-warmup01-app.log",
+      "archive": "after/llmr-after-warmup01-app.log",
+      "bytes": 24761,
+      "SHA256": "5426e6d9a2b01ae8c0b097702d5eaa89636bf8a7d1da303ad474609d45cc86bd"
+    },
+    {
+      "source": "after/llmr-after-warmup01-build-receipt.json",
+      "archive": "after/llmr-after-warmup01-build-receipt.json",
+      "bytes": 155,
+      "SHA256": "d8ee594b28e73eea56f0e4a2f2734ec377df839d3a737e77c9c0ab057b2c21c0"
+    },
+    {
+      "source": "after/llmr-after-warmup01-redis.log",
+      "archive": "after/llmr-after-warmup01-redis.log",
+      "bytes": 10193,
+      "SHA256": "b85c4432bf18623af59f380a546dcfd80b8923f57fd961895cf66c3a6f986756"
+    },
+    {
+      "source": "after/llmr-after-warmup01-result.json",
+      "archive": "after/llmr-after-warmup01-result.json",
+      "bytes": 8133,
+      "SHA256": "3ba69d81ec57e14fce73e1fdaf505583c26e675192402849744be5d73931a26f"
+    },
+    {
+      "source": "after/llmr-after-warmup01-sample.json",
+      "archive": "after/llmr-after-warmup01-sample.json",
+      "bytes": 10744,
+      "SHA256": "7f153d21ec8183bd52f81d062c02057195638176d7a26dc8cd5dfb0bd2102bd9"
+    },
+    {
+      "source": "after/llmr-after-warmup01-stderr.log",
+      "archive": "after/llmr-after-warmup01-stderr.log",
+      "bytes": 6399,
+      "SHA256": "81bfaf5a198d0208903290f793b63f5fadba6e6e787d76657d07d7d0988e1ce0"
+    },
+    {
+      "source": "after/llmr-after01-app.log",
+      "archive": "after/llmr-after01-app.log",
+      "bytes": 24090,
+      "SHA256": "318189f589b4e9d3e39876dd65e6de81a46d4858dc7c0f256af19f994feaccfa"
+    },
+    {
+      "source": "after/llmr-after01-down-result.json",
+      "archive": "after/llmr-after01-down-result.json",
+      "bytes": 1501,
+      "SHA256": "febfd7df22b624d2cde4f6cef65a12486d95c31161f3c39c50e461938f499139"
+    },
+    {
+      "source": "after/llmr-after01-down-stderr.log",
+      "archive": "after/llmr-after01-down-stderr.log",
+      "bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "after/llmr-after01-redis.log",
+      "archive": "after/llmr-after01-redis.log",
+      "bytes": 9187,
+      "SHA256": "ad34b828032688524074265f7475805ca0c03580e04c3f4493c1ceb1a7b9d37b"
+    },
+    {
+      "source": "after/llmr-after01-result.json",
+      "archive": "after/llmr-after01-result.json",
+      "bytes": 7708,
+      "SHA256": "85b32c9b6b30d46681ddf2b86171438f47e68d6668a14557ba42a05d04a5d37b"
+    },
+    {
+      "source": "after/llmr-after01-sample.json",
+      "archive": "after/llmr-after01-sample.json",
+      "bytes": 10507,
+      "SHA256": "477d3b466448d12e6e6d5dca1276712f3d9867a397407067580a8458c573828d"
+    },
+    {
+      "source": "after/llmr-after01-stderr.log",
+      "archive": "after/llmr-after01-stderr.log",
+      "bytes": 6399,
+      "SHA256": "f206ae77dabd11bc2a915f1c89e3d7bda8cd44f4dc4c9be23c24e16c4f983704"
+    },
+    {
+      "source": "after/llmr-after02-app.log",
+      "archive": "after/llmr-after02-app.log",
+      "bytes": 23977,
+      "SHA256": "5cca35e9080126b8e25ebfa867ac7d140f5680f9a6a3b29154fd81718af1fce3"
+    },
+    {
+      "source": "after/llmr-after02-down-result.json",
+      "archive": "after/llmr-after02-down-result.json",
+      "bytes": 1500,
+      "SHA256": "e326c9008e31faeaa2488a90f2a223aad6f2a25dcdecdce97868626e3e8ecd17"
+    },
+    {
+      "source": "after/llmr-after02-down-stderr.log",
+      "archive": "after/llmr-after02-down-stderr.log",
+      "bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "after/llmr-after02-redis.log",
+      "archive": "after/llmr-after02-redis.log",
+      "bytes": 9306,
+      "SHA256": "c3a795a945da8c2e1ba1a3b7dc76e2e13e64e599ec1527429eec6fc7807d67cc"
+    },
+    {
+      "source": "after/llmr-after02-result.json",
+      "archive": "after/llmr-after02-result.json",
+      "bytes": 7708,
+      "SHA256": "9d5b7c72dfb82f14a0b77e39766670e695a4ee688caed0c4d52dacf6166bb340"
+    },
+    {
+      "source": "after/llmr-after02-sample.json",
+      "archive": "after/llmr-after02-sample.json",
+      "bytes": 10507,
+      "SHA256": "d29fa630d95bb492d2361be0e12032b1b2a8d97532151e4e9321c2e5d116e82e"
+    },
+    {
+      "source": "after/llmr-after02-stderr.log",
+      "archive": "after/llmr-after02-stderr.log",
+      "bytes": 6399,
+      "SHA256": "65853614223a8b9153deb4437f2bb6f2fe9d69cb0d05759508eae075d7336002"
+    },
+    {
+      "source": "after/llmr-fault01-down-result.json",
+      "archive": "after/llmr-fault01-down-result.json",
+      "bytes": 1501,
+      "SHA256": "04e53a006015bbeb1d89b29c49206d7c68b0b0ed0481bac9914fb8e1a5d02fe8"
+    },
+    {
+      "source": "after/llmr-fault01-down-stderr.log",
+      "archive": "after/llmr-fault01-down-stderr.log",
+      "bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "after/llmr-fault01-result.json",
+      "archive": "after/llmr-fault01-result.json",
+      "bytes": 7706,
+      "SHA256": "edb626d7c7d4f01911357e15a79b3a214955ce9e4ea21008f6a6bfae75d738b6"
+    },
+    {
+      "source": "after/llmr-fault01-stderr.log",
+      "archive": "after/llmr-fault01-stderr.log",
+      "bytes": 6399,
+      "SHA256": "68990829298386e1ad746ef9ead4cea512db925d56f0488b61fc349e759691d3"
+    },
+    {
+      "source": "after/llmr-fault02-down-result.json",
+      "archive": "after/llmr-fault02-down-result.json",
+      "bytes": 1501,
+      "SHA256": "8c6f6664fa1a3515f7f91b9b69904590fc078c28178d48e9803e4f2406b95985"
+    },
+    {
+      "source": "after/llmr-fault02-down-stderr.log",
+      "archive": "after/llmr-fault02-down-stderr.log",
+      "bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "after/llmr-fault02-result.json",
+      "archive": "after/llmr-fault02-result.json",
+      "bytes": 7704,
+      "SHA256": "895fe94fa13cf59e1cc4074d5a033b59a34e14c1653306d19cbe0019296ccb62"
+    },
+    {
+      "source": "after/llmr-fault02-stderr.log",
+      "archive": "after/llmr-fault02-stderr.log",
+      "bytes": 6399,
+      "SHA256": "2ee8bfa7b43ea7851f38397802544ea3232403be82b4105680129fadf271252f"
+    },
+    {
+      "source": "after/llmr-restore01-app.log",
+      "archive": "after/llmr-restore01-app.log",
+      "bytes": 23977,
+      "SHA256": "9061b2a16b79fb54bb70c7ba31f5c5b1713c7065d5d493f128f1c61affd5ef51"
+    },
+    {
+      "source": "after/llmr-restore01-down-result.json",
+      "archive": "after/llmr-restore01-down-result.json",
+      "bytes": 1511,
+      "SHA256": "2faf463d58a5cc953d85ca62014f1d0ea9d037f3d53d9da4453641094ef655dc"
+    },
+    {
+      "source": "after/llmr-restore01-down-stderr.log",
+      "archive": "after/llmr-restore01-down-stderr.log",
+      "bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "after/llmr-restore01-redis.log",
+      "archive": "after/llmr-restore01-redis.log",
+      "bytes": 9306,
+      "SHA256": "a094914fb6bdb0e82d672ac98f47cc29f71b95ac8f06410f040c964d09b79123"
+    },
+    {
+      "source": "after/llmr-restore01-result.json",
+      "archive": "after/llmr-restore01-result.json",
+      "bytes": 7756,
+      "SHA256": "95b1f630a9d20c7b89e8e320f7e8a116e831acc01e44a80f71a01e6962d8caec"
+    },
+    {
+      "source": "after/llmr-restore01-sample.json",
+      "archive": "after/llmr-restore01-sample.json",
+      "bytes": 10557,
+      "SHA256": "b30eb2cbc82ce922fcac6af05eb619ea0bdb4215d8c018fe952fffef49587529"
+    },
+    {
+      "source": "after/llmr-restore01-stderr.log",
+      "archive": "after/llmr-restore01-stderr.log",
+      "bytes": 6399,
+      "SHA256": "544e2ed6695c0ea7c828c686d2b4c3dd4ed0c1d2d880ebb8259b67d202e394a2"
+    },
+    {
+      "source": "after/raw/llmr-after-warmup01/animetta-build-checkpoint.json",
+      "archive": "after/raw/llmr-after-warmup01/animetta-build-checkpoint.json",
+      "bytes": 473,
+      "SHA256": "d061876225aad9e3535c3f8a0224aef027108315d5aa9d93a9e9697724b1ed78"
+    },
+    {
+      "source": "after/raw/llmr-after-warmup01/animetta-build-result.json",
+      "archive": "after/raw/llmr-after-warmup01/animetta-build-result.json",
+      "bytes": 553,
+      "SHA256": "6f731a6948593beb6c55644eccc1453f0a25a435158695bf39c7b7e25e1cc576"
+    },
+    {
+      "source": "after/raw/llmr-after-warmup01/animetta-health-checkpoint.json",
+      "archive": "after/raw/llmr-after-warmup01/animetta-health-checkpoint.json",
+      "bytes": 542,
+      "SHA256": "08058f44ab50c2a5457bebef084b4a70e00a9050943d33049a21a7312dee03e9"
+    },
+    {
+      "source": "after/raw/llmr-after-warmup01/animetta-health-result.json",
+      "archive": "after/raw/llmr-after-warmup01/animetta-health-result.json",
+      "bytes": 623,
+      "SHA256": "19dd2fe0bc4a077a05ad658297927e31a58286153bab576454c4515b7c6c51e1"
+    },
+    {
+      "source": "after/raw/llmr-after-warmup01/animetta-ready-checkpoint.json",
+      "archive": "after/raw/llmr-after-warmup01/animetta-ready-checkpoint.json",
+      "bytes": 540,
+      "SHA256": "71ff068b3fc75ebf8d91a796a378096384f5a60e8edde7b55b00ee7161aed933"
+    },
+    {
+      "source": "after/raw/llmr-after-warmup01/animetta-ready-result.json",
+      "archive": "after/raw/llmr-after-warmup01/animetta-ready-result.json",
+      "bytes": 621,
+      "SHA256": "3768dd69fccd56a8e98319ca4472c66f16e8d3ef76133fd95364ed97f23f4f01"
+    },
+    {
+      "source": "after/raw/llmr-after-warmup01/animetta-start-checkpoint.json",
+      "archive": "after/raw/llmr-after-warmup01/animetta-start-checkpoint.json",
+      "bytes": 543,
+      "SHA256": "d62209c2bb158d52ad61347a95f5d29b4d5cdcf1b6c41810f8c2e37ed6cd2bd5"
+    },
+    {
+      "source": "after/raw/llmr-after-warmup01/animetta-start-result.json",
+      "archive": "after/raw/llmr-after-warmup01/animetta-start-result.json",
+      "bytes": 622,
+      "SHA256": "df0fc9461559c5bb130a283072f00a9da982fb4407927f24e64672725d2a1ed5"
+    },
+    {
+      "source": "after/raw/llmr-after-warmup01/default-log-check-checkpoint.json",
+      "archive": "after/raw/llmr-after-warmup01/default-log-check-checkpoint.json",
+      "bytes": 549,
+      "SHA256": "0e054cd22874aa2015a317736491e294518774da4cdcc686ed6211633a2d4ab5"
+    },
+    {
+      "source": "after/raw/llmr-after-warmup01/default-log-check-result.json",
+      "archive": "after/raw/llmr-after-warmup01/default-log-check-result.json",
+      "bytes": 628,
+      "SHA256": "90accb5873cf02bded8872ef96afa2460eb89988904b32015acfdba77316ceda"
+    },
+    {
+      "source": "after/raw/llmr-after-warmup01/frontend-readiness-checkpoint.json",
+      "archive": "after/raw/llmr-after-warmup01/frontend-readiness-checkpoint.json",
+      "bytes": 548,
+      "SHA256": "d15f5d13feffe313d3d397c989891abd539e7792d17a23b24ee8b96cc42b0f77"
+    },
+    {
+      "source": "after/raw/llmr-after-warmup01/frontend-readiness-result.json",
+      "archive": "after/raw/llmr-after-warmup01/frontend-readiness-result.json",
+      "bytes": 625,
+      "SHA256": "58d58c2fe18dd9ac6945e699c273fab8cdb03992ca1214bc70e0511a9d9e0875"
+    },
+    {
+      "source": "after/raw/llmr-after-warmup01/host-tts-preflight-checkpoint.json",
+      "archive": "after/raw/llmr-after-warmup01/host-tts-preflight-checkpoint.json",
+      "bytes": 551,
+      "SHA256": "f95bde1701072b1c6bb344658a4496dc68ecf1bb80bf90d9e14b14aaf18887f0"
+    },
+    {
+      "source": "after/raw/llmr-after-warmup01/host-tts-preflight-result.json",
+      "archive": "after/raw/llmr-after-warmup01/host-tts-preflight-result.json",
+      "bytes": 632,
+      "SHA256": "a6cd0744156a72ee2b63f5987d94b289c292014ca0a1073167fb2e4cee454fdf"
+    },
+    {
+      "source": "after/raw/llmr-after-warmup01/host-tts-start-checkpoint.json",
+      "archive": "after/raw/llmr-after-warmup01/host-tts-start-checkpoint.json",
+      "bytes": 541,
+      "SHA256": "e47faa923ff4a816080f6ca3e9438f0ac4edc2aa38ff86d9d8027e05663b2ba2"
+    },
+    {
+      "source": "after/raw/llmr-after-warmup01/host-tts-start-result.json",
+      "archive": "after/raw/llmr-after-warmup01/host-tts-start-result.json",
+      "bytes": 603,
+      "SHA256": "cf0b3b45effbf135f09aad383f40f0fa0969432ce64fc18c981b3fb0241f3e39"
+    },
+    {
+      "source": "after/raw/llmr-after01-down/animetta-cleanup-checkpoint.json",
+      "archive": "after/raw/llmr-after01-down/animetta-cleanup-checkpoint.json",
+      "bytes": 541,
+      "SHA256": "3d8f4851a2119f60512a1f7436f7ce7cc60cd6880d2dc9dcc5f5f2712d703b48"
+    },
+    {
+      "source": "after/raw/llmr-after01-down/animetta-cleanup-result.json",
+      "archive": "after/raw/llmr-after01-down/animetta-cleanup-result.json",
+      "bytes": 621,
+      "SHA256": "844961fd542a50a978be2d462e83eb9c0e81e3f5465c50c72b145015b327d2b6"
+    },
+    {
+      "source": "after/raw/llmr-after01/animetta-build-checkpoint.json",
+      "archive": "after/raw/llmr-after01/animetta-build-checkpoint.json",
+      "bytes": 536,
+      "SHA256": "8165ca19f6273c1ee01cba3894f5050be27c6a7c0b988f2c5a1848b14cc9e803"
+    },
+    {
+      "source": "after/raw/llmr-after01/animetta-build-result.json",
+      "archive": "after/raw/llmr-after01/animetta-build-result.json",
+      "bytes": 502,
+      "SHA256": "96da6a711fc7e96d5b956a2036956661317f0e2a1984411a81f727a65136c893"
+    },
+    {
+      "source": "after/raw/llmr-after01/animetta-health-checkpoint.json",
+      "archive": "after/raw/llmr-after01/animetta-health-checkpoint.json",
+      "bytes": 521,
+      "SHA256": "89b84440c19d6c34d57f647e8a72994b47159593af5a0af97b2a36b89765254a"
+    },
+    {
+      "source": "after/raw/llmr-after01/animetta-health-result.json",
+      "archive": "after/raw/llmr-after01/animetta-health-result.json",
+      "bytes": 609,
+      "SHA256": "f9cd7f5312a921c4532cb7a21afe960131c5fbc5855174ab3bc1aaa178e260cf"
+    },
+    {
+      "source": "after/raw/llmr-after01/animetta-ready-checkpoint.json",
+      "archive": "after/raw/llmr-after01/animetta-ready-checkpoint.json",
+      "bytes": 519,
+      "SHA256": "f505798d8ffbb4ff8452fc42cd083b67c910c907196d0f5221f902007cc764a3"
+    },
+    {
+      "source": "after/raw/llmr-after01/animetta-ready-result.json",
+      "archive": "after/raw/llmr-after01/animetta-ready-result.json",
+      "bytes": 606,
+      "SHA256": "c35874fd74a4de52339db95f3124eef34da8769d35826312ff316ae9fade1bc4"
+    },
+    {
+      "source": "after/raw/llmr-after01/animetta-start-checkpoint.json",
+      "archive": "after/raw/llmr-after01/animetta-start-checkpoint.json",
+      "bytes": 522,
+      "SHA256": "10ca029d0aab32dbeeb8ea9b7b560a2cecd78ba2e71566d26d81bf83544d0e5c"
+    },
+    {
+      "source": "after/raw/llmr-after01/animetta-start-result.json",
+      "archive": "after/raw/llmr-after01/animetta-start-result.json",
+      "bytes": 607,
+      "SHA256": "4f8f9a47e7415450921ba3ac5cef0051f443c8bcbe2884323c49ea67ac0c90f8"
+    },
+    {
+      "source": "after/raw/llmr-after01/default-log-check-checkpoint.json",
+      "archive": "after/raw/llmr-after01/default-log-check-checkpoint.json",
+      "bytes": 528,
+      "SHA256": "f8bbeace48b9ccae0286b9698b15993499fe9870889977380b7511d7eb7007ca"
+    },
+    {
+      "source": "after/raw/llmr-after01/default-log-check-result.json",
+      "archive": "after/raw/llmr-after01/default-log-check-result.json",
+      "bytes": 615,
+      "SHA256": "268e5a7a445ad6ae3f4687cb23af5b60e5f5bcd43b071f9dbd3bb9b12528bd15"
+    },
+    {
+      "source": "after/raw/llmr-after01/frontend-readiness-checkpoint.json",
+      "archive": "after/raw/llmr-after01/frontend-readiness-checkpoint.json",
+      "bytes": 527,
+      "SHA256": "2a9f76fe426f7a8205ade8615e1348ad7d05ab9624b36406e5d0fd73d68b6c92"
+    },
+    {
+      "source": "after/raw/llmr-after01/frontend-readiness-result.json",
+      "archive": "after/raw/llmr-after01/frontend-readiness-result.json",
+      "bytes": 610,
+      "SHA256": "15c0be8afa260f094f45fbce48353c11515d7c25bca723d0b75bd93aa9163376"
+    },
+    {
+      "source": "after/raw/llmr-after01/host-tts-preflight-checkpoint.json",
+      "archive": "after/raw/llmr-after01/host-tts-preflight-checkpoint.json",
+      "bytes": 530,
+      "SHA256": "fb5d5deb733c8ef071b6e11b58a74ee6f766692392ea89cfc9d68112b640ccbf"
+    },
+    {
+      "source": "after/raw/llmr-after01/host-tts-preflight-result.json",
+      "archive": "after/raw/llmr-after01/host-tts-preflight-result.json",
+      "bytes": 617,
+      "SHA256": "3eb3c046973b1ee6e09c70f257b9afdd61ae4c9a2508b2b74fcec81c03e44364"
+    },
+    {
+      "source": "after/raw/llmr-after01/host-tts-start-checkpoint.json",
+      "archive": "after/raw/llmr-after01/host-tts-start-checkpoint.json",
+      "bytes": 520,
+      "SHA256": "3e712e6e0be2755c35915626e7f8e0d31ff751d984bd214a99d87dda45a29e14"
+    },
+    {
+      "source": "after/raw/llmr-after01/host-tts-start-result.json",
+      "archive": "after/raw/llmr-after01/host-tts-start-result.json",
+      "bytes": 589,
+      "SHA256": "3ab4f4201696fbf810acdbdf2bc56762824b70604b63e70bcfb4e94206546b7c"
+    },
+    {
+      "source": "after/raw/llmr-after02-down/animetta-cleanup-checkpoint.json",
+      "archive": "after/raw/llmr-after02-down/animetta-cleanup-checkpoint.json",
+      "bytes": 541,
+      "SHA256": "0410b5fb80afda4013750520abe4bc01bd8bf106a2f2695738da475140a05063"
+    },
+    {
+      "source": "after/raw/llmr-after02-down/animetta-cleanup-result.json",
+      "archive": "after/raw/llmr-after02-down/animetta-cleanup-result.json",
+      "bytes": 620,
+      "SHA256": "eb0b3d7ec82f48541e7ca372ebc9cbfa5ef5610ad25374d5b2d618ae09661753"
+    },
+    {
+      "source": "after/raw/llmr-after02/animetta-build-checkpoint.json",
+      "archive": "after/raw/llmr-after02/animetta-build-checkpoint.json",
+      "bytes": 536,
+      "SHA256": "382083b911af1d44a37d7641a1d82b7c7d9377462f0c74ca0695180c9d286206"
+    },
+    {
+      "source": "after/raw/llmr-after02/animetta-build-result.json",
+      "archive": "after/raw/llmr-after02/animetta-build-result.json",
+      "bytes": 502,
+      "SHA256": "229d0215aa333d1258dfca2424fb76f3e73d8119724a3a0172b4c00a1570aeef"
+    },
+    {
+      "source": "after/raw/llmr-after02/animetta-health-checkpoint.json",
+      "archive": "after/raw/llmr-after02/animetta-health-checkpoint.json",
+      "bytes": 521,
+      "SHA256": "ba1a8077804c750c9296059abc2c2450b9472e8c535f295e65ca59db5970c70c"
+    },
+    {
+      "source": "after/raw/llmr-after02/animetta-health-result.json",
+      "archive": "after/raw/llmr-after02/animetta-health-result.json",
+      "bytes": 609,
+      "SHA256": "76451b36e4b095aec4236b26f5622413e14b33a87fcddd1f0771036474e85944"
+    },
+    {
+      "source": "after/raw/llmr-after02/animetta-ready-checkpoint.json",
+      "archive": "after/raw/llmr-after02/animetta-ready-checkpoint.json",
+      "bytes": 519,
+      "SHA256": "1f16477de4cd70136a4b82c93732710b9337a68e75b321241847c8162fefc0fc"
+    },
+    {
+      "source": "after/raw/llmr-after02/animetta-ready-result.json",
+      "archive": "after/raw/llmr-after02/animetta-ready-result.json",
+      "bytes": 606,
+      "SHA256": "d6db2e251b00d662b680f6f45fc6bfedb8cfd015e415a10eac941f4d45a6ea0a"
+    },
+    {
+      "source": "after/raw/llmr-after02/animetta-start-checkpoint.json",
+      "archive": "after/raw/llmr-after02/animetta-start-checkpoint.json",
+      "bytes": 522,
+      "SHA256": "6c72ae9bfcb6e9e7a50b9384ecd3811596cd12907a480a502b81ac474dac5d34"
+    },
+    {
+      "source": "after/raw/llmr-after02/animetta-start-result.json",
+      "archive": "after/raw/llmr-after02/animetta-start-result.json",
+      "bytes": 607,
+      "SHA256": "6246924d60cdb7b67b1194d7575539ae88e82e0b72d1605a93c119cb0d972f3c"
+    },
+    {
+      "source": "after/raw/llmr-after02/default-log-check-checkpoint.json",
+      "archive": "after/raw/llmr-after02/default-log-check-checkpoint.json",
+      "bytes": 528,
+      "SHA256": "45adcecb544d7a23413f8d9945bfb5c8e5560d67a27888a25c36c2c8a446f96c"
+    },
+    {
+      "source": "after/raw/llmr-after02/default-log-check-result.json",
+      "archive": "after/raw/llmr-after02/default-log-check-result.json",
+      "bytes": 614,
+      "SHA256": "e068695e4c522e24cc0fc103082f0b63d5c5f91319bc5841cb885601e59fa911"
+    },
+    {
+      "source": "after/raw/llmr-after02/frontend-readiness-checkpoint.json",
+      "archive": "after/raw/llmr-after02/frontend-readiness-checkpoint.json",
+      "bytes": 527,
+      "SHA256": "43dcacc90e18932a69cc80464cbcd22b0925483d965d24798cb5ab518a21be88"
+    },
+    {
+      "source": "after/raw/llmr-after02/frontend-readiness-result.json",
+      "archive": "after/raw/llmr-after02/frontend-readiness-result.json",
+      "bytes": 611,
+      "SHA256": "16fe78add2a44c738bb8a93dd16424758e63ac6f456ec9d57b25c063e2147c96"
+    },
+    {
+      "source": "after/raw/llmr-after02/host-tts-preflight-checkpoint.json",
+      "archive": "after/raw/llmr-after02/host-tts-preflight-checkpoint.json",
+      "bytes": 530,
+      "SHA256": "506698b49ee6edfa44c02d3bb04e7007f500af96cd0344e34e510240d612c693"
+    },
+    {
+      "source": "after/raw/llmr-after02/host-tts-preflight-result.json",
+      "archive": "after/raw/llmr-after02/host-tts-preflight-result.json",
+      "bytes": 616,
+      "SHA256": "2e27defe3b281a90839e9a29b2e135e68a1d6716fae7181fff3763a38acf470e"
+    },
+    {
+      "source": "after/raw/llmr-after02/host-tts-start-checkpoint.json",
+      "archive": "after/raw/llmr-after02/host-tts-start-checkpoint.json",
+      "bytes": 520,
+      "SHA256": "08082b6a0bcf27ad8016042aab6f35d6492e41ed8f175062aab1a8072949fdff"
+    },
+    {
+      "source": "after/raw/llmr-after02/host-tts-start-result.json",
+      "archive": "after/raw/llmr-after02/host-tts-start-result.json",
+      "bytes": 589,
+      "SHA256": "2bc2121ba89dbbff515764a8ae7828bc9b11391f9bc0fe5641f99fe6a32d6cf0"
+    },
+    {
+      "source": "after/raw/llmr-fault01-down/animetta-cleanup-checkpoint.json",
+      "archive": "after/raw/llmr-fault01-down/animetta-cleanup-checkpoint.json",
+      "bytes": 541,
+      "SHA256": "177f0749c20a307dd95ae7204680f5021b78171bc00003616ed60d579ca556ac"
+    },
+    {
+      "source": "after/raw/llmr-fault01-down/animetta-cleanup-result.json",
+      "archive": "after/raw/llmr-fault01-down/animetta-cleanup-result.json",
+      "bytes": 621,
+      "SHA256": "e917ebf707b86941a337dc84c363ab54f86c60aff371e8896f3a6f85ae114151"
+    },
+    {
+      "source": "after/raw/llmr-fault01/animetta-build-checkpoint.json",
+      "archive": "after/raw/llmr-fault01/animetta-build-checkpoint.json",
+      "bytes": 536,
+      "SHA256": "538945c98dd3194280e1a2099d78779082782c72626fd83f4cff538fe4c5488d"
+    },
+    {
+      "source": "after/raw/llmr-fault01/animetta-build-result.json",
+      "archive": "after/raw/llmr-fault01/animetta-build-result.json",
+      "bytes": 502,
+      "SHA256": "c86a79e0bc481fd205debccdc03cb98031597d1c15d0c0518110dba2ff3ab617"
+    },
+    {
+      "source": "after/raw/llmr-fault01/animetta-health-checkpoint.json",
+      "archive": "after/raw/llmr-fault01/animetta-health-checkpoint.json",
+      "bytes": 521,
+      "SHA256": "2fdecb5c27db42c3cd8b8cd9b26be5cbd0d12b80121a2d58d02febedd5cabd1c"
+    },
+    {
+      "source": "after/raw/llmr-fault01/animetta-health-result.json",
+      "archive": "after/raw/llmr-fault01/animetta-health-result.json",
+      "bytes": 610,
+      "SHA256": "c4d6438362658ee8be32b580190ee68a45fdd59d7a63fb0547558f3aa83d2aff"
+    },
+    {
+      "source": "after/raw/llmr-fault01/animetta-ready-checkpoint.json",
+      "archive": "after/raw/llmr-fault01/animetta-ready-checkpoint.json",
+      "bytes": 519,
+      "SHA256": "e843660b5cd858a15d628cb62d79181ce24a1fc1f18ff828fc6db5c769ec3701"
+    },
+    {
+      "source": "after/raw/llmr-fault01/animetta-ready-result.json",
+      "archive": "after/raw/llmr-fault01/animetta-ready-result.json",
+      "bytes": 606,
+      "SHA256": "c670ce86ccc2f57cc7bbad1b6888f4b845db66f4c900a8b4aba451b0fe56515f"
+    },
+    {
+      "source": "after/raw/llmr-fault01/animetta-start-checkpoint.json",
+      "archive": "after/raw/llmr-fault01/animetta-start-checkpoint.json",
+      "bytes": 522,
+      "SHA256": "c91d5c75898a79420a0030c944656b29b35b17420cd6db384cb6bdf024408eb4"
+    },
+    {
+      "source": "after/raw/llmr-fault01/animetta-start-result.json",
+      "archive": "after/raw/llmr-fault01/animetta-start-result.json",
+      "bytes": 606,
+      "SHA256": "b840406514e7fb435b06273c71590def75e957b3d62e05c1101ee54506aafef0"
+    },
+    {
+      "source": "after/raw/llmr-fault01/default-log-check-checkpoint.json",
+      "archive": "after/raw/llmr-fault01/default-log-check-checkpoint.json",
+      "bytes": 528,
+      "SHA256": "e68a51e79f9f9d4bc2aeb8a01c61136d8ce319f05783b921bedeee976dd3c3f7"
+    },
+    {
+      "source": "after/raw/llmr-fault01/default-log-check-result.json",
+      "archive": "after/raw/llmr-fault01/default-log-check-result.json",
+      "bytes": 613,
+      "SHA256": "081580986f671d786cbfed7334ed14c591091ffae419704f7e3b3b47e6862b5f"
+    },
+    {
+      "source": "after/raw/llmr-fault01/frontend-readiness-checkpoint.json",
+      "archive": "after/raw/llmr-fault01/frontend-readiness-checkpoint.json",
+      "bytes": 527,
+      "SHA256": "fed36483f06ba7d3eafef38aca96f3482ff1c4ee39f3fb058d81dfbcc330e218"
+    },
+    {
+      "source": "after/raw/llmr-fault01/frontend-readiness-result.json",
+      "archive": "after/raw/llmr-fault01/frontend-readiness-result.json",
+      "bytes": 611,
+      "SHA256": "0e03dcd59c4701e60f9b15a281d1d4205b1b22659c1c9a2bb4bd4281a23102e1"
+    },
+    {
+      "source": "after/raw/llmr-fault01/host-tts-preflight-checkpoint.json",
+      "archive": "after/raw/llmr-fault01/host-tts-preflight-checkpoint.json",
+      "bytes": 530,
+      "SHA256": "5756061a57ed472a0266daa3f5c88f6479b158f582fa722bf47152bf5293c715"
+    },
+    {
+      "source": "after/raw/llmr-fault01/host-tts-preflight-result.json",
+      "archive": "after/raw/llmr-fault01/host-tts-preflight-result.json",
+      "bytes": 616,
+      "SHA256": "43c2271d71e90055fd319e200041faf4e1b6839f3ae5cc482bfa114ab9bd5980"
+    },
+    {
+      "source": "after/raw/llmr-fault01/host-tts-start-checkpoint.json",
+      "archive": "after/raw/llmr-fault01/host-tts-start-checkpoint.json",
+      "bytes": 520,
+      "SHA256": "8209ac86330e70c0835f9dc0865d37de9b9a97d9fc56e1e784303f8e22972957"
+    },
+    {
+      "source": "after/raw/llmr-fault01/host-tts-start-result.json",
+      "archive": "after/raw/llmr-fault01/host-tts-start-result.json",
+      "bytes": 589,
+      "SHA256": "c27c03edeb66afdac480531121f3a061a73882006126c7531a16a01f1cf7bec6"
+    },
+    {
+      "source": "after/raw/llmr-fault02-down/animetta-cleanup-checkpoint.json",
+      "archive": "after/raw/llmr-fault02-down/animetta-cleanup-checkpoint.json",
+      "bytes": 541,
+      "SHA256": "2d691ed8ddf4373fa445a2c92f49fc9b6372facb70a9e9fc4d1e7d884c2a357e"
+    },
+    {
+      "source": "after/raw/llmr-fault02-down/animetta-cleanup-result.json",
+      "archive": "after/raw/llmr-fault02-down/animetta-cleanup-result.json",
+      "bytes": 621,
+      "SHA256": "6eb741a7720910d29c7b02b66c107d6ae333f059f253231d66c64a3026862ebf"
+    },
+    {
+      "source": "after/raw/llmr-fault02/animetta-build-checkpoint.json",
+      "archive": "after/raw/llmr-fault02/animetta-build-checkpoint.json",
+      "bytes": 536,
+      "SHA256": "52bd9346a8ce6950dd82130f95a07a6f81de82fafe9727f5f55fac6cb20b40f4"
+    },
+    {
+      "source": "after/raw/llmr-fault02/animetta-build-result.json",
+      "archive": "after/raw/llmr-fault02/animetta-build-result.json",
+      "bytes": 502,
+      "SHA256": "7bb92f55bdb2c1624a8597f725162d309ff9b6c33cb0d3923cbb27870d8732cc"
+    },
+    {
+      "source": "after/raw/llmr-fault02/animetta-health-checkpoint.json",
+      "archive": "after/raw/llmr-fault02/animetta-health-checkpoint.json",
+      "bytes": 521,
+      "SHA256": "2773d2150439f5ff5a0261f23b69485814a3481b645396749fb3b2b8199ccab4"
+    },
+    {
+      "source": "after/raw/llmr-fault02/animetta-health-result.json",
+      "archive": "after/raw/llmr-fault02/animetta-health-result.json",
+      "bytes": 608,
+      "SHA256": "d9f3ba00aa9bbd83239140b353cd541cfff752a282621b472582c2e0139f9dc2"
+    },
+    {
+      "source": "after/raw/llmr-fault02/animetta-ready-checkpoint.json",
+      "archive": "after/raw/llmr-fault02/animetta-ready-checkpoint.json",
+      "bytes": 519,
+      "SHA256": "2f53550a40f555efe7f1d44f3e24c1311d793da6319c047e41e625d52a571978"
+    },
+    {
+      "source": "after/raw/llmr-fault02/animetta-ready-result.json",
+      "archive": "after/raw/llmr-fault02/animetta-ready-result.json",
+      "bytes": 606,
+      "SHA256": "182f7884c8a394d3e56e35f411d1e4863f0edbc82e093910c02224734b5e523c"
+    },
+    {
+      "source": "after/raw/llmr-fault02/animetta-start-checkpoint.json",
+      "archive": "after/raw/llmr-fault02/animetta-start-checkpoint.json",
+      "bytes": 522,
+      "SHA256": "c6bb5c81f4fafa4193c84d2491e5eeb2a7c74d8420ab410e286a0e8426a1b8e0"
+    },
+    {
+      "source": "after/raw/llmr-fault02/animetta-start-result.json",
+      "archive": "after/raw/llmr-fault02/animetta-start-result.json",
+      "bytes": 607,
+      "SHA256": "bba4bc60565c23f554190d9dabb48ab20898abccc37db068d2848534767d7846"
+    },
+    {
+      "source": "after/raw/llmr-fault02/default-log-check-checkpoint.json",
+      "archive": "after/raw/llmr-fault02/default-log-check-checkpoint.json",
+      "bytes": 528,
+      "SHA256": "642c6f4281defbd1d398442ba5dcb057b4bfeb3315449f1dfdb263c4a554c295"
+    },
+    {
+      "source": "after/raw/llmr-fault02/default-log-check-result.json",
+      "archive": "after/raw/llmr-fault02/default-log-check-result.json",
+      "bytes": 614,
+      "SHA256": "13e956fff8dddf33c1858339be41ccb08fc87a9c9d5477ddff90797745807a75"
+    },
+    {
+      "source": "after/raw/llmr-fault02/frontend-readiness-checkpoint.json",
+      "archive": "after/raw/llmr-fault02/frontend-readiness-checkpoint.json",
+      "bytes": 527,
+      "SHA256": "7691c46921a584f1f59798639d71e94e57a578ada1b3c3e0733e17f02e59a2aa"
+    },
+    {
+      "source": "after/raw/llmr-fault02/frontend-readiness-result.json",
+      "archive": "after/raw/llmr-fault02/frontend-readiness-result.json",
+      "bytes": 611,
+      "SHA256": "f82b010df340e82d3790d861df5667aa82e154ed91baef2ef2dac7b84261c685"
+    },
+    {
+      "source": "after/raw/llmr-fault02/host-tts-preflight-checkpoint.json",
+      "archive": "after/raw/llmr-fault02/host-tts-preflight-checkpoint.json",
+      "bytes": 530,
+      "SHA256": "857a26ba371db64c238e240a63dcb08455f5e8775f57005c0ec770c6ee619533"
+    },
+    {
+      "source": "after/raw/llmr-fault02/host-tts-preflight-result.json",
+      "archive": "after/raw/llmr-fault02/host-tts-preflight-result.json",
+      "bytes": 616,
+      "SHA256": "cca4ec46abcb7f8b602041211a2dd9dc70158b73020ead217ac51ae15d15a5b2"
+    },
+    {
+      "source": "after/raw/llmr-fault02/host-tts-start-checkpoint.json",
+      "archive": "after/raw/llmr-fault02/host-tts-start-checkpoint.json",
+      "bytes": 520,
+      "SHA256": "56c7960bcd5a37a1144740c4503cfe1b65acaad6bc6dcc4f16f97f8ccd2a3896"
+    },
+    {
+      "source": "after/raw/llmr-fault02/host-tts-start-result.json",
+      "archive": "after/raw/llmr-fault02/host-tts-start-result.json",
+      "bytes": 587,
+      "SHA256": "d682e0d453f4091f17965ffcd2ea0412aec89c043b5a73fff6334100a2a93024"
+    },
+    {
+      "source": "after/raw/llmr-restore01-down/animetta-cleanup-checkpoint.json",
+      "archive": "after/raw/llmr-restore01-down/animetta-cleanup-checkpoint.json",
+      "bytes": 547,
+      "SHA256": "875a34a7ad28ea9ef4269d0c0292f36923ee70d14e9df3922f91686b6a93eecf"
+    },
+    {
+      "source": "after/raw/llmr-restore01-down/animetta-cleanup-result.json",
+      "archive": "after/raw/llmr-restore01-down/animetta-cleanup-result.json",
+      "bytes": 625,
+      "SHA256": "164bacc6ae1e80df0e080443841aab0b716bebeb3216a6a4f40849528f0866b2"
+    },
+    {
+      "source": "after/raw/llmr-restore01/animetta-build-checkpoint.json",
+      "archive": "after/raw/llmr-restore01/animetta-build-checkpoint.json",
+      "bytes": 542,
+      "SHA256": "38cc325d995d02435223c3bfa6a9ef353af7978c6917b6e22ca6bb5d385cf9e8"
+    },
+    {
+      "source": "after/raw/llmr-restore01/animetta-build-result.json",
+      "archive": "after/raw/llmr-restore01/animetta-build-result.json",
+      "bytes": 502,
+      "SHA256": "02d03cdc88c6d1435f1b8d094f13d77883375dbd6e0b6eedd5848095d559ffa8"
+    },
+    {
+      "source": "after/raw/llmr-restore01/animetta-health-checkpoint.json",
+      "archive": "after/raw/llmr-restore01/animetta-health-checkpoint.json",
+      "bytes": 527,
+      "SHA256": "9c9b6eef6601525bf394271abf9a74671749bf4bd79f42dd6a825006ca453657"
+    },
+    {
+      "source": "after/raw/llmr-restore01/animetta-health-result.json",
+      "archive": "after/raw/llmr-restore01/animetta-health-result.json",
+      "bytes": 613,
+      "SHA256": "c434ed90841c0411aeaf40725a0cf8bb491ceaaa2af2e839fa709797b6dfb294"
+    },
+    {
+      "source": "after/raw/llmr-restore01/animetta-ready-checkpoint.json",
+      "archive": "after/raw/llmr-restore01/animetta-ready-checkpoint.json",
+      "bytes": 525,
+      "SHA256": "6499d78f72419c891eb89c26527d8a8500ad091595541afa5f74e89c89b9459b"
+    },
+    {
+      "source": "after/raw/llmr-restore01/animetta-ready-result.json",
+      "archive": "after/raw/llmr-restore01/animetta-ready-result.json",
+      "bytes": 611,
+      "SHA256": "069f7b33cd416cca2ec7303bb76f827cf96396250d509ef1aeb9d8c031f25a05"
+    },
+    {
+      "source": "after/raw/llmr-restore01/animetta-start-checkpoint.json",
+      "archive": "after/raw/llmr-restore01/animetta-start-checkpoint.json",
+      "bytes": 528,
+      "SHA256": "a8f3ca82f0d586ad927a80d88c58cc281c30573a8a6a03b026aa5bf38c1327f9"
+    },
+    {
+      "source": "after/raw/llmr-restore01/animetta-start-result.json",
+      "archive": "after/raw/llmr-restore01/animetta-start-result.json",
+      "bytes": 610,
+      "SHA256": "e0ab59e94060a0d914eb22ad4037f420fd5e0bf2023d53503b715248e9f504fb"
+    },
+    {
+      "source": "after/raw/llmr-restore01/default-log-check-checkpoint.json",
+      "archive": "after/raw/llmr-restore01/default-log-check-checkpoint.json",
+      "bytes": 534,
+      "SHA256": "d61292ca6848c4c55fabcd3ea49ca5132ccff7aa15ab3c35f64f736e70accd13"
+    },
+    {
+      "source": "after/raw/llmr-restore01/default-log-check-result.json",
+      "archive": "after/raw/llmr-restore01/default-log-check-result.json",
+      "bytes": 618,
+      "SHA256": "1a2680e328326f61196f2e1ef557aa9419538781dd041c4224c56e014ab3d5fd"
+    },
+    {
+      "source": "after/raw/llmr-restore01/frontend-readiness-checkpoint.json",
+      "archive": "after/raw/llmr-restore01/frontend-readiness-checkpoint.json",
+      "bytes": 533,
+      "SHA256": "7588ba05808e782d1fd51e6dabc53866dd979f12dd6da72d95f5e3e70798c3ef"
+    },
+    {
+      "source": "after/raw/llmr-restore01/frontend-readiness-result.json",
+      "archive": "after/raw/llmr-restore01/frontend-readiness-result.json",
+      "bytes": 615,
+      "SHA256": "54dbe91fec7b61224c90622b3307319ddc823bc6134699b5b4263a4c6bab675a"
+    },
+    {
+      "source": "after/raw/llmr-restore01/host-tts-preflight-checkpoint.json",
+      "archive": "after/raw/llmr-restore01/host-tts-preflight-checkpoint.json",
+      "bytes": 536,
+      "SHA256": "f64a50b94923f63ebc9b40ee57b111f1bf3dfc1dcdbbae1f0754cff14ea74284"
+    },
+    {
+      "source": "after/raw/llmr-restore01/host-tts-preflight-result.json",
+      "archive": "after/raw/llmr-restore01/host-tts-preflight-result.json",
+      "bytes": 621,
+      "SHA256": "6f04dabcfcabf60a41a7a013086410a0aa697ef3282875e3b00f8b714e11650f"
+    },
+    {
+      "source": "after/raw/llmr-restore01/host-tts-start-checkpoint.json",
+      "archive": "after/raw/llmr-restore01/host-tts-start-checkpoint.json",
+      "bytes": 526,
+      "SHA256": "cdba2cb099a20a2a6bc20bdb44d3c07e4c16c3e96f87196386b68659a5373f4d"
+    },
+    {
+      "source": "after/raw/llmr-restore01/host-tts-start-result.json",
+      "archive": "after/raw/llmr-restore01/host-tts-start-result.json",
+      "bytes": 593,
+      "SHA256": "26a229e487b1ae6bf358a12ada729adfae7aa6c0bdbcda3f922a7398c52c10d6"
+    },
+    {
+      "source": "archive-delivery.py",
+      "archive": "archive-delivery.py.txt",
+      "bytes": 2506,
+      "SHA256": "d44fd1973fb09b8891d5dd46518a7e1a74c2c5447f24a1d70cd842fcc60a881b"
+    },
+    {
+      "source": "artifact-index.json",
+      "archive": "artifact-index.json",
+      "bytes": 60248,
+      "SHA256": "8816e5c622e1d57ea7ce5c7c9cb2857e4bdaf26b66723740c55c57b2e40725e6"
+    },
+    {
+      "source": "baseline-summary.json",
+      "archive": "baseline-summary.json",
+      "bytes": 682,
+      "SHA256": "7228ae80e32f69c45cf480306c715cdd241770e5cee0ab2c768b9c7d236c3906"
+    },
+    {
+      "source": "baseline.json",
+      "archive": "baseline.json",
+      "bytes": 43070,
+      "SHA256": "ee59029f7751cbcb59b571d8fe982f2334008de956af370726bba866e52be727"
+    },
+    {
+      "source": "baseline/evidence/llmr-base01-down/animetta-cleanup-command-658be53f288e.log",
+      "archive": "baseline/evidence/llmr-base01-down/animetta-cleanup-command-658be53f288e.log",
+      "bytes": 363,
+      "SHA256": "3680a807f4e7bc448f62a7558171ca9152efc4185b3180cc9db0c385f12f66a5"
+    },
+    {
+      "source": "baseline/evidence/llmr-base01/animetta-health-http-91234995d891.log",
+      "archive": "baseline/evidence/llmr-base01/animetta-health-http-91234995d891.log",
+      "bytes": 63,
+      "SHA256": "b318f678cac630d587b37bbeaee13a1630cb6a0de787592e66f41226aef5d7e0"
+    },
+    {
+      "source": "baseline/evidence/llmr-base01/animetta-ready-http-1c2d6f651f30.log",
+      "archive": "baseline/evidence/llmr-base01/animetta-ready-http-1c2d6f651f30.log",
+      "bytes": 2335,
+      "SHA256": "b3893333cdea345107dc9cdbb4be24c769e88c77c99c503d95259720d4e8e4a8"
+    },
+    {
+      "source": "baseline/evidence/llmr-base01/animetta-start-command-a84b3fe2a39f.log",
+      "archive": "baseline/evidence/llmr-base01/animetta-start-command-a84b3fe2a39f.log",
+      "bytes": 500,
+      "SHA256": "de1d2dbec3ec8fb4ef7e8521319bbdb4fd6ea83679cf904306626425058646cd"
+    },
+    {
+      "source": "baseline/evidence/llmr-base01/default-log-check-command-70d2635a7b22.log",
+      "archive": "baseline/evidence/llmr-base01/default-log-check-command-70d2635a7b22.log",
+      "bytes": 22296,
+      "SHA256": "fb43aad64d0d2248e0a045a93be8c227c1ab6234a903c8419589e8cc4853430e"
+    },
+    {
+      "source": "baseline/evidence/llmr-base01/frontend-readiness-http-8605b8ba08c2.log",
+      "archive": "baseline/evidence/llmr-base01/frontend-readiness-http-8605b8ba08c2.log",
+      "bytes": 1695,
+      "SHA256": "fe9ce9dc0dd67db82bee9548d5e85a8057c74efe76a07fa96951f0702e3ec5cd"
+    },
+    {
+      "source": "baseline/evidence/llmr-base01/host-tts-preflight-command-a9629353fa5e.log",
+      "archive": "baseline/evidence/llmr-base01/host-tts-preflight-command-a9629353fa5e.log",
+      "bytes": 493,
+      "SHA256": "b810449f5ac5ee6c9473ab6d530c144d729282272c8100549e1ac06508a6da82"
+    },
+    {
+      "source": "baseline/evidence/llmr-base01/host-tts-start-host-tts-readiness.log",
+      "archive": "baseline/evidence/llmr-base01/host-tts-start-host-tts-readiness.log",
+      "bytes": 12,
+      "SHA256": "cba25a29e035757901e524bd21389a6a747826da3a38043cc7b8a4c6d066c268"
+    },
+    {
+      "source": "baseline/evidence/llmr-base02-down/animetta-cleanup-command-658be53f288e.log",
+      "archive": "baseline/evidence/llmr-base02-down/animetta-cleanup-command-658be53f288e.log",
+      "bytes": 363,
+      "SHA256": "3680a807f4e7bc448f62a7558171ca9152efc4185b3180cc9db0c385f12f66a5"
+    },
+    {
+      "source": "baseline/evidence/llmr-base02/animetta-health-http-91234995d891.log",
+      "archive": "baseline/evidence/llmr-base02/animetta-health-http-91234995d891.log",
+      "bytes": 64,
+      "SHA256": "86d86cf68d6e22826d07b709d72c158b67c0c8ae3f789278dc7241e529387c03"
+    },
+    {
+      "source": "baseline/evidence/llmr-base02/animetta-ready-http-1c2d6f651f30.log",
+      "archive": "baseline/evidence/llmr-base02/animetta-ready-http-1c2d6f651f30.log",
+      "bytes": 2335,
+      "SHA256": "7220397280c17aa153f894928f113e1b278f892d402745c3c0b411c5992f8f6f"
+    },
+    {
+      "source": "baseline/evidence/llmr-base02/animetta-start-command-a84b3fe2a39f.log",
+      "archive": "baseline/evidence/llmr-base02/animetta-start-command-a84b3fe2a39f.log",
+      "bytes": 500,
+      "SHA256": "de1d2dbec3ec8fb4ef7e8521319bbdb4fd6ea83679cf904306626425058646cd"
+    },
+    {
+      "source": "baseline/evidence/llmr-base02/default-log-check-command-f957cc24f102.log",
+      "archive": "baseline/evidence/llmr-base02/default-log-check-command-f957cc24f102.log",
+      "bytes": 21656,
+      "SHA256": "f5916b070ce55e713e996bc91be0faa82bd32b65936edef5a6ea31eb4fab75fd"
+    },
+    {
+      "source": "baseline/evidence/llmr-base02/frontend-readiness-http-8605b8ba08c2.log",
+      "archive": "baseline/evidence/llmr-base02/frontend-readiness-http-8605b8ba08c2.log",
+      "bytes": 1695,
+      "SHA256": "fe9ce9dc0dd67db82bee9548d5e85a8057c74efe76a07fa96951f0702e3ec5cd"
+    },
+    {
+      "source": "baseline/evidence/llmr-base02/host-tts-preflight-command-a9629353fa5e.log",
+      "archive": "baseline/evidence/llmr-base02/host-tts-preflight-command-a9629353fa5e.log",
+      "bytes": 493,
+      "SHA256": "b810449f5ac5ee6c9473ab6d530c144d729282272c8100549e1ac06508a6da82"
+    },
+    {
+      "source": "baseline/evidence/llmr-base02/host-tts-start-host-tts-readiness.log",
+      "archive": "baseline/evidence/llmr-base02/host-tts-start-host-tts-readiness.log",
+      "bytes": 12,
+      "SHA256": "cba25a29e035757901e524bd21389a6a747826da3a38043cc7b8a4c6d066c268"
+    },
+    {
+      "source": "canonical-evidence-closure.json",
+      "archive": "canonical-evidence-closure.json",
+      "bytes": 27386,
+      "SHA256": "17abff678bdb614835e5d6baf1b1d574e3a1ebf1b974322b09d84bec299a89f8"
+    },
+    {
+      "source": "checks/architecture-boundary-audit.json",
+      "archive": "checks/architecture-boundary-audit.json",
+      "bytes": 821,
+      "SHA256": "1f475e973812b5ed9eda34b0679a1a94c872e2a18f4146879bd5da51d1b6267a"
+    },
+    {
+      "source": "checks/backend-deadcode.json",
+      "archive": "checks/backend-deadcode.json",
+      "bytes": 766,
+      "SHA256": "518cfa90b5860b105024739d768d1622c9c5f1f905c60da2020f34f1acdf2a74"
+    },
+    {
+      "source": "checks/backend-events-contract.json",
+      "archive": "checks/backend-events-contract.json",
+      "bytes": 1219,
+      "SHA256": "9ef5ea5f94c18df7ba5133593d758d096ec46465759fe3e69c67970da084e4a4"
+    },
+    {
+      "source": "checks/backend-full.json",
+      "archive": "checks/backend-full.json",
+      "bytes": 85481,
+      "SHA256": "6853d41b3654e701c4ce4b76cf928154a0e88418cd88cd30fbff165565aa632d"
+    },
+    {
+      "source": "checks/backend-route-smoke.json",
+      "archive": "checks/backend-route-smoke.json",
+      "bytes": 12256,
+      "SHA256": "fb2bdc56503258887089d54393e445986e5dd1606efdcc3d6e48ce7247ab70cd"
+    },
+    {
+      "source": "checks/backend-static.json",
+      "archive": "checks/backend-static.json",
+      "bytes": 788,
+      "SHA256": "de7f78b4a9efcbcb1b2568d964ff24a4655dc27e9b02bb8301ba5ceb2234300e"
+    },
+    {
+      "source": "checks/backend-support-typecheck.json",
+      "archive": "checks/backend-support-typecheck.json",
+      "bytes": 995,
+      "SHA256": "da4656ed6eed26397148cd808f9bffd8719944192bfb91a0c1c0d85487d8bfcd"
+    },
+    {
+      "source": "checks/backend-typecheck.json",
+      "archive": "checks/backend-typecheck.json",
+      "bytes": 4654,
+      "SHA256": "00d4436130ff25af0857ee779f89574be79464c1d647b678a95cd787345ff688"
+    },
+    {
+      "source": "checks/python-format.json",
+      "archive": "checks/python-format.json",
+      "bytes": 797,
+      "SHA256": "01eca6821a9fc77663edd119c7145a39d656624e34cc4b3e408be0ba7aa8fca5"
+    },
+    {
+      "source": "checks/quality-plan.json",
+      "archive": "checks/quality-plan.json",
+      "bytes": 69763,
+      "SHA256": "0dcebf2a6c8debfb8d847476c838389d5c7fa82f20aafdeb0db6b4e7155375fd"
+    },
+    {
+      "source": "checks/summary.json",
+      "archive": "checks/summary.json",
+      "bytes": 2979,
+      "SHA256": "6940934f688f99361d3902fa03ea282dd7f28acf45f2bc4853282385e7e2ef0b"
+    },
+    {
+      "source": "checks/verification-notes.json",
+      "archive": "checks/verification-notes.json",
+      "bytes": 1869,
+      "SHA256": "5b9e4849bd457dded9f60666c7303ca3a18806f9a50a71f8246f9e3fddae2a07"
+    },
+    {
+      "source": "collector-efficiency-note.json",
+      "archive": "collector-efficiency-note.json",
+      "bytes": 432,
+      "SHA256": "15b06542c6e8701a16945b8361928c80a4b81ee36ce51ad1161d45aa1cb0861d"
+    },
+    {
+      "source": "contract.json",
+      "archive": "contract.json",
+      "bytes": 1737,
+      "SHA256": "137a76d87596d2679ec6f4e02b4fe69c3ad0d7e3237a0e413a999ada8afb4f71"
+    },
+    {
+      "source": "current-inventory.json",
+      "archive": "current-inventory.json",
+      "bytes": 3863,
+      "SHA256": "a96efeaafabff5ba9d168af2e34e630559ded53aa82737f532bff56d0682c842"
+    },
+    {
+      "source": "diagnosis/animetta-health-http-91234995d891.log",
+      "archive": "diagnosis/animetta-health-http-91234995d891.log",
+      "bytes": 64,
+      "SHA256": "fbe03d47cc19ce36d7d9b041fb128c893ce252515a385d0c9097de476de16a75"
+    },
+    {
+      "source": "diagnosis/animetta-ready-http-1c2d6f651f30.log",
+      "archive": "diagnosis/animetta-ready-http-1c2d6f651f30.log",
+      "bytes": 2335,
+      "SHA256": "87ccc14c32e79df668e57b6b7b38cc1981f1e2288e36faea09a8bccbe3768df2"
+    },
+    {
+      "source": "diagnosis/animetta-start-command-a84b3fe2a39f.log",
+      "archive": "diagnosis/animetta-start-command-a84b3fe2a39f.log",
+      "bytes": 500,
+      "SHA256": "de1d2dbec3ec8fb4ef7e8521319bbdb4fd6ea83679cf904306626425058646cd"
+    },
+    {
+      "source": "diagnosis/default-log-check-command-c65dc336c128.log",
+      "archive": "diagnosis/default-log-check-command-c65dc336c128.log",
+      "bytes": 25019,
+      "SHA256": "7e77b1377c644bbc85c41fa4c59452326fc869e6462c40d1ef18d76855f2b92d"
+    },
+    {
+      "source": "diagnosis/frontend-readiness-http-8605b8ba08c2.log",
+      "archive": "diagnosis/frontend-readiness-http-8605b8ba08c2.log",
+      "bytes": 1695,
+      "SHA256": "fe9ce9dc0dd67db82bee9548d5e85a8057c74efe76a07fa96951f0702e3ec5cd"
+    },
+    {
+      "source": "diagnosis/host-tts-preflight-command-a9629353fa5e.log",
+      "archive": "diagnosis/host-tts-preflight-command-a9629353fa5e.log",
+      "bytes": 493,
+      "SHA256": "b810449f5ac5ee6c9473ab6d530c144d729282272c8100549e1ac06508a6da82"
+    },
+    {
+      "source": "diagnosis/host-tts-start-host-tts-readiness.log",
+      "archive": "diagnosis/host-tts-start-host-tts-readiness.log",
+      "bytes": 12,
+      "SHA256": "cba25a29e035757901e524bd21389a6a747826da3a38043cc7b8a4c6d066c268"
+    },
+    {
+      "source": "failed-first/HOLD-report.json",
+      "archive": "failed-first/HOLD-report.json",
+      "bytes": 4619,
+      "SHA256": "1e447ff90568d74d1cc7f0667a8d98bdf9cc7a538d308b7c38b48fa2d2f9daa3"
+    },
+    {
+      "source": "failed-first/after-before-retest.json",
+      "archive": "failed-first/after-before-retest.json",
+      "bytes": 73469,
+      "SHA256": "0455d668b8e76bfe6c97865d178735b2cab29aed015823066cf32ac0e604036f"
+    },
+    {
+      "source": "failed-first/before-latest-acceptance-plan.json",
+      "archive": "failed-first/before-latest-acceptance-plan.json",
+      "bytes": 2995,
+      "SHA256": "47f32b845a30f766e8ba796fa57c0996851bd908684a56db9227734482755065"
+    },
+    {
+      "source": "failed-first/before-latest-after.json",
+      "archive": "failed-first/before-latest-after.json",
+      "bytes": 74156,
+      "SHA256": "ae6f71815e4586056108e07adff472f57ec6095134fbbe07e76b0edcf9257cb7"
+    },
+    {
+      "source": "failed-first/before-latest-retest-decision.json",
+      "archive": "failed-first/before-latest-retest-decision.json",
+      "bytes": 1361,
+      "SHA256": "2d98ab2317015fc3160c1bfba598a63bab7c911a1c700026fb8dead3f8e21b94"
+    },
+    {
+      "source": "failed-first/fault-current-readonly01.json",
+      "archive": "failed-first/fault-current-readonly01.json",
+      "bytes": 11564,
+      "SHA256": "125ec3ba24bb23bf3f341a86db6124d22136642d4a453a5e0173e272808db4c2"
+    },
+    {
+      "source": "failed-first/fault-observation.json",
+      "archive": "failed-first/fault-observation.json",
+      "bytes": 1054,
+      "SHA256": "bfb179d50db0f04c480a03ac5c6391104fd788e3c63a459214f03364f7dbff54"
+    },
+    {
+      "source": "failed-first/fault-observer.stderr.log",
+      "archive": "failed-first/fault-observer.stderr.log",
+      "bytes": 2699,
+      "SHA256": "19ae783680d850f4105d4dd8f96a56f693e3bb8ba7928768ad82f4283665c8e3"
+    },
+    {
+      "source": "failed-first/fault01-app.stderr.log",
+      "archive": "failed-first/fault01-app.stderr.log",
+      "bytes": 24399,
+      "SHA256": "fa8d338633afe0cb1497b1348e23e3bdc73db2fad4a817f4c28a05c133e7a197"
+    },
+    {
+      "source": "failed-first/fault01-app.stdout.log",
+      "archive": "failed-first/fault01-app.stdout.log",
+      "bytes": 3259,
+      "SHA256": "de8ede5351d6cf07bf8af9f63e46a636d7798f7558f24e3ce6f1dbc38b5d75b8"
+    },
+    {
+      "source": "failed-first/fault01-preservation.json",
+      "archive": "failed-first/fault01-preservation.json",
+      "bytes": 7292,
+      "SHA256": "d2d9c3d5eb4958311fab1a3e549f92971585f555661b93208c2f34db3f84a28c"
+    },
+    {
+      "source": "fault-current-readonly01.json",
+      "archive": "fault-current-readonly01.json",
+      "bytes": 11564,
+      "SHA256": "125ec3ba24bb23bf3f341a86db6124d22136642d4a453a5e0173e272808db4c2"
+    },
+    {
+      "source": "fault-observation.json",
+      "archive": "fault-observation.json",
+      "bytes": 1054,
+      "SHA256": "bfb179d50db0f04c480a03ac5c6391104fd788e3c63a459214f03364f7dbff54"
+    },
+    {
+      "source": "fault-observer.stderr.log",
+      "archive": "fault-observer.stderr.log",
+      "bytes": 2699,
+      "SHA256": "19ae783680d850f4105d4dd8f96a56f693e3bb8ba7928768ad82f4283665c8e3"
+    },
+    {
+      "source": "fault/compose.override.yml",
+      "archive": "fault/compose.override.yml",
+      "bytes": 237,
+      "SHA256": "475dcb59942a2081ac6b647b2e1b0e546c0825236ed279f0b03e3eb3ac7bdf06"
+    },
+    {
+      "source": "fault/fault.Dockerfile",
+      "archive": "fault/fault.Dockerfile.txt",
+      "bytes": 2075,
+      "SHA256": "5b8cd0ad433dd6237d0277a754ed08d5dc83740eb3026ae6130360ef3a8418c0"
+    },
+    {
+      "source": "fault/sitecustomize.py",
+      "archive": "fault/sitecustomize.py.txt",
+      "bytes": 1203,
+      "SHA256": "0b6cb5e113c888eec695522f983caf6a1ebb03289cf03f886e7fed624551a940"
+    },
+    {
+      "source": "fault01-recovered-observation.json",
+      "archive": "fault01-recovered-observation.json",
+      "bytes": 6357,
+      "SHA256": "fb2af2ee823734fd6667801f158edc9eabd0f831270451a4d7f4f6c21d9109ce"
+    },
+    {
+      "source": "fault02-execution-receipt.json",
+      "archive": "fault02-execution-receipt.json",
+      "bytes": 10903,
+      "SHA256": "2f6e71ffc9c16e2be437ebdfef252b14289bf0b4aec51d714a0bc0929ac0ae1b"
+    },
+    {
+      "source": "fault02-observation.json",
+      "archive": "fault02-observation.json",
+      "bytes": 69516,
+      "SHA256": "270895fa89e290e571dac2fa473a9b5bd5652b73237cf5a4eaef9fd4f6aa5f7d"
+    },
+    {
+      "source": "fault02-observer.stderr.log",
+      "archive": "fault02-observer.stderr.log",
+      "bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "fault02-startup.log",
+      "archive": "fault02-startup.log",
+      "bytes": 30895,
+      "SHA256": "f18c09e997800bc468b963a5f63866d9ca53d246013435db45870a812b8ee33f"
+    },
+    {
+      "source": "final-identity-ready.json",
+      "archive": "final-identity-ready.json",
+      "bytes": 11955,
+      "SHA256": "084a0663adead891793d8f92e451c1ecb3af6aa60fbef4d61cbe3e60b921fac2"
+    },
+    {
+      "source": "final-summary.json",
+      "archive": "final-summary.json",
+      "bytes": 5644,
+      "SHA256": "11416d10d8f2636182b4286845b7df9055c3fe418e07c7b5e3b72476c292475d"
+    },
+    {
+      "source": "finalize-evidence.py",
+      "archive": "finalize-evidence.py.txt",
+      "bytes": 10700,
+      "SHA256": "57ffe6d8dfbffa8e8fa8c664764b25a13bbbc44e38d43a1d4b8c80ae31d43132"
+    },
+    {
+      "source": "frozen-source-input.json",
+      "archive": "frozen-source-input.json",
+      "bytes": 99838,
+      "SHA256": "83ebe73ad35f8878ec21768d28b3b42e8b6e76e54775dddb26a4663e6aed21fe"
+    },
+    {
+      "source": "helper-provenance.json",
+      "archive": "helper-provenance.json",
+      "bytes": 293,
+      "SHA256": "22c2249f50c47cf53ad8c5c61a0a5f776281acd501d2f3fd983b23b732af6352"
+    },
+    {
+      "source": "helpers/baseline-runner.py",
+      "archive": "helpers/baseline-runner.py.txt",
+      "bytes": 11956,
+      "SHA256": "92d35e4bbaa6e7b651facedd98b969c889399e40ee61e9bd81ea5b0369ddfea8"
+    },
+    {
+      "source": "llmr-base01-app.log",
+      "archive": "llmr-base01-app.log",
+      "bytes": 24648,
+      "SHA256": "4557ce0b0a7153a287b97f522c079aad2d0f2fd88a5e0973bc6d8d960992f5fb"
+    },
+    {
+      "source": "llmr-base01-down-result.json",
+      "archive": "llmr-base01-down-result.json",
+      "bytes": 1496,
+      "SHA256": "5b3943afe8a49a47876a62f26a2a9f09b1cb6c9a53c3394d7f354a8d1afcac0a"
+    },
+    {
+      "source": "llmr-base01-down-stderr.log",
+      "archive": "llmr-base01-down-stderr.log",
+      "bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "llmr-base01-redis.log",
+      "archive": "llmr-base01-redis.log",
+      "bytes": 9306,
+      "SHA256": "6691f804a3cd7583f6fc7632202756ba2270bd7cbb9e074ac344ae18c0ce439c"
+    },
+    {
+      "source": "llmr-base01-result.json",
+      "archive": "llmr-base01-result.json",
+      "bytes": 7683,
+      "SHA256": "63c4507e33cee6902de8ab9e5876d4de912af1e0484b1a9c81a3684e3b540ebb"
+    },
+    {
+      "source": "llmr-base01-sample.json",
+      "archive": "llmr-base01-sample.json",
+      "bytes": 10467,
+      "SHA256": "00a6be25ea3d53c02e3c44b94942d3604ddf6de3d7c7f8c4403973ecc6535776"
+    },
+    {
+      "source": "llmr-base01-stderr.log",
+      "archive": "llmr-base01-stderr.log",
+      "bytes": 6399,
+      "SHA256": "458d4912d64a943eea86bbc5f1612aea1d7123ace790610def9deb575c2974a9"
+    },
+    {
+      "source": "llmr-base02-app.log",
+      "archive": "llmr-base02-app.log",
+      "bytes": 23864,
+      "SHA256": "68f4fe74affd37dc6cda385c4d517c904876366da5904ff5b33fd26279141a06"
+    },
+    {
+      "source": "llmr-base02-down-result.json",
+      "archive": "llmr-base02-down-result.json",
+      "bytes": 1496,
+      "SHA256": "8aa7a7eb8e4f6b24564a2b74abb18afba0fd6fee00c9e6b18f52fb8444df36f5"
+    },
+    {
+      "source": "llmr-base02-down-stderr.log",
+      "archive": "llmr-base02-down-stderr.log",
+      "bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "llmr-base02-redis.log",
+      "archive": "llmr-base02-redis.log",
+      "bytes": 9306,
+      "SHA256": "67eca3994c2c15afcff7ca7daf5e2a3ab496b9827887380f34d07ae7f1227d01"
+    },
+    {
+      "source": "llmr-base02-result.json",
+      "archive": "llmr-base02-result.json",
+      "bytes": 7682,
+      "SHA256": "6084d481f74e6cae7dafa8fd2256662cb8d38e54df077dbb2a9eae71073ee556"
+    },
+    {
+      "source": "llmr-base02-sample.json",
+      "archive": "llmr-base02-sample.json",
+      "bytes": 10463,
+      "SHA256": "ef1be89b726d9760ee0c67a639991c69f6721987a8425cd0e0ba161547d6108f"
+    },
+    {
+      "source": "llmr-base02-stderr.log",
+      "archive": "llmr-base02-stderr.log",
+      "bytes": 6399,
+      "SHA256": "01b8e77eabe3249bf8ae14446801fa7592daa6c53f94386017c84ace51c3c8fd"
+    },
+    {
+      "source": "observe-fault.py",
+      "archive": "observe-fault.py.txt",
+      "bytes": 7394,
+      "SHA256": "a669f8acb2c02785c41a33b383c8bbdcc94f8bc26e05b1d35b1cd913180530f7"
+    },
+    {
+      "source": "prediction-amendment.json",
+      "archive": "prediction-amendment.json",
+      "bytes": 1365,
+      "SHA256": "7b06efe01044dc05a945bc265229fc103e0e4a0ead5d528736a64b3f826e7a2e"
+    },
+    {
+      "source": "prediction.json",
+      "archive": "prediction.json",
+      "bytes": 2145,
+      "SHA256": "55806e4a593bba2aaf962e426339d53f30a7717edce0cdd9e94547d5b4399638"
+    },
+    {
+      "source": "raw/llmr-base01-down/animetta-cleanup-checkpoint.json",
+      "archive": "raw/llmr-base01-down/animetta-cleanup-checkpoint.json",
+      "bytes": 538,
+      "SHA256": "25b37cca1e39bc6e95dc16a668da05380ed00b78094310620deb2e6e709b399f"
+    },
+    {
+      "source": "raw/llmr-base01-down/animetta-cleanup-result.json",
+      "archive": "raw/llmr-base01-down/animetta-cleanup-result.json",
+      "bytes": 619,
+      "SHA256": "41de6c91106cdf9c6f573184f96ee45368dd0ffd3d6fa2852ea392ee0331aeea"
+    },
+    {
+      "source": "raw/llmr-base01/animetta-build-checkpoint.json",
+      "archive": "raw/llmr-base01/animetta-build-checkpoint.json",
+      "bytes": 533,
+      "SHA256": "e41c4c83afc0f8db3deaf7a9b6a68b0dfd20557c5fc66e1411547bbd4df15118"
+    },
+    {
+      "source": "raw/llmr-base01/animetta-build-result.json",
+      "archive": "raw/llmr-base01/animetta-build-result.json",
+      "bytes": 501,
+      "SHA256": "4478d99fffa7bf3c68eb52f5701dba2dce49c5fb24c544d7b60ac1ca36407339"
+    },
+    {
+      "source": "raw/llmr-base01/animetta-health-checkpoint.json",
+      "archive": "raw/llmr-base01/animetta-health-checkpoint.json",
+      "bytes": 518,
+      "SHA256": "96ad17e7f02416b9d619b2a15eb135e86ba25f56d766706cb5f24fee9e9c4610"
+    },
+    {
+      "source": "raw/llmr-base01/animetta-health-result.json",
+      "archive": "raw/llmr-base01/animetta-health-result.json",
+      "bytes": 607,
+      "SHA256": "6125074975b18797fa67cc73f9d04194e8654964499274f8232e9b0dd2218aba"
+    },
+    {
+      "source": "raw/llmr-base01/animetta-ready-checkpoint.json",
+      "archive": "raw/llmr-base01/animetta-ready-checkpoint.json",
+      "bytes": 516,
+      "SHA256": "b6f2525c0e593057e2f90b4e7b0e61a258df35f2392c2a59409eae8140057893"
+    },
+    {
+      "source": "raw/llmr-base01/animetta-ready-result.json",
+      "archive": "raw/llmr-base01/animetta-ready-result.json",
+      "bytes": 605,
+      "SHA256": "0a7b59abcbe66db3f919007f85d63b575232c8c34b055ea4b099f4d0cb601382"
+    },
+    {
+      "source": "raw/llmr-base01/animetta-start-checkpoint.json",
+      "archive": "raw/llmr-base01/animetta-start-checkpoint.json",
+      "bytes": 519,
+      "SHA256": "cef8c87ad5c066718174eb819d28d84b7b48242e78d5223a6130bc1c1f4e98f6"
+    },
+    {
+      "source": "raw/llmr-base01/animetta-start-result.json",
+      "archive": "raw/llmr-base01/animetta-start-result.json",
+      "bytes": 605,
+      "SHA256": "19d0210e5f31c409ac3961c0c24f948be46f0e3751b73a8fb3e7d6934d42b133"
+    },
+    {
+      "source": "raw/llmr-base01/default-log-check-checkpoint.json",
+      "archive": "raw/llmr-base01/default-log-check-checkpoint.json",
+      "bytes": 525,
+      "SHA256": "7fe8a45819a37047f6d415cc0752dd9149c8acdb375529a4b8b81263654819be"
+    },
+    {
+      "source": "raw/llmr-base01/default-log-check-result.json",
+      "archive": "raw/llmr-base01/default-log-check-result.json",
+      "bytes": 612,
+      "SHA256": "043a13046125207cdb998ee0beab60b51bca811996c9f38f2629dc7bcf70c2ab"
+    },
+    {
+      "source": "raw/llmr-base01/frontend-readiness-checkpoint.json",
+      "archive": "raw/llmr-base01/frontend-readiness-checkpoint.json",
+      "bytes": 524,
+      "SHA256": "f9aa680d88fd3b47339cb6cfff4d07d3802cd06c6888eafabe539060d01e6cb6"
+    },
+    {
+      "source": "raw/llmr-base01/frontend-readiness-result.json",
+      "archive": "raw/llmr-base01/frontend-readiness-result.json",
+      "bytes": 608,
+      "SHA256": "55e78fce652646677af19effd681372b96683a8a1fed6ad158d8e4810c5084b4"
+    },
+    {
+      "source": "raw/llmr-base01/host-tts-preflight-checkpoint.json",
+      "archive": "raw/llmr-base01/host-tts-preflight-checkpoint.json",
+      "bytes": 527,
+      "SHA256": "b42f7076dee748008f81ef7d781f28c82e92fe64637c2c853b7189505d176459"
+    },
+    {
+      "source": "raw/llmr-base01/host-tts-preflight-result.json",
+      "archive": "raw/llmr-base01/host-tts-preflight-result.json",
+      "bytes": 614,
+      "SHA256": "ea47ce676a190e6fa76bb3ae807228175300b9dcff69dcf74bf0900425039973"
+    },
+    {
+      "source": "raw/llmr-base01/host-tts-start-checkpoint.json",
+      "archive": "raw/llmr-base01/host-tts-start-checkpoint.json",
+      "bytes": 517,
+      "SHA256": "61274b84c3a5b0f8e49d931f5943ebfabbcd5dd65f1c54f3c99350287b17e7d2"
+    },
+    {
+      "source": "raw/llmr-base01/host-tts-start-result.json",
+      "archive": "raw/llmr-base01/host-tts-start-result.json",
+      "bytes": 587,
+      "SHA256": "2877f4a4908bf670eece38d2d8a15b9b42e2922b17957d6a418d4d450a3454f8"
+    },
+    {
+      "source": "raw/llmr-base02-down/animetta-cleanup-checkpoint.json",
+      "archive": "raw/llmr-base02-down/animetta-cleanup-checkpoint.json",
+      "bytes": 538,
+      "SHA256": "6e10ce3f6ddbec20b6936bdcb52d74bea73bdc762730e6f951333a6508c2a4af"
+    },
+    {
+      "source": "raw/llmr-base02-down/animetta-cleanup-result.json",
+      "archive": "raw/llmr-base02-down/animetta-cleanup-result.json",
+      "bytes": 619,
+      "SHA256": "596442220dfbee200c544dd1a89c339b09c2b7686e698941936c6acf25921c83"
+    },
+    {
+      "source": "raw/llmr-base02/animetta-build-checkpoint.json",
+      "archive": "raw/llmr-base02/animetta-build-checkpoint.json",
+      "bytes": 533,
+      "SHA256": "a1762451795d5183e0cd216c6727587cde4e0b7eb068cb9f787ebd4636b3a9cb"
+    },
+    {
+      "source": "raw/llmr-base02/animetta-build-result.json",
+      "archive": "raw/llmr-base02/animetta-build-result.json",
+      "bytes": 500,
+      "SHA256": "ea84a72256a569e2a56d87fdd4df655d0e176d280afbf6045697f83ba9d4bad5"
+    },
+    {
+      "source": "raw/llmr-base02/animetta-health-checkpoint.json",
+      "archive": "raw/llmr-base02/animetta-health-checkpoint.json",
+      "bytes": 518,
+      "SHA256": "d0e5dbf7a10ac7d05ddc3bf13fc5e327e7ec14d521adde641db2090fbd57f35a"
+    },
+    {
+      "source": "raw/llmr-base02/animetta-health-result.json",
+      "archive": "raw/llmr-base02/animetta-health-result.json",
+      "bytes": 607,
+      "SHA256": "06abd19d0a57cd0620cf5de2c3a30210754c450b0ec68662323c29b0fb66b55c"
+    },
+    {
+      "source": "raw/llmr-base02/animetta-ready-checkpoint.json",
+      "archive": "raw/llmr-base02/animetta-ready-checkpoint.json",
+      "bytes": 516,
+      "SHA256": "e283e788591269341d89f053a3f72853a20259fb9fc2a6c9727fbcbd140caa1a"
+    },
+    {
+      "source": "raw/llmr-base02/animetta-ready-result.json",
+      "archive": "raw/llmr-base02/animetta-ready-result.json",
+      "bytes": 604,
+      "SHA256": "c531f76ae327994b4e518c0640cad3ee61356980fff28a4209f6b152875d3211"
+    },
+    {
+      "source": "raw/llmr-base02/animetta-start-checkpoint.json",
+      "archive": "raw/llmr-base02/animetta-start-checkpoint.json",
+      "bytes": 519,
+      "SHA256": "0dafd9227a6782156b252ea88ea0ba02d846863a8f39dbc0d657af45a5d5fff2"
+    },
+    {
+      "source": "raw/llmr-base02/animetta-start-result.json",
+      "archive": "raw/llmr-base02/animetta-start-result.json",
+      "bytes": 605,
+      "SHA256": "f6d4035327be577701583e866473870902e6874315d87333c3b60d333a5b2746"
+    },
+    {
+      "source": "raw/llmr-base02/default-log-check-checkpoint.json",
+      "archive": "raw/llmr-base02/default-log-check-checkpoint.json",
+      "bytes": 525,
+      "SHA256": "3e6130c54bf8d675a17ac81ccdbbf51d8d9824c5759dff7b01a1805782ad6118"
+    },
+    {
+      "source": "raw/llmr-base02/default-log-check-result.json",
+      "archive": "raw/llmr-base02/default-log-check-result.json",
+      "bytes": 613,
+      "SHA256": "c8210c909cff23cf37e4589f368f5d4e3cf385e5ceca8548ec6d2c85522bed61"
+    },
+    {
+      "source": "raw/llmr-base02/frontend-readiness-checkpoint.json",
+      "archive": "raw/llmr-base02/frontend-readiness-checkpoint.json",
+      "bytes": 524,
+      "SHA256": "d20d8982fa3879f388a0d7342fefcb64f909cd7b0714793341b4e618f2ce0015"
+    },
+    {
+      "source": "raw/llmr-base02/frontend-readiness-result.json",
+      "archive": "raw/llmr-base02/frontend-readiness-result.json",
+      "bytes": 607,
+      "SHA256": "edb2f5fbbed7845fcd31a877e5544837c8d5e4385e81da3abbc2cbcbc588e74c"
+    },
+    {
+      "source": "raw/llmr-base02/host-tts-preflight-checkpoint.json",
+      "archive": "raw/llmr-base02/host-tts-preflight-checkpoint.json",
+      "bytes": 527,
+      "SHA256": "3edab3b58dba6f1f321164199334d08c63f765cf09027d730ee7a3c6247a14f7"
+    },
+    {
+      "source": "raw/llmr-base02/host-tts-preflight-result.json",
+      "archive": "raw/llmr-base02/host-tts-preflight-result.json",
+      "bytes": 615,
+      "SHA256": "beb33fcf39deaafc000f5c75ed18622e629174795db26d0a61f0d35bc34e393c"
+    },
+    {
+      "source": "raw/llmr-base02/host-tts-start-checkpoint.json",
+      "archive": "raw/llmr-base02/host-tts-start-checkpoint.json",
+      "bytes": 517,
+      "SHA256": "6c8a9350f1f8d0faebe4a0c3d46d96bfa6e4a3a675fb6c000b844aa9f5ae7444"
+    },
+    {
+      "source": "raw/llmr-base02/host-tts-start-result.json",
+      "archive": "raw/llmr-base02/host-tts-start-result.json",
+      "bytes": 587,
+      "SHA256": "40a2a4c56bce7bfc2ef73cc89062ed1612759d94001374398b7a81da63ca41e2"
+    },
+    {
+      "source": "retest-decision.json",
+      "archive": "retest-decision.json",
+      "bytes": 5323,
+      "SHA256": "dd0f6f59eddbfdaf0f9ab61be0d3d8b746cdea41cb315462a9dd464fbef55718"
+    },
+    {
+      "source": "run-after.py",
+      "archive": "run-after.py.txt",
+      "bytes": 7669,
+      "SHA256": "b4fa62f4c96fd77b3ca11b1c89cd71188f3c642305e153061979495ec9a5740a"
+    },
+    {
+      "source": "run-baseline.py",
+      "archive": "run-baseline.py.txt",
+      "bytes": 8714,
+      "SHA256": "f0980a93cbebe4b511ede6e9dfdfc093b8af4a8c4f2dae66d3522f3c2f439271"
+    },
+    {
+      "source": "run-role-recovered.py",
+      "archive": "run-role-recovered.py.txt",
+      "bytes": 2891,
+      "SHA256": "14255730aca978fd1abe60c79782d3526039814f5db8e3b39b870547b1247db7"
+    },
+    {
+      "source": "secret-scan.json",
+      "archive": "secret-scan.json",
+      "bytes": 270,
+      "SHA256": "b73c59e7a225618dceddbef9746069d28678764919d2487a3774e9bb93f66874"
+    },
+    {
+      "source": "state.json",
+      "archive": "state.json",
+      "bytes": 794,
+      "SHA256": "6cf3061754fd8ec9230ffb3ea884f941bd3315f1771b33c93689df5e349ce3e2"
+    }
+  ],
+  "file_count": 330,
+  "total_bytes": 1930134,
+  "policy": "Captured bytes are preserved; executable helper carriers use .txt.",
+  "child_manifest_closure": {
+    "status": "passed",
+    "files": 329
+  }
+}

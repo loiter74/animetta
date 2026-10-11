@@ -1,0 +1,51 @@
+"""One unchanged archived native role probe, only after fault recovery passed."""
+import argparse
+import importlib.util
+import json
+import subprocess
+from pathlib import Path
+
+O = Path(__file__).parent
+
+
+def main():
+    p = argparse.ArgumentParser()
+    p.add_argument('--authorized-quality-plan', required=True)
+    p.add_argument('--run-id', choices=['llmr-fault-role01', 'llmr-fault02-role01'], default='llmr-fault-role01')
+    a = p.parse_args()
+    spec = importlib.util.spec_from_file_location('after_stages', O / 'run-after.py')
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    g = m.helpers()
+    accepted = O / g['record']['accepted_fault_observation']
+    assert json.loads(accepted.read_bytes())['status'] == 'passed', 'Recovery has not passed'
+    if a.run_id == 'llmr-fault02-role01':
+        assert json.loads(accepted.read_bytes())['run_id'] == 'llmr-fault02', 'Final role must use accepted fault02 evidence'
+    g['verify']()
+    d = O / 'acceptance'
+    result = d / (a.run_id + '.json')
+    assert not result.exists(), 'Original role run exists; do not replay'
+    script = 'core-role-probe-fault02.mjs' if a.run_id == 'llmr-fault02-role01' else 'core-role-probe-recovered.mjs'
+    g['state'](a.run_id, status='role_running', next_action='Exactly one native role/continuity probe; failure HOLD')
+    child = subprocess.Popen(['node', str(d / script)], cwd=g['ROOT'], env=g['ENV'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    g['state'](a.run_id, active_pid=child.pid)
+    try:
+        out, err = child.communicate(timeout=450)
+        result.write_bytes(g['clean'](out))
+        (d / (a.run_id + '.stderr.log')).write_bytes(g['clean'](err))
+        r = json.loads(result.read_bytes())
+        assert child.returncode == 0 and r.get('status') == 'passed' and r.get('native_nonzero_audio_completed') and r.get('live_persistent_playback') and r.get('live2d_model_runtime_loaded') and r.get('live2d_real_task_mouth_applied') and r.get('continuity', {}).get('status') == 'passed', 'Native core acceptance failed; HOLD'
+        key = 'role02' if a.run_id == 'llmr-fault02-role01' else 'role'
+        g['record']['stages'][key] = {'status': 'passed', 'run_id': a.run_id, 'SHA256': g['sha'](result.read_bytes())}
+        g['state']('role_complete', status='stage_complete_HOLD', active_pid=None, next_action='Canonical down/up restore frozen normal tag; final strict readiness only')
+    except Exception as ex:
+        g['state']('HOLD_role', status='HOLD', active_pid=child.pid if child.poll() is None else None, error=str(ex), next_action='Preserve original role evidence/live child identity; no replay or subsequent lifecycle')
+        raise
+    finally:
+        s = json.loads(g['STATE'].read_bytes())
+        s.update(driver_pid=None, active_tool_session=None)
+        g['write'](g['STATE'], s)
+
+
+if __name__ == '__main__':
+    main()
