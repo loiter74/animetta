@@ -210,7 +210,7 @@ profiles:
         singing: false
         minecraft: false
         earth: false
-      long_term_memory_mode: "off"
+      long_term_memory_mode: "read_write"
       enable_tools: false
       enable_subtitle_translation: false
       enable_active_memes: false

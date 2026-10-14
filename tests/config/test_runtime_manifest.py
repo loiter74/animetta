@@ -778,6 +778,7 @@ def test_default_production_selects_existing_host_qwen(
     assert typed.model == HOST_TTS_CONTRACT.model
     assert typed.voice == HOST_TTS_CONTRACT.voice
     assert typed.base_url == "http://host.docker.internal:8767"
+    assert effective.runtime.long_term_memory_mode == "read_write"
     assert effective.runtime.enable_tools is False
     assert not any(effective.runtime.capabilities.model_dump().values())
 
