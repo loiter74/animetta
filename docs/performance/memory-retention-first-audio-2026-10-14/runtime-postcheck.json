@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "lifecycle_run_id": "anima-up-c9edbdac5e4d",
+  "probe_run_id": "memory-retention-first-audio-20261014",
+  "probe_evidence": "C:\\Users\\30262\\Project\\Anima\\.zcode\\memory-retention-20261014\\first-audio-latency.json",
+  "probe_evidence_sha256": "185aa3c4ed5fc72da899ee33e0fbb063f8cf846ee1e2b7b947a4667b8d88061c",
+  "probe_started_at": "2026-10-14T13:35:10.194Z",
+  "checked_at": "2026-10-14T13:39:07.968557Z",
+  "status": "passed",
+  "logs": [
+    {
+      "service": "anima-animetta-1",
+      "command_exit_code": 0,
+      "since": "2026-10-14T13:35:10.194Z",
+      "until": "2026-10-14T13:39:07.968557Z",
+      "line_count": 118,
+      "sha256": "839507dc648f0caa90a8cefa2c4734e0277ed999e121c5d906d05b0accd10d12",
+      "error_traceback_count": 0,
+      "unexpected_error_count": 0,
+      "unexpected_line_hashes": []
+    },
+    {
+      "service": "anima-redis-1",
+      "command_exit_code": 0,
+      "since": "2026-10-14T13:35:10.194Z",
+      "until": "2026-10-14T13:39:07.968557Z",
+      "line_count": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "error_traceback_count": 0,
+      "unexpected_error_count": 0,
+      "unexpected_line_hashes": []
+    },
+    {
+      "service": "host-qwen-tts",
+      "path": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\log\\host-tts.log",
+      "scope": "current PID 33044 log session, covering probe interval; log has no per-line timestamps",
+      "session_marker_found": true,
+      "line_count": 119,
+      "error_traceback_count": 0,
+      "unexpected_error_count": 0,
+      "session_sha256": "283b688b5b23de9b79260f72a1e2bbf49f392b29b7a51ad8fd50f66bba72117f"
+    }
+  ],
+  "expected_auth_boundary": [
+    {
+      "service": "anima-animetta-1",
+      "anonymous_ready_401_count": 0,
+      "error_lines_classified_as_expected_401": 0
+    },
+    {
+      "service": "anima-redis-1",
+      "anonymous_ready_401_count": 0,
+      "error_lines_classified_as_expected_401": 0
+    }
+  ],
+  "http": [
+    {
+      "url": "http://localhost/health",
+      "status": 200,
+      "health_status": "ok",
+      "service": "anima"
+    },
+    {
+      "url": "http://localhost/ready",
+      "status": 200,
+      "profile": "production",
+      "ready": true,
+      "degraded": false,
+      "tts": {
+        "type": "remote",
+        "provider": "qwen3-tts-gguf-host",
+        "model": "Qwen3-TTS-1.7B-Base",
+        "voice": "tosaka-rin-cn"
+      }
+    },
+    {
+      "url": "http://localhost/live.html",
+      "status": 200,
+      "html_sha256": "96322d8b4a66a2fde26a1de0cff68970a234b494313fa7aafea14008cf2ff32f"
+    }
+  ],
+  "qwen": {
+    "status": {
+      "running": true,
+      "ready": true,
+      "identity_matches": true
+    },
+    "identity": {
+      "ready": true,
+      "service": "qwen-tts",
+      "api_version": "v1",
+      "provider": "qwen3-tts-gguf-host",
+      "model": "Qwen3-TTS-1.7B-Base",
+      "revision": "0eb32e283ee46b86820c67843abb04cf12bc58d7",
+      "voice": "tosaka-rin-cn",
+      "sample_rate": 24000,
+      "quantization": "talker=Q5_K,predictor=Q8_0,onnx=FP16",
+      "runtime_commit": "0eb32e283ee46b86820c67843abb04cf12bc58d7"
+    },
+    "expected_pids": [
+      31760,
+      33044,
+      19504
+    ],
+    "pids_unchanged": true,
+    "processes": [
+      {
+        "ProcessId": 31760,
+        "ParentProcessId": 26748,
+        "Name": "python.exe",
+        "CreationDate": "/Date(1791983473257)/",
+        "CommandLine": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\venv\\Scripts\\python.exe -m animetta_qwen_tts"
+      },
+      {
+        "ProcessId": 33044,
+        "ParentProcessId": 31760,
+        "Name": "python3.13.exe",
+        "CreationDate": "/Date(1791983473432)/",
+        "CommandLine": "D:\\AnimaModelAuditions\\qwen3-tts-1.7b-streaming-20260726\\venv\\Scripts\\python.exe -m animetta_qwen_tts"
+      },
+      {
+        "ProcessId": 19504,
+        "ParentProcessId": 33044,
+        "Name": "python3.13.exe",
+        "CreationDate": "/Date(1791983495805)/",
+        "CommandLine": "\"C:\\Users\\30262\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\\python.exe\" \"-s\" \"-c\" \"from multiprocessing.spawn import spawn_main; spawn_main(parent_pid=33044, pipe_handle=2400)\" \"--multiprocessing-fork\""
+      }
+    ]
+  },
+  "probe_cleanup": {
+    "criteria": "no Node command referencing first_audio_probe or task id/path; no Chromium created on/after probe started_at",
+    "remaining_processes": [],
+    "passed": true
+  },
+  "failures": []
+}

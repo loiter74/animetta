@@ -23,6 +23,14 @@ from .reply_media import (
     ReplyMediaTurn,
 )
 
+_REPLY_SAMPLE_LIMIT = 1024
+
+
+def _append_latency_sample(samples: list[float], value: float) -> None:
+    """Keep recent latency samples while leaving lifetime counters cumulative."""
+    samples.append(value)
+    del samples[: max(0, len(samples) - _REPLY_SAMPLE_LIMIT)]
+
 
 @dataclass(frozen=True, slots=True)
 class ReplyCandidate:
@@ -244,7 +252,9 @@ class ReplyWorker:
                 continue
 
             started_at = self._clock()
-            self._metrics.queue_wait_seconds.append(max(0.0, started_at - candidate.admitted_at))
+            _append_latency_sample(
+                self._metrics.queue_wait_seconds, max(0.0, started_at - candidate.admitted_at)
+            )
             succeeded = False
             for attempt in range(2):
                 try:
@@ -282,7 +292,8 @@ class ReplyWorker:
                 continue
 
             self._metrics.reply_success += 1
-            self._metrics.reply_latency_seconds.append(
+            _append_latency_sample(
+                self._metrics.reply_latency_seconds,
                 max(0.0, self._clock() - started_at),
             )
 

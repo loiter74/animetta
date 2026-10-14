@@ -1,0 +1,75 @@
+{
+  "status": "passed",
+  "started_at": "2026-10-14T13:35:10.194Z",
+  "finished_at": "2026-10-14T13:35:29.298Z",
+  "total_seconds": 19.104,
+  "samples": [
+    {
+      "index": 1,
+      "status": "passed",
+      "first_text_seconds": 1.507,
+      "first_audio_received_seconds": 2.411,
+      "first_native_playing_seconds": 2.472,
+      "reply_characters": 12,
+      "playback_count_increment": 1,
+      "task_id": "af7b41d6-214c-4b63-a3f2-24ef8276c352",
+      "llm_provider_ms": 893.6111927032471,
+      "tts_provider_ms": 859.1804504394531,
+      "audio_duration_seconds": 2.24,
+      "rms": 0.062121656032595826,
+      "nonzero_samples": 53271,
+      "audio_to_playing_ms": 60.99999999999994
+    },
+    {
+      "index": 2,
+      "status": "passed",
+      "first_text_seconds": 1.079,
+      "first_audio_received_seconds": 1.945,
+      "first_native_playing_seconds": 1.98,
+      "reply_characters": 10,
+      "playback_count_increment": 1,
+      "task_id": "e52e0517-84ff-49d1-95d2-d9412b5b32c4",
+      "llm_provider_ms": 768.4352397918701,
+      "tts_provider_ms": 825.5078792572021,
+      "audio_duration_seconds": 1.84,
+      "rms": 0.0633927641989069,
+      "nonzero_samples": 43418,
+      "audio_to_playing_ms": 34.99999999999992
+    },
+    {
+      "index": 3,
+      "status": "passed",
+      "first_text_seconds": 0.933,
+      "first_audio_received_seconds": 2.104,
+      "first_native_playing_seconds": 2.128,
+      "reply_characters": 10,
+      "playback_count_increment": 1,
+      "task_id": "d1d4efd4-2463-4b41-be4c-8d21f57e97cc",
+      "llm_provider_ms": 727.5545597076416,
+      "tts_provider_ms": 1118.5407638549805,
+      "audio_duration_seconds": 2.64,
+      "rms": 0.03726606987248865,
+      "nonzero_samples": 51777,
+      "audio_to_playing_ms": 24.00000000000002
+    }
+  ],
+  "medians": {
+    "first_text_seconds": 1.079,
+    "first_audio_received_seconds": 2.104,
+    "first_native_playing_seconds": 2.128,
+    "llm_provider_ms": 768.4352397918701,
+    "tts_provider_ms": 859.1804504394531,
+    "audio_to_playing_ms": 34.99999999999992
+  },
+  "first_native_playing_range_seconds": [
+    1.98,
+    2.472
+  ],
+  "probe_sha256": "901325c16821ed614a2bec8ba3b2fa34f593dc7a295cc7b73426a7993674702f",
+  "limitations": [
+    "n=3 sequential, short responses, existing warm Qwen; first sample first graph request after app update",
+    "headless Chromium, verified native playback and nonzero WAV; physical speaker audibility not measured",
+    "not a latency before/after experiment; no speedup conclusion",
+    "Date.now timing resolution 1 ms; Node/browser share host clock"
+  ]
+}

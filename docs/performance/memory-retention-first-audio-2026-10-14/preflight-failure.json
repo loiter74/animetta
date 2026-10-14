@@ -1,0 +1,10 @@
+{
+  "phase": "before_browser_or_model_requests",
+  "model_requests_sent": 0,
+  "reason": "readiness fetch omitted Authorization",
+  "unauthenticated_http_status": 401,
+  "authenticated_http_status": 200,
+  "authenticated_profile": "production",
+  "authenticated_ready": true,
+  "recovery": "fixed probe headers; no lifecycle restart"
+}

@@ -153,6 +153,54 @@ async def test_same_conversation_turns_are_serialized(handler) -> None:
     assert peak == 1
 
 
+async def test_finished_conversations_release_chat_locks(handler) -> None:
+    chat, _, _ = handler
+    chat._process_text_command = AsyncMock()
+
+    for _ in range(1000):
+        await chat.on_text_command("sid", _command())
+
+    assert not chat._conversation_locks
+
+
+async def test_cancelled_waiter_keeps_the_active_conversation_lock(handler) -> None:
+    chat, _, _ = handler
+    conversation_id = str(uuid4())
+    first_entered = asyncio.Event()
+    release_first = asyncio.Event()
+    calls: list[str] = []
+
+    async def process(_sid, command, **_kwargs):
+        calls.append(command.text)
+        if command.text == "first":
+            first_entered.set()
+            await release_first.wait()
+
+    chat._process_text_command = AsyncMock(side_effect=process)
+    first = asyncio.create_task(
+        chat.on_text_command("sid", _command(conversation_id=conversation_id, text="first"))
+    )
+    await first_entered.wait()
+    cancelled = asyncio.create_task(
+        chat.on_text_command("sid", _command(conversation_id=conversation_id, text="cancelled"))
+    )
+    await asyncio.sleep(0)
+    cancelled.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await cancelled
+    third = asyncio.create_task(
+        chat.on_text_command("sid", _command(conversation_id=conversation_id, text="third"))
+    )
+    await asyncio.sleep(0)
+
+    assert calls == ["first"]
+    assert len(chat._conversation_locks) == 1
+    release_first.set()
+    await asyncio.gather(first, third)
+    assert calls == ["first", "third"]
+    assert not chat._conversation_locks
+
+
 @pytest.mark.asyncio
 async def test_processing_error_emits_correlated_typed_error(handler) -> None:
     chat, sio, admin = handler

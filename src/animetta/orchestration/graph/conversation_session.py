@@ -14,6 +14,7 @@ from animetta.services.bilibili.response_policy import PROACTIVE_TOPIC_SOURCE
 Mood = Literal["neutral", "bright", "tired", "irritated"]
 ScopeKind = Literal["livestream", "conversation"]
 PROACTIVE_TOPIC_HISTORY_LABEL = "[直播主持人自主发言触发，不是观众弹幕]"
+_COMMITTED_TASK_LIMIT = 1024
 
 
 @dataclass(frozen=True, slots=True)
@@ -71,7 +72,10 @@ class ConversationSessionState:
     _window: deque[ConversationTurn] = field(
         default_factory=lambda: deque(maxlen=6), init=False, repr=False
     )
-    _committed_tasks: set[str] = field(default_factory=set, init=False, repr=False)
+    # Local deduplication is recent-history only; durable request replay belongs to CommandInbox.
+    _committed_tasks: OrderedDict[str, None] = field(
+        default_factory=OrderedDict, init=False, repr=False
+    )
 
     def __post_init__(self) -> None:
         self.fatigue = _clamp(self.fatigue, 0, 100)
@@ -123,7 +127,9 @@ class ConversationSessionState:
                 source=source,
             )
         )
-        self._committed_tasks.add(task_id)
+        self._committed_tasks[task_id] = None
+        if len(self._committed_tasks) > _COMMITTED_TASK_LIMIT:
+            self._committed_tasks.popitem(last=False)
         if update_viewer_state:
             if mood is not None:
                 self.mood = mood

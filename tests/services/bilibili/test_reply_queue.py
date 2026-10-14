@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import json
+from dataclasses import asdict
 
 import pytest
 
@@ -33,6 +35,34 @@ def _candidate(
         generation_id=generation,
         admitted_at=timestamp,
     )
+
+
+async def test_long_running_worker_bounds_samples_and_keeps_cumulative_counts() -> None:
+    count = 1152
+    queue = BoundedReplyQueue(max_size=count)
+    metrics = ReplyMetrics()
+    for index in range(count):
+        await queue.put(_candidate(str(index), ReplyPriority.ORDINARY, timestamp=0))
+    await queue.close()
+    clock = iter(range(count * 2))
+
+    async def process(_candidate: ReplyCandidate) -> None:
+        return None
+
+    worker = ReplyWorker(
+        queue=queue,
+        processor=process,
+        metrics=metrics,
+        generation_id=1,
+        max_message_age_seconds=None,
+        clock=lambda: float(next(clock)),
+    )
+    await worker.run()
+
+    assert metrics.reply_success == metrics.terminal_count == count
+    assert metrics.queue_wait_seconds == [float(index * 2) for index in range(128, count)]
+    assert metrics.reply_latency_seconds == [1.0] * 1024
+    assert json.loads(json.dumps(asdict(metrics)))["reply_latency_seconds"] == [1.0] * 1024
 
 
 @pytest.mark.asyncio

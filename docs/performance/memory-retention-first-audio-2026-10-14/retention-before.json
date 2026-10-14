@@ -1,0 +1,114 @@
+{
+  "kind": "isolated_retention_probe",
+  "condition": "same process, fresh state per sample, real commit/chat-lock/reply-worker code, no external services; tracemalloc excludes imported modules",
+  "samples": [
+    {
+      "turns": 1000,
+      "conversation_window": 6,
+      "dedup_ids": 1000,
+      "queue_wait_samples": 1000,
+      "reply_latency_samples": 1000,
+      "chat_locks": 1000,
+      "success_count": 1000,
+      "retained_bytes": 302356,
+      "peak_bytes": 319412,
+      "elapsed_seconds": 0.17458890000034444
+    },
+    {
+      "turns": 1000,
+      "conversation_window": 6,
+      "dedup_ids": 1000,
+      "queue_wait_samples": 1000,
+      "reply_latency_samples": 1000,
+      "chat_locks": 1000,
+      "success_count": 1000,
+      "retained_bytes": 298964,
+      "peak_bytes": 316020,
+      "elapsed_seconds": 0.18085549999977957
+    },
+    {
+      "turns": 1000,
+      "conversation_window": 6,
+      "dedup_ids": 1000,
+      "queue_wait_samples": 1000,
+      "reply_latency_samples": 1000,
+      "chat_locks": 1000,
+      "success_count": 1000,
+      "retained_bytes": 298932,
+      "peak_bytes": 315988,
+      "elapsed_seconds": 0.18424210000011954
+    },
+    {
+      "turns": 10000,
+      "conversation_window": 6,
+      "dedup_ids": 10000,
+      "queue_wait_samples": 10000,
+      "reply_latency_samples": 10000,
+      "chat_locks": 10000,
+      "success_count": 10000,
+      "retained_bytes": 3104644,
+      "peak_bytes": 3121701,
+      "elapsed_seconds": 1.0969957000006616
+    },
+    {
+      "turns": 10000,
+      "conversation_window": 6,
+      "dedup_ids": 10000,
+      "queue_wait_samples": 10000,
+      "reply_latency_samples": 10000,
+      "chat_locks": 10000,
+      "success_count": 10000,
+      "retained_bytes": 3104612,
+      "peak_bytes": 3121669,
+      "elapsed_seconds": 1.041609900000367
+    },
+    {
+      "turns": 10000,
+      "conversation_window": 6,
+      "dedup_ids": 10000,
+      "queue_wait_samples": 10000,
+      "reply_latency_samples": 10000,
+      "chat_locks": 10000,
+      "success_count": 10000,
+      "retained_bytes": 3104580,
+      "peak_bytes": 3121637,
+      "elapsed_seconds": 1.1009787000002689
+    },
+    {
+      "turns": 30000,
+      "conversation_window": 6,
+      "dedup_ids": 30000,
+      "queue_wait_samples": 30000,
+      "reply_latency_samples": 30000,
+      "chat_locks": 30000,
+      "success_count": 30000,
+      "retained_bytes": 10193668,
+      "peak_bytes": 10210726,
+      "elapsed_seconds": 2.9368414999999004
+    },
+    {
+      "turns": 30000,
+      "conversation_window": 6,
+      "dedup_ids": 30000,
+      "queue_wait_samples": 30000,
+      "reply_latency_samples": 30000,
+      "chat_locks": 30000,
+      "success_count": 30000,
+      "retained_bytes": 10193636,
+      "peak_bytes": 10210694,
+      "elapsed_seconds": 3.0385537999991357
+    },
+    {
+      "turns": 30000,
+      "conversation_window": 6,
+      "dedup_ids": 30000,
+      "queue_wait_samples": 30000,
+      "reply_latency_samples": 30000,
+      "chat_locks": 30000,
+      "success_count": 30000,
+      "retained_bytes": 10193604,
+      "peak_bytes": 10210662,
+      "elapsed_seconds": 2.9191964000001462
+    }
+  ]
+}

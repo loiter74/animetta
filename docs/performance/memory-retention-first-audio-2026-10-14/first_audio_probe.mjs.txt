@@ -1,0 +1,263 @@
+import { createRequire } from 'node:module';
+import { randomUUID, createHash } from 'node:crypto';
+import { readFile, writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+const root=process.cwd(), require=createRequire(resolve(root,'frontend/package.json'));
+const { chromium }=require('playwright'), { io }=require('socket.io-client');
+const token=process.env.ANIMETTA_ACCESS_TOKEN;
+if(!token) throw new Error('ANIMETTA_ACCESS_TOKEN is required');
+const base=new URL('http://localhost'), safe=x=>String(x).replaceAll(token,'[redacted]');
+const p={schema_version:1,run_id:'memory-retention-first-audio-20261014',started_at:new Date().toISOString(),url:new URL('/live.html',base).href,condition:'three sequential identical short prompts; first request after application update; existing Qwen stays loaded; wall-clock timestamps at dispatch and actual browser events, 1ms resolution; browser headless autoplay enabled by user gesture',samples:[],errors:[]};
+const authenticatedFetch=url=>fetch(url,{headers:{Authorization:`Bearer ${token}`}});
+const ready=await authenticatedFetch(new URL('/ready',base));
+p.readiness_before=await ready.json();
+if(!ready.ok||p.readiness_before.profile!=='production'||!p.readiness_before.ready||p.readiness_before.components?.llm?.resolved?.type==='mock'||p.readiness_before.components?.tts?.resolved?.type==='mock')throw new Error('Real production providers must be ready');
+const browser=await chromium.launch({headless:true}),context=await browser.newContext({extraHTTPHeaders:{Authorization:`Bearer ${token}`}});
+await context.route('**/*',route=>new URL(route.request().url()).origin===base.origin?route.continue():route.abort('blockedbyclient'));
+await context.addInitScript(() => {
+  const qa = {
+    events: [],
+    audio_starts: [],
+    audio_contexts: 0,
+    legacy_play_calls: 0,
+    ws_connections: 0,
+    last_socket: null,
+    last_identity: null,
+  }
+  window.__ttsQa = qa
+
+  const safeIdentity = (data) => ({
+    message_id: data?.message_id,
+    conversation_id: data?.conversation_id,
+    task_id: data?.task_id,
+    turn_id: data?.turn_id,
+  })
+  const recordFrame = (raw, direction, socket) => {
+    if (typeof raw !== 'string') return;
+    if (direction === 'received' && raw.startsWith('40')) qa.socket_accepted = true;
+    if (direction === 'received' && raw.startsWith('44')) qa.socket_error = raw.slice(2,300);
+    if (!raw.startsWith('42')) return
+    try {
+      const packet = JSON.parse(raw.slice(2))
+      const name = packet[0]
+      const data = packet[1] ?? {}
+      const allowed = new Set([
+        'chat:text',
+        'chat:developer_text',
+        'system:error',
+        'chat:control',
+        'chat:sentence',
+        'chat:interrupt',
+        'chat:audio_stream_start',
+        'chat:audio_stream_chunk',
+        'chat:audio_stream_end',
+        'chat:audio_with_expression',
+        'chat:stop_audio',
+      ])
+      if (!allowed.has(name)) return
+      const event = {
+        direction,
+        name,
+        at_ms: performance.now(),
+        epoch_ms: Date.now(),
+        ...safeIdentity(data),
+      }
+      if (name === 'chat:audio_stream_start') {
+        Object.assign(event, {
+          stream_id: data.stream_id,
+          format: data.format,
+          sample_rate: data.sample_rate,
+          channels: data.channels,
+          emotion: data.emotion,
+        })
+      } else if (name === 'chat:audio_stream_chunk') {
+        Object.assign(event, {
+          stream_id: data.stream_id,
+          sequence: data.sequence,
+          encoded_length: typeof data.audio_data === 'string' ? data.audio_data.length : 0,
+        })
+      } else if (name === 'chat:audio_stream_end') {
+        Object.assign(event, {
+          stream_id: data.stream_id,
+          final_sequence: data.final_sequence,
+          status: data.status,
+          reason: data.reason,
+        })
+      }
+      if (name === 'chat:audio_with_expression') Object.assign(event,{format:data.format,encoded_length:typeof data.audio_data==='string'?data.audio_data.length:0,volume_count:Array.isArray(data.volumes)?data.volumes.length:0});
+      if (name === 'chat:sentence') event.text = data.text ?? data.sentence ?? null;
+      if (name === 'system:error') event.error = {code:data.code,message:data.message,component:data.component,phase:data.phase};
+      if (direction === 'received' && ['chat:audio_stream_start','chat:audio_with_expression'].includes(name)) qa.last_identity=safeIdentity(data);
+      qa.events.push(event)
+      if (direction === 'sent' && ['chat:text','chat:developer_text'].includes(name)) {
+        qa.last_socket = socket
+        qa.last_identity = safeIdentity(data)
+      }
+    } catch {
+      // Engine.IO control frames and non-JSON traffic are irrelevant here.
+    }
+  }
+
+  const NativeWebSocket = window.WebSocket
+  class ObservedWebSocket extends NativeWebSocket {
+    constructor(...args) {
+      super(...args)
+      qa.ws_connections += 1
+      this.addEventListener('message', (event) => recordFrame(event.data, 'received', this))
+    }
+
+    send(data) {
+      recordFrame(data, 'sent', this)
+      return super.send(data)
+    }
+  }
+  window.WebSocket = ObservedWebSocket
+  window.__interruptTtsQaTurn = () => {
+    if (!qa.last_socket || !qa.last_identity) throw new Error('No active chat identity')
+    qa.last_socket.send(`42${JSON.stringify(['chat:interrupt', qa.last_identity])}`)
+  }
+
+  const NativeAudioContext = window.AudioContext
+  window.AudioContext = class ObservedAudioContext extends NativeAudioContext {
+    constructor(...args) {
+      super(...args)
+      qa.audio_contexts += 1
+    }
+  }
+
+  let nextSourceId = 1
+  const sourceEntries = new WeakMap()
+  const nativeStart = AudioBufferSourceNode.prototype.start
+  AudioBufferSourceNode.prototype.start = function (when = 0, ...args) {
+    const samples = this.buffer?.getChannelData(0) ?? new Float32Array()
+    let energy = 0
+    for (const sample of samples) energy += sample * sample
+    const entry = {
+      id: nextSourceId++,
+      wall_at_ms: performance.now(),
+      epoch_ms: Date.now(),
+        epoch_ms: Date.now(),
+      scheduled_at: Number(when),
+      duration: Number(this.buffer?.duration ?? 0),
+      rms: samples.length > 0 ? Math.sqrt(energy / samples.length) : 0,
+      context_state: this.context.state,
+      task_id: qa.last_identity?.task_id ?? null,
+      stopped: false,
+      ended: false,
+    }
+    sourceEntries.set(this, entry)
+    qa.audio_starts.push(entry)
+    this.addEventListener(
+      'ended',
+      () => {
+        entry.ended = true
+        entry.ended_at_ms = performance.now()
+      },
+      { once: true },
+    )
+    return nativeStart.call(this, when, ...args)
+  }
+  const nativeStop = AudioBufferSourceNode.prototype.stop
+  AudioBufferSourceNode.prototype.stop = function (...args) {
+    const entry = sourceEntries.get(this)
+    if (entry) {
+      entry.stopped = true
+      entry.stopped_at_ms = performance.now()
+    }
+    return nativeStop.apply(this, args)
+  }
+
+
+  qa.media_starts=[];
+  const actualBlobs=new Map(),activeMedia=new WeakMap();
+  const nativeObjectURL=URL.createObjectURL;
+  URL.createObjectURL=function(blob){const url=nativeObjectURL.call(this,blob);if(blob instanceof Blob)actualBlobs.set(url,blob);return url};
+  async function inspectOriginalWav(blob,entry){
+   const raw=await blob.arrayBuffer(),view=new DataView(raw),tag=o=>String.fromCharCode(...new Uint8Array(raw,o,4));
+   entry.blob_bytes=raw.byteLength;entry.blob_type=blob.type;
+   entry.blob_sha256=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',raw)),x=>x.toString(16).padStart(2,'0')).join('');
+   if(raw.byteLength<12||tag(0)!=='RIFF'||tag(8)!=='WAVE'){entry.pcm_error='Actual native blob is not RIFF/WAVE';return}
+   let fmt=null,data=null;
+   for(let o=12;o+8<=raw.byteLength;){const name=tag(o),size=view.getUint32(o+4,true),start=o+8,length=Math.min(size,raw.byteLength-start);if(name==='fmt '&&length>=16)fmt={encoding:view.getUint16(start,true),channels:view.getUint16(start+2,true),sample_rate:view.getUint32(start+4,true),byte_rate:view.getUint32(start+8,true),bits:view.getUint16(start+14,true)};if(name==='data')data={start,length};if(size>raw.byteLength-start)break;o=start+size+(size%2)}
+   if(!fmt||!data){entry.pcm_error='Actual WAV fmt/data missing';return}
+   const width=fmt.bits/8,count=Math.floor(data.length/width);let energy=0,nonzero=0;
+   for(let i=0;i<count;i++){const o=data.start+i*width;let x;
+    if(fmt.encoding===3&&fmt.bits===32)x=view.getFloat32(o,true);
+    else if(fmt.encoding===1&&fmt.bits===8)x=(view.getUint8(o)-128)/128;
+    else if(fmt.encoding===1&&fmt.bits===16)x=view.getInt16(o,true)/32768;
+    else if(fmt.encoding===1&&fmt.bits===24){let v=view.getUint8(o)|(view.getUint8(o+1)<<8)|(view.getUint8(o+2)<<16);if(v&0x800000)v-=0x1000000;x=v/8388608}
+    else if(fmt.encoding===1&&fmt.bits===32)x=view.getInt32(o,true)/2147483648;
+    else {entry.pcm_error='Unsupported actual WAV sample encoding';return}
+    energy+=x*x;if(x!==0)nonzero++;
+   }
+   entry.pcm={...fmt,sample_count:count,nonzero_samples:nonzero,rms:count?Math.sqrt(energy/count):0,duration_seconds:fmt.byte_rate?data.length/fmt.byte_rate:null};
+  }
+  const nativePlay=HTMLMediaElement.prototype.play,nativePause=HTMLMediaElement.prototype.pause;
+  HTMLMediaElement.prototype.play=function(...args){
+   qa.legacy_play_calls++;
+   const source=this.currentSrc||this.src,blob=actualBlobs.get(this.src)||actualBlobs.get(source);
+   const entry={task_id:qa.last_identity?.task_id??null,source_kind:blob?'actual_blob':'other_native_source',source_url:source,assigned_src:this.src,call_epoch_ms:Date.now(),playing_epoch_ms:null,timeupdate_count:0,max_current_time:0,duration:null,ended:false,interrupted:false,error:null};
+   qa.media_starts.push(entry);activeMedia.set(this,entry);
+   const current=()=>activeMedia.get(this)===entry;
+   this.addEventListener('playing',()=>{if(!current())return;entry.playing_epoch_ms??=Date.now();entry.source_at_playing=this.currentSrc||this.src;entry.duration=Number(this.duration);entry.muted=this.muted;entry.volume=this.volume;entry.paused_at_playing=this.paused;entry.ready_state=this.readyState},{capture:true});
+   this.addEventListener('timeupdate',()=>{if(!current())return;entry.timeupdate_count++;entry.max_current_time=Math.max(entry.max_current_time,Number(this.currentTime));entry.duration=Number(this.duration)},{capture:true});
+   this.addEventListener('ended',()=>{if(!current())return;entry.ended=true;entry.ended_epoch_ms=Date.now();entry.native_ended_property=this.ended;entry.ended_current_time=Number(this.currentTime);entry.ended_duration=Number(this.duration);entry.max_current_time=Math.max(entry.max_current_time,Number(this.currentTime));entry.played_ranges=Array.from({length:this.played.length},(_,i)=>({start:this.played.start(i),end:this.played.end(i)}))},{capture:true});
+   this.addEventListener('error',()=>{if(current())entry.error={code:this.error?.code,message:this.error?.message}},{capture:true});
+   if(blob)void inspectOriginalWav(blob,entry).catch(e=>{entry.pcm_error=String(e.message)});
+   const promise=nativePlay.apply(this,args);
+   promise.then(()=>{entry.native_play_promise_resolved=true}).catch(e=>{entry.play_rejection=String(e.message)});
+   return promise;
+  };
+  HTMLMediaElement.prototype.pause=function(...args){const e=activeMedia.get(this);if(e&&!e.ended&&!this.ended&&e.source_kind==='actual_blob')e.interrupted=true;return nativePause.apply(this,args)};
+
+});
+const live=await context.newPage();
+live.on('pageerror',e=>p.errors.push(safe(e.message)));
+live.on('console',e=>{if(e.type()==='error')p.errors.push(safe(e.text()))});
+const socket=io(base.origin,{path:'/socket.io/',transports:['websocket'],auth:{token},extraHeaders:{Origin:base.origin},autoConnect:false,reconnection:false,timeout:15000});
+const writerEvents=[];
+socket.onAny((name,data)=>{if(['chat:sentence','system:error'].includes(name))writerEvents.push({name,epoch_ms:Date.now(),task_id:data?.task_id,text:name==='chat:sentence'?data?.text:null,error:name==='system:error'?safe(JSON.stringify(data)):null})});
+const mediaPassed=a=>a.source_kind==='actual_blob'&&a.source_at_playing===a.assigned_src&&a.pcm?.rms>0&&a.pcm.nonzero_samples>0&&a.playing_epoch_ms&&a.native_play_promise_resolved&&a.timeupdate_count>0&&a.max_current_time>0&&a.ended&&a.native_ended_property&&!a.interrupted&&!a.error&&!a.play_rejection&&a.muted===false&&a.volume>0&&a.ended_duration>0&&Math.abs(a.ended_current_time-a.ended_duration)<0.1;
+try {
+ await live.goto(p.url,{waitUntil:'domcontentloaded'});
+ await live.locator('#socketStatus[data-state="connected"]').waitFor({timeout:45000});
+ await live.locator('#modelStatus[data-state="live"]').waitFor({timeout:45000});
+ await live.locator('body').click({position:{x:20,y:20}});
+ p.frontend_resources=[];
+ for(const script of await live.locator('script[src]').evaluateAll(es=>es.map(e=>e.src))){const r=await fetch(script);const bytes=Buffer.from(await r.arrayBuffer());p.frontend_resources.push({url:script,status:r.status,sha256:createHash('sha256').update(bytes).digest('hex')})}
+ await new Promise((res,rej)=>{socket.once('connect',res);socket.once('connect_error',e=>rej(new Error('Socket authentication failed: '+safe(e.message))));socket.connect()});
+ for(let index=0;index<3;index++){
+  const task=randomUUID(),command={text:'请用一句不超过十五字的自然中文表达：今天的晚风很舒服。',message_id:randomUUID(),conversation_id:randomUUID(),task_id:task,turn_id:task,source:'text',is_inspection:false,is_acceptance:false};
+  const before=await live.locator('#audioStatus').evaluate(e=>({...e.dataset}));
+  const sample={index:index+1,condition:index===0?'first graph request after application update; Qwen already warm':'subsequent graph request; Qwen warm',command:{message_id:command.message_id,conversation_id:command.conversation_id,task_id:command.task_id,turn_id:command.turn_id},prompt_sha256:createHash('sha256').update(command.text).digest('hex'),prompt_characters:command.text.length,before,sent_at_ms:Date.now()};
+  p.samples.push(sample);
+  socket.emit('chat:developer_text',command);
+  await live.waitForFunction(({task,count})=>{const d=document.querySelector('#audioStatus')?.dataset;return d?.lastAudioTaskId===task&&Number(d.playbackCount)>count&&d.playbackState==='completed'}, {task,count:Number(before.playbackCount??0)},{timeout:90000});
+  const observations=await live.evaluate(task=>{const q=window.__ttsQa;return {events:q.events.filter(e=>e.task_id===task),audio_starts:q.audio_starts.filter(a=>a.task_id===task),media_starts:q.media_starts.filter(a=>a.task_id===task)}},task);
+  sample.after=await live.locator('#audioStatus').evaluate(e=>({...e.dataset}));
+  sample.observations=observations;
+  sample.writer_events=writerEvents.filter(e=>e.task_id===task);
+  const reply=observations.events.find(e=>e.name==='chat:sentence'),audio=observations.events.find(e=>e.name==='chat:audio_with_expression'||e.name==='chat:audio_stream_chunk'&&e.encoded_length>0);
+  const media=observations.media_starts.find(mediaPassed),pcm=observations.audio_starts.find(a=>a.rms>0&&a.context_state==='running'&&a.ended&&!a.stopped);
+  const playing=media?.playing_epoch_ms??pcm?.epoch_ms;
+  sample.reply_characters=sample.writer_events.filter(e=>e.name==='chat:sentence').map(e=>e.text??'').join('').length;
+  sample.first_text_seconds=reply?(reply.epoch_ms-sample.sent_at_ms)/1000:null;
+  sample.first_audio_received_seconds=audio?(audio.epoch_ms-sample.sent_at_ms)/1000:null;
+  sample.first_native_playing_seconds=playing?(playing-sample.sent_at_ms)/1000:null;
+  sample.playback_count_increment=Number(sample.after.playbackCount)-Number(before.playbackCount??0);
+  sample.actual_native_playback_path=media?'HTMLMediaElement actual WAV/blob':pcm?'AudioBufferSourceNode':'unproven';
+  sample.status=sample.playback_count_increment>0&&sample.after.lastAudioTaskId===task&&sample.after.playbackState==='completed'&&reply&&audio&&(media||pcm)&&!sample.writer_events.some(e=>e.name==='system:error')?'passed':'failed';
+  sample.finished_at=new Date().toISOString();
+  for(const event of [...sample.observations.events,...sample.writer_events])delete event.text;
+  if(sample.status!=='passed')throw new Error(`Sample ${index+1} failed playback evidence`);
+ }
+ p.readiness_after=await (await authenticatedFetch(new URL('/ready',base))).json();
+ p.status=p.samples.length===3&&p.samples.every(s=>s.status==='passed')&&p.errors.length===0&&p.readiness_after.ready?'passed':'failed';
+}catch(e){p.status='failed';p.error=safe(e.message)}finally{
+ socket.disconnect();await browser.close();p.finished_at=new Date().toISOString();
+ const output=resolve(root,'.zcode/memory-retention-20261014/first-audio-latency.json');
+ const json=JSON.stringify(p,null,2);if(json.includes(token))throw new Error('Secret appeared in probe evidence');
+ await writeFile(output,json+'\n','utf8');
+ console.log(JSON.stringify({status:p.status,error:p.error,samples:p.samples.map(({index,status,first_text_seconds,first_audio_received_seconds,first_native_playing_seconds,reply_characters})=>({index,status,first_text_seconds,first_audio_received_seconds,first_native_playing_seconds,reply_characters})),errors:p.errors}));
+ if(p.status!=='passed')process.exitCode=1;
+}

@@ -8,6 +8,7 @@ and conversation history operations.
 import asyncio
 from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
+from weakref import WeakValueDictionary
 
 from loguru import logger
 
@@ -70,7 +71,8 @@ class ChatHandlers:
         self.session_manager = session_manager
         self.admin = admin
         self._raw_audio_first_sids: set = set()
-        self._conversation_locks: dict[str, asyncio.Lock] = {}
+        # Active holders and waiters keep their lock alive; idle conversations retain no lock.
+        self._conversation_locks: WeakValueDictionary[str, asyncio.Lock] = WeakValueDictionary()
         self._sandbox_tasks: dict[str, asyncio.Task[None]] = {}
         self._sandbox_task_sids: dict[str, str] = {}
         self._sandbox_subscribers: dict[str, set[str]] = {}

@@ -65,6 +65,23 @@ def test_commit_is_idempotent_and_updates_bounded_state() -> None:
     assert session.affinity == 52
 
 
+def test_long_running_session_bounds_recent_commit_deduplication() -> None:
+    session = ConversationSessionState()
+    for index in range(10_000):
+        assert session.commit(task_id=f"task-{index}", user_text="u", final_response="a")
+
+    assert len(session.completed_turns) == 6
+    assert len(session._committed_tasks) == 1024
+    assert not session.commit(task_id="task-9999", user_text="u", final_response="duplicate")
+    assert not session.commit(task_id="task-8976", user_text="u", final_response="duplicate")
+    assert session.commit(task_id="task-8975", user_text="u", final_response="outside window")
+    assert len(session._committed_tasks) == 1024
+
+    session.reset()
+    assert not session._committed_tasks
+    assert session.commit(task_id="task-9999", user_text="u", final_response="new session")
+
+
 def test_state_values_are_clamped_and_reset() -> None:
     session = ConversationSessionState(affinity=99, fatigue=98)
     session.commit(task_id="task", user_text="u", final_response="a", affinity_delta=2)
