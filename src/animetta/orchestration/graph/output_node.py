@@ -369,8 +369,22 @@ async def _store_conversation_to_memory(
             else "off"
         )
         status = metadata.get("dialogue_status")
-        selected_final = status in {"composer", "composer_fallback"} or (
-            program_memory_mode == "write" and not state.get("error")
+        provider = getattr(service_context, "llm_engine", None)
+        direct_final = (
+            status == "direct"
+            and bool(metadata.get("text_ready_at"))
+            and not any(
+                metadata.get(flag)
+                for flag in ("is_inspection", "is_probe", "interrupted", "response_fallback")
+            )
+            and not state.get("error")
+            and provider is not None
+            and getattr(provider, "is_mock_provider", False) is not True
+        )
+        selected_final = (
+            direct_final
+            or status in {"composer", "composer_fallback"}
+            or (program_memory_mode == "write" and not state.get("error"))
         )
         decision = decide_persistence(
             PersistenceRequest(

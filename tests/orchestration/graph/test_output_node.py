@@ -436,6 +436,43 @@ class TestOutputNode:
         turn = runtime.submit_turn.call_args.args[0]
         assert turn.is_probe is True
 
+    @pytest.mark.parametrize(
+        ("metadata_update", "is_mock", "mode", "accepted"),
+        [
+            pytest.param({}, False, "read_write", True, id="completed-direct"),
+            pytest.param({}, False, "off", False, id="memory-off"),
+            pytest.param({}, False, "read_only", False, id="memory-read-only"),
+            pytest.param({"text_ready_at": None}, False, "read_write", False, id="not-delivered"),
+            pytest.param({"interrupted": True}, False, "read_write", False, id="interrupted"),
+            pytest.param({"response_fallback": True}, False, "read_write", False, id="fallback"),
+            pytest.param({"error_type": "timeout"}, False, "read_write", False, id="timeout"),
+            pytest.param({"is_probe": True}, False, "read_write", False, id="probe"),
+            pytest.param({"is_inspection": True}, False, "read_write", False, id="inspection"),
+            pytest.param({}, True, "read_write", False, id="mock-provider"),
+        ],
+    )
+    async def test_direct_turn_memory_requires_completed_real_reply(
+        self, mock_service_context, metadata_update, is_mock, mode, accepted
+    ):
+        runtime = MagicMock()
+        mock_service_context.memory_runtime = runtime
+        mock_service_context.llm_engine.is_mock_provider = is_mock
+        mock_service_context.config.system.long_term_memory_mode = mode
+        state = create_initial_state(session_id="direct-turn", user_text="本次测试暗号是蓝色书签")
+        state["response_text"] = "记住本次测试暗号了。"
+        state["metadata"] = {
+            "dialogue_status": "direct",
+            "text_ready_at": 1.0,
+            **metadata_update,
+        }
+
+        await _output_node_module._store_conversation_to_memory(
+            state, RunnableConfig(configurable={"service_context": mock_service_context})
+        )
+
+        assert runtime.submit_turn.call_count == int(accepted)
+        mock_service_context.memory_system.encode.assert_not_called()
+
     @pytest.mark.asyncio
     async def test_program_write_overrides_global_memory_off(
         self, mock_socketio, mock_service_context
