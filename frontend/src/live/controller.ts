@@ -1,8 +1,13 @@
 import { Events, type BilibiliStatusPayload } from '@/constants/socket-events'
 import type { DanmakuItem } from '@/types/chat'
 import type { LiveSocket } from '@/shared/transport/liveSocket'
+import {
+  readSubtitleEnabled,
+  SUBTITLE_CONFIG_STORAGE_KEY,
+} from '@/shared/broadcast/subtitleSettings'
 
 export type { LiveSocket } from '@/shared/transport/liveSocket'
+export type ChatPlaybackState = 'pending' | 'playing' | 'completed' | 'cancelled' | 'unavailable'
 
 export interface BackgroundConfig {
   file: string | null
@@ -126,6 +131,10 @@ export function createLiveController(options: LiveControllerOptions) {
   const messages: DanmakuItem[] = []
   let activeReplyTaskId: string | null = null
   let accumulatedReply = ''
+  let subtitleText: string | null = null
+  let subtitleEnabled = readSubtitleEnabled()
+  let playbackTaskId: string | null = null
+  let playbackState: ChatPlaybackState | null = null
   let subtitleHideTimer: ReturnType<typeof setTimeout> | null = null
   let messageRenderFrame: number | null = null
 
@@ -133,9 +142,26 @@ export function createLiveController(options: LiveControllerOptions) {
     if (subtitleHideTimer) clearTimeout(subtitleHideTimer)
     subtitleHideTimer = null
   }
+  const setSubtitle = (text: string | null): void => {
+    subtitleText = text
+    view.setSubtitle(subtitleEnabled ? text : null)
+  }
   const scheduleSubtitleHide = (): void => {
     cancelSubtitleHide()
-    subtitleHideTimer = setTimeout(() => view.setSubtitle(null), 6000)
+    const hasPlayback = playbackTaskId === activeReplyTaskId
+    if (hasPlayback && (playbackState === 'pending' || playbackState === 'playing')) return
+    subtitleHideTimer = setTimeout(() => setSubtitle(null), hasPlayback ? 1500 : 6000)
+  }
+  const setChatPlaybackState = (taskId: string, state: ChatPlaybackState): void => {
+    if (state === 'pending' || state === 'playing') playbackTaskId = taskId
+    if (taskId !== playbackTaskId) return
+    playbackState = state
+    if (taskId === activeReplyTaskId) scheduleSubtitleHide()
+  }
+  const onSubtitleSettings = (event: StorageEvent): void => {
+    if (event.key !== SUBTITLE_CONFIG_STORAGE_KEY && event.key !== null) return
+    subtitleEnabled = readSubtitleEnabled(event.newValue)
+    view.setSubtitle(subtitleEnabled ? subtitleText : null)
   }
 
   const onConnect = (): void => view.setSocketState('connected')
@@ -171,14 +197,14 @@ export function createLiveController(options: LiveControllerOptions) {
     }
     if (frame.taskId !== activeReplyTaskId) return
     if (frame.isComplete || frame.text === '') {
-      if (accumulatedReply) view.setSubtitle(accumulatedReply)
+      if (accumulatedReply) setSubtitle(accumulatedReply)
       accumulatedReply = ''
       scheduleSubtitleHide()
       return
     }
     const text = publicReplyText(frame.text)
     accumulatedReply = frame.seq === 0 ? text : accumulatedReply + text
-    if (accumulatedReply) view.setSubtitle(accumulatedReply)
+    if (accumulatedReply) setSubtitle(accumulatedReply)
   }
   const onControl = (value: unknown): void => {
     const frame = liveReplyFrame(value)
@@ -195,9 +221,11 @@ export function createLiveController(options: LiveControllerOptions) {
   socket.on(Events.BILIBILI.DANMAKU_AI_REPLY, onBilibiliReply)
   socket.on(Events.CHAT.SENTENCE, onSentence)
   socket.on(Events.CHAT.CONTROL, onControl)
+  window.addEventListener('storage', onSubtitleSettings)
   view.setBackground(backgroundFrom(search))
 
   return {
+    setChatPlaybackState,
     get messages(): readonly DanmakuItem[] {
       return messages
     },
@@ -210,6 +238,7 @@ export function createLiveController(options: LiveControllerOptions) {
       socket.off(Events.BILIBILI.DANMAKU_AI_REPLY, onBilibiliReply)
       socket.off(Events.CHAT.SENTENCE, onSentence)
       socket.off(Events.CHAT.CONTROL, onControl)
+      window.removeEventListener('storage', onSubtitleSettings)
       if (messageRenderFrame !== null) cancelAnimationFrame(messageRenderFrame)
       messageRenderFrame = null
       cancelSubtitleHide()

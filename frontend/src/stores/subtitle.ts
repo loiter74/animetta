@@ -1,10 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
+import { SUBTITLE_CONFIG_STORAGE_KEY as STORAGE_KEY } from '@/shared/broadcast/subtitleSettings'
 
 export type SubtitleDisplayMode = 'original' | 'translated' | 'bilingual'
 export type SubtitleFontSize = 'small' | 'medium' | 'large'
-
-const STORAGE_KEY = 'animetta_subtitle_config'
 
 interface SubtitleConfig {
   _version: number // storage format version (2 = ratio-based)

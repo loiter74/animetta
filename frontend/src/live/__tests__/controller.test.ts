@@ -1,6 +1,8 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Events, type BilibiliStatusPayload } from '@/constants/socket-events'
 import { createLiveController, type LiveSocket, type LiveView } from '../controller'
+
+const controllers: ReturnType<typeof createLiveController>[] = []
 
 function harness(search = '') {
   const handlers = new Map<string, (...args: unknown[]) => void>()
@@ -33,6 +35,7 @@ function harness(search = '') {
     view,
     search: new URLSearchParams(search),
   })
+  controllers.push(controller)
   return { controller, handlers, socket, view }
 }
 
@@ -51,7 +54,11 @@ function status(state: BilibiliStatusPayload['state']): BilibiliStatusPayload {
 }
 
 describe('standalone live controller', () => {
-  afterEach(() => vi.useRealTimers())
+  beforeEach(() => localStorage.clear())
+  afterEach(() => {
+    controllers.splice(0).forEach((controller) => controller.dispose())
+    vi.useRealTimers()
+  })
 
   it('uses canonical events and never emits room lifecycle commands', () => {
     const { handlers, socket } = harness()
@@ -166,5 +173,59 @@ describe('standalone live controller', () => {
     expect(view.setSubtitle).toHaveBeenLastCalledWith('开发者刚刚在后台提到测试。')
     vi.advanceTimersByTime(6000)
     expect(view.setSubtitle).toHaveBeenLastCalledWith(null)
+  })
+
+  it('keeps subtitles through pending and playing audio until actual completion', () => {
+    vi.useFakeTimers()
+    const { controller, handlers, view } = harness()
+    const identity = { task_id: 'task', turn_id: 'task' }
+    handlers.get(Events.CHAT.SENTENCE)!({ ...identity, seq: 0, text: '一句需要说完的话。' })
+    controller.setChatPlaybackState('task', 'pending')
+    handlers.get(Events.CHAT.SENTENCE)!({ ...identity, seq: 1, is_complete: true })
+    handlers.get(Events.CHAT.CONTROL)!({ ...identity, signal: 'conversation-end' })
+    vi.advanceTimersByTime(10000)
+    expect(view.setSubtitle).toHaveBeenLastCalledWith('一句需要说完的话。')
+    controller.setChatPlaybackState('task', 'playing')
+    vi.advanceTimersByTime(20000)
+    expect(view.setSubtitle).toHaveBeenLastCalledWith('一句需要说完的话。')
+    controller.setChatPlaybackState('task', 'completed')
+    vi.advanceTimersByTime(1499)
+    expect(view.setSubtitle).toHaveBeenLastCalledWith('一句需要说完的话。')
+    vi.advanceTimersByTime(1)
+    expect(view.setSubtitle).toHaveBeenLastCalledWith(null)
+  })
+
+  it('ignores old playback completion and falls back when playback fails', () => {
+    vi.useFakeTimers()
+    const { controller, handlers, view } = harness()
+    handlers.get(Events.CHAT.SENTENCE)!({ task_id: 'old', turn_id: 'old', seq: 0, text: '旧话' })
+    controller.setChatPlaybackState('old', 'playing')
+    handlers.get(Events.CHAT.SENTENCE)!({ task_id: 'new', turn_id: 'new', seq: 0, text: '新话' })
+    controller.setChatPlaybackState('new', 'pending')
+    controller.setChatPlaybackState('old', 'completed')
+    vi.advanceTimersByTime(10000)
+    expect(view.setSubtitle).toHaveBeenLastCalledWith('新话')
+    controller.setChatPlaybackState('new', 'cancelled')
+    vi.advanceTimersByTime(1500)
+    expect(view.setSubtitle).toHaveBeenLastCalledWith(null)
+  })
+
+  it('restores saved visibility and updates it during playback without losing the caption', () => {
+    const key = 'animetta_subtitle_config'
+    localStorage.setItem(key, JSON.stringify({ enabled: false }))
+    const { handlers, view } = harness()
+    handlers.get(Events.CHAT.SENTENCE)!({
+      task_id: 'task',
+      turn_id: 'task',
+      seq: 0,
+      text: '正在说话',
+    })
+    expect(view.setSubtitle).toHaveBeenLastCalledWith(null)
+    window.dispatchEvent(new StorageEvent('storage', { key, newValue: '{"enabled":true}' }))
+    expect(view.setSubtitle).toHaveBeenLastCalledWith('正在说话')
+    window.dispatchEvent(new StorageEvent('storage', { key, newValue: '{"enabled":false}' }))
+    expect(view.setSubtitle).toHaveBeenLastCalledWith(null)
+    window.dispatchEvent(new StorageEvent('storage', { key, newValue: 'invalid' }))
+    expect(view.setSubtitle).toHaveBeenLastCalledWith('正在说话')
   })
 })

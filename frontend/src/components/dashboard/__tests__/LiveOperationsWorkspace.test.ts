@@ -111,6 +111,7 @@ function mountWorkspace() {
 
 describe('LiveOperationsWorkspace', () => {
   beforeEach(() => {
+    localStorage.clear()
     socket.emit.mockReset()
     socket.on.mockReset()
     socket.off.mockReset()
@@ -123,6 +124,21 @@ describe('LiveOperationsWorkspace', () => {
   })
 
   afterEach(() => vi.unstubAllGlobals())
+
+  it('provides a persistent subtitle switch without changing translation or audio', async () => {
+    const { wrapper } = mountWorkspace()
+    await flushPromises()
+    const toggle = wrapper.get('[role="switch"][aria-label="显示直播字幕"]')
+    expect(toggle.attributes('aria-checked')).toBe('true')
+    await toggle.trigger('click')
+    expect(toggle.text()).toBe('字幕关闭')
+    expect(JSON.parse(localStorage.getItem('animetta_subtitle_config')!).enabled).toBe(false)
+    expect(socket.emit).not.toHaveBeenCalledWith(Events.TRANSLATION.CONFIGURE, expect.anything())
+    await toggle.trigger('click')
+    expect(toggle.attributes('aria-checked')).toBe('true')
+    expect(JSON.parse(localStorage.getItem('animetta_subtitle_config')!).enabled).toBe(true)
+    wrapper.unmount()
+  })
 
   it('shows trusted turn content and raw tool evidence only in the inspector', async () => {
     const { wrapper } = mountWorkspace()

@@ -1,4 +1,9 @@
-import { createLiveController, type LiveSocket, type LiveView } from './controller'
+import {
+  createLiveController,
+  type ChatPlaybackState,
+  type LiveSocket,
+  type LiveView,
+} from './controller'
 import { createLiveSocketRuntime, type LiveSocketRuntime } from './socket-runtime'
 import { DisposerStack } from '@/review/disposable'
 import {
@@ -17,6 +22,7 @@ export interface BootstrapLiveSessionOptions {
 export interface LiveSession {
   mode: LiveSocketRuntime['mode']
   socket: LiveSocket
+  setChatPlaybackState(taskId: string, state: ChatPlaybackState): void
   start(): void
   dispose(): void
 }
@@ -42,6 +48,7 @@ export function bootstrapLiveSession(options: BootstrapLiveSessionOptions): Live
   return {
     mode: runtime.mode,
     socket: runtime.socket,
+    setChatPlaybackState: controller.setChatPlaybackState,
     start(): void {
       if (started || disposed) return
       started = true

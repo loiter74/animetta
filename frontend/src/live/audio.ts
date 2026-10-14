@@ -23,7 +23,7 @@ import {
   writeSingingPlayback,
   type SingingPlaybackSnapshot,
 } from '@/singing/playback-sync'
-import type { LiveSocket } from './controller'
+import type { ChatPlaybackState, LiveSocket } from './controller'
 import type { LiveBgmController } from './bgm'
 import type {
   PublicMediaMode,
@@ -47,6 +47,7 @@ export interface ReviewAudioPlaybackRequest {
 export interface LiveAudioControllerOptions {
   mediaMode?: PublicMediaMode
   ownership?: PublicMediaOwnership
+  onChatPlaybackState?: (taskId: string, state: ChatPlaybackState) => void
 }
 
 export function createLiveAudioController(
@@ -126,6 +127,7 @@ export function createLiveAudioController(
         return
       }
       bgm?.duck()
+      if (kind === 'chat') options.onChatPlaybackState?.(event.task_id, 'playing')
       if (status) {
         status.dataset.playbackCount = String(Number(status.dataset.playbackCount ?? 0) + 1)
         status.dataset.lastAudioTaskId = event.task_id
@@ -135,12 +137,14 @@ export function createLiveAudioController(
     },
     onComplete: () => {
       bgm?.release()
+      if (kind === 'chat') options.onChatPlaybackState?.(event.task_id, 'completed')
       if (kind === 'chat' && currentChatTaskId === event.task_id) currentChatTaskId = null
       if (kind === 'review' && currentReviewTaskId === event.task_id) currentReviewTaskId = null
       if (status) status.dataset.playbackState = 'completed'
     },
     onCancel: () => {
       bgm?.release()
+      if (kind === 'chat') options.onChatPlaybackState?.(event.task_id, 'cancelled')
       if (kind === 'chat' && currentChatTaskId === event.task_id) currentChatTaskId = null
       if (kind === 'review' && currentReviewTaskId === event.task_id) currentReviewTaskId = null
       if (status) status.dataset.playbackState = 'cancelled'
@@ -150,6 +154,7 @@ export function createLiveAudioController(
     event: Pick<ChatIdentity, 'task_id'>,
     kind: 'chat' | 'singing' | 'review' = 'chat',
   ): void => {
+    if (kind === 'chat') options.onChatPlaybackState?.(event.task_id, 'pending')
     if (!status) return
     status.dataset.lastAudioTaskId = event.task_id
     status.dataset.lastAudioKind = kind
@@ -163,6 +168,7 @@ export function createLiveAudioController(
     event: Pick<ChatIdentity, 'task_id'>,
     kind: 'chat' | 'singing' | 'review' = 'chat',
   ): void => {
+    if (kind === 'chat') options.onChatPlaybackState?.(event.task_id, 'unavailable')
     if (!status) return
     status.dataset.lastAudioTaskId = event.task_id
     status.dataset.lastAudioKind = kind
@@ -172,11 +178,11 @@ export function createLiveAudioController(
   const onAudio = (value: unknown): void => {
     const event = value as AudioWithExpressionEvent
     if (event.turn_id !== event.task_id) return
+    markPending(event)
     requestPlayback(
       (permit) => {
         if (!validatePermit(permit)) return
         currentChatTaskId = event.task_id
-        markPending(event)
         playAudio(event, lifecycle(event, 'chat', permit), (value) =>
           setMouthTarget(value, event.task_id),
         )
@@ -187,11 +193,11 @@ export function createLiveAudioController(
   const onStreamStart = (value: unknown): void => {
     const event = value as AudioStreamStartEvent
     if (event.turn_id !== event.task_id) return
+    markPending(event)
     requestPlayback(
       (permit) => {
         if (!validatePermit(permit)) return
         currentChatTaskId = event.task_id
-        markPending(event)
         startAudioStream(event, lifecycle(event, 'chat', permit), (value) =>
           setMouthTarget(value, event.task_id),
         )

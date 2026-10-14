@@ -109,11 +109,6 @@ function updateSubtitle(): void {
   })
 }
 
-function toggleSubtitle(): void {
-  subtitleStore.toggle()
-  updateSubtitle()
-}
-
 function setDisplayMode(event: Event): void {
   subtitleStore.setDisplayMode((event.target as HTMLSelectElement).value as SubtitleDisplayMode)
 }
@@ -466,10 +461,12 @@ watch(
                   <button
                     class="btn-ghost"
                     type="button"
-                    :aria-pressed="subtitleStore.enabled"
-                    @click="toggleSubtitle"
+                    role="switch"
+                    aria-label="显示直播字幕"
+                    :aria-checked="subtitleStore.enabled"
+                    @click="subtitleStore.toggle()"
                   >
-                    {{ subtitleStore.enabled ? '已启用' : '已关闭' }}
+                    {{ subtitleStore.enabled ? '已显示' : '已隐藏' }}
                   </button>
                 </div>
                 <div class="mt-3 grid gap-3 sm:grid-cols-3">

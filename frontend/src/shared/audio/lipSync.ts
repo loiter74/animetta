@@ -11,7 +11,6 @@ let targetMouth = 0
 let mouthModel: MouthParameterLookup | null = null
 let mouthParameterIndex = -1
 let lipSyncCancel: (() => void) | null = null
-let _lipSyncRafActive = false // when true, PIXI ticker lip sync is disabled
 
 export type MouthTarget = (value: number) => void
 
@@ -33,8 +32,6 @@ interface MouthModel {
 }
 
 export function tickLipSync(model: MouthModel | null | undefined): void {
-  // RAF-based lip sync takes priority over PIXI ticker
-  if (_lipSyncRafActive) return
   if (!model) return
   const coreModel = model.internalModel?.coreModel
   if (!coreModel) return
@@ -61,64 +58,51 @@ export function startLipSync(
   setTarget: MouthTarget = setMouthTarget,
 ): void {
   stopLipSync()
-  _lipSyncRafActive = false
   const intervalMs = 20
   let lastIndex = -1
   let hasStarted = false
-  let preRollCount = 0
-  const preRollTarget = 3
-  let lipSyncTarget = 0
-  const mouthEnvelope = createMouthEnvelope()
+  let cancelled = false
+  let frame: number | null = null
+  // Complete-audio timelines already contain gained peak amplitudes;
+  // PCM streaming applies its separate RMS gain in pcmStreamPlayback.
+  const mouthEnvelope = createMouthEnvelope(1)
 
   // RAF tracks the audio envelope only. The PIXI late-frame ticker owns the
   // actual parameter write so mouth opening is always applied after motion
   // and semantic expression overlays.
-  function setLipSyncParam(value: number) {
-    lipSyncTarget = value === 0 ? mouthEnvelope.reset() : mouthEnvelope.next(value)
-    setTarget(lipSyncTarget)
+  function cancel(): void {
+    if (cancelled) return
+    cancelled = true
+    if (frame !== null) cancelAnimationFrame(frame)
+    setTarget(mouthEnvelope.reset())
   }
 
   const tick = () => {
+    if (cancelled) return
     if (audio.ended || (hasStarted && audio.paused)) {
-      setLipSyncParam(0)
+      cancel()
       return
     }
 
-    if (!hasStarted) {
-      if (audio.paused) {
-        if (preRollCount < preRollTarget && preRollCount < volumes.length) {
-          setLipSyncParam(volumes[preRollCount])
-          preRollCount++
-        }
-        requestAnimationFrame(tick)
-        return
-      }
-      hasStarted = true
-    }
-
-    const rawIndex = Math.floor((audio.currentTime * 1000) / intervalMs)
-    const index = rawIndex + preRollCount
-    if (index !== lastIndex) {
-      setLipSyncParam(index < volumes.length ? volumes[index] : 0)
-      lastIndex = index
+    if (audio.paused) {
+      setTarget(0)
     } else {
-      // Keep smoothing toward current target even on same index
-      setLipSyncParam(lipSyncTarget)
+      hasStarted = true
+      const index = Math.floor((audio.currentTime * 1000) / intervalMs)
+      if (index !== lastIndex) {
+        setTarget(mouthEnvelope.next(volumes[index] ?? 0))
+        lastIndex = index
+      }
     }
-    requestAnimationFrame(tick)
+    frame = requestAnimationFrame(tick)
   }
-  requestAnimationFrame(tick)
-
-  lipSyncCancel = () => {
-    _lipSyncRafActive = false
-    setLipSyncParam(0)
-  }
+  frame = requestAnimationFrame(tick)
+  lipSyncCancel = cancel
 }
 
 export function stopLipSync(): void {
   const cancel = lipSyncCancel
   lipSyncCancel = null
-  _lipSyncRafActive = false
   if (cancel) cancel()
   else setMouthTarget(0)
 }

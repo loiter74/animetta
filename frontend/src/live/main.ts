@@ -81,6 +81,7 @@ live2dStage = stage
 const liveBgm = createLiveBgmController(document, search, { ownership: mediaOwnership })
 const liveAudio = createLiveAudioController(session.socket, document, stage.setMouth, liveBgm, {
   ownership: mediaOwnership,
+  onChatPlaybackState: session.setChatPlaybackState,
 })
 pageDisposers.add(() => mediaOwnership.dispose())
 pageDisposers.add(() => session.dispose())

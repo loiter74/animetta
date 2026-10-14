@@ -10,6 +10,7 @@ import { useDanmaku } from '@/composables/useDanmaku'
 import { getSocket } from '@/composables/useSocket'
 import { Events } from '@/constants/socket-events'
 import { useDanmakuStore } from '@/stores/danmaku'
+import { useSubtitleStore } from '@/stores/subtitle'
 import {
   useDashboardStore,
   type LiveActivity,
@@ -20,6 +21,7 @@ import type { ChatMessage } from '@/types/chat'
 
 const store = useDashboardStore()
 const danmakuStore = useDanmakuStore()
+const subtitleStore = useSubtitleStore()
 useDanmaku()
 const selectedTraceId = ref('')
 const historyLocked = ref(false)
@@ -244,6 +246,16 @@ function closePreflight(): void {
           </dd>
         </div>
       </dl>
+      <button
+        class="btn-ghost shrink-0"
+        type="button"
+        role="switch"
+        aria-label="显示直播字幕"
+        :aria-checked="subtitleStore.enabled"
+        @click="subtitleStore.toggle()"
+      >
+        字幕{{ subtitleStore.enabled ? '开启' : '关闭' }}
+      </button>
       <button
         ref="preflightButtonRef"
         class="btn-accent shrink-0"

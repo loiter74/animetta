@@ -72,14 +72,39 @@ function harness(
   vi.spyOn(singingAudio, 'pause').mockImplementation(() => undefined)
   vi.spyOn(singingAudio, 'load').mockImplementation(() => undefined)
   const bgm = { duck: vi.fn(), release: vi.fn(), unlock: vi.fn() }
-  const controller = createLiveAudioController(socket, document, setMouthTarget, bgm, { mediaMode })
-  return { bgm, controller, handlers, setMouthTarget, singingAudio, socket }
+  const onChatPlaybackState = vi.fn()
+  const controller = createLiveAudioController(socket, document, setMouthTarget, bgm, {
+    mediaMode,
+    onChatPlaybackState,
+  })
+  return { bgm, controller, handlers, setMouthTarget, singingAudio, socket, onChatPlaybackState }
 }
 
 describe('standalone live audio', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     localStorage.clear()
+  })
+
+  it('reports the native chat lifecycle and unavailable playback to subtitles', () => {
+    const { handlers, controller, onChatPlaybackState } = harness()
+    const event = { task_id: 'caption-task', turn_id: 'caption-task', audio_url: '/speech.wav' }
+    handlers.get(Events.CHAT.AUDIO_WITH_EXPRESSION)!(event)
+    expect(onChatPlaybackState).toHaveBeenLastCalledWith('caption-task', 'pending')
+    const lifecycle = playback.playAudio.mock.lastCall![1]
+    lifecycle.onStart()
+    expect(onChatPlaybackState).toHaveBeenLastCalledWith('caption-task', 'playing')
+    lifecycle.onComplete()
+    expect(onChatPlaybackState).toHaveBeenLastCalledWith('caption-task', 'completed')
+    handlers.get(Events.CHAT.AUDIO_STREAM_START)!({ ...event, stream_id: 'stream' })
+    playback.startAudioStream.mock.lastCall![1].onCancel()
+    expect(onChatPlaybackState).toHaveBeenLastCalledWith('caption-task', 'cancelled')
+    controller.dispose()
+
+    const muted = harness(Promise.resolve(), 'muted')
+    muted.handlers.get(Events.CHAT.AUDIO_WITH_EXPRESSION)!(event)
+    expect(muted.onChatPlaybackState).toHaveBeenLastCalledWith('caption-task', 'unavailable')
+    muted.controller.dispose()
   })
 
   it('restores dashboard singing playback when live opens later', () => {
