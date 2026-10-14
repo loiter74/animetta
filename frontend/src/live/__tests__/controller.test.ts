@@ -171,7 +171,26 @@ describe('standalone live controller', () => {
     handlers.get(Events.CHAT.SENTENCE)!({ ...identity, seq: 1, text: '', is_complete: true })
 
     expect(view.setSubtitle).toHaveBeenLastCalledWith('开发者刚刚在后台提到测试。')
+    handlers.get(Events.CHAT.CONTROL)!({ ...identity, signal: 'conversation-end' })
     vi.advanceTimersByTime(6000)
+    expect(view.setSubtitle).toHaveBeenLastCalledWith(null)
+  })
+
+  it('keeps the completed text while TTS synthesis takes longer than six seconds', () => {
+    vi.useFakeTimers()
+    const { controller, handlers, view } = harness()
+    const identity = { task_id: 'slow-tts', turn_id: 'slow-tts' }
+    handlers.get(Events.CHAT.SENTENCE)!({ ...identity, seq: 0, text: '等声音合成完成再收起。' })
+    handlers.get(Events.CHAT.SENTENCE)!({ ...identity, seq: 1, text: '', is_complete: true })
+    vi.advanceTimersByTime(10000)
+    expect(view.setSubtitle).toHaveBeenLastCalledWith('等声音合成完成再收起。')
+    controller.setChatPlaybackState('slow-tts', 'pending')
+    handlers.get(Events.CHAT.CONTROL)!({ ...identity, signal: 'conversation-end' })
+    controller.setChatPlaybackState('slow-tts', 'playing')
+    vi.advanceTimersByTime(10000)
+    expect(view.setSubtitle).toHaveBeenLastCalledWith('等声音合成完成再收起。')
+    controller.setChatPlaybackState('slow-tts', 'completed')
+    vi.advanceTimersByTime(1500)
     expect(view.setSubtitle).toHaveBeenLastCalledWith(null)
   })
 

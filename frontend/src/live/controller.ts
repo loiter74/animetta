@@ -199,7 +199,7 @@ export function createLiveController(options: LiveControllerOptions) {
     if (frame.isComplete || frame.text === '') {
       if (accumulatedReply) setSubtitle(accumulatedReply)
       accumulatedReply = ''
-      scheduleSubtitleHide()
+      // Text is published before TTS synthesis; conversation-end handles text-only turns.
       return
     }
     const text = publicReplyText(frame.text)
