@@ -127,54 +127,93 @@
     color: var(--c-text-muted);
   }
 
-  .btn-accent {
-    background: var(--c-accent);
-    color: #fff;
-    border: 0;
-    border-radius: var(--r-lg);
-    padding: 10px 18px;
-    font-size: var(--fs-sm);
-    font-weight: 500;
-    cursor: pointer;
-    transition: all var(--d-base) var(--ease-out-expo);
-    font-family: inherit;
-  }
-  .btn-accent:hover { background: var(--c-accent-hover); box-shadow: var(--shadow-glow-accent); }
-  .btn-accent:active { transform: scale(0.96); }
-  .btn-accent:disabled {
-    background: var(--c-card);
-    color: var(--c-text-muted);
-    cursor: not-allowed;
-    box-shadow: none;
-  }
+  .btn-accent,
+      .btn-secondary,
+      .btn-ghost,
+      .btn-danger,
+      .btn-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 36px;
+        padding: 7px 14px;
+        border: 1px solid transparent;
+        border-radius: var(--r-xl);
+        font: 600 var(--fs-xs)/16px var(--font-sans);
+        white-space: nowrap;
+        cursor: pointer;
+        transition:
+          background-color var(--d-fast) var(--ease-out-expo),
+          color var(--d-fast) var(--ease-out-expo),
+          border-color var(--d-fast) var(--ease-out-expo);
+      }
+      .btn-accent {
+        background: var(--c-accent);
+        color: var(--c-on-accent);
+        box-shadow: var(--shadow-control);
+      }
+      .btn-accent:hover {
+        background: var(--c-accent-hover);
+      }
+      .btn-secondary {
+        background: var(--c-panel);
+        color: var(--c-text-dim);
+        border-color: var(--c-border);
+      }
+      .btn-secondary:hover {
+        background: var(--c-card);
+        border-color: var(--c-border-strong);
+        color: var(--c-text);
+      }
+      .btn-ghost,
+      .btn-icon {
+        background: transparent;
+        color: var(--c-text-dim);
+      }
+      .btn-ghost:hover,
+      .btn-icon:hover {
+        background: var(--c-card);
+        color: var(--c-text);
+      }
+      .btn-danger {
+        background: transparent;
+        color: var(--c-error);
+      }
+      .btn-danger:hover {
+        background: color-mix(in srgb, var(--c-error) 10%, transparent);
+      }
+      .btn-accent:disabled {
+        cursor: not-allowed;
+        opacity: 0.45;
+      }
+      .btn-accent:disabled:hover {
+        background: var(--c-accent);
+      }
+      .btn-accent:active,
+      .btn-secondary:active,
+      .btn-ghost:active,
+      .btn-icon:active {
+        transform: translateY(1px);
+      }
+      .btn-accent:disabled:active {
+        transform: none;
+      }
+      button:focus-visible {
+        outline: 2px solid var(--c-accent);
+        outline-offset: 3px;
+      }
+      .btn-icon {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+      }
+      .btn-icon svg {
+        width: 16px;
+        height: 16px;
+      }
 
-  .btn-ghost {
-    background: transparent;
-    color: var(--c-text-dim);
-    border: 0;
-    border-radius: var(--r-lg);
-    padding: 8px 14px;
-    font-size: var(--fs-sm);
-    cursor: pointer;
-    transition: all var(--d-base) var(--ease-out-expo);
-    font-family: inherit;
-  }
-  .btn-ghost:hover { background: var(--c-accent-soft); color: var(--c-accent); }
-
-  .btn-icon {
-    width: 38px; height: 38px;
-    border-radius: var(--r-lg);
-    background: rgba(232,121,168,0.10);
-    border: 1px solid var(--c-border-accent);
-    color: var(--c-accent);
-    display: grid; place-items: center;
-    cursor: pointer;
-    transition: all var(--d-base) var(--ease-out-expo);
-  }
-  .btn-icon:hover { background: var(--c-accent); color: #fff; box-shadow: var(--shadow-glow-accent); }
-  .btn-icon svg { width: 18px; height: 18px; }
-
-  .btn-mic {
+      .btn-mic {
     width: 44px; height: 44px;
     border-radius: 50%;
     background: var(--c-accent);
@@ -601,46 +640,98 @@
     </div>
   </article>
 
-  <!-- Buttons ---------------------------------------------------- -->
-  <article class="comp">
-    <div class="comp-head">
-      <h3>Buttons</h3>
-      <span class="key">.btn-accent · .btn-ghost · &lt;AnimatedButton&gt;</span>
-      <p>Two text-buttons, one icon-button, one mic. Anything else is a custom case.</p>
-    </div>
-    <div class="comp-body">
-      <div class="btn-row">
-        <div class="btn-stack">
-          <div class="lab">Primary · accent</div>
-          <button class="btn-accent">Send message</button>
-          <button class="btn-accent" disabled>Connecting…</button>
+    <article class="comp" aria-label="工作台视觉语言">
+        <div class="comp-head">
+          <h3>工作台视觉语言</h3>
+          <p>
+            中性色组织信息，樱粉标记操作。通过留白、字重和表面层级建立秩序。
+          </p>
         </div>
-        <div class="btn-stack">
-          <div class="lab">Secondary · ghost</div>
-          <button class="btn-ghost">Cancel</button>
-          <button class="btn-ghost" style="color: var(--c-accent); background: var(--c-accent-soft);">Hover state</button>
-        </div>
-        <div class="btn-stack" style="align-items: center;">
-          <div class="lab">Icon button</div>
-          <button class="btn-icon" aria-label="Settings">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06A2 2 0 1 1 4.37 16.96l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06A2 2 0 1 1 7.04 4.37l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+        <div class="comp-body">
+          <p>
+            标题 20px，正文 14px，控件与说明
+            12px。使用本地系统字体，不加载网络字体。
+          </p>
+          <p>
+            页面间距 24px，控件间距
+            8px；深浅主题共享相同结构、键盘焦点与禁用反馈。
+          </p>
+          <button
+            type="button"
+            class="btn-secondary"
+            onclick="document.documentElement.classList.toggle('theme-light')"
+          >
+            切换深浅主题
           </button>
         </div>
-        <div class="btn-stack" style="align-items: center;">
-          <div class="lab">Voice · recording</div>
-          <button class="btn-mic recording" aria-label="Stop recording">
-            <svg viewBox="0 0 24 24" fill="currentColor"><rect x="8" y="8" width="8" height="8" rx="2"/></svg>
-          </button>
+      </article>
+
+      <!-- Buttons ---------------------------------------------------- -->
+      <article class="comp">
+        <div class="comp-head">
+          <h3>Buttons</h3>
+          <span class="key"
+            >.btn-accent · .btn-secondary · .btn-ghost · .btn-danger</span
+          >
+          <p>
+            工作台统一使用 36px
+            控件。一个任务区域保留一个主操作，其余按操作意图降级。
+          </p>
         </div>
-      </div>
-    </div>
-    <div class="comp-spec">
-      <div class="spec-pair"><b>Height · accent</b><span>40px (10/18 padding)</span></div>
-      <div class="spec-pair"><b>Hover</b><span>--c-accent-hover + glow</span></div>
-      <div class="spec-pair"><b>Active scale</b><span>0.96</span></div>
-      <div class="spec-pair"><b>Transition</b><span>200ms ease-out</span></div>
-    </div>
-  </article>
+        <div class="comp-body">
+          <div class="btn-row">
+            <div class="btn-stack">
+              <div class="lab">主操作</div>
+              <button class="btn-accent">整理记忆</button>
+              <button class="btn-accent" disabled>整理中</button>
+            </div>
+            <div class="btn-stack">
+              <div class="lab">次操作与辅助操作</div>
+              <button class="btn-secondary">固定记忆</button>
+              <button class="btn-ghost">取消</button>
+              <button class="btn-danger">遗忘</button>
+            </div>
+            <div class="btn-stack" style="align-items: center">
+              <div class="lab">Icon button</div>
+              <button class="btn-icon" aria-label="Settings">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+                  <path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06A2 2 0 1 1 4.37 16.96l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06A2 2 0 1 1 7.04 4.37l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div class="btn-stack" style="align-items: center">
+              <div class="lab">Voice · recording</div>
+              <button class="btn-mic recording" aria-label="Stop recording">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <rect x="8" y="8" width="8" height="8" rx="2" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="comp-spec">
+          <div class="spec-pair">
+            <b>Height · accent</b><span>36px · 12px corners</span>
+          </div>
+          <div class="spec-pair">
+            <b>Hover</b><span>Color shift, no decorative glow</span>
+          </div>
+          <div class="spec-pair">
+            <b>Pressed</b><span>translateY(1px)</span>
+          </div>
+          <div class="spec-pair">
+            <b>Transition</b><span>150ms ease-out-expo</span>
+          </div>
+        </div>
+      </article>
 
   <!-- Chat bubbles ---------------------------------------------- -->
   <article class="comp">
@@ -896,7 +987,7 @@
     </div>
     <div class="comp-spec">
       <div class="spec-pair"><b>Grid</b><span>CSS Grid · grid-auto-flow: dense</span></div>
-      <div class="spec-pair"><b>Columns</span><span>4 / 2 / 1 (responsive)</span></div>
+      <div class="spec-pair"><b>Columns</b><span>4 / 2 / 1 (responsive)</span></div>
       <div class="spec-pair"><b>Gap</b><span>16px (default)</span></div>
       <div class="spec-pair"><b>Hover</b><span>scale-103 · 700ms ease-out</span></div>
     </div>

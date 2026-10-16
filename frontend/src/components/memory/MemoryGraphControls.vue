@@ -37,11 +37,7 @@ const categoryLabels: Record<string, string> = {
   <div class="graph-controls">
     <!-- Left: zoom controls -->
     <div class="graph-controls-left flex items-center gap-1 shrink-0">
-      <button
-        class="w-7 h-7 flex items-center justify-center rounded-lg bg-c-bg/40 text-c-text-dim hover:text-c-text hover:bg-c-bg/60 transition-colors"
-        title="放大"
-        @click="emit('zoomIn')"
-      >
+      <button class="btn-icon" type="button" aria-label="放大" title="放大" @click="emit('zoomIn')">
         <svg
           width="14"
           height="14"
@@ -56,7 +52,9 @@ const categoryLabels: Record<string, string> = {
         </svg>
       </button>
       <button
-        class="w-7 h-7 flex items-center justify-center rounded-lg bg-c-bg/40 text-c-text-dim hover:text-c-text hover:bg-c-bg/60 transition-colors"
+        class="btn-icon"
+        type="button"
+        aria-label="缩小"
         title="缩小"
         @click="emit('zoomOut')"
       >
@@ -74,7 +72,9 @@ const categoryLabels: Record<string, string> = {
         </svg>
       </button>
       <button
-        class="w-7 h-7 flex items-center justify-center rounded-lg bg-c-bg/40 text-c-text-dim hover:text-c-text hover:bg-c-bg/60 transition-colors"
+        class="btn-icon"
+        type="button"
+        aria-label="重置视图"
         title="重置视图"
         @click="emit('zoomReset')"
       >
@@ -99,13 +99,13 @@ const categoryLabels: Record<string, string> = {
         type="text"
         placeholder="搜索实体…"
         aria-label="搜索图谱实体"
-        class="w-full pl-7 pr-2 py-1 rounded-lg bg-c-bg/60 border border-c-border/30 text-10px text-c-text placeholder:text-c-text-muted focus:outline-none focus:border-c-accent/50 transition-colors"
+        class="control-field w-full pl-9 pr-3"
         @input="emit('update:searchQuery', ($event.target as HTMLInputElement).value)"
       />
       <svg
-        class="absolute left-2 top-1/2 -translate-y-1/2 text-c-text-muted"
-        width="12"
-        height="12"
+        class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-c-text-muted"
+        width="14"
+        height="14"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -120,7 +120,8 @@ const categoryLabels: Record<string, string> = {
     <div class="graph-controls-right shrink-0">
       <select
         :value="selectedCategory ?? ''"
-        class="px-2 py-1 rounded-lg bg-c-bg/60 border border-c-border/30 text-10px text-c-text focus:outline-none focus:border-c-accent/50 transition-colors cursor-pointer"
+        class="control-field"
+        aria-label="图谱实体类型"
         @change="
           emit('update:selectedCategory', ($event.target as HTMLSelectElement).value || null)
         "

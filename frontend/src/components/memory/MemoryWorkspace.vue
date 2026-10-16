@@ -163,26 +163,39 @@ watch(
 </script>
 
 <template>
-  <main
-    class="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3 sm:p-4 lg:overflow-hidden"
-    data-testid="memory-workspace"
-  >
-    <header class="flex shrink-0 flex-wrap items-start justify-between gap-3 px-1">
+  <main class="workspace-body" data-testid="memory-workspace">
+    <header class="flex shrink-0 flex-wrap items-center justify-between gap-4">
       <div>
-        <h1 class="text-base font-semibold">原子知识图谱</h1>
-        <p class="mt-1 text-xs text-c-text-muted">
-          将对话拆成独立事实，连接实体，并保留每条关系的原文证据
-        </p>
+        <h1 class="workspace-title">原子知识图谱</h1>
+        <p class="workspace-copy">将对话拆成独立事实，连接实体，并保留每条关系的原文证据</p>
       </div>
       <button class="btn-accent" type="button" :disabled="organizing" @click="organize">
         {{ organizing ? '整理中' : '整理记忆' }}
       </button>
     </header>
 
-    <div class="flex flex-wrap gap-3 px-1 text-xs text-c-text-secondary" aria-label="知识统计">
-      <span>{{ store.knowledge.entities }} 个实体</span>
-      <span>{{ store.knowledge.facts }} 条原子事实</span>
-      <span>{{ store.knowledge.pending_sources }} 条对话待整理</span>
+    <div
+      class="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-c-text-dim"
+      aria-label="知识统计"
+    >
+      <span
+        ><strong class="mr-1 font-semibold tabular-nums text-c-text">{{
+          store.knowledge.entities
+        }}</strong>
+        个实体</span
+      >
+      <span
+        ><strong class="mr-1 font-semibold tabular-nums text-c-text">{{
+          store.knowledge.facts
+        }}</strong>
+        条原子事实</span
+      >
+      <span
+        ><strong class="mr-1 font-semibold tabular-nums text-c-text">{{
+          store.knowledge.pending_sources
+        }}</strong>
+        条对话待整理</span
+      >
     </div>
 
     <section v-if="store.job" class="glass shrink-0 px-4 py-3" aria-live="polite">
@@ -206,33 +219,30 @@ watch(
         <input
           v-if="view === 'list'"
           :value="store.searchQuery"
-          class="min-w-44 flex-1 rounded-xl border border-c-border bg-c-panel/55 px-3 py-2 text-sm outline-none focus:border-c-border-accent"
+          class="control-field min-w-44 flex-1"
           placeholder="搜索标题、摘要或正文"
           @input="store.setSearch(($event.target as HTMLInputElement).value)"
         />
         <select
           v-if="view === 'list'"
           :value="store.filterType ?? ''"
-          class="rounded-xl border border-c-border bg-c-panel px-3 py-2 text-xs"
+          class="control-field"
+          aria-label="记忆类型"
           @change="selectType(($event.target as HTMLSelectElement).value)"
         >
           <option v-for="item in types" :key="item.id" :value="item.id">{{ item.label }}</option>
         </select>
         <select
           :value="store.filterScope ?? ''"
-          class="rounded-xl border border-c-border bg-c-panel px-3 py-2 text-xs"
+          class="control-field"
+          aria-label="记忆作用域"
           @change="selectScope(($event.target as HTMLSelectElement).value)"
         >
           <option v-for="item in scopes" :key="item.id" :value="item.id">{{ item.label }}</option>
         </select>
-        <div
-          class="flex rounded-xl border border-c-border bg-c-panel/45 p-1"
-          role="group"
-          aria-label="记忆视图"
-        >
+        <div class="segmented-control ml-auto" role="group" aria-label="记忆视图">
           <button
-            class="rounded-lg px-2.5 py-1 text-xs"
-            :class="view === 'list' ? 'bg-c-accent-soft text-c-accent' : 'text-c-text-muted'"
+            class="segment-option"
             type="button"
             :aria-pressed="view === 'list'"
             @click="view = 'list'"
@@ -240,8 +250,7 @@ watch(
             列表
           </button>
           <button
-            class="rounded-lg px-2.5 py-1 text-xs"
-            :class="view === 'graph' ? 'bg-c-accent-soft text-c-accent' : 'text-c-text-muted'"
+            class="segment-option"
             type="button"
             :aria-pressed="view === 'graph'"
             @click="view = 'graph'"
@@ -332,7 +341,7 @@ watch(
           />
         </div>
 
-        <aside class="min-h-0 overflow-y-auto p-5">
+        <aside class="min-h-0 overflow-y-auto bg-c-panel/45 p-5 sm:p-6">
           <div v-if="!selected" class="grid min-h-72 place-items-center text-center">
             <div>
               <p class="text-sm text-c-text-secondary">点击实体或关系查看知识</p>
@@ -352,7 +361,7 @@ watch(
                   {{ selected.id }}
                 </p>
               </div>
-              <button class="btn-ghost" type="button" @click="togglePin(selected)">
+              <button class="btn-secondary" type="button" @click="togglePin(selected)">
                 {{ selected.retention_policy === 'pinned' ? '取消固定' : '固定' }}
               </button>
             </div>
@@ -379,7 +388,7 @@ watch(
               <figure
                 v-for="(evidence, index) in selected.knowledge.evidence"
                 :key="index"
-                class="mt-2 rounded-xl bg-c-panel/45 p-3"
+                class="mx-0 mt-3 rounded-xl border border-c-border bg-c-surface p-4"
               >
                 <blockquote class="whitespace-pre-wrap text-xs leading-relaxed">
                   {{ evidence.quote }}
@@ -484,13 +493,13 @@ watch(
                 保存修正
               </button>
               <button
-                class="btn-ghost"
+                class="btn-secondary"
                 type="button"
                 @click="emit('send-to-sandbox', selected.content)"
               >
                 发送到对话沙盒
               </button>
-              <button class="btn-ghost text-c-error" type="button" @click="forget(selected)">
+              <button class="btn-danger" type="button" @click="forget(selected)">
                 {{ confirmForgetId === selected.id ? '确认遗忘' : '遗忘' }}
               </button>
             </div>

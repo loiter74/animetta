@@ -11,7 +11,7 @@ const statusColors: Record<string, string> = {
   unauthenticated: 'bg-c-warning',
   unavailable: 'bg-c-error',
   'password-required': 'bg-c-warning',
-  connected: 'bg-c-success shadow-[0_0_8px_rgba(74,222,128,0.6)]',
+  connected: 'bg-c-success',
   disconnected: 'bg-c-error',
   connecting: 'bg-c-warning animate-pulse',
   error: 'bg-c-error',
@@ -45,18 +45,23 @@ function isActive(item: (typeof navItems)[number]) {
 </script>
 
 <template>
-  <header class="titlebar">
+  <header
+    class="titlebar relative z-40 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-c-border bg-c-surface/95 px-4 backdrop-blur-lg select-none sm:px-6"
+  >
     <!-- Left: brand + primary nav grouped together -->
-    <div class="titlebar-left">
-      <div class="brand">Anima<span class="brand-dot">.</span></div>
-      <nav class="titlebar-nav" aria-label="Main sections">
+    <div class="titlebar-left flex min-w-0 items-center gap-4 sm:gap-8">
+      <div class="brand shrink-0 text-lg font-semibold tracking-tight">
+        Anima<span class="brand-dot text-c-accent">.</span>
+      </div>
+      <nav class="titlebar-nav flex items-center gap-1" aria-label="Main sections">
         <a
           v-for="item in navItems"
           :key="item.key"
           :data-testid="`nav-${item.key}`"
           :href="item.path"
-          class="nav-btn"
-          :class="{ active: isActive(item) }"
+          :aria-current="isActive(item) ? 'page' : undefined"
+          class="nav-btn btn-ghost min-h-8 px-2.5 no-underline sm:px-3"
+          :class="isActive(item) ? 'active bg-c-accent-soft text-c-accent' : ''"
         >
           {{ item.label }}
         </a>
@@ -64,123 +69,15 @@ function isActive(item: (typeof navItems)[number]) {
     </div>
 
     <!-- Right: connection status -->
-    <div class="titlebar-right">
-      <div class="status-indicator">
-        <span class="status-dot" :class="statusColors[displayStatus]"></span>
+    <div class="titlebar-right hidden shrink-0 sm:flex">
+      <div class="status-indicator flex items-center gap-2 text-xs text-c-text-dim" role="status">
+        <span
+          class="status-dot h-1.5 w-1.5 shrink-0 rounded-full"
+          :class="statusColors[displayStatus]"
+          aria-hidden="true"
+        ></span>
         <span class="status-text">{{ statusLabels[displayStatus] }}</span>
       </div>
     </div>
   </header>
 </template>
-
-<style scoped>
-.titlebar {
-  position: relative;
-  z-index: 100;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 var(--s-6);
-  background: rgba(26, 16, 40, 0.8);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--c-border);
-  user-select: none;
-}
-
-.titlebar-left {
-  display: flex;
-  align-items: center;
-  gap: var(--s-12);
-}
-
-.brand {
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0;
-  color: var(--c-text);
-  white-space: nowrap;
-}
-
-.brand-dot {
-  color: var(--c-accent);
-}
-
-.titlebar-nav {
-  display: flex;
-  gap: var(--s-2);
-}
-
-.nav-btn {
-  display: inline-flex;
-  align-items: center;
-  padding: var(--s-2_5) var(--s-5);
-  font-size: 12px;
-  color: var(--c-text-dim);
-  background: transparent;
-  border: none;
-  border-radius: var(--r-md);
-  cursor: pointer;
-  transition: all var(--d-base) var(--ease-out-expo);
-  font-family: inherit;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.nav-btn:hover {
-  color: var(--c-text);
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.nav-btn.active {
-  color: var(--c-accent);
-  background: var(--c-accent-soft);
-}
-
-.titlebar-right {
-  display: flex;
-  align-items: center;
-  gap: var(--s-2);
-}
-
-.status-indicator {
-  display: flex;
-  align-items: center;
-  gap: var(--s-2);
-  padding: 4px 8px;
-  border: 1px solid var(--c-border);
-  border-radius: var(--r-full);
-  background: color-mix(in srgb, var(--c-text) 3%, transparent);
-}
-
-.status-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.status-text {
-  font-size: 10px;
-  color: var(--c-text-dim);
-  font-family: monospace;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
-}
-
-@media (max-width: 680px) {
-  .titlebar-left {
-    gap: var(--s-3);
-  }
-
-  .titlebar-right {
-    display: none;
-  }
-
-  .nav-btn {
-    padding-left: var(--s-2);
-    padding-right: var(--s-2);
-  }
-}
-</style>

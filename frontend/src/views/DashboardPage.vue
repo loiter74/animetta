@@ -33,7 +33,10 @@ function sendMemoryToSandbox(content: string): void {
 </script>
 
 <template>
-  <div class="ops-shell flex h-full min-h-0 flex-col text-c-text" data-testid="dashboard-page">
+  <div
+    class="ops-shell flex h-full min-h-0 flex-col bg-c-bg/95 text-c-text"
+    data-testid="dashboard-page"
+  >
     <TitleBar />
     <SectionTabs v-model="activeTask" :tabs="tasks" label="后台任务" />
 

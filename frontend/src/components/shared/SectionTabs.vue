@@ -56,7 +56,7 @@ function handleKeydown(event: KeyboardEvent): void {
 
 <template>
   <nav
-    class="flex shrink-0 gap-1 overflow-x-auto bg-c-surface/65 px-3 py-2 sm:px-4"
+    class="flex shrink-0 items-center gap-1 overflow-x-auto border-b border-c-border bg-c-surface/80 px-4 py-2 sm:px-6"
     :aria-label="label"
     role="tablist"
     @keydown="handleKeydown"
@@ -66,11 +66,11 @@ function handleKeydown(event: KeyboardEvent): void {
       :key="tab.id"
       :ref="(element) => setTabRef(tab.id, element)"
       type="button"
-      class="cursor-pointer rounded-xl px-3 py-2 text-left text-xs font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-c-accent"
+      class="btn-base min-h-9 shrink-0 px-4 text-left text-sm font-medium"
       :class="
         modelValue === tab.id
           ? 'bg-c-accent-soft text-c-accent'
-          : 'bg-c-panel/50 text-c-text-dim hover:bg-c-panel/80 hover:text-c-accent'
+          : 'bg-transparent text-c-text-dim hover:bg-c-card hover:text-c-text'
       "
       role="tab"
       :id="`${label}-${tab.id}-tab`"

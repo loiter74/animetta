@@ -99,6 +99,8 @@ input_sets:
     paths:
       - README*.md
       - CONTRIBUTING.md
+      - STYLE_GUIDE.md
+      - design-system/**
       - AGENTS.md
       - tests/AGENTS.md
       - .github/assets/**
@@ -2036,6 +2038,8 @@ components:
     paths:
       - README*.md
       - CONTRIBUTING.md
+      - STYLE_GUIDE.md
+      - design-system/**
       - .github/assets/**
       - docs/**
       - openspec/**/*.md

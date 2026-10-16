@@ -219,19 +219,14 @@ function closePreflight(): void {
 </script>
 
 <template>
-  <main
-    class="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3 sm:p-4 lg:overflow-hidden"
-    data-testid="live-operations-workspace"
-  >
-    <header class="flex shrink-0 flex-wrap items-center justify-between gap-3 px-1">
+  <main class="workspace-body" data-testid="live-operations-workspace">
+    <header class="flex shrink-0 flex-wrap items-center justify-between gap-4">
       <div class="min-w-52">
         <div class="flex items-center gap-2">
-          <span class="h-2 w-2 rounded-full bg-c-success shadow-[0_0_8px_var(--c-success)]" />
-          <h1 class="text-base font-semibold">直播执行</h1>
+          <span class="h-2 w-2 rounded-full bg-c-success" aria-hidden="true" />
+          <h1 class="workspace-title">直播执行</h1>
         </div>
-        <p class="mt-1 text-xs text-c-text-muted">
-          开发者输入仅在后台可见，公开回答自动进入直播链路
-        </p>
+        <p class="workspace-copy">开发者输入仅在后台可见，公开回答自动进入直播链路</p>
       </div>
 
       <dl class="flex min-w-0 flex-1 items-center justify-end overflow-x-auto">
@@ -247,7 +242,7 @@ function closePreflight(): void {
         </div>
       </dl>
       <button
-        class="btn-ghost shrink-0"
+        class="btn-secondary shrink-0"
         type="button"
         role="switch"
         aria-label="显示直播字幕"
@@ -287,14 +282,9 @@ function closePreflight(): void {
               }}
             </p>
           </div>
-          <div class="flex gap-1" role="group" aria-label="现场消息视图">
+          <div class="segmented-control" role="group" aria-label="现场消息视图">
             <button
-              class="rounded-lg px-2.5 py-1 text-10px transition-colors duration-200"
-              :class="
-                feedMode === 'turns'
-                  ? 'bg-c-accent-soft text-c-accent'
-                  : 'bg-c-panel/50 text-c-text-dim hover:bg-c-panel/80 hover:text-c-accent'
-              "
+              class="segment-option"
               type="button"
               :aria-pressed="feedMode === 'turns'"
               @click="feedMode = 'turns'"
@@ -302,12 +292,7 @@ function closePreflight(): void {
               执行回合
             </button>
             <button
-              class="rounded-lg px-2.5 py-1 text-10px transition-colors duration-200"
-              :class="
-                feedMode === 'raw'
-                  ? 'bg-c-accent-soft text-c-accent'
-                  : 'bg-c-panel/50 text-c-text-dim hover:bg-c-panel/80 hover:text-c-accent'
-              "
+              class="segment-option"
               type="button"
               :aria-pressed="feedMode === 'raw'"
               @click="feedMode = 'raw'"

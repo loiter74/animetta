@@ -1,9 +1,18 @@
 /* ============================================================
-   Animetta Theme System — AIRI-inspired light + night-violet dark
+   Animetta Theme System: neutral workspaces with a sakura accent
    ============================================================ */
 
 :root {
   /* Dark mode (default) */
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Hiragino Sans', 'Noto Sans SC',
+    'Microsoft YaHei', sans-serif;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
   /* Paint the <html> canvas with the theme bg so no white ever bleeds
      through at the viewport bottom / overscroll / when content is shorter
      than the window. <html> (:root) previously had a transparent bg, so
@@ -20,93 +29,105 @@
      The matching -rgb channel vars feed UnoCSS opacity modifiers
      (rgb(var(--c-X-rgb) / <alpha-value>)). Without them, bg-c-accent/20
      compiles to the same opaque var as text-c-accent, hiding content. */
-  --c-bg: #1a1028;
-  --c-bg-rgb: 26 16 40;
-  --c-surface: #241538;
-  --c-surface-rgb: 36 21 56;
-  --c-panel: #2d1b45;
-  --c-panel-rgb: 45 27 69;
-  --c-card: #36205a;
-  --c-card-rgb: 54 32 90;
-  --c-text: #e8e0f0;
-  --c-text-rgb: 232 224 240;
-  --c-text-dim: #e4afc5;
-  --c-text-dim-rgb: 228 175 197;
-  --c-text-muted: #c8849c;
-  --c-text-muted-rgb: 200 132 156;
+  --c-bg: #17161d;
+  --c-bg-rgb: 23 22 29;
+  --c-surface: #1e1c25;
+  --c-surface-rgb: 30 28 37;
+  --c-panel: #26232e;
+  --c-panel-rgb: 38 35 46;
+  --c-card: #302c39;
+  --c-card-rgb: 48 44 57;
+  --c-text: #f2eef5;
+  --c-text-rgb: 242 238 245;
+  --c-text-dim: #b9b2c2;
+  --c-text-dim-rgb: 185 178 194;
+  --c-text-muted: #9d95a8;
+  --c-text-muted-rgb: 157 149 168;
   --c-accent: #e879a8;
   --c-accent-rgb: 232 121 168;
-  --c-accent-hover: #f090c0;
-  --c-accent-hover-rgb: 240 144 192;
-  --c-accent-soft: rgba(232, 121, 168, 0.15);
-  --c-blue: #7c8cf5;
-  --c-blue-rgb: 124 140 245;
-  --c-mint: #6ee7b7;
-  --c-mint-rgb: 110 231 183;
-  --c-gold: #f5c872;
-  --c-gold-rgb: 245 200 114;
-  --c-violet: #a882ff;
-  --c-violet-rgb: 168 130 255;
+  --c-accent-hover: #f091b9;
+  --c-accent-hover-rgb: 240 145 185;
+  --c-accent-soft: rgba(232, 121, 168, 0.12);
+  --c-blue: #a0abf5;
+  --c-blue-rgb: 160 171 245;
+  --c-mint: #75cba8;
+  --c-mint-rgb: 117 203 168;
+  --c-gold: #e5bd72;
+  --c-gold-rgb: 229 189 114;
+  --c-violet: #b8a0e5;
+  --c-violet-rgb: 184 160 229;
   --c-violet-soft: rgba(168, 130, 255, 0.15);
   --c-violet-glow: rgba(168, 130, 255, 0.5);
-  --c-success: #4ade80;
-  --c-success-rgb: 74 222 128;
-  --c-warning: #fbbf24;
-  --c-warning-rgb: 251 191 36;
-  --c-error: #f87171;
-  --c-error-rgb: 248 113 113;
-  --c-border: rgba(255, 255, 255, 0.08);
+  --c-success: #75cba8;
+  --c-success-rgb: 117 203 168;
+  --c-warning: #e5bd72;
+  --c-warning-rgb: 229 189 114;
+  --c-error: #f0909e;
+  --c-error-rgb: 240 144 158;
+  --c-border: rgba(236, 229, 245, 0.1);
   --c-border-accent: rgba(232, 121, 168, 0.3);
   --c-user-bubble: rgba(124, 140, 245, 0.2);
   --c-ai-bubble: rgba(232, 121, 168, 0.15);
   --c-glow: rgba(232, 121, 168, 0.4);
   --c-glow-soft: rgba(232, 121, 168, 0.15);
+  /* Control contrast and elevation, shared with the component spec. */
+  --c-on-accent: #291520;
+  --c-on-accent-rgb: 41 21 32;
+  --c-border-strong: rgba(236, 229, 245, 0.22);
+  --shadow-control: 0 1px 3px rgba(12, 8, 18, 0.2);
+  --shadow-panel: 0 4px 20px -16px rgba(12, 8, 18, 0.45);
 }
 
 .theme-light {
   /* AIRI-inspired light mode */
   color-scheme: light;
-  --c-bg: #e8f0fa;
-  --c-bg-rgb: 232 240 250;
-  --c-surface: #dce6f2;
-  --c-surface-rgb: 220 230 242;
+  --c-bg: #f4f3f6;
+  --c-bg-rgb: 244 243 246;
+  --c-surface: #fbfafc;
+  --c-surface-rgb: 251 250 252;
   --c-panel: #ffffff;
   --c-panel-rgb: 255 255 255;
-  --c-card: #eaf0f8;
-  --c-card-rgb: 234 240 248;
-  --c-text: #2d3050;
-  --c-text-rgb: 45 48 80;
-  --c-text-dim: #6b7d95;
-  --c-text-dim-rgb: 107 125 149;
-  --c-text-muted: #94a3b8;
-  --c-text-muted-rgb: 148 163 184;
-  --c-accent: #d4688c;
-  --c-accent-rgb: 212 104 140;
-  --c-accent-hover: #c0567a;
-  --c-accent-hover-rgb: 192 86 122;
-  --c-accent-soft: rgba(212, 104, 140, 0.12);
-  --c-blue: #6b7df0;
-  --c-blue-rgb: 107 125 240;
-  --c-mint: #34d399;
-  --c-mint-rgb: 52 211 153;
-  --c-gold: #f59e0b;
-  --c-gold-rgb: 245 158 11;
-  --c-violet: #8b6fe8;
-  --c-violet-rgb: 139 111 232;
+  --c-card: #eeecf2;
+  --c-card-rgb: 238 236 242;
+  --c-text: #302b3a;
+  --c-text-rgb: 48 43 58;
+  --c-text-dim: #635d70;
+  --c-text-dim-rgb: 99 93 112;
+  --c-text-muted: #706878;
+  --c-text-muted-rgb: 112 104 120;
+  --c-accent: #b84874;
+  --c-accent-rgb: 184 72 116;
+  --c-accent-hover: #a53b65;
+  --c-accent-hover-rgb: 165 59 101;
+  --c-accent-soft: rgba(184, 72, 116, 0.09);
+  --c-blue: #596bc1;
+  --c-blue-rgb: 89 107 193;
+  --c-mint: #258663;
+  --c-mint-rgb: 37 134 99;
+  --c-gold: #996319;
+  --c-gold-rgb: 153 99 25;
+  --c-violet: #8263b8;
+  --c-violet-rgb: 130 99 184;
   --c-violet-soft: rgba(139, 111, 232, 0.12);
   --c-violet-glow: rgba(139, 111, 232, 0.35);
-  --c-success: #22c55e;
-  --c-success-rgb: 34 197 94;
-  --c-warning: #f59e0b;
-  --c-warning-rgb: 245 158 11;
-  --c-error: #ef4444;
-  --c-error-rgb: 239 68 68;
-  --c-border: #d0d8e4;
-  --c-border-accent: rgba(212, 104, 140, 0.25);
+  --c-success: #237b58;
+  --c-success-rgb: 35 123 88;
+  --c-warning: #996319;
+  --c-warning-rgb: 153 99 25;
+  --c-error: #b63c55;
+  --c-error-rgb: 182 60 85;
+  --c-border: #ded9e5;
+  --c-border-accent: rgba(184, 72, 116, 0.28);
   --c-user-bubble: rgba(124, 140, 245, 0.12);
   --c-ai-bubble: rgba(212, 104, 140, 0.1);
   --c-glow: rgba(212, 104, 140, 0.25);
   --c-glow-soft: rgba(212, 104, 140, 0.08);
+  /* Control contrast and elevation, shared with the component spec. */
+  --c-on-accent: #ffffff;
+  --c-on-accent-rgb: 255 255 255;
+  --c-border-strong: #c3bbcf;
+  --shadow-control: 0 1px 3px rgba(49, 35, 62, 0.08);
+  --shadow-panel: 0 4px 20px -16px rgba(49, 35, 62, 0.16);
 }
 
 /* ============================================================
@@ -128,4 +149,57 @@ input,
 select,
 textarea {
   color: var(--c-text);
+}
+
+/* Native controls must share the app typography and control grammar. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+  border-color: var(--c-border);
+}
+
+:where(body, h1, h2, h3, h4, p, figure, blockquote, dl, dd) {
+  margin: 0;
+}
+
+body {
+  font-size: 14px;
+}
+
+:where(button, input, select, textarea) {
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+:where(button) {
+  appearance: none;
+  border-width: 0;
+  background: transparent;
+  color: inherit;
+}
+
+:where(button:not(:disabled), select, summary) {
+  cursor: pointer;
+}
+
+:where(button, a, input, select, textarea, summary):focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 3px;
+}
+
+:where(input, select, textarea) {
+  accent-color: var(--c-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -19,6 +19,7 @@ New code uses UnoCSS utility classes exclusively. Existing CSS-variable code mig
 | `var(--c-text-muted)` | `text-c-text-muted` |
 | `var(--c-accent)` | `text-c-accent`, `bg-c-accent`, `border-c-accent` |
 | `var(--c-accent-hover)` | `bg-c-accent-hover` |
+| `var(--c-on-accent)` | `text-c-on-accent` (foreground on primary actions) |
 | `var(--c-accent-soft)` | `bg-c-accent-soft` |
 | `var(--c-blue)` | `text-c-blue`, `bg-c-blue` |
 | `var(--c-mint)` | `text-c-mint`, `bg-c-mint` |
@@ -31,6 +32,7 @@ New code uses UnoCSS utility classes exclusively. Existing CSS-variable code mig
 | `var(--c-error)` | `text-c-error`, `bg-c-error` |
 | `var(--c-border)` | `border-c-border` |
 | `var(--c-border-accent)` | `border-c-border-accent` |
+| `var(--c-border-strong)` | `border-c-border-strong` (control hover) |
 | `var(--c-user-bubble)` | `bg-c-user-bubble` |
 | `var(--c-ai-bubble)` | `bg-c-ai-bubble` |
 | `var(--c-glow)` | Use `shadow` or inline `style` — no direct UnoCSS class |
@@ -60,6 +62,8 @@ UnoCSS uses the Tailwind-compatible spacing scale with a 4px base unit: `p-1` (4
 | `shadow-lg` | Large shadow |
 | `shadow-xl` | Extra-large shadow |
 | `shadow-2xl` | Maximum shadow |
+| `shadow-panel` | Theme-aware, quiet surface elevation |
+| `shadow-control` | Theme-aware selected-control elevation |
 
 ### Typography
 
@@ -83,12 +87,32 @@ UnoCSS uses the Tailwind-compatible spacing scale with a 4px base unit: `p-1` (4
 | `glass` | Glass-panel background with subtle transparency |
 | `glass-strong` | Heavier glass effect for overlays |
 | `btn-accent` | Accent-colored action button |
-| `btn-ghost` | Ghost/outline button |
+| `btn-secondary` | Neutral bordered secondary action |
+| `btn-ghost` | Quiet, borderless tertiary action |
+| `btn-danger` | Destructive action with semantic error color |
+| `btn-icon` | 36px square icon action with an accessible name |
+| `control-field` | 36px input or select with matching focus treatment |
+| `segmented-control` | Container for related view options |
+| `segment-option` | View option; `aria-pressed` determines the selected style |
+| `workspace-body` | Shared responsive workspace spacing |
+| `workspace-title` / `workspace-copy` | Page title and supporting description |
 | `gradient-accent` | Accent gradient background |
 | `animate-fade-in` | Fade-in entrance animation |
 | `animate-slide-up` | Slide-up entrance animation |
 
 ## §3 Component Template
+
+The workspace language uses neutral surfaces with a sakura accent. Keep one
+primary action per local task area; use secondary, ghost and destructive
+variants according to intent. Primary actions use `text-c-on-accent`, never a
+hardcoded white foreground. Neutral text carries hierarchy; accent color
+identifies actions and selected navigation. Buttons share a 36px minimum height,
+12px corners, 150ms feedback and visible keyboard focus. Compact segmented
+options may use 28px height. Preserve the user's selected light or dark theme.
+
+Native controls inherit the system CJK font and reset their browser borders in
+`themes.css`. Component utilities then supply intentional borders and spacing.
+Use the shared shortcuts instead of restyling native buttons individually.
 
 ```vue
 <script setup lang="ts">

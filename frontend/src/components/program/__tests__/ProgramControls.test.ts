@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import ProgramRunPanel from '@/components/program/ProgramRunPanel.vue'
 import ProgramReplayPanel from '@/components/program/ProgramReplayPanel.vue'
 import ProgramScriptEditor from '@/components/program/ProgramScriptEditor.vue'
-import unoConfig from '../../../../uno.config'
 
 const api = vi.hoisted(() => ({
   listProgramScripts: vi.fn(),
@@ -139,15 +138,16 @@ describe('dashboard program controls', () => {
   })
 
   it('keeps unavailable actions visibly disabled with an enabling explanation', async () => {
-    const shortcuts = unoConfig.shortcuts as Record<string, string>
-    expect(shortcuts['btn-accent']).toContain('disabled:cursor-not-allowed')
-    expect(shortcuts['btn-ghost']).toContain('disabled:cursor-not-allowed')
-
     const runPanel = mount(ProgramRunPanel)
     const replayPanel = mount(ProgramReplayPanel)
     const editor = mount(ProgramScriptEditor)
     await flushPromises()
 
+    for (const label of ['暂停', '停止']) {
+      const action = runPanel.findAll('button').find((button) => button.text() === label)
+      expect(action).toBeDefined()
+      expect(action!.attributes()).toHaveProperty('disabled')
+    }
     expect(runPanel.text()).toContain('开始节目后可使用暂停和停止')
     expect(replayPanel.text()).toContain('开始重放后可使用暂停、调速和重新开始')
     expect(editor.text()).toContain('填写“新草稿 ID”后可复制或新建')

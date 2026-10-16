@@ -6,121 +6,172 @@
 
 :root {
   /* ---------- SURFACE SCALE (deep night-violet) ------------------------ */
-  --c-bg:        #1a1028;
-  --c-bg-rgb:        26 16 40;
-  --c-surface:   #241538;
-  --c-surface-rgb:   36 21 56;
-  --c-panel:     #2d1b45;
-  --c-panel-rgb:     45 27 69;
-  --c-card:      #36205a;
-  --c-card-rgb:      54 32 90;
+  --c-bg: #17161d;
+  --c-bg-rgb: 23 22 29;
+  --c-surface: #1e1c25;
+  --c-surface-rgb: 30 28 37;
+  --c-panel: #26232e;
+  --c-panel-rgb: 38 35 46;
+  --c-card: #302c39;
+  --c-card-rgb: 48 44 57;
 
   /* ---------- TEXT ----------------------------------------------------- */
-  --c-text:        #e8e0f0;
-  --c-text-rgb:        232 224 240;
-  --c-text-dim:    #e4afc5;
-  --c-text-dim-rgb:    228 175 197;
-  --c-text-muted:  #c8849c;
-  --c-text-muted-rgb:  200 132 156;
+  --c-text: #f2eef5;
+  --c-text-rgb: 242 238 245;
+  --c-text-dim: #b9b2c2;
+  --c-text-dim-rgb: 185 178 194;
+  --c-text-muted: #9d95a8;
+  --c-text-muted-rgb: 157 149 168;
 
   /* ---------- ACCENT (sakura pink — Anima's heart) -------------------- */
-  --c-accent:        #e879a8;
-  --c-accent-rgb:        232 121 168;
-  --c-accent-hover:  #f090c0;
-  --c-accent-hover-rgb:  240 144 192;
-  --c-accent-soft:   rgba(232, 121, 168, 0.15);
-  --c-glow:          rgba(232, 121, 168, 0.40);
-  --c-glow-soft:     rgba(232, 121, 168, 0.15);
+  --c-accent: #e879a8;
+  --c-accent-rgb: 232 121 168;
+  --c-accent-hover: #f091b9;
+  --c-accent-hover-rgb: 240 145 185;
+  --c-accent-soft: rgba(232, 121, 168, 0.12);
+  --c-glow: rgba(232, 121, 168, 0.4);
+  --c-glow-soft: rgba(232, 121, 168, 0.15);
 
   /* ---------- SUPPORTING HUES ----------------------------------------- */
-  --c-blue:  #7c8cf5;    /* user message bubble                 */
-  --c-blue-rgb:  124 140 245;
-  --c-mint:  #6ee7b7;
-  --c-mint-rgb:  110 231 183;
-  --c-gold:  #f5c872;
-  --c-gold-rgb:  245 200 114;
-  --c-violet: #a882ff;   /* sliders and MBTI dimension accents */
-  --c-violet-rgb: 168 130 255;
+  --c-blue: #a0abf5; /* user message bubble                 */
+  --c-blue-rgb: 160 171 245;
+  --c-mint: #75cba8;
+  --c-mint-rgb: 117 203 168;
+  --c-gold: #e5bd72;
+  --c-gold-rgb: 229 189 114;
+  --c-violet: #b8a0e5; /* sliders and MBTI dimension accents */
+  --c-violet-rgb: 184 160 229;
   --c-violet-soft: rgba(168, 130, 255, 0.15);
-  --c-violet-glow: rgba(168, 130, 255, 0.50);
+  --c-violet-glow: rgba(168, 130, 255, 0.5);
 
   /* ---------- SEMANTIC ------------------------------------------------- */
-  --c-success: #4ade80;
-  --c-success-rgb: 74 222 128;
-  --c-warning: #fbbf24;
-  --c-warning-rgb: 251 191 36;
-  --c-error:   #f87171;
-  --c-error-rgb:   248 113 113;
+  --c-success: #75cba8;
+  --c-success-rgb: 117 203 168;
+  --c-warning: #e5bd72;
+  --c-warning-rgb: 229 189 114;
+  --c-error: #f0909e;
+  --c-error-rgb: 240 144 158;
 
   /* ---------- LINES + BUBBLES ----------------------------------------- */
   /* c-border is rgba-backed (base alpha baked in); opacity modifiers on it
      are intentionally not supported. Use the pre-baked -soft/-glow tokens
-     or the hex-backed colors above for bg-*/text-*/border-*/<alpha>. */
-  --c-border:        rgba(255, 255, 255, 0.08);
-  --c-border-accent: rgba(232, 121, 168, 0.30);
-  --c-user-bubble:   rgba(124, 140, 245, 0.20);
-  --c-ai-bubble:     rgba(232, 121, 168, 0.15);
+     or the hex-backed colors above for opacity-aware background/text/border utilities. */
+  --c-border: rgba(236, 229, 245, 0.1);
+  --c-border-accent: rgba(232, 121, 168, 0.3);
+  --c-user-bubble: rgba(124, 140, 245, 0.2);
+  --c-ai-bubble: rgba(232, 121, 168, 0.15);
 
   /* ---------- RADII ---------------------------------------------------- */
-  --r-sm:   6px;
-  --r-md:   8px;
-  --r-lg:  12px;
-  --r-xl:  16px;
-  --r-2xl: 20px;
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 8px;
+  --r-xl: 12px;
+  --r-2xl: 16px;
   --r-full: 9999px;
 
   /* ---------- SPACING -------------------------------------------------- */
-  --s-1:    4px;
-  --s-1_5:  6px;
-  --s-2:    8px;
+  --s-1: 4px;
+  --s-1_5: 6px;
+  --s-2: 8px;
   --s-2_5: 10px;
-  --s-3:   12px;
-  --s-4:   16px;
-  --s-5:   20px;
-  --s-6:   24px;
-  --s-8:   32px;
-  --s-10:  40px;
-  --s-12:  48px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-10: 40px;
+  --s-12: 48px;
 
   /* ---------- SHADOWS + GLOWS ----------------------------------------- */
-  --shadow-soft:         0 8px 24px rgba(0, 0, 0, 0.35);
-  --shadow-panel:        0 20px 48px rgba(0, 0, 0, 0.45);
-  --shadow-glow-accent:  0 0 8px rgba(232, 121, 168, 0.6);
+  --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-panel: 0 4px 20px -16px rgba(12, 8, 18, 0.45);
+  --shadow-glow-accent: 0 0 8px rgba(232, 121, 168, 0.6);
   --shadow-glow-success: 0 0 8px rgba(74, 222, 128, 0.6);
-  --shadow-glow-violet:  0 0 12px var(--c-violet-glow);
+  --shadow-glow-violet: 0 0 12px var(--c-violet-glow);
 
   /* ---------- MOTION --------------------------------------------------- */
   --d-fast: 150ms;
   --d-base: 200ms;
   --d-slow: 300ms;
-  --ease-out-expo:  cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-back-soft: cubic-bezier(0.34, 1.56, 0.64, 1);
 
   /* ---------- TYPE ----------------------------------------------------- */
   /* Anima ships no webfont. It relies on the OS stack for CJK fidelity. */
   --font-sans:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Hiragino Sans", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans",
+    "Noto Sans SC", "Microsoft YaHei", sans-serif;
   --font-mono:
-    "JetBrains Mono", "SF Mono", Menlo, Consolas,
-    "Source Han Mono SC", monospace;
+    "JetBrains Mono", "SF Mono", Menlo, Consolas, "Source Han Mono SC",
+    monospace;
 
   /* Size scale — Anima is a small-text product. Most copy is 12–14px. */
-  --fs-9:    9px;     /* timestamp foot, meme tag                */
-  --fs-10:  10px;     /* badges, button caption                   */
-  --fs-xs:  12px;     /* secondary body                           */
-  --fs-sm:  14px;     /* primary body, chat message               */
-  --fs-base:16px;
-  --fs-lg:  18px;     /* meme card headline                       */
-  --fs-xl:  20px;     /* welcome heading                          */
-  --fs-2xl: 28px;     /* page title                               */
-  --fs-3xl: 40px;     /* hero / display                           */
+  --fs-9: 9px; /* timestamp foot, meme tag                */
+  --fs-10: 10px; /* badges, button caption                   */
+  --fs-xs: 12px; /* secondary body                           */
+  --fs-sm: 14px; /* primary body, chat message               */
+  --fs-base: 16px;
+  --fs-lg: 18px; /* meme card headline                       */
+  --fs-xl: 20px; /* welcome heading                          */
+  --fs-2xl: 28px; /* page title                               */
+  --fs-3xl: 40px; /* hero / display                           */
 
   /* line-heights */
-  --lh-tight:  1.15;
-  --lh-snug:   1.30;
-  --lh-body:   1.50;
-  --lh-relax:  1.65;
+  --lh-tight: 1.15;
+  --lh-snug: 1.3;
+  --lh-body: 1.5;
+  --lh-relax: 1.65;
+  /* Control contrast and elevation, shared with the component spec. */
+  --c-on-accent: #291520;
+  --c-on-accent-rgb: 41 21 32;
+  --c-border-strong: rgba(236, 229, 245, 0.22);
+  --shadow-control: 0 1px 3px rgba(12, 8, 18, 0.2);
+}
+
+.theme-light {
+  color-scheme: light;
+  --c-bg: #f4f3f6;
+  --c-bg-rgb: 244 243 246;
+  --c-surface: #fbfafc;
+  --c-surface-rgb: 251 250 252;
+  --c-panel: #ffffff;
+  --c-panel-rgb: 255 255 255;
+  --c-card: #eeecf2;
+  --c-card-rgb: 238 236 242;
+  --c-text: #302b3a;
+  --c-text-rgb: 48 43 58;
+  --c-text-dim: #635d70;
+  --c-text-dim-rgb: 99 93 112;
+  --c-text-muted: #706878;
+  --c-text-muted-rgb: 112 104 120;
+  --c-accent: #b84874;
+  --c-accent-rgb: 184 72 116;
+  --c-accent-hover: #a53b65;
+  --c-accent-hover-rgb: 165 59 101;
+  --c-blue: #596bc1;
+  --c-blue-rgb: 89 107 193;
+  --c-mint: #258663;
+  --c-mint-rgb: 37 134 99;
+  --c-gold: #996319;
+  --c-gold-rgb: 153 99 25;
+  --c-violet: #8263b8;
+  --c-violet-rgb: 130 99 184;
+  --c-success: #237b58;
+  --c-success-rgb: 35 123 88;
+  --c-warning: #996319;
+  --c-warning-rgb: 153 99 25;
+  --c-error: #b63c55;
+  --c-error-rgb: 182 60 85;
+  /* Control contrast and elevation, shared with the component spec. */
+  --c-on-accent: #ffffff;
+  --c-on-accent-rgb: 255 255 255;
+  --c-border-strong: #c3bbcf;
+  --shadow-control: 0 1px 3px rgba(49, 35, 62, 0.08);
+  --shadow-panel: 0 4px 20px -16px rgba(49, 35, 62, 0.16);
+
+  --c-accent-soft: rgba(184, 72, 116, 0.09);
+  --c-border: #ded9e5;
+  --c-border-accent: rgba(184, 72, 116, 0.28);
 }
 
 /* =========================================================================
