@@ -81,13 +81,23 @@
       </aside>
       <audio id="singingAudio" preload="metadata" hidden></audio>
       <audio id="bgmAudio" preload="auto" hidden></audio>
-      <aside id="audioUnlockPrompt" class="absolute bottom-8 left-1/2 z-30 -translate-x-1/2">
+      <aside class="absolute bottom-4 left-1/2 z-30 flex -translate-x-1/2 gap-2">
+        <span id="audioUnlockPrompt">
+          <button
+            id="enableAudio"
+            type="button"
+            class="btn-secondary min-h-11 whitespace-nowrap px-5"
+          >
+            开启声音
+          </button>
+        </span>
         <button
-          id="enableAudio"
+          id="toggleSubtitles"
           type="button"
+          aria-pressed="true"
           class="btn-secondary min-h-11 whitespace-nowrap px-5"
         >
-          开启声音
+          字幕已开启
         </button>
       </aside>
       <section class="danmaku-panel" id="danmakuPanel" aria-label="实时弹幕">

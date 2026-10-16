@@ -13,6 +13,7 @@ describe('standalone live DOM view', () => {
       <span id="livestreamStatus"></span>
       <div id="liveBackground"></div>
       <section id="subtitleOverlay" hidden><p id="subtitleText"></p></section>
+      <button id="toggleSubtitles"></button>
       <aside id="publicActivityPanel" hidden>
         <section id="publicNarrationState" hidden></section>
         <span id="publicCurrentIntent"></span>
@@ -29,6 +30,24 @@ describe('standalone live DOM view', () => {
 
     expect('bindToggle' in view).toBe(false)
     expect('setCollapsed' in view).toBe(false)
+  })
+
+  it('shows subtitle visibility and detaches the page toggle on disposal', () => {
+    const view = mountLiveView()
+    const button = document.getElementById('toggleSubtitles')!
+    let toggles = 0
+    const unbind = view.bindSubtitleToggle!(() => toggles++)
+    view.setSubtitleEnabled!(false)
+    expect(button.textContent).toBe('开启字幕')
+    expect(button.getAttribute('aria-pressed')).toBe('false')
+    button.click()
+    expect(toggles).toBe(1)
+    view.setSubtitleEnabled!(true)
+    expect(button.textContent).toBe('字幕已开启')
+    expect(button.getAttribute('aria-pressed')).toBe('true')
+    unbind()
+    button.click()
+    expect(toggles).toBe(1)
   })
 
   it.each([

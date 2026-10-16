@@ -1,3 +1,5 @@
+import { createIndexedDbMediaLockManager } from './mediaLeaseLock'
+
 export type PublicMediaMode = 'active' | 'muted'
 export type PublicMediaOwnerState = 'active' | 'standby' | 'muted'
 
@@ -7,6 +9,8 @@ const DEFAULT_ACQUIRE_WAIT_MS = 250
 
 export interface PublicMediaLock {
   readonly name: string
+  readonly signal?: AbortSignal
+  isValid?(): boolean
 }
 
 export interface PublicMediaLockManager {
@@ -65,7 +69,10 @@ function browserLockManager(): PublicMediaLockManager | null {
   const navigatorWithLocks = globalThis.navigator as Navigator & {
     locks?: PublicMediaLockManager
   }
-  return navigatorWithLocks?.locks ?? null
+  return (
+    navigatorWithLocks?.locks ??
+    (globalThis.indexedDB ? createIndexedDbMediaLockManager(globalThis.indexedDB) : null)
+  )
 }
 
 export function createPublicMediaOwnership(
@@ -82,6 +89,7 @@ export function createPublicMediaOwnership(
   let state: PublicMediaOwnerState = requestedMode === 'active' ? 'standby' : 'muted'
   let fence = 0
   let lockHeld = false
+  let heldLock: PublicMediaLock | null = null
   let disposed = false
   let retryTimer: ReturnType<typeof setTimeout> | null = null
   let attemptSettlement: Promise<void> | null = null
@@ -103,6 +111,8 @@ export function createPublicMediaOwnership(
     fence = nextFence
     notify()
   }
+  const hasValidLock = (): boolean =>
+    lockHeld && state === 'active' && (heldLock?.isValid?.() ?? true)
   const scheduleRetry = (): void => {
     if (disposed || requestedMode !== 'active' || !lockManager || retryTimer !== null || lockHeld) {
       return
@@ -144,14 +154,20 @@ export function createPublicMediaOwnership(
           const held = new Promise<void>((resolve) => {
             releaseLock = resolve
           })
+          const onRevoked = (): void => releaseLock?.()
+          lock.signal?.addEventListener('abort', onRevoked, { once: true })
+          heldLock = lock
           lockHeld = true
           setState('active', acquiredFence)
           settle()
           await held
+          lock.signal?.removeEventListener('abort', onRevoked)
+          heldLock = null
           releaseLock = null
           if (lockHeld && fence === acquiredFence) {
             lockHeld = false
             setState('standby')
+            scheduleRetry()
           }
         })
         .catch(() => {
@@ -176,7 +192,7 @@ export function createPublicMediaOwnership(
     },
     canPlay(): boolean {
       if (disposed || requestedMode !== 'active' || !lockManager) return false
-      if (lockHeld && state === 'active') return true
+      if (hasValidLock()) return true
       void attemptAcquire()
       return false
     },
@@ -192,16 +208,10 @@ export function createPublicMediaOwnership(
           ])
         }
       }
-      return lockHeld && state === 'active' ? { ownerId, fence } : null
+      return hasValidLock() ? { ownerId, fence } : null
     },
     validatePlayback(permit: PublicMediaPlaybackPermit): boolean {
-      return (
-        !disposed &&
-        lockHeld &&
-        state === 'active' &&
-        permit.ownerId === ownerId &&
-        permit.fence === fence
-      )
+      return !disposed && hasValidLock() && permit.ownerId === ownerId && permit.fence === fence
     },
     subscribe(listener): () => void {
       listeners.add(listener)

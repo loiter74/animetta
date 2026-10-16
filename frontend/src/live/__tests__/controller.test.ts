@@ -25,6 +25,10 @@ function harness(search = '') {
     setCollapsed: vi.fn(),
     setBackground: vi.fn(),
     setSubtitle: vi.fn(),
+    setSubtitleEnabled: vi.fn(),
+    bindSubtitleToggle: vi
+      .fn<NonNullable<LiveView['bindSubtitleToggle']>>()
+      .mockReturnValue(vi.fn()),
     bindToggle: vi.fn(),
   } satisfies LiveView & {
     setCollapsed: ReturnType<typeof vi.fn>
@@ -58,6 +62,29 @@ describe('standalone live controller', () => {
   afterEach(() => {
     controllers.splice(0).forEach((controller) => controller.dispose())
     vi.useRealTimers()
+  })
+
+  it('lets the live page restore a disabled caption without waiting for another reply', () => {
+    localStorage.setItem(
+      'animetta_subtitle_config',
+      JSON.stringify({ enabled: false, fontSize: 20 }),
+    )
+    const { handlers, view } = harness()
+    handlers.get(Events.CHAT.SENTENCE)!({
+      task_id: 'phone-turn',
+      turn_id: 'phone-turn',
+      text: '手机字幕',
+      seq: 0,
+    })
+    expect(view.setSubtitle).toHaveBeenLastCalledWith(null)
+    expect(view.setSubtitleEnabled).toHaveBeenLastCalledWith(false)
+    view.bindSubtitleToggle.mock.calls[0][0]()
+    expect(view.setSubtitle).toHaveBeenLastCalledWith('手机字幕')
+    expect(view.setSubtitleEnabled).toHaveBeenLastCalledWith(true)
+    expect(JSON.parse(localStorage.getItem('animetta_subtitle_config')!)).toEqual({
+      enabled: true,
+      fontSize: 20,
+    })
   })
 
   it('uses canonical events and never emits room lifecycle commands', () => {

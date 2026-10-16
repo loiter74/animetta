@@ -29,6 +29,7 @@ export function createDomLiveView(document: Document): LiveView & PublicActivity
   const background = requiredElement<HTMLDivElement>(document, 'liveBackground')
   const subtitle = requiredElement<HTMLElement>(document, 'subtitleOverlay')
   const subtitleText = requiredElement<HTMLParagraphElement>(document, 'subtitleText')
+  const subtitleToggle = document.getElementById('toggleSubtitles')
   const publicActivity = createDomPublicActivityView(document)
 
   const createMessageElement = (message: DanmakuItem): HTMLElement => {
@@ -134,6 +135,15 @@ export function createDomLiveView(document: Document): LiveView & PublicActivity
     setSubtitle(text: string | null): void {
       subtitleText.textContent = text ?? ''
       subtitle.hidden = !text
+    },
+    setSubtitleEnabled(enabled: boolean): void {
+      if (!subtitleToggle) return
+      subtitleToggle.setAttribute('aria-pressed', String(enabled))
+      subtitleToggle.textContent = enabled ? '字幕已开启' : '开启字幕'
+    },
+    bindSubtitleToggle(listener: () => void): () => void {
+      subtitleToggle?.addEventListener('click', listener)
+      return () => subtitleToggle?.removeEventListener('click', listener)
     },
   }
 }

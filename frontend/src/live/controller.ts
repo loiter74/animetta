@@ -3,6 +3,7 @@ import type { DanmakuItem } from '@/types/chat'
 import type { LiveSocket } from '@/shared/transport/liveSocket'
 import {
   readSubtitleEnabled,
+  writeSubtitleEnabled,
   SUBTITLE_CONFIG_STORAGE_KEY,
 } from '@/shared/broadcast/subtitleSettings'
 
@@ -27,6 +28,8 @@ export interface LiveView {
   setBilibiliReplyEvidence(reply: BilibiliReplyEvidence): void
   setBackground(config: BackgroundConfig): void
   setSubtitle(text: string | null): void
+  setSubtitleEnabled?(enabled: boolean): void
+  bindSubtitleToggle?(listener: () => void): () => void
 }
 
 export interface LiveControllerOptions {
@@ -161,8 +164,16 @@ export function createLiveController(options: LiveControllerOptions) {
   const onSubtitleSettings = (event: StorageEvent): void => {
     if (event.key !== SUBTITLE_CONFIG_STORAGE_KEY && event.key !== null) return
     subtitleEnabled = readSubtitleEnabled(event.newValue)
+    view.setSubtitleEnabled?.(subtitleEnabled)
     view.setSubtitle(subtitleEnabled ? subtitleText : null)
   }
+  view.setSubtitleEnabled?.(subtitleEnabled)
+  const unbindSubtitleToggle = view.bindSubtitleToggle?.(() => {
+    subtitleEnabled = !subtitleEnabled
+    writeSubtitleEnabled(subtitleEnabled)
+    view.setSubtitleEnabled?.(subtitleEnabled)
+    view.setSubtitle(subtitleEnabled ? subtitleText : null)
+  })
 
   const onConnect = (): void => view.setSocketState('connected')
   const onDisconnect = (): void => view.setSocketState('disconnected')
@@ -239,6 +250,7 @@ export function createLiveController(options: LiveControllerOptions) {
       socket.off(Events.CHAT.SENTENCE, onSentence)
       socket.off(Events.CHAT.CONTROL, onControl)
       window.removeEventListener('storage', onSubtitleSettings)
+      unbindSubtitleToggle?.()
       if (messageRenderFrame !== null) cancelAnimationFrame(messageRenderFrame)
       messageRenderFrame = null
       cancelSubtitleHide()

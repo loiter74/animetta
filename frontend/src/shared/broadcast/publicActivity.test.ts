@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createIndexedDbMediaLockManager, type MediaLeaseStore } from './mediaLeaseLock'
+import * as mediaLeaseLock from './mediaLeaseLock'
 
 import { Events } from '@/constants/socket-events'
 import type { LiveSocket } from '@/shared/transport/liveSocket'
@@ -317,7 +319,7 @@ describe('public broadcast activity', () => {
     gameplay.dispose()
   })
 
-  it('fails closed when the browser has no Web Locks implementation', async () => {
+  it('fails closed when no ownership backend is available', async () => {
     const ownership = createPublicMediaOwnership(new URLSearchParams('media=active'), 'active', {
       ownerId: 'unsupported-page',
       lockManager: null,
@@ -327,5 +329,75 @@ describe('public broadcast activity', () => {
     expect(ownership.canPlay()).toBe(false)
     expect(await ownership.acquirePlayback()).toBeNull()
     ownership.dispose()
+  })
+
+  it('selects transactional ownership when LAN HTTP has IndexedDB but no Web Locks', async () => {
+    vi.stubGlobal('navigator', { locks: undefined })
+    vi.stubGlobal('indexedDB', {})
+    const fallback = vi
+      .spyOn(mediaLeaseLock, 'createIndexedDbMediaLockManager')
+      .mockReturnValue(new FakeLockManager())
+    const ownership = createPublicMediaOwnership(new URLSearchParams(), 'active')
+    try {
+      expect(await ownership.acquirePlayback()).not.toBeNull()
+      expect(ownership.canPlay()).toBe(true)
+      expect(fallback).toHaveBeenCalledOnce()
+    } finally {
+      ownership.dispose()
+      fallback.mockRestore()
+      vi.unstubAllGlobals()
+    }
+  })
+
+  it('plays over HTTP with an atomic lease, excludes another tab and releases for takeover', async () => {
+    let row: { owner: string; deadline: number } | null = null
+    const store: MediaLeaseStore = {
+      async update(_name, owner, renew) {
+        const now = Date.now()
+        const available = !row || row.deadline <= now
+        if (renew ? row?.owner !== owner || available : !available) return 0
+        row = { owner, deadline: now + 5000 }
+        return row.deadline
+      },
+      async release(_name, owner) {
+        if (row?.owner === owner) row = null
+      },
+    }
+    const manager = createIndexedDbMediaLockManager({} as IDBFactory, store)
+    const first = createPublicMediaOwnership(new URLSearchParams(), 'active', {
+      lockManager: manager,
+    })
+    const second = createPublicMediaOwnership(new URLSearchParams(), 'active', {
+      lockManager: manager,
+    })
+    const permit = await first.acquirePlayback()
+    expect(permit).not.toBeNull()
+    expect(first.canPlay()).toBe(true)
+    expect(await second.acquirePlayback()).toBeNull()
+    first.dispose()
+    expect(first.validatePlayback(permit!)).toBe(false)
+    await vi.waitFor(() => expect(second.canPlay()).toBe(true))
+    second.dispose()
+  })
+
+  it('revokes an HTTP playback permit when renewal fails instead of keeping a stale owner', async () => {
+    const store: MediaLeaseStore = {
+      update: vi
+        .fn()
+        .mockResolvedValueOnce(Date.now() + 5000)
+        .mockResolvedValue(0),
+      release: vi.fn().mockResolvedValue(undefined),
+    }
+    vi.useFakeTimers()
+    const ownership = createPublicMediaOwnership(new URLSearchParams(), 'active', {
+      lockManager: createIndexedDbMediaLockManager({} as IDBFactory, store),
+    })
+    const permit = await ownership.acquirePlayback()
+    expect(permit).not.toBeNull()
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(ownership.validatePlayback(permit!)).toBe(false)
+    expect(ownership.canPlay()).toBe(false)
+    ownership.dispose()
+    vi.useRealTimers()
   })
 })

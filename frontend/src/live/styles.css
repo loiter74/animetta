@@ -67,7 +67,7 @@ button {
 }
 .subtitle-overlay {
   position: absolute;
-  bottom: 32px;
+  bottom: 80px;
   left: 50%;
   z-index: 20;
   width: min(820px, calc(100vw - 56px));
@@ -263,7 +263,7 @@ button {
     white-space: nowrap;
   }
   .subtitle-overlay {
-    bottom: max(16px, env(safe-area-inset-bottom));
+    bottom: max(80px, calc(env(safe-area-inset-bottom) + 64px));
     width: calc(100vw - 32px);
     padding: 10px 14px;
   }
