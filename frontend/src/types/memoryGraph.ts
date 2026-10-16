@@ -10,6 +10,7 @@
  */
 
 import type { SimulationNodeDatum } from 'd3-force'
+import type { MemoryKnowledge } from '@/types/memoryKnowledge'
 
 // ── Graph node (extends d3-force SimulationNodeDatum for layout) ───────
 
@@ -25,6 +26,9 @@ export interface MemoryNode extends SimulationNodeDatum {
 // ── Graph edge ─────────────────────────────────────────────────────────
 
 export interface MemoryEdge {
+  id?: string
+  factId?: string
+  offset?: number
   source: string // node id
   target: string // node id
   type: string // relation_type from backend
@@ -41,7 +45,7 @@ export interface MemoryGraphData {
 
 // ── Internal: shape of a page from the API (with optional future fields)
 
-interface RawPage {
+export interface RawPage {
   id?: string
   path: string
   title: string
@@ -54,6 +58,7 @@ interface RawPage {
   confidence?: number
   scope?: string
   origin?: Record<string, string>
+  knowledge?: MemoryKnowledge
   // Optional: added when backend serializes atom.relations
   relations?: Array<{
     source_id: string
@@ -76,6 +81,7 @@ interface RawRelation {
 // Maps backend layer → page_type → graph category
 
 const PAGE_TYPE_TO_CATEGORY: Record<string, string> = {
+  fact: 'fact',
   source: 'other', // RAW layer
   entity: 'fact', // EPISODIC layer
   concept: 'interest', // SEMANTIC layer
@@ -85,6 +91,11 @@ const PAGE_TYPE_TO_CATEGORY: Record<string, string> = {
 // ── Display color mappings ─────────────────────────────────────────────
 
 export const CATEGORY_COLORS: Record<string, string> = {
+  person: 'var(--c-blue)',
+  place: 'var(--c-mint)',
+  organization: 'var(--c-gold)',
+  concept: 'var(--c-accent)',
+  value: 'var(--c-violet)',
   skill: 'var(--c-blue)',
   interest: 'var(--c-accent)',
   fact: 'var(--c-mint)',
@@ -172,10 +183,10 @@ function relationLabel(relationType: string): string {
 
 /**
  * Create a canonical edge key for deduplication.
- * Treats A→B and B→A as the same undirected edge.
+ * Direction and predicate are part of a relation's identity.
  */
-function edgeKey(sourceId: string, targetId: string): string {
-  return [sourceId, targetId].sort().join('::')
+function edgeKey(sourceId: string, targetId: string, type: string): string {
+  return JSON.stringify([sourceId, targetId, type])
 }
 
 // ── Public API ─────────────────────────────────────────────────────────
@@ -193,7 +204,7 @@ export function parseNodes(pages: RawPage[]): MemoryNode[] {
   return pages.map((page) => ({
     id: page.path,
     label: page.title || page.content.slice(0, 50),
-    category: deriveCategory(page.page_type, page.tags),
+    category: page.knowledge?.entity_type ?? deriveCategory(page.page_type, page.tags),
     importance: computeImportance(page),
     content: page.content,
     metadata: {
@@ -211,9 +222,7 @@ export function parseNodes(pages: RawPage[]): MemoryNode[] {
 /**
  * Flatten all relations from all pages into a deduplicated edge list.
  *
- * Relations from the backend MemoryAtom.relations are directional, but
- * the graph treats them as undirected: A→B and B→A are merged into a
- * single edge. When duplicates exist, the first occurrence wins.
+ * Exact duplicates are merged; reverse and differently typed edges remain distinct.
  *
  * If pages don't include `relations` (current API), returns an empty array.
  *
@@ -232,7 +241,7 @@ export function parseEdges(pages: RawPage[]): MemoryEdge[] {
       if (rel.source_id === rel.target_id) continue
       if (!visibleIds.has(rel.source_id) || !visibleIds.has(rel.target_id)) continue
 
-      const key = edgeKey(rel.source_id, rel.target_id)
+      const key = edgeKey(rel.source_id, rel.target_id, rel.relation_type)
 
       // First occurrence wins (deduplication)
       if (!seen.has(key)) {
@@ -258,9 +267,44 @@ export function parseEdges(pages: RawPage[]): MemoryEdge[] {
  * @param pages - Array of page objects from `memory:list_pages` response
  * @returns MemoryGraphData with nodes and edges
  */
-export function parseMemoryGraph(pages: RawPage[]): MemoryGraphData {
-  return {
-    nodes: parseNodes(pages),
-    edges: parseEdges(pages),
+export function parseMemoryGraph(pages: RawPage[], knowledgeOnly = false): MemoryGraphData {
+  const entities = pages.filter((page) => page.knowledge?.kind === 'entity')
+  const ids = new Set(entities.map((page) => page.id ?? page.path))
+  const edges: MemoryEdge[] = knowledgeOnly
+    ? pages.flatMap((page) => {
+        const fact = page.knowledge
+        if (
+          fact?.kind !== 'fact' ||
+          !fact.subject_id ||
+          !fact.object_id ||
+          !ids.has(fact.subject_id) ||
+          !ids.has(fact.object_id)
+        )
+          return []
+        return [
+          {
+            id: page.id ?? page.path,
+            factId: page.id ?? page.path,
+            source: fact.subject_id,
+            target: fact.object_id,
+            type: fact.predicate ?? '',
+            label: fact.predicate ?? page.title,
+            weight: page.confidence ?? 0.5,
+          },
+        ]
+      })
+    : parseEdges(pages)
+  const groups = new Map<string, MemoryEdge[]>()
+  for (const edge of edges) {
+    const key = JSON.stringify([edge.source, edge.target].sort())
+    const group = groups.get(key) ?? []
+    group.push(edge)
+    groups.set(key, group)
   }
+  for (const group of groups.values()) {
+    group.forEach((edge, index) => {
+      edge.offset = (index - (group.length - 1) / 2) * 40 * (edge.source > edge.target ? -1 : 1)
+    })
+  }
+  return { nodes: parseNodes(knowledgeOnly ? entities : pages), edges }
 }

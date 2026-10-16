@@ -106,3 +106,49 @@ describe('useMemoryStore', () => {
     expect(socket.off).toHaveBeenCalledTimes(3)
   })
 })
+
+describe('coherent graph pagination', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    socket.emit.mockReset()
+    socket.connected = true
+  })
+
+  it('loads every page before publishing a complete graph', async () => {
+    socket.emit.mockImplementation((_event, payload, ack) =>
+      ack({
+        ok: true,
+        data: {
+          items: [{ id: payload.cursor ? 'entity-2' : 'entity-1' }],
+          revision: 4,
+          next_cursor: payload.cursor ? null : '100',
+          total: 2,
+          knowledge: { entities: 2, facts: 0, pending_sources: 1 },
+        },
+      }),
+    )
+    const store = useMemoryStore()
+    await store.fetchMemories({ all: true })
+    expect(store.wikiPages.map((page) => page.id)).toEqual(['entity-1', 'entity-2'])
+    expect(store.nextCursor).toBeNull()
+    expect(store.knowledge.entities).toBe(2)
+  })
+
+  it('rejects a graph assembled from different revisions', async () => {
+    socket.emit.mockImplementation((_event, payload, ack) =>
+      ack({
+        ok: true,
+        data: {
+          items: [],
+          revision: payload.cursor ? 5 : 4,
+          next_cursor: payload.cursor ? null : '100',
+          total: 2,
+        },
+      }),
+    )
+    const store = useMemoryStore()
+    await expect(store.fetchMemories({ all: true })).rejects.toThrow('记忆已更新')
+    expect(store.wikiPages).toEqual([])
+    expect(store.loading).toBe(false)
+  })
+})

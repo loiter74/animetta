@@ -38,7 +38,7 @@ class AtomStore:
     Reuses existing SQLite patterns from storage/sqlite.py.
     """
 
-    SCHEMA_VERSION = 1
+    SCHEMA_VERSION = 2
 
     def __init__(
         self,
@@ -280,6 +280,7 @@ class AtomStore:
                 source_ids TEXT DEFAULT '[]',
                 relations TEXT DEFAULT '[]',
                 tags TEXT DEFAULT '[]',
+                knowledge TEXT NOT NULL DEFAULT '{}',
                 scope TEXT NOT NULL DEFAULT 'community',
                 visibility TEXT NOT NULL DEFAULT 'internal',
                 subject_ids TEXT NOT NULL DEFAULT '[]',
@@ -340,6 +341,7 @@ class AtomStore:
 
         columns = {row["name"] for row in (await self._fetchall("PRAGMA table_info(memory_atoms)"))}
         additions = {
+            "knowledge": "TEXT NOT NULL DEFAULT '{}'",
             "scope": "TEXT NOT NULL DEFAULT 'community'",
             "visibility": "TEXT NOT NULL DEFAULT 'internal'",
             "subject_ids": "TEXT NOT NULL DEFAULT '[]'",
@@ -522,61 +524,204 @@ class AtomStore:
 
     async def create(self, atom: MemoryAtom) -> str:
         async with self._database(write=True):
-            await self._execute(
-                """
-                INSERT INTO memory_atoms (id, layer, content, summary, occurred_at,
-                    rewritten_at, version, version_chain, confidence, salience,
-                    retrieval_count, last_accessed_at, emotion_valence, emotion_arousal,
-                    emotion_dominance, source_ids, relations, tags, scope, visibility,
-                    subject_ids, origin, trust_level, retention_policy, index_state,
-                    decay_rate, forget_at, is_archived)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                    ?, ?, ?, ?, ?, ?, ?)
-            """,
-                (
-                    atom.id,
-                    atom.layer.value,
-                    atom.content,
-                    atom.summary,
-                    atom.occurred_at.isoformat(),
-                    atom.rewritten_at.isoformat()
-                    if atom.rewritten_at
-                    else atom.occurred_at.isoformat(),
-                    atom.version,
-                    json.dumps(atom.version_chain),
-                    atom.confidence,
-                    atom.salience,
-                    atom.retrieval_count,
-                    atom.last_accessed_at.isoformat() if atom.last_accessed_at else None,
-                    atom.emotion_valence,
-                    atom.emotion_arousal,
-                    atom.emotion_dominance,
-                    json.dumps(atom.source_ids),
-                    json.dumps([self._relation_to_dict(r) for r in atom.relations]),
-                    json.dumps(atom.tags),
-                    atom.scope.value,
-                    atom.visibility.value,
-                    json.dumps(atom.subject_ids),
-                    json.dumps(atom.origin),
-                    atom.trust_level,
-                    atom.retention_policy,
-                    "pending",
-                    atom.decay_rate,
-                    atom.forget_at.isoformat() if atom.forget_at else None,
-                    1 if atom.is_archived else 0,
-                ),
+            return await self._create(atom)
+
+    async def _create(self, atom: MemoryAtom) -> str:
+        await self._execute(
+            """
+            INSERT INTO memory_atoms (id, layer, content, summary, occurred_at,
+                rewritten_at, version, version_chain, confidence, salience,
+                retrieval_count, last_accessed_at, emotion_valence, emotion_arousal,
+                emotion_dominance, source_ids, relations, tags, knowledge, scope, visibility,
+                subject_ids, origin, trust_level, retention_policy, index_state,
+                decay_rate, forget_at, is_archived)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+            (
+                atom.id,
+                atom.layer.value,
+                atom.content,
+                atom.summary,
+                atom.occurred_at.isoformat(),
+                atom.rewritten_at.isoformat()
+                if atom.rewritten_at
+                else atom.occurred_at.isoformat(),
+                atom.version,
+                json.dumps(atom.version_chain),
+                atom.confidence,
+                atom.salience,
+                atom.retrieval_count,
+                atom.last_accessed_at.isoformat() if atom.last_accessed_at else None,
+                atom.emotion_valence,
+                atom.emotion_arousal,
+                atom.emotion_dominance,
+                json.dumps(atom.source_ids),
+                json.dumps([self._relation_to_dict(r) for r in atom.relations]),
+                json.dumps(atom.tags),
+                json.dumps(atom.knowledge, ensure_ascii=False),
+                atom.scope.value,
+                atom.visibility.value,
+                json.dumps(atom.subject_ids),
+                json.dumps(atom.origin),
+                atom.trust_level,
+                atom.retention_policy,
+                "pending",
+                atom.decay_rate,
+                atom.forget_at.isoformat() if atom.forget_at else None,
+                1 if atom.is_archived else 0,
+            ),
+        )
+        # Sync FTS5 index
+        row = await self._fetchone("SELECT rowid FROM memory_atoms WHERE id=?", (atom.id,))
+        assert row is not None
+        rowid = row[0]
+        await self._execute(
+            "INSERT INTO memory_fts(rowid, content, summary) VALUES (?, ?, ?)",
+            (rowid, atom.content, atom.summary or ""),
+        )
+        revision = await self._next_revision()
+        await self._enqueue_index(atom.id, "upsert", revision)
+        return atom.id
+
+    async def commit_knowledge(self, source_id: str, nodes: list[MemoryAtom]) -> dict[str, int]:
+        """Commit a complete extraction and its source receipt in one transaction."""
+        counts = {"sources_processed": 0, "entities_created": 0, "facts_created": 0}
+        async with self._database(write=True):
+            source = await self._get(source_id)
+            if source is None or source.is_archived or source.knowledge.get("status") == "complete":
+                return counts
+            for node in nodes:
+                if node.knowledge.get("kind") == "fact":
+                    endpoints = [
+                        await self._get(node.knowledge[key]) for key in ("subject_id", "object_id")
+                    ]
+                    if any(endpoint is None or endpoint.is_archived for endpoint in endpoints):
+                        continue
+                current = await self._get(node.id)
+                if current is not None:
+                    if current.is_archived:
+                        # Old pending work cannot undo a forget; a new conversation is new evidence.
+                        if source.occurred_at <= current.rewritten_at:
+                            continue
+                        node.version = current.version + 1
+                        await self._update(node)
+                        continue
+                    current.source_ids = sorted(set(current.source_ids + node.source_ids))
+                    current.confidence = max(current.confidence, node.confidence)
+                    for key in ("aliases", "evidence"):
+                        values = current.knowledge.setdefault(key, [])
+                        for value in node.knowledge.get(key, []):
+                            if value not in values:
+                                values.append(value)
+                    await self._update(current)
+                else:
+                    await self._create(node)
+                    key = (
+                        "entities_created"
+                        if node.knowledge["kind"] == "entity"
+                        else "facts_created"
+                    )
+                    counts[key] += 1
+            source.knowledge.update(status="complete", last_error="")
+            await self._update(source)
+            counts["sources_processed"] = 1
+        return counts
+
+    async def knowledge_atoms(self, namespace: str) -> list[MemoryAtom]:
+        """Include forgotten identities so aliases cannot accidentally revive them."""
+        async with self._database():
+            rows = await self._fetchall(
+                "SELECT * FROM memory_atoms WHERE json_extract(knowledge, '$.namespace') = ? "
+                "ORDER BY occurred_at, id",
+                (namespace,),
             )
-            # Sync FTS5 index
-            row = await self._fetchone("SELECT rowid FROM memory_atoms WHERE id=?", (atom.id,))
-            assert row is not None
-            rowid = row[0]
-            await self._execute(
-                "INSERT INTO memory_fts(rowid, content, summary) VALUES (?, ?, ?)",
-                (rowid, atom.content, atom.summary or ""),
+            return [self._row_to_atom(row) for row in rows]
+
+    async def pending_knowledge_sources(self, limit: int = 20) -> list[MemoryAtom]:
+        async with self._database():
+            rows = await self._fetchall(
+                "SELECT * FROM memory_atoms WHERE layer=0 AND is_archived=0 "
+                "AND COALESCE(json_extract(knowledge, '$.status'), '') != 'complete' "
+                "ORDER BY occurred_at, id LIMIT ?",
+                (limit,),
             )
-            revision = await self._next_revision()
-            await self._enqueue_index(atom.id, "upsert", revision)
-            return atom.id
+            return [self._row_to_atom(row) for row in rows]
+
+    async def knowledge_stats(self, scope: str | None = None) -> dict[str, int]:
+        async with self._database():
+            clause = "is_archived=0" + (" AND scope=?" if scope else "")
+            parameters = (scope,) if scope else ()
+            rows = await self._fetchall(
+                "SELECT COALESCE(json_extract(knowledge, '$.kind'), 'source') AS kind, "
+                f"COUNT(*) AS count FROM memory_atoms WHERE {clause} GROUP BY kind",
+                parameters,
+            )
+            counts = {row["kind"]: row["count"] for row in rows}
+            pending = await self._fetchone(
+                f"SELECT COUNT(*) FROM memory_atoms WHERE {clause} AND layer=0 "
+                "AND COALESCE(json_extract(knowledge, '$.status'), '') != 'complete'",
+                parameters,
+            )
+            return {
+                "entities": counts.get("entity", 0),
+                "facts": counts.get("fact", 0),
+                "pending_sources": int(pending[0]) if pending else 0,
+            }
+
+    async def active_page(
+        self, limit: int, offset: int, scope: str | None = None
+    ) -> tuple[list[MemoryAtom], int, int]:
+        async with self._database():
+            clause = "is_archived=0" + (" AND scope=?" if scope else "")
+            parameters = (scope,) if scope else ()
+            count = await self._fetchone(
+                f"SELECT COUNT(*) FROM memory_atoms WHERE {clause}", parameters
+            )
+            rows = await self._fetchall(
+                f"SELECT * FROM memory_atoms WHERE {clause} ORDER BY occurred_at DESC, id "
+                "LIMIT ? OFFSET ?",
+                (*parameters, limit, offset),
+            )
+            revision = await self._fetchone(
+                "SELECT value FROM memory_metadata WHERE key='revision'"
+            )
+            return (
+                [self._row_to_atom(row) for row in rows],
+                int(count[0]) if count else 0,
+                int(revision[0]) if revision else 0,
+            )
+
+    async def forget_with_knowledge(self, atom_id: str) -> MemoryAtom | None:
+        """Retract evidence and dependent facts when their sole source is forgotten."""
+        async with self._database(write=True):
+            atom = await self._get(atom_id)
+            if atom is None or atom.is_archived:
+                return atom
+            atom.is_archived = True
+            atom.rewritten_at = datetime.now(UTC)
+            await self._update(atom)
+            rows = await self._fetchall(
+                "SELECT * FROM memory_atoms WHERE is_archived=0 AND "
+                "(EXISTS(SELECT 1 FROM json_each(source_ids) WHERE value=?) "
+                "OR json_extract(knowledge, '$.subject_id')=? "
+                "OR json_extract(knowledge, '$.object_id')=?)",
+                (atom_id, atom_id, atom_id),
+            )
+            for row in rows:
+                dependent = self._row_to_atom(row)
+                dependent.source_ids = [value for value in dependent.source_ids if value != atom_id]
+                dependent.knowledge["evidence"] = [
+                    item
+                    for item in dependent.knowledge.get("evidence", [])
+                    if item["source_id"] != atom_id
+                ]
+                dependent.is_archived = (
+                    not dependent.source_ids or atom.knowledge.get("kind") == "entity"
+                )
+                dependent.rewritten_at = atom.rewritten_at
+                await self._update(dependent)
+            return atom
 
     async def get(self, atom_id: str) -> MemoryAtom | None:
         async with self._database():
@@ -599,7 +744,7 @@ class AtomStore:
                 version=?, version_chain=?, confidence=?, salience=?,
                 retrieval_count=?, last_accessed_at=?, emotion_valence=?,
                 emotion_arousal=?, emotion_dominance=?, decay_rate=?,
-                forget_at=?, is_archived=?, relations=?, tags=?, source_ids=?,
+                forget_at=?, is_archived=?, relations=?, tags=?, source_ids=?, knowledge=?,
                 scope=?, visibility=?, subject_ids=?, origin=?, trust_level=?,
                 retention_policy=?, index_state=?
             WHERE id=?
@@ -625,6 +770,7 @@ class AtomStore:
                 json.dumps([self._relation_to_dict(r) for r in atom.relations]),
                 json.dumps(atom.tags),
                 json.dumps(atom.source_ids),
+                json.dumps(atom.knowledge, ensure_ascii=False),
                 atom.scope.value,
                 atom.visibility.value,
                 json.dumps(atom.subject_ids),
@@ -713,7 +859,13 @@ class AtomStore:
         """Archive all atoms with salience below threshold. Returns count."""
         async with self._database(write=True):
             cursor = await self._execute(
-                "UPDATE memory_atoms SET is_archived = 1 WHERE is_archived = 0 AND salience < ?",
+                "UPDATE memory_atoms AS atom SET is_archived=1 "
+                "WHERE atom.is_archived=0 AND atom.salience < ? AND atom.retention_policy != 'pinned' "
+                "AND (COALESCE(json_extract(atom.knowledge, '$.kind'), '') != 'entity' OR NOT EXISTS ("
+                "SELECT 1 FROM memory_atoms AS fact WHERE fact.is_archived=0 "
+                "AND json_extract(fact.knowledge, '$.kind')='fact' "
+                "AND (json_extract(fact.knowledge, '$.subject_id')=atom.id "
+                "OR json_extract(fact.knowledge, '$.object_id')=atom.id)))",
                 (threshold,),
             )
             return cursor
@@ -807,6 +959,7 @@ class AtomStore:
             source_ids=json.loads(row["source_ids"]),
             relations=[self._dict_to_relation(d) for d in json.loads(row["relations"])],
             tags=json.loads(row["tags"]),
+            knowledge=json.loads(row["knowledge"]),
             scope=MemoryScope(row["scope"]),
             visibility=MemoryVisibility(row["visibility"]),
             subject_ids=json.loads(row["subject_ids"]),

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useMemoryStore, type WikiPageEntry } from '@/stores/memory'
 import type { MemoryNode } from '@/types/memoryGraph'
 import MemoryGraph from './MemoryGraph.vue'
@@ -9,13 +9,16 @@ const emit = defineEmits<{
 }>()
 
 const store = useMemoryStore()
-const view = ref<'list' | 'graph'>('list')
+const view = ref<'list' | 'graph'>('graph')
 const selected = ref<WikiPageEntry | null>(null)
 const correctionDraft = ref('')
 const confirmForgetId = ref('')
+const sourceDetail = ref<WikiPageEntry | null>(null)
+const sourceLoading = ref(false)
 
 const types = [
   { id: '', label: '全部类型' },
+  { id: 'fact', label: '原子事实' },
   { id: 'entity', label: '实体' },
   { id: 'concept', label: '概念' },
   { id: 'synthesis', label: '合成' },
@@ -33,6 +36,15 @@ const scopes = [
 ] as const
 
 const organizing = computed(() => ['accepted', 'running'].includes(store.job?.status ?? ''))
+const hasFacts = computed(() => store.wikiPages.some((page) => page.knowledge?.kind === 'fact'))
+const relatedFacts = computed(() =>
+  store.wikiPages.filter(
+    (page) =>
+      page.knowledge?.kind === 'fact' &&
+      (page.knowledge.subject_id === selected.value?.id ||
+        page.knowledge.object_id === selected.value?.id),
+  ),
+)
 
 async function refresh(append = false): Promise<void> {
   try {
@@ -40,6 +52,7 @@ async function refresh(append = false): Promise<void> {
       scope: store.filterScope,
       cursor: append ? store.nextCursor : null,
       append,
+      all: true,
     })
   } catch {
     // The store exposes the structured error below.
@@ -60,11 +73,30 @@ function selectPage(page: WikiPageEntry): void {
   selected.value = page
   correctionDraft.value = page.summary ?? page.content
   confirmForgetId.value = ''
+  sourceDetail.value = null
 }
 
 function selectGraphNode(node: MemoryNode): void {
   const page = store.wikiPages.find((item) => item.id === node.id || item.path === node.id)
   if (page) selectPage(page)
+}
+
+function selectGraphFact(id: string): void {
+  const page = store.wikiPages.find((item) => item.id === id)
+  if (page) selectPage(page)
+}
+
+async function showSource(id: string): Promise<void> {
+  const selectedId = selected.value?.id
+  sourceLoading.value = true
+  try {
+    const page = store.wikiPages.find((item) => item.id === id) ?? (await store.getMemory(id))
+    if (selected.value?.id === selectedId) sourceDetail.value = page
+  } catch {
+    // The store exposes the error and leaves the current fact selected.
+  } finally {
+    sourceLoading.value = false
+  }
 }
 
 async function organize(): Promise<void> {
@@ -122,6 +154,12 @@ onMounted(() => {
   void store.recoverOrganize()
   void refresh()
 })
+watch(
+  () => store.job?.status,
+  (status, previous) => {
+    if (status === 'completed' && ['accepted', 'running'].includes(previous ?? '')) void refresh()
+  },
+)
 </script>
 
 <template>
@@ -131,15 +169,21 @@ onMounted(() => {
   >
     <header class="flex shrink-0 flex-wrap items-start justify-between gap-3 px-1">
       <div>
-        <h1 class="text-base font-semibold">记忆治理</h1>
+        <h1 class="text-base font-semibold">原子知识图谱</h1>
         <p class="mt-1 text-xs text-c-text-muted">
-          整理、审计和修正长期信息，不在聊天工具栏重复操作
+          将对话拆成独立事实，连接实体，并保留每条关系的原文证据
         </p>
       </div>
       <button class="btn-accent" type="button" :disabled="organizing" @click="organize">
         {{ organizing ? '整理中' : '整理记忆' }}
       </button>
     </header>
+
+    <div class="flex flex-wrap gap-3 px-1 text-xs text-c-text-secondary" aria-label="知识统计">
+      <span>{{ store.knowledge.entities }} 个实体</span>
+      <span>{{ store.knowledge.facts }} 条原子事实</span>
+      <span>{{ store.knowledge.pending_sources }} 条对话待整理</span>
+    </div>
 
     <section v-if="store.job" class="glass shrink-0 px-4 py-3" aria-live="polite">
       <div class="flex items-center justify-between gap-3 text-xs">
@@ -160,12 +204,14 @@ onMounted(() => {
     <section class="glass flex min-h-0 flex-1 flex-col overflow-hidden">
       <div class="flex shrink-0 flex-wrap items-center gap-2 border-b border-c-border p-3">
         <input
+          v-if="view === 'list'"
           :value="store.searchQuery"
           class="min-w-44 flex-1 rounded-xl border border-c-border bg-c-panel/55 px-3 py-2 text-sm outline-none focus:border-c-border-accent"
           placeholder="搜索标题、摘要或正文"
           @input="store.setSearch(($event.target as HTMLInputElement).value)"
         />
         <select
+          v-if="view === 'list'"
           :value="store.filterType ?? ''"
           class="rounded-xl border border-c-border bg-c-panel px-3 py-2 text-xs"
           @change="selectType(($event.target as HTMLSelectElement).value)"
@@ -226,12 +272,20 @@ onMounted(() => {
             正在读取记忆
           </div>
           <div
-            v-else-if="!store.filteredPages.length"
+            v-else-if="view === 'graph' ? !hasFacts : !store.filteredPages.length"
             class="grid h-full min-h-80 place-items-center px-6 text-center"
           >
             <div>
-              <p class="text-sm text-c-text-secondary">没有符合条件的记忆</p>
-              <p class="mt-1 text-xs text-c-text-muted">调整搜索、类型或作用域后重试</p>
+              <p class="text-sm text-c-text-secondary">
+                {{ view === 'graph' ? '还没有可展示的原子知识' : '没有符合条件的记忆' }}
+              </p>
+              <p class="mt-1 text-xs text-c-text-muted">
+                {{
+                  view === 'graph'
+                    ? '点击“整理记忆”，从已有对话抽取实体和事实；没有可确认的事实时会保留原始记录。'
+                    : '调整搜索、类型或作用域后重试'
+                }}
+              </p>
             </div>
           </div>
           <div v-else-if="view === 'list'" class="h-full overflow-y-auto">
@@ -270,23 +324,33 @@ onMounted(() => {
           <MemoryGraph
             v-else
             class="h-full min-h-112"
-            :pages="store.filteredPages"
+            :pages="store.wikiPages"
+            knowledge-only
+            :selected-id="selected?.id"
             @node-click="selectGraphNode"
+            @fact-click="selectGraphFact"
           />
         </div>
 
         <aside class="min-h-0 overflow-y-auto p-5">
           <div v-if="!selected" class="grid min-h-72 place-items-center text-center">
             <div>
-              <p class="text-sm text-c-text-secondary">选择一条记忆查看详情</p>
-              <p class="mt-1 text-xs text-c-text-muted">关系、审计信息和修正入口集中在这里</p>
+              <p class="text-sm text-c-text-secondary">点击实体或关系查看知识</p>
+              <p class="mt-1 text-xs text-c-text-muted">
+                箭头表示关系方向，每条事实都可追溯到原始对话
+              </p>
             </div>
           </div>
           <template v-else>
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
                 <h2 class="break-words text-sm font-semibold">{{ selected.title }}</h2>
-                <p class="mt-1 font-mono text-10px text-c-text-muted">{{ selected.id }}</p>
+                <p
+                  v-if="!selected.knowledge?.kind"
+                  class="mt-1 font-mono text-10px text-c-text-muted"
+                >
+                  {{ selected.id }}
+                </p>
               </div>
               <button class="btn-ghost" type="button" @click="togglePin(selected)">
                 {{ selected.retention_policy === 'pinned' ? '取消固定' : '固定' }}
@@ -297,7 +361,59 @@ onMounted(() => {
               {{ selected.content }}
             </p>
 
-            <div class="mt-5">
+            <section v-if="relatedFacts.length" class="mt-5" aria-label="关联事实">
+              <h3 class="text-xs font-medium">关联事实</h3>
+              <button
+                v-for="fact in relatedFacts"
+                :key="fact.id"
+                type="button"
+                class="mt-2 block w-full rounded-xl bg-c-panel/45 px-3 py-2 text-left text-xs hover:bg-c-panel"
+                @click="selectPage(fact)"
+              >
+                {{ fact.title }}
+              </button>
+            </section>
+
+            <section v-if="selected.knowledge?.evidence?.length" class="mt-5" aria-label="原文证据">
+              <h3 class="text-xs font-medium">原文证据</h3>
+              <figure
+                v-for="(evidence, index) in selected.knowledge.evidence"
+                :key="index"
+                class="mt-2 rounded-xl bg-c-panel/45 p-3"
+              >
+                <blockquote class="whitespace-pre-wrap text-xs leading-relaxed">
+                  {{ evidence.quote }}
+                </blockquote>
+                <figcaption
+                  class="mt-2 flex flex-wrap items-center gap-2 text-10px text-c-text-muted"
+                >
+                  <span>{{ evidence.role === 'user' ? '用户陈述' : '助手陈述' }}</span>
+                  <span>{{ formatTime(evidence.occurred_at) }}</span>
+                  <button
+                    type="button"
+                    class="border-none bg-transparent p-0 text-c-accent underline"
+                    @click="showSource(evidence.source_id)"
+                  >
+                    查看原始对话
+                  </button>
+                </figcaption>
+              </figure>
+            </section>
+            <p v-if="sourceLoading" class="mt-3 text-xs text-c-text-muted" role="status">
+              正在读取来源…
+            </p>
+            <section
+              v-if="sourceDetail"
+              class="mt-3 rounded-xl border border-c-border p-3"
+              aria-label="原始对话"
+            >
+              <h3 class="text-xs font-medium">原始对话</h3>
+              <p class="mt-2 whitespace-pre-wrap text-xs leading-relaxed text-c-text-secondary">
+                {{ sourceDetail.content }}
+              </p>
+            </section>
+
+            <div v-if="!selected.knowledge?.kind" class="mt-5">
               <h3 class="text-xs font-medium">关系</h3>
               <ul
                 v-if="selected.relations.length"
@@ -319,21 +435,37 @@ onMounted(() => {
                 <dt class="text-c-text-muted">可信度</dt>
                 <dd class="mt-1 font-mono">{{ selected.confidence }}</dd>
               </div>
-              <div class="rounded-xl bg-c-panel/45 p-3">
+              <div v-if="!selected.knowledge?.kind" class="rounded-xl bg-c-panel/45 p-3">
                 <dt class="text-c-text-muted">信任等级</dt>
                 <dd class="mt-1 font-mono">{{ selected.trust_level }}</dd>
               </div>
-              <div class="rounded-xl bg-c-panel/45 p-3">
+              <div v-if="!selected.knowledge?.kind" class="rounded-xl bg-c-panel/45 p-3">
                 <dt class="text-c-text-muted">索引状态</dt>
                 <dd class="mt-1 font-mono">{{ selected.index_state }}</dd>
               </div>
               <div class="rounded-xl bg-c-panel/45 p-3">
                 <dt class="text-c-text-muted">可见性</dt>
-                <dd class="mt-1 font-mono">{{ selected.visibility }}</dd>
+                <dd class="mt-1">
+                  {{ { public: '公开', private: '仅本人', internal: '内部' }[selected.visibility] }}
+                </dd>
               </div>
             </dl>
+            <details v-if="selected.knowledge?.kind" class="mt-4 text-xs text-c-text-muted">
+              <summary class="cursor-pointer">审计信息</summary>
+              <p class="mt-2 break-all font-mono">{{ selected.id }} · v{{ selected.version }}</p>
+              <p class="mt-1">
+                记录于 {{ formatTime(selected.occurred_at) }} ·
+                {{ selected.source_ids.length }} 条来源
+              </p>
+            </details>
 
-            <label class="mt-5 block text-xs font-medium">
+            <p
+              v-if="selected.knowledge?.kind"
+              class="mt-5 text-xs leading-relaxed text-c-text-muted"
+            >
+              如需更正知识，可先遗忘旧事实，再在现场对话中提供新的陈述。
+            </p>
+            <label v-else class="mt-5 block text-xs font-medium">
               内容修正
               <textarea
                 v-model="correctionDraft"
@@ -343,6 +475,7 @@ onMounted(() => {
             </label>
             <div class="mt-3 flex flex-wrap gap-2">
               <button
+                v-if="!selected.knowledge?.kind"
                 class="btn-accent"
                 type="button"
                 :disabled="!correctionDraft.trim()"

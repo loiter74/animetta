@@ -10,6 +10,8 @@
  */
 
 import { describe, it, expect } from 'vitest'
+import { mount } from '@vue/test-utils'
+import MemoryGraphEdge from '@/components/memory/MemoryGraphEdge.vue'
 import {
   parseNodes,
   parseEdges,
@@ -199,9 +201,9 @@ describe('parseEdges', () => {
     expect(edges[0]).toHaveProperty('label')
   })
 
-  it('deduplicates bidirectional edges (A→B and B→A)', () => {
+  it('preserves both directions of a relation', () => {
     // semantic-seed → episodic-seed (EXTENDS)
-    // episodic-seed → semantic-seed (EXTENDS)  ← same undirected edge
+    // Reverse relations carry different meaning.
     const edges = parseEdges(mockPagesWithRelations)
 
     const extendsEdges = edges.filter(
@@ -211,11 +213,10 @@ describe('parseEdges', () => {
           (e.source === 'episodic-seed-e5f6g7h8' && e.target === 'semantic-seed-a1b2c3d4')),
     )
 
-    // Should be exactly 1 deduplicated edge, not 2
-    expect(extendsEdges).toHaveLength(1)
+    expect(extendsEdges).toHaveLength(2)
   })
 
-  it('preserves the first occurrence direction on dedup', () => {
+  it('retains the direction of the first relation', () => {
     const edges = parseEdges(mockPagesWithRelations)
     const extendsEdge = edges.find(
       (e) =>
@@ -368,5 +369,53 @@ describe('RELATION_COLORS', () => {
 
   it('has a default fallback color', () => {
     expect(RELATION_COLORS.default).toBeDefined()
+  })
+})
+
+describe('atomic knowledge graph', () => {
+  const entities = ['张三', '杭州'].map((title, index) => ({
+    ...mockPages[0],
+    id: `entity-${index}`,
+    path: `entity-${index}`,
+    title,
+    content: title,
+    page_type: 'entity',
+    knowledge: { kind: 'entity' as const },
+  }))
+  const facts = ['居住地', '出生地', '关联人物'].map((predicate, index) => ({
+    ...mockPages[0],
+    id: `fact-${index}`,
+    path: `fact-${index}`,
+    page_type: 'fact',
+    knowledge: {
+      kind: 'fact' as const,
+      subject_id: index === 2 ? 'entity-1' : 'entity-0',
+      object_id: index === 2 ? 'entity-0' : 'entity-1',
+      predicate,
+    },
+  }))
+
+  it('shows entities and independent, directed, parallel facts', () => {
+    const graph = parseMemoryGraph([...entities, ...facts], true)
+    expect(graph.nodes).toHaveLength(2)
+    expect(graph.edges).toHaveLength(3)
+    expect(graph.edges.map((edge) => edge.label)).toEqual(['居住地', '出生地', '关联人物'])
+    expect(graph.edges[2]).toMatchObject({
+      source: 'entity-1',
+      target: 'entity-0',
+      factId: 'fact-2',
+    })
+    expect(parseMemoryGraph([...entities.slice(0, 1), ...facts], true).edges).toHaveLength(0)
+  })
+
+  it('renders relation labels, arrowheads and accessible fact selection', async () => {
+    const edge = parseMemoryGraph([...entities, ...facts], true).edges[0]
+    const wrapper = mount(MemoryGraphEdge, { props: { edge, x1: 0, y1: 0, x2: 240, y2: 80 } })
+    expect(wrapper.find('polygon').exists()).toBe(true)
+    expect(wrapper.find('text').text()).toBe('居住地')
+    expect(wrapper.attributes('aria-label')).toBe('查看事实：居住地')
+    await wrapper.trigger('keydown.enter')
+    expect(wrapper.emitted('select')).toEqual([['fact-0']])
+    wrapper.unmount()
   })
 })

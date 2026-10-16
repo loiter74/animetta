@@ -19,6 +19,7 @@ from loguru import logger
 from animetta.memory.v2.atom import MemoryScope, MemoryVisibility
 from animetta.memory.v2.context import MemoryContext
 from animetta.memory.v2.emotion_field import VADVector
+from animetta.memory.v2.knowledge import LLMCall
 from animetta.memory.v2.system import LivingMemorySystem
 from animetta.observability.context import ObservationCarrier, observation_context
 from animetta.observability.domain import (
@@ -59,6 +60,7 @@ class SharedMemoryRuntime:
         db_path: str | Path = "memory_db/living_memory.sqlite",
         *,
         system_factory: Callable[[], Any] | None = None,
+        llm_call: LLMCall | None = None,
         retrieval_mode: Literal["fts", "semantic"] = "fts",
         worker_interval: float = 0.5,
         ingestion_queue_size: int = 256,
@@ -69,7 +71,9 @@ class SharedMemoryRuntime:
         self.db_path = str(db_path)
         self.retrieval_mode = retrieval_mode
         self._system_factory = system_factory or (
-            lambda: LivingMemorySystem(db_path=self.db_path, retrieval_mode=retrieval_mode)
+            lambda: LivingMemorySystem(
+                db_path=self.db_path, retrieval_mode=retrieval_mode, llm_call=llm_call
+            )
         )
         self.worker_interval = worker_interval
         self.system: Any | None = None

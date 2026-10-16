@@ -193,6 +193,10 @@ describe('dashboard domain workspaces', () => {
     })
     await wrapper
       .findAll('button')
+      .find((button) => button.text() === '列表')!
+      .trigger('click')
+    await wrapper
+      .findAll('button')
       .find((button) => button.text().includes('雨夜电台偏好'))!
       .trigger('click')
     await wrapper
@@ -274,5 +278,75 @@ describe('dashboard domain workspaces', () => {
     ).toEqual(['连接', '人格', '画面'])
     await wrapper.get('[role="dialog"]').trigger('keydown', { key: 'Escape' })
     expect(wrapper.emitted('close')).toHaveLength(1)
+  })
+})
+
+describe('atomic knowledge evidence', () => {
+  it('opens a directed fact and retrieves its original source', async () => {
+    const pinia = createPinia()
+    setActivePinia(pinia)
+    const store = useMemoryStore()
+    store.fetchMemories = vi.fn().mockResolvedValue(undefined)
+    store.recoverOrganize = vi.fn().mockResolvedValue(undefined)
+    store.getMemory = vi.fn().mockResolvedValue({
+      ...memory,
+      id: 'raw-1',
+      page_type: 'source',
+      content: '用户: 张三住在杭州。\n助手: 记住了。',
+    })
+    store.wikiPages = [
+      ...['张三', '杭州'].map((title, index) => ({
+        ...memory,
+        id: `entity-${index}`,
+        path: `entity-${index}`,
+        title,
+        content: title,
+        page_type: 'entity',
+        knowledge: { kind: 'entity' as const },
+      })),
+      {
+        ...memory,
+        id: 'fact-1',
+        path: 'fact-1',
+        title: '张三 · 居住地 · 杭州',
+        content: '张三 · 居住地 · 杭州',
+        page_type: 'fact',
+        knowledge: {
+          kind: 'fact',
+          subject_id: 'entity-0',
+          object_id: 'entity-1',
+          predicate: '居住地',
+          evidence: [
+            {
+              source_id: 'raw-1',
+              quote: '张三住在杭州。',
+              role: 'user',
+              occurred_at: memory.occurred_at,
+            },
+          ],
+        },
+      },
+    ]
+    const wrapper = mount(MemoryWorkspace, {
+      global: {
+        plugins: [pinia],
+        stubs: {
+          MemoryGraph: {
+            emits: ['fact-click'],
+            template: `<button data-testid="memory-graph" @click="$emit('fact-click', 'fact-1')">居住地</button>`,
+          },
+        },
+      },
+    })
+    await wrapper.find('[data-testid="memory-graph"]').trigger('click')
+    expect(wrapper.find('[aria-label="原文证据"]').text()).toContain('张三住在杭州。')
+    await wrapper
+      .findAll('button')
+      .find((button) => button.text() === '查看原始对话')!
+      .trigger('click')
+    await flushPromises()
+    expect(store.getMemory).toHaveBeenCalledWith('raw-1')
+    expect(wrapper.find('[aria-label="原始对话"]').text()).toContain('助手: 记住了。')
+    wrapper.unmount()
   })
 })

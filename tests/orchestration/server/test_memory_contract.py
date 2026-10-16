@@ -88,7 +88,13 @@ async def test_memory_change_replays_and_rejects_stale_versions(memory_handler) 
 @pytest.mark.asyncio
 async def test_organize_job_events_are_scoped_by_job_id(memory_handler) -> None:
     handler, memory, _, sio = memory_handler
-    memory.run_metabolism_tick = AsyncMock()
+    memory.organize_knowledge = AsyncMock(
+        return_value={
+            "facts_created": 2,
+            "entities_created": 3,
+            "pending_sources": 0,
+        }
+    )
 
     accepted = await handler.on_memory_organize("socket-a", {})
     assert accepted["ok"] is True

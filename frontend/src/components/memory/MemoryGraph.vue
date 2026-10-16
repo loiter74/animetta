@@ -17,35 +17,22 @@ import {
   type SimulationLinkDatum,
 } from 'd3-force'
 import { parseMemoryGraph } from '@/types/memoryGraph'
-import type { MemoryNode, MemoryEdge } from '@/types/memoryGraph'
+import type { MemoryNode, MemoryEdge, RawPage } from '@/types/memoryGraph'
 import MemoryGraphControls from './MemoryGraphControls.vue'
 import MemoryGraphNode from './MemoryGraphNode.vue'
 import MemoryGraphEdge from './MemoryGraphEdge.vue'
 
 // ── Props & Emits ────────────────────────────────────────
 
-interface WikiPage {
-  path: string
-  title: string
-  page_type: string
-  content: string
-  tags: string[]
-  updated_at: string
-  salience?: number
-  relations?: Array<{
-    source_id: string
-    target_id: string
-    relation_type: string
-    metadata?: Record<string, unknown>
-  }>
-}
-
 const props = defineProps<{
-  pages: WikiPage[]
+  pages: RawPage[]
+  knowledgeOnly?: boolean
+  selectedId?: string
 }>()
 
 const emit = defineEmits<{
   'node-click': [node: MemoryNode]
+  'fact-click': [id: string]
 }>()
 
 // ── Refs ─────────────────────────────────────────────────
@@ -276,7 +263,7 @@ function hideTooltip() {
 // ── Force simulation ─────────────────────────────────────
 
 function initSimulation() {
-  const data = parseMemoryGraph(props.pages)
+  const data = parseMemoryGraph(props.pages, props.knowledgeOnly)
   graphNodes.value = data.nodes
   graphEdges.value = data.edges
 
@@ -368,15 +355,16 @@ watch(
     />
 
     <!-- Empty state -->
-    <div v-if="pages.length === 0" class="graph-empty">
+    <div v-if="graphNodes.length === 0" class="graph-empty">
       <span class="graph-empty-icon">🧠</span>
-      <span>No memory data available</span>
+      <span>暂无知识节点，请先整理对话</span>
     </div>
 
     <!-- Graph SVG -->
     <svg
       v-else
       ref="svgRef"
+      aria-label="原子知识图谱"
       class="w-full h-full"
       @wheel.prevent="handleWheel"
       @mousedown="handleSvgMouseDown"
@@ -394,6 +382,7 @@ watch(
           :dimmed="isEdgeDimmed(edge)"
           @mouseenter="showEdgeTooltip(edge, $event)"
           @mouseleave="hideTooltip"
+          @select="emit('fact-click', $event)"
         />
 
         <!-- Nodes -->
@@ -402,7 +391,7 @@ watch(
           :key="node.id"
           :node="node"
           :dimmed="isNodeDimmed(node)"
-          :selected="false"
+          :selected="node.id === selectedId"
           @click="handleNodeClick"
           @drag-start="handleNodeDragStart"
         />

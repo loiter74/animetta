@@ -27,6 +27,7 @@ from animetta.memory.v2.character_filter import CharacterMemoryFilter
 from animetta.memory.v2.compile import COMPILE_TRIGGERS, CompileEngine
 from animetta.memory.v2.context import MemoryContext
 from animetta.memory.v2.emotion_field import EmotionalField, VADVector
+from animetta.memory.v2.knowledge import KnowledgeEngine, LLMCall
 from animetta.memory.v2.metabolism import MetabolismScheduler
 from animetta.memory.v2.reconsolidation import get_reconsolidation_client
 from animetta.memory.v2.search import MemorySearch
@@ -91,6 +92,7 @@ class LivingMemorySystem:
         db_path: str = "memory_db/living_memory.sqlite",
         *,
         retrieval_mode: Literal["fts", "semantic"] = "fts",
+        llm_call: LLMCall | None = None,
     ):
         if retrieval_mode not in {"fts", "semantic"}:
             raise ValueError("Unknown memory retrieval mode")
@@ -102,7 +104,8 @@ class LivingMemorySystem:
         self._reconsolidation_tasks: set[asyncio.Task] = set()
         self._metabolism_task: asyncio.Task | None = None
         self._metabolism_interval = 6 * 3600  # 6 hours in seconds
-        self.compile_engine = CompileEngine()
+        self.compile_engine = CompileEngine(llm_call)
+        self.knowledge_engine = KnowledgeEngine(self.store, llm_call)
 
     async def initialize(self) -> None:
         await self.store.initialize()
@@ -143,7 +146,11 @@ class LivingMemorySystem:
     async def list_wiki_pages(self, limit: int = 50) -> list[dict[str, object]]:
         """Return active memory atoms as frontend-compatible wiki pages."""
         atoms = await self.store.get_all_active(limit=limit)
-        return [self._atom_to_wiki_page(atom) for atom in atoms]
+        fields = ("path", "title", "content", "page_type", "tags", "updated_at")
+        return [
+            {key: value for key, value in self.atom_to_dto(atom).items() if key in fields}
+            for atom in atoms
+        ]
 
     async def list_memories(
         self,
@@ -160,21 +167,24 @@ class LivingMemorySystem:
         if offset < 0:
             raise ValueError("cursor must be a non-negative integer")
         page_size = max(1, min(int(limit), 100))
-        atoms = await self.store.get_all_active(limit=1000)
         if scope:
             try:
                 expected_scope = MemoryScope(scope)
             except ValueError as exc:
                 raise ValueError(f"unknown memory scope: {scope}") from exc
-            atoms = [atom for atom in atoms if atom.scope is expected_scope]
-        page = atoms[offset : offset + page_size]
+            scope = expected_scope.value
+        page, total, revision = await self.store.active_page(page_size, offset, scope)
         next_offset = offset + len(page)
         index_health = self.store.get_index_health()
         return {
             "items": [self.atom_to_dto(atom) for atom in page],
-            "revision": await self.store.get_revision(),
-            "next_cursor": str(next_offset) if next_offset < len(atoms) else None,
-            "total": len(atoms),
+            "revision": revision,
+            "next_cursor": str(next_offset) if next_offset < total else None,
+            "total": total,
+            "knowledge": {
+                **await self.store.knowledge_stats(scope),
+                "available": self.knowledge_engine.llm_call is not None,
+            },
             "health": {
                 "degraded": bool(index_health["degraded"]),
                 "last_error": index_health["last_error"] or "",
@@ -222,14 +232,8 @@ class LivingMemorySystem:
         return self.atom_to_dto(atom)
 
     async def forget_memory(self, atom_id: str) -> dict[str, object] | None:
-        atom = await self.store.get(atom_id)
-        if atom is None:
-            return None
-        if atom.is_archived:
-            return self.atom_to_dto(atom)
-        atom.is_archived = True
-        await self.store.update(atom)
-        return self.atom_to_dto(atom)
+        atom = await self.store.forget_with_knowledge(atom_id)
+        return self.atom_to_dto(atom) if atom is not None else None
 
     async def change_memory(
         self,
@@ -245,6 +249,8 @@ class LivingMemorySystem:
             return None
         if atom.summary == corrected:
             return self.atom_to_dto(atom)
+        if atom.knowledge.get("kind"):
+            raise ValueError("请通过新的陈述更正知识；可以先遗忘旧事实")
         updated = await self.store.create_version(
             atom_id,
             corrected,
@@ -277,7 +283,9 @@ class LivingMemorySystem:
             "content": atom.content,
             "summary": atom.summary,
             "layer": atom.layer.name.lower(),
-            "page_type": layer_to_type.get(atom.layer, atom.layer.name.lower()),
+            "page_type": atom.knowledge.get("kind")
+            or layer_to_type.get(atom.layer, atom.layer.name.lower()),
+            "knowledge": dict(atom.knowledge),
             "scope": atom.scope.value,
             "visibility": atom.visibility.value,
             "subject_ids": list(atom.subject_ids),
@@ -309,26 +317,10 @@ class LivingMemorySystem:
             "updated_at": updated_at.isoformat(),
         }
 
-    @staticmethod
-    def _atom_to_wiki_page(atom: MemoryAtom) -> dict[str, object]:
-        layer_to_type = {
-            Layer.RAW: "source",
-            Layer.EPISODIC: "entity",
-            Layer.SEMANTIC: "concept",
-            Layer.EMERGENT: "synthesis",
-        }
-        updated_at = atom.rewritten_at or atom.occurred_at
-        return {
-            "path": atom.id,
-            "title": atom.summary or atom.content[:80],
-            "content": atom.content,
-            "page_type": layer_to_type.get(atom.layer, atom.layer.name.lower()),
-            "tags": atom.tags or [],
-            "updated_at": updated_at.isoformat() if updated_at else "",
-        }
-
     async def _run_metabolism_tick(self) -> None:
         """Execute one metabolism tick: decay + compile + forget."""
+        if self.knowledge_engine.llm_call is not None:
+            await self.organize_knowledge()
         # Get all active atoms
         atoms = await self.store.get_all_active()
         if not atoms:
@@ -352,6 +344,7 @@ class LivingMemorySystem:
 
     async def _try_compile(self, atoms: list[MemoryAtom]) -> None:
         """Try compiling atoms up through layers."""
+        atoms = [atom for atom in atoms if not atom.knowledge.get("kind")]
         for source_layer in [Layer.RAW, Layer.EPISODIC, Layer.SEMANTIC]:
             trigger = COMPILE_TRIGGERS[source_layer]
             eligible = CompileEngine.get_eligible_atoms(atoms, source_layer, trigger)
@@ -400,6 +393,17 @@ class LivingMemorySystem:
         await self.store.close()
 
     # ── Encode ──
+
+    async def organize_knowledge(self, limit: int = 20) -> dict[str, int]:
+        """Backfill pending sources without age/count gates or invented fallback facts."""
+        if self.knowledge_engine.llm_call is None:
+            raise RuntimeError("Knowledge extraction provider is unavailable")
+        counts = {"sources_processed": 0, "entities_created": 0, "facts_created": 0}
+        for source in await self.store.pending_knowledge_sources(limit):
+            result = await self.knowledge_engine.extract(source)
+            for key in counts:
+                counts[key] += result[key]
+        return {**counts, **await self.store.knowledge_stats()}
 
     async def encode(
         self,
@@ -465,6 +469,10 @@ class LivingMemorySystem:
             emotion_arousal=emotion_vad.arousal,
             emotion_dominance=emotion_vad.dominance,
             tags=[],
+            knowledge={
+                "status": "pending",
+                "messages": {"user": user_input, "assistant": agent_response},
+            },
             scope=scope,
             visibility=visibility,
             subject_ids=subject_ids,
@@ -472,6 +480,12 @@ class LivingMemorySystem:
             retention_policy=retention_policy,
         )
         await self.store.create(atom)
+        if self.knowledge_engine.llm_call is not None:
+            try:
+                await self.knowledge_engine.extract(atom)
+            except Exception as exc:
+                # The original evidence survives provider failures and can be retried by organize.
+                logger.warning("Atomic knowledge extraction deferred: %s", type(exc).__name__)
         return atom
 
     # ── Recall ──
@@ -635,6 +649,8 @@ class LivingMemorySystem:
         for atom in atoms:
             if reconsolidated >= self.MAX_RECONSOLIDATION_PER_RECALL:
                 break
+            if atom.knowledge.get("kind"):
+                continue
 
             # Cooldown check
             if atom.last_accessed_at and (now - atom.last_accessed_at) < cooldown:

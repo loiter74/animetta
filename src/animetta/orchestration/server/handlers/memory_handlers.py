@@ -246,15 +246,21 @@ class MemoryHandlers(BaseSocketHandler):
         key = CommandKey("dashboard", "memory.organize", job_id)
         try:
             self._jobs[job_id].update(status="running", progress=30)
-            progress = {**self._jobs[job_id], "text": "Running metabolism tick..."}
+            progress = {**self._jobs[job_id], "text": "正在从原始对话抽取知识…"}
             await self._command_inbox.update_progress(key, progress)
             for subscriber in tuple(self._organize_subscribers.get(job_id, ())):
                 await self.sio.emit(
                     EVENTS["memory"]["organize_progress"]["name"], progress, to=subscriber
                 )
-            await memory.run_metabolism_tick()
+            stats = await memory.organize_knowledge()
             revision = await memory.store.get_revision()
-            self._jobs[job_id].update(status="completed", progress=100, revision=revision)
+            text = (
+                f"新增 {stats['facts_created']} 条事实、{stats['entities_created']} 个实体；"
+                f"待处理来源 {stats['pending_sources']} 条"
+            )
+            self._jobs[job_id].update(
+                status="completed", progress=100, revision=revision, stats=stats, text=text
+            )
             result = {**self._jobs[job_id], "message": "Memory organized"}
             await self._command_inbox.succeed(key, result)
             for subscriber in tuple(self._organize_subscribers.get(job_id, ())):

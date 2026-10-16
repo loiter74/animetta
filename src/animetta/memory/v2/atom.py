@@ -104,6 +104,7 @@ class MemoryAtom:
     source_ids: list[str] = field(default_factory=list)
     relations: list[Relation] = field(default_factory=list)
     tags: list[str] = field(default_factory=list)
+    knowledge: dict = field(default_factory=dict)
 
     # ── Livestream identity and policy ──
     scope: MemoryScope = MemoryScope.COMMUNITY

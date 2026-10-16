@@ -1,3 +1,4 @@
+import type { MemoryKnowledge, KnowledgeStats } from '@/types/memoryKnowledge'
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { getSocket } from '@/services/socket'
@@ -36,6 +37,7 @@ export interface MemoryAtomDTO {
   is_archived: boolean
   occurred_at: string
   updated_at: string
+  knowledge?: MemoryKnowledge
 }
 
 export type WikiPageEntry = MemoryAtomDTO
@@ -52,6 +54,7 @@ export interface MemoryJob {
   text?: string
   revision?: number
   error?: string
+  stats?: KnowledgeStats
 }
 
 interface MemoryPage {
@@ -59,6 +62,7 @@ interface MemoryPage {
   revision: number
   next_cursor: string | null
   total: number
+  knowledge?: KnowledgeStats
   health?: {
     degraded: boolean
     index_backlog: number
@@ -78,6 +82,7 @@ interface FetchOptions {
   scope?: string | null
   append?: boolean
   timeoutMs?: number
+  all?: boolean
 }
 
 const DEFAULT_ACK_TIMEOUT_MS = 3000
@@ -105,6 +110,7 @@ export const useMemoryStore = defineStore('memory', () => {
   const error = ref<MemoryError | null>(null)
   const job = ref<MemoryJob | null>(null)
   const health = ref({ degraded: false, indexBacklog: 0, lastError: '' })
+  const knowledge = ref<KnowledgeStats>({ entities: 0, facts: 0, pending_sources: 0 })
   let listenersStarted = false
 
   const filteredPages = computed(() => {
@@ -166,16 +172,36 @@ export const useMemoryStore = defineStore('memory', () => {
         Events.MEMORY.LIST,
         {
           cursor: options.cursor ?? undefined,
-          limit: options.limit ?? 50,
+          limit: options.limit ?? (options.all ? 100 : 50),
           scope: options.scope ?? undefined,
         },
         options.timeoutMs,
       )
-      wikiPages.value = options.append ? [...wikiPages.value, ...page.items] : page.items
+      const items = [...page.items]
+      let cursor = page.next_cursor
+      const seen = new Set<string>()
+      while (options.all && cursor !== null) {
+        if (seen.has(cursor)) throw fail('INVALID_CURSOR', '记忆分页游标重复，请刷新重试')
+        seen.add(cursor)
+        const next = await request<MemoryPage>(
+          Events.MEMORY.LIST,
+          {
+            cursor,
+            limit: 100,
+            scope: options.scope ?? undefined,
+          },
+          options.timeoutMs,
+        )
+        if (next.revision !== page.revision) throw fail('STALE_GRAPH', '记忆已更新，请重新载入图谱')
+        items.push(...next.items)
+        cursor = next.next_cursor
+      }
+      wikiPages.value = options.append ? [...wikiPages.value, ...items] : items
       revision.value = page.revision
       latestRevision.value = Math.max(latestRevision.value, page.revision)
-      nextCursor.value = page.next_cursor
+      nextCursor.value = cursor
       total.value = page.total
+      if (page.knowledge) knowledge.value = page.knowledge
       if (page.health) {
         health.value = {
           degraded: page.health.degraded,
@@ -183,7 +209,7 @@ export const useMemoryStore = defineStore('memory', () => {
           lastError: page.health.last_error,
         }
       }
-      invalidated.value = false
+      invalidated.value = latestRevision.value > revision.value
     } finally {
       loading.value = false
     }
@@ -220,6 +246,10 @@ export const useMemoryStore = defineStore('memory', () => {
 
   const pinMemory = (id: string, pinned: boolean) => mutate(Events.MEMORY.PIN, { id, pinned })
   const forgetMemory = (id: string) => mutate(Events.MEMORY.FORGET, { id })
+  const getMemory = async (id: string) => {
+    const result = await request<{ item: MemoryAtomDTO }>(Events.MEMORY.GET, { id })
+    return result.item
+  }
   const changeMemory = (id: string, summary: string) => {
     const current = wikiPages.value.find((item) => item.id === id)
     if (!current) throw fail('NOT_FOUND', 'Memory not found')
@@ -264,6 +294,8 @@ export const useMemoryStore = defineStore('memory', () => {
       progress: Number(source?.progress ?? (snapshot.status === 'succeeded' ? 100 : 0)),
       text: snapshot.reused ? '已恢复整理任务' : undefined,
       error: snapshot.error?.message,
+      stats: source?.stats as KnowledgeStats | undefined,
+      ...(typeof source?.text === 'string' ? { text: source.text } : {}),
     }
   }
 
@@ -342,12 +374,14 @@ export const useMemoryStore = defineStore('memory', () => {
     error,
     job,
     health,
+    knowledge,
     filteredPages,
     fetchMemories,
     fetchWikiPages,
     searchRemote,
     pinMemory,
     forgetMemory,
+    getMemory,
     changeMemory,
     organizeMemory,
     recoverOrganize,

@@ -840,18 +840,19 @@ class TestRouteHandlersDispatch:
         assert "sk-persona-list-secret" not in logged
 
     @pytest.mark.asyncio
-    async def test_on_memory_organize_uses_public_metabolism_api(
+    async def test_on_memory_organize_uses_public_knowledge_api(
         self, mock_socketio, mock_session_manager
     ):
         """memory:organize should not reach into MemorySystem private methods."""
 
         class PublicMemorySystem:
             def __init__(self) -> None:
-                self.tick_called = False
+                self.extraction_called = False
                 self.store = SimpleNamespace(get_revision=AsyncMock(return_value=4))
 
-            async def run_metabolism_tick(self) -> None:
-                self.tick_called = True
+            async def organize_knowledge(self) -> dict[str, int]:
+                self.extraction_called = True
+                return {"facts_created": 2, "entities_created": 3, "pending_sources": 0}
 
         memory = PublicMemorySystem()
         mock_session_manager.get_or_create_context = AsyncMock(
@@ -865,7 +866,7 @@ class TestRouteHandlersDispatch:
         job_id = accepted["data"]["job_id"]
         await handlers.memory.wait_for_job(job_id)
 
-        assert memory.tick_called
+        assert memory.extraction_called
         mock_socketio.emit.assert_any_call(
             "memory:organize_result",
             {
@@ -873,6 +874,8 @@ class TestRouteHandlersDispatch:
                 "status": "completed",
                 "progress": 100,
                 "revision": 4,
+                "stats": {"facts_created": 2, "entities_created": 3, "pending_sources": 0},
+                "text": "新增 2 条事实、3 个实体；待处理来源 0 条",
                 "message": "Memory organized",
             },
             to="sid1",

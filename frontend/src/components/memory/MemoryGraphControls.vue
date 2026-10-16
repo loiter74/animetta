@@ -18,6 +18,19 @@ const emit = defineEmits<{
   zoomOut: []
   zoomReset: []
 }>()
+const categoryLabels: Record<string, string> = {
+  person: '人物',
+  place: '地点',
+  organization: '组织',
+  concept: '概念',
+  value: '数值 / 日期',
+  fact: '事实',
+  interest: '兴趣',
+  skill: '能力',
+  relation: '关系',
+  knowledge: '知识',
+  other: '其他',
+}
 </script>
 
 <template>
@@ -26,7 +39,7 @@ const emit = defineEmits<{
     <div class="graph-controls-left flex items-center gap-1 shrink-0">
       <button
         class="w-7 h-7 flex items-center justify-center rounded-lg bg-c-bg/40 text-c-text-dim hover:text-c-text hover:bg-c-bg/60 transition-colors"
-        title="Zoom in"
+        title="放大"
         @click="emit('zoomIn')"
       >
         <svg
@@ -44,7 +57,7 @@ const emit = defineEmits<{
       </button>
       <button
         class="w-7 h-7 flex items-center justify-center rounded-lg bg-c-bg/40 text-c-text-dim hover:text-c-text hover:bg-c-bg/60 transition-colors"
-        title="Zoom out"
+        title="缩小"
         @click="emit('zoomOut')"
       >
         <svg
@@ -62,7 +75,7 @@ const emit = defineEmits<{
       </button>
       <button
         class="w-7 h-7 flex items-center justify-center rounded-lg bg-c-bg/40 text-c-text-dim hover:text-c-text hover:bg-c-bg/60 transition-colors"
-        title="Reset zoom"
+        title="重置视图"
         @click="emit('zoomReset')"
       >
         <svg
@@ -84,7 +97,8 @@ const emit = defineEmits<{
       <input
         :value="searchQuery"
         type="text"
-        placeholder="Search nodes..."
+        placeholder="搜索实体…"
+        aria-label="搜索图谱实体"
         class="w-full pl-7 pr-2 py-1 rounded-lg bg-c-bg/60 border border-c-border/30 text-10px text-c-text placeholder:text-c-text-muted focus:outline-none focus:border-c-accent/50 transition-colors"
         @input="emit('update:searchQuery', ($event.target as HTMLInputElement).value)"
       />
@@ -111,9 +125,9 @@ const emit = defineEmits<{
           emit('update:selectedCategory', ($event.target as HTMLSelectElement).value || null)
         "
       >
-        <option value="">All categories</option>
+        <option value="">全部实体类型</option>
         <option v-for="cat in categories" :key="cat" :value="cat">
-          {{ cat }}
+          {{ categoryLabels[cat] ?? cat }}
         </option>
       </select>
     </div>

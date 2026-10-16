@@ -75,6 +75,24 @@ SINGING_SOCKET_MAX_BUFFER_BYTES = 96 * 1024 * 1024
 class WebSocketServer:
     """WebSocket server"""
 
+    async def _memory_llm_call(self, system_prompt: str, user_prompt: str) -> str:
+        """Borrow the configured provider without touching live conversation history."""
+        engine = self.provider_pool.get_context().get("llm_engine")
+        if engine is None or getattr(engine, "is_mock_provider", False) is True:
+            raise RuntimeError("Knowledge extraction requires a real LLM provider")
+        response = await engine.chat_messages(
+            [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            temperature=0,
+            max_tokens=4096,
+            response_format={"type": "json_object"},
+        )
+        if not isinstance(response, str) or not response.strip():
+            raise ValueError("Knowledge extraction returned an empty response")
+        return response
+
     def __init__(
         self,
         config: EffectiveConfig | None = None,
@@ -138,6 +156,7 @@ class WebSocketServer:
         project_root = Path(__file__).resolve().parent.parent.parent.parent.parent
         self.command_inbox = CommandInbox(get_data_dir() / "command_inbox.db")
         self.memory_runtime = SharedMemoryRuntime(
+            llm_call=self._memory_llm_call,
             retrieval_mode=config.runtime.memory_retrieval_mode if config is not None else "fts",
             command_inbox=self.command_inbox,
             observation_recorder=self.observation_recorder,
