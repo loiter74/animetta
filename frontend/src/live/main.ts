@@ -1,3 +1,4 @@
+import '@/shared/browserCrypto'
 import { io } from 'socket.io-client'
 import * as PIXI from 'pixi.js'
 import { mountTtsFailoverReviewNotification } from '@/tts-failover/main'

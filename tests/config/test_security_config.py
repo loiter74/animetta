@@ -15,9 +15,36 @@ def test_security_config_rejects_wildcard_origin() -> None:
         SecurityConfig(allowed_origins=("*",))
 
 
-def test_security_config_requires_https_for_non_loopback_origin() -> None:
+@pytest.mark.parametrize(
+    "origin",
+    [
+        "http://animetta.example",
+        "http://1.1.1.1",
+        "http://100.64.0.1",
+        "http://169.254.1.1",
+        "http://192.0.2.22",
+        "http://172.15.255.255",
+        "http://172.32.0.1",
+        "http://[fd00::1]",
+        "http://192.168.5.22.example",
+    ],
+)
+def test_security_config_requires_https_for_non_local_origin(origin: str) -> None:
     with pytest.raises(ValidationError, match="must use HTTPS"):
-        SecurityConfig(allowed_origins=("http://animetta.example",))
+        SecurityConfig(allowed_origins=(origin,))
+
+
+@pytest.mark.parametrize(
+    "origin",
+    [
+        "http://10.0.0.22:8000",
+        "http://172.16.0.1",
+        "http://172.31.255.254",
+        "http://192.168.5.22",
+    ],
+)
+def test_security_config_accepts_explicit_private_ipv4_http_origin(origin: str) -> None:
+    assert SecurityConfig(allowed_origins=(origin,)).allowed_origins == (origin,)
 
 
 def test_security_config_accepts_exact_https_and_loopback_http() -> None:

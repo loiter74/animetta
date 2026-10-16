@@ -97,11 +97,12 @@ def _runtime(
     password_hash: str = TEST_PASSWORD_HASH,
     recorder=None,
     session_client: FakeRedis | None = None,
+    origin: str = "https://animetta.example",
 ) -> SecurityRuntime:
     client = session_client or FakeRedis()
     return SecurityRuntime(
         profile="production",
-        config=SecurityConfig(allowed_origins=("https://animetta.example",)),
+        config=SecurityConfig(allowed_origins=(origin,)),
         environ={
             "ANIMETTA_ACCESS_TOKEN": token,
             "ANIMETTA_AUTH_USERNAME": username,
@@ -203,6 +204,34 @@ def test_login_issues_strict_httponly_session_and_protects_api() -> None:
         assert logout.status_code == 200
         assert client.get("/api/auth/session").status_code == 401
         client.cookies.set("animetta_session", original_cookie)
+        assert client.get("/api/auth/session").status_code == 401
+
+
+def test_lan_browser_login_keeps_a_session_and_rejects_other_origins() -> None:
+    origin = "http://192.168.5.22"
+    security = _runtime(origin=origin)
+    app = Starlette(routes=get_auth_routes(security))
+    app.add_middleware(AuthenticationMiddleware, security=security)
+
+    with TestClient(app, base_url=origin) as client:
+        response = client.post(
+            "/api/auth/login",
+            json={"username": TEST_USERNAME, "password": TEST_PASSWORD},
+            headers={"Origin": origin},
+        )
+        assert response.status_code == 200
+        attributes = {part.strip().lower() for part in response.headers["set-cookie"].split(";")}
+        assert "secure" not in attributes
+        assert "httponly" in attributes
+        assert "samesite=strict" in attributes
+        assert client.get("/api/auth/session").json()["authenticated"] is True
+
+        assert (
+            client.post("/api/auth/logout", headers={"Origin": "http://192.168.5.23"}).status_code
+            == 403
+        )
+        assert client.get("/api/auth/session").status_code == 200
+        assert client.post("/api/auth/logout", headers={"Origin": origin}).status_code == 200
         assert client.get("/api/auth/session").status_code == 401
 
 

@@ -2,9 +2,14 @@
 
 from __future__ import annotations
 
+from ipaddress import IPv4Address, IPv4Network
 from urllib.parse import urlsplit
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+_LAN_NETWORKS = tuple(
+    IPv4Network(cidr) for cidr in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")
+)
 
 
 class SecurityConfig(BaseModel):
@@ -38,8 +43,14 @@ class SecurityConfig(BaseModel):
                 raise ValueError(f"origin must not contain a path, query, or fragment: {origin}")
             host = parsed.hostname.lower()
             is_loopback = host in {"localhost", "127.0.0.1", "::1"}
-            if not is_loopback and parsed.scheme != "https":
-                raise ValueError(f"non-loopback origin must use HTTPS: {origin}")
+            try:
+                address = IPv4Address(host)
+            except ValueError:
+                is_lan = False
+            else:
+                is_lan = any(address in network for network in _LAN_NETWORKS)
+            if not (is_loopback or is_lan) and parsed.scheme != "https":
+                raise ValueError(f"non-local origin must use HTTPS: {origin}")
             canonical = origin.rstrip("/")
             if canonical in normalized:
                 raise ValueError(f"duplicate origin: {canonical}")
