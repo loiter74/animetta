@@ -263,7 +263,12 @@ button {
     white-space: nowrap;
   }
   .subtitle-overlay {
-    bottom: 16px;
+    bottom: max(16px, env(safe-area-inset-bottom));
     width: calc(100vw - 32px);
+    padding: 10px 14px;
+  }
+  .subtitle-overlay p {
+    font-size: clamp(16px, 4.5vw, 20px);
+    line-height: 1.5;
   }
 }

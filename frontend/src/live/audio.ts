@@ -58,6 +58,8 @@ export function createLiveAudioController(
   options: LiveAudioControllerOptions = {},
 ): LiveAudioController {
   const status = document.getElementById('audioStatus')
+  const unlockPrompt = document.getElementById('audioUnlockPrompt')
+  let disposed = false
   const singingAudio = document.getElementById('singingAudio') as HTMLAudioElement | null
   const requestedMode = options.ownership?.requestedMode ?? options.mediaMode ?? 'active'
   let singingTaskId = ''
@@ -111,6 +113,7 @@ export function createLiveAudioController(
   }
 
   syncOwnershipEvidence()
+  if (unlockPrompt) unlockPrompt.hidden = requestedMode !== 'active'
   if (status && requestedMode !== 'active') {
     status.dataset.playbackState = 'muted'
   }
@@ -127,6 +130,7 @@ export function createLiveAudioController(
         return
       }
       bgm?.duck()
+      if (unlockPrompt) unlockPrompt.hidden = true
       if (kind === 'chat') options.onChatPlaybackState?.(event.task_id, 'playing')
       if (status) {
         status.dataset.playbackCount = String(Number(status.dataset.playbackCount ?? 0) + 1)
@@ -332,7 +336,9 @@ export function createLiveAudioController(
   }
   const onPlaybackGesture = (): void => {
     if (!canPlayMedia()) return
-    unlockAudioPlayback()
+    void unlockAudioPlayback().then((unlocked) => {
+      if (!disposed && unlocked && unlockPrompt) unlockPrompt.hidden = true
+    })
     bgm?.unlock()
     if (currentSingingPlayback?.state === 'playing' && singingAudio?.paused) {
       applySingingPlayback(currentSingingPlayback)
@@ -403,7 +409,7 @@ export function createLiveAudioController(
   singingAudio?.addEventListener('ended', onSingingEnded)
   singingAudio?.addEventListener('error', onSingingError)
   if (requestedMode === 'active') {
-    document.addEventListener('pointerdown', onPlaybackGesture, { capture: true })
+    document.addEventListener('click', onPlaybackGesture, { capture: true })
     document.addEventListener('keydown', onPlaybackGesture, { capture: true })
   }
   socket.on(Events.CHAT.AUDIO_WITH_EXPRESSION, onAudio)
@@ -440,8 +446,9 @@ export function createLiveAudioController(
   return {
     playReviewAudio,
     dispose(): void {
+      disposed = true
       if (requestedMode === 'active') {
-        document.removeEventListener('pointerdown', onPlaybackGesture, { capture: true })
+        document.removeEventListener('click', onPlaybackGesture, { capture: true })
         document.removeEventListener('keydown', onPlaybackGesture, { capture: true })
       }
       socket.off(Events.CHAT.AUDIO_WITH_EXPRESSION, onAudio)

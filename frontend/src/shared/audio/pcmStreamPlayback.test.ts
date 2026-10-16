@@ -41,6 +41,7 @@ interface PlaybackModule {
   endAudioStream(data: StreamEnd): void
   playAudio(data: { audio_data: string; format: string }): void
   stopAudio(): void
+  unlockAudioPlayback(): Promise<boolean>
 }
 
 class MockAudio {
@@ -157,6 +158,33 @@ describe('progressive PCM playback', () => {
   afterEach(() => {
     vi.useRealTimers()
     vi.unstubAllGlobals()
+  })
+
+  it('retains a finished stream while suspended and reports playback only after unlock', async () => {
+    const playback = await loadPlayback()
+    const lifecycle = { onStart: vi.fn(), onComplete: vi.fn() }
+    playback.startAudioStream(startEvent(), lifecycle)
+    const context = MockAudioContext.instances[0]
+    context.state = 'suspended'
+    playback.pushAudioStreamChunk({
+      stream_id: 'stream-a',
+      sequence: 0,
+      audio_data: pcmChunk(4_000, 250),
+    })
+    playback.endAudioStream({ stream_id: 'stream-a', final_sequence: 0, status: 'completed' })
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(context.sources).toHaveLength(0)
+    expect(lifecycle.onStart).not.toHaveBeenCalled()
+    expect(lifecycle.onComplete).not.toHaveBeenCalled()
+    context.resume.mockImplementation(async () => {
+      context.state = 'running'
+    })
+    await playback.unlockAudioPlayback()
+    await vi.advanceTimersByTimeAsync(25)
+    expect(context.sources).toHaveLength(1)
+    expect(lifecycle.onStart).toHaveBeenCalledOnce()
+    context.sources[0].onended?.()
+    expect(lifecycle.onComplete).toHaveBeenCalledOnce()
   })
 
   it('reorders chunks, ignores duplicates, and waits for about 200ms before scheduling', async () => {

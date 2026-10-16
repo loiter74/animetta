@@ -21,7 +21,7 @@ const SILENT_AUDIO_DATA_URL =
 let currentAudio: HTMLAudioElement | null = null
 let currentBlobUrl: string | null = null
 let audioUnlocked = false
-let unlockPending = false
+let unlockPending: Promise<boolean> | null = null
 let currentLifecycle: AudioPlaybackLifecycle | null = null
 let playbackOwner: symbol | null = null
 
@@ -51,15 +51,14 @@ function getAudioElement(): HTMLAudioElement {
  * active. TTS arrives asynchronously, after the browser's transient autoplay
  * permission has expired, so the later response must reuse this element.
  */
-export function unlockAudioPlayback(): void {
+export function unlockAudioPlayback(): Promise<boolean> {
   unlockPcmAudioPlayback()
-  if (audioUnlocked || unlockPending || currentBlobUrl) return
+  if (audioUnlocked || currentBlobUrl) return Promise.resolve(audioUnlocked)
+  if (unlockPending) return unlockPending
 
   const audio = getAudioElement()
   audio.src = SILENT_AUDIO_DATA_URL
-  unlockPending = true
-
-  audio
+  unlockPending = audio
     .play()
     .then(() => {
       audioUnlocked = true
@@ -68,13 +67,16 @@ export function unlockAudioPlayback(): void {
         audio.removeAttribute('src')
         audio.load()
       }
+      return true
     })
     .catch((error: unknown) => {
       console.warn('[audio] Unable to unlock chat audio playback', error)
+      return false
     })
     .finally(() => {
-      unlockPending = false
+      unlockPending = null
     })
+  return unlockPending
 }
 
 export interface AudioPlaybackPayload {

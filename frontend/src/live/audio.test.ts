@@ -63,6 +63,7 @@ function harness(
     }),
   }
   document.body.innerHTML = `
+    <aside id="audioUnlockPrompt"><button id="enableAudio">开启声音</button></aside>
     <span id="audioStatus" data-playback-state="idle" data-playback-count="0" hidden></span>
     <span id="livestreamStatus" data-last-bilibili-reply-id="reply-task"></span>
     <audio id="singingAudio" hidden></audio>
@@ -83,7 +84,27 @@ function harness(
 describe('standalone live audio', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    playback.unlockAudioPlayback.mockResolvedValue(true)
     localStorage.clear()
+  })
+
+  it('unlocks after a completed touch click and hides the prompt only on success', async () => {
+    const { controller } = harness()
+    const button = document.getElementById('enableAudio')!
+    const prompt = document.getElementById('audioUnlockPrompt')!
+    button.dispatchEvent(new PointerEvent('pointerdown', { pointerType: 'touch', bubbles: true }))
+    expect(playback.unlockAudioPlayback).not.toHaveBeenCalled()
+    playback.unlockAudioPlayback.mockResolvedValueOnce(false)
+    button.click()
+    await Promise.resolve()
+    expect(playback.unlockAudioPlayback).toHaveBeenCalledOnce()
+    expect(prompt.hidden).toBe(false)
+    button.click()
+    await Promise.resolve()
+    expect(prompt.hidden).toBe(true)
+    controller.dispose()
+    button.click()
+    expect(playback.unlockAudioPlayback).toHaveBeenCalledTimes(2)
   })
 
   it('reports the native chat lifecycle and unavailable playback to subtitles', () => {
@@ -199,7 +220,7 @@ describe('standalone live audio', () => {
     )
 
     vi.mocked(singingAudio.play).mockResolvedValue()
-    document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
+    document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }))
 
     expect(singingAudio.play).toHaveBeenCalledTimes(2)
     expect(playback.unlockAudioPlayback).toHaveBeenCalledOnce()
@@ -220,7 +241,7 @@ describe('standalone live audio', () => {
     const { controller, singingAudio } = harness(Promise.reject(new Error('NotAllowedError')))
     vi.mocked(singingAudio.play).mockResolvedValue()
 
-    document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
+    document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }))
     await Promise.resolve()
     await Promise.resolve()
 
@@ -328,7 +349,7 @@ describe('standalone live audio', () => {
       channels: 1,
     })
     handlers.get(Events.SING.COMPLETE)!({ task_id: 'muted-song', audio_url: '/song.wav' })
-    document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
+    document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }))
 
     const status = document.getElementById('audioStatus')!
     expect(status.dataset.audioOwner).toBe('muted')
@@ -577,7 +598,7 @@ describe('standalone live audio', () => {
     const { bgm, controller, handlers, socket } = harness()
     const status = document.getElementById('audioStatus')!
 
-    status.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
+    status.dispatchEvent(new MouseEvent('click', { bubbles: true }))
 
     expect(playback.unlockAudioPlayback).toHaveBeenCalledOnce()
     expect(bgm.unlock).toHaveBeenCalledOnce()

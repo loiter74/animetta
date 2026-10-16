@@ -50,5 +50,8 @@ describe('standalone live panel styles', () => {
     expect(liveStyles).toMatch(
       /@media \(max-width: 600px\)[\s\S]*\.status-pill\s*\{[^}]*font-size:\s*12px/s,
     )
+    expect(liveStyles).toMatch(
+      /@media \(max-width: 600px\)[\s\S]*\.subtitle-overlay p\s*\{[^}]*font-size:\s*clamp\(16px,\s*4\.5vw,\s*20px\)/s,
+    )
   })
 })

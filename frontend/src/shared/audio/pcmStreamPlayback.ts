@@ -47,9 +47,22 @@ function getPcmAudioContext(): AudioContext | null {
 
 function resumeContext(context: AudioContext): void {
   if (context.state !== 'suspended') return
-  context.resume().catch((error: unknown) => {
-    console.warn('[audio] Unable to resume streaming audio context', error)
-  })
+  context
+    .resume()
+    .then(() => {
+      const stream = activePcmStream
+      if (!stream || stream.context !== context) return
+      if (
+        stream.started ||
+        stream.ended ||
+        stream.bufferedFrames / stream.sampleRate >= INITIAL_BUFFER_SECONDS
+      ) {
+        flushReadyChunks(stream)
+      }
+    })
+    .catch((error: unknown) => {
+      console.warn('[audio] Unable to resume streaming audio context', error)
+    })
 }
 
 function decodePcm16Le(audioData: string): Float32Array | null {
@@ -119,6 +132,7 @@ function scheduleChunk(stream: ActivePcmStream, chunk: DecodedChunk): void {
 }
 
 function flushReadyChunks(stream: ActivePcmStream): void {
+  if (stream.context.state !== 'running' || stream.ready.length === 0) return
   if (!stream.started) {
     stream.started = true
     stream.nextStartAt = Math.max(
@@ -220,6 +234,7 @@ export function endPcmAudioStream(data: AudioStreamEndEvent): void {
   }
   if (!stream.started && stream.ready.length > 0) flushReadyChunks(stream)
   stream.ended = true
+  if (stream.ready.length > 0) return
   if (stream.sources.size === 0) {
     stream.setMouthTarget(0)
     activePcmStream = null

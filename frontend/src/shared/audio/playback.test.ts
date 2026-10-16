@@ -58,6 +58,23 @@ describe('useAudioPlayback', () => {
     expect(MockAudio.instances[0].play).toHaveBeenCalledTimes(2)
   })
 
+  it('keeps a rejected unlock retryable and shares concurrent attempts', async () => {
+    const { unlockAudioPlayback } = await import('./playback')
+    const audio = new MockAudio()
+    vi.stubGlobal(
+      'Audio',
+      vi.fn(function () {
+        return audio
+      }),
+    )
+    audio.play.mockRejectedValueOnce(new DOMException('Touch required', 'NotAllowedError'))
+    const first = unlockAudioPlayback()
+    expect(unlockAudioPlayback()).toBe(first)
+    expect(await first).toBe(false)
+    expect(await unlockAudioPlayback()).toBe(true)
+    expect(audio.play).toHaveBeenCalledTimes(2)
+  })
+
   it('an old owner cannot cancel a newer session playback', async () => {
     const { playAudio } = await import('./playback')
     const first = { onCancel: vi.fn() }
