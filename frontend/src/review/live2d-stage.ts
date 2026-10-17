@@ -7,6 +7,8 @@ import { DEFAULT_LIVE2D_PERFORMANCE_PLAN } from '@/shared/live2d/performanceCont
 import { createLive2DRenderer } from '@/shared/live2d/renderer'
 import type { Live2DModelProfile } from '@/shared/live2d/modelProfile'
 import { DEFAULT_LIVE2D_MODEL_PROFILE } from '@/shared/live2d/modelProfiles'
+import { createLive2DExpressionController } from '@/shared/live2d/expressionController'
+import { bindLive2DEmotionSocket } from '@/shared/live2d/emotionSocket'
 import { createReviewVolumeTimelineLipSync } from './review-lip-sync'
 
 const PUBLIC_CUE_EMOTIONS = {
@@ -23,7 +25,8 @@ export interface Live2DStage {
   ready: Promise<void>
   setZoom(value: number): void
   setMouth(value: number, taskId?: string): void
-  setExpression(name: string): void
+  setEmotion(emotion: string): void
+  setExpression(name: string | null): void
   playReviewAudio(
     notification: HTMLElement,
     volumes: readonly number[],
@@ -52,6 +55,7 @@ export function createLive2DStage(
       ready: Promise.resolve(),
       setZoom() {},
       setMouth() {},
+      setEmotion() {},
       setExpression() {},
       playReviewAudio() {},
       cancelReviewAudio() {},
@@ -68,6 +72,17 @@ export function createLive2DStage(
   let releaseAudio: (() => void) | null = null
   let playbackVersion = 0
   const profile = options.profile ?? DEFAULT_LIVE2D_MODEL_PROFILE
+  const expression = createLive2DExpressionController(
+    profile,
+    (name) => {
+      if (loaded) renderer.applyAction({ type: 'expression', name })
+    },
+    (snapshot) => {
+      state.dataset.emotion = snapshot.emotion
+      state.dataset.expression = snapshot.expression
+      state.dataset.expressionMode = snapshot.mode
+    },
+  )
   const renderer = createLive2DRenderer({
     canvas,
     resizeTo: options.resizeTo ?? window,
@@ -103,18 +118,30 @@ export function createLive2DStage(
     const action = profile.semanticMotions[cue.phase]
     if (!action || cue.emotion !== PUBLIC_CUE_EMOTIONS[cue.phase]) return
     lastCue = cue.sourceEventId
+    expression.setEmotion(cue.emotion)
     renderer.applyAction({ type: 'motion', group: action.group, index: action.index })
   }
   const onAction = (value: unknown): void => {
     if (disposed) return
     const action = value as Live2DAction
-    if (action?.type === 'expression' && action.name) renderer.applyAction(action)
+    // Semantic emotion events own expressions on mapped models; legacy asset
+    // commands remain available for models without a semantic mapping.
+    if (action?.type === 'expression' && action.name && !profile.emotionExpressions) {
+      renderer.applyAction(action)
+    }
     if (action?.type === 'motion' && action.group) renderer.applyAction(action)
   }
+  socket.on(Events.CHAT.LIVE2D_ACTION, onAction)
+  const unbindEmotion = bindLive2DEmotionSocket(socket, {
+    setEmotion: expression.setEmotion,
+    resetEmotion: () => expression.setEmotion('neutral'),
+  })
   const ready = renderer.ready.then(() => {
     if (disposed || state.dataset.state !== 'live') return
     loaded = true
-    socket.on(Events.CHAT.LIVE2D_ACTION, onAction)
+    if (expression.snapshot.expression) {
+      renderer.applyAction({ type: 'expression', name: expression.snapshot.expression })
+    }
     if (pendingCue) {
       applyPublicCue(pendingCue)
       pendingCue = null
@@ -134,7 +161,8 @@ export function createLive2DStage(
     ready,
     setZoom: renderer.setZoom,
     setMouth: renderer.setMouth,
-    setExpression: (name) => renderer.applyAction({ type: 'expression', name }),
+    setEmotion: expression.setEmotion,
+    setExpression: expression.setManual,
     applyPublicCue,
     cancelReviewAudio,
     playReviewAudio(element, volumes, performance = DEFAULT_LIVE2D_PERFORMANCE_PLAN) {
@@ -183,7 +211,9 @@ export function createLive2DStage(
     dispose() {
       if (disposed) return
       disposed = true
-      if (loaded) socket.off(Events.CHAT.LIVE2D_ACTION, onAction)
+      socket.off(Events.CHAT.LIVE2D_ACTION, onAction)
+      unbindEmotion()
+      expression.dispose()
       cancelReviewAudio()
       renderer.dispose()
     },

@@ -17,6 +17,7 @@ export interface Live2DModelProfile {
   }
   readonly semanticMotions: Readonly<Record<string, { group: string; index?: number }>>
   readonly expressions?: Readonly<Record<string, { label: string; mouthRest: number }>>
+  readonly emotionExpressions?: Readonly<Record<string, string>>
   readonly idleVitality?: readonly Live2DIdleVitalityParameter[]
   /** Cubism's generated breathing also adds independent head and body angles. */
   readonly automaticBreathing?: boolean

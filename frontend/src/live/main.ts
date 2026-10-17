@@ -10,7 +10,7 @@ import type { LiveSocket } from './controller'
 import { applyLiveReviewLayout } from '@/review/layout'
 import { createLive2DStage } from '@/review/live2d-stage'
 import { resolveLive2DModelProfile } from '@/shared/live2d/modelProfiles'
-import { mountAvatarPreview } from '@/review/avatar-preview'
+import { bindAvatarPreview } from '@/review/avatar-preview'
 import { parseReviewMouthTimeline } from '@/review/review-lip-sync'
 import { mountLive2DPerformanceReview } from '@/review/live2d-performance/main'
 import { PUBLIC_LIVE_SOCKET_AUTH, startPublicLiveSocket } from '@/shared/transport/publicLiveSocket'
@@ -102,7 +102,7 @@ pageDisposers.add(() => window.removeEventListener('beforeunload', disposePage))
 
 void stage.ready.finally(() => {
   if (pageDisposed) return
-  const avatarPreview = mountAvatarPreview(document, search, avatarProfile, stage)
+  const avatarPreview = bindAvatarPreview(document, search, avatarProfile, stage)
   if (avatarPreview) pageDisposers.add(avatarPreview)
   const notification = mountTtsFailoverReviewNotification(document, search, { autoplay: false })
   if (notification) {

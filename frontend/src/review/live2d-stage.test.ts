@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { DEFAULT_LIVE2D_MODEL_PROFILE } from '@/shared/live2d/modelProfiles'
+import {
+  DEFAULT_LIVE2D_MODEL_PROFILE,
+  resolveLive2DModelProfile,
+} from '@/shared/live2d/modelProfiles'
+import { bindLive2DEmotionSocket } from '@/shared/live2d/emotionSocket'
+import { Events } from '@/constants/socket-events'
+import type { LiveSocket } from '@/shared/transport/liveSocket'
 
 const fixtures = vi.hoisted(() => {
   let beforeModelUpdate: (() => void) | null = null
@@ -41,6 +47,7 @@ const fixtures = vi.hoisted(() => {
     anchor: { set: vi.fn() },
     position: { set: vi.fn() },
     internalModel: {
+      breath: { setParameters: vi.fn() },
       coreModel: {
         getParameterCount: vi.fn().mockReturnValue(parameterNames.length),
         getParameterIndex: vi.fn((name: string) => parameterNames.indexOf(name)),
@@ -143,6 +150,44 @@ describe('createLive2DStage', () => {
     const calls = fixtures.model.position.set.mock.calls.length
     fixtures.emitRendererResize(600, 800)
     expect(fixtures.model.position.set).toHaveBeenCalledTimes(calls)
+  })
+
+  it('retains emotion while loading and lets manual preview override automatic events until released', async () => {
+    const { createLive2DStage } = await import('./live2d-stage')
+    const handlers = new Map<string, (...args: unknown[]) => void>()
+    const socket = {
+      on: vi.fn((event: string, handler: (...args: unknown[]) => void) => {
+        handlers.set(event, handler)
+        return socket
+      }),
+      off: vi.fn().mockReturnThis(),
+    }
+    const profile = { ...resolveLive2DModelProfile('whale-maid-v1'), mouthParameters: ['ParamA'] }
+    const stage = createLive2DStage(socket, { profile })
+    const frame = {
+      message_id: 'm1',
+      conversation_id: 'c1',
+      task_id: 't1',
+      turn_id: 't1',
+      emotion: 'happy',
+    }
+    handlers.get(Events.CHAT.EXPRESSION)!(frame)
+    await stage.ready
+    expect(fixtures.model.expression).toHaveBeenLastCalledWith('goofy')
+    fixtures.emitBeforeModelUpdate()
+    expect(fixtures.getParameterValue('ParamA')).toBeCloseTo(0.82)
+    stage.setExpression('standard')
+    handlers.get(Events.CHAT.LIVE2D_ACTION)!({ type: 'expression', name: 'goofy' })
+    handlers.get(Events.CHAT.EXPRESSION)!({ ...frame, emotion: 'sad' })
+    expect(fixtures.model.expression).toHaveBeenLastCalledWith('standard')
+    expect(document.getElementById('modelStatus')?.dataset.expressionMode).toBe('manual')
+    handlers.get(Events.CHAT.EXPRESSION)!(frame)
+    stage.setExpression(null)
+    expect(fixtures.model.expression).toHaveBeenLastCalledWith('goofy')
+    expect(document.getElementById('modelStatus')?.dataset.emotion).toBe('happy')
+    handlers.get('disconnect')!()
+    expect(fixtures.model.expression).toHaveBeenLastCalledWith('standard')
+    stage.dispose()
   })
 
   it('owns the only review playback and samples mouth volume in the model frame', async () => {
@@ -330,5 +375,130 @@ describe('createLive2DStage', () => {
     fixtures.emitBeforeModelUpdate()
     expect(fixtures.getParameterValue('ParamAngleX')).toBe(8)
     stage.dispose()
+  })
+})
+
+describe('bindLive2DEmotionSocket', () => {
+  function harness() {
+    const handlers = new Map<string, Set<(...args: unknown[]) => void>>()
+    const socket: LiveSocket = {
+      on: vi.fn((event, handler) => {
+        if (!handlers.has(event)) handlers.set(event, new Set())
+        handlers.get(event)!.add(handler)
+        return socket
+      }),
+      off: vi.fn((event, handler) => {
+        handlers.get(event)?.delete(handler)
+        return socket
+      }),
+    }
+    const target = { setEmotion: vi.fn(), resetEmotion: vi.fn() }
+    const dispose = bindLive2DEmotionSocket(socket, target)
+    return {
+      socket,
+      target,
+      dispose,
+      emit: (event: string, value?: unknown) => {
+        for (const handler of handlers.get(event) ?? []) handler(value)
+      },
+    }
+  }
+
+  const frame = (taskId: string, extra: Record<string, unknown> = {}) => ({
+    message_id: `message-${taskId}`,
+    conversation_id: 'conversation',
+    task_id: taskId,
+    turn_id: taskId,
+    ...extra,
+  })
+
+  it('accepts current expression and stream emotions, including a page opened mid-turn', () => {
+    const { emit, target, dispose } = harness()
+    emit(Events.CHAT.EXPRESSION, frame('one', { emotion: 'happy' }))
+    expect(target.setEmotion).toHaveBeenLastCalledWith('happy')
+    emit(Events.CHAT.AUDIO_STREAM_START, frame('one', { emotion: 'thinking' }))
+    expect(target.setEmotion).toHaveBeenLastCalledWith('thinking')
+    emit(Events.CHAT.CONTROL, frame('one', { signal: 'conversation-end' }))
+    expect(target.resetEmotion).toHaveBeenCalledOnce()
+    dispose()
+  })
+
+  it('rejects malformed identities, unknown emotions and unstarted tasks', () => {
+    const { emit, target, dispose } = harness()
+    emit(Events.CHAT.EXPRESSION, frame('one', { emotion: 'happy', turn_id: 'two' }))
+    emit(Events.CHAT.EXPRESSION, { task_id: 'one', turn_id: 'one', emotion: 'happy' })
+    emit(Events.CHAT.EXPRESSION, frame('one', { emotion: 'unknown' }))
+    expect(target.setEmotion).not.toHaveBeenCalled()
+    emit(Events.CHAT.CONTROL, frame('one', { signal: 'conversation-start' }))
+    emit(Events.CHAT.EXPRESSION, frame('two', { emotion: 'happy' }))
+    expect(target.setEmotion).not.toHaveBeenCalled()
+    dispose()
+  })
+
+  it('retires replaced tasks and cannot revive them with delayed start or emotion events', () => {
+    const { emit, target, dispose } = harness()
+    emit(Events.CHAT.CONTROL, frame('one', { signal: 'conversation-start' }))
+    emit(Events.CHAT.EXPRESSION, frame('one', { emotion: 'happy' }))
+    emit(Events.CHAT.SENTENCE, frame('two', { seq: 0 }))
+    emit(Events.CHAT.EXPRESSION, frame('two', { emotion: 'sad' }))
+    target.setEmotion.mockClear()
+    const resets = target.resetEmotion.mock.calls.length
+    emit(Events.CHAT.CONTROL, frame('one', { signal: 'conversation-start' }))
+    emit(Events.CHAT.SENTENCE, frame('one', { seq: 0 }))
+    emit(Events.CHAT.AUDIO_STREAM_START, frame('one', { emotion: 'happy' }))
+    emit(Events.CHAT.STOP_AUDIO, frame('one'))
+    expect(target.setEmotion).not.toHaveBeenCalled()
+    expect(target.resetEmotion).toHaveBeenCalledTimes(resets)
+    emit(Events.CHAT.EXPRESSION, frame('two', { emotion: 'thinking' }))
+    expect(target.setEmotion).toHaveBeenLastCalledWith('thinking')
+    dispose()
+  })
+
+  it('resets only the stopped active task and retires it until a new turn starts', () => {
+    const { emit, target, dispose } = harness()
+    emit(Events.CHAT.EXPRESSION, frame('one', { emotion: 'happy' }))
+    emit(Events.CHAT.STOP_AUDIO, frame('one'))
+    target.setEmotion.mockClear()
+    target.resetEmotion.mockClear()
+    emit(Events.CHAT.EXPRESSION, frame('one', { emotion: 'happy' }))
+    emit(Events.CHAT.SENTENCE, frame('one', { seq: 0 }))
+    emit(Events.CHAT.EXPRESSION, frame('two', { emotion: 'happy' }))
+    expect(target.setEmotion).not.toHaveBeenCalled()
+    expect(target.resetEmotion).not.toHaveBeenCalled()
+    emit(Events.CHAT.CONTROL, frame('two', { signal: 'conversation-start' }))
+    emit(Events.CHAT.EXPRESSION, frame('two', { emotion: 'neutral' }))
+    expect(target.setEmotion).toHaveBeenLastCalledWith('neutral')
+    dispose()
+  })
+
+  it('clears on disconnect and requires a new turn before accepting emotions again', () => {
+    const { emit, target, dispose } = harness()
+    emit(Events.CHAT.EXPRESSION, frame('one', { emotion: 'happy' }))
+    target.resetEmotion.mockClear()
+    emit('disconnect')
+    expect(target.resetEmotion).toHaveBeenCalledOnce()
+    target.setEmotion.mockClear()
+    emit(Events.CHAT.EXPRESSION, frame('one', { emotion: 'happy' }))
+    emit(Events.CHAT.EXPRESSION, frame('two', { emotion: 'sad' }))
+    expect(target.setEmotion).not.toHaveBeenCalled()
+    emit(Events.CHAT.SENTENCE, frame('two', { seq: 0 }))
+    emit(Events.CHAT.EXPRESSION, frame('two', { emotion: 'sad' }))
+    expect(target.setEmotion).toHaveBeenLastCalledWith('sad')
+    dispose()
+  })
+
+  it('unsubscribes every own handler once and ignores retained callbacks after disposal', () => {
+    const { socket, target, emit, dispose } = harness()
+    const listeners = vi.mocked(socket.on).mock.calls
+    dispose()
+    dispose()
+    expect(socket.off).toHaveBeenCalledTimes(listeners.length)
+    for (const [event, handler] of listeners) {
+      expect(socket.off).toHaveBeenCalledWith(event, handler)
+      handler(frame('one', { signal: 'conversation-start', seq: 0, emotion: 'happy' }))
+    }
+    emit(Events.CHAT.EXPRESSION, frame('one', { emotion: 'happy' }))
+    expect(target.setEmotion).not.toHaveBeenCalled()
+    expect(target.resetEmotion).not.toHaveBeenCalled()
   })
 })

@@ -91,7 +91,7 @@ describe('DashboardPage information architecture', () => {
     )
     expect(
       wrapper.findAll('[aria-label="验证工作区"] [role="tab"]').map((item) => item.text()),
-    ).toEqual(['对话沙盒', '弹幕重放'])
+    ).toEqual(['对话沙盒', '弹幕重放', '立绘调试'])
   })
 
   it('keeps replay exclusively under validation', async () => {

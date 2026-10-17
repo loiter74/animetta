@@ -19,6 +19,12 @@ describe('live review entry styles', () => {
     expect(liveMarkup).not.toContain('aria-label="折叠弹幕"')
   })
 
+  it('keeps diagnostic labels hidden and mounts no floating avatar controls', () => {
+    expect(liveMarkup).toContain('class="hidden" aria-label="直播状态" hidden')
+    expect(mainSource).not.toContain('mountAvatarPreview')
+    expect(mainSource).toContain('bindAvatarPreview')
+  })
+
   it('provides the public subtitle surface for broadcast AI replies', () => {
     expect(liveMarkup).toContain('id="subtitleOverlay"')
     expect(liveMarkup).toContain('id="subtitleText"')

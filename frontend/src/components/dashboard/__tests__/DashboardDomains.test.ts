@@ -3,6 +3,8 @@ import { createPinia, setActivePinia } from 'pinia'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import ConversationSandbox from '@/components/dashboard/ConversationSandbox.vue'
 import PreflightDrawer from '@/components/dashboard/PreflightDrawer.vue'
+import ValidationWorkspace from '@/components/dashboard/ValidationWorkspace.vue'
+import AvatarWorkspace from '@/components/dashboard/AvatarWorkspace.vue'
 import MemoryWorkspace from '@/components/memory/MemoryWorkspace.vue'
 import MemeWorkspace from '@/components/meme/MemeWorkspace.vue'
 import { Events } from '@/constants/socket-events'
@@ -104,6 +106,100 @@ describe('dashboard domain workspaces', () => {
   })
 
   afterEach(() => vi.useRealTimers())
+
+  it('opens avatar debugging from the validation workspace using the formal live entrypoint', async () => {
+    const wrapper = mount(ValidationWorkspace, {
+      props: { modelValue: 'sandbox' },
+      global: {
+        stubs: {
+          ConversationSandbox: true,
+          ProgramReplayPanel: true,
+        },
+      },
+    })
+    const avatarTab = wrapper.get('#验证工作区-avatar-tab')
+    await avatarTab.trigger('click')
+    expect(wrapper.emitted('update:modelValue')).toEqual([['avatar']])
+    await wrapper.setProps({ modelValue: 'avatar' })
+
+    expect(wrapper.get('#验证工作区-avatar-panel').attributes('aria-labelledby')).toBe(
+      avatarTab.attributes('id'),
+    )
+    expect(wrapper.get('iframe[title="立绘调试预览"]').attributes('src')).toBe(
+      '/live.html?review=1&scene=empty&avatar=whale-maid-v1&media=muted&avatarDebug=1',
+    )
+    expect(wrapper.text()).toContain('等待预览返回状态')
+    wrapper.unmount()
+  })
+
+  it('accepts state only from its same-origin preview and waits for command acknowledgements', async () => {
+    const wrapper = mount(AvatarWorkspace)
+    const frame = wrapper.get('iframe').element as HTMLIFrameElement
+    // Exercise the message boundary without loading the actual Live runtime in happy-dom.
+    frame.removeAttribute('src')
+    document.body.appendChild(wrapper.element)
+    const frameWindow = frame.contentWindow
+    if (!frameWindow) throw new Error('Preview iframe window is unavailable')
+    const postMessage = vi.spyOn(frameWindow, 'postMessage').mockImplementation(() => {})
+    const state = {
+      modelId: 'whale-maid-v1',
+      loaded: true,
+      expression: 'standard',
+      emotion: 'neutral',
+      mode: 'auto',
+      zoom: 1,
+      mouthDemo: false,
+      socketState: 'connected',
+      livestreamState: '评审预览',
+    }
+    const report = (origin: string, source: Window, value = state) => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          origin,
+          source,
+          data: { type: 'animetta:avatar-preview-state', state: value },
+        }),
+      )
+    }
+    try {
+      await wrapper.get('iframe').trigger('load')
+      expect(postMessage).toHaveBeenCalledWith(
+        { type: 'animetta:avatar-preview-command', command: { type: 'reset' } },
+        location.origin,
+      )
+      postMessage.mockClear()
+      report('https://unrelated.example', frameWindow)
+      report(location.origin, window)
+      await wrapper.vm.$nextTick()
+      expect(wrapper.get('fieldset').attributes('disabled')).toBeDefined()
+
+      report(location.origin, frameWindow)
+      await wrapper.vm.$nextTick()
+      expect(wrapper.get('fieldset').attributes('disabled')).toBeUndefined()
+      expect(wrapper.text()).toContain('自动跟随情绪')
+      await wrapper
+        .findAll('button')
+        .find((button) => button.text() === '傻笑')!
+        .trigger('click')
+      expect(postMessage).toHaveBeenLastCalledWith(
+        {
+          type: 'animetta:avatar-preview-command',
+          command: { type: 'expression', name: 'goofy' },
+        },
+        location.origin,
+      )
+      expect(wrapper.text()).toContain('等待预览返回状态…')
+      expect(wrapper.text()).toContain('自动跟随情绪')
+      report(location.origin, frameWindow, { ...state, expression: 'goofy', mode: 'manual' })
+      await wrapper.vm.$nextTick()
+      expect(wrapper.text()).toContain('手动预览')
+      expect(wrapper.find('[role="status"]').exists()).toBe(false)
+    } finally {
+      wrapper.unmount()
+      wrapper.element.remove()
+      postMessage.mockRestore()
+    }
+  })
 
   it('reports a disconnected private sandbox without falling back to a fake reply', async () => {
     socket.connected = false

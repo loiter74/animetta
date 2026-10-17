@@ -5,6 +5,14 @@ export const PublicLiveEvents = {
   NARRATION_STATE: events.livestream.narration_state.name,
 } as const
 
+export const ChatEmotionEvents = {
+  CONTROL: events.chat.control.name,
+  SENTENCE: events.chat.sentence.name,
+  EXPRESSION: events.chat.expression.name,
+  AUDIO_STREAM_START: events.chat.audio_stream_start.name,
+  STOP_AUDIO: events.chat.stop_audio.name,
+} as const
+
 export type ConnectionStatus = 'connected' | 'disconnected' | 'connecting' | 'error'
 
 export type CommandTaskStatus =
@@ -102,7 +110,8 @@ export interface AudioWithExpressionEvent extends ChatIdentity {
   performance?: Live2DPerformancePlanV1
 }
 
-export type ChatEmotion = 'neutral' | 'happy' | 'sad' | 'angry' | 'surprised' | 'thinking'
+export const CHAT_EMOTIONS = ['neutral', 'happy', 'sad', 'angry', 'surprised', 'thinking'] as const
+export type ChatEmotion = (typeof CHAT_EMOTIONS)[number]
 
 export interface AudioStreamStartEvent extends ChatIdentity {
   stream_id: string

@@ -3,6 +3,120 @@ import { readFileSync, existsSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { DEFAULT_LIVE2D_MODEL_PROFILE, resolveLive2DModelProfile } from './modelProfiles'
 import { createCubismParameterAdapter } from './performanceProfile'
+import { createLive2DExpressionController } from './expressionController'
+
+describe('Live2D emotion expressions', () => {
+  const whale = resolveLive2DModelProfile('whale-maid-v1')
+
+  it('applies the neutral expression initially and follows supported emotions without restarting it', () => {
+    const apply = vi.fn()
+    const onChange = vi.fn()
+    const controller = createLive2DExpressionController(whale, apply, onChange)
+
+    expect(controller.snapshot).toEqual({
+      emotion: 'neutral',
+      expression: 'standard',
+      mode: 'auto',
+    })
+    controller.setEmotion(' HAPPY ')
+    controller.setEmotion('happy')
+    controller.setEmotion('amused')
+    expect(controller.snapshot).toEqual({ emotion: 'amused', expression: 'goofy', mode: 'auto' })
+    expect(apply.mock.calls).toEqual([['standard'], ['goofy']])
+    expect(onChange).toHaveBeenCalledTimes(3)
+    controller.setEmotion('sad')
+    expect(apply).toHaveBeenLastCalledWith('standard')
+  })
+
+  it('remembers emotion during a manual override and resumes the latest emotion immediately', () => {
+    const apply = vi.fn()
+    const controller = createLive2DExpressionController(whale, apply)
+    controller.setManual('standard')
+    controller.setEmotion('excited')
+    expect(controller.snapshot).toEqual({
+      emotion: 'excited',
+      expression: 'standard',
+      mode: 'manual',
+    })
+    expect(apply).toHaveBeenCalledOnce()
+    controller.setManual(null)
+    expect(controller.snapshot).toEqual({ emotion: 'excited', expression: 'goofy', mode: 'auto' })
+    expect(apply).toHaveBeenLastCalledWith('goofy')
+  })
+
+  it('ignores unknown manual expressions and safely returns unknown emotions to neutral', () => {
+    const apply = vi.fn()
+    const controller = createLive2DExpressionController(whale, apply)
+    controller.setEmotion('joy')
+    controller.setManual('missing-expression')
+    expect(controller.snapshot.mode).toBe('auto')
+    controller.setEmotion('missing-emotion')
+    expect(controller.snapshot).toEqual({
+      emotion: 'neutral',
+      expression: 'standard',
+      mode: 'auto',
+    })
+    controller.setEmotion('none')
+    expect(apply.mock.calls).toEqual([['standard'], ['goofy'], ['standard']])
+  })
+
+  it('resets both the manual selection and remembered emotion', () => {
+    const controller = createLive2DExpressionController(whale, vi.fn())
+    controller.setEmotion('happy')
+    controller.setManual('goofy')
+    controller.reset()
+    expect(controller.snapshot).toEqual({
+      emotion: 'neutral',
+      expression: 'standard',
+      mode: 'auto',
+    })
+    expect(Object.isFrozen(controller.snapshot)).toBe(true)
+  })
+
+  it('stops state notifications and model writes after disposal', () => {
+    const apply = vi.fn()
+    const onChange = vi.fn()
+    const controller = createLive2DExpressionController(whale, apply, onChange)
+    const initial = controller.snapshot
+    controller.dispose()
+    controller.setEmotion('happy')
+    controller.setManual('goofy')
+    controller.setManual(null)
+    controller.reset()
+    expect(controller.snapshot).toBe(initial)
+    expect(apply).toHaveBeenCalledOnce()
+    expect(onChange).toHaveBeenCalledOnce()
+  })
+
+  it('does not invent expression assets for a model without expression declarations', () => {
+    const apply = vi.fn()
+    const controller = createLive2DExpressionController(DEFAULT_LIVE2D_MODEL_PROFILE, apply)
+    controller.setEmotion('happy')
+    controller.setManual('goofy')
+    controller.setManual(null)
+    expect(controller.snapshot).toEqual({ emotion: 'neutral', expression: '', mode: 'auto' })
+    expect(apply).not.toHaveBeenCalled()
+  })
+
+  it('never applies an expression missing from the profile even when a mapping is invalid', () => {
+    const apply = vi.fn()
+    const controller = createLive2DExpressionController(
+      {
+        ...whale,
+        emotionExpressions: { neutral: 'missing', happy: 'also-missing' },
+      },
+      apply,
+    )
+    controller.setEmotion('happy')
+    controller.setManual(null)
+    expect(controller.snapshot).toEqual({
+      emotion: 'neutral',
+      expression: 'standard',
+      mode: 'auto',
+    })
+    expect(apply.mock.calls).toEqual([['standard']])
+  })
+})
 
 describe('Live2D performance model adapter', () => {
   it('reads and writes known Cubism parameters with model bounds', () => {
@@ -75,6 +189,9 @@ describe('versioned Live2D model assets', () => {
         expect(Number.isFinite(mouthRest), name).toBe(true)
         expect(mouthRest, name).toBeGreaterThanOrEqual(0)
         expect(mouthRest, name).toBeLessThanOrEqual(1)
+      }
+      for (const name of Object.values(profile.emotionExpressions ?? {})) {
+        expect(profile.expressions?.[name], name).toBeDefined()
       }
     }
   })

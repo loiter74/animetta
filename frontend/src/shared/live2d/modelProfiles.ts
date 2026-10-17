@@ -53,6 +53,22 @@ const WHALE_MAID_MODEL_PROFILE: Live2DModelProfile = {
     standard: { label: '标准表情', mouthRest: 0 },
     goofy: { label: '傻笑', mouthRest: 0.82 },
   },
+  emotionExpressions: {
+    neutral: 'standard',
+    happy: 'goofy',
+    joy: 'goofy',
+    excited: 'goofy',
+    amused: 'goofy',
+    relieved: 'goofy',
+    sad: 'standard',
+    angry: 'standard',
+    surprised: 'standard',
+    thinking: 'standard',
+    confident: 'standard',
+    focused: 'standard',
+    alert: 'standard',
+    calm: 'standard',
+  },
 }
 
 export function resolveLive2DModelProfile(id: string | null): Live2DModelProfile {
