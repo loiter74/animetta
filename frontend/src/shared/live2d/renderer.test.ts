@@ -8,6 +8,7 @@ const fixtures = vi.hoisted(() => {
     options: Record<string, unknown>
     screen: { width: number; height: number }
     renderer: { resolution: number; resize: ReturnType<typeof vi.fn> }
+    resize: ReturnType<typeof vi.fn>
   }[] = []
   const limits = { renderbuffer: 8192, viewport: [8192, 8192] }
   function createModel(parameterIds = ['ParamA']) {
@@ -70,6 +71,12 @@ vi.mock('pixi.js', () => ({
       off: (_event: string, listener: () => void) => this.listeners.delete(listener),
     }
     stage = { addChild: vi.fn() }
+    resize = vi.fn(() => {
+      const viewport = this.options.resizeTo as HTMLElement
+      this.screen.width = viewport.clientWidth
+      this.screen.height = viewport.clientHeight
+      this.listeners.forEach((listener) => listener())
+    })
     stop = vi.fn()
     destroy = vi.fn()
     constructor(options: Record<string, unknown>) {
@@ -176,6 +183,53 @@ describe('instance Live2D renderer', () => {
       expect(resolution).toBeLessThanOrEqual(2)
     }
     renderer.dispose()
+  })
+
+  it('refits an embedded model when its container narrows without a window resize', async () => {
+    let notify = () => {}
+    const observe = vi.fn()
+    const disconnect = vi.fn()
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(callback: () => void) {
+          notify = callback
+        }
+        observe = observe
+        disconnect = disconnect
+      },
+    )
+    const options = elements()
+    let width = 360
+    vi.spyOn(options.resizeTo, 'clientWidth', 'get').mockImplementation(() => width)
+    vi.spyOn(options.resizeTo, 'clientHeight', 'get').mockReturnValue(560)
+    const model = fixtures.createModel()
+    model.width = 800
+    model.height = 1200
+    fixtures.from.mockResolvedValueOnce(model)
+    const renderer = createLive2DRenderer({
+      ...options,
+      profile: { ...mao, framing: { scale: 1, x: 0.5, y: 0.5 } },
+    })
+    await renderer.ready
+    expect(observe).toHaveBeenCalledExactlyOnceWith(options.resizeTo)
+    notify()
+    const normalScale = model.scale.set.mock.lastCall![0] as number
+    width = 260
+    notify()
+    const narrowScale = model.scale.set.mock.lastCall![0] as number
+    const [x, y] = model.position.set.mock.lastCall! as [number, number]
+    expect(fixtures.apps[0].screen).toEqual({ width: 260, height: 560 })
+    expect(narrowScale).toBeLessThan(normalScale)
+    expect(x - (model.width * narrowScale) / 2).toBeGreaterThanOrEqual(0)
+    expect(x + (model.width * narrowScale) / 2).toBeLessThanOrEqual(260)
+    expect(y - (model.height * narrowScale) / 2).toBeGreaterThanOrEqual(0)
+    expect(y + (model.height * narrowScale) / 2).toBeLessThanOrEqual(560)
+    renderer.dispose()
+    expect(disconnect).toHaveBeenCalledOnce()
+    const resizeCalls = fixtures.apps[0].resize.mock.calls.length
+    notify()
+    expect(fixtures.apps[0].resize).toHaveBeenCalledTimes(resizeCalls)
   })
 
   it('disables SDK head oscillation only for models with authored breathing', async () => {

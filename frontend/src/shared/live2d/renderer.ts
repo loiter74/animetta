@@ -269,6 +269,15 @@ export function createLive2DRenderer(options: Live2DRendererOptions): Live2DRend
       }
       renderer.on('resize', resize)
       cleanups.push(() => renderer.off('resize', resize))
+      if (output === 'responsive' && !('innerWidth' in viewport)) {
+        // Pixi's resize plugin listens to the window, while embedded panels
+        // can change size independently of it.
+        const observer = new ResizeObserver(() => {
+          if (!disposed) app?.resize()
+        })
+        observer.observe(viewport)
+        cleanups.push(() => observer.disconnect())
+      }
       options.canvas.dataset.renderState = 'live'
       options.onState?.('live')
     } catch (error) {
