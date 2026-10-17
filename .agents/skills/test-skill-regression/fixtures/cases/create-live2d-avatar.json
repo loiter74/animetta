@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "create-live2d-avatar-evidence-plan",
+  "skill": "create-live2d-avatar",
+  "task": "使用 $create-live2d-avatar 读取 request.md，在 result/plan.md 完成其中的离线制作与验收计划。只读取目标 Skill、其参考资料和当前副本；只写上述一个文件，不访问产品文件、其他运行目录、编辑器或浏览器，不生成图片，不执行建模或修改其他文件。",
+  "baseline": "../baselines/create-live2d-avatar-evidence-plan",
+  "run_count": 2,
+  "allowed_paths": ["result/plan.md"],
+  "require_content_identical": false,
+  "invariants": [
+    {
+      "path": "result/plan.md",
+      "contains": ["Core", "UV", ".moc3", "原画", "口腔", "3840"],
+      "not_contains": ["已完成商业级建模", "已经达到商业级", "无需模型文件即可验收", "直接覆盖原模型"]
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "立绘 Live2D 化"
+  short_description: "复用原画分层、局部绑定与原生导出流程，验收实际 Live2D 模型"
+  default_prompt: "使用 $create-live2d-avatar 将选定立绘制作或继续精修为可驱动 Live2D，保留已有确认并验证实际导出结果。"
