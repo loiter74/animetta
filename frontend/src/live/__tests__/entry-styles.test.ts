@@ -30,6 +30,13 @@ describe('live review entry styles', () => {
     expect(liveMarkup).toContain('id="subtitleText"')
   })
 
+  it('groups the existing audio and subtitle actions in the responsive playback rail', () => {
+    expect(liveMarkup).toContain('class="live-controls" aria-label="直播播放控制"')
+    expect(liveMarkup).toContain('id="enableAudio"')
+    expect(liveMarkup).toContain('id="toggleSubtitles"')
+    expect(liveMarkup).toContain('aria-pressed="true"')
+  })
+
   it('provides shared public activity and audio ownership evidence', () => {
     expect(liveMarkup).toContain('id="publicActivityPanel"')
     expect(liveMarkup).toContain('id="publicActivityList"')

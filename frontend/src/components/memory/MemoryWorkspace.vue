@@ -163,7 +163,7 @@ watch(
 </script>
 
 <template>
-  <main class="workspace-body" data-testid="memory-workspace">
+  <main class="workspace-body min-w-0" data-testid="memory-workspace">
     <header class="flex shrink-0 flex-wrap items-center justify-between gap-4">
       <div>
         <h1 class="workspace-title">原子知识图谱</h1>
@@ -175,7 +175,7 @@ watch(
     </header>
 
     <div
-      class="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-c-text-dim"
+      class="flex shrink-0 flex-wrap items-center gap-x-5 gap-y-2 border-y border-c-border py-3 text-xs text-c-text-dim"
       aria-label="知识统计"
     >
       <span
@@ -214,12 +214,12 @@ watch(
       <p v-if="store.job.error" class="mt-2 text-xs text-c-error">{{ store.job.error }}</p>
     </section>
 
-    <section class="glass flex min-h-0 flex-1 flex-col overflow-hidden">
-      <div class="flex shrink-0 flex-wrap items-center gap-2 border-b border-c-border p-3">
+    <section class="glass flex min-w-0 shrink-0 flex-col overflow-hidden lg:min-h-0 lg:flex-1">
+      <div class="flex shrink-0 flex-wrap items-center gap-2 border-b border-c-border p-4">
         <input
           v-if="view === 'list'"
           :value="store.searchQuery"
-          class="control-field min-w-44 flex-1"
+          class="control-field min-w-0 w-full sm:min-w-44 sm:flex-1"
           placeholder="搜索标题、摘要或正文"
           @input="store.setSearch(($event.target as HTMLInputElement).value)"
         />
@@ -272,17 +272,21 @@ watch(
         <button class="ml-2 underline" type="button" @click="refresh()">重试</button>
       </p>
 
-      <div class="grid min-h-0 flex-1 lg:grid-cols-[minmax(0,3fr)_minmax(320px,2fr)]">
-        <div class="min-h-0 overflow-hidden border-b border-c-border lg:border-b-0 lg:border-r">
+      <div
+        class="grid min-w-0 lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.55fr)]"
+      >
+        <div
+          class="h-[52dvh] min-h-64 overflow-hidden border-b border-c-border lg:h-auto lg:min-h-0 lg:border-b-0 lg:border-r"
+        >
           <div
             v-if="store.loading"
-            class="grid h-full min-h-80 place-items-center text-sm text-c-text-muted"
+            class="grid h-full min-h-0 place-items-center px-6 text-sm text-c-text-muted"
           >
             正在读取记忆
           </div>
           <div
             v-else-if="view === 'graph' ? !hasFacts : !store.filteredPages.length"
-            class="grid h-full min-h-80 place-items-center px-6 text-center"
+            class="grid h-full min-h-0 place-items-center px-6 text-center"
           >
             <div>
               <p class="text-sm text-c-text-secondary">
@@ -297,7 +301,7 @@ watch(
               </p>
             </div>
           </div>
-          <div v-else-if="view === 'list'" class="h-full overflow-y-auto">
+          <div v-else-if="view === 'list'" class="h-full overflow-y-auto overscroll-contain">
             <button
               v-for="page in store.filteredPages"
               :key="page.id"
@@ -332,7 +336,7 @@ watch(
           </div>
           <MemoryGraph
             v-else
-            class="h-full min-h-112"
+            class="h-full min-h-0"
             :pages="store.wikiPages"
             knowledge-only
             :selected-id="selected?.id"
@@ -341,7 +345,9 @@ watch(
           />
         </div>
 
-        <aside class="min-h-0 overflow-y-auto bg-c-panel/45 p-5 sm:p-6">
+        <aside
+          class="min-h-0 min-w-0 break-words bg-c-panel/45 p-5 sm:p-6 lg:overflow-y-auto lg:overscroll-contain"
+        >
           <div v-if="!selected" class="grid min-h-72 place-items-center text-center">
             <div>
               <p class="text-sm text-c-text-secondary">点击实体或关系查看知识</p>

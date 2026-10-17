@@ -81,21 +81,15 @@
       </aside>
       <audio id="singingAudio" preload="metadata" hidden></audio>
       <audio id="bgmAudio" preload="auto" hidden></audio>
-      <aside class="absolute bottom-4 left-1/2 z-30 flex -translate-x-1/2 gap-2">
+      <aside class="live-controls" aria-label="直播播放控制">
         <span id="audioUnlockPrompt">
-          <button
-            id="enableAudio"
-            type="button"
-            class="btn-secondary min-h-11 whitespace-nowrap px-5"
-          >
-            开启声音
-          </button>
+          <button id="enableAudio" type="button" class="btn-accent min-h-11 px-4">开启声音</button>
         </span>
         <button
           id="toggleSubtitles"
           type="button"
           aria-pressed="true"
-          class="btn-secondary min-h-11 whitespace-nowrap px-5"
+          class="btn-ghost min-h-11 px-4 aria-pressed:bg-c-card aria-pressed:text-c-text"
         >
           字幕已开启
         </button>

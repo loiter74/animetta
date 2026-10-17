@@ -46,39 +46,39 @@ function sendMessage(): void {
 <template>
   <div
     data-testid="chat-input-bar"
-    class="border border-c-border rounded-lg backdrop-blur-md flex items-center focus-within:border-c-border-accent focus-within:shadow-[0_0_0_3px_var(--c-accent-soft)]"
-    :style="{
-      background: appearance === 'surface' ? 'var(--c-panel)' : 'rgba(36, 21, 56, 0.35)',
-      touchAction: 'manipulation',
-    }"
-    :class="
-      isMobile
-        ? 'mobile-input-bar gap-3 px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] w-full'
-        : 'gap-2.5 pl-5 pr-4 py-4'
-    "
+    class="flex w-full min-w-0 items-end gap-3 rounded-xl border border-c-border p-3 transition-colors duration-150 ease-out-expo touch-manipulation focus-within:border-c-border-accent focus-within:ring-2 focus-within:ring-c-accent/20"
+    :class="[
+      appearance === 'surface' ? 'bg-c-panel' : 'bg-c-surface/85 backdrop-blur-md',
+      { 'mobile-input-bar pb-[max(0.75rem,env(safe-area-inset-bottom))]': isMobile },
+    ]"
     @pointerdown.capture="unlockAudioPlayback"
     @keydown.capture="unlockAudioPlayback"
   >
     <textarea
       ref="textareaRef"
       v-model="inputText"
-      class="flex-1 bg-transparent border-0 outline-none text-sm text-c-text placeholder-c-text-muted resize-none min-h-10 max-h-30"
-      :class="isMobile ? 'mobile-input-textarea leading-snug' : ''"
+      class="min-h-10 min-w-0 max-h-30 flex-1 resize-none border-0 bg-transparent py-2 text-sm leading-6 text-c-text outline-none placeholder:text-c-text-muted"
+      :class="{ 'mobile-input-textarea': isMobile }"
       :placeholder="placeholder"
+      aria-label="消息内容"
       rows="1"
       @input="handleInput"
       @keydown="handleKeydown"
     />
-    <VoiceButton v-if="showVoice" :class="isMobile ? '!w-12 !h-12' : ''" />
-    <button
-      class="bg-c-accent hover:bg-c-accent-hover text-white rounded-lg flex items-center justify-center transition-all duration-200 disabled:bg-c-card disabled:text-c-text-muted disabled:cursor-not-allowed"
-      :class="isMobile ? 'w-12 h-12' : 'w-8 h-8'"
-      :disabled="!inputText.trim()"
-      @click="sendMessage"
-    >
-      <svg width="14" height="14" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-      </svg>
-    </button>
+    <div class="flex shrink-0 items-center gap-2">
+      <VoiceButton v-if="showVoice" type="button" aria-label="切换语音输入" />
+      <button
+        class="btn-accent h-10 w-10 shrink-0 p-0"
+        type="button"
+        aria-label="发送消息"
+        title="发送消息（Enter）"
+        :disabled="!inputText.trim()"
+        @click="sendMessage"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+        </svg>
+      </button>
+    </div>
   </div>
 </template>

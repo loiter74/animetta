@@ -27,6 +27,7 @@ const isRecording = ref(false)
 const isStreaming = ref(false)
 const isSpeaking = ref(false)
 const evidence = ref<Array<{ label: string; value: string }>>([])
+const evidenceOpen = ref(false)
 const isCheckingRuntime = ref(false)
 let sequence = 0
 let activeCommand: SandboxRequestEvent | null = null
@@ -205,12 +206,14 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section class="grid h-full min-h-0 gap-3 lg:grid-cols-[minmax(0,3fr)_minmax(300px,2fr)]">
+  <section
+    class="grid h-full min-h-0 min-w-0 grid-rows-[minmax(20rem,1fr)_auto] gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,0.42fr)] lg:grid-rows-1"
+  >
     <div class="glass flex min-h-0 flex-col overflow-hidden">
-      <header class="shrink-0 border-b border-c-border px-5 py-4">
+      <header class="shrink-0 border-b border-c-border px-4 py-4 sm:px-5">
         <div class="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 class="text-sm font-semibold">私密对话演练</h1>
+            <h2 class="text-sm font-semibold">私密对话演练</h2>
             <p class="mt-1 text-xs text-c-text-muted">
               调用当前运行时模型，不进入直播、语音或记忆链路
             </p>
@@ -223,7 +226,7 @@ onUnmounted(() => {
         </div>
       </header>
 
-      <div class="min-h-0 flex-1 space-y-3 overflow-y-auto px-5 py-4" aria-live="polite">
+      <div class="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-4 sm:px-5" aria-live="polite">
         <div v-if="!messages.length" class="grid min-h-52 place-items-center text-center">
           <div>
             <p class="text-sm text-c-text-secondary">尚无演练记录</p>
@@ -254,7 +257,7 @@ onUnmounted(() => {
       <footer class="shrink-0 border-t border-c-border bg-c-surface/55 p-4">
         <textarea
           v-model="draft"
-          rows="3"
+          rows="2"
           class="w-full resize-none rounded-xl border border-c-border bg-c-panel/55 px-3 py-2 text-sm outline-none transition-colors duration-200 placeholder:text-c-text-muted focus:border-c-border-accent"
           placeholder="输入要验证的对话，内容不会自动发送"
           @keydown.ctrl.enter.prevent="runPrivateExercise"
@@ -298,24 +301,42 @@ onUnmounted(() => {
       </footer>
     </div>
 
-    <aside class="glass min-h-0 overflow-y-auto px-5 py-4">
-      <h2 class="text-sm font-semibold">执行证据</h2>
-      <p class="mt-1 text-xs text-c-text-muted">用于确认演练没有进入公开链路</p>
-      <dl v-if="evidence.length" class="mt-4 divide-y divide-c-border">
-        <div
-          v-for="item in evidence"
-          :key="item.label"
-          class="flex items-center justify-between gap-4 py-3 text-xs"
-        >
-          <dt class="text-c-text-muted">{{ item.label }}</dt>
-          <dd class="font-mono text-c-text-secondary">{{ item.value }}</dd>
+    <aside class="glass flex min-h-0 flex-col overflow-hidden">
+      <header class="flex shrink-0 items-center justify-between gap-3 px-4 py-4 sm:px-5">
+        <div>
+          <h2 class="text-sm font-semibold">执行证据</h2>
+          <p class="mt-1 text-xs text-c-text-muted">用于确认演练没有进入公开链路</p>
         </div>
-      </dl>
+        <button
+          class="btn-ghost shrink-0 lg:hidden"
+          type="button"
+          :aria-expanded="evidenceOpen"
+          aria-controls="sandbox-execution-evidence"
+          @click="evidenceOpen = !evidenceOpen"
+        >
+          {{ evidenceOpen ? '收起' : '展开' }}
+        </button>
+      </header>
       <div
-        v-else
-        class="mt-4 rounded-xl border border-c-border bg-c-panel/35 p-4 text-xs text-c-text-muted"
+        id="sandbox-execution-evidence"
+        class="min-h-0 overflow-y-auto border-t border-c-border px-4 pb-4 sm:px-5 lg:block lg:flex-1"
+        :class="evidenceOpen ? 'max-h-52 lg:max-h-none' : 'hidden'"
       >
-        运行一次私密演练后，这里会记录模型身份与公开链路隔离状态。
+        <dl v-if="evidence.length" class="divide-y divide-c-border">
+          <div
+            v-for="item in evidence"
+            :key="item.label"
+            class="flex items-center justify-between gap-4 py-3 text-xs"
+          >
+            <dt class="text-c-text-muted">{{ item.label }}</dt>
+            <dd class="min-w-0 break-words text-right font-mono text-c-text-secondary">
+              {{ item.value }}
+            </dd>
+          </div>
+        </dl>
+        <div v-else class="mt-4 rounded-xl bg-c-panel/35 p-4 text-xs leading-5 text-c-text-muted">
+          运行一次私密演练后，这里会记录模型身份与公开链路隔离状态。
+        </div>
       </div>
     </aside>
   </section>

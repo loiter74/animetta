@@ -30,10 +30,10 @@ describe('InputBar', () => {
     mockUnlockAudioPlayback.mockClear()
   })
 
-  it('renders textarea and send button', () => {
+  it('names the message field and send action', () => {
     const wrapper = createWrapper()
-    expect(wrapper.find('textarea').exists()).toBe(true)
-    expect(wrapper.find('button').exists()).toBe(true)
+    expect(wrapper.get('textarea').attributes('aria-label')).toBe('消息内容')
+    expect(wrapper.get('button[aria-label="发送消息"]').attributes('type')).toBe('button')
   })
 
   it('uses the theme panel surface when requested', () => {
@@ -42,9 +42,7 @@ describe('InputBar', () => {
       global: { stubs: { VoiceButton: true } },
     })
 
-    expect(wrapper.get('[data-testid="chat-input-bar"]').attributes('style')).toContain(
-      'background: var(--c-panel)',
-    )
+    expect(wrapper.get('[data-testid="chat-input-bar"]').classes()).toContain('bg-c-panel')
   })
 
   it('send button is disabled when input is empty', () => {

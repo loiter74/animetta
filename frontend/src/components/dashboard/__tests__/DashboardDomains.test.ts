@@ -213,6 +213,22 @@ describe('dashboard domain workspaces', () => {
     expect(wrapper.text()).not.toContain('本地演练已记录')
   })
 
+  it('opens sandbox evidence while preserving the unsent private draft', async () => {
+    const wrapper = mount(ConversationSandbox, { props: { modelValue: '保留这条待验证输入' } })
+    const disclosure = wrapper.get('button[aria-controls="sandbox-execution-evidence"]')
+    expect(disclosure.attributes('aria-expanded')).toBe('false')
+
+    await disclosure.trigger('click')
+
+    expect(disclosure.attributes('aria-expanded')).toBe('true')
+    expect((wrapper.get('textarea').element as HTMLTextAreaElement).value).toBe(
+      '保留这条待验证输入',
+    )
+    expect(wrapper.get('#sandbox-execution-evidence').text()).toContain('运行一次私密演练后')
+    expect(socket.emit).not.toHaveBeenCalledWith(Events.CHAT.SANDBOX_REQUEST, expect.anything())
+    wrapper.unmount()
+  })
+
   it('renders correlated private model chunks and execution evidence', async () => {
     const wrapper = mount(ConversationSandbox, { props: { modelValue: '验证真实模型' } })
     await wrapper

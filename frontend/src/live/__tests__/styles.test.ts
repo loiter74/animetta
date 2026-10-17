@@ -5,12 +5,13 @@ import { describe, expect, it } from 'vitest'
 const liveStyles = readFileSync(resolve(process.cwd(), 'src/live/styles.css'), 'utf8')
 
 describe('standalone live panel styles', () => {
-  it('keeps the desktop panel inside the right half of the review viewport', () => {
-    expect(liveStyles).toMatch(/\.danmaku-panel\s*\{[^}]*width:\s*min\(500px,/s)
+  it('keeps desktop chat compact at the outer edge of the stage', () => {
+    expect(liveStyles).toMatch(/\.danmaku-panel\s*\{[^}]*width:\s*min\(380px,\s*28vw\)/s)
+    expect(liveStyles).toMatch(/\.danmaku-panel\s*\{[^}]*right:\s*var\(--live-gutter\)/s)
   })
 
   it('caps the danmaku list above the Live2D model', () => {
-    expect(liveStyles).toMatch(/\.danmaku-list\s*\{[^}]*max-height:\s*min\(460px,\s*28vh\)/s)
+    expect(liveStyles).toMatch(/\.danmaku-list\s*\{[^}]*max-height:\s*min\(360px,\s*32dvh\)/s)
   })
 
   it('composites the Live2D model in front of the danmaku panel', () => {
@@ -26,32 +27,52 @@ describe('standalone live panel styles', () => {
   })
 
   it('uses existing theme tokens for gift and super-chat labels', () => {
-    expect(liveStyles).toMatch(/\.danmaku-kind--gift\s*\{[^}]*var\(--c-success\)/s)
-    expect(liveStyles).toMatch(/\.danmaku-kind--super-chat\s*\{[^}]*var\(--c-accent\)/s)
+    expect(liveStyles).toMatch(/\.danmaku-kind--gift\s*\{[^}]*@apply[^;]*text-c-success/s)
+    expect(liveStyles).toMatch(/\.danmaku-kind--super-chat\s*\{[^}]*@apply[^;]*text-c-accent/s)
   })
 
   it('keeps the public subtitle above the model using theme tokens', () => {
     expect(liveStyles).toMatch(/\.subtitle-overlay\s*\{[^}]*z-index:\s*20/s)
-    expect(liveStyles).toMatch(/\.subtitle-overlay\s*\{[^}]*var\(--c-panel\)/s)
+    expect(liveStyles).toMatch(/\.subtitle-overlay\s*\{[^}]*@apply[^;]*bg-c-panel\/95/s)
     expect(liveStyles).toMatch(
-      /\.subtitle-overlay p\s*\{[^}]*font-size:\s*clamp\(30px,\s*3\.4vw,\s*40px\)/s,
+      /\.subtitle-overlay p\s*\{[^}]*font-size:\s*clamp\(24px,\s*2\.2vw,\s*36px\)/s,
     )
     expect(liveStyles).toMatch(/\.subtitle-overlay p\s*\{[^}]*font-weight:\s*500/s)
   })
 
-  it('keeps mobile chrome inside the dynamic viewport without covering the panel heading', () => {
+  it('stacks portrait chat, subtitles and controls below the clear stage area', () => {
     expect(liveStyles).toMatch(/\.live-shell\s*\{[^}]*height:\s*100dvh/s)
+    const portraitStyles = liveStyles.split('@media (max-width: 760px), (max-aspect-ratio: 4/3)')[1]
+    expect(portraitStyles).toMatch(
+      /\.live-shell\s*\{[^}]*grid-template-rows:\s*minmax\(0,\s*1fr\) auto auto auto/s,
+    )
+    expect(portraitStyles).toMatch(
+      /\.danmaku-panel\s*\{[^}]*grid-row:\s*2[^}]*max-height:\s*22dvh/s,
+    )
+    expect(portraitStyles).toMatch(/\.subtitle-overlay\s*\{[^}]*grid-row:\s*3/s)
+    expect(portraitStyles).toMatch(/\.live-controls\s*\{[^}]*grid-row:\s*4/s)
     expect(liveStyles).toMatch(
-      /@media \(max-width: 600px\)[\s\S]*\.danmaku-panel\s*\{[^}]*top:\s*62px/s,
+      /\.subtitle-overlay\s*\{[^}]*max-height:\s*32dvh[^}]*overflow-y:\s*auto/s,
+    )
+  })
+
+  it('reserves one shared safe area for subtitles and playback controls', () => {
+    expect(liveStyles).toContain('--live-safe-bottom: max(16px, env(safe-area-inset-bottom))')
+    expect(liveStyles).toContain(
+      '--live-subtitle-bottom: calc(var(--live-safe-bottom) + var(--live-controls-height) + 12px)',
+    )
+    expect(liveStyles).toMatch(/\.live-controls\s*\{[^}]*bottom:\s*var\(--live-safe-bottom\)/s)
+    expect(liveStyles).toMatch(
+      /\.subtitle-overlay\s*\{[^}]*bottom:\s*var\(--live-subtitle-bottom\)/s,
+    )
+  })
+
+  it('caps side panels on short desktop viewports without overriding portrait stacking', () => {
+    expect(liveStyles).toContain(
+      '@media (min-width: 761px) and (max-height: 600px) and (min-aspect-ratio: 4/3)',
     )
     expect(liveStyles).toMatch(
-      /@media \(max-width: 600px\)[\s\S]*\.status-rail\s*\{[^}]*right:\s*16px[^}]*flex-wrap:\s*nowrap/s,
-    )
-    expect(liveStyles).toMatch(
-      /@media \(max-width: 600px\)[\s\S]*\.status-pill\s*\{[^}]*font-size:\s*12px/s,
-    )
-    expect(liveStyles).toMatch(
-      /@media \(max-width: 600px\)[\s\S]*\.subtitle-overlay p\s*\{[^}]*font-size:\s*clamp\(16px,\s*4\.5vw,\s*20px\)/s,
+      /max-height: 600px[\s\S]*\.danmaku-panel\s*\{[^}]*max-height:\s*42dvh/s,
     )
   })
 })

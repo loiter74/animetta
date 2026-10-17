@@ -86,26 +86,33 @@ onUnmounted(() => window.removeEventListener('message', onPreviewMessage))
 </script>
 
 <template>
-  <section class="flex min-h-0 flex-col gap-4 text-c-text" data-testid="avatar-workspace">
-    <header>
-      <h1 class="workspace-title">立绘调试</h1>
+  <section
+    class="flex h-full min-h-0 flex-col gap-4 overflow-y-auto text-c-text lg:overflow-hidden"
+    data-testid="avatar-workspace"
+  >
+    <header class="shrink-0">
+      <h2 class="text-base font-semibold">立绘调试</h2>
       <p class="workspace-copy">模拟与手动操作只影响此预览，直播默认跟随公开情绪</p>
     </header>
 
     <div
-      class="grid min-h-0 gap-4 sm:grid-cols-[minmax(0,1fr)_280px] xl:grid-cols-[minmax(0,1fr)_320px]"
+      class="grid shrink-0 gap-4 lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)] lg:overflow-hidden"
     >
-      <div class="overflow-hidden rounded-xl border border-c-border bg-c-surface">
+      <div
+        class="h-[50dvh] min-h-48 overflow-hidden rounded-xl border border-c-border bg-c-surface lg:h-full lg:min-h-0"
+      >
         <iframe
           ref="preview"
           src="/live.html?review=1&scene=empty&avatar=whale-maid-v1&media=muted&avatarDebug=1"
           title="立绘调试预览"
-          class="h-[70vh] min-h-120 w-full border-0"
+          class="block h-full w-full border-0"
           @load="onPreviewLoad"
         />
       </div>
 
-      <aside class="flex flex-col gap-4 rounded-xl border border-c-border bg-c-panel p-4">
+      <aside
+        class="flex flex-col gap-4 rounded-xl border border-c-border bg-c-panel p-4 lg:min-h-0 lg:overflow-y-auto"
+      >
         <div>
           <h2 class="text-sm font-semibold">当前状态</h2>
           <dl class="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 text-sm">

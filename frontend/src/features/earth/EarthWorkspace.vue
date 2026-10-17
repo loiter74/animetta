@@ -134,64 +134,78 @@ onBeforeUnmount(() => {
 
 <template>
   <section
-    class="flex flex-1 min-h-0 bg-c-bg text-c-text overflow-hidden"
+    class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto bg-c-bg p-4 text-c-text lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:overflow-hidden lg:p-6"
     data-testid="earth-workspace"
     :data-playback-task="playback.taskId"
     :data-playback-state="playback.status"
     :data-playback-count="playback.count"
     :data-playback-at="playback.at"
   >
-    <div class="relative flex-1 min-w-0" aria-label="三维地球">
-      <div
-        ref="container"
-        class="absolute inset-0"
-        @pointerdown="pause"
-        @wheel.passive="pause"
-        @keydown="pause"
-        @click="select"
-      />
-      <EarthAvatar
-        v-if="enabledAvatar"
-        ref="avatar"
-        data-testid="earth-companion"
-        class="absolute right-[3%] bottom-0 w-[34%] max-w-104 h-[62%] max-h-140 pointer-events-none"
-      />
-      <div class="absolute top-5 left-5 bg-c-panel/95 rounded-xl px-4 py-3 text-sm">
-        <span class="text-c-accent">◎ 私密探索</span
-        ><span class="ml-3 text-c-text-muted">拖动即暂停</span>
+    <div
+      class="flex min-h-112 min-w-0 shrink-0 flex-col overflow-hidden rounded-xl border border-c-border bg-c-surface lg:min-h-0"
+      aria-label="三维地球"
+    >
+      <div class="relative min-h-72 flex-1 lg:min-h-0">
+        <div
+          ref="container"
+          class="absolute inset-0"
+          @pointerdown="pause"
+          @wheel.passive="pause"
+          @keydown="pause"
+          @click="select"
+        />
+        <EarthAvatar
+          v-if="enabledAvatar"
+          ref="avatar"
+          data-testid="earth-companion"
+          class="pointer-events-none absolute bottom-0 right-[3%] h-[68%] max-h-140 w-[38%] max-w-104"
+        />
+        <div
+          class="absolute left-4 top-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-c-border bg-c-panel/95 px-3 py-2 text-xs backdrop-blur-md"
+        >
+          <span class="font-semibold text-c-accent">◎ 私密探索</span>
+          <span class="text-c-text-dim">拖动即暂停</span>
+        </div>
       </div>
       <div
-        class="absolute bottom-13 left-6 box-border w-[calc(63%_-_3rem)] max-w-182 bg-c-panel/95 backdrop-blur-xl rounded-xl p-5 shadow-xl"
+        class="max-h-52 shrink-0 overflow-y-auto border-t border-c-border bg-c-panel p-4 sm:p-5"
         aria-live="polite"
       >
-        <div class="flex justify-between gap-3 mb-3">
-          <span class="text-c-accent font-semibold">Animetta</span
-          ><span class="text-xs text-c-text-muted" data-testid="earth-phase"
+        <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <span class="text-xs font-semibold text-c-accent">Animetta</span
+          ><span class="text-xs text-c-text-dim" data-testid="earth-phase"
             >{{ phase }}<template v-if="remaining"> · {{ remaining }} 秒</template></span
           >
         </div>
-        <p class="m-0 text-base xl:text-lg leading-relaxed">{{ explanation }}</p>
+        <p class="m-0 text-sm leading-6">{{ explanation }}</p>
       </div>
     </div>
     <aside
-      class="w-72 xl:w-88 shrink-0 bg-c-surface p-5 flex flex-col gap-4 overflow-y-auto"
+      class="flex min-h-0 min-w-0 shrink-0 flex-col gap-5 overflow-y-auto rounded-xl border border-c-border bg-c-surface p-4 sm:p-5"
       aria-label="探索对话"
     >
-      <div>
-        <p class="text-xs text-c-text-muted tracking-widest">我们正在看</p>
-        <h1 class="text-2xl m-0">{{ title }}</h1>
-        <p class="text-sm text-c-text-dim leading-relaxed">
+      <header class="shrink-0 border-b border-c-border pb-4">
+        <p class="m-0 text-xs text-c-text-muted">我们正在看</p>
+        <h1 class="mb-0 mt-2 text-xl font-semibold leading-7 tracking-tight">{{ title }}</h1>
+        <p class="mb-0 mt-2 text-xs leading-5 text-c-text-dim">
           从模糊的记忆开始，慢慢认出你熟悉的地方。
         </p>
-      </div>
-      <div class="flex-1 min-h-24 overflow-y-auto space-y-3" role="log" aria-label="探索记录">
-        <p v-if="!messages.length" class="text-sm text-c-text-muted leading-relaxed">
+      </header>
+      <div
+        class="min-h-24 max-h-64 flex-1 space-y-3 overflow-y-auto lg:max-h-none"
+        role="log"
+        aria-label="探索记录"
+      >
+        <p
+          v-if="!messages.length"
+          class="m-0 rounded-xl bg-c-panel p-4 text-xs leading-6 text-c-text-dim"
+        >
           告诉我一座城市、一个地标，或在地图上指出你熟悉的位置。
         </p>
         <div
           v-for="(message, index) in messages"
           :key="index"
-          class="rounded-xl p-3 text-sm leading-relaxed"
+          class="break-words rounded-xl p-3 text-sm leading-6"
           :class="message.role === 'user' ? 'bg-c-user-bubble' : 'bg-c-panel'"
         >
           <span class="block text-xs text-c-text-muted mb-1">{{
@@ -200,11 +214,11 @@ onBeforeUnmount(() => {
           >{{ message.text }}
         </div>
       </div>
-      <div v-if="snapshot?.candidates.length" class="space-y-2" aria-label="地点候选">
+      <div v-if="snapshot?.candidates.length" class="shrink-0 space-y-2" aria-label="地点候选">
         <button
           v-for="candidate in snapshot.candidates"
           :key="candidate.id"
-          class="btn-ghost bg-c-panel w-full text-left"
+          class="btn-secondary w-full flex-col items-start whitespace-normal text-left"
           @click="controller?.choose(candidate.id)"
         >
           {{ candidate.name }} ↗<span class="block text-xs text-c-text-muted">{{
@@ -212,32 +226,36 @@ onBeforeUnmount(() => {
           }}</span>
         </button>
       </div>
-      <form class="flex gap-2" @submit.prevent="submit">
+      <form class="flex shrink-0 gap-2" @submit.prevent="submit">
         <input
           v-model="input"
           aria-label="告诉 Animetta 你的线索"
           placeholder="好像是在上海…"
-          class="min-w-0 flex-1 bg-c-panel text-c-text border-none rounded-xl p-3"
+          class="control-field min-w-0 flex-1"
           @input="pause"
           @focus="pause"
         />
         <button class="btn-accent" :disabled="!ready || !input.trim()">发送</button>
       </form>
-      <div class="grid grid-cols-2 gap-2">
-        <button class="btn-accent" :disabled="!ready" @click="pause">暂停</button>
-        <button class="btn-ghost bg-c-panel" :disabled="!ready" @click="controller?.resume()">
+      <div class="grid shrink-0 grid-cols-2 gap-2">
+        <button class="btn-secondary" :disabled="!ready" @click="pause">暂停</button>
+        <button class="btn-secondary" :disabled="!ready" @click="controller?.resume()">
           继续观察
         </button>
-        <button class="btn-ghost bg-c-panel" :disabled="!ready" @click="toggleSelection">
+        <button class="btn-secondary" :disabled="!ready" @click="toggleSelection">
           {{ selecting ? '请点击地图…' : '指认这里' }}
         </button>
-        <button class="btn-ghost bg-c-panel" :disabled="!ready" @click="controller?.back()">
+        <button class="btn-secondary" :disabled="!ready" @click="controller?.back()">
           返回观察点
         </button>
       </div>
-      <div class="flex gap-4 text-sm text-c-text-dim">
-        <label><input v-model="enabledAvatar" type="checkbox" /> 角色</label>
-        <label
+      <div
+        class="flex shrink-0 flex-wrap items-center gap-4 border-t border-c-border pt-4 text-xs text-c-text-dim"
+      >
+        <label class="flex items-center gap-2"
+          ><input v-model="enabledAvatar" type="checkbox" /> 角色</label
+        >
+        <label class="flex items-center gap-2"
           ><input
             v-model="enabledVoice"
             type="checkbox"
@@ -249,7 +267,7 @@ onBeforeUnmount(() => {
       </div>
       <button
         v-if="snapshot?.capabilities.asr"
-        class="btn-ghost bg-c-panel"
+        class="btn-secondary shrink-0"
         @click="recording ? microphone.stop() : microphone.start()"
       >
         {{ recording ? '结束录音并发送' : '说一条线索' }}
@@ -257,11 +275,11 @@ onBeforeUnmount(() => {
       <p
         v-if="error || snapshot?.error"
         role="alert"
-        class="text-sm text-c-warning leading-relaxed"
+        class="m-0 shrink-0 rounded-xl border border-c-warning/30 bg-c-warning/8 p-3 text-xs leading-5 text-c-warning"
       >
         {{ error || snapshot?.error?.message }}
       </p>
-      <p class="text-xs text-c-text-muted leading-relaxed m-0">
+      <p class="m-0 shrink-0 text-xs leading-5 text-c-text-muted">
         线索与指认仅用于本次私密探索。当前使用卫星影像展示与地名资料；视觉分析尚未开放。
       </p>
     </aside>

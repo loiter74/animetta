@@ -27,6 +27,7 @@ const selectedTraceId = ref('')
 const historyLocked = ref(false)
 const feedMode = ref<'turns' | 'raw'>('turns')
 const preflightOpen = ref(false)
+const inspectorOpen = ref(false)
 const preflightButtonRef = ref<HTMLButtonElement | null>(null)
 const pendingTurns = ref<Array<{ traceId: string; text: string; startedAt: number }>>([])
 let summaryTimer: ReturnType<typeof setInterval> | null = null
@@ -220,8 +221,8 @@ function closePreflight(): void {
 
 <template>
   <main class="workspace-body" data-testid="live-operations-workspace">
-    <header class="flex shrink-0 flex-wrap items-center justify-between gap-4">
-      <div class="min-w-52">
+    <header class="flex shrink-0 flex-wrap items-center justify-between gap-3">
+      <div class="min-w-0">
         <div class="flex items-center gap-2">
           <span class="h-2 w-2 rounded-full bg-c-success" aria-hidden="true" />
           <h1 class="workspace-title">直播执行</h1>
@@ -229,44 +230,45 @@ function closePreflight(): void {
         <p class="workspace-copy">开发者输入仅在后台可见，公开回答自动进入直播链路</p>
       </div>
 
-      <dl class="flex min-w-0 flex-1 items-center justify-end overflow-x-auto">
-        <div
-          v-for="item in metricItems"
-          :key="item.label"
-          class="min-w-24 border-l border-c-border px-4 first:border-l-0"
+      <div class="flex shrink-0 items-center gap-2">
+        <button
+          class="btn-secondary shrink-0"
+          type="button"
+          role="switch"
+          aria-label="显示直播字幕"
+          :aria-checked="subtitleStore.enabled"
+          @click="subtitleStore.toggle()"
         >
-          <dt class="whitespace-nowrap text-10px text-c-text-muted">{{ item.label }}</dt>
-          <dd class="mt-0.5 whitespace-nowrap font-mono text-sm font-semibold uppercase">
-            {{ item.value }}
-          </dd>
-        </div>
-      </dl>
-      <button
-        class="btn-secondary shrink-0"
-        type="button"
-        role="switch"
-        aria-label="显示直播字幕"
-        :aria-checked="subtitleStore.enabled"
-        @click="subtitleStore.toggle()"
-      >
-        字幕{{ subtitleStore.enabled ? '开启' : '关闭' }}
-      </button>
-      <button
-        ref="preflightButtonRef"
-        class="btn-accent shrink-0"
-        type="button"
-        aria-haspopup="dialog"
-        @click="preflightOpen = true"
-      >
-        开播准备
-      </button>
+          字幕{{ subtitleStore.enabled ? '开启' : '关闭' }}
+        </button>
+        <button
+          ref="preflightButtonRef"
+          class="btn-accent shrink-0"
+          type="button"
+          aria-haspopup="dialog"
+          @click="preflightOpen = true"
+        >
+          开播准备
+        </button>
+      </div>
     </header>
+
+    <dl
+      class="grid shrink-0 grid-cols-2 gap-x-4 gap-y-3 border-y border-c-border py-3 sm:grid-cols-5"
+    >
+      <div v-for="item in metricItems" :key="item.label" class="min-w-0">
+        <dt class="text-10px text-c-text-muted">{{ item.label }}</dt>
+        <dd class="mt-1 truncate font-mono text-base font-semibold uppercase tabular-nums">
+          {{ item.value }}
+        </dd>
+      </div>
+    </dl>
 
     <ProgramRunPanel />
     <ToolApprovalQueue />
 
-    <div class="grid min-h-0 flex-1 gap-3 lg:grid-cols-[minmax(0,3fr)_minmax(340px,2fr)]">
-      <section class="glass flex min-h-136 flex-col overflow-hidden lg:min-h-0">
+    <div class="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.55fr)]">
+      <section class="glass flex min-h-96 flex-col overflow-hidden lg:min-h-0">
         <div
           class="flex shrink-0 items-start justify-between gap-4 border-b border-c-border px-5 py-4"
         >
@@ -304,7 +306,7 @@ function closePreflight(): void {
 
         <div
           v-if="feedMode === 'turns'"
-          class="ops-scroll min-h-0 flex-1 overflow-y-auto"
+          class="min-h-0 flex-1 overflow-y-auto overscroll-contain"
           data-testid="live-turn-list"
         >
           <button
@@ -377,7 +379,7 @@ function closePreflight(): void {
 
         <div
           v-else
-          class="ops-scroll min-h-0 flex-1 overflow-y-auto"
+          class="min-h-0 flex-1 overflow-y-auto overscroll-contain"
           data-testid="raw-danmaku-list"
         >
           <div
@@ -424,20 +426,20 @@ function closePreflight(): void {
         </div>
       </section>
 
-      <div class="flex min-h-136 flex-col gap-3 lg:min-h-0">
-        <aside class="glass flex min-h-96 flex-1 flex-col overflow-hidden lg:min-h-0">
-          <div class="shrink-0 border-b border-c-border px-5 py-4">
-            <div class="flex items-start justify-between gap-3">
-              <div class="min-w-0">
-                <h2 class="text-sm font-semibold">执行检查器</h2>
-                <p class="mt-1 truncate font-mono text-10px text-c-text-muted">
-                  {{
-                    selectedTurn
-                      ? `${sourceLabel(selectedTurn)} · ${selectedTurn.trace_id}`
-                      : '选择一个回合查看执行阶段'
-                  }}
-                </p>
-              </div>
+      <aside class="glass flex min-h-0 flex-col overflow-hidden">
+        <div class="shrink-0 border-b border-c-border px-5 py-4">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <h2 class="text-sm font-semibold">执行检查器</h2>
+              <p class="mt-1 truncate font-mono text-10px text-c-text-muted">
+                {{
+                  selectedTurn
+                    ? `${sourceLabel(selectedTurn)} · ${selectedTurn.trace_id}`
+                    : '选择一个回合查看执行阶段'
+                }}
+              </p>
+            </div>
+            <div class="flex shrink-0 items-center gap-1">
               <button
                 class="shrink-0 rounded-lg px-2.5 py-1.5 text-10px transition-colors duration-200"
                 :class="
@@ -450,166 +452,177 @@ function closePreflight(): void {
               >
                 {{ historyLocked ? '回到最新' : '跟随最新' }}
               </button>
-            </div>
-
-            <div
-              v-if="selectedTurn"
-              class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-10px"
-            >
-              <span class="text-c-text-muted">
-                来源
-                <strong class="font-medium text-c-text-secondary">{{
-                  sourceLabel(selectedTurn)
-                }}</strong>
-              </span>
-              <span class="text-c-text-muted">
-                总耗时
-                <strong class="font-mono font-medium text-c-text-secondary">{{
-                  formatDuration(selectedTurn.duration_ms)
-                }}</strong>
-              </span>
-              <span class="text-c-text-muted">
-                内容
-                <strong class="font-mono font-medium uppercase text-c-text-secondary">{{
-                  selectedTurn.privacy_mode === 'full' ? '后台原文' : '历史脱敏'
-                }}</strong>
-              </span>
+              <button
+                class="btn-ghost lg:hidden"
+                type="button"
+                :aria-expanded="inspectorOpen"
+                aria-controls="live-execution-timeline"
+                @click="inspectorOpen = !inspectorOpen"
+              >
+                {{ inspectorOpen ? '收起' : '展开' }}
+              </button>
             </div>
           </div>
 
-          <ol
-            class="ops-scroll min-h-0 flex-1 overflow-y-auto px-5 py-4"
-            data-testid="execution-timeline"
+          <div
+            v-if="selectedTurn"
+            class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-10px"
           >
-            <li
-              v-for="(activity, index) in selectedDetail?.activities ?? []"
-              :key="activity.id"
-              class="grid grid-cols-[12px_minmax(0,1fr)] gap-3"
-            >
-              <div class="flex flex-col items-center">
+            <span class="text-c-text-muted">
+              来源
+              <strong class="font-medium text-c-text-secondary">{{
+                sourceLabel(selectedTurn)
+              }}</strong>
+            </span>
+            <span class="text-c-text-muted">
+              总耗时
+              <strong class="font-mono font-medium text-c-text-secondary">{{
+                formatDuration(selectedTurn.duration_ms)
+              }}</strong>
+            </span>
+            <span class="text-c-text-muted">
+              内容
+              <strong class="font-mono font-medium uppercase text-c-text-secondary">{{
+                selectedTurn.privacy_mode === 'full' ? '后台原文' : '历史脱敏'
+              }}</strong>
+            </span>
+          </div>
+        </div>
+
+        <ol
+          id="live-execution-timeline"
+          class="min-h-0 flex-1 overflow-y-auto overscroll-contain border-t border-c-border px-5 py-4 lg:block"
+          :class="inspectorOpen ? 'max-h-96 lg:max-h-none' : 'hidden'"
+          data-testid="execution-timeline"
+        >
+          <li
+            v-for="(activity, index) in selectedDetail?.activities ?? []"
+            :key="activity.id"
+            class="grid grid-cols-[12px_minmax(0,1fr)] gap-3"
+          >
+            <div class="flex flex-col items-center">
+              <span
+                class="mt-1.5 h-2 w-2 shrink-0 rounded-full"
+                :class="activityDotTone(activity)"
+              />
+              <span
+                v-if="index < (selectedDetail?.activities.length ?? 0) - 1"
+                class="my-1 w-px flex-1 bg-c-border"
+              />
+            </div>
+
+            <article class="min-w-0 pb-5">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="text-sm font-medium">{{ activity.label }}</p>
+                  <p class="mt-1 truncate font-mono text-10px text-c-text-muted">
+                    {{ activity.name }} · {{ activity.layer }}
+                  </p>
+                </div>
                 <span
-                  class="mt-1.5 h-2 w-2 shrink-0 rounded-full"
-                  :class="activityDotTone(activity)"
-                />
-                <span
-                  v-if="index < (selectedDetail?.activities.length ?? 0) - 1"
-                  class="my-1 w-px flex-1 bg-c-border"
-                />
+                  class="shrink-0 rounded-lg border px-2 py-1 font-mono text-9px uppercase"
+                  :class="activityTone(activity)"
+                >
+                  {{ activity.status }}
+                </span>
               </div>
 
-              <article class="min-w-0 pb-5">
-                <div class="flex items-start justify-between gap-3">
-                  <div class="min-w-0">
-                    <p class="text-sm font-medium">{{ activity.label }}</p>
-                    <p class="mt-1 truncate font-mono text-10px text-c-text-muted">
-                      {{ activity.name }} · {{ activity.layer }}
-                    </p>
-                  </div>
-                  <span
-                    class="shrink-0 rounded-lg border px-2 py-1 font-mono text-9px uppercase"
-                    :class="activityTone(activity)"
-                  >
-                    {{ activity.status }}
-                  </span>
-                </div>
-
-                <div
-                  class="mt-2 flex flex-wrap gap-x-3 gap-y-1 font-mono text-10px text-c-text-secondary"
+              <div
+                class="mt-2 flex flex-wrap gap-x-3 gap-y-1 font-mono text-10px text-c-text-secondary"
+              >
+                <span>{{ formatDuration(activity.duration_ms) }}</span>
+                <span v-if="activity.provider">{{ activity.provider }}</span>
+                <span v-if="activity.model">{{ activity.model }}</span>
+                <span v-if="activity.attributes.tool_source"
+                  >来源 {{ activity.attributes.tool_source }}</span
                 >
-                  <span>{{ formatDuration(activity.duration_ms) }}</span>
-                  <span v-if="activity.provider">{{ activity.provider }}</span>
-                  <span v-if="activity.model">{{ activity.model }}</span>
-                  <span v-if="activity.attributes.tool_source"
-                    >来源 {{ activity.attributes.tool_source }}</span
-                  >
-                  <span v-if="activity.attributes.mcp_server"
-                    >MCP {{ activity.attributes.mcp_server }}</span
-                  >
-                </div>
-
-                <p v-if="activity.error" class="mt-2 text-xs text-c-error">
-                  {{ activity.error }}
-                </p>
-
-                <div
-                  v-if="activity.minecraft"
-                  class="mt-3 border-l-2 border-c-blue bg-c-panel/35 px-3 py-2.5 text-xs"
+                <span v-if="activity.attributes.mcp_server"
+                  >MCP {{ activity.attributes.mcp_server }}</span
                 >
-                  <div class="flex items-center justify-between gap-2">
-                    <span class="text-c-text-muted">MC 指令</span>
-                    <strong class="font-mono uppercase text-c-text">{{
-                      activity.minecraft.state
-                    }}</strong>
-                  </div>
-                  <p
-                    v-if="selectedTurn?.privacy_mode === 'full'"
-                    class="mt-2 break-all font-mono text-10px text-c-text-secondary"
-                  >
-                    {{ activity.minecraft.command_id }}
-                  </p>
-                  <p v-if="activity.minecraft.failure_reason" class="mt-2 text-c-error">
-                    {{ activity.minecraft.failure_reason }}
-                  </p>
-                  <ol class="mt-2 space-y-1 font-mono text-10px text-c-text-secondary">
-                    <li
-                      v-for="(transition, transitionIndex) in activity.minecraft.transitions"
-                      :key="transitionIndex"
-                    >
-                      {{ transition.from_state ?? 'accepted' }} → {{ transition.to_state }} ·
-                      {{ transition.reason_code }}
-                    </li>
-                  </ol>
-                </div>
+              </div>
 
-                <details
-                  v-if="
-                    selectedTurn?.privacy_mode === 'full' &&
-                    (rawValue(activity, 'arguments_text') || rawValue(activity, 'result_text'))
-                  "
-                  open
-                  class="mt-3"
-                >
-                  <summary class="cursor-pointer text-xs text-c-accent">工具原始数据</summary>
-                  <pre
-                    v-if="rawValue(activity, 'arguments_text')"
-                    class="mt-2 overflow-x-auto whitespace-pre-wrap rounded-lg bg-c-panel/50 p-3 font-mono text-10px"
-                    >{{ rawValue(activity, 'arguments_text') }}</pre>
-                  <pre
-                    v-if="rawValue(activity, 'result_text')"
-                    class="mt-2 overflow-x-auto whitespace-pre-wrap rounded-lg bg-c-panel/50 p-3 font-mono text-10px"
-                    >{{ rawValue(activity, 'result_text') }}</pre>
-                </details>
+              <p v-if="activity.error" class="mt-2 text-xs text-c-error">
+                {{ activity.error }}
+              </p>
+
+              <div
+                v-if="activity.minecraft"
+                class="mt-3 border-l-2 border-c-blue bg-c-panel/35 px-3 py-2.5 text-xs"
+              >
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-c-text-muted">MC 指令</span>
+                  <strong class="font-mono uppercase text-c-text">{{
+                    activity.minecraft.state
+                  }}</strong>
+                </div>
                 <p
-                  v-else-if="
-                    activity.attributes.arguments_digest || activity.attributes.result_digest
-                  "
-                  class="mt-2 text-10px text-c-text-muted"
+                  v-if="selectedTurn?.privacy_mode === 'full'"
+                  class="mt-2 break-all font-mono text-10px text-c-text-secondary"
                 >
-                  原始数据已脱敏，仅保留长度与摘要
+                  {{ activity.minecraft.command_id }}
                 </p>
-              </article>
-            </li>
-
-            <li
-              v-if="!selectedDetail?.activities?.length"
-              class="grid min-h-72 place-items-center text-center"
-            >
-              <div>
-                <p class="text-sm text-c-text-secondary">
-                  {{ selectedTraceId ? '正在等待执行阶段' : '尚未选择回合' }}
+                <p v-if="activity.minecraft.failure_reason" class="mt-2 text-c-error">
+                  {{ activity.minecraft.failure_reason }}
                 </p>
-                <p class="mt-1 text-xs text-c-text-muted">
-                  {{
-                    selectedTraceId
-                      ? '模型、工具和 MC 状态会在这里实时更新'
-                      : '从左侧消息流选择一个回合'
-                  }}
-                </p>
+                <ol class="mt-2 space-y-1 font-mono text-10px text-c-text-secondary">
+                  <li
+                    v-for="(transition, transitionIndex) in activity.minecraft.transitions"
+                    :key="transitionIndex"
+                  >
+                    {{ transition.from_state ?? 'accepted' }} → {{ transition.to_state }} ·
+                    {{ transition.reason_code }}
+                  </li>
+                </ol>
               </div>
-            </li>
-          </ol>
-        </aside>
-      </div>
+
+              <details
+                v-if="
+                  selectedTurn?.privacy_mode === 'full' &&
+                  (rawValue(activity, 'arguments_text') || rawValue(activity, 'result_text'))
+                "
+                open
+                class="mt-3"
+              >
+                <summary class="cursor-pointer text-xs text-c-accent">工具原始数据</summary>
+                <pre
+                  v-if="rawValue(activity, 'arguments_text')"
+                  class="mt-2 overflow-x-auto whitespace-pre-wrap rounded-lg bg-c-panel/50 p-3 font-mono text-10px"
+                  >{{ rawValue(activity, 'arguments_text') }}</pre>
+                <pre
+                  v-if="rawValue(activity, 'result_text')"
+                  class="mt-2 overflow-x-auto whitespace-pre-wrap rounded-lg bg-c-panel/50 p-3 font-mono text-10px"
+                  >{{ rawValue(activity, 'result_text') }}</pre>
+              </details>
+              <p
+                v-else-if="
+                  activity.attributes.arguments_digest || activity.attributes.result_digest
+                "
+                class="mt-2 text-10px text-c-text-muted"
+              >
+                原始数据已脱敏，仅保留长度与摘要
+              </p>
+            </article>
+          </li>
+
+          <li
+            v-if="!selectedDetail?.activities?.length"
+            class="grid min-h-72 place-items-center text-center"
+          >
+            <div>
+              <p class="text-sm text-c-text-secondary">
+                {{ selectedTraceId ? '正在等待执行阶段' : '尚未选择回合' }}
+              </p>
+              <p class="mt-1 text-xs text-c-text-muted">
+                {{
+                  selectedTraceId
+                    ? '模型、工具和 MC 状态会在这里实时更新'
+                    : '从左侧消息流选择一个回合'
+                }}
+              </p>
+            </div>
+          </li>
+        </ol>
+      </aside>
     </div>
 
     <p
@@ -622,24 +635,3 @@ function closePreflight(): void {
     <PreflightDrawer :open="preflightOpen" @close="closePreflight" />
   </main>
 </template>
-
-<style scoped>
-.ops-scroll {
-  overscroll-behavior: contain;
-  scrollbar-width: thin;
-  scrollbar-color: var(--c-border) transparent;
-}
-
-.ops-scroll::-webkit-scrollbar {
-  width: 4px;
-}
-
-.ops-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.ops-scroll::-webkit-scrollbar-thumb {
-  border-radius: var(--r-full);
-  background: var(--c-border);
-}
-</style>

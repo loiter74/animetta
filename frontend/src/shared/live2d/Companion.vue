@@ -38,11 +38,11 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="container" aria-label="Animetta Live2D 伙伴">
+  <div ref="container" class="isolate overflow-hidden" aria-label="Animetta Live2D 伙伴">
     <canvas ref="canvas" class="block w-full h-full" aria-hidden="true" />
     <span
       :data-state="status"
-      class="absolute bottom-0 right-0 text-xs text-c-text-dim bg-c-panel/85 rounded-xl px-3 py-2 data-[state=live]:hidden"
+      class="absolute inset-x-3 bottom-3 rounded-xl border border-c-border bg-c-panel/95 px-3 py-2 text-center text-xs text-c-text-dim data-[state=live]:hidden"
       role="status"
       >{{
         status === 'error'

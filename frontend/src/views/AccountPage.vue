@@ -74,17 +74,22 @@ async function signOut(): Promise<void> {
 </script>
 
 <template>
-  <div class="ops-shell flex h-full min-h-0 flex-col text-c-text" data-testid="account-page">
+  <div
+    class="ops-shell flex h-full min-h-0 flex-col bg-c-bg/95 text-c-text"
+    data-testid="account-page"
+  >
     <TitleBar />
-    <main class="min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-6">
+    <main class="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
       <div class="mx-auto flex w-full max-w-6xl flex-col gap-6">
-        <header class="flex flex-wrap items-end justify-between gap-4">
+        <header
+          class="flex flex-wrap items-start justify-between gap-4 border-b border-c-border pb-6"
+        >
           <div>
-            <p class="text-10px font-semibold tracking-[0.18em] text-c-accent">ACCOUNT</p>
-            <h1 class="mt-2 text-2xl font-semibold">账号与安全</h1>
+            <p class="text-xs font-medium text-c-text-muted">个人设置</p>
+            <h1 class="mt-2 text-2xl font-semibold tracking-tight">账号与安全</h1>
             <p class="mt-2 text-sm text-c-text-muted">管理当前账号、密码和浏览器会话。</p>
           </div>
-          <button class="btn-ghost" type="button" :disabled="busy" @click="signOut">
+          <button class="btn-secondary" type="button" :disabled="busy" @click="signOut">
             退出登录
           </button>
         </header>
@@ -101,8 +106,13 @@ async function signOut(): Promise<void> {
           </p>
         </section>
 
-        <div class="grid gap-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
-          <section class="glass rounded-xl p-5">
+        <div class="grid items-start gap-6 lg:grid-cols-[18rem_minmax(0,1fr)]">
+          <aside class="rounded-xl border border-c-border bg-c-surface p-5">
+            <span
+              class="mb-5 grid h-12 w-12 place-items-center rounded-xl bg-c-accent-soft text-xl font-semibold text-c-accent"
+              aria-hidden="true"
+              >{{ currentUser?.username.slice(0, 1).toUpperCase() ?? 'A' }}</span
+            >
             <div class="flex items-start justify-between gap-4">
               <div>
                 <p class="text-xs text-c-text-muted">当前账号</p>
@@ -110,7 +120,7 @@ async function signOut(): Promise<void> {
                   {{ currentUser?.username ?? '正在读取…' }}
                 </h2>
               </div>
-              <span class="rounded-full border border-c-border px-3 py-1 text-10px text-c-text-dim">
+              <span class="rounded-xl bg-c-card px-2.5 py-1 text-10px text-c-text-dim">
                 {{ currentUser?.role === 'admin' ? '管理员' : '普通用户' }}
               </span>
             </div>
@@ -120,16 +130,22 @@ async function signOut(): Promise<void> {
                 <dd class="text-c-text-dim">固定 8 小时</dd>
               </div>
               <div class="flex justify-between gap-4 border-t border-c-border pt-3">
-                <dt class="text-c-text-muted">密码存储</dt>
-                <dd class="text-c-text-dim">scrypt-v1 加盐哈希</dd>
+                <dt class="shrink-0 text-c-text-muted">会话保护</dt>
+                <dd class="text-right text-c-text-dim">改密后退出其他会话</dd>
               </div>
             </dl>
-          </section>
+          </aside>
 
-          <section class="glass rounded-xl p-5">
-            <h2 class="text-base font-semibold">修改密码</h2>
-            <p class="mt-1 text-xs text-c-text-muted">至少 8 个 UTF-8 字节；成功后撤销其他会话。</p>
-            <form class="mt-5 grid gap-4" @submit.prevent="submitPassword">
+          <section
+            class="min-w-0 rounded-xl border border-c-border bg-c-panel p-5 shadow-panel sm:p-6"
+          >
+            <div class="border-b border-c-border pb-5">
+              <h2 class="text-base font-semibold">修改密码</h2>
+              <p class="mt-1 text-xs leading-5 text-c-text-dim">
+                至少 8 个 UTF-8 字节；成功后撤销其他会话。
+              </p>
+            </div>
+            <form class="mt-5 grid gap-5" @submit.prevent="submitPassword">
               <label class="grid gap-2 text-xs text-c-text-dim">
                 当前密码
                 <input
@@ -140,33 +156,35 @@ async function signOut(): Promise<void> {
                   required
                 />
               </label>
-              <label class="grid gap-2 text-xs text-c-text-dim">
-                新密码
-                <input
-                  v-model="newPassword"
-                  class="input-field"
-                  type="password"
-                  autocomplete="new-password"
-                  required
-                />
-              </label>
-              <label class="grid gap-2 text-xs text-c-text-dim">
-                再次输入新密码
-                <input
-                  v-model="confirmation"
-                  class="input-field"
-                  type="password"
-                  autocomplete="new-password"
-                  required
-                />
-              </label>
+              <div class="grid gap-5 sm:grid-cols-2">
+                <label class="grid min-w-0 gap-2 text-xs text-c-text-dim">
+                  新密码
+                  <input
+                    v-model="newPassword"
+                    class="input-field"
+                    type="password"
+                    autocomplete="new-password"
+                    required
+                  />
+                </label>
+                <label class="grid min-w-0 gap-2 text-xs text-c-text-dim">
+                  再次输入新密码
+                  <input
+                    v-model="confirmation"
+                    class="input-field"
+                    type="password"
+                    autocomplete="new-password"
+                    required
+                  />
+                </label>
+              </div>
               <p v-if="errorMessage" class="text-xs text-c-error" role="alert">
                 {{ errorMessage }}
               </p>
               <p v-if="successMessage" class="text-xs text-c-success" role="status">
                 {{ successMessage }}
               </p>
-              <button class="btn-accent justify-self-start" type="submit" :disabled="busy">
+              <button class="btn-accent mt-1 justify-self-start" type="submit" :disabled="busy">
                 {{ busy ? '正在更新…' : '更新密码' }}
               </button>
             </form>

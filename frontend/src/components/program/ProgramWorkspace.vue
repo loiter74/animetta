@@ -18,20 +18,29 @@ const modes: readonly SectionTab[] = [
 </script>
 
 <template>
-  <div class="flex min-h-0 flex-1 flex-col" data-testid="program-workspace">
-    <SectionTabs
-      :model-value="modelValue"
-      :tabs="modes"
-      label="节目工作区"
-      @update:model-value="emit('update:modelValue', $event)"
-    />
+  <div class="flex min-h-0 min-w-0 flex-1 flex-col" data-testid="program-workspace">
+    <header class="shrink-0 border-b border-c-border bg-c-surface/35 px-4 py-4 sm:px-6">
+      <div class="mb-4">
+        <h1 class="workspace-title">节目</h1>
+        <p class="workspace-copy">
+          {{ modes.find((mode) => mode.id === modelValue)?.description }}
+        </p>
+      </div>
+      <SectionTabs
+        :model-value="modelValue"
+        :tabs="modes"
+        label="节目工作区"
+        class="!border-b-0 !bg-transparent !p-0"
+        @update:model-value="emit('update:modelValue', $event)"
+      />
+    </header>
 
     <main
       v-if="modelValue === 'scripts'"
       id="节目工作区-scripts-panel"
       role="tabpanel"
       aria-labelledby="节目工作区-scripts-tab"
-      class="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4"
+      class="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6"
     >
       <ProgramScriptEditor />
     </main>
@@ -40,7 +49,7 @@ const modes: readonly SectionTab[] = [
       id="节目工作区-singing-panel"
       role="tabpanel"
       aria-labelledby="节目工作区-singing-tab"
-      class="min-h-0 flex-1 overflow-hidden p-3 sm:p-4"
+      class="min-h-0 min-w-0 flex-1 overflow-hidden p-4 sm:p-6"
     >
       <section class="glass h-full min-h-0 overflow-hidden">
         <MusicCard />
@@ -51,7 +60,7 @@ const modes: readonly SectionTab[] = [
       id="节目工作区-memes-panel"
       role="tabpanel"
       aria-labelledby="节目工作区-memes-tab"
-      class="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4"
+      class="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6"
     >
       <MemeWorkspace />
     </main>

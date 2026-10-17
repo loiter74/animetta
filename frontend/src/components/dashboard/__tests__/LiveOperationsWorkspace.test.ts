@@ -173,6 +173,23 @@ describe('LiveOperationsWorkspace', () => {
     wrapper.unmount()
   })
 
+  it('opens inspector evidence without changing the selected turn or sending a command', async () => {
+    const { wrapper } = mountWorkspace()
+    await flushPromises()
+    const disclosure = wrapper.get('button[aria-controls="live-execution-timeline"]')
+    expect(disclosure.attributes('aria-expanded')).toBe('false')
+
+    await disclosure.trigger('click')
+
+    expect(disclosure.attributes('aria-expanded')).toBe('true')
+    expect(wrapper.get('#live-execution-timeline').text()).toContain('决定并调用工具')
+    expect(wrapper.get('[data-trace-id]').attributes('aria-pressed')).toBe('true')
+    expect(socket.emit).not.toHaveBeenCalledWith(Events.CHAT.DEVELOPER_TEXT, expect.anything())
+    await disclosure.trigger('click')
+    expect(disclosure.attributes('aria-expanded')).toBe('false')
+    wrapper.unmount()
+  })
+
   it('switches to the raw danmaku feed with connection, audience, and count evidence', async () => {
     const { wrapper, pinia } = mountWorkspace()
     const danmaku = useDanmakuStore(pinia)

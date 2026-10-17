@@ -32,19 +32,26 @@ const modes: readonly SectionTab[] = [
 
 <template>
   <div class="flex min-h-0 flex-1 flex-col" data-testid="validation-workspace">
-    <SectionTabs
-      :model-value="modelValue"
-      :tabs="modes"
-      label="验证工作区"
-      @update:model-value="emit('update:modelValue', $event)"
-    />
+    <header class="shrink-0 border-b border-c-border bg-c-surface/35 px-4 py-4 sm:px-6">
+      <div class="mb-4">
+        <h1 class="workspace-title">验证</h1>
+        <p class="workspace-copy">在演练中检查对话、弹幕与立绘的表现</p>
+      </div>
+      <SectionTabs
+        :model-value="modelValue"
+        :tabs="modes"
+        label="验证工作区"
+        class="!border-b-0 !bg-transparent !p-0"
+        @update:model-value="emit('update:modelValue', $event)"
+      />
+    </header>
 
     <main
       v-if="modelValue === 'sandbox'"
       id="验证工作区-sandbox-panel"
       role="tabpanel"
       aria-labelledby="验证工作区-sandbox-tab"
-      class="min-h-0 flex-1 overflow-hidden p-3 sm:p-4"
+      class="min-h-0 min-w-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:overflow-hidden"
     >
       <ConversationSandbox v-model="sandboxDraft" />
     </main>
@@ -53,7 +60,7 @@ const modes: readonly SectionTab[] = [
       id="验证工作区-replay-panel"
       role="tabpanel"
       aria-labelledby="验证工作区-replay-tab"
-      class="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4"
+      class="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6"
     >
       <ProgramReplayPanel />
     </main>
@@ -62,7 +69,7 @@ const modes: readonly SectionTab[] = [
       id="验证工作区-avatar-panel"
       role="tabpanel"
       aria-labelledby="验证工作区-avatar-tab"
-      class="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4"
+      class="min-h-0 min-w-0 flex-1 overflow-hidden p-4 sm:p-6"
     >
       <AvatarWorkspace />
     </main>
