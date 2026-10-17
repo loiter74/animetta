@@ -16,5 +16,6 @@ export interface Live2DModelProfile {
     readonly y: number
   }
   readonly semanticMotions: Readonly<Record<string, { group: string; index?: number }>>
+  readonly expressions?: Readonly<Record<string, { label: string; mouthRest: number }>>
   readonly idleVitality?: readonly Live2DIdleVitalityParameter[]
 }

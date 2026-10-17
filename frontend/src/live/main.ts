@@ -9,6 +9,8 @@ import { createLiveBgmController } from './bgm'
 import type { LiveSocket } from './controller'
 import { applyLiveReviewLayout } from '@/review/layout'
 import { createLive2DStage } from '@/review/live2d-stage'
+import { resolveLive2DModelProfile } from '@/shared/live2d/modelProfiles'
+import { mountAvatarPreview } from '@/review/avatar-preview'
 import { parseReviewMouthTimeline } from '@/review/review-lip-sync'
 import { mountLive2DPerformanceReview } from '@/review/live2d-performance/main'
 import { PUBLIC_LIVE_SOCKET_AUTH, startPublicLiveSocket } from '@/shared/transport/publicLiveSocket'
@@ -77,7 +79,8 @@ const session = bootstrapLiveSession({
 
 const pageDisposers = new DisposerStack()
 let pageDisposed = false
-const stage = createLive2DStage(session.socket, { idleVitality: true })
+const avatarProfile = resolveLive2DModelProfile(search.get('avatar'))
+const stage = createLive2DStage(session.socket, { idleVitality: true, profile: avatarProfile })
 live2dStage = stage
 const liveBgm = createLiveBgmController(document, search, { ownership: mediaOwnership })
 const liveAudio = createLiveAudioController(session.socket, document, stage.setMouth, liveBgm, {
@@ -99,6 +102,8 @@ pageDisposers.add(() => window.removeEventListener('beforeunload', disposePage))
 
 void stage.ready.finally(() => {
   if (pageDisposed) return
+  const avatarPreview = mountAvatarPreview(document, search, avatarProfile, stage)
+  if (avatarPreview) pageDisposers.add(avatarPreview)
   const notification = mountTtsFailoverReviewNotification(document, search, { autoplay: false })
   if (notification) {
     pageDisposers.add(() => notification.dispose())

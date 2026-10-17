@@ -26,3 +26,36 @@ export const DEFAULT_LIVE2D_MODEL_PROFILE: Live2DModelProfile = {
     { name: 'ParamBreath', factor: 2.4 },
   ],
 }
+
+const WHALE_MAID_MODEL_PROFILE: Live2DModelProfile = {
+  id: 'whale-maid-v1',
+  modelUrl: '/live2d/whale-maid-v1/whale-maid-v1.model3.json',
+  mouthParameters: ['ParamMouthOpenY'],
+  framing: { scale: 0.9, x: 0.5, y: 0.46 },
+  performance: {
+    resolve(plan) {
+      if (plan.base === 'calm') return []
+      const offset = plan.base === 'annoyed' ? -0.25 : 0.35
+      return ['ParamBrowLY', 'ParamBrowRY'].map((name) => ({ name, offset, min: -1, max: 1 }))
+    },
+  },
+  semanticMotions: {
+    planning: { group: 'Nod', index: 0 },
+    observing: { group: 'Nod', index: 0 },
+    committed: { group: 'Nod', index: 0 },
+    acting: { group: 'Nod', index: 0 },
+    checking: { group: 'Nod', index: 0 },
+    recovering: { group: 'Shake', index: 0 },
+    finished: { group: 'Nod', index: 0 },
+  },
+  expressions: {
+    standard: { label: '标准表情', mouthRest: 0 },
+    goofy: { label: '傻笑', mouthRest: 0.82 },
+  },
+}
+
+export function resolveLive2DModelProfile(id: string | null): Live2DModelProfile {
+  return id === WHALE_MAID_MODEL_PROFILE.id
+    ? WHALE_MAID_MODEL_PROFILE
+    : DEFAULT_LIVE2D_MODEL_PROFILE
+}

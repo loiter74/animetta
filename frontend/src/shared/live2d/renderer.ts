@@ -109,6 +109,7 @@ export function createLive2DRenderer(options: Live2DRendererOptions): Live2DRend
   let model: Live2DModel | null = null
   let performanceController: Live2DPerformanceController | null = null
   let mouth = 0
+  let mouthRest = 0
   let mouthTaskId = ''
   const cleanups: (() => void)[] = []
   const cleanup = (): void => {
@@ -165,8 +166,9 @@ export function createLive2DRenderer(options: Live2DRendererOptions): Live2DRend
         }
         options.beforeMouthApply?.()
         if (mouthIndex >= 0) {
-          internal.coreModel.setParameterValueByIndex(mouthIndex, mouth)
-          if (mouth > 0.02) options.onMouthApplied?.(mouth, mouthTaskId)
+          const opening = mouthRest + (1 - mouthRest) * mouth
+          internal.coreModel.setParameterValueByIndex(mouthIndex, opening)
+          if (mouth > 0.02) options.onMouthApplied?.(opening, mouthTaskId)
         }
       }
       internal.on('beforeModelUpdate', applyMouth)
@@ -215,8 +217,11 @@ export function createLive2DRenderer(options: Live2DRendererOptions): Live2DRend
     },
     applyAction(action) {
       if (disposed || !model) return
-      if (action.type === 'expression') void model.expression(action.name)
-      else void model.motion(action.group, action.index ?? 0)
+      if (action.type === 'expression') {
+        if (profile.expressions && !Object.hasOwn(profile.expressions, action.name)) return
+        mouthRest = Math.max(0, Math.min(1, profile.expressions?.[action.name]?.mouthRest ?? 0))
+        void model.expression(action.name)
+      } else void model.motion(action.group, action.index ?? 0)
     },
     armPerformance: (plan, taskId) => {
       performanceController?.arm(plan, taskId)

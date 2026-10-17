@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { readFileSync, existsSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
-import { DEFAULT_LIVE2D_MODEL_PROFILE } from './modelProfiles'
+import { DEFAULT_LIVE2D_MODEL_PROFILE, resolveLive2DModelProfile } from './modelProfiles'
 import { createCubismParameterAdapter } from './performanceProfile'
 
 describe('Live2D performance model adapter', () => {
@@ -27,8 +27,17 @@ describe('Live2D performance model adapter', () => {
 })
 
 describe('versioned Live2D model assets', () => {
+  it('falls back to the default model for undeclared IDs', () => {
+    expect(resolveLive2DModelProfile(null)).toBe(DEFAULT_LIVE2D_MODEL_PROFILE)
+    expect(resolveLive2DModelProfile('unknown')).toBe(DEFAULT_LIVE2D_MODEL_PROFILE)
+    expect(resolveLive2DModelProfile('/arbitrary.model3.json')).toBe(DEFAULT_LIVE2D_MODEL_PROFILE)
+  })
+
   it('maps each model only to its own packaged motion groups and mouth parameters', () => {
-    for (const profile of [DEFAULT_LIVE2D_MODEL_PROFILE]) {
+    for (const profile of [
+      DEFAULT_LIVE2D_MODEL_PROFILE,
+      resolveLive2DModelProfile('whale-maid-v1'),
+    ]) {
       const path = resolve('public', profile.modelUrl.slice(1))
       const model = JSON.parse(readFileSync(path, 'utf8'))
       const refs = model.FileReferences
@@ -43,6 +52,14 @@ describe('versioned Live2D model assets', () => {
       expect(profile.mouthParameters.every((parameter) => parameters.has(parameter))).toBe(true)
       for (const motion of Object.values(profile.semanticMotions)) {
         expect(model.FileReferences.Motions[motion.group]?.[motion.index ?? 0]).toBeDefined()
+      }
+      for (const [name, { mouthRest }] of Object.entries(profile.expressions ?? {})) {
+        const expression = refs.Expressions.find((entry: { Name: string }) => entry.Name === name)
+        expect(expression, name).toBeDefined()
+        expect(existsSync(resolve(dirname(path), expression.File)), name).toBe(true)
+        expect(Number.isFinite(mouthRest), name).toBe(true)
+        expect(mouthRest, name).toBeGreaterThanOrEqual(0)
+        expect(mouthRest, name).toBeLessThanOrEqual(1)
       }
     }
   })

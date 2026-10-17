@@ -22,6 +22,7 @@ const PUBLIC_CUE_EMOTIONS = {
 export interface Live2DStage {
   ready: Promise<void>
   setMouth(value: number, taskId?: string): void
+  setExpression(name: string): void
   playReviewAudio(
     notification: HTMLElement,
     volumes: readonly number[],
@@ -49,6 +50,7 @@ export function createLive2DStage(
     return {
       ready: Promise.resolve(),
       setMouth() {},
+      setExpression() {},
       playReviewAudio() {},
       cancelReviewAudio() {},
       applyPublicCue() {},
@@ -129,6 +131,7 @@ export function createLive2DStage(
   return {
     ready,
     setMouth: renderer.setMouth,
+    setExpression: (name) => renderer.applyAction({ type: 'expression', name }),
     applyPublicCue,
     cancelReviewAudio,
     playReviewAudio(element, volumes, performance = DEFAULT_LIVE2D_PERFORMANCE_PLAN) {

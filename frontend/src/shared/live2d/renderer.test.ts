@@ -128,6 +128,39 @@ describe('instance Live2D renderer', () => {
     expect(fixtures.apps[0].destroy).toHaveBeenCalledOnce()
   })
 
+  it('preserves a selected smile while applying speech opening and reports the applied value', async () => {
+    const applied = vi.fn()
+    const renderer = createLive2DRenderer({
+      ...elements(),
+      profile: {
+        ...DEFAULT_LIVE2D_MODEL_PROFILE,
+        expressions: {
+          standard: { label: '标准', mouthRest: 0 },
+          goofy: { label: '傻笑', mouthRest: 0.8 },
+        },
+      },
+      onMouthApplied: applied,
+    })
+    await renderer.ready
+    const model = fixtures.models[0]
+    renderer.applyAction({ type: 'expression', name: 'goofy' })
+    model.listeners.forEach((listener) => listener())
+    expect(model.internalModel.coreModel.getParameterValueByIndex(0)).toBe(0.8)
+    expect(applied).not.toHaveBeenCalled()
+    renderer.applyAction({ type: 'expression', name: 'unsupported' })
+    model.listeners.forEach((listener) => listener())
+    expect(model.internalModel.coreModel.getParameterValueByIndex(0)).toBe(0.8)
+    expect(model.expression).toHaveBeenCalledTimes(1)
+    renderer.setMouth(0.5, 'speech')
+    model.listeners.forEach((listener) => listener())
+    expect(applied).toHaveBeenLastCalledWith(0.9, 'speech')
+    renderer.applyAction({ type: 'expression', name: 'standard' })
+    renderer.setMouth(0)
+    model.listeners.forEach((listener) => listener())
+    expect(model.internalModel.coreModel.getParameterValueByIndex(0)).toBe(0)
+    renderer.dispose()
+  })
+
   it('uses independent model URLs, declared mouth parameters and performance profiles', async () => {
     const firstModel = fixtures.createModel(['ParamMouthOpenY', 'firstMouth', 'firstEmotion'])
     const secondModel = fixtures.createModel(['ParamMouthOpenY', 'secondMouth', 'secondEmotion'])

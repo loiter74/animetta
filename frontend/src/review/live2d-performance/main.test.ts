@@ -15,6 +15,7 @@ describe('mountLive2DPerformanceReview', () => {
     const stage = {
       ready: Promise.resolve(),
       setMouth: vi.fn(),
+      setExpression: vi.fn(),
       playReviewAudio(
         element: HTMLElement,
         volumes: readonly number[],

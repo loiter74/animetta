@@ -1815,6 +1815,15 @@ components:
     impacts: [orchestration-graph]
     risk: normal
 
+  frontend-live2d-assets:
+    domain: frontend
+    paths:
+      - frontend/public/live2d/**
+    direct_groups:
+      - frontend-tests
+    impacts: [frontend-build-control]
+    risk: normal
+
   frontend-source:
     domain: frontend
     paths:

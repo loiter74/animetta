@@ -1,0 +1,66 @@
+{
+  "Version": 3,
+  "FileReferences": {
+    "Moc": "whale-maid-v1.moc3",
+    "Textures": [
+      "whale-maid-v1.2048/texture_00.png",
+      "whale-maid-v1.2048/texture_01.png",
+      "whale-maid-v1.2048/texture_02.png",
+      "whale-maid-v1.2048/texture_03.png",
+      "whale-maid-v1.2048/texture_04.png",
+      "whale-maid-v1.2048/texture_05.png",
+      "whale-maid-v1.2048/texture_06.png"
+    ],
+    "Physics": "whale-maid-v1.physics3.json",
+    "DisplayInfo": "whale-maid-v1.cdi3.json",
+    "Motions": {
+      "Idle": [
+        {
+          "File": "whale-maid-v1.idle.motion3.json"
+        }
+      ],
+      "Blink": [
+        {
+          "File": "whale-maid-v1.blink.motion3.json"
+        }
+      ],
+      "Nod": [
+        {
+          "File": "whale-maid-v1.nod.motion3.json"
+        }
+      ],
+      "Shake": [
+        {
+          "File": "whale-maid-v1.shake.motion3.json"
+        }
+      ]
+    },
+    "Expressions": [
+      {
+        "Name": "standard",
+        "File": "standard.exp3.json"
+      },
+      {
+        "Name": "goofy",
+        "File": "goofy.exp3.json"
+      }
+    ]
+  },
+  "Groups": [
+    {
+      "Target": "Parameter",
+      "Name": "LipSync",
+      "Ids": [
+        "ParamMouthOpenY"
+      ]
+    },
+    {
+      "Target": "Parameter",
+      "Name": "EyeBlink",
+      "Ids": [
+        "ParamEyeLOpen",
+        "ParamEyeROpen"
+      ]
+    }
+  ]
+}
