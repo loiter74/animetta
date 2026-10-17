@@ -18,10 +18,10 @@
 
 使用 [PSD2Live 3.4.5](https://github.com/tsunehimatoi/psd2live/releases/tag/v3.4.5) 原生素材分割、PSD 导出、网格生成和工程编辑。先从分层 PSD 干净编译，再恢复绘制层级并添加 `ParamTailAngle`。PSD2Live 3.4.5 重新导出导入工程时会丢失 MOC 的贴图页索引，因此成品保留干净编译的七张贴图，并按 `source/texture-pages.json` 恢复各 ArtMesh 的页号。重新导出后可运行 `node source/restore-texture-pages.cjs` 恢复并校验 MOC。七页 2048 贴图、网格间距 24px、头部强度 0.35、身体强度 0.3。生成工具本身不作为 Animetta 的依赖。
 
-`ParamMouthOpenY` 驱动嘴型；`ParamEyeLOpen` / `ParamEyeROpen` 驱动睁闭眼。Idle 包含呼吸、眨眼、身体和鲸尾轻摆；背发使用物理参数。Nod / Shake 用于语义动作。
+`ParamMouthOpenY` 驱动嘴型；`ParamEyeLOpen` / `ParamEyeROpen` 驱动睁闭眼。Idle 包含呼吸、眨眼、身体和鲸尾轻摆；背发使用物理参数。Nod / Shake 用于语义动作。待机头身侧倾使用同向同相曲线，头部侧倾限制在约 ±0.8；Nod / Shake 也使用温和幅度。
 
 Animetta 的模型配置将傻笑静息口型设为 0.82，并继续叠加说话开合。`.exp3.json` 保留眼神差异；其他播放器若只加载表情文件，需要同时设置静息口型才能得到同样的张口傻笑。
 
 ## 第一版范围
 
-已拆分头、躯干、背发、鲸尾、眉、双眼、闭眼和两种嘴型。眼白、虹膜、睫毛尚未逐件拆分，视线跟随暂未绑定；肩颈接缝和大角度转头仍需要下一轮精修。此版用于确认完整外观与基础动作。
+已拆分头、躯干、背发、鲸尾、眉、双眼、闭眼和两种嘴型。眼白、虹膜、睫毛尚未逐件拆分，视线跟随暂未绑定；肩颈接缝和大角度转头仍需要下一轮精修。原画的轻微歪头仍保留，待机不再让头身反向扭动。`source/face-direction-v2.png` 是依据用户新参考图绘制的标准 / 傻笑面部方向稿，尚未替换当前模型贴图。后续脸型应突出清爽少女感，保持柔和小下巴与明亮眼神，不用单纯拉长头部形变替代面部重画。
