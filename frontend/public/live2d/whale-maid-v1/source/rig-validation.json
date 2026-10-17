@@ -1,0 +1,177 @@
+{
+  "status": "eye_and_wrist_revision_verified_commercial_model_incomplete",
+  "runtime": {
+    "parameters": 31,
+    "drawables": 21,
+    "textures": 13,
+    "mocSha256": "5b2affd5e171c0d63593d898b13ca19ffc0fe66ea81f4f521967646acda9a25d",
+    "sourceCmo3Sha256": "8765b0298816fceed25ba23c04393dfcff3d5f6c7ad4f2c6b532a2b718d3ab15",
+    "sourcePsdSha256": "2ed19ee09351fdd45ad183bbdca4a6df5110cd24670668378c8d6b6c86a7e9fe"
+  },
+  "eyeRoles": {
+    "left": {
+      "iris": [
+        "ArtMeshImage_2"
+      ],
+      "aperture": [
+        "ArtMeshEyewhiteL3"
+      ]
+    },
+    "right": {
+      "iris": [
+        "ArtMeshImage"
+      ],
+      "aperture": [
+        "ArtMeshEyewhiteR3"
+      ]
+    }
+  },
+  "eyes": {
+    "poses": 2847,
+    "flips": 0,
+    "degenerates": 0,
+    "nonFinite": 0,
+    "minAreaRatio": 0.007779653608069337,
+    "maxUnrelatedPositionDifference": 0,
+    "nonIrisGazePositionDifference": 0,
+    "transparentSplitSliverRemoved": {
+      "mesh": "ArtMeshEyewhiteR2",
+      "vertices": [
+        126,
+        130,
+        131
+      ],
+      "removedTriangles": 1
+    }
+  },
+  "wrists": {
+    "ranges": {
+      "ParamHandR": [
+        -1,
+        0,
+        1
+      ],
+      "ParamHandL": [
+        -1,
+        0,
+        1
+      ]
+    },
+    "endAngleDegrees": 6,
+    "summary": {
+      "cases": 99,
+      "nonFinite": 0,
+      "newVisibleFlips": 0,
+      "newVisibleDegenerates": 0,
+      "minimumAreaRatio": 0.13057259871048058,
+      "maxOutsideSupportDelta": 0,
+      "maxOtherMeshDelta": 0,
+      "maxFixedCuffDelta": 0,
+      "firstFailures": []
+    },
+    "measured": {
+      "ParamHandR": {
+        "maxCanvasVertexDelta": 11.47495116562678,
+        "fullWeightAnglesDegrees": [
+          {
+            "value": -1,
+            "minimum": -6.015157778759313,
+            "maximum": -5.97701211562829,
+            "vertices": 36
+          },
+          {
+            "value": 1,
+            "minimum": 5.979070446087263,
+            "maximum": 6.0213852050242975,
+            "vertices": 36
+          }
+        ],
+        "fixedCuffVertices": [
+          391,
+          392,
+          431,
+          432,
+          433,
+          524
+        ]
+      },
+      "ParamHandL": {
+        "maxCanvasVertexDelta": 11.438362644406443,
+        "fullWeightAnglesDegrees": [
+          {
+            "value": -1,
+            "minimum": 5.975428352225266,
+            "maximum": 6.022322526757963,
+            "vertices": 35
+          },
+          {
+            "value": 1,
+            "minimum": -6.023807233039117,
+            "maximum": -5.965745067528464,
+            "vertices": 35
+          }
+        ],
+        "fixedCuffVertices": [
+          52,
+          53,
+          563
+        ]
+      }
+    }
+  },
+  "localMotion": {
+    "factor": 2,
+    "axes": 8,
+    "combinations": 6561,
+    "newFlips": 0,
+    "newDegenerates": 0,
+    "defaultPositionDifference": 0
+  },
+  "textureChain": {
+    "allDrawablesMapped": 21,
+    "allPagesMatched": 13,
+    "uvTolerance": 1e-06,
+    "geometryUnchangedByPageRestore": true
+  },
+  "integratedIdle": {
+    "status": "core_passed_browser_required",
+    "durationSeconds": 24,
+    "fps": [
+      30,
+      60,
+      120
+    ],
+    "frames": [
+      721,
+      1441,
+      2881
+    ],
+    "coreOpacityProvesClosedIrises": true,
+    "browserReview": "Real WebGL: standard/goofy, independent left/right wink, half/near-closed eye at gaze corner, and opposed wrist endpoints checked."
+  },
+  "sourceArtPixels": [
+    1024,
+    1536
+  ],
+  "remaining": [
+    "少女脸型方向稿尚未替换脸部原画",
+    "大角度转头的肩颈和背发裁切边仍需精修",
+    "商业级最终全流程视觉验收尚未完成"
+  ],
+  "productOutput": {
+    "entrypoint": "/live.html?review=1&scene=empty&avatar=whale-maid-v1",
+    "canvasPixels": [
+      3840,
+      2160
+    ],
+    "screenshotPixels": [
+      3840,
+      2160
+    ],
+    "servedAssetsMatched": 16,
+    "sourceArtPixels": [
+      1024,
+      1536
+    ]
+  }
+}

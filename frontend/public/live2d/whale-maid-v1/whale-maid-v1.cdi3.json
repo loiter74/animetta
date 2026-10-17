@@ -145,6 +145,16 @@
 			"Id": "ParamTailAngle",
 			"GroupId": "",
 			"Name": "鲸尾摆动"
+		},
+		{
+			"Id": "ParamHandR",
+			"GroupId": "",
+			"Name": "右手腕局部"
+		},
+		{
+			"Id": "ParamHandL",
+			"GroupId": "",
+			"Name": "左手腕局部"
 		}
 	],
 	"ParameterGroups": [
@@ -241,12 +251,28 @@
 			"Name": "neck join underlay"
 		},
 		{
-			"Id": "ArtMeshEyewhiteR",
-			"Name": "eyewhite right"
+			"Id": "ArtMeshImage_2",
+			"Name": "左虹膜瞳孔高光"
 		},
 		{
-			"Id": "ArtMeshEyewhiteL",
-			"Name": "eyewhite left"
+			"Id": "ArtMeshImage",
+			"Name": "右虹膜瞳孔高光"
+		},
+		{
+			"Id": "ArtMeshEyewhiteR2",
+			"Name": "右眼框上下睫毛"
+		},
+		{
+			"Id": "ArtMeshEyewhiteR3",
+			"Name": "右眼裂补白"
+		},
+		{
+			"Id": "ArtMeshEyewhiteL2",
+			"Name": "左眼框原睫毛"
+		},
+		{
+			"Id": "ArtMeshEyewhiteL3",
+			"Name": "左眼裂补白"
 		},
 		{
 			"Id": "ArtMeshEyebrowR",

@@ -167,9 +167,13 @@ describe('versioned Live2D model assets', () => {
         'ParamFinL',
         'ParamArmR',
         'ParamArmL',
+        'ParamEyeBallX',
+        'ParamEyeBallY',
+        'ParamHandR',
+        'ParamHandL',
       ]),
     )
-    expect(parameters).toHaveLength(8)
+    expect(parameters).toHaveLength(12)
     expect(new Set(parameters).size).toBe(parameters.length)
     expect(idle.Meta.CurveCount).toBe(parameters.length)
     expect(parameters.some((id: string) => /^Param(?:Body)?Angle[XYZ]$/.test(id))).toBe(false)
