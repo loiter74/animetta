@@ -5,17 +5,18 @@ import type { PublicLive2DCue } from '@/shared/broadcast/publicActivity'
 import type { Live2DPerformancePlanV1 } from '@/types/socket-events'
 import { DEFAULT_LIVE2D_PERFORMANCE_PLAN } from '@/shared/live2d/performanceController'
 import { createLive2DRenderer } from '@/shared/live2d/renderer'
-import { computeLive2DLayout } from './layout'
+import type { Live2DModelProfile } from '@/shared/live2d/modelProfile'
+import { DEFAULT_LIVE2D_MODEL_PROFILE } from '@/shared/live2d/modelProfiles'
 import { createReviewVolumeTimelineLipSync } from './review-lip-sync'
 
-const PUBLIC_CUE_ACTIONS = {
-  planning: { emotion: 'thinking', group: 'TapBody', index: 0 },
-  observing: { emotion: 'thinking', group: 'TapBody', index: 1 },
-  committed: { emotion: 'confident', group: 'TapBody', index: 2 },
-  acting: { emotion: 'focused', group: 'TapBody', index: 3 },
-  checking: { emotion: 'thinking', group: 'TapBody', index: 1 },
-  recovering: { emotion: 'alert', group: 'TapBody', index: 4 },
-  finished: { emotion: 'relieved', group: 'TapBody', index: 5 },
+const PUBLIC_CUE_EMOTIONS = {
+  planning: 'thinking',
+  observing: 'thinking',
+  committed: 'confident',
+  acting: 'focused',
+  checking: 'thinking',
+  recovering: 'alert',
+  finished: 'relieved',
 } as const
 
 export interface Live2DStage {
@@ -32,6 +33,7 @@ export interface Live2DStage {
 }
 
 export interface Live2DStageOptions {
+  readonly profile?: Live2DModelProfile
   readonly resizeTo?: Window | HTMLElement
   readonly idleVitality?: boolean
 }
@@ -61,11 +63,12 @@ export function createLive2DStage(
   let notification: HTMLElement | null = null
   let releaseAudio: (() => void) | null = null
   let playbackVersion = 0
+  const profile = options.profile ?? DEFAULT_LIVE2D_MODEL_PROFILE
   const renderer = createLive2DRenderer({
     canvas,
     resizeTo: options.resizeTo ?? window,
     idleVitality: options.idleVitality,
-    layout: computeLive2DLayout,
+    profile,
     beforeMouthApply: () => lipSync?.sample(),
     onMouthApplied(value, taskId) {
       if (notification) notification.dataset.lipSync = 'observed'
@@ -93,8 +96,8 @@ export function createLive2DStage(
       return
     }
     if (cue.sourceEventId === lastCue) return
-    const action = PUBLIC_CUE_ACTIONS[cue.phase]
-    if (cue.emotion !== action.emotion) return
+    const action = profile.semanticMotions[cue.phase]
+    if (!action || cue.emotion !== PUBLIC_CUE_EMOTIONS[cue.phase]) return
     lastCue = cue.sourceEventId
     renderer.applyAction({ type: 'motion', group: action.group, index: action.index })
   }

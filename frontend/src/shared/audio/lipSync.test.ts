@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { startLipSync, stopLipSync } from './lipSync'
+import { startLipSync, stopLipSync, tickLipSync } from './lipSync'
 
 describe('audio-clock lip sync', () => {
   let frames: Map<number, FrameRequestCallback>
@@ -35,6 +35,27 @@ describe('audio-clock lip sync', () => {
     for (let index = 0; index < 8; index++) frame()
     expect(target.mock.lastCall![0]).toBe(opening)
     expect(opening).toBeLessThan(0.1)
+  })
+
+  it('uses the selected mouth mapping and refreshes it even when the model stays the same', () => {
+    const write = vi.fn()
+    const model = {
+      internalModel: {
+        coreModel: {
+          getParameterCount: () => 3,
+          getParameterIndex: (name: string) =>
+            ['ParamMouthOpenY', 'ParamA', 'CustomMouth'].indexOf(name),
+          getParameterValueByIndex: () => 0,
+          setParameterValueByIndex: write,
+        },
+      },
+    }
+    tickLipSync(model, ['CustomMouth'])
+    expect(write).toHaveBeenLastCalledWith(2, expect.any(Number))
+    tickLipSync(model, ['ParamA'])
+    expect(write).toHaveBeenLastCalledWith(1, expect.any(Number))
+    tickLipSync(model)
+    expect(write).toHaveBeenLastCalledWith(0, expect.any(Number))
   })
 
   it('waits for actual playback without advancing the mouth timeline', () => {

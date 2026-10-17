@@ -1,23 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import { applyLiveReviewLayout, computeLive2DLayout } from '../layout'
+import { applyLiveReviewLayout } from '../layout'
 
 describe('livestream review layout', () => {
-  it('keeps the Live2D model prominent without covering the danmaku panel', () => {
-    expect(
-      computeLive2DLayout({
-        screenWidth: 1080,
-        screenHeight: 1920,
-        baseWidth: 1000,
-        baseHeight: 1000,
-      }),
-    ).toEqual({
-      scale: 1.71072,
-      x: 540,
-      y: 1536,
-    })
-  })
-
   it('anchors the danmaku panel near the upper-right corner', () => {
     applyLiveReviewLayout(document.documentElement)
 

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { Live2DPerformancePlanV1 } from '@/types/socket-events'
 import {
   MAO_PERFORMANCE_OWNED_PARAMETERS,
+  MAO_PERFORMANCE_PROFILE,
   resolveMaoPerformanceParameters,
 } from './maoPerformanceProfile'
 import { Live2DPerformanceController } from './performanceController'
@@ -19,7 +20,12 @@ describe('Live2DPerformanceController', () => {
     let now = 0
     const write = vi.fn()
     const observe = vi.fn()
-    const controller = new Live2DPerformanceController({ write, now: () => now, observe })
+    const controller = new Live2DPerformanceController({
+      profile: MAO_PERFORMANCE_PROFILE,
+      write,
+      now: () => now,
+      observe,
+    })
     const invalidPlan = { ...ANNOYED, base: 'future-semantic' }
 
     controller.arm(invalidPlan as Live2DPerformancePlanV1, 'task-invalid')
@@ -41,6 +47,7 @@ describe('Live2DPerformanceController', () => {
     let now = 0
     const observe = vi.fn()
     const controller = new Live2DPerformanceController({
+      profile: MAO_PERFORMANCE_PROFILE,
       write: vi.fn(),
       now: () => now,
       observe,
@@ -72,7 +79,11 @@ describe('Live2DPerformanceController', () => {
 
   it('maps deprecated wire semantics into the reduced catalog', () => {
     const observe = vi.fn()
-    const controller = new Live2DPerformanceController({ write: vi.fn(), observe })
+    const controller = new Live2DPerformanceController({
+      profile: MAO_PERFORMANCE_PROFILE,
+      write: vi.fn(),
+      observe,
+    })
 
     controller.arm(
       { ...ANNOYED, base: 'thinking', accent: 'skeptical', source: 'llm' },
@@ -91,7 +102,11 @@ describe('Live2DPerformanceController', () => {
   it('moves through calm, armed, speaking, settling and back to calm', () => {
     let now = 0
     const write = vi.fn()
-    const controller = new Live2DPerformanceController({ write, now: () => now })
+    const controller = new Live2DPerformanceController({
+      profile: MAO_PERFORMANCE_PROFILE,
+      write,
+      now: () => now,
+    })
 
     expect(controller.state).toBe('calm')
     controller.arm(ANNOYED, 'task-1')
@@ -115,6 +130,7 @@ describe('Live2DPerformanceController', () => {
     let now = 0
     const write = vi.fn()
     const controller = new Live2DPerformanceController({
+      profile: MAO_PERFORMANCE_PROFILE,
       read: () => 0.4,
       write,
       now: () => now,
@@ -135,6 +151,7 @@ describe('Live2DPerformanceController', () => {
     let now = 0
     const write = vi.fn()
     const controller = new Live2DPerformanceController({
+      profile: MAO_PERFORMANCE_PROFILE,
       read: (name) => (name === 'ParamMouthDown' ? 0.2 : 0),
       write,
       now: () => now,
@@ -172,7 +189,11 @@ describe('Live2DPerformanceController', () => {
 
   it('ignores stale completion', () => {
     let now = 0
-    const controller = new Live2DPerformanceController({ write: vi.fn(), now: () => now })
+    const controller = new Live2DPerformanceController({
+      profile: MAO_PERFORMANCE_PROFILE,
+      write: vi.fn(),
+      now: () => now,
+    })
     controller.arm(ANNOYED, 'task-1')
     controller.start('task-1')
     for (now = 0; now <= 1000; now += 50) controller.tick()
@@ -183,7 +204,7 @@ describe('Live2DPerformanceController', () => {
 
   it('returns to calm before arming a replacement task', () => {
     const write = vi.fn()
-    const controller = new Live2DPerformanceController({ write })
+    const controller = new Live2DPerformanceController({ profile: MAO_PERFORMANCE_PROFILE, write })
     controller.arm(ANNOYED, 'task-1')
     controller.start('task-1')
     controller.tick()
@@ -198,7 +219,7 @@ describe('Live2DPerformanceController', () => {
 
   it('interrupts immediately to calm and destroy is idempotent', () => {
     const write = vi.fn()
-    const controller = new Live2DPerformanceController({ write })
+    const controller = new Live2DPerformanceController({ profile: MAO_PERFORMANCE_PROFILE, write })
     controller.arm(ANNOYED, 'task-1')
     controller.start('task-1')
 

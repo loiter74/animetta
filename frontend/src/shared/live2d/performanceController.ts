@@ -3,7 +3,6 @@ import {
   normalizeLive2DPerformancePlan,
   type Live2DPerformancePlanV1,
 } from './performanceContract'
-import { MAO_PERFORMANCE_PROFILE } from './maoPerformanceProfile'
 import type { Live2DParameterAdapter, Live2DPerformanceProfile } from './performanceProfile'
 import {
   dispatchLive2DPerformanceObservation,
@@ -18,7 +17,7 @@ const SETTLING_MS = 350
 
 export interface Live2DPerformanceControllerOptions extends Partial<Live2DParameterAdapter> {
   write: Live2DParameterAdapter['write']
-  profile?: Live2DPerformanceProfile
+  profile: Live2DPerformanceProfile
   now?: () => number
   observe?: Live2DPerformanceObserver
 }
@@ -39,7 +38,7 @@ export class Live2DPerformanceController {
   constructor(options: Live2DPerformanceControllerOptions) {
     this.read = options.read ?? (() => 0)
     this.write = options.write
-    this.profile = options.profile ?? MAO_PERFORMANCE_PROFILE
+    this.profile = options.profile
     this.now = options.now ?? (() => performance.now())
     this.observe = options.observe ?? dispatchLive2DPerformanceObservation
   }
@@ -137,7 +136,7 @@ export class Live2DPerformanceController {
 
 export function createLive2DPerformanceController(
   adapter: Live2DParameterAdapter,
-  options: Omit<Live2DPerformanceControllerOptions, keyof Live2DParameterAdapter> = {},
+  options: Omit<Live2DPerformanceControllerOptions, keyof Live2DParameterAdapter>,
 ): Live2DPerformanceController {
   return new Live2DPerformanceController({ ...options, ...adapter })
 }

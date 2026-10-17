@@ -3,17 +3,13 @@ import { getApp } from './usePixiApp'
 import {
   getModel,
   applyScale,
+  centerModel,
   getUserScale,
   setUserScale,
   getStrategy,
   STRATEGIES,
   setStrategy,
-  POS_X_RATIO,
-  POS_Y_RATIO,
   INITIAL_SCALE,
-  FIXED_X,
-  FIXED_Y,
-  USE_FIXED_POSITION,
 } from './useLive2DModel'
 
 // ===== Reactive State (exposed to Vue templates) =====
@@ -80,20 +76,9 @@ export function zoom(delta: number): void {
 
 /** Reset to user's preferred initial position and scale */
 export function resetView(): void {
-  const app = getApp()
-  const model = getModel()
   setUserScale(INITIAL_SCALE)
   applyScale()
-  if (model && app) {
-    if (USE_FIXED_POSITION) {
-      model.x = FIXED_X
-      model.y = FIXED_Y
-    } else {
-      model.x = app.screen.width * POS_X_RATIO
-      model.y = app.screen.height * POS_Y_RATIO
-    }
-  }
-  updateModelInfo()
+  centerModel()
 }
 
 // ===== Scale Strategy =====

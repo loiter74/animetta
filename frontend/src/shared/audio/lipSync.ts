@@ -9,6 +9,7 @@ import { createMouthEnvelope } from './mouthEnvelope'
 let mouthValue = 0
 let targetMouth = 0
 let mouthModel: MouthParameterLookup | null = null
+let mouthCandidates: readonly string[] | undefined
 let mouthParameterIndex = -1
 let lipSyncCancel: (() => void) | null = null
 
@@ -31,7 +32,10 @@ interface MouthModel {
   }
 }
 
-export function tickLipSync(model: MouthModel | null | undefined): void {
+export function tickLipSync(
+  model: MouthModel | null | undefined,
+  candidates?: readonly string[],
+): void {
   if (!model) return
   const coreModel = model.internalModel?.coreModel
   if (!coreModel) return
@@ -40,9 +44,10 @@ export function tickLipSync(model: MouthModel | null | undefined): void {
   const factor = 0.5 + 0.4 * Math.min(delta / 0.3, 1.0)
   mouthValue += (targetMouth - mouthValue) * factor
 
-  if (coreModel !== mouthModel) {
+  if (coreModel !== mouthModel || candidates !== mouthCandidates) {
     mouthModel = coreModel
-    mouthParameterIndex = resolveMouthParameterIndex(coreModel)
+    mouthCandidates = candidates
+    mouthParameterIndex = resolveMouthParameterIndex(coreModel, candidates)
   }
 
   if (mouthParameterIndex >= 0) {

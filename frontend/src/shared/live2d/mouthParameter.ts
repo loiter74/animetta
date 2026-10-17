@@ -5,9 +5,12 @@ export interface MouthParameterLookup {
   getParameterIndex(name: string): number
 }
 
-export function resolveMouthParameterIndex(model: MouthParameterLookup): number {
+export function resolveMouthParameterIndex(
+  model: MouthParameterLookup,
+  candidates: readonly string[] = MOUTH_PARAMETERS,
+): number {
   const parameterCount = model.getParameterCount()
-  for (const name of MOUTH_PARAMETERS) {
+  for (const name of candidates) {
     const index = model.getParameterIndex(name)
     if (index >= 0 && index < parameterCount) return index
   }

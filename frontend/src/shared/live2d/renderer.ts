@@ -7,6 +7,7 @@ import {
 } from './performanceController'
 import { createCubismParameterAdapter, type CubismParameterModel } from './performanceProfile'
 import type { Live2DPerformancePlanV1 } from './performanceContract'
+import type { Live2DIdleVitalityParameter, Live2DModelProfile } from './modelProfile'
 
 export interface Live2DLayoutInput {
   screenWidth: number
@@ -17,6 +18,7 @@ export interface Live2DLayoutInput {
 export interface Live2DRendererOptions {
   canvas: HTMLCanvasElement
   resizeTo: Window | HTMLElement
+  profile: Live2DModelProfile
   idleVitality?: boolean
   layout?(input: Live2DLayoutInput): { scale: number; x: number; y: number }
   onState?(status: 'live' | 'error', error?: unknown): void
@@ -35,16 +37,6 @@ export interface Live2DRenderer {
   cancelPerformance(): void
   dispose(): void
 }
-
-const IDLE_VITALITY_PARAMETERS = [
-  { name: 'ParamAngleX', factor: 2.3 },
-  { name: 'ParamAngleY', factor: 2.3 },
-  { name: 'ParamAngleZ', factor: 2.3 },
-  { name: 'ParamBodyAngleX', factor: 2.6 },
-  { name: 'ParamBodyAngleY', factor: 2.6 },
-  { name: 'ParamBodyAngleZ', factor: 2.6 },
-  { name: 'ParamBreath', factor: 2.4 },
-] as const
 
 const PARAMETER_LIMIT_KNEE_RATIO = 0.8
 
@@ -68,10 +60,14 @@ function softlyLimitParameter(
   return defaultValue + Math.sign(offset) * softened
 }
 
-function amplifyIdleMotion(internalModel: Cubism4InternalModel): void {
-  if (internalModel.motionManager.state.currentGroup !== 'Idle') return
+function amplifyIdleMotion(
+  internalModel: Cubism4InternalModel,
+  parameters: readonly Live2DIdleVitalityParameter[],
+): void {
+  const { motionManager } = internalModel
+  if (motionManager.state.currentGroup !== motionManager.groups.idle) return
 
-  for (const { name, factor } of IDLE_VITALITY_PARAMETERS) {
+  for (const { name, factor } of parameters) {
     const index = internalModel.coreModel.getParameterIndex(name)
     if (index < 0) continue
     const current = internalModel.coreModel.getParameterValueByIndex(index)
@@ -107,6 +103,7 @@ async function configureIdleLoopMotions(internalModel: Cubism4InternalModel): Pr
 }
 
 export function createLive2DRenderer(options: Live2DRendererOptions): Live2DRenderer {
+  const { profile } = options
   let disposed = false
   let app: PIXI.Application | null = null
   let model: Live2DModel | null = null
@@ -132,7 +129,7 @@ export function createLive2DRenderer(options: Live2DRendererOptions): Live2DRend
         backgroundAlpha: 0,
         autoStart: true,
       })
-      const loaded = await Live2DModel.from('/live2d/mao/Mao.model3.json', { autoInteract: false })
+      const loaded = await Live2DModel.from(profile.modelUrl, { autoInteract: false })
       if (disposed) {
         loaded.destroy()
         return
@@ -151,14 +148,21 @@ export function createLive2DRenderer(options: Live2DRendererOptions): Live2DRend
       model = loaded
       const internal = loaded.internalModel as Cubism4InternalModel
       const core = internal.coreModel as CubismParameterModel
-      const mouthIndex = resolveMouthParameterIndex(internal.coreModel)
+      const mouthIndex = resolveMouthParameterIndex(internal.coreModel, profile.mouthParameters)
       const baseWidth = loaded.width / loaded.scale.x
       const baseHeight = loaded.height / loaded.scale.y
-      performanceController = createLive2DPerformanceController(createCubismParameterAdapter(core))
+      performanceController = createLive2DPerformanceController(
+        createCubismParameterAdapter(core),
+        {
+          profile: profile.performance,
+        },
+      )
       const applyMouth = (): void => {
         if (disposed) return
         performanceController?.tick()
-        if (options.idleVitality) amplifyIdleMotion(internal)
+        if (options.idleVitality && profile.idleVitality) {
+          amplifyIdleMotion(internal, profile.idleVitality)
+        }
         options.beforeMouthApply?.()
         if (mouthIndex >= 0) {
           internal.coreModel.setParameterValueByIndex(mouthIndex, mouth)
@@ -183,9 +187,9 @@ export function createLive2DRenderer(options: Live2DRendererOptions): Live2DRend
             Math.min(
               (input.screenWidth * 0.88) / baseWidth,
               (input.screenHeight * 0.82) / baseHeight,
-            ) * 1.8,
-          x: input.screenWidth * 0.5,
-          y: input.screenHeight * 0.8,
+            ) * profile.framing.scale,
+          x: input.screenWidth * profile.framing.x,
+          y: input.screenHeight * profile.framing.y,
         }
         loaded.scale.set(position.scale)
         loaded.anchor.set(0.5, 0.5)

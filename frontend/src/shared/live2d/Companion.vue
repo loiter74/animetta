@@ -2,8 +2,11 @@
 import { onMounted, onBeforeUnmount, ref } from 'vue'
 import * as PIXI from 'pixi.js'
 import type { Live2DRenderer } from '@/shared/live2d/renderer'
+import type { Live2DModelProfile } from './modelProfile'
+import { DEFAULT_LIVE2D_MODEL_PROFILE } from './modelProfiles'
 
 defineOptions({ name: 'Live2DCompanion' })
+const props = defineProps<{ profile?: Live2DModelProfile }>()
 
 const container = ref<HTMLElement>()
 const canvas = ref<HTMLCanvasElement>()
@@ -20,6 +23,7 @@ onMounted(async () => {
   stage = createLive2DRenderer({
     canvas: canvas.value,
     resizeTo: container.value,
+    profile: props.profile ?? DEFAULT_LIVE2D_MODEL_PROFILE,
     idleVitality: true,
     onState: (value) => {
       status.value = value

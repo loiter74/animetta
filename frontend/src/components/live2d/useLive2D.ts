@@ -41,6 +41,7 @@ import {
   createLive2DPerformanceController,
 } from '@/shared/live2d/performanceController'
 import { dispatchLive2DPerformanceObservation } from '@/shared/live2d/performanceObservability'
+import { DEFAULT_LIVE2D_MODEL_PROFILE } from '@/shared/live2d/modelProfiles'
 import {
   isLoaded,
   isLoading,
@@ -67,10 +68,10 @@ let audioStreamChunkListener: ((data: AudioStreamChunkEvent) => void) | null = n
 let audioStreamEndListener: ((data: AudioStreamEndEvent) => void) | null = null
 let stopAudioListener: ((data: ChatIdentity) => void) | null = null
 let disconnectListener: (() => void) | null = null
-const performanceController = createLive2DPerformanceController({
-  read: getParameterValue,
-  write: setClampedParameter,
-})
+const performanceController = createLive2DPerformanceController(
+  { read: getParameterValue, write: setClampedParameter },
+  { profile: DEFAULT_LIVE2D_MODEL_PROFILE.performance },
+)
 
 function isCurrentPerformanceEvent(
   data: ChatIdentity,
@@ -88,7 +89,7 @@ function isCurrentPerformanceEvent(
 
 function tickPerformanceThenLipSync(): void {
   performanceController.tick()
-  tickLipSync(getModel())
+  tickLipSync(getModel(), DEFAULT_LIVE2D_MODEL_PROFILE.mouthParameters)
 }
 
 // ===== Main Composable =====

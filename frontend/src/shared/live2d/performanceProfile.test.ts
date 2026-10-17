@@ -1,4 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
+import { readFileSync, existsSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { DEFAULT_LIVE2D_MODEL_PROFILE } from './modelProfiles'
 import { createCubismParameterAdapter } from './performanceProfile'
 
 describe('Live2D performance model adapter', () => {
@@ -20,5 +23,27 @@ describe('Live2D performance model adapter', () => {
 
     expect(set).toHaveBeenCalledOnce()
     expect(set).toHaveBeenCalledWith(2, 0.5)
+  })
+})
+
+describe('versioned Live2D model assets', () => {
+  it('maps each model only to its own packaged motion groups and mouth parameters', () => {
+    for (const profile of [DEFAULT_LIVE2D_MODEL_PROFILE]) {
+      const path = resolve('public', profile.modelUrl.slice(1))
+      const model = JSON.parse(readFileSync(path, 'utf8'))
+      const refs = model.FileReferences
+      const files = [refs.Moc, ...refs.Textures, refs.Physics, refs.DisplayInfo]
+      for (const file of files) expect(existsSync(resolve(dirname(path), file)), file).toBe(true)
+      const display = JSON.parse(
+        readFileSync(resolve(dirname(path), model.FileReferences.DisplayInfo), 'utf8'),
+      )
+      const parameters = new Set(
+        display.Parameters.map((parameter: { Id: string }) => parameter.Id),
+      )
+      expect(profile.mouthParameters.every((parameter) => parameters.has(parameter))).toBe(true)
+      for (const motion of Object.values(profile.semanticMotions)) {
+        expect(model.FileReferences.Motions[motion.group]?.[motion.index ?? 0]).toBeDefined()
+      }
+    }
   })
 })

@@ -1,22 +1,16 @@
 import type { Cubism4InternalModel, Live2DModel } from 'pixi-live2d-display/cubism4'
 import { getApp } from './usePixiApp'
 import { isLoaded, isLoading, loadError, updateModelInfo } from './useInteraction'
+import { DEFAULT_LIVE2D_MODEL_PROFILE } from '@/shared/live2d/modelProfiles'
 
-// ===== Model Configuration (edit these to change model) =====
+// ===== Default avatar selected at the application boundary =====
 
-export const MODEL_PATH = 'live2d/mao/Mao.model3.json'
-// Position is computed as a fraction of canvas dimensions at load time,
-// so the model appears at the same relative position on any screen size.
-const POS_X_RATIO = 0.741 // 800/1080 = 0.741 (74.1% from left)
-const POS_Y_RATIO = 0.677 // 1300/1920 = 0.677 (67.7% from top)
+export const MODEL_PATH = DEFAULT_LIVE2D_MODEL_PROFILE.modelUrl
+// The Vue surface keeps its existing composition independently of model defaults.
+const INITIAL_POSITION = { x: 800, y: 1300 }
 const INITIAL_SCALE = 2.59
 
-// Fixed pixel position (overrides ratio when set)
-const FIXED_X = 800
-const FIXED_Y = 1300
-const USE_FIXED_POSITION = true // Set to false to use ratio-based positioning
-
-export { POS_X_RATIO, POS_Y_RATIO, INITIAL_SCALE, FIXED_X, FIXED_Y, USE_FIXED_POSITION }
+export { INITIAL_SCALE }
 
 export interface ScaleStrategy {
   anchor: [number, number]
@@ -91,8 +85,7 @@ export async function loadModel(modelPath: string): Promise<void> {
       ),
     ])) as Live2DModel<Cubism4InternalModel>
 
-    // Reset scheduler state left by a previously loaded model before Mao's
-    // authored idle scheduler begins.
+    // Reset scheduler state left by a previously loaded model.
     try {
       model.internalModel?.motionManager?.stopAllMotions()
     } catch {}
@@ -122,20 +115,11 @@ export async function loadModel(modelPath: string): Promise<void> {
     const initialBounds = loadedModel.getBounds()
     baseBounds = { width: initialBounds.width, height: initialBounds.height }
 
-    applyScale()
-    // Position model: fixed pixel position or ratio-based
-    if (USE_FIXED_POSITION) {
-      model.x = FIXED_X
-      model.y = FIXED_Y
-    } else {
-      model.x = app.screen.width * POS_X_RATIO
-      model.y = app.screen.height * POS_Y_RATIO
-    }
     userScale = INITIAL_SCALE
     applyScale()
+    centerModel()
     isLoaded.value = true
     isLoading.value = false
-    updateModelInfo()
   } catch (err: unknown) {
     loadError.value = err instanceof Error ? err.message : '模型加载失败'
     isLoading.value = false
@@ -173,13 +157,8 @@ export function applyScale(): void {
 export function centerModel(): void {
   const app = getApp()
   if (!model || !app) return
-  if (USE_FIXED_POSITION) {
-    model.x = FIXED_X
-    model.y = FIXED_Y
-  } else {
-    model.x = app.screen.width * POS_X_RATIO
-    model.y = app.screen.height * POS_Y_RATIO
-  }
+  model.x = INITIAL_POSITION.x
+  model.y = INITIAL_POSITION.y
   updateModelInfo()
 }
 

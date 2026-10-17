@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { DEFAULT_LIVE2D_MODEL_PROFILE } from '@/shared/live2d/modelProfiles'
 
 const fixtures = vi.hoisted(() => {
   let beforeModelUpdate: (() => void) | null = null
@@ -15,7 +16,7 @@ const fixtures = vi.hoisted(() => {
   }
   const setParameterValueByIndex = vi.fn()
   const parameterNames = [
-    'ParamMouthOpenY',
+    'ParamA',
     'ParamAngleX',
     'ParamAngleY',
     'ParamAngleZ',
@@ -267,7 +268,7 @@ describe('createLive2DStage', () => {
   it('maps sanitized public cues only to existing Mao motion assets', async () => {
     const { createLive2DStage } = await import('./live2d-stage')
     const socket = { on: vi.fn().mockReturnThis(), off: vi.fn().mockReturnThis() }
-    const stage = createLive2DStage(socket)
+    const stage = createLive2DStage(socket, { profile: DEFAULT_LIVE2D_MODEL_PROFILE })
 
     stage.applyPublicCue({
       sourceEventId: 'activity:1',
@@ -308,7 +309,10 @@ describe('createLive2DStage', () => {
   it('amplifies idle motion without hitting hard parameter limits', async () => {
     const { createLive2DStage } = await import('./live2d-stage')
     const socket = { on: vi.fn().mockReturnThis(), off: vi.fn().mockReturnThis() }
-    const stage = createLive2DStage(socket, { idleVitality: true })
+    const stage = createLive2DStage(socket, {
+      idleVitality: true,
+      profile: DEFAULT_LIVE2D_MODEL_PROFILE,
+    })
     await stage.ready
 
     fixtures.setParameterValue('ParamAngleX', 8)
