@@ -90,7 +90,7 @@ describe('Live2D emotion expressions', () => {
 
   it('does not invent expression assets for a model without expression declarations', () => {
     const apply = vi.fn()
-    const controller = createLive2DExpressionController(DEFAULT_LIVE2D_MODEL_PROFILE, apply)
+    const controller = createLive2DExpressionController(resolveLive2DModelProfile('mao'), apply)
     controller.setEmotion('happy')
     controller.setManual('goofy')
     controller.setManual(null)
@@ -141,6 +141,17 @@ describe('Live2D performance model adapter', () => {
 })
 
 describe('versioned Live2D model assets', () => {
+  it('selects the authored whale maid as the application default and explicit whale profile', () => {
+    expect(DEFAULT_LIVE2D_MODEL_PROFILE.id).toBe('whale-maid-v1')
+    expect(DEFAULT_LIVE2D_MODEL_PROFILE).toBe(resolveLive2DModelProfile('whale-maid-v1'))
+  })
+
+  it('preserves the explicit Mao profile independently of the application default', () => {
+    const mao = resolveLive2DModelProfile('mao')
+    expect(mao).not.toBe(DEFAULT_LIVE2D_MODEL_PROFILE)
+    expect(mao.id).toBe('mao')
+  })
+
   it('falls back to the default model for undeclared IDs', () => {
     expect(resolveLive2DModelProfile(null)).toBe(DEFAULT_LIVE2D_MODEL_PROFILE)
     expect(resolveLive2DModelProfile('unknown')).toBe(DEFAULT_LIVE2D_MODEL_PROFILE)
@@ -212,7 +223,7 @@ describe('versioned Live2D model assets', () => {
 
   it('maps each model only to its own packaged motion groups and mouth parameters', () => {
     for (const profile of [
-      DEFAULT_LIVE2D_MODEL_PROFILE,
+      resolveLive2DModelProfile('mao'),
       resolveLive2DModelProfile('whale-maid-v1'),
     ]) {
       const path = resolve('public', profile.modelUrl.slice(1))

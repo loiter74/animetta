@@ -1,11 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import {
-  DEFAULT_LIVE2D_MODEL_PROFILE,
-  resolveLive2DModelProfile,
-} from '@/shared/live2d/modelProfiles'
+import { resolveLive2DModelProfile } from '@/shared/live2d/modelProfiles'
 import { bindLive2DEmotionSocket } from '@/shared/live2d/emotionSocket'
 import { Events } from '@/constants/socket-events'
 import type { LiveSocket } from '@/shared/transport/liveSocket'
+
+const mao = resolveLive2DModelProfile('mao')
 
 const fixtures = vi.hoisted(() => {
   let beforeModelUpdate: (() => void) | null = null
@@ -148,7 +147,10 @@ describe('createLive2DStage', () => {
 
   it('fits the model after the renderer changes size and removes the resize listener on disposal', async () => {
     const { createLive2DStage } = await import('./live2d-stage')
-    const stage = createLive2DStage({ on: vi.fn().mockReturnThis(), off: vi.fn().mockReturnThis() })
+    const stage = createLive2DStage(
+      { on: vi.fn().mockReturnThis(), off: vi.fn().mockReturnThis() },
+      { profile: mao },
+    )
     await stage.ready
     expect(document.getElementById('modelStatus')?.dataset.state).toBe('live')
     fixtures.emitRendererResize(300, 400)
@@ -206,7 +208,7 @@ describe('createLive2DStage', () => {
   it('owns the only review playback and samples mouth volume in the model frame', async () => {
     const { createLive2DStage } = await import('./live2d-stage')
     const socket = { on: vi.fn().mockReturnThis(), off: vi.fn().mockReturnThis() }
-    const stage = createLive2DStage(socket)
+    const stage = createLive2DStage(socket, { profile: mao })
     await stage.ready
     const notification = document.createElement('aside')
     const audio = document.createElement('audio')
@@ -235,7 +237,7 @@ describe('createLive2DStage', () => {
   it('applies production mouth targets inside the Live2D model frame', async () => {
     const { createLive2DStage } = await import('./live2d-stage')
     const socket = { on: vi.fn().mockReturnThis(), off: vi.fn().mockReturnThis() }
-    const stage = createLive2DStage(socket)
+    const stage = createLive2DStage(socket, { profile: mao })
     await stage.ready
 
     stage.setMouth(0.8, 'task-1')
@@ -257,7 +259,7 @@ describe('createLive2DStage', () => {
   it('unsubscribes its own socket handler and ignores actions after disposal', async () => {
     const { createLive2DStage } = await import('./live2d-stage')
     const socket = { on: vi.fn().mockReturnThis(), off: vi.fn().mockReturnThis() }
-    const stage = createLive2DStage(socket)
+    const stage = createLive2DStage(socket, { profile: mao })
     await stage.ready
     const [event, handler] = socket.on.mock.calls[0]
     handler({ type: 'expression', name: 'smile' })
@@ -270,7 +272,10 @@ describe('createLive2DStage', () => {
 
   it('detaches replaced audio callbacks and ignores a late playback rejection', async () => {
     const { createLive2DStage } = await import('./live2d-stage')
-    const stage = createLive2DStage({ on: vi.fn().mockReturnThis(), off: vi.fn().mockReturnThis() })
+    const stage = createLive2DStage(
+      { on: vi.fn().mockReturnThis(), off: vi.fn().mockReturnThis() },
+      { profile: mao },
+    )
     await stage.ready
     const first = document.createElement('aside')
     const second = document.createElement('aside')
@@ -316,7 +321,7 @@ describe('createLive2DStage', () => {
     const socket = { on: vi.fn().mockReturnThis(), off: vi.fn().mockReturnThis() }
     const avatarContainer = document.createElement('section')
 
-    const stage = createLive2DStage(socket, { resizeTo: avatarContainer })
+    const stage = createLive2DStage(socket, { resizeTo: avatarContainer, profile: mao })
     await stage.ready
 
     expect(fixtures.getApplicationOptions()?.resizeTo).toBe(avatarContainer)
@@ -326,7 +331,7 @@ describe('createLive2DStage', () => {
   it('maps sanitized public cues only to existing Mao motion assets', async () => {
     const { createLive2DStage } = await import('./live2d-stage')
     const socket = { on: vi.fn().mockReturnThis(), off: vi.fn().mockReturnThis() }
-    const stage = createLive2DStage(socket, { profile: DEFAULT_LIVE2D_MODEL_PROFILE })
+    const stage = createLive2DStage(socket, { profile: mao })
 
     stage.applyPublicCue({
       sourceEventId: 'activity:1',
@@ -354,7 +359,7 @@ describe('createLive2DStage', () => {
     const { createLive2DStage } = await import('./live2d-stage')
     const socket = { on: vi.fn().mockReturnThis(), off: vi.fn().mockReturnThis() }
 
-    const stage = createLive2DStage(socket)
+    const stage = createLive2DStage(socket, { profile: mao })
     await stage.ready
 
     expect(fixtures.idleMotions[0].setIsLoop).toHaveBeenCalledWith(true)
@@ -369,7 +374,7 @@ describe('createLive2DStage', () => {
     const socket = { on: vi.fn().mockReturnThis(), off: vi.fn().mockReturnThis() }
     const stage = createLive2DStage(socket, {
       idleVitality: true,
-      profile: DEFAULT_LIVE2D_MODEL_PROFILE,
+      profile: mao,
     })
     await stage.ready
 

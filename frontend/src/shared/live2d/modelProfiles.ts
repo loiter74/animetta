@@ -1,7 +1,7 @@
 import { MAO_PERFORMANCE_PROFILE } from './maoPerformanceProfile'
 import type { Live2DModelProfile } from './modelProfile'
 
-export const DEFAULT_LIVE2D_MODEL_PROFILE: Live2DModelProfile = {
+const MAO_MODEL_PROFILE: Live2DModelProfile = {
   id: 'mao',
   modelUrl: '/live2d/mao/Mao.model3.json',
   mouthParameters: ['ParamA'],
@@ -72,8 +72,8 @@ const WHALE_MAID_MODEL_PROFILE: Live2DModelProfile = {
   },
 }
 
+export const DEFAULT_LIVE2D_MODEL_PROFILE = WHALE_MAID_MODEL_PROFILE
+
 export function resolveLive2DModelProfile(id: string | null): Live2DModelProfile {
-  return id === WHALE_MAID_MODEL_PROFILE.id
-    ? WHALE_MAID_MODEL_PROFILE
-    : DEFAULT_LIVE2D_MODEL_PROFILE
+  return id === MAO_MODEL_PROFILE.id ? MAO_MODEL_PROFILE : DEFAULT_LIVE2D_MODEL_PROFILE
 }

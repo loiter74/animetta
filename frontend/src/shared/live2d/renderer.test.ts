@@ -87,15 +87,18 @@ vi.mock('pixi.js', () => ({
 
 import { createLive2DRenderer } from './renderer'
 import type { Live2DModelProfile } from './modelProfile'
-import { DEFAULT_LIVE2D_MODEL_PROFILE } from './modelProfiles'
+import { DEFAULT_LIVE2D_MODEL_PROFILE, resolveLive2DModelProfile } from './modelProfiles'
 import { DEFAULT_LIVE2D_PERFORMANCE_PLAN } from './performanceContract'
 import { LIVE2D_UHD_SIZE, responsiveRenderResolution } from './renderResolution'
 import { createFixedStepPhysics } from './fixedStepPhysics'
 
+// The SDK fixture uses Mao's mouth parameter and does not include authored physics.
+const mao = resolveLive2DModelProfile('mao')
+
 const elements = () => ({
   canvas: document.createElement('canvas'),
   resizeTo: document.createElement('div'),
-  profile: DEFAULT_LIVE2D_MODEL_PROFILE,
+  profile: mao,
 })
 
 describe('instance Live2D renderer', () => {
@@ -178,7 +181,7 @@ describe('instance Live2D renderer', () => {
   it('disables SDK head oscillation only for models with authored breathing', async () => {
     const authored = createLive2DRenderer({
       ...elements(),
-      profile: { ...DEFAULT_LIVE2D_MODEL_PROFILE, automaticBreathing: false },
+      profile: { ...mao, automaticBreathing: false },
     })
     const defaults = createLive2DRenderer(elements())
     await Promise.all([authored.ready, defaults.ready])
@@ -207,7 +210,7 @@ describe('instance Live2D renderer', () => {
     fixtures.from.mockResolvedValueOnce(firstModel).mockResolvedValueOnce(secondModel)
     const first = createLive2DRenderer({
       ...elements(),
-      profile: { ...DEFAULT_LIVE2D_MODEL_PROFILE, fixedStepPhysics: true },
+      profile: { ...mao, fixedStepPhysics: true },
     })
     const second = createLive2DRenderer(elements())
     await Promise.all([first.ready, second.ready])
@@ -217,6 +220,23 @@ describe('instance Live2D renderer', () => {
     expect(firstModel.listeners.size).toBe(1)
     first.dispose()
     second.dispose()
+  })
+
+  it('fails when the default whale model is missing its required authored physics', async () => {
+    const onState = vi.fn()
+    const options = { ...elements(), profile: DEFAULT_LIVE2D_MODEL_PROFILE, onState }
+    const renderer = createLive2DRenderer(options)
+    await renderer.ready
+    expect(fixtures.from).toHaveBeenCalledWith(DEFAULT_LIVE2D_MODEL_PROFILE.modelUrl, {
+      autoInteract: false,
+    })
+    expect(onState).toHaveBeenCalledExactlyOnceWith(
+      'error',
+      expect.objectContaining({ message: 'Authored Live2D physics could not be loaded' }),
+    )
+    expect(options.canvas.dataset.renderState).toBe('error')
+    expect(fixtures.models[0].destroy).toHaveBeenCalledOnce()
+    renderer.dispose()
   })
 
   it('isolates mouth, callbacks, actions and disposal across two instances without global DOM IDs', async () => {
@@ -273,7 +293,7 @@ describe('instance Live2D renderer', () => {
     const renderer = createLive2DRenderer({
       ...elements(),
       profile: {
-        ...DEFAULT_LIVE2D_MODEL_PROFILE,
+        ...mao,
         expressions: {
           standard: { label: '标准', mouthRest: 0 },
           goofy: { label: '傻笑', mouthRest: 0.8 },
@@ -312,14 +332,14 @@ describe('instance Live2D renderer', () => {
       plan.base === 'annoyed' ? [{ name: 'secondEmotion', offset: 0.6, min: 0, max: 1 }] : [],
     )
     const firstProfile: Live2DModelProfile = {
-      ...DEFAULT_LIVE2D_MODEL_PROFILE,
+      ...mao,
       id: 'first',
       modelUrl: '/first.model3.json',
       mouthParameters: ['firstMouth'],
       performance: { resolve: firstResolve },
     }
     const secondProfile: Live2DModelProfile = {
-      ...DEFAULT_LIVE2D_MODEL_PROFILE,
+      ...mao,
       id: 'second',
       modelUrl: '/second.model3.json',
       mouthParameters: ['secondMouth'],
