@@ -10,7 +10,7 @@ afterEach(() => {
 describe('avatar preview on the live entrypoint', () => {
   it('keeps the controls out of the normal live surface', () => {
     document.body.innerHTML = '<main class="live-shell"></main>'
-    const stage = { setExpression: vi.fn(), setMouth: vi.fn() }
+    const stage = { setExpression: vi.fn(), setMouth: vi.fn(), setZoom: vi.fn() }
     const dispose = mountAvatarPreview(
       document,
       new URLSearchParams(),
@@ -25,7 +25,7 @@ describe('avatar preview on the live entrypoint', () => {
   it('switches both expressions and bounds mouth preview to twenty seconds with disposal', () => {
     vi.useFakeTimers()
     document.body.innerHTML = '<main class="live-shell"></main>'
-    const stage = { setExpression: vi.fn(), setMouth: vi.fn() }
+    const stage = { setExpression: vi.fn(), setMouth: vi.fn(), setZoom: vi.fn() }
     const dispose = mountAvatarPreview(
       document,
       new URLSearchParams('review=1&expression=goofy'),
@@ -48,5 +48,34 @@ describe('avatar preview on the live entrypoint', () => {
     expect(vi.getTimerCount()).toBe(0)
     expect(stage.setMouth).toHaveBeenLastCalledWith(0)
     expect(document.querySelector('[aria-label="立绘预览"]')).toBeNull()
+  })
+
+  it('enlarges the actual model and restores full-body framing without changing expressions', () => {
+    document.body.innerHTML = '<main class="live-shell"></main>'
+    const stage = { setExpression: vi.fn(), setMouth: vi.fn(), setZoom: vi.fn() }
+    const dispose = mountAvatarPreview(
+      document,
+      new URLSearchParams('review=1'),
+      resolveLive2DModelProfile('whale-maid-v1'),
+      stage,
+    )!
+    const button = (label: string) =>
+      [...document.querySelectorAll('button')].find((item) => item.textContent === label)!
+    const larger = button('放大')
+    larger.click()
+    larger.click()
+    expect(stage.setZoom).toHaveBeenLastCalledWith(1.5)
+    expect(document.querySelector('[aria-label="立绘缩放"]')?.textContent).toBe('150%')
+    button('缩小').click()
+    expect(stage.setZoom).toHaveBeenLastCalledWith(1.25)
+    button('全身').click()
+    expect(stage.setZoom).toHaveBeenLastCalledWith(1)
+    button('缩小').click()
+    expect(stage.setZoom).toHaveBeenLastCalledWith(1)
+    expect(stage.setExpression).toHaveBeenCalledOnce()
+    dispose()
+    stage.setZoom.mockClear()
+    larger.click()
+    expect(stage.setZoom).not.toHaveBeenCalled()
   })
 })

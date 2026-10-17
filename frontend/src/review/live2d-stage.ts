@@ -21,6 +21,7 @@ const PUBLIC_CUE_EMOTIONS = {
 
 export interface Live2DStage {
   ready: Promise<void>
+  setZoom(value: number): void
   setMouth(value: number, taskId?: string): void
   setExpression(name: string): void
   playReviewAudio(
@@ -49,6 +50,7 @@ export function createLive2DStage(
   if (!(canvas instanceof HTMLCanvasElement) || !state) {
     return {
       ready: Promise.resolve(),
+      setZoom() {},
       setMouth() {},
       setExpression() {},
       playReviewAudio() {},
@@ -130,6 +132,7 @@ export function createLive2DStage(
   }
   return {
     ready,
+    setZoom: renderer.setZoom,
     setMouth: renderer.setMouth,
     setExpression: (name) => renderer.applyAction({ type: 'expression', name }),
     applyPublicCue,

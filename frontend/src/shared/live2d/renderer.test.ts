@@ -20,6 +20,7 @@ const fixtures = vi.hoisted(() => {
       anchor: { set: vi.fn() },
       internalModel: {
         coreModel,
+        breath: { setParameters: vi.fn() },
         motionManager: {
           groups: { idle: 'Idle' },
           state: { currentGroup: 'Idle' },
@@ -77,6 +78,19 @@ describe('instance Live2D renderer', () => {
     vi.clearAllMocks()
     fixtures.models.length = 0
     fixtures.apps.length = 0
+  })
+
+  it('disables SDK head oscillation only for models with authored breathing', async () => {
+    const authored = createLive2DRenderer({
+      ...elements(),
+      profile: { ...DEFAULT_LIVE2D_MODEL_PROFILE, automaticBreathing: false },
+    })
+    const defaults = createLive2DRenderer(elements())
+    await Promise.all([authored.ready, defaults.ready])
+    expect(fixtures.models[0].internalModel.breath.setParameters).toHaveBeenCalledWith([])
+    expect(fixtures.models[1].internalModel.breath.setParameters).not.toHaveBeenCalled()
+    authored.dispose()
+    defaults.dispose()
   })
 
   it('isolates mouth, callbacks, actions and disposal across two instances without global DOM IDs', async () => {
@@ -293,6 +307,26 @@ describe('instance Live2D renderer', () => {
     expect(model.destroy).toHaveBeenCalledOnce()
     expect(onState).not.toHaveBeenCalled()
     expect(model.listeners.size).toBe(0)
+  })
+
+  it('zooms with cached dimensions while keeping the head visible and restores the fitted full body', async () => {
+    const renderer = createLive2DRenderer({ ...elements() })
+    renderer.setZoom(2)
+    await renderer.ready
+    const model = fixtures.models[0]
+    expect(model.scale.set).toHaveBeenLastCalledWith(1.476)
+    expect(model.position.set.mock.lastCall?.[1]).toBeCloseTo(615.2)
+    renderer.setZoom(2)
+    expect(model.scale.set).toHaveBeenLastCalledWith(1.476)
+    renderer.setZoom(20)
+    expect(model.scale.set.mock.lastCall?.[0]).toBeCloseTo(2.214)
+    renderer.setZoom(1)
+    expect(model.scale.set).toHaveBeenLastCalledWith(0.738)
+    expect(model.position.set).toHaveBeenLastCalledWith(150, 320)
+    renderer.dispose()
+    model.scale.set.mockClear()
+    renderer.setZoom(2)
+    expect(model.scale.set).not.toHaveBeenCalled()
   })
 
   it('releases failed initialization and reports an error without leaking an application', async () => {

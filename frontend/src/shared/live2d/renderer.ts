@@ -29,6 +29,7 @@ export type Live2DRendererAction =
   { type: 'expression'; name: string } | { type: 'motion'; group: string; index?: number }
 export interface Live2DRenderer {
   ready: Promise<void>
+  setZoom(value: number): void
   setMouth(value: number, taskId?: string): void
   applyAction(action: Live2DRendererAction): void
   armPerformance(plan: Live2DPerformancePlanV1, taskId: string): void
@@ -111,6 +112,8 @@ export function createLive2DRenderer(options: Live2DRendererOptions): Live2DRend
   let mouth = 0
   let mouthRest = 0
   let mouthTaskId = ''
+  let zoom = 1
+  let applyLayout: (() => void) | undefined
   const cleanups: (() => void)[] = []
   const cleanup = (): void => {
     for (const release of cleanups.splice(0).reverse()) release()
@@ -118,6 +121,7 @@ export function createLive2DRenderer(options: Live2DRendererOptions): Live2DRend
     performanceController = null
     model?.destroy()
     model = null
+    applyLayout = undefined
     app?.stop()
     app?.destroy(false, { children: false, texture: false, baseTexture: false })
     app = null
@@ -148,6 +152,7 @@ export function createLive2DRenderer(options: Live2DRendererOptions): Live2DRend
       }
       model = loaded
       const internal = loaded.internalModel as Cubism4InternalModel
+      if (profile.automaticBreathing === false) internal.breath.setParameters([])
       const core = internal.coreModel as CubismParameterModel
       const mouthIndex = resolveMouthParameterIndex(internal.coreModel, profile.mouthParameters)
       const baseWidth = loaded.width / loaded.scale.x
@@ -193,10 +198,12 @@ export function createLive2DRenderer(options: Live2DRendererOptions): Live2DRend
           x: input.screenWidth * profile.framing.x,
           y: input.screenHeight * profile.framing.y,
         }
-        loaded.scale.set(position.scale)
+        loaded.scale.set(position.scale * zoom)
         loaded.anchor.set(0.5, 0.5)
-        loaded.position.set(position.x, position.y)
+        // Keep the fitted top edge visible when zooming in to inspect the face.
+        loaded.position.set(position.x, position.y + (baseHeight * position.scale * (zoom - 1)) / 2)
       }
+      applyLayout = layout
       app.stage.addChild(loaded)
       layout()
       const renderer = app.renderer
@@ -210,6 +217,11 @@ export function createLive2DRenderer(options: Live2DRendererOptions): Live2DRend
   })()
   return {
     ready,
+    setZoom(value) {
+      if (disposed) return
+      zoom = Number.isFinite(value) ? Math.max(1, Math.min(3, value)) : 1
+      applyLayout?.()
+    },
     setMouth(value, taskId = '') {
       if (disposed) return
       mouth = Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0

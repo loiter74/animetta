@@ -6,7 +6,7 @@ export function mountAvatarPreview(
   document: Document,
   search: URLSearchParams,
   profile: Live2DModelProfile,
-  stage: Pick<Live2DStage, 'setMouth' | 'setExpression'>,
+  stage: Pick<Live2DStage, 'setMouth' | 'setExpression' | 'setZoom'>,
 ): (() => void) | undefined {
   const expressions = Object.entries(profile.expressions ?? {})
   const shell = document.querySelector('.live-shell')
@@ -16,7 +16,7 @@ export function mountAvatarPreview(
   const panel = document.createElement('aside')
   panel.setAttribute('aria-label', '立绘预览')
   panel.className =
-    'absolute bottom-22 left-4 z-30 flex flex-wrap gap-2 rounded-xl bg-c-panel/95 p-3 text-c-text'
+    'absolute bottom-22 left-4 z-30 flex max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-xl bg-c-panel/95 p-3 text-c-text'
   panel.dataset.avatar = profile.id
   const demo = document.createElement('button')
   demo.type = 'button'
@@ -68,6 +68,32 @@ export function mountAvatarPreview(
     { signal: life.signal },
   )
   panel.append(demo)
+  let zoom = 1
+  const zoomLabel = document.createElement('output')
+  zoomLabel.setAttribute('aria-label', '立绘缩放')
+  zoomLabel.className = 'min-w-12 text-center text-sm text-c-text-dim tabular-nums'
+  zoomLabel.textContent = '100%'
+  for (const [label, value] of [
+    ['缩小', -0.25],
+    ['放大', 0.25],
+    ['全身', 0],
+  ] as const) {
+    const button = document.createElement('button')
+    button.type = 'button'
+    button.className = 'btn-secondary min-h-11'
+    button.textContent = label
+    button.addEventListener(
+      'click',
+      () => {
+        zoom = value === 0 ? 1 : Math.max(1, Math.min(3, zoom + value))
+        stage.setZoom(zoom)
+        zoomLabel.textContent = `${Math.round(zoom * 100)}%`
+      },
+      { signal: life.signal },
+    )
+    panel.append(button)
+  }
+  panel.append(zoomLabel)
   shell.append(panel)
   const requested = search.get('expression') ?? ''
   select(buttons.has(requested) ? requested : expressions[0][0])

@@ -33,6 +33,21 @@ describe('versioned Live2D model assets', () => {
     expect(resolveLive2DModelProfile('/arbitrary.model3.json')).toBe(DEFAULT_LIVE2D_MODEL_PROFILE)
   })
 
+  it('keeps whale maid idle breathing without independent head rotation', () => {
+    const profile = resolveLive2DModelProfile('whale-maid-v1')
+    expect(profile.automaticBreathing).toBe(false)
+    const modelPath = resolve('public', profile.modelUrl.slice(1))
+    const model = JSON.parse(readFileSync(modelPath, 'utf8'))
+    const idle = JSON.parse(
+      readFileSync(resolve(dirname(modelPath), model.FileReferences.Motions.Idle[0].File), 'utf8'),
+    )
+    const parameters = idle.Curves.map((curve: { Id: string }) => curve.Id)
+    expect(parameters).toEqual(
+      expect.arrayContaining(['ParamBreath', 'ParamEyeLOpen', 'ParamEyeROpen', 'ParamTailAngle']),
+    )
+    expect(parameters.some((id: string) => /^Param(?:Body)?Angle[XYZ]$/.test(id))).toBe(false)
+  })
+
   it('maps each model only to its own packaged motion groups and mouth parameters', () => {
     for (const profile of [
       DEFAULT_LIVE2D_MODEL_PROFILE,

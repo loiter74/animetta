@@ -9,7 +9,8 @@
       "whale-maid-v1.2048/texture_03.png",
       "whale-maid-v1.2048/texture_04.png",
       "whale-maid-v1.2048/texture_05.png",
-      "whale-maid-v1.2048/texture_06.png"
+      "whale-maid-v1.2048/texture_06.png",
+      "whale-maid-v1.2048/texture_07.png"
     ],
     "Physics": "whale-maid-v1.physics3.json",
     "DisplayInfo": "whale-maid-v1.cdi3.json",
