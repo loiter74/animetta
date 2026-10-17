@@ -90,6 +90,7 @@ import type { Live2DModelProfile } from './modelProfile'
 import { DEFAULT_LIVE2D_MODEL_PROFILE } from './modelProfiles'
 import { DEFAULT_LIVE2D_PERFORMANCE_PLAN } from './performanceContract'
 import { LIVE2D_UHD_SIZE, responsiveRenderResolution } from './renderResolution'
+import { createFixedStepPhysics } from './fixedStepPhysics'
 
 const elements = () => ({
   canvas: document.createElement('canvas'),
@@ -185,6 +186,37 @@ describe('instance Live2D renderer', () => {
     expect(fixtures.models[1].internalModel.breath.setParameters).not.toHaveBeenCalled()
     authored.dispose()
     defaults.dispose()
+  })
+
+  it('replaces only the opted-in model physics stage and preserves other instances', async () => {
+    const firstModel = fixtures.createModel(['ParamInput', 'ParamOutput'])
+    const secondModel = fixtures.createModel(['ParamInput', 'ParamOutput'])
+    const makePhysics = () => ({
+      _physicsRig: {
+        inputs: [{ source: { id: 'ParamInput' } }],
+        outputs: [{ destination: { id: 'ParamOutput' } }],
+      },
+      evaluate: vi.fn(),
+    })
+    const firstPhysics = makePhysics()
+    const secondPhysics = makePhysics()
+    const originalFirst = firstPhysics.evaluate
+    const originalSecond = secondPhysics.evaluate
+    Object.assign(firstModel.internalModel, { physics: firstPhysics })
+    Object.assign(secondModel.internalModel, { physics: secondPhysics })
+    fixtures.from.mockResolvedValueOnce(firstModel).mockResolvedValueOnce(secondModel)
+    const first = createLive2DRenderer({
+      ...elements(),
+      profile: { ...DEFAULT_LIVE2D_MODEL_PROFILE, fixedStepPhysics: true },
+    })
+    const second = createLive2DRenderer(elements())
+    await Promise.all([first.ready, second.ready])
+    expect(firstPhysics.evaluate).not.toBe(originalFirst)
+    expect(secondPhysics.evaluate).toBe(originalSecond)
+    expect(originalFirst).not.toHaveBeenCalled()
+    expect(firstModel.listeners.size).toBe(1)
+    first.dispose()
+    second.dispose()
   })
 
   it('isolates mouth, callbacks, actions and disposal across two instances without global DOM IDs', async () => {
@@ -432,5 +464,71 @@ describe('instance Live2D renderer', () => {
     expect(fixtures.apps[0].destroy).toHaveBeenCalledOnce()
     renderer.dispose()
     expect(fixtures.apps[0].destroy).toHaveBeenCalledOnce()
+  })
+})
+
+describe('fixed-step authored physics', () => {
+  function fixture() {
+    const ids = ['input', 'output', 'unrelated']
+    const values = [0, 0, 0.7]
+    const model = {
+      getParameterCount: () => ids.length,
+      getParameterIndex: (id: string) => ids.indexOf(id),
+      getParameterValueByIndex: (index: number) => values[index],
+      setParameterValueByIndex: (index: number, value: number) => {
+        values[index] = value
+      },
+    }
+    const physics = {
+      _physicsRig: {
+        inputs: [{ source: { id: 'input' } }, { source: { id: 'input' } }],
+        outputs: [{ destination: { id: 'output' } }],
+      },
+      evaluate: vi.fn((_model: typeof model, delta: number) => {
+        values[1] += values[0] * delta
+      }),
+    }
+    return { model, physics, values }
+  }
+
+  it('keeps 30/60/120 Hz physics aligned without advancing a step input before its frame', () => {
+    const run = (fps: number) => {
+      const { model, physics, values } = fixture()
+      const evaluate = createFixedStepPhysics(physics, model)
+      const samples: number[] = []
+      evaluate(model, 0)
+      for (let frame = 1; frame <= fps * 2; frame++) {
+        values[0] = frame / fps >= 1 ? 1 : 0
+        evaluate(model, 1 / fps)
+        expect(values[0]).toBe(frame / fps >= 1 ? 1 : 0)
+        expect(values[2]).toBe(0.7)
+        if (frame % (fps / 30) === 0) samples.push(values[1])
+      }
+      expect(physics.evaluate).toHaveBeenCalledTimes(120)
+      expect(samples[28]).toBe(0)
+      expect(samples[29]).toBe(0)
+      expect(samples.at(-1)).toBeCloseTo(1)
+      return samples
+    }
+    const reference = run(60)
+    for (const fps of [30, 120]) {
+      run(fps).forEach((value, at) => expect(value).toBeCloseTo(reference[at], 12))
+    }
+  })
+
+  it('bounds resume work and rejects conflicting or missing rig parameters', () => {
+    const { model, physics, values } = fixture()
+    const evaluate = createFixedStepPhysics(physics, model)
+    evaluate(model, 0)
+    values[0] = 1
+    evaluate(model, 60)
+    expect(physics.evaluate).toHaveBeenCalledTimes(15)
+    expect(values[0]).toBe(1)
+    for (const delta of [Number.NaN, Number.POSITIVE_INFINITY, -1]) evaluate(model, delta)
+    expect(physics.evaluate).toHaveBeenCalledTimes(15)
+    physics._physicsRig.outputs[0].destination.id = 'input'
+    expect(() => createFixedStepPhysics(physics, model)).toThrow('separate input and output')
+    physics._physicsRig.outputs[0].destination.id = 'missing'
+    expect(() => createFixedStepPhysics(physics, model)).toThrow('missing')
   })
 })

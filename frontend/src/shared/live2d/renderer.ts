@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js'
 import { Live2DModel, type Cubism4InternalModel } from 'pixi-live2d-display/cubism4'
 import { resolveMouthParameterIndex } from './mouthParameter'
+import { createFixedStepPhysics } from './fixedStepPhysics'
 import {
   createLive2DPerformanceController,
   type Live2DPerformanceController,
@@ -193,6 +194,10 @@ export function createLive2DRenderer(options: Live2DRendererOptions): Live2DRend
       model = loaded
       const internal = loaded.internalModel as Cubism4InternalModel
       if (profile.automaticBreathing === false) internal.breath.setParameters([])
+      if (profile.fixedStepPhysics) {
+        if (!internal.physics) throw new Error('Authored Live2D physics could not be loaded')
+        internal.physics.evaluate = createFixedStepPhysics(internal.physics, internal.coreModel)
+      }
       const core = internal.coreModel as CubismParameterModel
       const mouthIndex = resolveMouthParameterIndex(internal.coreModel, profile.mouthParameters)
       const baseWidth = loaded.width / loaded.scale.x

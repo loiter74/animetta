@@ -54,6 +54,7 @@ const fixtures = vi.hoisted(() => {
     position: { set: vi.fn() },
     internalModel: {
       breath: { setParameters: vi.fn() },
+      physics: { _physicsRig: { inputs: [], outputs: [] }, evaluate: vi.fn() },
       coreModel: {
         getParameterCount: vi.fn().mockReturnValue(parameterNames.length),
         getParameterIndex: vi.fn((name: string) => parameterNames.indexOf(name)),

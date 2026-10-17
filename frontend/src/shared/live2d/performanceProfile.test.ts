@@ -147,9 +147,10 @@ describe('versioned Live2D model assets', () => {
     expect(resolveLive2DModelProfile('/arbitrary.model3.json')).toBe(DEFAULT_LIVE2D_MODEL_PROFILE)
   })
 
-  it('moves eight independent whale maid parts without idle head rotation or duplicate writers', () => {
+  it('assigns local parts to idle or physics without head rotation or duplicate writers', () => {
     const profile = resolveLive2DModelProfile('whale-maid-v1')
     expect(profile.automaticBreathing).toBe(false)
+    expect(profile.fixedStepPhysics).toBe(true)
     const modelPath = resolve('public', profile.modelUrl.slice(1))
     const model = JSON.parse(readFileSync(modelPath, 'utf8'))
     const idle = JSON.parse(
@@ -166,13 +167,9 @@ describe('versioned Live2D model assets', () => {
         'ParamFinL',
         'ParamArmR',
         'ParamArmL',
-        'ParamHairFringeR',
-        'ParamHairFringeC',
-        'ParamHairFringeL',
-        'ParamSkirtSway',
       ]),
     )
-    expect(parameters).toHaveLength(12)
+    expect(parameters).toHaveLength(8)
     expect(new Set(parameters).size).toBe(parameters.length)
     expect(idle.Meta.CurveCount).toBe(parameters.length)
     expect(parameters.some((id: string) => /^Param(?:Body)?Angle[XYZ]$/.test(id))).toBe(false)
@@ -186,9 +183,25 @@ describe('versioned Live2D model assets', () => {
     const physics = JSON.parse(
       readFileSync(resolve(dirname(modelPath), model.FileReferences.Physics), 'utf8'),
     )
+    const physicsOutputs: string[] = []
     for (const setting of physics.PhysicsSettings) {
       for (const output of setting.Output) {
+        physicsOutputs.push(output.Destination.Id)
         expect(parameters).not.toContain(output.Destination.Id)
+        expect(declaredParameters.has(output.Destination.Id)).toBe(true)
+      }
+    }
+    expect(physicsOutputs).toEqual([
+      'ParamHairBack',
+      'ParamHairFringeR',
+      'ParamHairFringeC',
+      'ParamHairFringeL',
+      'ParamSkirtSway',
+    ])
+    for (const setting of physics.PhysicsSettings) {
+      for (const input of setting.Input) {
+        expect(declaredParameters.has(input.Source.Id)).toBe(true)
+        expect(physicsOutputs).not.toContain(input.Source.Id)
       }
     }
   })

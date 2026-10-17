@@ -21,4 +21,6 @@ export interface Live2DModelProfile {
   readonly idleVitality?: readonly Live2DIdleVitalityParameter[]
   /** Cubism's generated breathing also adds independent head and body angles. */
   readonly automaticBreathing?: boolean
+  /** Resample this model's authored physics through the existing single SDK stage. */
+  readonly fixedStepPhysics?: boolean
 }
