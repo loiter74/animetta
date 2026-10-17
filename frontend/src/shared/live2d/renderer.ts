@@ -8,6 +8,11 @@ import {
 import { createCubismParameterAdapter, type CubismParameterModel } from './performanceProfile'
 import type { Live2DPerformancePlanV1 } from './performanceContract'
 import type { Live2DIdleVitalityParameter, Live2DModelProfile } from './modelProfile'
+import {
+  LIVE2D_UHD_SIZE,
+  responsiveRenderResolution,
+  type Live2DRenderOutput,
+} from './renderResolution'
 
 export interface Live2DLayoutInput {
   screenWidth: number
@@ -19,6 +24,8 @@ export interface Live2DRendererOptions {
   canvas: HTMLCanvasElement
   resizeTo: Window | HTMLElement
   profile: Live2DModelProfile
+  /** Fixed UHD pixels with a center-cropped CSS preview, or a responsive high-DPI canvas. */
+  output?: Live2DRenderOutput
   idleVitality?: boolean
   layout?(input: Live2DLayoutInput): { scale: number; x: number; y: number }
   onState?(status: 'live' | 'error', error?: unknown): void
@@ -105,6 +112,12 @@ async function configureIdleLoopMotions(internalModel: Cubism4InternalModel): Pr
 
 export function createLive2DRenderer(options: Live2DRendererOptions): Live2DRenderer {
   const { profile } = options
+  const output = options.output ?? 'responsive'
+  const previousObjectFit = options.canvas.style.objectFit
+  options.canvas.dataset.renderOutput = output
+  options.canvas.dataset.renderTarget =
+    output === '4k' ? `${LIVE2D_UHD_SIZE.width}x${LIVE2D_UHD_SIZE.height}` : 'viewport'
+  options.canvas.dataset.renderState = 'loading'
   let disposed = false
   let app: PIXI.Application | null = null
   let model: Live2DModel | null = null
@@ -125,15 +138,42 @@ export function createLive2DRenderer(options: Live2DRendererOptions): Live2DRend
     app?.stop()
     app?.destroy(false, { children: false, texture: false, baseTexture: false })
     app = null
+    options.canvas.style.objectFit = previousObjectFit
   }
   const ready = (async (): Promise<void> => {
     try {
+      const viewport = options.resizeTo
+      const width = 'innerWidth' in viewport ? viewport.innerWidth : viewport.clientWidth
+      const height = 'innerHeight' in viewport ? viewport.innerHeight : viewport.clientHeight
       app = new PIXI.Application({
         view: options.canvas,
-        resizeTo: options.resizeTo,
+        ...(output === '4k'
+          ? { ...LIVE2D_UHD_SIZE, resolution: 1 }
+          : {
+              resizeTo: options.resizeTo,
+              resolution: responsiveRenderResolution(width, height, window.devicePixelRatio),
+              autoDensity: true,
+            }),
         backgroundAlpha: 0,
         autoStart: true,
       })
+      if (output === '4k') {
+        // Narrow embedded windows crop the sides of the preview, preserving the
+        // avatar's height. A 16:9 output shows the complete 3840×2160 image.
+        options.canvas.style.objectFit = 'cover'
+        const gl = (app.renderer as PIXI.Renderer).gl
+        const maximumSize = gl.getParameter(gl.MAX_RENDERBUFFER_SIZE) as number
+        const viewportLimits = gl.getParameter(gl.MAX_VIEWPORT_DIMS) as Int32Array
+        if (
+          maximumSize < LIVE2D_UHD_SIZE.width ||
+          viewportLimits[0] < LIVE2D_UHD_SIZE.width ||
+          viewportLimits[1] < LIVE2D_UHD_SIZE.height ||
+          options.canvas.width !== LIVE2D_UHD_SIZE.width ||
+          options.canvas.height !== LIVE2D_UHD_SIZE.height
+        ) {
+          throw new Error('This graphics context cannot provide a 3840×2160 Live2D output')
+        }
+      }
       const loaded = await Live2DModel.from(profile.modelUrl, { autoInteract: false })
       if (disposed) {
         loaded.destroy()
@@ -207,11 +247,28 @@ export function createLive2DRenderer(options: Live2DRendererOptions): Live2DRend
       app.stage.addChild(loaded)
       layout()
       const renderer = app.renderer
-      renderer.on('resize', layout)
-      cleanups.push(() => renderer.off('resize', layout))
+      const resize = (): void => {
+        if (output === 'responsive' && app) {
+          const resolution = responsiveRenderResolution(
+            app.screen.width,
+            app.screen.height,
+            window.devicePixelRatio,
+          )
+          if (renderer.resolution !== resolution) {
+            renderer.resolution = resolution
+            renderer.resize(app.screen.width, app.screen.height)
+            return
+          }
+        }
+        layout()
+      }
+      renderer.on('resize', resize)
+      cleanups.push(() => renderer.off('resize', resize))
+      options.canvas.dataset.renderState = 'live'
       options.onState?.('live')
     } catch (error) {
       cleanup()
+      options.canvas.dataset.renderState = 'error'
       if (!disposed) options.onState?.('error', error)
     }
   })()
@@ -251,6 +308,7 @@ export function createLive2DRenderer(options: Live2DRendererOptions): Live2DRend
       if (disposed) return
       disposed = true
       cleanup()
+      options.canvas.dataset.renderState = 'disposed'
     },
   }
 }

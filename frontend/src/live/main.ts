@@ -80,7 +80,11 @@ const session = bootstrapLiveSession({
 const pageDisposers = new DisposerStack()
 let pageDisposed = false
 const avatarProfile = resolveLive2DModelProfile(search.get('avatar'))
-const stage = createLive2DStage(session.socket, { idleVitality: true, profile: avatarProfile })
+const stage = createLive2DStage(session.socket, {
+  idleVitality: true,
+  profile: avatarProfile,
+  output: '4k',
+})
 live2dStage = stage
 const liveBgm = createLiveBgmController(document, search, { ownership: mediaOwnership })
 const liveAudio = createLiveAudioController(session.socket, document, stage.setMouth, liveBgm, {

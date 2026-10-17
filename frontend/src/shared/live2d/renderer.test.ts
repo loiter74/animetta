@@ -1,8 +1,15 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const fixtures = vi.hoisted(() => {
   const models: ReturnType<typeof createModel>[] = []
-  const apps: { destroy: ReturnType<typeof vi.fn>; listeners: Set<() => void> }[] = []
+  const apps: {
+    destroy: ReturnType<typeof vi.fn>
+    listeners: Set<() => void>
+    options: Record<string, unknown>
+    screen: { width: number; height: number }
+    renderer: { resolution: number; resize: ReturnType<typeof vi.fn> }
+  }[] = []
+  const limits = { renderbuffer: 8192, viewport: [8192, 8192] }
   function createModel(parameterIds = ['ParamA']) {
     const listeners = new Set<() => void>()
     const values = new Map<number, number>()
@@ -41,22 +48,38 @@ const fixtures = vi.hoisted(() => {
     models.push(model)
     return model
   })
-  return { models, apps, createModel, from }
+  return { models, apps, limits, createModel, from }
 })
 
 vi.mock('pixi-live2d-display/cubism4', () => ({ Live2DModel: { from: fixtures.from } }))
 vi.mock('pixi.js', () => ({
   Application: class {
     screen = { width: 300, height: 400 }
+    options: Record<string, unknown>
     listeners = new Set<() => void>()
     renderer = {
+      resolution: 1,
+      gl: {
+        MAX_RENDERBUFFER_SIZE: 1,
+        MAX_VIEWPORT_DIMS: 2,
+        getParameter: (parameter: number) =>
+          parameter === 1 ? fixtures.limits.renderbuffer : fixtures.limits.viewport,
+      },
+      resize: vi.fn(),
       on: (_event: string, listener: () => void) => this.listeners.add(listener),
       off: (_event: string, listener: () => void) => this.listeners.delete(listener),
     }
     stage = { addChild: vi.fn() }
     stop = vi.fn()
     destroy = vi.fn()
-    constructor() {
+    constructor(options: Record<string, unknown>) {
+      this.options = options
+      this.renderer.resolution = Number(options.resolution ?? 1)
+      if (typeof options.width === 'number') this.screen.width = options.width
+      if (typeof options.height === 'number') this.screen.height = options.height
+      const canvas = options.view as HTMLCanvasElement
+      canvas.width = this.screen.width * this.renderer.resolution
+      canvas.height = this.screen.height * this.renderer.resolution
       fixtures.apps.push(this)
     }
   },
@@ -66,6 +89,7 @@ import { createLive2DRenderer } from './renderer'
 import type { Live2DModelProfile } from './modelProfile'
 import { DEFAULT_LIVE2D_MODEL_PROFILE } from './modelProfiles'
 import { DEFAULT_LIVE2D_PERFORMANCE_PLAN } from './performanceContract'
+import { LIVE2D_UHD_SIZE, responsiveRenderResolution } from './renderResolution'
 
 const elements = () => ({
   canvas: document.createElement('canvas'),
@@ -78,6 +102,76 @@ describe('instance Live2D renderer', () => {
     vi.clearAllMocks()
     fixtures.models.length = 0
     fixtures.apps.length = 0
+    fixtures.limits.renderbuffer = 8192
+    fixtures.limits.viewport = [8192, 8192]
+  })
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('renders a fixed 3840×2160 backing canvas independently of the embedded preview size', async () => {
+    vi.stubGlobal('devicePixelRatio', 2)
+    const options = elements()
+    options.canvas.style.objectFit = 'contain'
+    const renderer = createLive2DRenderer({ ...options, output: '4k' })
+    await renderer.ready
+    expect(options.canvas.width).toBe(3840)
+    expect(options.canvas.height).toBe(2160)
+    expect(fixtures.apps[0].screen).toEqual(LIVE2D_UHD_SIZE)
+    expect(fixtures.apps[0].options.resizeTo).toBeUndefined()
+    expect(fixtures.apps[0].renderer.resolution).toBe(1)
+    expect(options.canvas.style.objectFit).toBe('cover')
+    expect(options.canvas.dataset.renderState).toBe('live')
+    expect(options.canvas.dataset.renderOutput).toBe('4k')
+    renderer.setZoom(2)
+    expect(options.canvas.width).toBe(3840)
+    expect(options.canvas.height).toBe(2160)
+    renderer.dispose()
+    expect(options.canvas.style.objectFit).toBe('contain')
+    expect(options.canvas.dataset.renderState).toBe('disposed')
+  })
+
+  it('reports unsupported UHD graphics limits without silently falling back to a lower resolution', async () => {
+    fixtures.limits.renderbuffer = 2048
+    const onState = vi.fn()
+    const options = elements()
+    const renderer = createLive2DRenderer({ ...options, output: '4k', onState })
+    await renderer.ready
+    expect(onState).toHaveBeenCalledExactlyOnceWith(
+      'error',
+      expect.objectContaining({ message: expect.stringContaining('3840×2160') }),
+    )
+    expect(fixtures.from).not.toHaveBeenCalled()
+    expect(fixtures.apps[0].destroy).toHaveBeenCalledOnce()
+    expect(options.canvas.dataset.renderState).toBe('error')
+    renderer.dispose()
+  })
+
+  it('uses high DPI for responsive previews while bounding the backing surface to UHD', async () => {
+    vi.stubGlobal('devicePixelRatio', 2)
+    const options = elements()
+    const renderer = createLive2DRenderer(options)
+    await renderer.ready
+    expect(fixtures.apps[0].options).toMatchObject({
+      resizeTo: options.resizeTo,
+      autoDensity: true,
+      resolution: 2,
+    })
+    expect(responsiveRenderResolution(1920, 1080, 3)).toBe(2)
+    expect(responsiveRenderResolution(3840, 2160, 2)).toBe(1)
+    expect(responsiveRenderResolution(7680, 4320, 2)).toBe(0.5)
+    expect(responsiveRenderResolution(800, 600, Number.NaN)).toBe(1)
+    expect(responsiveRenderResolution(800, 600, Number.MIN_VALUE)).toBe(1)
+    for (const [width, height] of [
+      [0, 0],
+      [-100, Number.NEGATIVE_INFINITY],
+      [Number.NaN, Number.POSITIVE_INFINITY],
+      [Number.MAX_VALUE, Number.MAX_VALUE],
+    ]) {
+      const resolution = responsiveRenderResolution(width, height, 2)
+      expect(Number.isFinite(resolution)).toBe(true)
+      expect(resolution).toBeGreaterThan(0)
+      expect(resolution).toBeLessThanOrEqual(2)
+    }
+    renderer.dispose()
   })
 
   it('disables SDK head oscillation only for models with authored breathing', async () => {

@@ -9,6 +9,7 @@ import type { Live2DModelProfile } from '@/shared/live2d/modelProfile'
 import { DEFAULT_LIVE2D_MODEL_PROFILE } from '@/shared/live2d/modelProfiles'
 import { createLive2DExpressionController } from '@/shared/live2d/expressionController'
 import { bindLive2DEmotionSocket } from '@/shared/live2d/emotionSocket'
+import type { Live2DRenderOutput } from '@/shared/live2d/renderResolution'
 import { createReviewVolumeTimelineLipSync } from './review-lip-sync'
 
 const PUBLIC_CUE_EMOTIONS = {
@@ -38,6 +39,7 @@ export interface Live2DStage {
 }
 
 export interface Live2DStageOptions {
+  readonly output?: Live2DRenderOutput
   readonly profile?: Live2DModelProfile
   readonly resizeTo?: Window | HTMLElement
   readonly idleVitality?: boolean
@@ -88,6 +90,7 @@ export function createLive2DStage(
     resizeTo: options.resizeTo ?? window,
     idleVitality: options.idleVitality,
     profile,
+    output: options.output,
     beforeMouthApply: () => lipSync?.sample(),
     onMouthApplied(value, taskId) {
       if (notification) notification.dataset.lipSync = 'observed'

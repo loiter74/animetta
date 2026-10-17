@@ -2,9 +2,44 @@
 	"Version": 3,
 	"Parameters": [
 		{
-			"Id": "ParamTailAngle",
+			"Id": "ParamSkirtSway",
 			"GroupId": "",
-			"Name": "鲸尾摆动"
+			"Name": "裙摆与围裙摆动"
+		},
+		{
+			"Id": "ParamArmL",
+			"GroupId": "",
+			"Name": "左袖与手臂"
+		},
+		{
+			"Id": "ParamArmR",
+			"GroupId": "",
+			"Name": "右袖与手臂"
+		},
+		{
+			"Id": "ParamHairFringeL",
+			"GroupId": "",
+			"Name": "左侧前发簇"
+		},
+		{
+			"Id": "ParamHairFringeC",
+			"GroupId": "",
+			"Name": "中间前发簇"
+		},
+		{
+			"Id": "ParamHairFringeR",
+			"GroupId": "",
+			"Name": "右侧前发簇"
+		},
+		{
+			"Id": "ParamFinL",
+			"GroupId": "",
+			"Name": "左鲸鳍耳"
+		},
+		{
+			"Id": "ParamFinR",
+			"GroupId": "",
+			"Name": "右鲸鳍耳"
 		},
 		{
 			"Id": "ParamAngleX",
@@ -105,6 +140,11 @@
 			"Id": "ParamHairBack",
 			"GroupId": "ParamGroupPhysics",
 			"Name": "Back Hair Sway"
+		},
+		{
+			"Id": "ParamTailAngle",
+			"GroupId": "",
+			"Name": "鲸尾摆动"
 		}
 	],
 	"ParameterGroups": [
@@ -175,12 +215,12 @@
 			"ParamAngleY"
 		],
 		[
-			"ParamBodyAngleX",
-			"ParamBodyAngleY"
-		],
-		[
 			"ParamEyeBallX",
 			"ParamEyeBallY"
+		],
+		[
+			"ParamBodyAngleX",
+			"ParamBodyAngleY"
 		]
 	],
 	"Drawables": [
@@ -195,6 +235,10 @@
 		{
 			"Id": "ArtMeshHeadwear",
 			"Name": "headwear outline"
+		},
+		{
+			"Id": "ArtMeshNeck",
+			"Name": "neck join underlay"
 		},
 		{
 			"Id": "ArtMeshEyewhiteR",

@@ -13,6 +13,12 @@ const fixtures = vi.hoisted(() => {
   const screen = { width: 1080, height: 1920 }
   let resizeListener: (() => void) | null = null
   const renderer = {
+    resolution: 1,
+    resize: vi.fn((width: number, height: number) => {
+      screen.width = width
+      screen.height = height
+      resizeListener?.()
+    }),
     on: vi.fn((_event: string, listener: () => void) => {
       resizeListener = listener
     }),
@@ -90,11 +96,13 @@ const fixtures = vi.hoisted(() => {
     setParameterValueByIndex,
     setApplicationOptions: (options: Record<string, unknown>) => {
       applicationOptions = options
+      renderer.resolution = Number(options.resolution ?? 1)
     },
     resetModelState: () => {
       screen.width = 1080
       screen.height = 1920
       resizeListener = null
+      renderer.resolution = 1
       parameterValues.fill(0)
       motionState.currentGroup = 'Idle'
     },
@@ -146,6 +154,10 @@ describe('createLive2DStage', () => {
     expect(fixtures.model.position.set).toHaveBeenLastCalledWith(150, 320)
     const appliedScale = fixtures.model.scale.set.mock.lastCall?.[0]
     expect(appliedScale).toBeCloseTo(0.738)
+    fixtures.emitRendererResize(7680, 4320)
+    expect(fixtures.renderer.resolution).toBe(0.5)
+    expect(fixtures.renderer.resize).toHaveBeenLastCalledWith(7680, 4320)
+    expect(fixtures.model.position.set).toHaveBeenLastCalledWith(3840, 3456)
     stage.dispose()
     const calls = fixtures.model.position.set.mock.calls.length
     fixtures.emitRendererResize(600, 800)

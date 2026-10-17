@@ -147,7 +147,7 @@ describe('versioned Live2D model assets', () => {
     expect(resolveLive2DModelProfile('/arbitrary.model3.json')).toBe(DEFAULT_LIVE2D_MODEL_PROFILE)
   })
 
-  it('keeps whale maid idle breathing without independent head rotation', () => {
+  it('moves eight independent whale maid parts without idle head rotation or duplicate writers', () => {
     const profile = resolveLive2DModelProfile('whale-maid-v1')
     expect(profile.automaticBreathing).toBe(false)
     const modelPath = resolve('public', profile.modelUrl.slice(1))
@@ -157,9 +157,40 @@ describe('versioned Live2D model assets', () => {
     )
     const parameters = idle.Curves.map((curve: { Id: string }) => curve.Id)
     expect(parameters).toEqual(
-      expect.arrayContaining(['ParamBreath', 'ParamEyeLOpen', 'ParamEyeROpen', 'ParamTailAngle']),
+      expect.arrayContaining([
+        'ParamBreath',
+        'ParamEyeLOpen',
+        'ParamEyeROpen',
+        'ParamTailAngle',
+        'ParamFinR',
+        'ParamFinL',
+        'ParamArmR',
+        'ParamArmL',
+        'ParamHairFringeR',
+        'ParamHairFringeC',
+        'ParamHairFringeL',
+        'ParamSkirtSway',
+      ]),
     )
+    expect(parameters).toHaveLength(12)
+    expect(new Set(parameters).size).toBe(parameters.length)
+    expect(idle.Meta.CurveCount).toBe(parameters.length)
     expect(parameters.some((id: string) => /^Param(?:Body)?Angle[XYZ]$/.test(id))).toBe(false)
+    const display = JSON.parse(
+      readFileSync(resolve(dirname(modelPath), model.FileReferences.DisplayInfo), 'utf8'),
+    )
+    const declaredParameters = new Set(
+      display.Parameters.map((parameter: { Id: string }) => parameter.Id),
+    )
+    expect(parameters.every((id: string) => declaredParameters.has(id))).toBe(true)
+    const physics = JSON.parse(
+      readFileSync(resolve(dirname(modelPath), model.FileReferences.Physics), 'utf8'),
+    )
+    for (const setting of physics.PhysicsSettings) {
+      for (const output of setting.Output) {
+        expect(parameters).not.toContain(output.Destination.Id)
+      }
+    }
   })
 
   it('maps each model only to its own packaged motion groups and mouth parameters', () => {
