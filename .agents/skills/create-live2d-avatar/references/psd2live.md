@@ -2,11 +2,13 @@
 
 以下来自 Windows 上 PSD2Live 3.4.5 的实际建模。先核对当前版本、官方接口与模型状态；工具修复后不继续套用旧版补丁。
 
+常规制作先遵循 [官方流程与现成能力复用](production-workflow.md)；本页记录工具事务及版本限定的恢复经验。原画分层不完整时返回拆件与补画，不用这里的格式修复经验继续堆叠视觉补丁。
+
 ## 工具定位与事务
 
 - 已验证安装参考：`C:/Users/30262/AppData/Local/CodexTools/anima-whale-maid-v1/portable`。官方源码在相邻 `source/`。这是本机工具位置，不是新角色输出目录，也不保证其他机器存在。
 - 本机原生 MCP 曾使用 loopback HTTP `/mcp`。先从当前编辑器配置确认地址、会话和可用工具；鉴权仅在调用进程中读取，不打印、写入技能或提交凭据。启动前核对进程完整命令行，复用合适实例。
-- `workspace_get_operation` 查询确切操作的 `request_schema`；`workspace_inspect` 检查参数、对象、层、预览。大响应只保存本地并提取所需字段，避免输出整套 schema 或图像编码。
+- 先核对运行构建及能力目录，再用 `workspace_get_operation` 查询确切操作的 `request_schema`；`workspace_inspect` 检查参数、对象、层、预览。同名版本的公开文档不能代替当前 schema。大响应只保存本地并提取所需字段，避免输出整套 schema 或图像编码。
 - 编辑使用最新 `state`、`project_id` 与独立 `request_id`。`workspace_apply_edits` 可原子提交一组相关编辑。请求内容改变就换请求标识；超时且已有任务句柄时继续等待同一任务，不能重复发起。
 - 结构性修改前 `save_as`，导出到候选目录。导入修复后的当前工程使用 `project` 的 `import_cmo3` 并明确导入方式；先保存，再取新鲜状态。素材切分或新增贴图后的恢复优先使用独立 `NEW` 导入，不能默认 `REPLACE`；后者需先证明现有 atlas 与待导入资源不会重复。不要重新打开较早工程而丢失新绑定。
 - `.psd2live` 是 ZIP 工程，`rig/objects/*.bin` 为原生二进制数据。需要程序化修复时优先官方 `Cmo3.read/write`、图编辑 API 与 `RigIrBinary.Reader`，保留资源和未修改字段，不能按文本猜格式。
