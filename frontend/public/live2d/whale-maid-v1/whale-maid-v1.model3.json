@@ -15,7 +15,8 @@
       "whale-maid-v1.2048/texture_09.png",
       "whale-maid-v1.2048/texture_10.png",
       "whale-maid-v1.2048/texture_11.png",
-      "whale-maid-v1.2048/texture_12.png"
+      "whale-maid-v1.2048/texture_12.png",
+      "whale-maid-v1.2048/texture_13.png"
     ],
     "Physics": "whale-maid-v1.physics3.json",
     "DisplayInfo": "whale-maid-v1.cdi3.json",

@@ -9,18 +9,21 @@
 ## 文件
 
 - `whale-maid-v1.model3.json`：运行入口；同目录包含真实 Cubism `.moc3`、贴图、物理、动作及两份表情文件。
-- `source/whale-maid-v1.psd`：21 个实际素材图层，包含独立眼裂、眼框、虹膜和肩颈补底，可继续修画。
+- `source/whale-maid-v1.psd`：23 个实际素材图层，包含独立眼裂、眼框、虹膜、肩颈补底和左右袖片，可继续修画。
 - `source/whale-maid-v1.cmo3`：包含第一版网格、参数、形变和层级的可编辑工程。
 - `source/standard.png` / `goofy.png`：用户确认的完整立绘。
 - `source/face-underpaint.png` / `blink.png`：补画来源。面部底色仅取脸部区域，外圈半透明像素不用于成品。
 - `source/iris-pair-anime-v3.png`、相邻提示词与 `iris-provenance.json`：内置 image_gen 生成的透明蓝色圆瞳原始素材与来源记录。
+- `source/shoulder-underpaint-v1.png`、相邻提示词与 `shoulder-provenance.json`：同一角色的完整肩袖补画来源；成品只采样左右衣袖缺失区。
 - `source/rig-validation.json`：本版源文件哈希、眼部遮罩角色、几何验证范围和剩余限制。
 
 ## 生成与绑定
 
 原画及局部编辑使用内置 image_gen：成年等身全身、蓝青渐变长发、鲸鳍耳和鲸尾、收腰深蓝长袖女仆裙、白围裙、金色袖饰和蓝色菱形胸针。标准版为闭嘴微笑；傻笑版保留相同造型，使用半眯眼和张口笑；另外补画无五官面部底色及闭眼睫毛。
 
-使用 [PSD2Live 3.4.5](https://github.com/tsunehimatoi/psd2live/releases/tag/v3.4.5) 原生素材分割、PSD 导出、网格生成和工程编辑。肩颈补底取自同一原画的连续区域，放在已有头发和身体图层之下。眼部切分后通过独立 NEW 项目保存、导出完整 21 网格工程，避免 REPLACE 导入重复 atlas 槽。当前实际运行贴图为 13 页；目录名 `.2048` 不代表每一页的实际尺寸。导出器仍可能清空 MOC 页号，因此按完整源 CMO3 的资源哈希及 UV 建立 `source/texture-pages.json`。在本模型目录运行 `node source/restore-texture-pages.cjs` 可恢复并校验页号；不能复用旧版 17 网格清单。制作工具不作为 Animetta 的运行依赖，物理以同目录 `physics3.json` 为准，重新导出不能用工具默认物理覆盖它。
+使用 [PSD2Live 3.4.5](https://github.com/tsunehimatoi/psd2live/releases/tag/v3.4.5) 原生素材分割、PSD 导出、网格生成和工程编辑。肩颈补底取自同一原画的连续区域，放在已有头发和身体图层之下。眼部切分及袖片补画后通过独立 NEW 项目保存、导出完整 23 网格工程，避免 REPLACE 导入重复 atlas 槽。当前实际运行贴图为 14 页；目录名 `.2048` 不代表每一页的实际尺寸。导出器仍可能清空 MOC 页号，因此按完整源 CMO3 的资源哈希及 UV 建立 `source/texture-pages.json`。在本模型目录运行 `node source/restore-texture-pages.cjs` 可恢复并校验页号；不能复用旧版 17 网格清单。制作工具不作为 Animetta 的运行依赖，物理以同目录 `physics3.json` 为准，重新导出不能用工具默认物理覆盖它。
+
+新增左右独立肩袖补画，填补被原前发遮住、动作时露出的衣料。袖片分别继承同侧手臂与手腕增量，肩根平滑固定，不跟随头部或对侧手臂。98 个相关姿态未出现新增翻折、退化或非有限坐标；原 21 网格在这些姿态中的顶点差为零，原贴图 13 页保持原字节。原生保存／导出前后的 95 个参数端点和组合姿态，全部 23 网格顶点与透明度差为零，UV 与索引一致。配套 PSD 经官方读取器往返验证 23 层的 RGBA、边界、名称及顺序一致；双眼、双手和物理沿用此前版本的验证记录。
 
 `ParamMouthOpenY` 驱动嘴型；`ParamEyeLOpen` / `ParamEyeROpen` 独立驱动两眼开合。模型包含 31 个参数，已有八组局部增量形变为双侧鲸鳍耳 `ParamFinR/L`、三束前发 `ParamHairFringeR/C/L`、双臂 `ParamArmR/L` 和裙摆 `ParamSkirtSway`。本版新增双手腕 `ParamHandR/L`：手部绕腕关节约 ±6°，袖口固定，并与手臂／裙摆增量组合；99 个相关姿势无新增可见翻折或退化，手部端点最大位移约为原画 11.5 像素。这不是逐指绑定。
 

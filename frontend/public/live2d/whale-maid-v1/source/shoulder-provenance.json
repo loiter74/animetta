@@ -1,0 +1,14 @@
+{
+  "generator": "OpenAI image_gen",
+  "kind": "Generated shoulder and sleeve underpaint for the approved whale maid design",
+  "reference": "Original Topwear material layer; source/standard.png for clothing and shoulder proportions",
+  "rawImage": "shoulder-underpaint-v1.png",
+  "rawPixels": [
+    954,
+    1649
+  ],
+  "rawSha256": "edef03c18a68d6dc555cfa02ab73c5ac1f234276b44f618e4d49f0947a2bc1c5",
+  "prompt": "shoulder-underpaint-v1-prompt.txt",
+  "runtimePage": "../whale-maid-v1.2048/texture_13.png",
+  "registration": "Landmark registration to the source canvas; independent R/L mesh UVs sample only missing cloth with a narrow overlap. Raw PNG bytes are unchanged. Original body, hands, skirt, feet and hair are not replaced."
+}
