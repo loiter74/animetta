@@ -16,6 +16,9 @@
 - `source/iris-pair-anime-v3.png`、相邻提示词与 `iris-provenance.json`：内置 image_gen 生成的透明蓝色圆瞳原始素材与来源记录。
 - `source/shoulder-underpaint-v1.png`、相邻提示词与 `shoulder-provenance.json`：同一角色的完整肩袖补画来源；成品只采样左右衣袖缺失区。
 - `source/rig-validation.json`：本版源文件哈希、眼部遮罩角色、几何验证范围和剩余限制。
+- `source/authoring/neck-materials-v2.psd2live` / `.psd`：制作中的原生工程与 24 层导入 PSD；从原画 Topwear 层拆出连续颈部皮肤。来源和检查范围见相邻 `neck-materials-v2.provenance.json`，尚未用于当前运行模型。
+
+颈部拆件母版复用原始皮肤的 600 个可见像素，颜色与拆分前一致，两份素材的透明度完整分配且不重叠；其余 22 个源层及原有 23 份原生素材保留。PSD 经官方读取器确认，24 个导出层的 RGBA、边界及名称与原生源层一致。四组原生姿态对照仍能复现已有接缝；头发／衣领混合素材、遮挡补画及运动继承仍需继续修复。该母版不是新的成品，也未完成最终 Core 与 4K 入口验收。
 
 ## 生成与绑定
 
