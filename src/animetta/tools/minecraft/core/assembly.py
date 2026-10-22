@@ -46,6 +46,7 @@ from animetta.tools.minecraft.survival.registry import WorkflowRegistry
 from animetta.tools.minecraft.survival.workflows import (
     diamond_survival_workflow,
     iron_survival_workflow,
+    nether_preparation_workflows,
 )
 from animetta.tools.minecraft.tech_tree.graph import build_survival_tech_graph
 from animetta.tools.minecraft.voyager.advancement_store import (
@@ -127,6 +128,9 @@ def _budget_policy(config: MinecraftConfig) -> ModeBudgetPolicy:
         live=limits(32, 4, 256, 32, 15 * 60_000),
         fallback=limits(64, 4, 500, 512, 45 * 60_000),
         learn=limits(128, 8, 512, 1_024, 60 * 60_000),
+        mission=limits(128, 9, 512, 1_152, 60 * 60_000).model_copy(
+            update={"max_travel_distance": float(config.safety.max_mission_travel_distance)}
+        ),
     )
 
 
@@ -216,6 +220,7 @@ class MinecraftControlPlane:
     mission_projection: MissionProjectionService
     world_fact_store: SQLiteWorldFactStore
     advancement_store: SQLiteAdvancementEventStore
+    advancement_recorder: AdvancementEventRecorder
     evidence_collector: RuntimeGoalEvidenceCollector
     adaptive_runtime: AdaptiveMissionRuntime | None
     activity_recorder: PublicActivityRecorder
@@ -226,6 +231,7 @@ class MinecraftControlPlane:
         await self.scheduler.stop()
         await self.activity_aggregator.drain()
         await self.repository.recover_startup(occurred_at_ms=_now_ms())
+        await self.advancement_recorder.close()
         await self.evidence_collector.drain()
         await self.advancement_store.close()
         await self.world_fact_store.close()
@@ -431,6 +437,8 @@ async def assemble_control_plane(
     workflow_registry = WorkflowRegistry()
     workflow_registry.register(iron_survival_workflow())
     workflow_registry.register(diamond_survival_workflow())
+    for workflow in nether_preparation_workflows():
+        workflow_registry.register(workflow)
 
     environment_fingerprint = stable_environment_fingerprint(manifest.profile)
     live_revisions, live_trusts = await skill_store.load_live_catalog(
@@ -477,6 +485,7 @@ async def assemble_control_plane(
                 manifest=current_manifest,
                 blueprint_origins=blueprint_origins,
                 entity_origins=entity_origins,
+                execution_budget=execution_budget_from_json(command.effective_budget),
             ),
             live=(
                 live_factory(current_manifest, command)
@@ -742,6 +751,7 @@ async def assemble_control_plane(
         world_fact_store=world_fact_store,
         advancement_store=advancement_store,
         evidence_collector=evidence_collector,
+        advancement_recorder=advancement_recorder,
         adaptive_runtime=adaptive_runtime,
         activity_recorder=activity_recorder,
         activity_aggregator=activity_aggregator,

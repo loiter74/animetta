@@ -98,3 +98,23 @@ async def test_recorder_drain_surfaces_async_store_failure() -> None:
 
     with pytest.raises(RuntimeError, match="ADVANCEMENT_STORE_FAILED"):
         await recorder.drain()
+
+
+async def test_closed_recorder_unsubscribes_before_store_close_and_ignores_late_events() -> None:
+    callbacks = []
+
+    class Bridge:
+        def add_runtime_event_callback(self, callback):
+            callbacks.append(callback)
+            return lambda: callbacks.remove(callback)
+
+    store = InMemoryAdvancementEventStore()
+    await store.connect()
+    recorder = AdvancementEventRecorder(bridge=Bridge(), store=store)
+    recorder.start()
+    late_callback = callbacks[0]
+    await recorder.close()
+    await store.close()
+    assert callbacks == []
+    late_callback({"type": "advancement_observed", **EVENT})
+    await recorder.drain()

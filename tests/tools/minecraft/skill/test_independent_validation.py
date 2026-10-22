@@ -87,6 +87,23 @@ def test_goal_contract_uses_goal_predicate_instead_of_tautological_health_check(
     assert all(predicate.left.path != "health" for predicate in predicates)
 
 
+def test_food_threshold_changes_the_independent_skill_contract() -> None:
+    from animetta.tools.minecraft.survival.food import build_food_recovery_mission
+
+    module = _module()
+    hashes = {
+        module.goal_contract_hash(
+            module.goal_postconditions(
+                build_food_recovery_mission(mission_id="food-contract", food=food)
+                .objectives[0]
+                .goal
+            )
+        )
+        for food in (None, 18, 20)
+    }
+    assert len(hashes) == 3
+
+
 async def test_failed_independent_validation_persists_as_untrusted(tmp_path) -> None:
     module = _module()
     definition, revision = _revision()

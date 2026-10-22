@@ -1317,6 +1317,12 @@
     "RuntimeHealth": {
       "additionalProperties": false,
       "properties": {
+        "action_phase_publish_failures_total": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Action Phase Publish Failures Total",
+          "type": "integer"
+        },
         "active_correlation_id": {
           "anyOf": [
             {

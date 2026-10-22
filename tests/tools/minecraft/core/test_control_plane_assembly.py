@@ -5,8 +5,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
 from pydantic import TypeAdapter
 
+from animetta.tools.gamebot.contracts.v2 import Observation
 from animetta.tools.minecraft.core.assembly import (
     _budget_policy,
     _learning_frontier,
@@ -15,7 +17,7 @@ from animetta.tools.minecraft.core.assembly import (
 )
 from animetta.tools.minecraft.core.config import MinecraftConfig
 from animetta.tools.minecraft.survival.workflows import diamond_survival_workflow
-from animetta.tools.minecraft.voyager.budget import BudgetUsage
+from animetta.tools.minecraft.voyager.budget import BudgetAccount, BudgetExceededError, BudgetUsage
 from animetta.tools.minecraft.voyager.command_models import CommandState
 from animetta.tools.minecraft.voyager.gateway import ExecuteAtomicRequest, ExecuteMissionRequest
 from animetta.tools.minecraft.voyager.goal_models import AtomicAction, GoalSpec
@@ -327,6 +329,25 @@ async def test_mission_factory_restores_strict_budget_from_journal_json(tmp_path
     assert learn._compilation_budget.protected_items == frozenset(
         {"diamond_pickaxe", "netherite_pickaxe"}
     )
+    builtin = strategy._strategies["builtin"]
+    goto = manifest.capability("collect").model_copy(update={"name": "goto"})
+    builtin._manifest = manifest.model_copy(update={"capabilities": (*manifest.capabilities, goto)})
+    travel = TypeAdapter(GoalSpec).validate_python(
+        {
+            "intent": "travel",
+            "target": "surface",
+            "success_predicates": [{"kind": "location_reached", "x": 11, "y": 64, "z": 75}],
+        }
+    )
+    step = builtin.propose(
+        builtin.prepare(travel), Observation.model_validate(MESSAGES["Observation"])
+    )
+    assert step.kind == "execute"
+    assert step.maximum_cost.max_actions == 1
+    assert step.maximum_cost.max_travel_distance == budget.max_travel_distance
+    assert step.maximum_cost.max_blocks_changed == budget.max_blocks_changed
+    assert step.maximum_cost.max_damage_taken == budget.max_damage_taken
+    assert step.maximum_cost.resource_consumption == budget.resource_consumption
 
 
 async def test_failed_mission_receipt_with_protected_items_is_settled(tmp_path) -> None:
@@ -416,17 +437,21 @@ async def test_failed_mission_receipt_with_protected_items_is_settled(tmp_path) 
     assert snapshot.objectives[0].status == "failed"
 
 
-def test_fallback_budget_covers_bounded_diamond_progression() -> None:
+def test_fallback_budget_bounds_each_diamond_step_and_rejects_worst_case_total() -> None:
     fallback = _budget_policy(MinecraftConfig()).fallback
     reserved = BudgetUsage()
     for step in diamond_survival_workflow().steps:
+        BudgetAccount(limit=fallback).reserve("step", step.maximum_cost)
         reserved = reserved.plus(step.maximum_cost)
 
     assert fallback.execution_timeout_ms == 45 * 60_000
     assert fallback.max_blocks_changed == 512
+    assert fallback.max_travel_distance == 500
     assert reserved.max_actions <= fallback.max_actions
-    assert reserved.max_travel_distance <= fallback.max_travel_distance
-    assert reserved.max_blocks_changed <= fallback.max_blocks_changed
+    # Maximum per-step reservations are released before the next step; actual
+    # receipts determine whether the remaining authority permits continuation.
+    with pytest.raises(BudgetExceededError):
+        BudgetAccount(limit=fallback).charge(reserved)
 
 
 def test_learning_frontier_supports_a_discovered_resource_acquisition_goal() -> None:

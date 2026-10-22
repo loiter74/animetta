@@ -12,6 +12,7 @@ class MinecraftSafetyConfig(BaseModel):
     no_griefing: bool = True
     auto_heal: bool = True
     max_distance: int = 500
+    max_mission_travel_distance: int = Field(default=2_000, gt=0)
 
 
 class MinecraftMcpConfig(BaseModel):

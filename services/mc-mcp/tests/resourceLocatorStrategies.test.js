@@ -1,10 +1,36 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ResourceMemory } from '../src/resources/memory.js';
+import { locateResource } from '../src/resources/locator.js';
 import {
   STRATEGIES,
   findNearestMatchingBlock,
 } from '../src/resources/strategies.js';
+
+test('locator retains a bounded history of strategy failures in its terminal error', async () => {
+  const original = STRATEGIES.memory_first;
+  let attempt = 0;
+  STRATEGIES.memory_first = async () => {
+    throw Object.assign(new Error(`path probe failed ${attempt++}`), { code: 'PATH_FAILED' });
+  };
+  try {
+    await assert.rejects(locateResource({
+      inventory: { items: () => [{ name: 'stone_pickaxe' }] },
+    }, 'iron_ore', {
+      mcData: {},
+      allowedStrategies: Array.from({ length: 8 }, () => 'memory_first'),
+    }), (error) => {
+      assert.equal(error.code, 'RESOURCE_NOT_FOUND');
+      assert.equal(error.search_failures.length, 5);
+      assert.equal(error.search_failures[0].message, 'path probe failed 3');
+      assert.equal(error.search_failures[4].message, 'path probe failed 7');
+      assert.equal(error.search_failures[4].code, 'PATH_FAILED');
+      return true;
+    });
+  } finally {
+    STRATEGIES.memory_first = original;
+  }
+});
 
 function pos(x, y, z) {
   return {
@@ -55,6 +81,8 @@ test('resource scans ignore caller-excluded block coordinates', () => {
 test('branch_mine advances through a supported tunnel before rescanning for iron', async () => {
   const entityPosition = pos(0, 64, 0);
   const iron = { name: 'iron_ore', type: 42, boundingBox: 'block', position: pos(3, 64, 0) };
+  const cleared = new Set();
+  const key = position => `${position.x},${position.y},${position.z}`;
   const bot = {
     entity: { position: entityPosition, yaw: Math.PI / 2 },
     health: 20,
@@ -69,12 +97,23 @@ test('branch_mine advances through a supported tunnel before rescanning for iron
     },
     pathfinder: {
       stop() {},
+      async goto(goal) {
+        assert.equal(bot.blockAt(pos(goal.x, goal.y - 1, goal.z)).boundingBox, 'block');
+        assert.equal(bot.blockAt(pos(goal.x, goal.y, goal.z)).name, 'air');
+        assert.equal(bot.blockAt(pos(goal.x, goal.y + 1, goal.z)).name, 'air');
+        entityPosition.x = goal.x;
+        entityPosition.y = goal.y;
+        entityPosition.z = goal.z;
+      },
     },
     stopDigging() {},
     async equip() {},
     async lookAt() {},
-    async dig() {},
+    async dig(block) { cleared.add(key(block.position)); },
     blockAt(blockPos) {
+      if (cleared.has(key(blockPos))) {
+        return { name: 'air', boundingBox: 'empty', position: blockPos };
+      }
       if (blockPos.y === 63) {
         return { name: 'stone', boundingBox: 'block', position: blockPos };
       }
@@ -84,7 +123,7 @@ test('branch_mine advances through a supported tunnel before rescanning for iron
       return entityPosition.z >= 1 ? iron : null;
     },
     setControlState(name, value) {
-      if (name === 'forward' && value) entityPosition.z += 1;
+      assert.equal(value, false, `manual ${name} must not replace supported navigation`);
     },
   };
   const context = {

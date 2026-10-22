@@ -1026,3 +1026,78 @@ async def test_executor_settles_cancelled_receipt_then_reports_cancelled_command
     persisted = await repository.get_step("step-1")
     assert caught.value.error.code == "CANCELLATION_REQUESTED"
     assert persisted is not None and persisted.state == "settled"
+
+
+async def test_partial_collection_error_retains_settled_budget_and_observation() -> None:
+    repository = InMemoryCommandJournal()
+
+    class PartialRuntime(Runtime):
+        async def execute_action(self, request, *, timeout=60.0):
+            receipt = await super().execute_action(request, timeout=timeout)
+            payload = receipt.model_dump(mode="json", exclude={"content_hash"})
+            error = dict(MESSAGES["RuntimeProtocolError"])
+            error.update(code="PARTIAL_COLLECT", outcome_known=True, world_may_have_changed=True)
+            payload.update(outcome="error", error=error)
+            payload["content_hash"] = canonical_json_hash(payload)
+            return ActionReceipt.model_validate(payload)
+
+    executor = CommandExecutor(
+        runtime=PartialRuntime(repository),
+        repository=repository,
+        now_ms=lambda: 1_800_000_000_000,
+        make_id=lambda prefix: f"{prefix}-1",
+    )
+    with pytest.raises(ExecutorError) as caught:
+        await executor.execute_step(
+            command=await command(repository),
+            step=ExecuteStep(
+                capability="collect",
+                parameters={"count": 1},
+                maximum_cost=BudgetUsage(
+                    max_actions=1, max_travel_distance=16, max_blocks_changed=4
+                ),
+            ),
+            before=Observation.model_validate(MESSAGES["Observation"]),
+            ordinal=1,
+            strategy_state_hash="b" * 64,
+            account=BudgetAccount(limit=budget()),
+        )
+
+    result = caught.value.settled_result
+    assert result is not None
+    assert result.account.used.max_actions == 1
+    assert result.account.used.max_blocks_changed == 1
+    assert result.receipt.outcome.value == "error"
+    assert result.after.inventory == {"oak_log": 1}
+    assert (await repository.get_step("step-1")).state == "settled"
+
+
+async def test_budget_overrun_preserves_valid_receipt_before_quarantine() -> None:
+    repository = InMemoryCommandJournal()
+    executor = CommandExecutor(
+        runtime=Runtime(repository),
+        repository=repository,
+        now_ms=lambda: 1_800_000_000_000,
+        make_id=lambda prefix: f"{prefix}-1",
+    )
+    with pytest.raises(ExecutorError) as caught:
+        await executor.execute_step(
+            command=await command(repository),
+            step=ExecuteStep(
+                capability="collect",
+                parameters={"count": 1},
+                maximum_cost=BudgetUsage(
+                    max_actions=1, max_travel_distance=1, max_blocks_changed=4
+                ),
+            ),
+            before=Observation.model_validate(MESSAGES["Observation"]),
+            ordinal=1,
+            strategy_state_hash="b" * 64,
+            account=BudgetAccount(limit=budget()),
+        )
+    persisted = await repository.get_step("step-1")
+    assert persisted is not None and persisted.state == "unknown"
+    assert persisted.receipt["budget_usage"]["max_travel_distance"] == 2
+    assert caught.value.error.code == "BUDGET_CONTRACT_VIOLATION"
+    assert caught.value.error.details["actual_usage"]["max_travel_distance"] == 2
+    assert caught.value.error.outcome_known is False

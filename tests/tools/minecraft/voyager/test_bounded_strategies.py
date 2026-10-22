@@ -16,8 +16,10 @@ from animetta.tools.minecraft.skill.trust import (
 )
 from animetta.tools.minecraft.survival.registry import WorkflowRegistry
 from animetta.tools.minecraft.survival.workflows import (
+    InventoryThreshold,
     diamond_survival_workflow,
     iron_survival_workflow,
+    nether_preparation_workflows,
 )
 from animetta.tools.minecraft.voyager.budget import BudgetUsage, ExecutionBudget
 from animetta.tools.minecraft.voyager.goal_models import AtomicAction, GoalSpec
@@ -54,6 +56,12 @@ def budget() -> ExecutionBudget:
         max_travel_distance=256,
         max_blocks_changed=64,
         max_damage_taken=4,
+    )
+
+
+def observation_with(inventory: dict[str, int]) -> Observation:
+    return Observation.model_validate(MESSAGES["Observation"]).model_copy(
+        update={"inventory": inventory}
     )
 
 
@@ -153,6 +161,193 @@ def test_diamond_workflow_uses_deterministic_carried_planks_instead_of_optional_
     )
     smelt = next(step for step in workflow.steps if step.capability == "smelt")
     assert smelt.parameters == {"item": "raw_iron", "fuel": "oak_planks", "count": 3}
+
+
+def test_fallback_propose_collects_only_the_remaining_declared_gap() -> None:
+    registry = WorkflowRegistry()
+    registry.register(iron_survival_workflow())
+    strategy = FallbackStrategy(registry=registry)
+
+    full = strategy.propose(strategy.prepare(goal()), observation_with({"oak_log": 0}))
+    state = strategy.prepare(goal())
+    resumed = strategy.propose(state, observation_with({"oak_log": 4}))
+
+    assert full.kind == "execute"
+    assert full.parameters == {"block_type": "oak_log", "count": 8}
+    assert resumed.kind == "execute"
+    assert resumed.parameters == {"block_type": "oak_log", "count": 4}
+    assert resumed.maximum_cost == full.maximum_cost
+    assert state["step_index"] == 0
+
+
+def test_fallback_propose_skips_collect_when_declared_target_is_already_satisfied() -> None:
+    registry = WorkflowRegistry()
+    registry.register(iron_survival_workflow())
+    strategy = FallbackStrategy(registry=registry)
+    state = strategy.prepare(goal())
+
+    decision = strategy.propose(state, observation_with({"oak_log": 9}))
+
+    assert decision.kind == "execute"
+    assert decision.capability == "craft"
+    assert decision.parameters == {"recipe": "oak_planks", "count": 32}
+    assert state["step_index"] == 1
+
+
+def test_fallback_propose_resolves_namespaced_inventory_keys_for_declared_targets() -> None:
+    registry = WorkflowRegistry()
+    registry.register(iron_survival_workflow())
+    strategy = FallbackStrategy(registry=registry)
+    state = strategy.prepare(goal())
+
+    decision = strategy.propose(state, observation_with({"minecraft:oak_log": 6}))
+
+    assert decision.kind == "execute"
+    assert decision.parameters == {"block_type": "oak_log", "count": 2}
+
+
+def test_survival_workflows_declare_absolute_collection_targets() -> None:
+    iron = iron_survival_workflow()
+    diamond = diamond_survival_workflow()
+    workflows = {workflow.target: workflow for workflow in nether_preparation_workflows()}
+    pickaxe, ignition, obsidian = (
+        workflows[target] for target in ("diamond_pickaxe", "flint_and_steel", "obsidian")
+    )
+
+    assert iron.collection_targets[0] == InventoryThreshold(item="oak_log", quantity=8)
+    assert iron.collection_targets[5] == InventoryThreshold(item="cobblestone", quantity=16)
+    assert iron.collection_targets[8] == InventoryThreshold(item="raw_iron", quantity=3)
+    assert all(
+        target is None
+        for index, target in enumerate(iron.collection_targets)
+        if index not in {0, 5, 8}
+    )
+    assert len(diamond.collection_targets) == len(diamond.steps)
+    assert diamond.collection_targets[-1] == InventoryThreshold(item="diamond", quantity=1)
+    assert len(pickaxe.collection_targets) == len(pickaxe.steps)
+    pickaxe_diamond_index = len(pickaxe.steps) - 3
+    assert pickaxe.steps[pickaxe_diamond_index].parameters == {
+        "block_type": "diamond_ore",
+        "count": 3,
+    }
+    assert pickaxe.collection_targets[pickaxe_diamond_index] == InventoryThreshold(
+        item="diamond", quantity=3
+    )
+    assert ignition.collection_targets == (
+        InventoryThreshold(item="oak_log", quantity=2),
+        None,
+        InventoryThreshold(item="raw_iron", quantity=1),
+        None,
+        None,
+        None,
+    )
+    assert obsidian.collection_targets == (None,) + tuple(
+        InventoryThreshold(item="obsidian", quantity=count) for count in range(1, 11)
+    )
+
+
+def test_fallback_accept_partial_result_requires_declared_target_progress() -> None:
+    registry = WorkflowRegistry()
+    registry.register(iron_survival_workflow())
+    strategy = FallbackStrategy(registry=registry)
+    state = strategy.prepare(goal())
+    before = observation_with({"oak_log": 0})
+    after = observation_with({"oak_log": 4})
+
+    recovered = strategy.accept_partial_result(state, before, after)
+    no_progress = strategy.accept_partial_result(state, after, after)
+    other_item = strategy.accept_partial_result(
+        state, after, observation_with({"oak_log": 4, "cobblestone": 3})
+    )
+    craft_state = {**state, "step_index": 1}
+    craft_step = strategy.accept_partial_result(craft_state, before, after)
+    unsupported = strategy.accept_partial_result(strategy.prepare(goal("emerald")), before, after)
+    namespaced = strategy.accept_partial_result(
+        strategy.prepare(goal()),
+        observation_with({"minecraft:oak_log": 1}),
+        observation_with({"minecraft:oak_log": 3}),
+    )
+
+    assert recovered is not None
+    assert recovered["step_index"] == 0
+    assert no_progress is None
+    assert other_item is None
+    assert craft_step is None
+    assert unsupported is None
+    assert namespaced is not None
+
+
+def test_mission_accept_partial_result_only_delegates_to_selected_fallback() -> None:
+    from animetta.tools.minecraft.voyager.strategies.base import ExecuteStep
+
+    execute = ExecuteStep(
+        capability="collect",
+        parameters={"count": 1},
+        maximum_cost=BudgetUsage(max_actions=1),
+    )
+
+    class StubStrategy:
+        def __init__(self, decision) -> None:
+            self.decision = decision
+
+        def prepare(self, selected_goal):
+            return {"goal": selected_goal}
+
+        def propose(self, state, current_observation):
+            del state, current_observation
+            return self.decision
+
+        def accept_result(self, state, result):
+            return {**state, "result": result}
+
+    class RecoverableFallback(StubStrategy):
+        def __init__(self, recovers: bool) -> None:
+            super().__init__(execute)
+            self.recovers = recovers
+            self.partial_calls = 0
+
+        def accept_partial_result(self, state, before, after):
+            del before, after
+            self.partial_calls += 1
+            return {**state, "recovered": True} if self.recovers else None
+
+    observation = Observation.model_validate(MESSAGES["Observation"])
+    fallback = RecoverableFallback(recovers=True)
+    mission = MissionStrategy(live=StubStrategy(execute), learn=None, fallback=fallback)
+    live_state = mission.prepare(goal())
+    mission.propose(live_state, observation)
+
+    assert live_state["selected_strategy"] == "live"
+    assert mission.accept_partial_result(live_state, observation, observation) is None
+    assert fallback.partial_calls == 0
+
+    fallback_first = MissionStrategy(live=None, learn=None, fallback=fallback)
+    state = fallback_first.prepare(goal())
+    fallback_first.propose(state, observation)
+
+    recovered = fallback_first.accept_partial_result(
+        state, observation, observation_with({"oak_log": 2})
+    )
+
+    assert state["selected_strategy"] == "fallback"
+    assert recovered is not None
+    assert recovered["executed_steps"] == 1
+    assert recovered["selected_strategy"] == "fallback"
+    assert recovered["strategy_state"]["recovered"] is True
+    assert state["executed_steps"] == 0
+    assert fallback.partial_calls == 1
+
+    declining = MissionStrategy(live=None, learn=None, fallback=RecoverableFallback(recovers=False))
+    declined_state = declining.prepare(goal())
+    declining.propose(declined_state, observation)
+
+    assert (
+        declining.accept_partial_result(
+            declined_state, observation, observation_with({"oak_log": 2})
+        )
+        is None
+    )
+    assert declined_state["executed_steps"] == 0
 
 
 def test_live_requires_exact_environment_trust_and_never_falls_back() -> None:

@@ -110,6 +110,8 @@ def goal_postconditions(goal: GoalSpec) -> tuple[Predicate, ...]:
             predicates.append(_observation_at_least(f"inventory.{success.item}", success.quantity))
         elif success.kind == "health_at_least":
             predicates.append(_observation_at_least("health", success.health))
+        elif success.kind == "food_at_least":
+            predicates.append(_observation_at_least("food", success.food))
         elif success.kind == "survived_duration":
             predicates.append(_observation_at_least("survival.duration_ms", success.duration_ms))
         elif success.kind == "entity_defeated":

@@ -8,7 +8,12 @@ from pathlib import Path
 import pytest
 from pydantic import TypeAdapter
 
-from animetta.tools.gamebot.contracts.v2 import ActionReceipt, Observation, RuntimeManifest
+from animetta.tools.gamebot.contracts.v2 import (
+    ActionReceipt,
+    Observation,
+    ReceiptOutcome,
+    RuntimeManifest,
+)
 from animetta.tools.minecraft.blueprint import (
     BlueprintBinding,
     BlueprintCompiler,
@@ -19,10 +24,11 @@ from animetta.tools.minecraft.discovery import (
     RuntimeDiscoveryProjector,
     WorldFactState,
 )
-from animetta.tools.minecraft.voyager.budget import ExecutionBudget
+from animetta.tools.minecraft.voyager.budget import BudgetAccount, BudgetUsage, ExecutionBudget
 from animetta.tools.minecraft.voyager.command_executor import (
     ExecutorError,
     ReconciliationResult,
+    StepExecutionResult,
 )
 from animetta.tools.minecraft.voyager.command_models import (
     CommandState,
@@ -37,7 +43,7 @@ from animetta.tools.minecraft.voyager.goal_models import GoalSpec
 from animetta.tools.minecraft.voyager.journal import JournalCommand
 from animetta.tools.minecraft.voyager.reconciliation import RecoveryDecision
 from animetta.tools.minecraft.voyager.scheduler import CommandExecutionError
-from animetta.tools.minecraft.voyager.strategies.base import Complete
+from animetta.tools.minecraft.voyager.strategies.base import Complete, ExecuteStep
 
 ROOT = Path(__file__).resolve().parents[4]
 MESSAGES = json.loads(
@@ -179,6 +185,99 @@ async def test_controller_passes_collected_typed_evidence_to_goal_verifier() -> 
     assert collector.called is True
     assert verifier.received["technology_evidence"] == ("technology:stone-age",)
     assert activity.phases == ["observing", "checking"]
+
+
+@pytest.mark.parametrize("recoverable", [True, False])
+async def test_controller_only_resumes_partial_collection_with_strategy_progress(
+    recoverable: bool,
+) -> None:
+    class PartialStrategy(CompleteStrategy):
+        def propose(self, state, observation):
+            if observation.inventory.get("oak_log", 0) >= 8:
+                return super().propose(state, observation)
+            return ExecuteStep(
+                capability="collect",
+                parameters={"count": 8 - observation.inventory.get("oak_log", 0)},
+                maximum_cost=BudgetUsage(max_actions=1),
+            )
+
+        def accept_partial_result(self, state, before, after):
+            assert before.inventory == {"oak_log": 1}
+            assert after.inventory == {"oak_log": 4}
+            return state if recoverable else None
+
+        def accept_result(self, state, result):
+            assert result["outcome"] == "success"
+            return state
+
+    class PartialExecutor(ExecutorStub):
+        def __init__(self):
+            self.calls = []
+
+        async def execute_step(self, **kwargs):
+            self.calls.append(kwargs)
+            first = len(self.calls) == 1
+            receipt = ActionReceipt.model_validate(MESSAGES["ActionReceipt"]).model_copy(
+                update={"outcome": ReceiptOutcome.ERROR if first else ReceiptOutcome.SUCCESS}
+            )
+            account = BudgetAccount(
+                limit=kwargs["account"].limit,
+                used=BudgetUsage(max_actions=len(self.calls)),
+            )
+            result = StepExecutionResult(
+                receipt=receipt,
+                after=kwargs["before"].model_copy(
+                    update={"inventory": {"oak_log": 4 if first else 8}}
+                ),
+                account=account,
+            )
+            if first:
+                raise ExecutorError(
+                    ControlPlaneError(
+                        code="PARTIAL_COLLECT",
+                        message="4/8 collected",
+                        phase="execution",
+                        outcome_known=True,
+                        world_may_have_changed=True,
+                        caller_may_resubmit=False,
+                        operator_action="inspect receipt",
+                    ),
+                    settled_result=result,
+                )
+            return result
+
+    executor = PartialExecutor()
+    verifier = VerifierStub()
+    controller = UnifiedVoyagerController(
+        runtime=RuntimeStub(),
+        repository=object(),
+        executor=executor,
+        strategy_factories={"mission": lambda _manifest, _command: PartialStrategy()},
+        verifier=verifier,
+        evidence_collector=EvidenceCollectorStub(),
+        make_id=lambda prefix: f"{prefix}-id",
+        now_ms=lambda: 10,
+    )
+    cmd = _command()
+    cmd = cmd.model_copy(
+        update={
+            "effective_budget": {
+                **cmd.effective_budget,
+                "max_actions": 3,
+            }
+        }
+    )
+    if not recoverable:
+        with pytest.raises(CommandExecutionError, match="4/8 collected"):
+            await controller.execute_command(cmd)
+        assert len(executor.calls) == 1
+        return
+
+    await controller.execute_command(cmd)
+    assert [call["step"].parameters["count"] for call in executor.calls] == [7, 4]
+    assert executor.calls[1]["account"].used.max_actions == 1
+    assert executor.calls[1]["previous_receipt_hash"]
+    assert len(verifier.received["receipts"]) == 2
 
 
 async def test_goal_verification_failure_retains_auditable_evidence() -> None:

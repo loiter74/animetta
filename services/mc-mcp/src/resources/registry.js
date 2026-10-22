@@ -20,6 +20,18 @@ export const TOOL_TIER = {
 // canonical 资源定义。canonical = 搜索目标（block 形式）。
 // category ∈ surface | shore | common_underground | deep_ore（决定策略集）。
 export const REGISTRY = {
+  gravel: {
+    canonical: 'gravel', aliases: ['gravel', 'flint'], blocks: ['gravel'],
+    drops: ['gravel', 'flint'], category: 'common_underground',
+    strategies: ['memory_first', 'cave_scan', 'spiral_scan'],
+    maxDistance: 48, attemptBudget: 6, timeBudgetMs: 20000,
+  },
+  obsidian: {
+    canonical: 'obsidian', aliases: ['obsidian'], blocks: ['obsidian'], drops: ['obsidian'],
+    category: 'deep_ore', requiredTool: 'diamond_pickaxe',
+    strategies: ['memory_first', 'cave_scan', 'spiral_scan'],
+    maxDistance: 48, attemptBudget: 6, timeBudgetMs: 30000,
+  },
   oak_log: {
     canonical: 'oak_log',
     aliases: ['oak_log', 'oak', 'log', 'wood'],

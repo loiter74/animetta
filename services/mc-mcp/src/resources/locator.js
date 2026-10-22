@@ -10,7 +10,7 @@
 
 import { getResourceDefinition, isUndergroundCategory } from './registry.js';
 import { ResourceMemory } from './memory.js';
-import { STRATEGIES, locatorError, checkTool } from './strategies.js';
+import { STRATEGIES, locatorError, checkTool, recordStrategyFailure } from './strategies.js';
 
 // ── 轻量 debug 日志（T11.1）─────────────────────────────────────────────
 // 统一前缀便于 grep；stderr 不会污染 JSON-line stdout 协议。
@@ -74,6 +74,7 @@ export async function locateResource(bot, resourceName, options = {}) {
     mcData,
     deadline,
     attempts: 0,
+    searchFailures: [],
   };
 
   for (const id of allowed) {
@@ -96,6 +97,7 @@ export async function locateResource(bot, resourceName, options = {}) {
     try {
       candidate = await fn(bot, ctx);
     } catch (e) {
+      recordStrategyFailure(ctx, id, e);
       ctx.memory.recordStrategyResult(def.canonical, id, false);
       _debugLog(`ERROR strategy=${id} resource=${def.canonical} code=${e?.code || 'unknown'} reason=${e?.reason || e?.message || ''}`);
       if (e && e.code) {
@@ -141,6 +143,7 @@ export async function locateResource(bot, resourceName, options = {}) {
       reason: 'all strategies exhausted within time budget',
       attempts: ctx.attempts,
       strategiesTried: allowed,
+      search_failures: ctx.searchFailures,
     });
   }
   _debugLog(`FAIL resource=${def.canonical} code=RESOURCE_NOT_FOUND attempts=${ctx.attempts} strategies=${allowed.join(',')}`);
@@ -149,6 +152,7 @@ export async function locateResource(bot, resourceName, options = {}) {
     reason: `no ${def.canonical} found after ${ctx.attempts} attempts`,
     attempts: ctx.attempts,
     strategiesTried: allowed,
+    search_failures: ctx.searchFailures,
   });
 }
 

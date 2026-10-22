@@ -25,6 +25,7 @@ from animetta.tools.minecraft.voyager.public_activity import (
     project_activity_page,
 )
 from animetta.tools.minecraft.voyager.sqlite_repository import SQLiteCommandJournal
+from animetta.tools.minecraft.voyager.stop import StopResult
 
 from .assembly import MinecraftControlPlane, assemble_control_plane
 from .bridge import MinecraftMcpBridge
@@ -266,11 +267,19 @@ async def manage_minecraft_connection(
         return await bridge.connection_status()
     if operation == "reattach_viewer":
         return await bridge.reattach_viewer(request_id=request_id)
-    await _stop_control_plane(request_id=request_id, reason=f"connection {operation}")
-    await _close_control_plane()
+    stopped = await _stop_control_plane(request_id=request_id, reason=f"connection {operation}")
     if operation == "disconnect":
-        return await bridge.disconnect_runtime(request_id=request_id)
-    return await bridge.shutdown_runtime(request_id=request_id)
+        result = await bridge.disconnect_runtime(request_id=request_id)
+    else:
+        result = await bridge.shutdown_runtime(request_id=request_id)
+    if stopped is not None and stopped.recovery_error and _control_plane is not None:
+        await _control_plane.gateway.record_runtime_termination(
+            caller_scope=_caller_scope.get(),
+            runtime_instance_id=_control_plane.adapter.runtime_instance_id,
+            acknowledgement=result,
+        )
+    await _close_control_plane()
+    return result
 
 
 @tool(args_schema=MinecraftConnectionToolInput)
@@ -487,10 +496,10 @@ def _gateway():
     return _control_plane.gateway
 
 
-async def _stop_control_plane(*, request_id: str, reason: str) -> None:
+async def _stop_control_plane(*, request_id: str, reason: str) -> StopResult | None:
     if _control_plane is None:
-        return
-    await _control_plane.gateway.stop(
+        return None
+    return await _control_plane.gateway.stop(
         caller_scope=_caller_scope.get(),
         request_id=f"{request_id}:cancel",
         reason=reason,

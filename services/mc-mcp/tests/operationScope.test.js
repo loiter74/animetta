@@ -1,7 +1,90 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { EventEmitter } from 'node:events';
+import minecraftData from 'minecraft-data';
+import pathfinderPackage from 'mineflayer-pathfinder';
+import Vec3 from 'vec3';
 
 import { createOperationScope } from '../src/runtime/operationScope.js';
+
+test('interaction navigation supports SDK goals with pos and vector-based visibility checks', async () => {
+  const target = new Vec3(29, 61, 96);
+  const bot = new EventEmitter();
+  bot.entity = { position: new Vec3(29, 64, 96), onGround: true, velocity: new Vec3(0, 0, 0) };
+  bot.pathfinder = { isMoving: () => false, setGoal() {}, stop() {} };
+  bot.setControlState = () => {};
+  const goal = new pathfinderPackage.goals.GoalLookAtBlock(target, { raycast: () => ({ position: target }) });
+  const scope = createOperationScope({ bot, deadlineMs: Date.now() + 5000 });
+  assert.equal(await scope.navigate(goal, async () => 'visible'), 'visible');
+});
+
+test('navigation clears an idle stop request before the real pathfinder accepts a new goal', async () => {
+  const bot = new EventEmitter();
+  bot.registry = minecraftData('1.21.1');
+  bot.entity = { position: new Vec3(0, 64, 0), onGround: true, velocity: new Vec3(0, 0, 0) };
+  bot.inventory = { items: () => [] };
+  bot.clearControlStates = () => {};
+  bot.setControlState = () => {};
+  pathfinderPackage.pathfinder(bot);
+  bot.pathfinder.stop();
+  const goal = new pathfinderPackage.goals.GoalBlock(1, 64, 0);
+  const scope = createOperationScope({ bot, deadlineMs: Date.now() + 5_000 });
+  let failure = null;
+  const pending = scope.navigate(goal, () => bot.pathfinder.goto(goal)).catch((error) => {
+    failure = error;
+  });
+  await new Promise(setImmediate);
+  bot.entity.position = new Vec3(1, 64, 0);
+  bot.emit('goal_reached', goal);
+  await pending;
+  assert.equal(failure, null);
+});
+
+test('navigation timeout cancels the real SDK goal without waiting for its next waypoint', async () => {
+  const bot = new EventEmitter();
+  bot.registry = minecraftData('1.21.1');
+  bot.entity = { position: new Vec3(0, 26, 0), onGround: true, velocity: new Vec3(0, 0, 0) };
+  bot.inventory = { items: () => [] };
+  bot.clearControlStates = () => {};
+  bot.setControlState = () => {};
+  pathfinderPackage.pathfinder(bot);
+  const goal = new pathfinderPackage.goals.GoalY(30);
+  const scope = createOperationScope({ bot, deadlineMs: Date.now() + 5000, quiescenceTimeoutMs: 100 });
+  await assert.rejects(scope.navigate(goal, () => bot.pathfinder.goto(goal), { timeoutMs: 20 }),
+    error => error.code === 'ACTION_DEADLINE_EXPIRED');
+  assert.equal(bot.pathfinder.goal, null);
+  assert.equal(bot.listenerCount('goal_reached'), 0);
+});
+
+test('distant navigation can finish beyond the short navigation window', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const { bot } = botFixture();
+  const scope = createOperationScope({ bot, deadlineMs: Date.now() + 200_000 });
+  const pending = scope.navigate(
+    { x: 64, y: 64, z: 0, isEnd: (node) => node.x === 64 },
+    () => new Promise((resolve) => setTimeout(() => {
+      bot.entity.position.x = 64;
+      resolve();
+    }, 17_000)),
+  ).then(() => true, (error) => error.code);
+  await Promise.resolve();
+  t.mock.timers.tick(17_000);
+  assert.equal(await pending, true);
+});
+
+test('native height goals retain time for planning and pillar movement', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const { bot } = botFixture();
+  bot.entity.position.y = 26;
+  const scope = createOperationScope({ bot, deadlineMs: Date.now() + 200_000 });
+  const goal = new pathfinderPackage.goals.GoalY(30);
+  const pending = scope.navigate(goal, () => new Promise(resolve => setTimeout(() => {
+    bot.entity.position.y = 30; resolve();
+  }, 17_000))).then(() => true, error => error.code);
+  await Promise.resolve();
+  t.mock.timers.tick(17_000);
+  assert.equal(await pending, true);
+});
 
 
 function botFixture(overrides = {}) {
@@ -24,6 +107,24 @@ function botFixture(overrides = {}) {
   };
   return { bot, controls, stops: () => stops };
 }
+
+test('grounded gravity is settled but falling, jumping and horizontal drift are not', async () => {
+  const { bot } = botFixture();
+  bot.entity.velocity.y = -0.0784000015258789;
+  const scope = createOperationScope({ bot });
+  assert.equal(scope.isQuiescent(), true);
+  assert.equal(await scope.interrupt(), true);
+  bot.entity.onGround = false;
+  assert.equal(scope.isQuiescent(), false);
+  bot.entity.onGround = true;
+  bot.entity.velocity.y = -0.2;
+  assert.equal(scope.isQuiescent(), false);
+  bot.entity.velocity.y = 0.2;
+  assert.equal(scope.isQuiescent(), false);
+  bot.entity.velocity.y = -0.0784;
+  bot.entity.velocity.x = 0.1;
+  assert.equal(scope.isQuiescent(), false);
+});
 
 
 test('navigation cannot report success before the goal predicate is satisfied', async () => {

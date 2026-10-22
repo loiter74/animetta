@@ -305,15 +305,41 @@ class UnifiedVoyagerController:
                 if not isinstance(decision, ExecuteStep):
                     raise RuntimeError("INVALID_STRATEGY_DECISION")
                 ordinal += 1
-                result = await self._executor.execute_step(
-                    command=command,
-                    step=decision,
-                    before=observation,
-                    ordinal=ordinal,
-                    strategy_state_hash=self._make_id("strategy-state").ljust(64, "0")[:64],
-                    account=account,
-                    previous_receipt_hash=previous_hash,
-                )
+                try:
+                    result = await self._executor.execute_step(
+                        command=command,
+                        step=decision,
+                        before=observation,
+                        ordinal=ordinal,
+                        strategy_state_hash=self._make_id("strategy-state").ljust(64, "0")[:64],
+                        account=account,
+                        previous_receipt_hash=previous_hash,
+                    )
+                except ExecutorError as exc:
+                    result = exc.settled_result
+                    if result is None:
+                        raise
+                    account = result.account
+                    receipts.append(result.receipt)
+                    previous_hash = result.receipt.content_hash
+                    recover = getattr(strategy, "accept_partial_result", None)
+                    recovered_state = None
+                    if (
+                        exc.error.code == "PARTIAL_COLLECT"
+                        and exc.error.outcome_known
+                        and decision.capability == "collect"
+                        and result.receipt.outcome.value == "error"
+                        and result.receipt.reconciliation.value == "accepted"
+                        and result.receipt.post_observation.value == "stable"
+                        and CommandExecutor._observation_motion_settled(result.after)
+                        and callable(recover)
+                    ):
+                        recovered_state = recover(state, observation, result.after)
+                    if recovered_state is None:
+                        raise
+                    state = recovered_state
+                    observation = result.after
+                    continue
                 account = result.account
                 observation = result.after
                 receipts.append(result.receipt)

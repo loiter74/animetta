@@ -95,7 +95,13 @@ export function inspectRegionBlocks(bot, bounds) {
     for (let y = min.y; y <= max.y; y += 1) {
       for (let z = min.z; z <= max.z; z += 1) {
         const block = bot.blockAt?.(new Vec3(x, y, z));
-        blocks[`${x},${y},${z}`] = resourceId(block?.name || 'air');
+        if (!block?.name) {
+          const error = new Error(`Region block ${x},${y},${z} is not loaded`);
+          error.code = 'REGION_NOT_LOADED';
+          error.details = { position: { x, y, z } };
+          throw error;
+        }
+        blocks[`${x},${y},${z}`] = resourceId(block.name);
       }
     }
   }

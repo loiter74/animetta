@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
 import test from 'node:test';
+import Vec3 from 'vec3';
+import minecraftData from 'minecraft-data';
+import injectEntities from 'mineflayer/lib/plugins/entities.js';
 
 import { createGameBotV2Adapter } from '../src/runtime/gamebotV2Adapter.js';
 
@@ -42,12 +45,16 @@ function adapterFixture({ actions: actionOverrides = {}, look = async () => {}, 
   Object.assign(bot, {
     _client: protocolClient,
     version: '1.21.1',
+    registry: minecraftData('1.21.1'),
     game: { dimension: 'minecraft:overworld' },
     time: { age: 40 },
     health: 20,
     food: 20,
     entities: {},
     entity: {
+      id: 1,
+      name: 'player',
+      metadata: { 1: 300 },
       position,
       height: 1.62,
       eyeHeight: 1.62,
@@ -112,6 +119,134 @@ function request(adapter, capability, parameters, correlationId) {
     previous_receipt_hash: '',
   };
 }
+
+test('real SDK metadata from another entity cannot replace the bot own air supply', async () => {
+  let bot;
+  const fixture = adapterFixture({ actions: { goto: async (_x, _y, _z, context) => {
+    fixture.protocolClient.emit('entity_metadata', {
+      entityId: 2, metadata: [{ key: 1, type: 'varint', value: 210 }],
+    });
+    assert.equal(bot.oxygenLevel, 14, 'the installed SDK writes another entity air into this shared field');
+    assert.equal(context.signal.aborted, false);
+    return 'arrived';
+  } } });
+  bot = fixture.bot;
+  bot.supportFeature = bot.registry.supportFeature;
+  injectEntities(bot);
+  bot.entities[1] = bot.entity;
+  bot.entities[2] = { id: 2, name: 'item', metadata: {} };
+  fixture.protocolClient.emit('entity_metadata', {
+    entityId: 1, metadata: [{ key: 1, type: 'varint', value: 300 }],
+  });
+  const receipt = await fixture.adapter.runtime.executeAction(request(
+    fixture.adapter, 'goto', { x: 0, y: 64, z: 0 }, 'own-air',
+  ));
+  assert.equal(receipt.outcome, 'success');
+  const observation = await fixture.adapter.runtime.observe({
+    correlation_id: 'own-air-observation', runtime_instance_id: fixture.adapter.runtimeInstanceId,
+  });
+  assert.equal(observation.environment.oxygen_level, 20);
+  fixture.protocolClient.emit('entity_metadata', {
+    entityId: 1, metadata: [{ key: 1, type: 'varint', value: 210 }],
+  });
+  const low = await fixture.adapter.runtime.executeAction(request(
+    fixture.adapter, 'goto', { x: 0, y: 64, z: 0 }, 'own-low-air',
+  ));
+  assert.equal(low.error.code, 'OXYGEN_LOW');
+  fixture.adapter.dispose();
+});
+
+test('missing own air metadata stays unknown even if the SDK shared field has a value', async () => {
+  const { adapter, bot } = adapterFixture();
+  bot.entity.metadata = {};
+  bot.oxygenLevel = 14;
+  const observation = await adapter.runtime.observe({
+    correlation_id: 'unknown-own-air', runtime_instance_id: adapter.runtimeInstanceId,
+  });
+  assert.equal(Object.hasOwn(observation.environment, 'oxygen_level'), false);
+  adapter.dispose();
+});
+
+test('low air cancels an admitted collect before drowning and retains charged work', async () => {
+  let started;
+  const entered = new Promise(resolve => { started = resolve; });
+  const { adapter, bot } = adapterFixture({ actions: {
+    collectWithEvidence: async (_block, _count, context) => new Promise((_resolve, reject) => {
+      context.signal.addEventListener('abort', () => reject(Object.assign(new Error('stopped'), {
+        budget_usage: { max_actions: 1, max_blocks_changed: 4, max_travel_distance: 2 },
+        explained_mutations: [],
+      })), { once: true });
+      started();
+    }),
+  } });
+  const pending = adapter.runtime.executeAction(request(adapter, 'collect', { block_type: 'iron_ore', count: 7 }, 'low-air'));
+  await entered;
+  bot.oxygenLevel = 14;
+  bot.entity.metadata[1] = 210;
+  bot.emit('breath');
+  const receipt = await pending;
+  assert.equal(receipt.error.code, 'OXYGEN_LOW');
+  assert.equal(receipt.budget_usage.max_actions, 1);
+  assert.equal(receipt.budget_usage.max_blocks_changed, 4);
+  assert.equal(receipt.budget_usage.max_travel_distance, 2);
+  assert.equal(bot.listenerCount('breath'), 0);
+  assert.equal(bot.health, 20);
+  adapter.dispose();
+});
+
+test('low air permits only a known upward shore recovery and still rejects other travel', async () => {
+  for (const targetY of [63, 56]) {
+    let entered = false;
+    let bot;
+    const fixture = adapterFixture({ actions: { goto: async (x, y, z, context) => {
+      entered = true;
+      assert.equal(context.signal.aborted, false);
+      bot.entity.position = new Vec3(x, y, z);
+      bot.oxygenLevel = 20;
+      bot.entity.metadata[1] = 300;
+      return 'recovered';
+    } } });
+    bot = fixture.bot;
+    bot.entity.position = new Vec3(0, 57, 0);
+    bot.oxygenLevel = 10;
+    bot.entity.metadata[1] = 150;
+    bot.blockAt = position => {
+      const water = position.x === 0 && position.z === 0 && position.y >= 57 && position.y < 63;
+      const name = water ? 'water' : position.y < 63 ? 'stone' : 'air';
+      return { name, boundingBox: name === 'stone' ? 'block' : 'empty', position };
+    };
+    const receipt = await fixture.adapter.runtime.executeAction(request(
+      fixture.adapter, 'goto', { x: 3, y: targetY, z: 0 }, `air-return-${targetY}`,
+    ));
+    assert.equal(entered, targetY === 63);
+    assert.equal(receipt.outcome, targetY === 63 ? 'success' : 'error');
+    if (targetY === 56) assert.equal(receipt.error.code, 'OXYGEN_LOW');
+    fixture.adapter.dispose();
+  }
+});
+
+test('partial collection receipt preserves charged work and rejects over-budget errors', async () => {
+  for (const blocks of [4, 65]) {
+    const { adapter } = adapterFixture({ actions: {
+      collectWithEvidence: async () => {
+        throw Object.assign(new Error('partial'), {
+          code: 'PARTIAL_COLLECT',
+          budget_usage: { max_actions: 1, max_blocks_changed: blocks },
+          explained_mutations: [],
+        });
+      },
+    } });
+    const receipt = await adapter.runtime.executeAction(
+      request(adapter, 'collect', { block_type: 'oak_log', count: 8 }, `partial-${blocks}`),
+    );
+    assert.equal(receipt.budget_usage.max_actions, 1);
+    assert.equal(receipt.budget_usage.max_blocks_changed, blocks);
+    assert.equal(receipt.outcome, blocks === 4 ? 'error' : 'unknown');
+    assert.equal(receipt.reconciliation, blocks === 4 ? 'accepted' : 'pending');
+    assert.equal(receipt.error.code, blocks === 4 ? 'PARTIAL_COLLECT' : 'BUDGET_CONTRACT_VIOLATION');
+    adapter.close?.();
+  }
+});
 
 
 test('adapter preserves and normalizes budget usage from a non-evidence capability', async () => {

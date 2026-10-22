@@ -92,3 +92,26 @@ class MissionStrategy:
             "strategy_state": delegated,
             "executed_steps": state["executed_steps"] + 1,
         }
+
+    def accept_partial_result(
+        self,
+        state: dict,
+        before: Observation,
+        after: Observation,
+    ) -> dict | None:
+        """Forward a settled partial collect only to the selected fallback delegate."""
+
+        if state.get("selected_strategy") != "fallback":
+            return None
+        fallback = self._strategies.get("fallback")
+        accept = getattr(fallback, "accept_partial_result", None)
+        if not callable(accept):
+            return None
+        recovered = accept(state["strategy_state"], before, after)
+        if recovered is None:
+            return None
+        return {
+            **state,
+            "strategy_state": recovered,
+            "executed_steps": state["executed_steps"] + 1,
+        }

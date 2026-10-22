@@ -21,7 +21,7 @@ from animetta.tools.minecraft.mission.projection import (
 )
 
 from .budget import ModeBudgetPolicy, RequestedBudget, effective_budget
-from .command_models import TERMINAL_COMMAND_STATES
+from .command_models import TERMINAL_COMMAND_STATES, CommandResult, CommandState, ControlPlaneError
 from .goal_models import AtomicAction
 from .journal import CommandDraft, CommandJournal, JournalCommand, ProjectionPage
 from .public_activity import PublicActivityPage, project_activity_page
@@ -240,6 +240,8 @@ class VoyagerGateway:
         maxima = tuple(
             self._budget_policy.maximum_for(mode) for mode in ("learn", "live", "fallback")
         )
+        if self._budget_policy.mission is not None:
+            maxima = (self._budget_policy.mission,)
         configured_resource_maxima = {
             resource: max(item.resource_consumption.get(resource, 0) for item in maxima)
             for resource in {key for item in maxima for key in item.resource_consumption}
@@ -341,6 +343,83 @@ class VoyagerGateway:
             limit=min(limit, self._max_activity_replay, 100)
         )
         return project_activity_page(page)
+
+    async def record_runtime_termination(
+        self,
+        *,
+        caller_scope: str,
+        runtime_instance_id: str | None,
+        acknowledgement: dict,
+    ) -> tuple[str, ...]:
+        """Cancel quarantined goals only after the owning MCP service confirms exit.
+
+        Original unknown receipts and reservations remain immutable. Termination
+        proves that execution stopped, never that a past action succeeded.
+        """
+        bot = acknowledgement.get("bot")
+        if (
+            runtime_instance_id is None
+            or runtime_instance_id != self._manifest.runtime_instance_id
+            or acknowledgement.get("state") != "stopped"
+            or not isinstance(bot, dict)
+            or bot.get("state") != "stopped"
+        ):
+            raise ValueError("RUNTIME_TERMINATION_NOT_CONFIRMED")
+        page = await self._repository.read_projection(caller_scope, limit=100)  # type: ignore[attr-defined]
+        cancelled: list[str] = []
+        for command in page.commands:
+            if command.state is not CommandState.BLOCKED_UNKNOWN:
+                continue
+            step = await self._repository.latest_step(command.command_id)
+            if step is None or step.runtime_instance_id != runtime_instance_id:
+                continue
+            evidence = {
+                "runtime_instance_id": runtime_instance_id,
+                "lifecycle_state": "stopped",
+                "correlation_id": step.correlation_id,
+                "original_outcome_known": False,
+                "action_replayed": False,
+                "goal_completed": False,
+            }
+            await self._repository.append_recovery(command.command_id, evidence)  # type: ignore[attr-defined]
+            current = await self._repository.transition(
+                command.command_id,
+                expected_version=command.state_version,
+                target=CommandState.RECONCILING,
+                reason_code="RUNTIME_TERMINATION_CONFIRMED",
+                actor="runtime-lifecycle",
+                occurred_at_ms=self._now_ms(),
+                details=evidence,
+            )
+            result = CommandResult(
+                command_id=command.command_id,
+                state=CommandState.CANCELLED,
+                output=evidence,
+                learning_evidence_eligible=False,
+                error=ControlPlaneError(
+                    code="RUNTIME_TERMINATED_AFTER_UNKNOWN_ACTION",
+                    message="Execution stopped; the original action outcome remains unknown",
+                    phase="recovery",
+                    outcome_known=False,
+                    world_may_have_changed=True,
+                    caller_may_resubmit=False,
+                    operator_action="retain the receipt and plan a new goal from fresh observations",
+                    details=evidence,
+                ),
+            )
+            await self._repository.transition(
+                command.command_id,
+                expected_version=current.state_version,
+                target=CommandState.CANCELLED,
+                reason_code="RUNTIME_TERMINATED_AFTER_UNKNOWN_ACTION",
+                actor="runtime-lifecycle",
+                occurred_at_ms=self._now_ms(),
+                details=evidence,
+                terminal_result=result.model_dump(mode="json"),
+            )
+            await self._notify(command.command_id)
+            cancelled.append(command.command_id)
+        return tuple(cancelled)
 
     async def stop(self, *, caller_scope: str, request_id: str, reason: str) -> StopResult:
         result = await self._stop_barrier.stop(

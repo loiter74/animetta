@@ -204,3 +204,4 @@ class RuntimeHealth(V2ContractModel):
     runtime_instance_id: str = Field(min_length=1, max_length=128)
     active_correlation_id: str | None = None
     last_completed_action_sequence: int = Field(ge=0)
+    action_phase_publish_failures_total: int = Field(default=0, ge=0)

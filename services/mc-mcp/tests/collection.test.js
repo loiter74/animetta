@@ -1,21 +1,262 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { EventEmitter } from 'node:events';
+import Vec3 from 'vec3';
+import pathfinderPkg from 'mineflayer-pathfinder';
+import minecraftData from 'minecraft-data';
+import prismarineBlock from 'prismarine-block';
 
 import * as collection from '../src/collection.js';
 
 const {
   collectionBlockKey,
+  collectionDigTimeoutMs,
   createCollectionBlockMatcher,
   digCollectionBlock,
   findCollectionTarget,
   incompleteCollectionError,
   isCollectionFluidHazard,
+  isPreparedObsidianTarget,
+  obsidianWorkMinimumY,
   isCollectionBlockStillPresent,
   isRecoverableCollectionDigError,
   collectionResourceMutation,
   stopCollectionMovement,
   waitForCollectionMovementToSettle,
 } = collection;
+
+test('collection approach requires an exposed reachable face rather than proximity through dirt', () => {
+  const target = { position: new Vec3(29, 61, 96) };
+  const standing = new Vec3(29, 64, 96);
+  let obstruction = new Vec3(29, 63, 96);
+  const bot = { world: { raycast: () => ({ position: obstruction }) } };
+  assert.equal(new pathfinderPkg.goals.GoalNear(29, 61, 96, 3).isEnd(standing), true);
+  const goal = collection.collectionApproachGoal(bot, target);
+  assert.equal(goal.isEnd(standing), false);
+  obstruction = target.position;
+  assert.equal(goal.isEnd(standing), true);
+});
+
+test('buried target access can be planned before its current-world visibility becomes true', () => {
+  const target = { name: 'gravel', position: new Vec3(8, 58, 79) };
+  const contact = new Vec3(8, 59, 79);
+  let obstruction = new Vec3(8, 59, 79);
+  const bot = { world: { raycast: () => ({ position: obstruction }) } };
+  const visibility = collection.collectionApproachGoal(bot, target);
+  const excavation = collection.collectionExcavationGoal(target);
+  assert.equal(visibility.isEnd(contact), false);
+  assert.equal(excavation.isEnd(contact), true);
+  assert.equal(excavation.isEnd(new Vec3(8, 60, 79)), false);
+  obstruction = target.position;
+  assert.equal(visibility.isEnd(contact), true);
+});
+
+test('collection pickup ignores unrelated loot and items without decoded metadata', () => {
+  const bot = { entity: { position: { x: 0, y: 64, z: 0 } }, entities: {
+    1: { name: 'item', position: { x: 1, y: 64, z: 0 }, getDroppedItem: () => ({ name: 'stick' }) },
+    2: { name: 'item', position: { x: 2, y: 64, z: 0 }, getDroppedItem: () => ({ name: 'oak_log' }) },
+    3: { name: 'item', position: { x: 1, y: 64, z: 1 }, getDroppedItem: () => null },
+    4: { name: 'item', position: { x: 2, y: 64, z: 1 }, getDroppedItem: () => ({ name: 'flint' }) },
+  } };
+  assert.deepEqual(collection.findPickupItemEntities(bot, 20, 'minecraft:oak_log').map(row => row.entity), [bot.entities[2]]);
+  assert.deepEqual(collection.findPickupItemEntities(bot, 20, ['gravel', 'flint']).map(row => row.entity), [bot.entities[4]]);
+  assert.equal(collection.findPickupItemEntities(bot).length, 4);
+});
+
+test('pickup chooses a safe edge close to the drop instead of close to the bot', () => {
+  const bot = {
+    entity: { position: new Vec3(2.5, 64, 0.5) },
+    blockAt(position) {
+      const water = position.x === 0 && position.z === 0 && [63, 64].includes(position.y);
+      const name = water ? 'water' : position.y < 64 ? 'stone' : 'air';
+      return { name, boundingBox: name === 'stone' ? 'block' : 'empty', position };
+    },
+  };
+  const item = new Vec3(0.25, 63, 0.25);
+  const standing = collection.pickupStandingPosition(bot, item);
+  assert.ok(standing.distanceTo(item) < 1.5);
+  assert.equal(collection.isSafeStandingPosition(bot, standing), true);
+});
+
+test('pickup height floor rejects a temporarily dry pit below the obsidian work surface', () => {
+  const bot = {
+    entity: { position: new Vec3(2.5, 64, 0.5) },
+    blockAt(position) {
+      const pit = position.x === 0 && position.z === 0 && position.y === 63;
+      const name = position.y < 64 && !pit ? 'stone' : 'air';
+      return { name, boundingBox: name === 'stone' ? 'block' : 'empty', position };
+    },
+  };
+  const item = new Vec3(0.25, 63, 0.25);
+  assert.equal(collection.pickupStandingPosition(bot, item).y, 63);
+  assert.equal(collection.pickupStandingPosition(bot, item, { minimumY: 64 }).y, 64);
+});
+
+test('safe pickup waits at a supported edge for a delayed floating item', async () => {
+  const entity = { name: 'item', position: new Vec3(1.5, 64, 0.5), getDroppedItem: () => ({ name: 'obsidian' }) };
+  const bot = {
+    entity: { position: new Vec3(3.5, 64, 0.5) }, entities: { 1: entity },
+    blockAt: position => ({ name: position.y < 64 ? 'stone' : 'air', boundingBox: position.y < 64 ? 'block' : 'empty', position }),
+    setControlState() {},
+  };
+  bot.pathfinder = { async goto(goal) { bot.entity.position = new Vec3(goal.x + 0.5, goal.y, goal.z + 0.5); }, stop() {} };
+  let elapsed = 0;
+  const outcome = await collection.safePickupDroppedItems(bot, {
+    GoalNear: pathfinderPkg.goals.GoalNear, itemName: 'obsidian', nowMs: () => elapsed,
+    waitMs: async ms => { elapsed += ms; if (elapsed >= 1500) delete bot.entities[1]; },
+  });
+  assert.equal(outcome.navigations, 1);
+  assert.equal(bot.entities[1], undefined);
+  assert.ok(elapsed >= 1500 && elapsed < 8000);
+});
+
+test('obsidian mining switches from scaffold to diamond pickaxe before calculating dig duration', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const block = { name: 'obsidian', position: { x: 53, y: -55, z: 127 } };
+  const bot = {
+    heldItem: { name: 'cobblestone' },
+    entity: { position: { x: 52, y: -54, z: 125 } },
+    blockAt: () => ({ name: 'air', boundingBox: 'empty' }),
+    inventory: { items: () => [{ name: 'iron_pickaxe' }, { name: 'diamond_pickaxe' }] },
+    async equip(item) { this.heldItem = item; },
+    digTime() { return this.heldItem.name === 'diamond_pickaxe' ? 9_400 : 250_000; },
+    dig() { return new Promise((resolve) => setTimeout(() => resolve('dug'), this.digTime())); },
+    stopDigging() {},
+  };
+  const pending = digCollectionBlock(bot, block).then((value) => value, (error) => error.code);
+  await Promise.resolve();
+  await Promise.resolve();
+  t.mock.timers.tick(10_000);
+  assert.equal(await pending, 'dug');
+  assert.equal(bot.heldItem.name, 'diamond_pickaxe');
+});
+
+test('dig duration remains bounded and includes slow submerged obsidian mining', () => {
+  assert.ok(collectionDigTimeoutMs({ digTime: () => 47_000 }, {}) > 47_000);
+  assert.equal(collectionDigTimeoutMs({ digTime: () => 250_000 }, {}), 120_000);
+});
+
+test('real SDK obsidian digging applies pickaxe speed without changing registry blocks', async () => {
+  const registry = minecraftData('1.21');
+  const Block = prismarineBlock('1.21');
+  for (const [tool, expected] of [['diamond_pickaxe', 9400], ['netherite_pickaxe', 8350]]) {
+    const block = Block.fromStateId(registry.blocksByName.obsidian.defaultState);
+    block.position = new Vec3(1, 63, 0);
+    const material = block.material;
+    const item = { name: tool, type: registry.itemsByName[tool].id };
+    const bot = {
+      registry,
+      heldItem: item,
+      entity: { position: new Vec3(0, 64, 0), onGround: true },
+      inventory: { items: () => [item] },
+      blockAt: () => ({ name: 'air' }),
+      digTime: target => target.digTime(item.type, false, false, false),
+      async dig(target) {
+        assert.ok(target instanceof Block);
+        assert.equal(bot.digTime(target), expected);
+        assert.equal(target.position, block.position);
+        return 'dug';
+      },
+    };
+    assert.equal(await digCollectionBlock(bot, block), 'dug');
+    assert.equal(block.material, material);
+    assert.equal(registry.blocksByName.obsidian.material, material);
+  }
+});
+
+test('obsidian collection refuses to dig without a harvest-capable pickaxe', async () => {
+  await assert.rejects(digCollectionBlock({
+    inventory: { items: () => [{ name: 'iron_pickaxe' }] },
+    dig: () => assert.fail('obsidian must not be destroyed with an iron pickaxe'),
+  }, { name: 'obsidian' }), (error) => error.code === 'TOOL_REQUIRED');
+});
+
+test('collection matcher admits palette entries before filtering positioned blocks', () => {
+  const matcher = createCollectionBlockMatcher([42, 43], new Set(['2,19,130']));
+  assert.equal(matcher({ type: 42 }), true);
+  assert.equal(matcher({ type: 43 }), true);
+  assert.equal(matcher({ type: 41 }), false);
+  assert.equal(matcher({ type: 42, position: { x: 2, y: 19, z: 130 } }), false);
+  assert.equal(matcher({ type: 42, position: { x: 2, y: 20, z: 130 } }), true);
+});
+
+test('obsidian discovery skips covered and unsafe targets while preserving SDK palette filtering', () => {
+  const covered = { type: 170, name: 'obsidian', position: new Vec3(55, -55, 122) };
+  const exposed = { ...covered, position: new Vec3(56, -55, 122) };
+  const unsafe = { ...covered, position: new Vec3(57, -55, 122) };
+  const unloaded = { ...covered, position: new Vec3(58, -55, 122) };
+  let lookups = 0;
+  const bot = {
+    entity: { position: new Vec3(54, -54, 122) },
+    blockAt(position) {
+      lookups++;
+      if (position.y === -54 && position.x === 58) return null;
+      const name = position.y === -54 && [56, 57].includes(position.x) ? 'air'
+        : position.x === 57 && position.y === -56 ? 'lava' : 'cobblestone';
+      return { name, position, boundingBox: name === 'cobblestone' ? 'block' : 'empty' };
+    },
+  };
+  const matches = createCollectionBlockMatcher(170, new Set(), block => isPreparedObsidianTarget(bot, block));
+  assert.equal(matches({ type: 170 }), true);
+  assert.equal(lookups, 0);
+  assert.equal(matches(covered), false);
+  assert.equal(matches(unsafe), false);
+  assert.equal(matches(unloaded), false);
+  assert.equal(matches(exposed), true);
+});
+
+test('obsidian work height permits one supported step down from a bank but excludes a flooded pit', () => {
+  const floor = new Vec3(58, -55, 122);
+  const pit = new Vec3(56, -56, 123);
+  const bot = {
+    entity: { position: new Vec3(57.5, -53, 122.5) },
+    blockAt(position) {
+      const name = position.equals(floor) || position.equals(pit) ? 'obsidian'
+        : position.x === 56 && position.z === 123 ? 'water' : 'air';
+      return { name, boundingBox: name === 'obsidian' ? 'block' : 'empty', position };
+    },
+  };
+  assert.equal(obsidianWorkMinimumY(bot, [floor, pit]), -54);
+  assert.equal(isPreparedObsidianTarget(bot, { position: floor }, -53), false);
+  assert.equal(isPreparedObsidianTarget(bot, { position: floor }, -54), true);
+  assert.equal(isPreparedObsidianTarget(bot, { position: pit }, -54), false);
+  assert.equal(obsidianWorkMinimumY(bot, [pit]), -53);
+  bot.entity.position.y = -54;
+  assert.equal(obsidianWorkMinimumY(bot, [floor, pit]), -54);
+});
+
+test('ordinary ore collection also refuses a water breach before invoking dig', async () => {
+  const bot = {
+    blockAt: position => ({ name: position.x === 2 ? 'water' : 'stone' }),
+    dig: () => assert.fail('must not open the aquifer'),
+  };
+  await assert.rejects(digCollectionBlock(bot, { name: 'iron_ore', position: { x: 1, y: 16, z: 0 } }),
+    error => error.code === 'UNSAFE_AREA' && error.reason_code === 'FLUID_BREACH');
+});
+
+test('collection evidence charges partial work and removes event listeners', async () => {
+  const bot = new EventEmitter();
+  bot.entity = { position: { x: 0, y: 64, z: 0 } };
+  bot.health = 20;
+  const error = incompleteCollectionError('oak_log', 'oak_log', 4, 8);
+  await assert.rejects(collection.withCollectionEvidence(bot, async (mutations) => {
+    mutations.push(...Array.from({ length: 4 }, (_, ordinal) => ({ kind: 'block', ordinal })));
+    bot.entity.position.x = 3;
+    bot.emit('move');
+    bot.entity.position.x = 0;
+    bot.emit('move');
+    bot.health = 19;
+    bot.emit('health');
+    throw error;
+  }), (caught) => caught === error);
+  assert.equal(error.budget_usage.max_actions, 1);
+  assert.equal(error.budget_usage.max_blocks_changed, 4);
+  assert.equal(error.budget_usage.max_travel_distance, 6);
+  assert.equal(error.budget_usage.max_damage_taken, 1);
+  assert.equal(error.explained_mutations.length, 4);
+  assert.equal(bot.listenerCount('move'), 0);
+  assert.equal(bot.listenerCount('health'), 0);
+});
 
 test('collection settlement rejects an apparently grounded position inside water', () => {
   const position = { floored: () => ({ x: 2, y: 58, z: 64 }) };
@@ -28,12 +269,14 @@ test('collection settlement rejects an apparently grounded position inside water
 });
 
 test('zero-progress collection reports resource absence instead of missing drops', () => {
-  const error = incompleteCollectionError('oak_log', 'oak_log', 0, 8);
+  const diagnostics = { search_failures: [{ stage: 'navigate', message: 'no path' }] };
+  const error = incompleteCollectionError('oak_log', 'oak_log', 0, 8, diagnostics);
 
   assert.equal(error.code, 'RESOURCE_NOT_FOUND');
   assert.equal(error.collected, 0);
   assert.equal(error.requested, 8);
   assert.match(error.message, /No reachable oak_log/);
+  assert.deepEqual(error.details.search_failures, diagnostics.search_failures);
 });
 
 test('productive incomplete collection keeps partial-drop recovery metadata', () => {
@@ -102,6 +345,7 @@ test('collection cleanup waits for grounded position stability after stopping na
 test('collection dig returns the completed Mineflayer result', async () => {
   const block = { name: 'iron_ore', position: { x: 1, y: 2, z: 3 } };
   const bot = {
+    blockAt: () => ({ name: 'air', boundingBox: 'empty' }),
     dig: async (target) => {
       assert.equal(target, block);
       return 'dug';
@@ -132,6 +376,11 @@ test('collection dig bounds a stalled Mineflayer action and stops it', async () 
   let stops = 0;
   const block = { name: 'iron_ore', position: { x: 4, y: 5, z: 6 } };
   const bot = {
+    blockAt: () => ({ name: 'air', boundingBox: 'empty' }),
+    heldItem: { name: 'diamond_pickaxe' },
+    entity: { onGround: false, effects: {} },
+    _getBlockAtEyeLevel: () => ({ name: 'water' }),
+    digTime: () => 235_000,
     dig: async () => new Promise(() => {}),
     stopDigging: () => {
       stops += 1;
@@ -140,7 +389,20 @@ test('collection dig bounds a stalled Mineflayer action and stops it', async () 
 
   await assert.rejects(
     digCollectionBlock(bot, block, 5),
-    (error) => error.code === 'COLLECT_FAILED' && error.operation === 'dig',
+    (error) => {
+      assert.equal(error.code, 'COLLECT_FAILED');
+      assert.equal(error.operation, 'dig');
+      assert.deepEqual(error.details.dig_context, {
+        expected_duration_ms: 235_000,
+        timeout_ms: 5,
+        held_item: 'diamond_pickaxe',
+        on_ground: false,
+        eye_block: 'water',
+        effects: [],
+        target_after: 'air',
+      });
+      return true;
+    },
   );
   assert.equal(stops, 1);
 });
@@ -254,4 +516,15 @@ test('visible discovered ore is collected in place before any underground prepar
     shouldPrepareUndergroundCollection('iron_ore', 1, 63, false),
     { targetY: 16, minimumCobblestone: 0 },
   );
+});
+
+test('buried gravel uses its observed layer without inventing a blind descent target', () => {
+  const { shouldPrepareUndergroundCollection } = collection;
+  assert.equal(shouldPrepareUndergroundCollection('gravel', 1, 62, false), null);
+  assert.deepEqual(shouldPrepareUndergroundCollection('gravel', 1, 62, false, 58), {
+    targetY: 60, minimumCobblestone: 0,
+  });
+  assert.equal(shouldPrepareUndergroundCollection('gravel', 1, 62, true, 58), null);
+  assert.equal(shouldPrepareUndergroundCollection('gravel', 1, 60, false, 58), null);
+  assert.equal(shouldPrepareUndergroundCollection('oak_log', 1, 62, false, 30), null);
 });

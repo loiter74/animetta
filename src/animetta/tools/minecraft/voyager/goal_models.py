@@ -37,6 +37,11 @@ class HealthAtLeast(_FrozenModel):
     health: float = Field(ge=0, le=20)
 
 
+class FoodAtLeast(_FrozenModel):
+    kind: Literal["food_at_least"]
+    food: int = Field(ge=0, le=20)
+
+
 class SurvivedDuration(_FrozenModel):
     kind: Literal["survived_duration"]
     duration_ms: int = Field(gt=0)
@@ -82,6 +87,7 @@ SuccessPredicate = Annotated[
     InventoryAtLeast
     | LocationReached
     | HealthAtLeast
+    | FoodAtLeast
     | SurvivedDuration
     | EntityDefeated
     | BlocksPlaced

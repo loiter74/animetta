@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -191,12 +192,15 @@ class AdvancementEventRecorder:
         self._store = store
         self._tasks: set[asyncio.Task[bool]] = set()
         self.invalid_events = 0
+        self._unsubscribe: Callable[[], None] | None = None
+        self._closed = False
 
     def start(self) -> None:
-        self._bridge.add_runtime_event_callback(self._on_event)
+        unsubscribe = self._bridge.add_runtime_event_callback(self._on_event)
+        self._unsubscribe = unsubscribe if callable(unsubscribe) else None
 
     def _on_event(self, payload: dict[str, Any]) -> None:
-        if payload.get("type") != "advancement_observed":
+        if self._closed or payload.get("type") != "advancement_observed":
             return
         try:
             event = AdvancementObservedEvent.model_validate(
@@ -213,3 +217,10 @@ class AdvancementEventRecorder:
         while self._tasks:
             tasks = tuple(self._tasks)
             await asyncio.gather(*tasks)
+
+    async def close(self) -> None:
+        self._closed = True
+        if self._unsubscribe is not None:
+            self._unsubscribe()
+            self._unsubscribe = None
+        await self.drain()

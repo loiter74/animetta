@@ -120,12 +120,17 @@ for (const name of [
   'gold_ore',
   'diamond',
   'diamond_ore',
+  'obsidian',
+  'gravel',
+  'flint',
 ]) {
   assert(getResourceDefinition(name) != null, `supported: ${name}`);
 }
 
 // 元数据完整性（T3.3）
-assert(Object.keys(REGISTRY).length === 8, '8 canonical resources');
+assert(Object.keys(REGISTRY).length === 10, '10 canonical resources');
+assert(REGISTRY.obsidian.requiredTool === 'diamond_pickaxe', 'obsidian needs diamond_pickaxe');
+assert(normalizeResourceName('flint') === 'gravel', 'flint resolves to its gravel source');
 for (const [canonical, def] of Object.entries(REGISTRY)) {
   assert(def.canonical === canonical, `${canonical} canonical self`);
   assert(Array.isArray(def.blocks) && def.blocks.length > 0, `${canonical} has blocks`);

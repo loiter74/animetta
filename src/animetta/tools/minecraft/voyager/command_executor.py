@@ -38,9 +38,12 @@ from .strategies.base import ExecuteStep
 
 
 class ExecutorError(RuntimeError):
-    def __init__(self, error: ControlPlaneError) -> None:
+    def __init__(
+        self, error: ControlPlaneError, *, settled_result: StepExecutionResult | None = None
+    ) -> None:
         super().__init__(f"{error.code}: {error.message}")
         self.error = error
+        self.settled_result = settled_result
 
 
 @dataclass(frozen=True)
@@ -68,6 +71,7 @@ def _error(
     caller_may_resubmit: bool = False,
     operator_action: str = "inspect command status",
     details: dict[str, Any] | None = None,
+    settled_result: StepExecutionResult | None = None,
 ) -> ExecutorError:
     return ExecutorError(
         ControlPlaneError(
@@ -79,7 +83,8 @@ def _error(
             caller_may_resubmit=caller_may_resubmit,
             operator_action=operator_action,
             details=details or {},
-        )
+        ),
+        settled_result=settled_result,
     )
 
 
@@ -603,6 +608,9 @@ class CommandExecutor:
                     "mismatches": mismatches,
                 },
             )
+        await self._repository.record_step_receipt(  # type: ignore[attr-defined]
+            step_id, receipt.model_dump(mode="json")
+        )
         try:
             settled_account = reserved_account.settle(step_id, _receipt_usage(receipt))
         except BudgetContractViolationError as exc:
@@ -614,12 +622,14 @@ class CommandExecutor:
                 outcome_known=False,
                 world_may_have_changed=True,
                 operator_action="quarantine runtime and reconcile budget usage",
-                details={"step_id": step_id, "correlation_id": correlation_id},
+                details={
+                    "step_id": step_id,
+                    "correlation_id": correlation_id,
+                    "actual_usage": _receipt_usage(receipt).model_dump(mode="json"),
+                    "reservation": step.maximum_cost.model_dump(mode="json"),
+                },
             ) from exc
 
-        await self._repository.record_step_receipt(  # type: ignore[attr-defined]
-            step_id, receipt.model_dump(mode="json")
-        )
         if self._activity_recorder is not None:
             await self._activity_recorder.record_command(
                 command,
@@ -769,6 +779,9 @@ class CommandExecutor:
                     else "inspect command status"
                 ),
                 details={"step_id": step_id, "correlation_id": correlation_id},
+                settled_result=StepExecutionResult(
+                    receipt=receipt, after=after, account=settled_account
+                ),
             )
         return StepExecutionResult(
             receipt=receipt,

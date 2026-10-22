@@ -20,6 +20,7 @@ from animetta.tools.minecraft.discovery.models import WorldFact, WorldFactState
 from .goal_models import (
     BlocksPlaced,
     EntityDefeated,
+    FoodAtLeast,
     GoalSpec,
     HealthAtLeast,
     InventoryAtLeast,
@@ -86,6 +87,10 @@ class GoalVerifier:
                 details["inventory_count"] = inventory_count
             elif isinstance(predicate, HealthAtLeast) and final is not None:
                 satisfied = (final.health or 0) >= predicate.health
+            elif isinstance(predicate, FoodAtLeast) and final is not None:
+                # Satiation is verified only from the final observation's own
+                # food level; full health never substitutes for a missing value.
+                satisfied = final.food is not None and final.food >= predicate.food
             elif isinstance(predicate, LocationReached) and final is not None and final.position:
                 distance = (
                     (final.position.x - predicate.x) ** 2

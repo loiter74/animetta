@@ -43,6 +43,16 @@ export function locatorError(code, fields) {
   return new LocatorError(code, fields);
 }
 
+export function recordStrategyFailure(ctx, strategy, error) {
+  ctx.searchFailures ??= [];
+  ctx.searchFailures.push({
+    strategy,
+    code: error?.code || null,
+    message: String(error?.message || error),
+  });
+  if (ctx.searchFailures.length > 5) ctx.searchFailures.shift();
+}
+
 // ── 共享 helpers（T5.1–T5.6）──
 
 export function getBotPosition(bot) {
@@ -383,6 +393,7 @@ async function branchMine(bot, ctx) {
           strategy: 'branch_mine',
         });
       }
+      recordStrategyFailure(ctx, 'branch_mine', error);
       continue;
     }
     const found = findNearestMatchingBlock(

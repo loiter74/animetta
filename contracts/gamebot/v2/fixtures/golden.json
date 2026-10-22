@@ -294,6 +294,7 @@
       "transport_id": "transport-region-1"
     },
     "RuntimeHealth": {
+      "action_phase_publish_failures_total": 0,
       "active_correlation_id": null,
       "busy": false,
       "last_completed_action_sequence": 8,
@@ -435,5 +436,5 @@
       "world_may_have_changed": false
     }
   },
-  "schema_digest": "c0d787324758d42db72c1c3bfdfc6c89524e253e779602eafa8a146a126f0bcf"
+  "schema_digest": "b6390f5c987ca210c35eeaf2feea130033dc9f3b1479d2dbf8ecdea5217e7a82"
 }

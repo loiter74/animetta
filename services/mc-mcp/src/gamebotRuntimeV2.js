@@ -755,19 +755,7 @@ export function createGameBotRuntimeV2({
           explainedMutations = result?.explained_mutations || [];
           combat = result?.combat || null;
           budgetUsage = result?.budget_usage || emptyBudget();
-          if (!budgetFitsWithin(budgetUsage, request.remaining_budget)) {
-            outcome = 'unknown';
-            error = structuredError({
-              code: 'BUDGET_CONTRACT_VIOLATION',
-              message: 'Capability reported usage above the controller budget',
-              commandId: request.command_id,
-              stepId: request.step_id,
-              correlationId: request.correlation_id,
-              outcomeKnown: false,
-              worldMayHaveChanged: true,
-              operatorAction: 'quarantine runtime and reconcile the action receipt',
-            });
-          } else if (abortController.signal.aborted) {
+          if (abortController.signal.aborted) {
             outcome = 'cancelled';
           }
           if (
@@ -806,6 +794,8 @@ export function createGameBotRuntimeV2({
             });
           }
         } catch (caught) {
+          budgetUsage = { ...emptyBudget(), ...caught?.budget_usage };
+          explainedMutations = caught?.explained_mutations || [];
           const settlementTimedOut = [
             'CANCEL_SETTLEMENT_TIMEOUT',
             'ACTION_SETTLEMENT_TIMEOUT',
@@ -904,6 +894,19 @@ export function createGameBotRuntimeV2({
         }
 
         const after = postAction.observation;
+        if (!budgetFitsWithin(budgetUsage, request.remaining_budget)) {
+          outcome = 'unknown';
+          error = structuredError({
+            code: 'BUDGET_CONTRACT_VIOLATION',
+            message: 'Capability reported usage above the controller budget',
+            commandId: request.command_id,
+            stepId: request.step_id,
+            correlationId: request.correlation_id,
+            outcomeKnown: false,
+            worldMayHaveChanged: true,
+            operatorAction: 'quarantine runtime and reconcile the action receipt',
+          });
+        }
         const reconciliation = !postAction.stable || outcome === 'unknown'
           ? 'pending'
           : 'accepted';

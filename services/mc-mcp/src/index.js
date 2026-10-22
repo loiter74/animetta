@@ -5,6 +5,7 @@ import Vec3 from 'vec3';
 import { stdin, stdout, argv } from 'node:process';
 
 import { actionTimeoutFromDeadline } from './actionDeadline.js';
+import { configureMineSupport } from './branch_mine.js';
 import { findReachableCraftingTable } from './craftingTable.js';
 import { availableMaterialCount, craftOperations } from './crafting/counts.js';
 import {
@@ -13,22 +14,40 @@ import {
 } from './crafting/placement.js';
 import {
   collectionBlockKey,
+  collectionApproachGoal,
+  collectionExcavationGoal,
+  collectionDigTimeoutMs,
+  collectionDigSafety,
+  assertSafeDigTarget,
+  configureDryNavigation,
+  restrictNavigationHeight,
   collectionResourceMutation,
   createCollectionBlockMatcher,
   digCollectionBlock,
   findCollectionTarget,
+  findPickupItemEntities,
   incompleteCollectionError,
   isCollectionFluidHazard,
+  isCollectionSettleHazard,
+  isPreparedObsidianTarget,
+  obsidianWorkMinimumY,
+  safePickupDroppedItems,
   isCollectionBlockStillPresent,
   isRecoverableCollectionDigError,
   stopCollectionMovement,
   shouldPrepareUndergroundCollection,
   shouldRetryStructuredResourceSearch,
   waitForCollectionMovementToSettle,
+  withCollectionEvidence,
 } from './collection.js';
 import { createEquip } from './equip.js';
+import { eatFood, forageApples } from './food.js';
 import { executeCombatWithEvidence } from './gamebotEvidenceV2.js';
 import { createMineShaft } from './mine_shaft.js';
+import { navigateTo } from './navigation.js';
+import { backfillObsidianHole } from './obsidianSupport.js';
+import { acquireFlint, ignitePortal } from './portal.js';
+import { fillWaterBucket, prepareObsidian } from './water.js';
 import {
   findPlacementReference,
   normalizePlacementBlockName,
@@ -59,7 +78,7 @@ import {
 } from './runtime/broadcastMotionPolicy.js';
 
 const { pathfinder, Movements, goals } = pathfinderPkg;
-const { GoalBlock, GoalNear } = goals;
+const { GoalBlock, GoalNear, GoalXZ } = goals;
 const { plugin: pvp } = pvpPkg;
 
 // --- CLI arguments ---
@@ -90,7 +109,7 @@ function patchPathfinder() {
       bot,
       deadlineMs: Date.now() + 15_000,
     });
-    return scope.navigate(goal, () => _originalGoto(goal, ...args), { timeoutMs: 15_000 });
+    return scope.navigate(goal, () => _originalGoto(goal, ...args));
   };
 }
 
@@ -108,10 +127,15 @@ function patchInterruptibleBotMethods() {
     const original = bot[method].bind(bot);
     bot[method] = (...args) => {
       const scope = activeOperationScope();
+      if (method === 'dig') assertSafeDigTarget(bot, args[0]);
       if (!scope) return original(...args);
       return scope.runInterruptible(
         () => original(...args),
-        { label: `bot.${method}`, timeoutMs, includeContainers },
+        {
+          label: `bot.${method}`,
+          timeoutMs: method === 'dig' ? collectionDigTimeoutMs(bot, args[0]) : timeoutMs,
+          includeContainers,
+        },
       );
     };
   }
@@ -133,6 +157,8 @@ async function getMcData() {
 async function setupMovements() {
   const mcData = await getMcData();
   const movements = new Movements(bot, mcData);
+  configureMineSupport(movements, mcData);
+  configureDryNavigation(movements, bot);
   bot.pathfinder.setMovements(movements);
   return mcData;
 }
@@ -142,8 +168,24 @@ async function setupMovements() {
 async function _goto(x, y, z, context = {}) {
   context.operation_scope?.checkpoint();
   await setupMovements();
-  await bot.pathfinder.goto(new GoalBlock(Math.floor(x), Math.floor(y), Math.floor(z)));
+  await navigateTo(bot, { x, y, z }, context);
   return `Moved to (${x}, ${y}, ${z})`;
+}
+
+async function _navigateFoodSurface(goal, context = {}) {
+  context.operation_scope?.checkpoint();
+  const movements = new Movements(bot, await getMcData());
+  configureDryNavigation(movements, bot);
+  movements.canDig = false;
+  bot.pathfinder.setMovements(movements);
+  try {
+    await bot.pathfinder.goto(goal);
+    return true;
+  } catch (error) {
+    context.signal?.throwIfAborted();
+    if (error.operationSettlement || !context.operation_scope?.isQuiescent()) throw error;
+    return false;
+  }
 }
 
 // Blocks that are typically underground (need to dig down to find)
@@ -396,7 +438,7 @@ async function _placeWithEvidence(block_type, x, y, z, facing = undefined, conte
     explained_mutations: explainedMutations,
     budget_usage: {
       max_actions: 1,
-      max_strategy_attempts: 1,
+      max_strategy_attempts: 0,
       max_travel_distance: 8,
       max_blocks_changed: explainedMutations.length,
       max_damage_taken: 0,
@@ -441,7 +483,7 @@ async function _attackWithEvidence(target = 'nearest_hostile', context = {}) {
     signal: context.signal,
     deadlineMs: context.deadline_ms,
   });
-  if (target === 'nearest_food_animal' && combat.outcome === 'defeated') {
+  if (FOOD_ANIMAL_NAMES.includes(entity.name) && combat.outcome === 'defeated') {
     await _pickupDroppedItems(6000, entity.position);
   }
   return {
@@ -529,7 +571,7 @@ function _findNearestStandable(maxRadius = 8) {
       for (let dy = 3; dy >= -8; dy--) {
         const groundPos = origin.offset(dx, dy, dz);
         const ground = bot.blockAt(groundPos);
-        if (_isAirLike(ground)) continue;
+        if (ground?.boundingBox !== 'block') continue;
 
         const feet = bot.blockAt(groundPos.offset(0, 1, 0));
         const head = bot.blockAt(groundPos.offset(0, 2, 0));
@@ -551,7 +593,7 @@ function _findNearestStandable(maxRadius = 8) {
 async function _stabilizePosition(timeout = 7000) {
   if (!bot.entity) return false;
   stopCollectionMovement(bot);
-  if (bot.entity.onGround !== false && !isCollectionFluidHazard(bot)) return true;
+  if (bot.entity.onGround !== false && !isCollectionSettleHazard(bot)) return true;
 
   const standPos = _findNearestStandable(8);
   if (!standPos) {
@@ -565,26 +607,19 @@ async function _stabilizePosition(timeout = 7000) {
   } catch (e) {
     _collectDebug(`stabilize path failed: ${e.message}`);
     stopCollectionMovement(bot);
-    try {
-      await bot.lookAt(standPos.offset(0.5, 0.25, 0.5), true);
-      bot.setControlState('forward', true);
-      if (isCollectionFluidHazard(bot)) bot.setControlState('jump', true);
-      await operationWait(900);
-    } finally {
-      bot.setControlState('forward', false);
-    }
+    activeOperationScope()?.checkpoint();
   } finally {
     stopCollectionMovement(bot);
   }
 
   await operationWait(300);
-  return bot.entity?.onGround !== false && !isCollectionFluidHazard(bot);
+  return bot.entity?.onGround !== false && !isCollectionSettleHazard(bot);
 }
 
 const PICKAXE_TIERS = ['netherite_pickaxe', 'diamond_pickaxe', 'iron_pickaxe', 'stone_pickaxe', 'wooden_pickaxe'];
 const IRON_PICKAXE_REQUIRED = new Set(['diamond_ore', 'deepslate_diamond_ore', 'emerald_ore', 'deepslate_emerald_ore', 'gold_ore', 'deepslate_gold_ore', 'redstone_ore', 'deepslate_redstone_ore']);
 const PICKAXE_BLOCKS = new Set([
-  'stone', 'deepslate', 'cobbled_deepslate', 'coal_ore', 'deepslate_coal_ore',
+  'stone', 'deepslate', 'cobbled_deepslate', 'obsidian', 'coal_ore', 'deepslate_coal_ore',
   'iron_ore', 'deepslate_iron_ore', 'copper_ore', 'deepslate_copper_ore',
   'lapis_ore', 'deepslate_lapis_ore', ...IRON_PICKAXE_REQUIRED,
 ]);
@@ -614,98 +649,30 @@ async function _equipToolForBlock(block) {
   return null;
 }
 
-async function _pickupDroppedItems(timeout = 5000, fallbackPos = null) {
-  await _stabilizePosition(5000);
-
-  // Wait for items to drop
+async function _pickupDroppedItems(timeout = 5000, fallbackPos = null, itemName = null, minimumY = Number.NEGATIVE_INFINITY) {
+  const mcData = await getMcData();
+  const movements = new Movements(bot, mcData);
+  configureDryNavigation(movements, bot);
+  movements.canDig = false;
+  movements.allow1by1towers = false;
+  movements.allowParkour = false;
+  movements.allowSprinting = false;
   await operationWait(300);
-
-  const deadline = Date.now() + timeout;
-  let attempts = 0;
-  let triedFallbackPosition = false;
-
-  const walkToward = async (pos, label) => {
-    try {
-      await bot.lookAt(pos.offset ? pos.offset(0, 0.25, 0) : new Vec3(pos.x, pos.y + 0.25, pos.z), true);
-      bot.setControlState('forward', true);
-      bot.setControlState('sprint', true);
-      await operationWait(650);
-    } catch (e) {
-      _collectDebug(`manual pickup move failed (${label}): ${e.message}`);
-    } finally {
-      bot.setControlState('forward', false);
-      bot.setControlState('sprint', false);
-    }
+  const debugDrops = phase => {
+    if (!process.env.COLLECT_DEBUG) return;
+    const drops = findPickupItemEntities(bot, 20, itemName).map(({ entity }) => ({
+      id: entity.id, position: entity.position,
+    }));
+    _collectDebug(`pickup ${phase}=${JSON.stringify({ item: itemName, minimum_y: minimumY, drops })}`);
   };
-
-  while (Date.now() < deadline && attempts < 10) {
-    attempts++;
-
-    // Find ALL nearby item entities
-    const items = [];
-    for (const e of Object.values(bot.entities)) {
-      if (!e || !e.name || e.name !== 'item') continue;
-      if (!e.position || !bot.entity || !bot.entity.position) continue;
-      const dist = e.position.distanceTo(bot.entity.position);
-      if (dist < 20) {
-        items.push({ entity: e, dist });
-      }
-    }
-
-    if (items.length === 0) {
-      // Sometimes the dropped item is not yet visible to the bot, especially
-      // after mining logs/leaves. Walk to the broken block position once, then
-      // rescan for the actual entity.
-      if (fallbackPos && !triedFallbackPosition) {
-        triedFallbackPosition = true;
-        try {
-          _collectDebug(`no item entity visible; moving to fallback=${fallbackPos.x},${fallbackPos.y},${fallbackPos.z}`);
-          await bot.pathfinder.goto(new GoalNear(fallbackPos.x, fallbackPos.y, fallbackPos.z, 1));
-          stopCollectionMovement(bot);
-          await walkToward(fallbackPos, 'fallback');
-        } catch (e) {
-          _collectDebug(`pickup fallback path failed: ${e.message}`);
-          await walkToward(fallbackPos, 'fallback after path failure');
-        }
-      }
-      await operationWait(500);
-      continue;
-    }
-
-    // Sort by distance, pick up closest
-    items.sort((a, b) => a.dist - b.dist);
-    const closest = items[0].entity;
-    _collectDebug(`pickup candidates=${items.length} closest=${closest.position.x.toFixed(2)},${closest.position.y.toFixed(2)},${closest.position.z.toFixed(2)} dist=${items[0].dist.toFixed(2)}`);
-
-    try {
-      const pos = closest.position;
-      await bot.pathfinder.goto(
-        new GoalNear(Math.floor(pos.x), Math.floor(pos.y), Math.floor(pos.z), 1),
-      );
-      stopCollectionMovement(bot);
-      await walkToward(pos, 'item entity');
-    } catch (e) {
-      _collectDebug(`pickup path failed: ${e.message}`);
-      await walkToward(closest.position, 'item entity after path failure');
-    }
-
-    // Wait for pickup to register
-    await operationWait(200);
-    _collectDebug(`pickup wait done inventory=${JSON.stringify(Object.fromEntries(bot.inventory.items().map((it) => [it.name, it.count])))}`);
-  }
-
-  stopCollectionMovement(bot);
-
-  // ❻ Re-equip best weapon after pickup
-  const weaponTiers = ['diamond_sword', 'iron_sword', 'stone_sword', 'wooden_sword',
-                       'diamond_axe', 'iron_axe', 'stone_axe', 'wooden_axe'];
-  for (const weaponName of weaponTiers) {
-    const weapon = bot.inventory.items().find(i => i.name === weaponName);
-    if (weapon) {
-      try { await bot.equip(weapon, 'hand'); } catch {}
-      break;
-    }
-  }
+  debugDrops('before');
+  const result = await safePickupDroppedItems(bot, {
+    timeoutMs: timeout, fallbackPos, itemName, GoalNear, movements, minimumY,
+    context: { operation_scope: activeOperationScope(), signal: activeOperationScope()?.signal },
+  });
+  debugDrops('after');
+  _collectDebug(`pickup outcome=${JSON.stringify(result)}`);
+  return result;
 }
 
 async function _collect(block_type, count = 1, context = {}) {
@@ -724,12 +691,9 @@ async function _collect(block_type, count = 1, context = {}) {
 }
 
 async function _collectWithEvidence(block_type, count = 1, context = {}) {
-  const resourceMutations = [];
-  const output = await _collect(block_type, count, { ...context, resourceMutations });
-  return {
-    output,
-    explained_mutations: resourceMutations,
-  };
+  return withCollectionEvidence(bot, (resourceMutations) => (
+    _collect(block_type, count, { ...context, resourceMutations })
+  ));
 }
 
 async function _collectInner(block_type, count, mcData, context = {}) {
@@ -751,22 +715,37 @@ async function _collectInner(block_type, count, mcData, context = {}) {
   if (!bi) throw new Error(`Unknown block: ${block_type}`);
 
   const dropItem = BLOCK_DROP_ITEM[resolvedBlockType] || block_type;
+  let minimumY = resolvedBlockType === 'obsidian'
+    ? Math.floor(bot.entity.position.y) : Number.NEGATIVE_INFINITY;
   const startingCount = _inventoryCount(dropItem);
   _collectDebug(`start block=${block_type} resolved=${resolvedBlockType} drop=${dropItem} need=${count} starting=${startingCount}`);
   let collected = 0;
   const excludedTargets = context.excludedTargets instanceof Set
     ? context.excludedTargets
     : new Set();
+  const blockIds = resolvedBlockTypes.map((name) => mcData.blocksByName[name].id);
   const matchesAvailableTarget = createCollectionBlockMatcher(
-    resolvedBlockTypes.map((name) => mcData.blocksByName[name].id),
+    blockIds,
     excludedTargets,
+    resolvedBlockType === 'obsidian' ? block => isPreparedObsidianTarget(bot, block, minimumY) : undefined,
   );
-  let discoveredTarget = bot.findBlock({ matching: matchesAvailableTarget, maxDistance: 32 });
+  const workTargets = resolvedBlockType === 'obsidian'
+    ? bot.findBlocks({
+      matching: createCollectionBlockMatcher(blockIds, excludedTargets, block => isPreparedObsidianTarget(bot, block)),
+      maxDistance: 32, count: 64,
+    }) : null;
+  if (workTargets) {
+    minimumY = obsidianWorkMinimumY(bot, workTargets);
+    restrictNavigationHeight(bot.pathfinder.movements, minimumY);
+  }
+  let discoveredTarget = workTargets?.map(position => bot.blockAt(position)).find(matchesAvailableTarget)
+    ?? bot.findBlock({ matching: matchesAvailableTarget, maxDistance: 32 });
   const preparation = shouldPrepareUndergroundCollection(
     resolvedBlockType,
     count,
     bot.entity.position.y,
-    Boolean(discoveredTarget),
+    Boolean(discoveredTarget && collectionApproachGoal(bot, discoveredTarget).isEnd(bot.entity.position.floored())),
+    discoveredTarget && collectionDigSafety(bot, discoveredTarget).safe ? discoveredTarget.position.y : null,
   );
   if (preparation) {
     await mineShaftMod.mineShaft(
@@ -784,8 +763,21 @@ async function _collectInner(block_type, count, mcData, context = {}) {
   }
   let attempts = 0;
   const maxAttempts = Math.max(count * 3, count + 3);
+  const searchFailures = [];
+  const recordSearchFailure = (stage, error, target = null) => {
+    searchFailures.push({
+      stage,
+      code: error?.code || null,
+      message: String(error?.message || error),
+      strategy_failures: error?.search_failures || [],
+      target,
+    });
+    if (searchFailures.length > 5) searchFailures.shift();
+  };
   while (collected < count && attempts < maxAttempts) {
     context.signal?.throwIfAborted();
+    collected = Math.min(Math.max(0, _inventoryCount(dropItem) - startingCount), count);
+    if (collected >= count) break;
     attempts++;
     // Find block
     let block = discoveredTarget
@@ -805,6 +797,7 @@ async function _collectInner(block_type, count, mcData, context = {}) {
         if (at && matchesAvailableTarget(at)) block = at;
       } catch (_locErr) {
         context.signal?.throwIfAborted();
+        recordSearchFailure('locate', _locErr);
         // Hard locator errors are actionable; do not hide them behind blind exploration.
         if (_locErr && ['TOOL_REQUIRED', 'UNKNOWN_RESOURCE', 'UNSAFE_AREA'].includes(_locErr.code)) {
           throw _locErr;
@@ -826,6 +819,10 @@ async function _collectInner(block_type, count, mcData, context = {}) {
     }
 
     if (!block) break;
+    if (!collectionDigSafety(bot, block).safe) {
+      excludedTargets.add(collectionBlockKey(block));
+      continue;
+    }
     _collectDebug(`target block=${block.name}@${block.position.x},${block.position.y},${block.position.z}`);
     const presentationTarget = await presentBlockTarget({
       context,
@@ -835,21 +832,38 @@ async function _collectInner(block_type, count, mcData, context = {}) {
       data: { attempt: attempts },
     });
 
-    // Navigate to block with timeout
+    // Reach a visible block face, rather than stopping above a buried target.
+    const approachGoal = collectionApproachGoal(bot, block);
     try {
-      await bot.pathfinder.goto(
-        new GoalNear(block.position.x, block.position.y, block.position.z, 3),
-      );
+      // Visibility goals inspect the current world, so an enclosed ore cannot
+      // satisfy them until a coordinate goal has first excavated its access.
+      if (block.name !== 'obsidian' && !approachGoal.isEnd(bot.entity.position.floored())) {
+        await bot.pathfinder.goto(collectionExcavationGoal(block));
+      }
+      if (!approachGoal.isEnd(bot.entity.position.floored())) {
+        await bot.pathfinder.goto(approachGoal);
+      }
     } catch (e) {
       context.signal?.throwIfAborted();
-      // Navigation failed, try to dig from current position
+      recordSearchFailure('navigate', e, { ...block.position });
+      // A fresh interaction check below decides whether the current spot is usable.
     }
 
     // Stop pathfinder and wait for bot to fully stop
     bot.pathfinder.stop();
     await operationWait(200);
+    collected = Math.min(Math.max(0, _inventoryCount(dropItem) - startingCount), count);
+    if (collected >= count) break;
     _collectDebug(`after navigation pos=${bot.entity.position.x.toFixed(2)},${bot.entity.position.y.toFixed(2)},${bot.entity.position.z.toFixed(2)}`);
-    if (bot.entity.position.distanceTo(block.position) > 5.5) {
+    if (!collectionDigSafety(bot, block).safe) {
+      excludedTargets.add(collectionBlockKey(block));
+      continue;
+    }
+    if (!approachGoal.isEnd(bot.entity.position.floored())) {
+      recordSearchFailure('reach', new Error('Target remains outside digging reach'), {
+        ...block.position,
+        distance: bot.entity.position.distanceTo(block.position),
+      });
       excludedTargets.add(collectionBlockKey(block));
       _collectDebug(`excluded unreachable target=${collectionBlockKey(block)}`);
       continue;
@@ -909,9 +923,14 @@ async function _collectInner(block_type, count, mcData, context = {}) {
           bot.game?.dimension || 'minecraft:overworld',
         ));
       }
+      if (block.name === 'obsidian') {
+        const support = await backfillObsidianHole(bot, block.position, context);
+        if (support && Array.isArray(context.resourceMutations)) context.resourceMutations.push(support);
+      }
       // Wait for item entity to register and pick up drops
       await operationWait(500);
-      await _pickupDroppedItems(8000, block.position);
+      await _pickupDroppedItems(8000, block.position,
+        resolvedBlockType === 'gravel' ? ['gravel', 'flint'] : dropItem, minimumY);
       context.signal?.throwIfAborted();
       const actual = Math.max(0, _inventoryCount(dropItem) - startingCount);
       collected = Math.min(actual, count);
@@ -919,7 +938,11 @@ async function _collectInner(block_type, count, mcData, context = {}) {
     }
   }
   if (collected < count) {
-    throw incompleteCollectionError(block_type, dropItem, collected, count);
+    throw incompleteCollectionError(block_type, dropItem, collected, count, {
+      attempts,
+      excluded_targets: [...excludedTargets].slice(-5),
+      search_failures: searchFailures,
+    });
   }
   return `Collected ${collected} ${block_type}`;
 }
@@ -1771,6 +1794,35 @@ gameBotV2Adapter = createGameBotV2Adapter({
     mine: _mine,
     craft: _craft,
     placeWithEvidence: _placeWithEvidence,
+    eat: (item, context) => eatFood(bot, item, context),
+    forageApples: (maxBlocks, context) => forageApples(bot, maxBlocks, context, {
+      navigate: (position) => (
+        _navigateFoodSurface(new GoalNear(position.x, position.y, position.z, 3), context)
+      ),
+      pickup: _pickupDroppedItems,
+    }),
+    async exploreSurface(x, z, context) {
+      const before = bot.entity.position.clone();
+      const reached = await _navigateFoodSurface(new GoalXZ(x, z), context);
+      return {
+        output: { reached },
+        budget_usage: { max_actions: 1, max_travel_distance: before.distanceTo(bot.entity.position) },
+      };
+    },
+    async waitForRegeneration(context) {
+      context.operation_scope?.checkpoint();
+      await operationWait(2000);
+      return { output: { health: bot.health, food: bot.food }, budget_usage: { max_actions: 1 } };
+    },
+    ignitePortal: (parameters, context) => ignitePortal(bot, parameters, context),
+    fillWaterBucket: (context) => fillWaterBucket(bot, context),
+    prepareObsidian: (context) => prepareObsidian(bot, context),
+    acquireFlint: (maxAttempts, context) => acquireFlint(bot, maxAttempts, context, {
+      collect: (scopedContext) => _collect('gravel', 1, scopedContext),
+      place: (position, scopedContext) => (
+        _placeWithEvidence('gravel', position.x, position.y, position.z, undefined, scopedContext)
+      ),
+    }),
     smelt: (item, fuel, count, context) => smeltMod.smelt(item, fuel, count, context),
     equip: (item, destination, context) => equipMod.equip(item, destination, context),
     attackWithEvidence: _attackWithEvidence,

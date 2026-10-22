@@ -1,5 +1,5 @@
 // Generated from contracts/gamebot/v2/schema.json; do not edit.
-// schema-digest: c0d787324758d42db72c1c3bfdfc6c89524e253e779602eafa8a146a126f0bcf
+// schema-digest: b6390f5c987ca210c35eeaf2feea130033dc9f3b1479d2dbf8ecdea5217e7a82
 
 export type ActionInspectionState = "not_found" | "accepted" | "running" | "terminal";
 
@@ -236,6 +236,7 @@ export type RuntimeHealth = {
   readonly runtime_instance_id: string;
   readonly active_correlation_id?: string | null;
   readonly last_completed_action_sequence: number;
+  readonly action_phase_publish_failures_total?: number;
 };
 
 export type RuntimeManifest = {

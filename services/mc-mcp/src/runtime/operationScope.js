@@ -1,4 +1,5 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
+import Vec3 from 'vec3';
 
 
 export const DEFAULT_QUIESCENCE_TIMEOUT_MS = 2_000;
@@ -41,14 +42,17 @@ function velocitySettled(entity) {
   if (!entity) return true;
   if (entity.onGround === false) return false;
   const velocity = entity.velocity || {};
-  return ['x', 'y', 'z'].every((axis) => (
+  const horizontalSettled = ['x', 'z'].every((axis) => (
     !Number.isFinite(Number(velocity[axis])) || Math.abs(Number(velocity[axis])) <= 0.03
   ));
+  const vertical = Number(velocity.y);
+  // Mineflayer retains one gravity tick while resting on a solid block.
+  return horizontalSettled && (!Number.isFinite(vertical) || (vertical >= -0.09 && vertical <= 0.01));
 }
 
 
 function goalPosition(goal) {
-  for (const candidate of [goal, goal?.end, goal?.target, goal?.position]) {
+  for (const candidate of [goal, goal?.end, goal?.target, goal?.position, goal?.pos]) {
     if (candidate && ['x', 'y', 'z'].every((axis) => Number.isFinite(Number(candidate[axis])))) {
       return { x: Number(candidate.x), y: Number(candidate.y), z: Number(candidate.z) };
     }
@@ -59,11 +63,8 @@ function goalPosition(goal) {
 
 function goalSatisfied(goal, entityPosition) {
   if (!entityPosition) return false;
-  const node = {
-    x: Math.floor(Number(entityPosition.x)),
-    y: Math.floor(Number(entityPosition.y)),
-    z: Math.floor(Number(entityPosition.z)),
-  };
+  const node = new Vec3(Math.floor(Number(entityPosition.x)),
+    Math.floor(Number(entityPosition.y)), Math.floor(Number(entityPosition.z)));
   if (typeof goal?.isEnd === 'function') {
     try { return Boolean(goal.isEnd(node)); } catch {}
   }
@@ -165,6 +166,8 @@ export class OperationScope {
     operationSettlement = null,
   } = {}) {
     try { this.bot.pathfinder?.stop?.(); } catch {}
+    // stop() waits for the next waypoint, which a stalled jump/place may never reach.
+    try { this.bot.pathfinder?.setGoal?.(null); } catch {}
     try { Promise.resolve(this.bot.pvp?.stop?.()).catch(() => {}); } catch {}
     try { this.bot.stopDigging?.(); } catch {}
     for (const control of MOVEMENT_CONTROLS) {
@@ -307,12 +310,24 @@ export class OperationScope {
     }
   }
 
-  async navigate(goal, operation, { timeoutMs = 15_000 } = {}) {
+  async navigate(goal, operation, { timeoutMs } = {}) {
+    const target = goalPosition(goal);
+    const origin = this.bot.entity?.position;
+    const distance = target && origin ? Math.hypot(
+      target.x - origin.x, target.y - origin.y, target.z - origin.z,
+    ) : 0;
+    const verticalOnly = target === null && Number.isFinite(goal?.y);
+    const navigationTimeoutMs = timeoutMs ?? (verticalOnly
+      ? 30_000 : Math.min(120_000, Math.max(15_000, distance * 1_500)));
     let result;
     try {
-      result = await this.runInterruptible(operation, {
+      result = await this.runInterruptible(() => {
+        // Mineflayer stop() is deferred; consume it before goto installs listeners.
+        this.bot.pathfinder?.setGoal?.(null);
+        return operation();
+      }, {
         label: 'pathfinder navigation',
-        timeoutMs,
+        timeoutMs: navigationTimeoutMs,
       });
     } catch (error) {
       try { this.bot.pathfinder?.stop?.(); } catch {}

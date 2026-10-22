@@ -2,19 +2,32 @@
 // This is used after reaching diamond depth to expose new ore faces without cheats.
 
 import { Vec3 } from 'vec3';
+import pathfinderPkg from 'mineflayer-pathfinder';
 import { activeOperationScope, operationWait } from './runtime/operationScope.js';
 
+const SUPPORT_BLOCKS = [
+  'cobblestone',
+  'cobbled_deepslate',
+  'dirt',
+  'andesite',
+  'diorite',
+  'granite',
+  'deepslate',
+  'stone',
+];
+
+export function configureMineSupport(movements, mcData) {
+  movements.scafoldingBlocks = SUPPORT_BLOCKS.flatMap((name) => (
+    mcData.itemsByName[name] ? [mcData.itemsByName[name].id] : []
+  ));
+}
+
+export function findMineSupportItem(bot) {
+  const items = bot.inventory?.items?.() ?? [];
+  return SUPPORT_BLOCKS.map(name => items.find(item => item.name === name && item.count > 0)).find(Boolean);
+}
+
 export function createBranchMine({ bot, disableAuto, enableAuto, wait: injectedWait }) {
-  const SUPPORT_BLOCKS = [
-    'cobblestone',
-    'cobbled_deepslate',
-    'dirt',
-    'andesite',
-    'diorite',
-    'granite',
-    'deepslate',
-    'stone',
-  ];
 
   function wait(ms) {
     if (typeof injectedWait === 'function') return injectedWait(ms);
@@ -239,10 +252,17 @@ export function createBranchMine({ bot, disableAuto, enableAuto, wait: injectedW
             'look down tunnel'
           );
         }
-        bot.setControlState('forward', true);
-        await wait(800);
-        bot.setControlState('forward', false);
-        await wait(150);
+        if (typeof bot.pathfinder?.goto !== 'function') {
+          throw Object.assign(new Error('隧道移动需要可用的寻路器。'), { code: 'BRANCH_MINE_NAVIGATION_UNAVAILABLE' });
+        }
+        try {
+          await withActionTimeout(() => bot.pathfinder.goto(
+            new pathfinderPkg.goals.GoalBlock(feetPos.x, feetPos.y, feetPos.z)),
+          5000, 'move to supported branch step', () => bot.pathfinder.stop?.());
+        } finally { bot.pathfinder.stop?.(); }
+        if (['x', 'y', 'z'].some(axis => Math.floor(bot.entity.position[axis]) !== feetPos[axis])) {
+          throw Object.assign(new Error('寻路未到达已检查的隧道落点。'), { code: 'BRANCH_MINE_STUCK' });
+        }
 
         const after = bot.entity.position;
         const dx = (after.x || 0) - (before.x || 0);

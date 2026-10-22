@@ -1,6 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createBranchMine } from '../src/branch_mine.js';
+import minecraftData from 'minecraft-data';
+import pathfinderPackage from 'mineflayer-pathfinder';
+import { configureMineSupport, createBranchMine } from '../src/branch_mine.js';
+
+test('return navigation can use carried deepslate without spending portal obsidian', () => {
+  const registry = minecraftData('1.21.1');
+  const bot = { registry, inventory: { items: () => [
+    { type: registry.itemsByName.cobbled_deepslate.id, count: 118 },
+    { type: registry.itemsByName.cobblestone.id, count: 27 },
+    { type: registry.itemsByName.dirt.id, count: 4 },
+    { type: registry.itemsByName.obsidian.id, count: 14 },
+  ] } };
+  const movements = new pathfinderPackage.Movements(bot);
+  assert.equal(movements.countScaffoldingItems(), 31);
+  configureMineSupport(movements, registry);
+  assert.equal(movements.countScaffoldingItems(), 149);
+});
 
 function pos(x, y, z) {
   return {
@@ -13,7 +29,29 @@ function pos(x, y, z) {
   };
 }
 
-test('branchMine digs a two-high forward tunnel using movement controls', async () => {
+function branchFixture(options) {
+  const bot = options.bot;
+  bot.pathfinder = { stop() {}, ...bot.pathfinder, async goto(goal) {
+    Object.assign(bot.entity.position, { x: goal.x + 0.5, y: goal.y, z: goal.z + 0.5 });
+  } };
+  return createBranchMine(options);
+}
+
+test('branchMine stops on navigation failure without manual forward fallback', async () => {
+  const position = { x: 0, y: 64, z: 0, floored: () => pos(0, 64, 0) };
+  const bot = {
+    entity: { position },
+    blockAt: p => ({ name: p.y === 63 ? 'stone' : 'air',
+      boundingBox: p.y === 63 ? 'block' : 'empty', position: p }),
+    lookAt: async () => {},
+    pathfinder: { goto: async () => { throw new Error('No path'); }, stop() {} },
+    setControlState: (_control, value) => assert.equal(value, false),
+  };
+  await assert.rejects(createBranchMine({ bot, wait: async () => {} }).branchMine(1), /No path/);
+  assert.equal(position.x, 0);
+});
+
+test('branchMine digs a two-high tunnel and navigates only to each supported cell', async () => {
   const dug = [];
   const controls = [];
   const bot = {
@@ -52,12 +90,12 @@ test('branchMine digs a two-high forward tunnel using movement controls', async 
     },
   };
 
-  const branch = createBranchMine({ bot, wait: async () => {} });
+  const branch = branchFixture({ bot, wait: async () => {} });
   const result = await branch.branchMine(2);
 
   assert.match(result, /Branch mined/);
   assert.deepEqual(dug, ['0,-53,1', '0,-54,1', '0,-53,2', '0,-54,2']);
-  assert(controls.some(([name, value]) => name === 'forward' && value === true));
+  assert(!controls.some(([_name, value]) => value === true));
   assert(controls.some(([name, value]) => name === 'forward' && value === false));
 });
 
@@ -80,7 +118,7 @@ test('branchMine rejects unsupported forward steps', async () => {
     setControlState() {},
   };
 
-  const branch = createBranchMine({ bot, wait: async () => {} });
+  const branch = branchFixture({ bot, wait: async () => {} });
 
   await assert.rejects(
     () => branch.branchMine(1),
@@ -129,7 +167,7 @@ test('branchMine tries another direction when the forward step is unsupported', 
     },
   };
 
-  const branch = createBranchMine({ bot, wait: async () => {} });
+  const branch = branchFixture({ bot, wait: async () => {} });
   const result = await branch.branchMine(1);
 
   assert.match(result, /Branch mined/);
@@ -181,7 +219,7 @@ test('branchMine bridges one support block when all adjacent steps are unsupport
     },
   };
 
-  const branch = createBranchMine({ bot, wait: async () => {} });
+  const branch = branchFixture({ bot, wait: async () => {} });
   const result = await branch.branchMine(1);
 
   assert.match(result, /Branch mined/);
@@ -234,7 +272,7 @@ test('branchMine retries once after stale Digging aborted state', async () => {
     },
   };
 
-  const branch = createBranchMine({ bot, wait: async () => {} });
+  const branch = branchFixture({ bot, wait: async () => {} });
   const result = await branch.branchMine(1);
 
   assert.match(result, /Branch mined/);

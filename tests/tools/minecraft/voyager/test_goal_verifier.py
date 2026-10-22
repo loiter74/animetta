@@ -29,8 +29,11 @@ from animetta.tools.minecraft.voyager.goal_models import (
     CombatGoal,
     DiscoverGoal,
     EntityDefeated,
+    FoodAtLeast,
+    HealthAtLeast,
     InventoryAtLeast,
     StructureMatchesBlueprint,
+    SurviveGoal,
     VanillaAdvancementObserved,
     WorldFactAcquired,
 )
@@ -352,3 +355,43 @@ def test_vanilla_advancement_uses_packet_event_and_ignores_internal_technology()
 
     assert internal_only["satisfied"] is False
     assert vanilla["satisfied"] is True
+
+
+def _food_recovery_goal() -> SurviveGoal:
+    return SurviveGoal(
+        intent="survive",
+        target="food-recovery",
+        success_predicates=(
+            HealthAtLeast(kind="health_at_least", health=20),
+            FoodAtLeast(kind="food_at_least", food=18),
+        ),
+    )
+
+
+def test_food_verifier_uses_final_food_level_not_full_health() -> None:
+    observation = _observation(inventory={}).model_copy(update={"health": 20.0, "food": 12})
+
+    result = GoalVerifier().verify(goal=_food_recovery_goal(), final=observation)
+
+    assert result["satisfied"] is False
+    satisfied_by_kind = {item["kind"]: item["satisfied"] for item in result["predicate_results"]}
+    assert satisfied_by_kind["health_at_least"] is True
+    assert satisfied_by_kind["food_at_least"] is False
+
+
+def test_food_verifier_rejects_missing_food_evidence() -> None:
+    missing_food = _observation(inventory={}).model_copy(update={"food": None})
+
+    without_food = GoalVerifier().verify(goal=_food_recovery_goal(), final=missing_food)
+    without_observation = GoalVerifier().verify(goal=_food_recovery_goal())
+
+    assert without_food["satisfied"] is False
+    assert without_observation["satisfied"] is False
+
+
+def test_food_verifier_accepts_declared_food_threshold() -> None:
+    observation = _observation(inventory={}).model_copy(update={"food": 18})
+
+    result = GoalVerifier().verify(goal=_food_recovery_goal(), final=observation)
+
+    assert result["satisfied"] is True

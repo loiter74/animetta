@@ -1396,6 +1396,7 @@ components:
   minecraft-adaptive-missions:
     domain: backend
     paths:
+      - contracts/minecraft/mission/**
       - src/animetta/tools/minecraft/mission/**
       - tests/tools/minecraft/mission/**
     direct_groups:

@@ -1,5 +1,8 @@
 import Vec3 from 'vec3';
+import pathfinderPkg from 'mineflayer-pathfinder';
+import { collectionDigSafety, configureDryNavigation } from './collection.js';
 import { activeOperationScope, operationWait } from './runtime/operationScope.js';
+import { ownOxygenLevel } from './runtime/playerVitals.js';
 
 // mine_shaft.js — 系统下矿（垂直挖矿井，从 index.js 提取，中度重构）。
 // 依赖注入：bot / disableAuto / enableAuto。
@@ -59,6 +62,30 @@ export function createMineShaft({
     return block && block.boundingBox === 'block' && block.name !== 'bedrock';
   }
 
+  function isStableSupport(block) {
+    return isSolid(block) && !['sand', 'red_sand', 'gravel', 'suspicious_sand',
+      'suspicious_gravel', 'anvil', 'chipped_anvil', 'damaged_anvil', 'dragon_egg'].includes(block.name)
+      && !block.name?.endsWith('_concrete_powder');
+  }
+
+  function assertDryState() {
+    activeOperationScope()?.checkpoint();
+    const base = bot.entity?.position?.floored?.();
+    if (!base) return;
+    const feet = bot.blockAt(base);
+    const head = bot.blockAt(base.offset(0, 1, 0));
+    const oxygen = ownOxygenLevel(bot);
+    if (!feet || !head || isFluidHazard(feet) || isFluidHazard(head)
+      || (oxygen !== null && oxygen <= 14)) {
+      const error = fluidHazard(head || feet || { name: 'unknown' });
+      error.message = '矿井当前位置或空气不足以安全继续，已停止下降。';
+      error.current_position_unsafe = true;
+      error.details = { oxygen_level: oxygen,
+        feet: feet?.name ?? null, head: head?.name ?? null };
+      throw error;
+    }
+  }
+
   function isFluidHazard(block) {
     return !!block && [
       'water',
@@ -76,7 +103,7 @@ export function createMineShaft({
   }
 
   function isClear(block) {
-    return !block || (!isFluidHazard(block) && (
+    return Boolean(block) && (!isFluidHazard(block) && (
       block.boundingBox === 'empty' || block.name === 'air' || block.name === 'cave_air'
     ));
   }
@@ -85,7 +112,7 @@ export function createMineShaft({
     for (let depth = minimumDepth; depth <= maximumDepth; depth += 1) {
       const landing = bot.blockAt(base.offset(0, -depth, 0));
       if (isFluidHazard(landing)) throw fluidHazard(landing);
-      if (isSolid(landing)) return true;
+      if (isStableSupport(landing)) return true;
     }
     return false;
   }
@@ -110,17 +137,32 @@ export function createMineShaft({
     }
   }
 
-  async function advanceIntoSideStep() {
-    const base = bot.entity.position.floored();
-    const escapingFluid = (
-      isFluidHazard(bot.blockAt(base))
-      || isFluidHazard(bot.blockAt(base.offset(0, 1, 0)))
-    );
-    bot.setControlState?.('forward', true);
-    if (escapingFluid) bot.setControlState?.('jump', true);
+  async function advanceIntoSideStep(target) {
+    assertDryState();
+    if (!isStableSupport(bot.blockAt(target.offset(0, -1, 0)))
+      || !isClear(bot.blockAt(target)) || !isClear(bot.blockAt(target.offset(0, 1, 0)))) return false;
+    if (typeof bot.pathfinder?.goto !== 'function') return false;
+    const previous = bot.pathfinder.movements;
+    if (bot.registry && bot.pathfinder.setMovements) {
+      const movements = configureDryNavigation(new pathfinderPkg.Movements(bot), bot);
+      movements.canDig = false;
+      movements.allow1by1towers = false;
+      bot.pathfinder.setMovements(movements);
+    }
     try {
-      await wait(escapingFluid ? 1200 : 900);
+      await withActionTimeout(() => bot.pathfinder.goto(
+        new pathfinderPkg.goals.GoalBlock(target.x, target.y, target.z)),
+      5000, 'move to supported shaft step', () => bot.pathfinder.stop?.());
+      assertDryState();
+      const actual = bot.entity.position.floored();
+      return actual.x === target.x && actual.y === target.y && actual.z === target.z;
+    } catch (error) {
+      assertDryState();
+      if (error.operationSettlement || error.current_position_unsafe) throw error;
+      return false;
     } finally {
+      bot.pathfinder.stop?.();
+      if (bot.registry && bot.pathfinder.setMovements) bot.pathfinder.setMovements(previous);
       stopMovement();
     }
   }
@@ -130,6 +172,7 @@ export function createMineShaft({
     let lastY = Math.floor(bot.entity.position.y);
     let stable = 0;
     while (Date.now() < deadline) {
+      assertDryState();
       await wait(100);
       const currentY = Math.floor(bot.entity.position.y);
       if (currentY === lastY) {
@@ -145,22 +188,16 @@ export function createMineShaft({
 
   async function waitForDescent(startY, startExactY, timeoutMs = 12000) {
     const deadline = Date.now() + timeoutMs;
-    const nudges = ['forward', 'back', 'left', 'right'];
-    let nudgeIndex = 0;
     stopMovement();
     while (Date.now() < deadline) {
+      assertDryState();
       if (Math.floor(bot.entity.position.y) < startY || bot.entity.position.y < startExactY - 0.2) {
         stopMovement();
         await waitForGround(1500);
         await waitForStableY(1800, 3);
         return true;
       }
-      const control = nudges[nudgeIndex % nudges.length];
-      nudgeIndex += 1;
-      bot.setControlState?.(control, true);
-      await wait(180);
-      bot.setControlState?.(control, false);
-      await wait(120);
+      await wait(100);
     }
     stopMovement();
     return Math.floor(bot.entity.position.y) < startY || bot.entity.position.y < startExactY - 0.2;
@@ -195,8 +232,14 @@ export function createMineShaft({
   }
 
   async function digIfNeeded(block) {
+    assertDryState();
+    if (block?.position) block = bot.blockAt(block.position);
+    if (!block) throw fluidHazard({ name: 'unknown' });
+    if (isFluidHazard(block)) throw fluidHazard(block);
     if (isClear(block)) return false;
     if (!isSolid(block)) return false;
+    const safety = collectionDigSafety(bot, block);
+    if (!safety.safe) throw fluidHazard({ name: safety.block || safety.reason_code });
     const tool = await withActionTimeout(
       () => equipBestPickaxe(block.name),
       3000,
@@ -328,13 +371,18 @@ export function createMineShaft({
       const feetPos = base.offset(dir.x, 0, dir.z);
       const headPos = feetPos.offset(0, 1, 0);
       const support = bot.blockAt(feetPos.offset(0, -1, 0));
-      if (!isSolid(support)) continue;
+      if (!isStableSupport(support)) continue;
 
       const headBlock = bot.blockAt(headPos);
       const feetBlock = bot.blockAt(feetPos);
       if (isFluidHazard(headBlock) || isFluidHazard(feetBlock)) continue;
-      await digIfNeeded(headBlock);
-      await digIfNeeded(feetBlock);
+      try {
+        await digIfNeeded(headBlock);
+        await digIfNeeded(feetBlock);
+      } catch (error) {
+        if (error.code === 'MINE_SHAFT_HAZARD' && !error.current_position_unsafe) continue;
+        throw error;
+      }
       if (typeof bot.lookAt === 'function' && feetPos?.offset) {
         await withActionTimeout(
           () => bot.lookAt(feetPos.offset(0.5, 0.5, 0.5), true),
@@ -342,7 +390,7 @@ export function createMineShaft({
           'look toward supported ledge'
         );
       }
-      await advanceIntoSideStep();
+      if (!await advanceIntoSideStep(feetPos)) continue;
       await waitForGround(1500);
       await waitForStableY(1800, 3);
 
@@ -362,13 +410,18 @@ export function createMineShaft({
       const feetPos = base.offset(dir.x, -1, dir.z);
       const headPos = feetPos.offset(0, 1, 0);
       const support = bot.blockAt(feetPos.offset(0, -1, 0));
-      if (!isSolid(support)) continue;
+      if (!isStableSupport(support)) continue;
 
       const feetBlock = bot.blockAt(feetPos);
       const headBlock = bot.blockAt(headPos);
       if (isFluidHazard(feetBlock) || isFluidHazard(headBlock)) continue;
-      await digIfNeeded(headBlock);
-      await digIfNeeded(feetBlock);
+      try {
+        await digIfNeeded(headBlock);
+        await digIfNeeded(feetBlock);
+      } catch (error) {
+        if (error.code === 'MINE_SHAFT_HAZARD' && !error.current_position_unsafe) continue;
+        throw error;
+      }
 
       if (typeof bot.lookAt === 'function' && feetPos?.offset) {
         await withActionTimeout(
@@ -378,7 +431,7 @@ export function createMineShaft({
         );
       }
 
-      await advanceIntoSideStep();
+      if (!await advanceIntoSideStep(feetPos)) continue;
       await waitForGround(1500);
       await waitForStableY(1800, 3);
 
@@ -453,6 +506,7 @@ export function createMineShaft({
     const deadline = Date.now() + timeoutMs;
     while (Date.now() < deadline) {
       if (bot.entity?.onGround) return true;
+        assertDryState();
         await wait(100);
       }
     return !!bot.entity?.onGround;
@@ -490,6 +544,7 @@ export function createMineShaft({
 
   async function waitForSurvivalThreatToClear() {
     for (let check = 0; getSurvivalThreat(); check += 1) {
+      assertDryState();
       if (check >= 40) {
         const threat = getSurvivalThreat();
         const err = new Error(`mine_shaft paused by persistent ${threat?.type || 'survival'} threat`);
@@ -504,6 +559,7 @@ export function createMineShaft({
   async function mineShaft(targetY = 20, minimumCobblestone = 0, context = {}) {
     context.operation_scope?.checkpoint();
     if (!bot.entity) throw new Error('bot not spawned');
+    assertDryState();
     const cobblestoneTarget = Math.max(0, Number(minimumCobblestone) || 0);
     const startingCobblestone = inventoryCount('cobblestone');
     const cobblestoneGained = () => Math.max(
@@ -525,6 +581,7 @@ export function createMineShaft({
     try {
       await waitForGround(3000);
       while (Math.floor(bot.entity.position.y) > targetY && Date.now() < deadline) {
+        assertDryState();
         await waitForSurvivalThreatToClear();
         const completedQuota = quotaResult();
         if (completedQuota) return completedQuota;
@@ -549,6 +606,7 @@ export function createMineShaft({
             }
           }
         } catch (e) {
+          if (e.current_position_unsafe || activeOperationScope()?.signal?.aborted) throw e;
           if (getSurvivalThreat()) {
             await waitForSurvivalThreatToClear();
             continue;

@@ -7,6 +7,8 @@ import {
   projectVisibleDiscovery,
 } from '../gamebotEvidenceV2.js';
 import { createGameBotRuntimeV2 } from '../gamebotRuntimeV2.js';
+import { AIR_RECOVERY_MS, surfaceEscapePlan } from '../navigation.js';
+import { ownOxygenLevel } from './playerVitals.js';
 import {
   BroadcastMotionPolicy,
   resolvePresentationConfig,
@@ -305,6 +307,38 @@ function capabilityDescriptors(bot, actions) {
         actions.mineShaft(target_y, minimum_cobblestone, context)
       ),
     },
+    acquire_flint: {
+      parameters: { max_attempts: { type: 'integer', minimum: 1, maximum: 32 } },
+      invoke: ({ max_attempts = 16 }, context) => actions.acquireFlint(max_attempts, context),
+    },
+    fill_water_bucket: {
+      parameters: {},
+      invoke: (_parameters, context) => actions.fillWaterBucket(context),
+    },
+    prepare_obsidian: {
+      parameters: {},
+      invoke: (_parameters, context) => actions.prepareObsidian(context),
+    },
+    eat: {
+      parameters: { item: { type: 'string' } },
+      invoke: ({ item }, context) => actions.eat(item, context),
+    },
+    forage_apples: {
+      parameters: { max_blocks: { type: 'integer', minimum: 1, maximum: 8 } },
+      invoke: ({ max_blocks = 8 }, context) => actions.forageApples(max_blocks, context),
+    },
+    wait_for_regeneration: {
+      parameters: {},
+      invoke: (_parameters, context) => actions.waitForRegeneration(context),
+    },
+    explore_surface: {
+      parameters: { x: { type: 'integer' }, z: { type: 'integer' } },
+      invoke: ({ x, z }, context) => actions.exploreSurface(x, z, context),
+    },
+    ignite_portal: {
+      parameters: { x: { type: 'integer' }, y: { type: 'integer' }, z: { type: 'integer' } },
+      invoke: (parameters, context) => actions.ignitePortal(parameters, context),
+    },
   };
 }
 
@@ -316,6 +350,7 @@ function guardBotAction(
   context,
   includeContainers,
   abortLifecycle,
+  airRecoveryDeadline = 0,
 ) {
   return new Promise((resolve, reject) => {
     let settled = false;
@@ -324,6 +359,7 @@ function guardBotAction(
     const cleanup = () => {
       bot.removeListener('death', onDeath);
       bot.removeListener('end', onEnd);
+      bot.removeListener('breath', onBreath);
       context.signal?.removeEventListener('abort', onAbort);
     };
     const fail = (code, message) => {
@@ -331,11 +367,22 @@ function guardBotAction(
       const error = new Error(message);
       error.code = code;
       error.retryable = true;
+      const position = bot.entity?.position;
+      error.details = {
+        oxygen_level: ownOxygenLevel(bot),
+        position: position ? { x: position.x, y: position.y, z: position.z } : null,
+      };
       lifecycleError ??= error;
       abortLifecycle(message);
       void Promise.resolve(abortActive()).catch(() => {});
     };
     const onDeath = () => fail('BOT_DIED', 'Bot died during capability execution');
+    const onBreath = () => {
+      const oxygen = ownOxygenLevel(bot);
+      if (oxygen !== null && oxygen <= 14 && Date.now() >= airRecoveryDeadline) {
+        fail('OXYGEN_LOW', '空气不足，已中止当前动作以保护角色。');
+      }
+    };
     const onEnd = (reason) => fail(
       'RUNTIME_DISCONNECTED',
       `Runtime disconnected during capability execution: ${reason || 'unknown'}`,
@@ -358,7 +405,8 @@ function guardBotAction(
         const settlementError = new OperationScopeError(
           'CANCEL_SETTLEMENT_TIMEOUT',
           'Mineflayer operation did not settle after cancellation',
-          { world_may_have_changed: true },
+          { world_may_have_changed: true, cause_code: lifecycleError?.code ?? 'ACTION_CANCELLED',
+            cause_details: lifecycleError?.details ?? {} },
         );
         Object.defineProperty(settlementError, 'operationSettlement', {
           value: Promise.all([
@@ -373,15 +421,25 @@ function guardBotAction(
     };
     bot.once('death', onDeath);
     bot.once('end', onEnd);
+    bot.on('breath', onBreath);
     context.signal?.addEventListener('abort', onAbort, { once: true });
     if (context.signal?.aborted) {
       void onAbort();
       return;
     }
+    onBreath();
+    if (context.signal?.aborted) return;
     const invocationPromise = Promise.resolve().then(invoke);
     invocationSettlement = invocationPromise.then(
       () => undefined,
-      (error) => error?.operationSettlement ?? undefined,
+      (error) => {
+        if (lifecycleError) {
+          for (const key of ['budget_usage', 'explained_mutations']) {
+            if (error?.[key] !== undefined) lifecycleError[key] = error[key];
+          }
+        }
+        return error?.operationSettlement ?? undefined;
+      },
     );
     invocationPromise.then(
       (value) => {
@@ -416,6 +474,8 @@ function runtimeCapabilities(bot, actions, abortActive, motionPolicy) {
         maximumCost: emptyBudget({ max_actions: readOnly ? 0 : 1 }),
         async invoke(parameters, context) {
           context.signal?.throwIfAborted();
+          const airRecoveryDeadline = name === 'goto' && surfaceEscapePlan(bot, parameters)
+            ? Date.now() + AIR_RECOVERY_MS : 0;
           const lifecycleController = new AbortController();
           const operationSignal = context.signal
             ? AbortSignal.any([context.signal, lifecycleController.signal])
@@ -491,8 +551,10 @@ function runtimeCapabilities(bot, actions, abortActive, motionPolicy) {
             abortActive,
             async () => {
               if (name === 'goto') {
-                context.report_phase?.('aiming', { target });
-                await safeFocus({ phase: 'aiming' });
+                if (!airRecoveryDeadline) {
+                  context.report_phase?.('aiming', { target });
+                  await safeFocus({ phase: 'aiming' });
+                }
                 context.report_phase?.('moving', { target });
               } else if (name === 'place') {
                 context.report_phase?.('aiming', { target });
@@ -512,6 +574,7 @@ function runtimeCapabilities(bot, actions, abortActive, motionPolicy) {
             scopedContext,
             ['craft', 'smelt'].includes(name),
             (reason) => lifecycleController.abort(reason),
+            airRecoveryDeadline,
           ));
           return normalizeCapabilityResult(value, { readOnly });
         },
@@ -531,6 +594,7 @@ function observationState(bot, advancementAdapter) {
     if (slots[slot]?.name) equipment[name] = slots[slot].name;
   }
   const biome = bot.entity ? bot.blockAt(bot.entity.position)?.biome?.name || 'unknown' : null;
+  const oxygen = ownOxygenLevel(bot);
   return {
     position: snapshot.position,
     health: snapshot.health,
@@ -544,6 +608,7 @@ function observationState(bot, advancementAdapter) {
       fall_distance: snapshot.fall_distance,
       on_ground: snapshot.on_ground,
       velocity: snapshot.velocity,
+      ...(oxygen !== null ? { oxygen_level: oxygen } : {}),
     },
     biome,
     visible_blocks: discovery.visible_blocks,

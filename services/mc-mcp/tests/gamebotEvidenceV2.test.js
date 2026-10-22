@@ -64,6 +64,19 @@ test('region scanner returns every canonical block in inclusive bounds', () => {
   });
 });
 
+test('region scanner rejects unloaded cells instead of certifying them as air', () => {
+  assert.throws(() => inspectRegionBlocks({
+    blockAt: (pos) => pos.x === 0 ? { name: 'air' } : null,
+  }, {
+    min: { x: 0, y: 64, z: 0 },
+    max: { x: 1, y: 64, z: 0 },
+  }), (error) => {
+    assert.equal(error.code, 'REGION_NOT_LOADED');
+    assert.deepEqual(error.details.position, { x: 1, y: 64, z: 0 });
+    return true;
+  });
+});
+
 
 test('combat waits for the exact target death and records health/ticks', async () => {
   const bot = new EventEmitter();

@@ -14,6 +14,7 @@ from animetta.tools.minecraft.mission.projection import MissionProjectionService
 from animetta.tools.minecraft.mission.repository import InMemoryMissionRepository
 from animetta.tools.minecraft.showcase.micro_gates import build_construction_mission
 from animetta.tools.minecraft.voyager.budget import ExecutionBudget, ModeBudgetPolicy
+from animetta.tools.minecraft.voyager.command_models import CommandState
 from animetta.tools.minecraft.voyager.gateway import (
     EXECUTE_REQUEST_ADAPTER,
     ExecuteAtomicRequest,
@@ -21,7 +22,7 @@ from animetta.tools.minecraft.voyager.gateway import (
     MissionHandle,
     VoyagerGateway,
 )
-from animetta.tools.minecraft.voyager.journal import InMemoryCommandJournal
+from animetta.tools.minecraft.voyager.journal import InMemoryCommandJournal, StepRecord
 from animetta.tools.minecraft.voyager.stop import GlobalStopBarrier
 from tests.tools.minecraft.mission.test_coordinator import _fixed_mission
 
@@ -89,6 +90,81 @@ def gateway(repository: InMemoryCommandJournal) -> VoyagerGateway:
 
 async def _noop() -> None:
     return None
+
+
+def test_mission_uses_its_configured_cumulative_ceiling() -> None:
+    from animetta.tools.minecraft.core.assembly import _budget_policy
+    from animetta.tools.minecraft.core.config import MinecraftConfig, MinecraftSafetyConfig
+    from animetta.tools.minecraft.survival.mainline import build_nether_portal_mission
+
+    service = gateway(InMemoryCommandJournal())
+    mission = build_nether_portal_mission(mission_id="cumulative-travel", home=(0, 64, 0))
+    service._budget_policy = _budget_policy(MinecraftConfig())
+    request = ExecuteMissionRequest(
+        request_id="mission-travel", mission=mission, contract_version="2", kind="mission"
+    )
+    assert service._authorized_mission(request).budget.max_travel_distance == 1984
+    service._budget_policy = _budget_policy(
+        MinecraftConfig(safety=MinecraftSafetyConfig(max_mission_travel_distance=500))
+    )
+    with pytest.raises(ValueError):
+        service._authorized_mission(request)
+
+
+async def test_runtime_termination_requires_owner_exit_and_preserves_unknown_step() -> None:
+    repository = InMemoryCommandJournal()
+    api = gateway(repository)
+    handle = await api.execute(caller_scope="owner", request=atomic_request())
+    running = await repository.transition(
+        handle.command_id,
+        expected_version=0,
+        target=CommandState.RUNNING,
+        reason_code="DISPATCHED",
+        actor="test",
+        occurred_at_ms=101,
+    )
+    await repository.reserve_step(
+        StepRecord(
+            step_id="unknown-step",
+            command_id=handle.command_id,
+            ordinal=1,
+            strategy_state_hash="a" * 64,
+            capability="collect",
+            params_hash="b" * 64,
+            params={"count": 1},
+            correlation_id="original-correlation",
+            runtime_instance_id=MANIFEST.runtime_instance_id,
+            state="dispatched",
+            reservation={"max_actions": 1},
+            before_observation_hash="c" * 64,
+        )
+    )
+    await repository.transition(
+        handle.command_id,
+        expected_version=running.state_version,
+        target=CommandState.BLOCKED_UNKNOWN,
+        reason_code="RECOVERY_INCOMPLETE",
+        actor="test",
+        occurred_at_ms=102,
+    )
+    with pytest.raises(ValueError, match="RUNTIME_TERMINATION_NOT_CONFIRMED"):
+        await api.record_runtime_termination(
+            caller_scope="owner",
+            runtime_instance_id=MANIFEST.runtime_instance_id,
+            acknowledgement={"state": "ready", "bot": {"state": "running"}},
+        )
+    cancelled = await api.record_runtime_termination(
+        caller_scope="owner",
+        runtime_instance_id=MANIFEST.runtime_instance_id,
+        acknowledgement={"state": "stopped", "bot": {"state": "stopped"}},
+    )
+    assert cancelled == (handle.command_id,)
+    command = await repository.get_command(handle.command_id)
+    assert command is not None and command.state is CommandState.CANCELLED
+    assert command.terminal_result["output"]["original_outcome_known"] is False
+    assert command.terminal_result["learning_evidence_eligible"] is False
+    assert (await repository.latest_step(handle.command_id)).state == "dispatched"
+    assert not (await repository.recover_startup(occurred_at_ms=103)).quarantined
 
 
 async def test_execute_injects_scope_clamps_budget_and_accepts_asynchronously() -> None:

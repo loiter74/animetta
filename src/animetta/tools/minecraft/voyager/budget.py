@@ -59,6 +59,7 @@ class ModeBudgetPolicy(_BudgetModel):
     live: ExecutionBudget
     fallback: ExecutionBudget
     atomic: ExecutionBudget
+    mission: ExecutionBudget | None = None
 
     def maximum_for(self, mode: str) -> ExecutionBudget:
         if mode not in {"learn", "live", "fallback", "atomic"}:

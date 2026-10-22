@@ -680,6 +680,16 @@ test('mineShaft relocates onto a same-level supported ledge before descending', 
       }
     },
     async placeBlock() {},
+    pathfinder: {
+      async goto(goal) {
+        position.x = goal.x + 0.5;
+        position.y = goal.y;
+        position.z = goal.z + 0.5;
+        bot.entity.onGround = true;
+        movedToLedge = true;
+      },
+      stop() {},
+    },
     setControlState(control, state) {
       if (control === 'forward' && state && lookingAtLedge && !movedToLedge) {
         movedToLedge = true;
@@ -852,142 +862,76 @@ test('mineShaft refuses to descend through a water column', async () => {
   assert.equal(digs, 0);
 });
 
-test('mineShaft routes around water through a supported side stair', async () => {
-  let sideCleared = false;
-  let movingForward = false;
+test('mineShaft routes around a water wall without breaking its dry barrier', async () => {
   const position = new Vec3(0.5, 62, 0.5);
+  let cleared = false;
+  const visited = [];
   const bot = {
-    entity: {
-      position,
-      onGround: true,
-      yaw: 0,
-    },
-    inventory: {
-      items: () => [{ name: 'wooden_pickaxe', count: 1 }],
-    },
-    async equip() {},
-    async lookAt() {},
+    entity: { position, onGround: true, yaw: 0 },
+    inventory: { items: () => [{ name: 'wooden_pickaxe', count: 1 }] },
+    async equip() {}, async lookAt() {},
     blockAt(pos) {
-      if (pos.x === 0 && pos.z === 0 && pos.y === 61) {
-        return { name: 'water', boundingBox: 'empty', position: pos };
-      }
-      if (pos.x === 1 && pos.z === 0 && pos.y === 61 && !sideCleared) {
-        return { name: 'stone', boundingBox: 'block', position: pos };
-      }
-      if (pos.x === 1 && pos.z === 0 && pos.y <= 60) {
+      if (pos.x >= 0 && pos.x <= 4 && pos.z === 0 && pos.y === 60) return { name: 'water', boundingBox: 'empty', position: pos };
+      if (pos.x >= 0 && pos.z === 0 && pos.y <= 61 && !(cleared && pos.x === 5 && pos.y === 61)) {
         return { name: 'stone', boundingBox: 'block', position: pos };
       }
       return { name: 'air', boundingBox: 'empty', position: pos };
     },
     async dig(block) {
-      if (block.position.x === 1 && block.position.y === 61) sideCleared = true;
+      assert.equal(block.position.x, 5, 'the solid roof above the aquifer must remain intact');
+      cleared = true;
     },
-    setControlState(control, state) {
-      if (control === 'forward') movingForward = state;
+    setControlState(_control, state) { assert.equal(state, false); },
+    pathfinder: {
+      async goto(goal) {
+        visited.push(goal.x);
+        position.x = goal.x + 0.5; position.y = goal.y; position.z = goal.z + 0.5;
+      }, stop() {},
     },
   };
-
-  const shaft = createMineShaft({
-    bot,
-    wait: async () => {
-      if (sideCleared && movingForward) {
-        position.x = 1.5;
-        position.y = 61;
-        bot.entity.onGround = true;
-      }
-    },
-  });
-
-  const result = await shaft.mineShaft(61);
-
+  const result = await createMineShaft({ bot, wait: async () => { if (cleared) position.y = 61; } }).mineShaft(61);
   assert.match(result, /Shaft mined 62 -> y=61/);
-  assert.equal(sideCleared, true);
+  assert.deepEqual(visited, [1, 2, 3, 4, 5]);
 });
 
-test('mineShaft swims out of a flooded feet block onto a dry supported side stair', async () => {
-  let initialBelowCleared = false;
-  let sideFeetCleared = false;
-  let sideHeadCleared = false;
-  let nextBelowCleared = false;
-  let movingForward = false;
-  let movingUp = false;
-  let usedSwimControl = false;
-  let waitsAfterNextDig = 0;
-  const position = new Vec3(3.5, 59, 64.5);
+test('mineShaft exits flooded or low-air starts without excavation or blind swimming', async () => {
+  for (const [feet, head, oxygen] of [['water', 'air', 20], ['air', 'water', 20], ['air', 'air', 14]]) {
+    const bot = {
+      entity: { position: new Vec3(0.5, 62, 0.5), onGround: true, name: 'player', metadata: { 1: oxygen * 15 } },
+      registry: { entitiesByName: { player: { metadataKeys: ['shared_flags', 'air_supply'] } } },
+      blockAt: pos => ({ name: pos.y === 62 ? feet : head, boundingBox: 'empty', position: pos }),
+      dig: async () => assert.fail('unsafe start must not dig'),
+      setControlState: (_control, enabled) => assert.equal(enabled, false),
+    };
+    await assert.rejects(createMineShaft({ bot, wait: async () => assert.fail('must fail promptly') }).mineShaft(16),
+      error => error.code === 'MINE_SHAFT_HAZARD' && error.current_position_unsafe);
+  }
+});
+
+test('mineShaft never digs a solid wall that would expose a water layer', async () => {
   const bot = {
-    entity: {
-      position,
-      onGround: true,
-      yaw: 0,
-    },
-    inventory: {
-      items: () => [
-        { name: 'wooden_pickaxe', count: 1 },
-        { name: 'cobblestone', count: 17 },
-      ],
-    },
-    async equip() {},
-    async lookAt() {},
+    entity: { position: new Vec3(0.5, 80, 0.5), onGround: true },
     blockAt(pos) {
-      if (pos.x === 3 && pos.z === 64 && pos.y === 59 && position.x < 4) {
-        return { name: 'water', boundingBox: 'empty', position: pos };
-      }
-      if (pos.x === 3 && pos.z === 64 && pos.y === 58 && !initialBelowCleared) {
-        return { name: 'stone', boundingBox: 'block', position: pos };
-      }
-      if (pos.x === 4 && pos.z === 64 && pos.y === 60 && !sideHeadCleared) {
-        return { name: 'dirt', boundingBox: 'block', position: pos };
-      }
-      if (pos.x === 4 && pos.z === 64 && pos.y === 59 && !sideFeetCleared) {
-        return { name: 'stone', boundingBox: 'block', position: pos };
-      }
-      if (pos.x === 4 && pos.z === 64 && pos.y === 58 && !nextBelowCleared) {
-        return { name: 'stone', boundingBox: 'block', position: pos };
-      }
-      if (pos.y <= 57) {
-        return { name: 'stone', boundingBox: 'block', position: pos };
-      }
-      return { name: 'air', boundingBox: 'empty', position: pos };
+      const name = pos.x === 1 && pos.y === 79 && pos.z === 0 ? 'water'
+        : pos.x === 0 && pos.z === 0 && pos.y <= 79 ? 'stone' : 'air';
+      return { name, boundingBox: name === 'stone' ? 'block' : 'empty', position: pos };
     },
-    async dig(block) {
-      const { x, y, z } = block.position;
-      if (x === 3 && y === 58 && z === 64) initialBelowCleared = true;
-      if (x === 4 && y === 60 && z === 64) sideHeadCleared = true;
-      if (x === 4 && y === 59 && z === 64) sideFeetCleared = true;
-      if (x === 4 && y === 58 && z === 64) nextBelowCleared = true;
-    },
-    setControlState(control, state) {
-      if (control === 'forward') movingForward = state;
-      if (control === 'jump') {
-        movingUp = state;
-        if (state) usedSwimControl = true;
-      }
-    },
+    dig: async () => assert.fail('must not breach the aquifer'),
+    setControlState: (_control, enabled) => assert.equal(enabled, false),
   };
+  await assert.rejects(createMineShaft({ bot, wait: async () => {} }).mineShaft(79), error => error.code === 'MINE_SHAFT_HAZARD');
+});
 
-  const shaft = createMineShaft({
-    bot,
-    wait: async () => {
-      if (
-        position.x < 4
-        && sideFeetCleared
-        && sideHeadCleared
-        && movingForward
-        && movingUp
-      ) {
-        position.x = 4.5;
-      }
-      if (position.x >= 4 && nextBelowCleared) {
-        waitsAfterNextDig += 1;
-        if (waitsAfterNextDig >= 2) position.y = 58;
-      }
+test('failed supported-step navigation never enables manual forward or jump', async () => {
+  const bot = {
+    entity: { position: new Vec3(0.5, 62, 0.5), onGround: true },
+    blockAt(pos) {
+      const name = pos.x === 0 && pos.z === 0 && pos.y === 61 ? 'water'
+        : pos.x === 1 && pos.z === 0 && pos.y <= 61 ? 'stone' : 'air';
+      return { name, boundingBox: name === 'stone' ? 'block' : 'empty', position: pos };
     },
-  });
-
-  const result = await shaft.mineShaft(58);
-
-  assert.match(result, /Shaft mined 59 -> y=58/);
-  assert.equal(usedSwimControl, true);
-  assert.equal(position.x, 4.5);
-  assert.equal(initialBelowCleared, false, 'must escape water before opening the shaft floor');
+    pathfinder: { goto: async () => { throw new Error('No path'); }, stop() {} },
+    setControlState: (_control, enabled) => assert.equal(enabled, false),
+  };
+  await assert.rejects(createMineShaft({ bot, wait: async () => {} }).mineShaft(61), error => error.code === 'MINE_SHAFT_HAZARD');
 });

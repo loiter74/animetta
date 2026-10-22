@@ -433,6 +433,28 @@
           "title": "EntityDefeated",
           "type": "object"
         },
+        "FoodAtLeast": {
+          "additionalProperties": false,
+          "properties": {
+            "food": {
+              "maximum": 20,
+              "minimum": 0,
+              "title": "Food",
+              "type": "integer"
+            },
+            "kind": {
+              "const": "food_at_least",
+              "title": "Kind",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "food"
+          ],
+          "title": "FoodAtLeast",
+          "type": "object"
+        },
         "HealthAtLeast": {
           "additionalProperties": false,
           "properties": {
@@ -702,6 +724,7 @@
               "mapping": {
                 "blocks_placed": "#/$defs/BlocksPlaced",
                 "entity_defeated": "#/$defs/EntityDefeated",
+                "food_at_least": "#/$defs/FoodAtLeast",
                 "health_at_least": "#/$defs/HealthAtLeast",
                 "inventory_at_least": "#/$defs/InventoryAtLeast",
                 "location_reached": "#/$defs/LocationReached",
@@ -722,6 +745,9 @@
               },
               {
                 "$ref": "#/$defs/HealthAtLeast"
+              },
+              {
+                "$ref": "#/$defs/FoodAtLeast"
               },
               {
                 "$ref": "#/$defs/SurvivedDuration"
@@ -963,6 +989,7 @@
                   "mapping": {
                     "blocks_placed": "#/$defs/BlocksPlaced",
                     "entity_defeated": "#/$defs/EntityDefeated",
+                    "food_at_least": "#/$defs/FoodAtLeast",
                     "health_at_least": "#/$defs/HealthAtLeast",
                     "inventory_at_least": "#/$defs/InventoryAtLeast",
                     "location_reached": "#/$defs/LocationReached",
@@ -983,6 +1010,9 @@
                   },
                   {
                     "$ref": "#/$defs/HealthAtLeast"
+                  },
+                  {
+                    "$ref": "#/$defs/FoodAtLeast"
                   },
                   {
                     "$ref": "#/$defs/SurvivedDuration"
@@ -1124,6 +1154,7 @@
                   "mapping": {
                     "blocks_placed": "#/$defs/BlocksPlaced",
                     "entity_defeated": "#/$defs/EntityDefeated",
+                    "food_at_least": "#/$defs/FoodAtLeast",
                     "health_at_least": "#/$defs/HealthAtLeast",
                     "inventory_at_least": "#/$defs/InventoryAtLeast",
                     "location_reached": "#/$defs/LocationReached",
@@ -1144,6 +1175,9 @@
                   },
                   {
                     "$ref": "#/$defs/HealthAtLeast"
+                  },
+                  {
+                    "$ref": "#/$defs/FoodAtLeast"
                   },
                   {
                     "$ref": "#/$defs/SurvivedDuration"
@@ -1213,6 +1247,7 @@
                   "mapping": {
                     "blocks_placed": "#/$defs/BlocksPlaced",
                     "entity_defeated": "#/$defs/EntityDefeated",
+                    "food_at_least": "#/$defs/FoodAtLeast",
                     "health_at_least": "#/$defs/HealthAtLeast",
                     "inventory_at_least": "#/$defs/InventoryAtLeast",
                     "location_reached": "#/$defs/LocationReached",
@@ -1233,6 +1268,9 @@
                   },
                   {
                     "$ref": "#/$defs/HealthAtLeast"
+                  },
+                  {
+                    "$ref": "#/$defs/FoodAtLeast"
                   },
                   {
                     "$ref": "#/$defs/SurvivedDuration"
@@ -1302,6 +1340,7 @@
                   "mapping": {
                     "blocks_placed": "#/$defs/BlocksPlaced",
                     "entity_defeated": "#/$defs/EntityDefeated",
+                    "food_at_least": "#/$defs/FoodAtLeast",
                     "health_at_least": "#/$defs/HealthAtLeast",
                     "inventory_at_least": "#/$defs/InventoryAtLeast",
                     "location_reached": "#/$defs/LocationReached",
@@ -1322,6 +1361,9 @@
                   },
                   {
                     "$ref": "#/$defs/HealthAtLeast"
+                  },
+                  {
+                    "$ref": "#/$defs/FoodAtLeast"
                   },
                   {
                     "$ref": "#/$defs/SurvivedDuration"
@@ -1403,6 +1445,7 @@
                   "mapping": {
                     "blocks_placed": "#/$defs/BlocksPlaced",
                     "entity_defeated": "#/$defs/EntityDefeated",
+                    "food_at_least": "#/$defs/FoodAtLeast",
                     "health_at_least": "#/$defs/HealthAtLeast",
                     "inventory_at_least": "#/$defs/InventoryAtLeast",
                     "location_reached": "#/$defs/LocationReached",
@@ -1423,6 +1466,9 @@
                   },
                   {
                     "$ref": "#/$defs/HealthAtLeast"
+                  },
+                  {
+                    "$ref": "#/$defs/FoodAtLeast"
                   },
                   {
                     "$ref": "#/$defs/SurvivedDuration"
@@ -1493,6 +1539,28 @@
             "entity"
           ],
           "title": "EntityDefeated",
+          "type": "object"
+        },
+        "FoodAtLeast": {
+          "additionalProperties": false,
+          "properties": {
+            "food": {
+              "maximum": 20,
+              "minimum": 0,
+              "title": "Food",
+              "type": "integer"
+            },
+            "kind": {
+              "const": "food_at_least",
+              "title": "Kind",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "food"
+          ],
+          "title": "FoodAtLeast",
           "type": "object"
         },
         "HealthAtLeast": {
@@ -1570,6 +1638,7 @@
                   "mapping": {
                     "blocks_placed": "#/$defs/BlocksPlaced",
                     "entity_defeated": "#/$defs/EntityDefeated",
+                    "food_at_least": "#/$defs/FoodAtLeast",
                     "health_at_least": "#/$defs/HealthAtLeast",
                     "inventory_at_least": "#/$defs/InventoryAtLeast",
                     "location_reached": "#/$defs/LocationReached",
@@ -1590,6 +1659,9 @@
                   },
                   {
                     "$ref": "#/$defs/HealthAtLeast"
+                  },
+                  {
+                    "$ref": "#/$defs/FoodAtLeast"
                   },
                   {
                     "$ref": "#/$defs/SurvivedDuration"
@@ -1722,6 +1794,7 @@
                   "mapping": {
                     "blocks_placed": "#/$defs/BlocksPlaced",
                     "entity_defeated": "#/$defs/EntityDefeated",
+                    "food_at_least": "#/$defs/FoodAtLeast",
                     "health_at_least": "#/$defs/HealthAtLeast",
                     "inventory_at_least": "#/$defs/InventoryAtLeast",
                     "location_reached": "#/$defs/LocationReached",
@@ -1742,6 +1815,9 @@
                   },
                   {
                     "$ref": "#/$defs/HealthAtLeast"
+                  },
+                  {
+                    "$ref": "#/$defs/FoodAtLeast"
                   },
                   {
                     "$ref": "#/$defs/SurvivedDuration"
@@ -1832,6 +1908,7 @@
                   "mapping": {
                     "blocks_placed": "#/$defs/BlocksPlaced",
                     "entity_defeated": "#/$defs/EntityDefeated",
+                    "food_at_least": "#/$defs/FoodAtLeast",
                     "health_at_least": "#/$defs/HealthAtLeast",
                     "inventory_at_least": "#/$defs/InventoryAtLeast",
                     "location_reached": "#/$defs/LocationReached",
@@ -1852,6 +1929,9 @@
                   },
                   {
                     "$ref": "#/$defs/HealthAtLeast"
+                  },
+                  {
+                    "$ref": "#/$defs/FoodAtLeast"
                   },
                   {
                     "$ref": "#/$defs/SurvivedDuration"
@@ -2149,6 +2229,7 @@
                   "mapping": {
                     "blocks_placed": "#/$defs/BlocksPlaced",
                     "entity_defeated": "#/$defs/EntityDefeated",
+                    "food_at_least": "#/$defs/FoodAtLeast",
                     "health_at_least": "#/$defs/HealthAtLeast",
                     "inventory_at_least": "#/$defs/InventoryAtLeast",
                     "location_reached": "#/$defs/LocationReached",
@@ -2169,6 +2250,9 @@
                   },
                   {
                     "$ref": "#/$defs/HealthAtLeast"
+                  },
+                  {
+                    "$ref": "#/$defs/FoodAtLeast"
                   },
                   {
                     "$ref": "#/$defs/SurvivedDuration"
@@ -2310,6 +2394,7 @@
                   "mapping": {
                     "blocks_placed": "#/$defs/BlocksPlaced",
                     "entity_defeated": "#/$defs/EntityDefeated",
+                    "food_at_least": "#/$defs/FoodAtLeast",
                     "health_at_least": "#/$defs/HealthAtLeast",
                     "inventory_at_least": "#/$defs/InventoryAtLeast",
                     "location_reached": "#/$defs/LocationReached",
@@ -2330,6 +2415,9 @@
                   },
                   {
                     "$ref": "#/$defs/HealthAtLeast"
+                  },
+                  {
+                    "$ref": "#/$defs/FoodAtLeast"
                   },
                   {
                     "$ref": "#/$defs/SurvivedDuration"
@@ -2399,6 +2487,7 @@
                   "mapping": {
                     "blocks_placed": "#/$defs/BlocksPlaced",
                     "entity_defeated": "#/$defs/EntityDefeated",
+                    "food_at_least": "#/$defs/FoodAtLeast",
                     "health_at_least": "#/$defs/HealthAtLeast",
                     "inventory_at_least": "#/$defs/InventoryAtLeast",
                     "location_reached": "#/$defs/LocationReached",
@@ -2419,6 +2508,9 @@
                   },
                   {
                     "$ref": "#/$defs/HealthAtLeast"
+                  },
+                  {
+                    "$ref": "#/$defs/FoodAtLeast"
                   },
                   {
                     "$ref": "#/$defs/SurvivedDuration"
@@ -2488,6 +2580,7 @@
                   "mapping": {
                     "blocks_placed": "#/$defs/BlocksPlaced",
                     "entity_defeated": "#/$defs/EntityDefeated",
+                    "food_at_least": "#/$defs/FoodAtLeast",
                     "health_at_least": "#/$defs/HealthAtLeast",
                     "inventory_at_least": "#/$defs/InventoryAtLeast",
                     "location_reached": "#/$defs/LocationReached",
@@ -2508,6 +2601,9 @@
                   },
                   {
                     "$ref": "#/$defs/HealthAtLeast"
+                  },
+                  {
+                    "$ref": "#/$defs/FoodAtLeast"
                   },
                   {
                     "$ref": "#/$defs/SurvivedDuration"
@@ -2589,6 +2685,7 @@
                   "mapping": {
                     "blocks_placed": "#/$defs/BlocksPlaced",
                     "entity_defeated": "#/$defs/EntityDefeated",
+                    "food_at_least": "#/$defs/FoodAtLeast",
                     "health_at_least": "#/$defs/HealthAtLeast",
                     "inventory_at_least": "#/$defs/InventoryAtLeast",
                     "location_reached": "#/$defs/LocationReached",
@@ -2609,6 +2706,9 @@
                   },
                   {
                     "$ref": "#/$defs/HealthAtLeast"
+                  },
+                  {
+                    "$ref": "#/$defs/FoodAtLeast"
                   },
                   {
                     "$ref": "#/$defs/SurvivedDuration"
@@ -2679,6 +2779,28 @@
             "entity"
           ],
           "title": "EntityDefeated",
+          "type": "object"
+        },
+        "FoodAtLeast": {
+          "additionalProperties": false,
+          "properties": {
+            "food": {
+              "maximum": 20,
+              "minimum": 0,
+              "title": "Food",
+              "type": "integer"
+            },
+            "kind": {
+              "const": "food_at_least",
+              "title": "Kind",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "food"
+          ],
+          "title": "FoodAtLeast",
           "type": "object"
         },
         "HealthAtLeast": {
@@ -2756,6 +2878,7 @@
                   "mapping": {
                     "blocks_placed": "#/$defs/BlocksPlaced",
                     "entity_defeated": "#/$defs/EntityDefeated",
+                    "food_at_least": "#/$defs/FoodAtLeast",
                     "health_at_least": "#/$defs/HealthAtLeast",
                     "inventory_at_least": "#/$defs/InventoryAtLeast",
                     "location_reached": "#/$defs/LocationReached",
@@ -2776,6 +2899,9 @@
                   },
                   {
                     "$ref": "#/$defs/HealthAtLeast"
+                  },
+                  {
+                    "$ref": "#/$defs/FoodAtLeast"
                   },
                   {
                     "$ref": "#/$defs/SurvivedDuration"
@@ -2908,6 +3034,7 @@
                   "mapping": {
                     "blocks_placed": "#/$defs/BlocksPlaced",
                     "entity_defeated": "#/$defs/EntityDefeated",
+                    "food_at_least": "#/$defs/FoodAtLeast",
                     "health_at_least": "#/$defs/HealthAtLeast",
                     "inventory_at_least": "#/$defs/InventoryAtLeast",
                     "location_reached": "#/$defs/LocationReached",
@@ -2928,6 +3055,9 @@
                   },
                   {
                     "$ref": "#/$defs/HealthAtLeast"
+                  },
+                  {
+                    "$ref": "#/$defs/FoodAtLeast"
                   },
                   {
                     "$ref": "#/$defs/SurvivedDuration"
@@ -3018,6 +3148,7 @@
                   "mapping": {
                     "blocks_placed": "#/$defs/BlocksPlaced",
                     "entity_defeated": "#/$defs/EntityDefeated",
+                    "food_at_least": "#/$defs/FoodAtLeast",
                     "health_at_least": "#/$defs/HealthAtLeast",
                     "inventory_at_least": "#/$defs/InventoryAtLeast",
                     "location_reached": "#/$defs/LocationReached",
@@ -3038,6 +3169,9 @@
                   },
                   {
                     "$ref": "#/$defs/HealthAtLeast"
+                  },
+                  {
+                    "$ref": "#/$defs/FoodAtLeast"
                   },
                   {
                     "$ref": "#/$defs/SurvivedDuration"
@@ -3412,6 +3546,7 @@
                   "mapping": {
                     "blocks_placed": "#/$defs/BlocksPlaced",
                     "entity_defeated": "#/$defs/EntityDefeated",
+                    "food_at_least": "#/$defs/FoodAtLeast",
                     "health_at_least": "#/$defs/HealthAtLeast",
                     "inventory_at_least": "#/$defs/InventoryAtLeast",
                     "location_reached": "#/$defs/LocationReached",
@@ -3432,6 +3567,9 @@
                   },
                   {
                     "$ref": "#/$defs/HealthAtLeast"
+                  },
+                  {
+                    "$ref": "#/$defs/FoodAtLeast"
                   },
                   {
                     "$ref": "#/$defs/SurvivedDuration"
@@ -3672,6 +3810,7 @@
                   "mapping": {
                     "blocks_placed": "#/$defs/BlocksPlaced",
                     "entity_defeated": "#/$defs/EntityDefeated",
+                    "food_at_least": "#/$defs/FoodAtLeast",
                     "health_at_least": "#/$defs/HealthAtLeast",
                     "inventory_at_least": "#/$defs/InventoryAtLeast",
                     "location_reached": "#/$defs/LocationReached",
@@ -3692,6 +3831,9 @@
                   },
                   {
                     "$ref": "#/$defs/HealthAtLeast"
+                  },
+                  {
+                    "$ref": "#/$defs/FoodAtLeast"
                   },
                   {
                     "$ref": "#/$defs/SurvivedDuration"
@@ -3761,6 +3903,7 @@
                   "mapping": {
                     "blocks_placed": "#/$defs/BlocksPlaced",
                     "entity_defeated": "#/$defs/EntityDefeated",
+                    "food_at_least": "#/$defs/FoodAtLeast",
                     "health_at_least": "#/$defs/HealthAtLeast",
                     "inventory_at_least": "#/$defs/InventoryAtLeast",
                     "location_reached": "#/$defs/LocationReached",
@@ -3781,6 +3924,9 @@
                   },
                   {
                     "$ref": "#/$defs/HealthAtLeast"
+                  },
+                  {
+                    "$ref": "#/$defs/FoodAtLeast"
                   },
                   {
                     "$ref": "#/$defs/SurvivedDuration"
@@ -3850,6 +3996,7 @@
                   "mapping": {
                     "blocks_placed": "#/$defs/BlocksPlaced",
                     "entity_defeated": "#/$defs/EntityDefeated",
+                    "food_at_least": "#/$defs/FoodAtLeast",
                     "health_at_least": "#/$defs/HealthAtLeast",
                     "inventory_at_least": "#/$defs/InventoryAtLeast",
                     "location_reached": "#/$defs/LocationReached",
@@ -3870,6 +4017,9 @@
                   },
                   {
                     "$ref": "#/$defs/HealthAtLeast"
+                  },
+                  {
+                    "$ref": "#/$defs/FoodAtLeast"
                   },
                   {
                     "$ref": "#/$defs/SurvivedDuration"
@@ -3951,6 +4101,7 @@
                   "mapping": {
                     "blocks_placed": "#/$defs/BlocksPlaced",
                     "entity_defeated": "#/$defs/EntityDefeated",
+                    "food_at_least": "#/$defs/FoodAtLeast",
                     "health_at_least": "#/$defs/HealthAtLeast",
                     "inventory_at_least": "#/$defs/InventoryAtLeast",
                     "location_reached": "#/$defs/LocationReached",
@@ -3971,6 +4122,9 @@
                   },
                   {
                     "$ref": "#/$defs/HealthAtLeast"
+                  },
+                  {
+                    "$ref": "#/$defs/FoodAtLeast"
                   },
                   {
                     "$ref": "#/$defs/SurvivedDuration"
@@ -4132,6 +4286,28 @@
           "title": "ExecutionPolicy",
           "type": "object"
         },
+        "FoodAtLeast": {
+          "additionalProperties": false,
+          "properties": {
+            "food": {
+              "maximum": 20,
+              "minimum": 0,
+              "title": "Food",
+              "type": "integer"
+            },
+            "kind": {
+              "const": "food_at_least",
+              "title": "Kind",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "food"
+          ],
+          "title": "FoodAtLeast",
+          "type": "object"
+        },
         "HealthAtLeast": {
           "additionalProperties": false,
           "properties": {
@@ -4207,6 +4383,7 @@
                   "mapping": {
                     "blocks_placed": "#/$defs/BlocksPlaced",
                     "entity_defeated": "#/$defs/EntityDefeated",
+                    "food_at_least": "#/$defs/FoodAtLeast",
                     "health_at_least": "#/$defs/HealthAtLeast",
                     "inventory_at_least": "#/$defs/InventoryAtLeast",
                     "location_reached": "#/$defs/LocationReached",
@@ -4227,6 +4404,9 @@
                   },
                   {
                     "$ref": "#/$defs/HealthAtLeast"
+                  },
+                  {
+                    "$ref": "#/$defs/FoodAtLeast"
                   },
                   {
                     "$ref": "#/$defs/SurvivedDuration"
@@ -4462,6 +4642,7 @@
                   "mapping": {
                     "blocks_placed": "#/$defs/BlocksPlaced",
                     "entity_defeated": "#/$defs/EntityDefeated",
+                    "food_at_least": "#/$defs/FoodAtLeast",
                     "health_at_least": "#/$defs/HealthAtLeast",
                     "inventory_at_least": "#/$defs/InventoryAtLeast",
                     "location_reached": "#/$defs/LocationReached",
@@ -4482,6 +4663,9 @@
                   },
                   {
                     "$ref": "#/$defs/HealthAtLeast"
+                  },
+                  {
+                    "$ref": "#/$defs/FoodAtLeast"
                   },
                   {
                     "$ref": "#/$defs/SurvivedDuration"
@@ -4572,6 +4756,7 @@
                   "mapping": {
                     "blocks_placed": "#/$defs/BlocksPlaced",
                     "entity_defeated": "#/$defs/EntityDefeated",
+                    "food_at_least": "#/$defs/FoodAtLeast",
                     "health_at_least": "#/$defs/HealthAtLeast",
                     "inventory_at_least": "#/$defs/InventoryAtLeast",
                     "location_reached": "#/$defs/LocationReached",
@@ -4592,6 +4777,9 @@
                   },
                   {
                     "$ref": "#/$defs/HealthAtLeast"
+                  },
+                  {
+                    "$ref": "#/$defs/FoodAtLeast"
                   },
                   {
                     "$ref": "#/$defs/SurvivedDuration"

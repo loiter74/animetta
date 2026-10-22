@@ -12,11 +12,15 @@ from animetta.tools.minecraft.blueprint import (
     CompiledBlueprint,
     starter_shelter_blueprint,
 )
+from animetta.tools.minecraft.blueprint.portal import nether_portal_blueprint
+from animetta.tools.minecraft.survival.food import propose_food_recovery
 
-from ..budget import BudgetUsage
+from ..budget import BudgetUsage, ExecutionBudget
 from ..goal_models import (
     EntityDefeated,
+    FoodAtLeast,
     GoalSpec,
+    HealthAtLeast,
     LocationReached,
     StructureMatchesBlueprint,
 )
@@ -36,16 +40,41 @@ class BuiltinMissionStrategy:
         manifest: RuntimeManifest,
         blueprint_origins: Mapping[str, tuple[int, int, int]] | None = None,
         entity_origins: Mapping[str, tuple[int, int, int]] | None = None,
+        execution_budget: ExecutionBudget | None = None,
     ) -> None:
         self._manifest = manifest
         self._blueprint_origins = dict(blueprint_origins or {})
         self._entity_origins = dict(entity_origins or {})
+        self._execution_budget = execution_budget
         shelter = starter_shelter_blueprint()
         self._blueprints = {shelter.blueprint_id: shelter}
+        portal = nether_portal_blueprint()
+        self._blueprints[portal.blueprint_id] = portal
 
     def prepare(self, goal: GoalSpec | None) -> dict:
         if goal is None:
             raise ValueError("builtin mission strategy requires a structured goal")
+        if goal.intent == "survive" and goal.target == "food-recovery":
+            health = next(
+                (
+                    predicate
+                    for predicate in goal.success_predicates
+                    if isinstance(predicate, HealthAtLeast)
+                ),
+                None,
+            )
+            if health is not None:
+                return {
+                    "goal": goal,
+                    "kind": "food-recovery",
+                    "predicate": health,
+                    "food_predicates": tuple(
+                        predicate
+                        for predicate in goal.success_predicates
+                        if isinstance(predicate, FoodAtLeast)
+                    ),
+                    "completed_steps": 0,
+                }
         combat = next(
             (
                 predicate
@@ -106,6 +135,8 @@ class BuiltinMissionStrategy:
                 code=str(failure),
                 message="Goal is not handled by the closed builtin catalog",
             )
+        if state["kind"] == "food-recovery":
+            return propose_food_recovery(state, observation)
         if state["kind"] == "combat":
             return self._propose_combat(state, observation)
         if state["kind"] == "travel":
@@ -114,6 +145,7 @@ class BuiltinMissionStrategy:
 
     def _propose_travel(self, state: dict) -> StrategyDecision:
         predicate: LocationReached = state["predicate"]
+        budget = self._execution_budget
         if state["completed_steps"] >= 1:
             return Complete(output={"builtin_kind": "travel"})
         try:
@@ -129,7 +161,10 @@ class BuiltinMissionStrategy:
             maximum_cost=BudgetUsage(
                 max_actions=1,
                 max_strategy_attempts=1,
-                max_travel_distance=64,
+                max_travel_distance=budget.max_travel_distance if budget else 64,
+                max_blocks_changed=budget.max_blocks_changed if budget else 0,
+                max_damage_taken=budget.max_damage_taken if budget else 0,
+                resource_consumption=budget.resource_consumption if budget else {},
             ),
         )
 
@@ -224,8 +259,36 @@ class BuiltinMissionStrategy:
                 blueprint,
                 BlueprintBinding(origin=origin, materials={}),
             )
+            if blueprint.blueprint_id == "nether-portal-v1":
+                compiled = compiled.model_copy(
+                    update={
+                        "steps": tuple(
+                            step
+                            for step in compiled.steps
+                            if step.block_id != "minecraft:nether_portal"
+                        ),
+                    }
+                )
             state["compiled_blueprint"] = compiled
         index = state["completed_steps"]
+        if compiled.blueprint_id == "nether-portal-v1" and index == len(compiled.steps):
+            x, y, z = compiled.origin
+            return ExecuteStep(
+                capability="goto",
+                parameters={"x": x + 1, "y": y, "z": z + 2},
+                maximum_cost=BudgetUsage(max_actions=1, max_travel_distance=8),
+            )
+        if compiled.blueprint_id == "nether-portal-v1" and index == len(compiled.steps) + 1:
+            x, y, z = compiled.origin
+            return ExecuteStep(
+                capability="ignite_portal",
+                parameters={"x": x, "y": y, "z": z},
+                maximum_cost=BudgetUsage(
+                    max_actions=1,
+                    max_travel_distance=8,
+                    max_blocks_changed=6,
+                ),
+            )
         if index >= len(compiled.steps):
             return Complete(
                 output={
@@ -240,6 +303,7 @@ class BuiltinMissionStrategy:
             maximum_cost=BudgetUsage(
                 max_actions=1,
                 max_blocks_changed=len(placement.effect_positions),
+                max_travel_distance=8 if compiled.blueprint_id == "nether-portal-v1" else 0,
             ),
         )
 

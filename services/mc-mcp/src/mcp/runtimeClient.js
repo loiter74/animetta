@@ -62,16 +62,32 @@ export class BotRuntimeClient {
     await this.waitForEvent((event) => event.type === 'login', timeoutMs);
   }
 
-  async stop() {
+  async stop({ timeoutMs = 5_000 } = {}) {
     const child = this.process;
-    this.process = null;
-    if (!child || child.exitCode !== null) return;
-    child.kill();
-    await Promise.race([
-      new Promise((resolve) => child.once('exit', resolve)),
-      new Promise((resolve) => setTimeout(resolve, 5_000)),
-    ]);
-    if (child.exitCode === null) child.kill('SIGKILL');
+    if (!child) return;
+    const hasExited = () => child.exitCode != null || child.signalCode != null;
+    const waitForExit = () => new Promise((resolve) => {
+      if (hasExited()) { resolve(true); return; }
+      let timer;
+      const finish = (exited) => {
+        clearTimeout(timer);
+        child.removeListener('exit', onExit);
+        resolve(exited);
+      };
+      const onExit = () => finish(true);
+      child.once('exit', onExit);
+      timer = setTimeout(() => finish(false), timeoutMs);
+    });
+    if (!hasExited()) {
+      const gracefulExit = waitForExit();
+      child.kill();
+      if (!await gracefulExit) {
+        const forcedExit = waitForExit();
+        child.kill('SIGKILL');
+        if (!await forcedExit) throw new Error('RUNTIME_STOP_TIMEOUT');
+      }
+    }
+    if (this.process === child) this.process = null;
   }
 
   async send(action, params = {}, timeoutMs = 60_000) {

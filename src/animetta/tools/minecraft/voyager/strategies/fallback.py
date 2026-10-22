@@ -4,7 +4,11 @@ from __future__ import annotations
 
 from animetta.tools.gamebot.contracts.v2 import Observation
 from animetta.tools.minecraft.survival.registry import WorkflowRegistry
-from animetta.tools.minecraft.survival.workflows import WorkflowCheckpoint
+from animetta.tools.minecraft.survival.workflows import (
+    InventoryThreshold,
+    WorkflowCheckpoint,
+    WorkflowDefinition,
+)
 
 from ..goal_models import GoalSpec
 from .base import Complete, StrategyDecision, StrategyFailure
@@ -42,10 +46,25 @@ class FallbackStrategy:
         index = state["step_index"]
         while index < len(workflow.steps):
             checkpoint = workflow.checkpoints[index] if workflow.checkpoints else None
-            if checkpoint is None or not self._checkpoint_satisfied(checkpoint, observation):
+            if checkpoint is not None and self._checkpoint_satisfied(checkpoint, observation):
+                index += 1
+                state["step_index"] = index
+                continue
+            step = workflow.steps[index]
+            target = self._declared_collection_target(workflow, index)
+            if target is None or step.capability != "collect":
                 break
-            index += 1
-            state["step_index"] = index
+            remaining = target.quantity - self._inventory_count(observation, target.item)
+            if remaining <= 0:
+                index += 1
+                state["step_index"] = index
+                continue
+            count = step.parameters.get("count")
+            if isinstance(count, int) and count > remaining:
+                return step.model_copy(
+                    update={"parameters": {**step.parameters, "count": remaining}}
+                )
+            return step
         if index >= len(workflow.steps):
             return Complete(
                 output={
@@ -55,22 +74,52 @@ class FallbackStrategy:
             )
         return workflow.steps[index]
 
+    def accept_partial_result(
+        self,
+        state: dict,
+        before: Observation,
+        after: Observation,
+    ) -> dict | None:
+        """Accept a settled partial collect when the declared target made progress."""
+
+        workflow = state.get("workflow")
+        index = state.get("step_index")
+        if workflow is None or index is None or index >= len(workflow.steps):
+            return None
+        step = workflow.steps[index]
+        target = self._declared_collection_target(workflow, index)
+        if target is None or step.capability != "collect":
+            return None
+        if self._inventory_count(after, target.item) <= self._inventory_count(before, target.item):
+            return None
+        return {**state}
+
+    @staticmethod
+    def _declared_collection_target(
+        workflow: WorkflowDefinition,
+        index: int,
+    ) -> InventoryThreshold | None:
+        if not workflow.collection_targets:
+            return None
+        return workflow.collection_targets[index]
+
+    @staticmethod
+    def _inventory_count(observation: Observation, item: str) -> int:
+        resource = item.removeprefix("minecraft:")
+        return max(
+            (
+                count
+                for key, count in observation.inventory.items()
+                if key.removeprefix("minecraft:") == resource
+            ),
+            default=0,
+        )
+
     @staticmethod
     def _checkpoint_satisfied(checkpoint: WorkflowCheckpoint, observation: Observation) -> bool:
-        def inventory_count(item: str) -> int:
-            resource = item.removeprefix("minecraft:")
-            return max(
-                (
-                    count
-                    for key, count in observation.inventory.items()
-                    if key.removeprefix("minecraft:") == resource
-                ),
-                default=0,
-            )
-
         for clause in checkpoint.any_of:
             inventory_satisfied = all(
-                inventory_count(threshold.item) >= threshold.quantity
+                FallbackStrategy._inventory_count(observation, threshold.item) >= threshold.quantity
                 for threshold in clause.inventory_all
             )
             depth_satisfied = clause.maximum_y is None or (
