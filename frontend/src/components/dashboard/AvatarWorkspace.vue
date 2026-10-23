@@ -6,6 +6,11 @@ import {
   type AvatarPreviewState,
 } from '@/shared/live2d/previewContract'
 import { resolveLive2DModelProfile } from '@/shared/live2d/modelProfiles'
+import { resolveCandidateModelProfile } from '@/review/candidate-model'
+
+const props = defineProps<{ candidateModelUrl?: string }>()
+
+const PREVIEW_SRC = '/live.html?review=1&scene=empty&avatar=whale-maid-v1&media=muted&avatarDebug=1'
 
 const preview = ref<HTMLIFrameElement | null>(null)
 const state = ref<AvatarPreviewState | null>(null)
@@ -13,6 +18,15 @@ const selectedEmotion = ref('neutral')
 const waiting = ref(false)
 const profile = resolveLive2DModelProfile('whale-maid-v1')
 const expressions = Object.entries(profile.expressions ?? {})
+const previewSrc = computed(() => {
+  const candidate = props.candidateModelUrl
+  if (!candidate) return PREVIEW_SRC
+  const search = new URLSearchParams(PREVIEW_SRC.slice(PREVIEW_SRC.indexOf('?') + 1))
+  search.set('model', candidate)
+  const resolved = resolveCandidateModelProfile(profile, search)
+  if (resolved.modelUrl === profile.modelUrl) return PREVIEW_SRC
+  return `${PREVIEW_SRC}&model=${encodeURIComponent(resolved.modelUrl)}`
+})
 const ready = computed(() => state.value?.loaded === true)
 const expressionLabel = computed(
   () => profile.expressions?.[state.value?.expression ?? '']?.label ?? '等待预览',
@@ -103,7 +117,7 @@ onUnmounted(() => window.removeEventListener('message', onPreviewMessage))
       >
         <iframe
           ref="preview"
-          src="/live.html?review=1&scene=empty&avatar=whale-maid-v1&media=muted&avatarDebug=1"
+          :src="previewSrc"
           title="立绘调试预览"
           class="block h-full w-full border-0"
           @load="onPreviewLoad"

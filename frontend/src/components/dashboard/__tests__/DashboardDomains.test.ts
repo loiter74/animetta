@@ -201,6 +201,32 @@ describe('dashboard domain workspaces', () => {
     }
   })
 
+  it('keeps the formal preview entrypoint unchanged and only appends whitelisted candidate models', () => {
+    const formalSrc =
+      '/live.html?review=1&scene=empty&avatar=whale-maid-v1&media=muted&avatarDebug=1'
+    const candidate = '/.zcode/whale-maid-v26/whale-maid-v26.model3.json'
+
+    const formal = mount(AvatarWorkspace)
+    expect(formal.get('iframe').attributes('src')).toBe(formalSrc)
+    formal.unmount()
+
+    const overridden = mount(AvatarWorkspace, { props: { candidateModelUrl: candidate } })
+    expect(overridden.get('iframe').attributes('src')).toBe(
+      `${formalSrc}&model=${encodeURIComponent(candidate)}`,
+    )
+    overridden.unmount()
+
+    for (const invalid of [
+      'https://unrelated.example/whale-maid-v26.model3.json',
+      '/live2d/whale-maid-v1/whale-maid-v1.model3.json',
+      '',
+    ]) {
+      const fallback = mount(AvatarWorkspace, { props: { candidateModelUrl: invalid } })
+      expect(fallback.get('iframe').attributes('src')).toBe(formalSrc)
+      fallback.unmount()
+    }
+  })
+
   it('reports a disconnected private sandbox without falling back to a fake reply', async () => {
     socket.connected = false
     const wrapper = mount(ConversationSandbox, { props: { modelValue: '验证这条记忆' } })
