@@ -680,6 +680,23 @@ export function incompleteCollectionError(blockType, dropItem, collected, reques
 
 export async function withCollectionEvidence(bot, collect) {
   const resourceMutations = [];
+  const dugMutations = [];
+  const removedBlocks = new Map();
+  const onBlockUpdate = (before, after) => {
+    if (before?.position && before.type !== 0 && after?.type === 0) {
+      removedBlocks.set(collectionBlockKey(before), before);
+    }
+  };
+  const onDiggingCompleted = after => {
+    // Mineflayer emits the new air block, after the general blockUpdate event.
+    const key = collectionBlockKey(after);
+    const block = removedBlocks.get(key);
+    if (!block) return;
+    removedBlocks.delete(key);
+    dugMutations.push(collectionResourceMutation(
+      block.name, block.position, bot.game?.dimension || 'minecraft:overworld',
+    ));
+  };
   let previousPosition = { ...bot.entity.position };
   let previousHealth = bot.health;
   let travel = 0;
@@ -697,17 +714,32 @@ export async function withCollectionEvidence(bot, collect) {
     damage += Math.max(0, previousHealth - bot.health);
     previousHealth = bot.health;
   };
-  const evidence = () => ({
-    explained_mutations: resourceMutations,
-    budget_usage: {
-      max_actions: 1,
-      max_travel_distance: travel,
-      max_blocks_changed: resourceMutations.length,
-      max_damage_taken: damage,
-    },
-  });
+  const evidence = () => {
+    // Native shaft/pathfinder excavation also changes blocks. Explicit target
+    // annotations describe the same digs; match each event once, not twice.
+    const unmatchedDigs = [...dugMutations];
+    const annotations = resourceMutations.filter(mutation => {
+      const index = unmatchedDigs.findIndex(dig => dig.subject === mutation.subject
+        && dig.delta === mutation.delta && dig.details.block_type === mutation.details?.block_type);
+      if (index < 0) return true;
+      unmatchedDigs.splice(index, 1);
+      return false;
+    });
+    const mutations = [...dugMutations, ...annotations];
+    return {
+      explained_mutations: mutations,
+      budget_usage: {
+        max_actions: 1,
+        max_travel_distance: travel,
+        max_blocks_changed: mutations.length,
+        max_damage_taken: damage,
+      },
+    };
+  };
   bot.on('move', onMove);
   bot.on('health', onHealth);
+  bot.on('blockUpdate', onBlockUpdate);
+  bot.on('diggingCompleted', onDiggingCompleted);
   try {
     const output = await collect(resourceMutations);
     onMove();
@@ -716,10 +748,15 @@ export async function withCollectionEvidence(bot, collect) {
   } catch (error) {
     onMove();
     onHealth();
-    Object.assign(error, evidence());
-    throw error;
+    // AbortSignal.throwIfAborted() may throw a string reason. Attaching fields
+    // to that primitive cannot preserve them for the receipt boundary.
+    const failure = error instanceof Error ? error : new Error(String(error), { cause: error });
+    Object.assign(failure, evidence());
+    throw failure;
   } finally {
     bot.removeListener('move', onMove);
     bot.removeListener('health', onHealth);
+    bot.removeListener('blockUpdate', onBlockUpdate);
+    bot.removeListener('diggingCompleted', onDiggingCompleted);
   }
 }

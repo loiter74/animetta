@@ -356,6 +356,7 @@ function guardBotAction(
     let settled = false;
     let lifecycleError = null;
     let invocationSettlement = Promise.resolve();
+    let invocationEvidence;
     const collectionBudget = context.capability === 'collect' ? context.budget : null;
     let previousPosition = { ...bot.entity?.position };
     let previousHealth = bot.health;
@@ -433,23 +434,28 @@ function guardBotAction(
       if (settled) return;
       settled = true;
       cleanup();
-      if (!quiet) {
-        const settlementError = new OperationScopeError(
+      const failure = quiet
+        ? lifecycleError || new OperationScopeError('ACTION_CANCELLED', 'Action cancelled')
+        : new OperationScopeError(
           'CANCEL_SETTLEMENT_TIMEOUT',
           'Mineflayer operation did not settle after cancellation',
           { world_may_have_changed: true, cause_code: lifecycleError?.code ?? 'ACTION_CANCELLED',
             cause_details: lifecycleError?.details ?? {} },
         );
-        Object.defineProperty(settlementError, 'operationSettlement', {
+      // Both successful and rejected native settlements can carry partial work.
+      // Keep the cancellation outcome, but charge the evidence after braking.
+      for (const key of ['budget_usage', 'explained_mutations']) {
+        if (invocationEvidence?.[key] !== undefined) failure[key] = invocationEvidence[key];
+      }
+      if (!quiet) {
+        Object.defineProperty(failure, 'operationSettlement', {
           value: Promise.all([
             invocationSettlement,
             context.operation_scope.waitForEventualQuiescence({ includeContainers }),
           ]).then(() => {}),
         });
-        reject(settlementError);
-        return;
       }
-      reject(lifecycleError || new OperationScopeError('ACTION_CANCELLED', 'Action cancelled'));
+      reject(failure);
     };
     bot.once('death', onDeath);
     bot.once('end', onEnd);
@@ -468,13 +474,9 @@ function guardBotAction(
     if (context.signal?.aborted) return;
     const invocationPromise = Promise.resolve().then(invoke);
     invocationSettlement = invocationPromise.then(
-      () => undefined,
+      (value) => { invocationEvidence = value; },
       (error) => {
-        if (lifecycleError) {
-          for (const key of ['budget_usage', 'explained_mutations']) {
-            if (error?.[key] !== undefined) lifecycleError[key] = error[key];
-          }
-        }
+        invocationEvidence = error;
         return error?.operationSettlement ?? undefined;
       },
     );

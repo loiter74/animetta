@@ -312,6 +312,32 @@ test('collection evidence charges partial work and removes event listeners', asy
   assert.equal(bot.listenerCount('health'), 0);
 });
 
+test('collection evidence counts native access excavation without double charging target annotations', async () => {
+  const bot = new EventEmitter();
+  bot.entity = { position: { x: 0, y: 64, z: 0 } };
+  bot.health = 20;
+  const target = { name: 'iron_ore', type: 15, position: { x: 1, y: 64, z: 0 } };
+  const access = { name: 'stone', type: 1, position: { x: 1, y: 65, z: 0 } };
+  const controller = new AbortController();
+  await assert.rejects(collection.withCollectionEvidence(bot, async (mutations) => {
+    for (const block of [access, target]) {
+      const air = { name: 'air', type: 0, position: block.position };
+      bot.emit('blockUpdate', block, air);
+      bot.emit('diggingCompleted', air);
+    }
+    mutations.push(collection.collectionResourceMutation(target.name, target.position));
+    controller.abort('budget guard stopped collection');
+    controller.signal.throwIfAborted();
+  }), error => {
+    assert.equal(error.budget_usage.max_blocks_changed, 2);
+    assert.equal(error.explained_mutations.length, 2);
+    assert.equal(error.budget_usage.max_actions, 1);
+    return true;
+  });
+  assert.equal(bot.listenerCount('diggingCompleted'), 0);
+  assert.equal(bot.listenerCount('blockUpdate'), 0);
+});
+
 test('collection settlement rejects an apparently grounded position inside water', () => {
   const position = { floored: () => ({ x: 2, y: 58, z: 64 }) };
   const bot = {

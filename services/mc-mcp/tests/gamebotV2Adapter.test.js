@@ -300,6 +300,44 @@ test('collection damage immediately stops work without hiding a real budget over
   fixture.adapter.dispose();
 });
 
+for (const completion of ['throw-abort-reason', 'return-after-abort', 'external-cancel']) {
+  test(`interrupted collection keeps settled evidence: ${completion}`, async () => {
+    const mutation = { kind: 'block', subject: 'block:minecraft:overworld:0:64:1', delta: -1,
+      details: { block_type: 'minecraft:iron_ore' } };
+    const fixture = adapterFixture({ actions: {
+      collectWithEvidence: async (_block, _count, context) => withCollectionEvidence(fixture.bot, async (mutations) => {
+        mutations.push(mutation);
+        fixture.bot.entity.position.x = 6;
+        fixture.bot.emit('move');
+        if (completion === 'external-cancel') {
+          const acknowledgement = await fixture.adapter.runtime.cancelAction({
+            schema_version: '2', runtime_instance_id: fixture.adapter.runtimeInstanceId,
+            correlation_id: 'settled-external-cancel', reason: 'controller stop',
+          });
+          assert.equal(acknowledgement.accepted, true);
+        }
+        // Final movement while braking is part of the same action's bill.
+        fixture.bot.entity.position.x = 6.5;
+        fixture.bot.emit('move');
+        if (completion !== 'return-after-abort') context.signal.throwIfAborted();
+        return 'collected before cancellation settled';
+      }),
+    } });
+    const action = request(fixture.adapter, 'collect', { block_type: 'iron_ore', count: 7 }, `settled-${completion}`);
+    action.remaining_budget = budget({ max_travel_distance: completion === 'external-cancel' ? 16 : 8 });
+    const receipt = await fixture.adapter.runtime.executeAction(action);
+    assert.equal(receipt.outcome, completion === 'external-cancel' ? 'cancelled' : 'error');
+    assert.equal(receipt.error?.code, completion === 'external-cancel' ? undefined : 'BUDGET_EXHAUSTED');
+    assert.equal(receipt.budget_usage.max_actions, 1);
+    assert.equal(receipt.budget_usage.max_travel_distance, 6.5);
+    assert.equal(receipt.budget_usage.max_blocks_changed, 1);
+    assert.deepEqual(receipt.explained_mutations.filter(item => item.kind === 'block'), [mutation]);
+    assert.equal(fixture.bot.listenerCount('move'), 0);
+    assert.equal(fixture.bot.listenerCount('health'), 0);
+    fixture.adapter.dispose();
+  });
+}
+
 test('collection preserves ordinary work within travel and damage budgets', async () => {
   const fixture = adapterFixture({ actions: {
     collectWithEvidence: async () => withCollectionEvidence(fixture.bot, async () => {
