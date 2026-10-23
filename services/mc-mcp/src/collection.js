@@ -36,6 +36,8 @@ export function configureDryNavigation(movements, bot, { allowSurfaceSwimming = 
     const feet = new Vec3(position.x, position.y, position.z);
     const body = bot.blockAt(feet);
     const head = bot.blockAt(feet.offset(0, 1, 0));
+    // Leaves can decay or be removed while approaching a trunk; use solid terrain.
+    if (bot.blockAt(feet.offset(0, -1, 0))?.name?.endsWith('_leaves')) return Infinity;
     if (isLavaBlock(body) || isLavaBlock(head) || isWaterBlock(head)) return Infinity;
     if (!allowSurfaceSwimming && isWaterBlock(body)
       && bot.blockAt(feet.offset(0, -1, 0))?.boundingBox !== 'block') return Infinity;
@@ -227,12 +229,21 @@ export function collectionBlockKey(block) {
 }
 
 export function collectionApproachGoal(bot, block) {
-  return new pathfinderPkg.goals.GoalLookAtBlock(block.position, bot.world, {
-    reach: 4.5, entityHeight: bot.entity?.eyeHeight || 1.62,
+  const reach = 4.5;
+  const entityHeight = bot.entity?.eyeHeight || 1.62;
+  // SDK 2.4.5's coarse range check compares feet to target + eye height,
+  // rejecting reachable overhead wood. Relax only that coarse check; actual
+  // line-of-sight rays still use the ordinary survival reach of 4.5 blocks.
+  return new pathfinderPkg.goals.GoalLookAtBlock(block.position, {
+    raycast: (origin, direction) => bot.world.raycast(origin, direction, reach),
+  }, {
+    reach: reach + 2 * entityHeight + Math.sqrt(3), entityHeight,
   });
 }
 
 export function collectionExcavationGoal(block) {
+  // Surface wood is harvested from visible reach, without climbing to touch it.
+  if (block.name?.endsWith('_log') || block.name?.endsWith('_wood')) return null;
   const { x, y, z } = block.position;
   return new pathfinderPkg.goals.GoalGetToBlock(x, y, z);
 }
@@ -414,6 +425,13 @@ export function collectionDigSafety(bot, block) {
   if (block?.name === 'obsidian') return obsidianDigSafety(bot, block);
   if (!block?.position || typeof bot.blockAt !== 'function') {
     return { safe: false, reason_code: 'REGION_NOT_LOADED' };
+  }
+  const position = bot.entity?.position;
+  if (position && Math.floor(position.x) === block.position.x
+    && Math.floor(position.z) === block.position.z
+    && Math.floor(position.y) - 1 === block.position.y
+    && bot.blockAt(offsetPosition(block.position, 0, -1, 0))?.boundingBox !== 'block') {
+    return { safe: false, reason_code: 'UNSUPPORTED_DROP' };
   }
   for (const [dx, dy, dz] of NEIGHBOR_OFFSETS) {
     const neighbor = bot.blockAt(offsetPosition(block.position, dx, dy, dz));

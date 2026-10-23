@@ -6,6 +6,7 @@ import minecraftData from 'minecraft-data';
 import injectEntities from 'mineflayer/lib/plugins/entities.js';
 
 import { createGameBotV2Adapter } from '../src/runtime/gamebotV2Adapter.js';
+import { withCollectionEvidence } from '../src/collection.js';
 
 
 function budget(overrides = {}) {
@@ -246,6 +247,90 @@ test('partial collection receipt preserves charged work and rejects over-budget 
     assert.equal(receipt.error.code, blocks === 4 ? 'PARTIAL_COLLECT' : 'BUDGET_CONTRACT_VIOLATION');
     adapter.close?.();
   }
+});
+
+test('collection stops cumulative backtracking before travel budget and keeps actual usage', async () => {
+  let moves = 0;
+  let completed = false;
+  const fixture = adapterFixture({ actions: {
+    collectWithEvidence: async (_block, _count, context) => withCollectionEvidence(fixture.bot, async () => {
+      for (; moves < 12; moves++) {
+        await context.operation_scope.wait(1);
+        fixture.bot.entity.position.x = moves % 2 === 0 ? 1 : 0;
+        fixture.bot.emit('move');
+      }
+      completed = true;
+      return 'collected';
+    }),
+  } });
+  const action = request(fixture.adapter, 'collect', { block_type: 'oak_log', count: 8 }, 'travel-guard');
+  action.remaining_budget = budget({ max_travel_distance: 8 });
+  const receipt = await fixture.adapter.runtime.executeAction(action);
+  assert.equal(receipt.error?.code, 'BUDGET_EXHAUSTED');
+  assert.equal(receipt.outcome, 'error');
+  assert.equal(receipt.reconciliation, 'accepted');
+  assert.equal(receipt.budget_usage.max_travel_distance, 6);
+  assert.equal(completed, false);
+  assert.equal(moves, 6);
+  assert.equal(fixture.bot.listenerCount('move'), 0);
+  assert.equal(fixture.bot.listenerCount('health'), 0);
+  fixture.adapter.dispose();
+});
+
+test('collection damage immediately stops work without hiding a real budget overage', async () => {
+  let continued = false;
+  const fixture = adapterFixture({ actions: {
+    collectWithEvidence: async (_block, _count, context) => withCollectionEvidence(fixture.bot, async () => {
+      fixture.bot.health = 18;
+      fixture.bot.emit('health');
+      await context.operation_scope.wait(1);
+      continued = true;
+      return 'must not finish';
+    }),
+  } });
+  const action = request(fixture.adapter, 'collect', { block_type: 'oak_log', count: 8 }, 'damage-guard');
+  action.remaining_budget = budget({ max_damage_taken: 0 });
+  const receipt = await fixture.adapter.runtime.executeAction(action);
+  assert.equal(continued, false);
+  assert.equal(receipt.budget_usage.max_damage_taken, 2);
+  assert.equal(receipt.outcome, 'unknown');
+  assert.equal(receipt.error.code, 'BUDGET_CONTRACT_VIOLATION');
+  assert.equal(fixture.bot.listenerCount('move'), 0);
+  assert.equal(fixture.bot.listenerCount('health'), 0);
+  fixture.adapter.dispose();
+});
+
+test('collection preserves ordinary work within travel and damage budgets', async () => {
+  const fixture = adapterFixture({ actions: {
+    collectWithEvidence: async () => withCollectionEvidence(fixture.bot, async () => {
+      fixture.bot.entity.position.x = 1;
+      fixture.bot.emit('move');
+      fixture.bot.health = 19;
+      fixture.bot.emit('health');
+      return 'collected';
+    }),
+  } });
+  const action = request(fixture.adapter, 'collect', { block_type: 'oak_log', count: 1 }, 'within-budget');
+  action.remaining_budget = budget({ max_travel_distance: 8, max_damage_taken: 1 });
+  const receipt = await fixture.adapter.runtime.executeAction(action);
+  assert.equal(receipt.outcome, 'success');
+  assert.equal(receipt.budget_usage.max_travel_distance, 1);
+  assert.equal(receipt.budget_usage.max_damage_taken, 1);
+  assert.equal(fixture.bot.listenerCount('move'), 0);
+  assert.equal(fixture.bot.listenerCount('health'), 0);
+  fixture.adapter.dispose();
+});
+
+test('collection refuses to start with less than the movement stopping reserve', async () => {
+  let started = false;
+  const { adapter } = adapterFixture({ actions: { collectWithEvidence: async () => { started = true; } } });
+  const action = request(adapter, 'collect', { block_type: 'oak_log', count: 8 }, 'no-travel-room');
+  action.remaining_budget = budget({ max_travel_distance: 1 });
+  const receipt = await adapter.runtime.executeAction(action);
+  assert.equal(started, false);
+  assert.equal(receipt.error?.code, 'BUDGET_EXHAUSTED');
+  assert.equal(receipt.budget_usage.max_travel_distance, 0);
+  adapter.dispose();
 });
 
 

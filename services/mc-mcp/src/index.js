@@ -834,11 +834,12 @@ async function _collectInner(block_type, count, mcData, context = {}) {
 
     // Reach a visible block face, rather than stopping above a buried target.
     const approachGoal = collectionApproachGoal(bot, block);
+    const excavationGoal = collectionExcavationGoal(block);
     try {
       // Visibility goals inspect the current world, so an enclosed ore cannot
       // satisfy them until a coordinate goal has first excavated its access.
-      if (block.name !== 'obsidian' && !approachGoal.isEnd(bot.entity.position.floored())) {
-        await bot.pathfinder.goto(collectionExcavationGoal(block));
+      if (block.name !== 'obsidian' && excavationGoal && !approachGoal.isEnd(bot.entity.position.floored())) {
+        await bot.pathfinder.goto(excavationGoal);
       }
       if (!approachGoal.isEnd(bot.entity.position.floored())) {
         await bot.pathfinder.goto(approachGoal);

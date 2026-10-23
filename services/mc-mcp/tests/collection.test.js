@@ -51,6 +51,60 @@ test('buried target access can be planned before its current-world visibility be
   assert.equal(visibility.isEnd(contact), true);
 });
 
+test('surface wood uses visible reach without forcing a climb into the tree', () => {
+  const target = { name: 'oak_log', position: new Vec3(0, 68, 0) };
+  const standing = new Vec3(3, 64, 0);
+  const bot = { world: { raycast: (origin, _direction, range) => {
+    assert.equal(range, 4.5, 'actual survival reach must not increase');
+    return origin.distanceTo(target.position.offset(0.5, 0.5, 0.5)) <= range ? target : null;
+  } }, entity: { eyeHeight: 1.62 } };
+  assert.equal(collection.collectionApproachGoal(bot, target).isEnd(standing), true);
+  assert.equal(collection.collectionApproachGoal(bot, target).isEnd(new Vec3(7, 64, 0)), false);
+  assert.equal(new pathfinderPkg.goals.GoalGetToBlock(0, 68, 0).isEnd(standing), false);
+  assert.equal(collection.collectionExcavationGoal(target), null);
+  assert.ok(collection.collectionExcavationGoal({ name: 'iron_ore', position: target.position }));
+});
+
+test('real SDK rejects a jump onto leaf support but keeps a solid one-block ascent', () => {
+  const registry = minecraftData('1.21');
+  const Block = prismarineBlock(registry);
+  let support = 'oak_leaves';
+  const bot = {
+    registry, game: { minY: -64 }, entity: { effects: {} },
+    inventory: { items: () => [] }, pathfinder: { bestHarvestTool: () => null },
+    blockAt(position) {
+      const name = position.y < 64 ? 'stone'
+        : position.equals(new Vec3(1, 64, 0)) ? support : 'air';
+      const block = Block.fromStateId(registry.blocksByName[name].defaultState);
+      block.position = position;
+      return block;
+    },
+  };
+  const movements = collection.configureDryNavigation(new pathfinderPkg.Movements(bot), bot);
+  const node = { x: 0, y: 64, z: 0, remainingBlocks: 0 };
+  const canopy = [];
+  movements.getMoveJumpUp(node, { x: 1, z: 0 }, canopy);
+  assert.deepEqual(canopy, []);
+  support = 'stone';
+  const ground = [];
+  movements.getMoveJumpUp(node, { x: 1, z: 0 }, ground);
+  assert.equal(ground[0]?.y, 65);
+});
+
+test('ordinary digging cannot remove support over a long fall, including a canopy leaf', async () => {
+  const bot = {
+    entity: { position: new Vec3(0.5, 93, 0.5) },
+    blockAt: position => ({ name: position.y < 86 ? 'stone' : 'air', position,
+      boundingBox: position.y < 86 ? 'block' : 'empty' }),
+    dig: () => assert.fail('must not remove the only support over a seven-block drop'),
+  };
+  await assert.rejects(digCollectionBlock(bot, { name: 'oak_leaves', position: new Vec3(0, 92, 0) }),
+    error => error.code === 'UNSAFE_AREA' && error.reason_code === 'UNSUPPORTED_DROP');
+  const oneStep = { name: 'stone', position: new Vec3(0, 86, 0) };
+  bot.entity.position.y = 87;
+  assert.equal(collection.collectionDigSafety(bot, oneStep).safe, true);
+});
+
 test('collection pickup ignores unrelated loot and items without decoded metadata', () => {
   const bot = { entity: { position: { x: 0, y: 64, z: 0 } }, entities: {
     1: { name: 'item', position: { x: 1, y: 64, z: 0 }, getDroppedItem: () => ({ name: 'stick' }) },

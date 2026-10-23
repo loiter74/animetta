@@ -356,14 +356,21 @@ function guardBotAction(
     let settled = false;
     let lifecycleError = null;
     let invocationSettlement = Promise.resolve();
+    const collectionBudget = context.capability === 'collect' ? context.budget : null;
+    let previousPosition = { ...bot.entity?.position };
+    let previousHealth = bot.health;
+    let travel = 0;
+    let damage = 0;
     const cleanup = () => {
       bot.removeListener('death', onDeath);
       bot.removeListener('end', onEnd);
       bot.removeListener('breath', onBreath);
+      bot.removeListener('move', onMove);
+      bot.removeListener('health', onHealth);
       context.signal?.removeEventListener('abort', onAbort);
     };
-    const fail = (code, message) => {
-      if (settled) return;
+    const fail = (code, message, details = {}) => {
+      if (settled || lifecycleError) return;
       const error = new Error(message);
       error.code = code;
       error.retryable = true;
@@ -371,10 +378,35 @@ function guardBotAction(
       error.details = {
         oxygen_level: ownOxygenLevel(bot),
         position: position ? { x: position.x, y: position.y, z: position.z } : null,
+        ...details,
       };
       lifecycleError ??= error;
       abortLifecycle(message);
       void Promise.resolve(abortActive()).catch(() => {});
+    };
+    const checkCollectionBudget = () => {
+      if (!collectionBudget) return;
+      // Dry navigation walks without sprinting/parkour. Stop two blocks early
+      // for the current physics tick and braking; never alter charged usage.
+      if (travel >= Math.max(0, collectionBudget.max_travel_distance - 2)
+        || damage > collectionBudget.max_damage_taken) {
+        fail('BUDGET_EXHAUSTED', '采集接近移动预算上限或已超过伤害预算，已停止当前动作。', {
+          travel_distance: travel, damage_taken: damage, stopping_reserve: 2,
+        });
+      }
+    };
+    const onMove = () => {
+      const position = bot.entity?.position;
+      if (!position) return;
+      travel += Math.hypot(position.x - previousPosition.x,
+        position.y - previousPosition.y, position.z - previousPosition.z);
+      previousPosition = { ...position };
+      checkCollectionBudget();
+    };
+    const onHealth = () => {
+      damage += Math.max(0, previousHealth - bot.health);
+      previousHealth = bot.health;
+      checkCollectionBudget();
     };
     const onDeath = () => fail('BOT_DIED', 'Bot died during capability execution');
     const onBreath = () => {
@@ -422,12 +454,17 @@ function guardBotAction(
     bot.once('death', onDeath);
     bot.once('end', onEnd);
     bot.on('breath', onBreath);
+    if (collectionBudget) {
+      bot.on('move', onMove);
+      bot.on('health', onHealth);
+    }
     context.signal?.addEventListener('abort', onAbort, { once: true });
     if (context.signal?.aborted) {
       void onAbort();
       return;
     }
     onBreath();
+    checkCollectionBudget();
     if (context.signal?.aborted) return;
     const invocationPromise = Promise.resolve().then(invoke);
     invocationSettlement = invocationPromise.then(
