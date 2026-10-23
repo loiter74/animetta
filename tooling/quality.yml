@@ -60,6 +60,7 @@ input_sets:
   frontend-toolchain:
     paths:
       - frontend/.npmrc
+      - frontend/.prettierignore
       - frontend/package.json
       - frontend/pnpm-lock.yaml
       - frontend/pnpm-workspace.yaml
@@ -1828,6 +1829,7 @@ components:
   frontend-source:
     domain: frontend
     paths:
+      - frontend/.prettierignore
       - frontend/src/**
       - frontend/tests/**
       - frontend/electron/**

@@ -3,6 +3,7 @@ import { io } from 'socket.io-client'
 import * as PIXI from 'pixi.js'
 import { mountTtsFailoverReviewNotification } from '@/tts-failover/main'
 import { DisposerStack } from '@/review/disposable'
+import { resolveCandidateModelProfile } from '@/review/candidate-model'
 import { bootstrapLiveSession } from './bootstrap'
 import { createLiveAudioController } from './audio'
 import { createLiveBgmController } from './bgm'
@@ -79,7 +80,10 @@ const session = bootstrapLiveSession({
 
 const pageDisposers = new DisposerStack()
 let pageDisposed = false
-const avatarProfile = resolveLive2DModelProfile(search.get('avatar'))
+const avatarProfile = resolveCandidateModelProfile(
+  resolveLive2DModelProfile(search.get('avatar')),
+  search,
+)
 const stage = createLive2DStage(session.socket, {
   idleVitality: true,
   profile: avatarProfile,
