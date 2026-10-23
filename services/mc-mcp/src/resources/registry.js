@@ -17,6 +17,10 @@ export const TOOL_TIER = {
   netherite: 5,
 };
 
+export const OVERWORLD_WOOD_TYPES = Object.freeze([
+  'oak', 'spruce', 'birch', 'jungle', 'acacia', 'dark_oak', 'mangrove', 'cherry',
+]);
+
 // canonical 资源定义。canonical = 搜索目标（block 形式）。
 // category ∈ surface | shore | common_underground | deep_ore（决定策略集）。
 export const REGISTRY = {
@@ -135,6 +139,16 @@ export const REGISTRY = {
     timeBudgetMs: 40000,
   },
 };
+
+// Each concrete wood request remains species-exact, with the existing oak
+// search limits. Choosing substitutable wood belongs to the survival planner.
+for (const wood of OVERWORLD_WOOD_TYPES.filter(wood => wood !== 'oak')) {
+  const log = `${wood}_log`;
+  REGISTRY[log] = {
+    ...REGISTRY.oak_log,
+    canonical: log, aliases: [log, wood], blocks: [log], drops: [log],
+  };
+}
 
 // 别名 → canonical 查找表（含 canonical 自身）。
 const ALIAS_TO_CANONICAL = {};

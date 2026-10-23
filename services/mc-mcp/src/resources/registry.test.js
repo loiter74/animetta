@@ -128,7 +128,7 @@ for (const name of [
 }
 
 // 元数据完整性（T3.3）
-assert(Object.keys(REGISTRY).length === 10, '10 canonical resources');
+assert(Object.keys(REGISTRY).length === 17, '17 canonical resources including eight exact wood species');
 assert(REGISTRY.obsidian.requiredTool === 'diamond_pickaxe', 'obsidian needs diamond_pickaxe');
 assert(normalizeResourceName('flint') === 'gravel', 'flint resolves to its gravel source');
 for (const [canonical, def] of Object.entries(REGISTRY)) {

@@ -16,7 +16,10 @@ from animetta.tools.minecraft.core.assembly import _budget_policy
 from animetta.tools.minecraft.core.config import MinecraftConfig
 from animetta.tools.minecraft.survival.mainline import build_nether_portal_mission
 from animetta.tools.minecraft.survival.registry import WorkflowRegistry
-from animetta.tools.minecraft.survival.workflows import nether_preparation_workflows
+from animetta.tools.minecraft.survival.workflows import (
+    WorkflowDefinition,
+    nether_preparation_workflows,
+)
 from animetta.tools.minecraft.voyager.budget import (
     BudgetAccount,
     BudgetUsage,
@@ -31,6 +34,99 @@ MESSAGES = json.loads(
         encoding="utf-8"
     )
 )["messages"]
+
+
+@pytest.mark.parametrize("wood", ["spruce", "birch", "dark_oak", "mangrove", "cherry"])
+def test_wood_bootstrap_binds_observed_species_through_crafting_and_fuel(wood: str) -> None:
+    workflow = next(w for w in nether_preparation_workflows() if w.target == "nether_iron_kit")
+    registry = WorkflowRegistry()
+    registry.register(workflow)
+    strategy = FallbackStrategy(registry=registry)
+    mission = build_nether_portal_mission(mission_id="observed-wood")
+    state = strategy.prepare(mission.objectives[0].goal)
+    observation = Observation.model_validate(
+        {
+            **MESSAGES["Observation"],
+            "inventory": {},
+            "position": {"x": -48, "y": 68, "z": -193},
+            "visible_blocks": [
+                {"block_id": f"minecraft:{wood}_log", "position": {"x": -51, "y": 68, "z": -196}}
+            ],
+        }
+    )
+
+    first = strategy.propose(state, observation)
+    assert first.parameters == {"block_type": f"{wood}_log", "count": 8}
+    bound = state["workflow"]
+    assert bound.steps[1].parameters == {"recipe": f"{wood}_planks", "count": 32}
+    assert bound.steps[-1].parameters["fuel"] == f"{wood}_planks"
+    assert bound.collection_targets[0].item == f"{wood}_log"
+    assert bound.checkpoints[0].any_of[0].inventory_all[1].item == f"{wood}_planks"
+    assert [s.maximum_cost for s in bound.steps] == [s.maximum_cost for s in workflow.steps]
+    # Registered templates stay exact and reusable by a different command.
+    assert workflow.steps[0].parameters["block_type"] == "oak_log"
+    state = strategy.accept_result(state, {})
+    second = strategy.propose(
+        state, observation.model_copy(update={"inventory": {f"{wood}_log": 8}})
+    )
+    assert second.parameters == {"recipe": f"{wood}_planks", "count": 32}
+    assert state["workflow"] is bound
+
+
+def test_wood_bootstrap_prefers_carried_stock_and_preserves_partial_progress() -> None:
+    workflow = next(w for w in nether_preparation_workflows() if w.target == "nether_iron_kit")
+    registry = WorkflowRegistry()
+    registry.register(workflow)
+    strategy = FallbackStrategy(registry=registry)
+    mission = build_nether_portal_mission(mission_id="carried-wood")
+    state = strategy.prepare(mission.objectives[0].goal)
+    observation = Observation.model_validate(
+        {
+            **MESSAGES["Observation"],
+            "inventory": {"minecraft:birch_log": 4},
+            "visible_blocks": [
+                {"block_id": "minecraft:spruce_log", "position": {"x": 0, "y": 64, "z": 0}}
+            ],
+        }
+    )
+    decision = strategy.propose(state, observation)
+    assert decision.parameters == {"block_type": "birch_log", "count": 4}
+    after = observation.model_copy(update={"inventory": {"birch_log": 5}})
+    assert strategy.accept_partial_result(state, observation, after) is not None
+
+
+def test_wood_binding_chooses_nearest_observed_log_and_leaves_exact_workflows_unchanged() -> None:
+    workflow = next(w for w in nether_preparation_workflows() if w.target == "nether_iron_kit")
+    registry = WorkflowRegistry()
+    registry.register(workflow)
+    strategy = FallbackStrategy(registry=registry)
+    goal = build_nether_portal_mission(mission_id="nearest-wood").objectives[0].goal
+    observation = Observation.model_validate(
+        {
+            **MESSAGES["Observation"],
+            "inventory": {},
+            "position": {"x": 0, "y": 64, "z": 0},
+            "visible_blocks": [
+                {"block_id": "minecraft:oak_log", "position": {"x": 20, "y": 64, "z": 0}},
+                {"block_id": "minecraft:birch_leaves", "position": {"x": 1, "y": 64, "z": 0}},
+                {"block_id": "minecraft:spruce_log", "position": {"x": 3, "y": 64, "z": 0}},
+            ],
+        }
+    )
+    assert (
+        strategy.propose(strategy.prepare(goal), observation).parameters["block_type"]
+        == "spruce_log"
+    )
+    exact = WorkflowDefinition(
+        workflow_id="exact:oak", intent=goal.intent, target=goal.target, steps=workflow.steps[:1]
+    )
+    exact_registry = WorkflowRegistry()
+    exact_registry.register(exact)
+    exact_strategy = FallbackStrategy(registry=exact_registry)
+    assert (
+        exact_strategy.propose(exact_strategy.prepare(goal), observation).parameters["block_type"]
+        == "oak_log"
+    )
 
 
 def test_mainline_fits_finite_mission_authority_and_workflow_reservations() -> None:

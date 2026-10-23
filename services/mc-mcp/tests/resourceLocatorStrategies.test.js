@@ -2,10 +2,30 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ResourceMemory } from '../src/resources/memory.js';
 import { locateResource } from '../src/resources/locator.js';
+import { getResourceDefinition } from '../src/resources/registry.js';
 import {
   STRATEGIES,
   findNearestMatchingBlock,
 } from '../src/resources/strategies.js';
+
+test('species-specific wood search finds nearby spruce without moving or accepting it as oak', async () => {
+  const spruce = { name: 'spruce_log', type: 12, position: pos(-51, 68, -196) };
+  const bot = {
+    entity: { position: pos(-48, 68, -193) },
+    findBlock({ matching }) { return matching(spruce) ? spruce : null; },
+    pathfinder: { goto() { assert.fail('visible spruce requires no exploratory movement'); } },
+  };
+  const candidate = await locateResource(bot, 'spruce_log', {
+    mcData: { blocksByName: { oak_log: { id: 11 }, spruce_log: { id: 12 } } },
+  });
+  assert.equal(candidate.block, 'spruce_log');
+  assert.equal(candidate.resource, 'spruce_log');
+  assert.deepEqual(candidate.position, { x: -51, y: 68, z: -196 });
+  assert.deepEqual(getResourceDefinition('oak_log').blocks, ['oak_log']);
+  for (const field of ['maxDistance', 'attemptBudget', 'timeBudgetMs']) {
+    assert.equal(getResourceDefinition('spruce_log')[field], getResourceDefinition('oak_log')[field]);
+  }
+});
 
 test('locator retains a bounded history of strategy failures in its terminal error', async () => {
   const original = STRATEGIES.memory_first;

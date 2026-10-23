@@ -43,6 +43,7 @@ class WorkflowDefinition(BaseModel):
     steps: tuple[ExecuteStep, ...]
     checkpoints: tuple[WorkflowCheckpoint | None, ...] = ()
     collection_targets: tuple[InventoryThreshold | None, ...] = ()
+    adaptive_wood: bool = False
 
     @model_validator(mode="after")
     def align_checkpoints(self) -> WorkflowDefinition:
@@ -186,6 +187,7 @@ def iron_survival_workflow() -> WorkflowDefinition:
 
     return WorkflowDefinition(
         workflow_id="survival:iron",
+        adaptive_wood=True,
         intent="acquire",
         target="iron_ingot",
         steps=_iron_progression_steps(),
@@ -200,6 +202,7 @@ def diamond_survival_workflow(diamond_quantity: int = 1) -> WorkflowDefinition:
     descent = _bounded_diamond_descent()
     return WorkflowDefinition(
         workflow_id="survival:diamond",
+        adaptive_wood=True,
         intent="acquire",
         target="diamond",
         steps=(
@@ -271,6 +274,7 @@ def nether_preparation_workflows() -> tuple[WorkflowDefinition, ...]:
     return (
         WorkflowDefinition(
             workflow_id="survival:nether-iron-kit",
+            adaptive_wood=True,
             intent="acquire",
             target="nether_iron_kit",
             steps=_iron_progression_steps(7),
@@ -310,6 +314,7 @@ def nether_preparation_workflows() -> tuple[WorkflowDefinition, ...]:
         ),
         WorkflowDefinition(
             workflow_id="survival:diamond-pickaxe",
+            adaptive_wood=True,
             intent="craft",
             target="diamond_pickaxe",
             steps=pickaxe_steps,
@@ -322,6 +327,7 @@ def nether_preparation_workflows() -> tuple[WorkflowDefinition, ...]:
         ),
         WorkflowDefinition(
             workflow_id="survival:ignition",
+            adaptive_wood=True,
             intent="craft",
             target="flint_and_steel",
             steps=(

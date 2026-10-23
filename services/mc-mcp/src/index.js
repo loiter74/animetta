@@ -7,7 +7,7 @@ import { stdin, stdout, argv } from 'node:process';
 import { actionTimeoutFromDeadline } from './actionDeadline.js';
 import { configureMineSupport } from './branch_mine.js';
 import { findReachableCraftingTable } from './craftingTable.js';
-import { availableMaterialCount, craftOperations } from './crafting/counts.js';
+import { availableMaterialCount, craftOperations, WOOD_PLANK_RECIPES } from './crafting/counts.js';
 import {
   createCraftingTablePlacementBudget,
   recoverPlacedCraftingTableAfterTimeout,
@@ -1129,7 +1129,7 @@ async function _reclaimCraftingTable(craftingTable) {
 // The recipe API sometimes fails to find recipes due to item ID changes.
 // These are the standard vanilla recipes as a safety net.
 const FALLBACK_RECIPES = {
-  oak_planks: { ingredients: { oak_log: 1 }, result: 4, requiresTable: false },
+  ...WOOD_PLANK_RECIPES,
   crafting_table: { ingredients: { oak_planks: 4 }, result: 1, requiresTable: false },
   stick: { ingredients: { oak_planks: 2 }, result: 4, requiresTable: false },
   wooden_pickaxe: { ingredients: { oak_planks: 3, stick: 2 }, result: 1, requiresTable: true },

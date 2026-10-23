@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from animetta.tools.gamebot.contracts.v2 import Observation
 from animetta.tools.minecraft.survival.registry import WorkflowRegistry
+from animetta.tools.minecraft.survival.wood import bind_workflow_wood
 from animetta.tools.minecraft.survival.workflows import (
     InventoryThreshold,
     WorkflowCheckpoint,
@@ -42,7 +43,8 @@ class FallbackStrategy:
             return StrategyFailure(
                 code=state["failure_code"], message="No exact deterministic workflow"
             )
-        workflow = state["workflow"]
+        workflow = bind_workflow_wood(state["workflow"], observation)
+        state["workflow"] = workflow
         index = state["step_index"]
         while index < len(workflow.steps):
             checkpoint = workflow.checkpoints[index] if workflow.checkpoints else None
