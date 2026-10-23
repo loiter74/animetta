@@ -88,16 +88,11 @@ def _error(
     )
 
 
-def _runtime_budget(account: BudgetAccount) -> BudgetVector:
-    remaining = account.remaining
+def _runtime_budget(account: BudgetAccount, maximum_cost: BudgetUsage) -> BudgetVector:
+    """Give the runtime exactly the admitted step allowance and command protections."""
     return BudgetVector(
-        max_actions=remaining.max_actions,
-        max_strategy_attempts=remaining.max_strategy_attempts,
-        max_travel_distance=remaining.max_travel_distance,
-        max_blocks_changed=remaining.max_blocks_changed,
-        max_damage_taken=remaining.max_damage_taken,
-        protected_items=tuple(sorted(remaining.protected_items)),
-        resource_consumption=remaining.resource_consumption,
+        **maximum_cost.model_dump(mode="python"),
+        protected_items=tuple(sorted(account.limit.protected_items)),
     )
 
 
@@ -537,7 +532,7 @@ class CommandExecutor:
             runtime_instance_id=manifest.runtime_instance_id,
             capability=step.capability,
             parameters=step.parameters,
-            remaining_budget=_runtime_budget(account),
+            remaining_budget=_runtime_budget(account, step.maximum_cost),
             deadline_ms=command.execution_deadline_ms or now + 60_000,
             previous_receipt_hash=previous_receipt_hash,
         )

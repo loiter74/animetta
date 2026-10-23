@@ -252,8 +252,76 @@ async def test_executor_reserves_before_dispatch_validates_receipt_and_observes_
         "checking",
     ]
     assert runtime.timeouts == [100.0]
+    assert runtime.requests[0].remaining_budget.max_travel_distance == 16
+    assert runtime.requests[0].remaining_budget.max_blocks_changed == 4
+    assert runtime.requests[0].remaining_budget.max_damage_taken == 0
     assert result.account.remaining.max_actions == 3
     assert result.after.action_sequence >= result.receipt.action_sequence
+
+
+@pytest.mark.parametrize(
+    "maximum_cost",
+    [
+        BudgetUsage(
+            max_actions=1,
+            max_strategy_attempts=1,
+            max_travel_distance=96,
+            max_blocks_changed=16,
+            resource_consumption={"coal": 1},
+        ),
+        BudgetUsage(max_actions=1),
+    ],
+)
+async def test_executor_dispatches_only_reserved_step_budget(maximum_cost: BudgetUsage) -> None:
+    repository = InMemoryCommandJournal()
+
+    class ZeroUsageRuntime(Runtime):
+        async def execute_action(self, request, *, timeout=60.0):
+            receipt = await super().execute_action(request, timeout=timeout)
+            payload = receipt.model_dump(mode="json", exclude={"content_hash"})
+            payload["budget_usage"].update(max_travel_distance=0, max_blocks_changed=0)
+            return ActionReceipt.model_validate(
+                {**payload, "content_hash": canonical_json_hash(payload)}
+            )
+
+    runtime = ZeroUsageRuntime(repository)
+    executor = CommandExecutor(
+        runtime=runtime,
+        repository=repository,
+        now_ms=lambda: 1_800_000_000_000,
+        make_id=lambda prefix: f"{prefix}-1",
+    )
+    limit = budget().model_copy(
+        update={
+            "max_actions": 16,
+            "max_travel_distance": 512.0,
+            "max_blocks_changed": 256,
+            "max_damage_taken": 1.0,
+            "protected_items": frozenset({"diamond_pickaxe", "netherite_pickaxe"}),
+            "resource_consumption": {"coal": 16, "torch": 64},
+        }
+    )
+    account = BudgetAccount(
+        limit=limit,
+        used=BudgetUsage(max_actions=5, max_travel_distance=44.45490874693277),
+    )
+    await executor.execute_step(
+        command=await command(repository),
+        step=ExecuteStep(capability="collect", parameters={"count": 1}, maximum_cost=maximum_cost),
+        before=Observation.model_validate(MESSAGES["Observation"]),
+        ordinal=1,
+        strategy_state_hash="b" * 64,
+        account=account,
+    )
+    sent = runtime.requests[0].remaining_budget
+    assert sent.model_dump(mode="json", exclude={"protected_items"}) == maximum_cost.model_dump(
+        mode="json"
+    )
+    assert sent.protected_items == ("diamond_pickaxe", "netherite_pickaxe")
+    reserved = await repository.get_step("step-1")
+    assert reserved is not None
+    assert reserved.reservation == maximum_cost.model_dump(mode="json")
+    assert account.remaining.max_travel_distance > sent.max_travel_distance
 
 
 async def test_executor_does_not_settle_successful_receipt_with_pending_reconciliation() -> None:
