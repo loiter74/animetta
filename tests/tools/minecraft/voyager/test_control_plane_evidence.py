@@ -187,9 +187,11 @@ async def test_controller_passes_collected_typed_evidence_to_goal_verifier() -> 
     assert activity.phases == ["observing", "checking"]
 
 
+@pytest.mark.parametrize("error_code", ["PARTIAL_COLLECT", "BUDGET_EXHAUSTED"])
 @pytest.mark.parametrize("recoverable", [True, False])
 async def test_controller_only_resumes_partial_collection_with_strategy_progress(
     recoverable: bool,
+    error_code: str,
 ) -> None:
     class PartialStrategy(CompleteStrategy):
         def propose(self, state, observation):
@@ -234,7 +236,7 @@ async def test_controller_only_resumes_partial_collection_with_strategy_progress
             if first:
                 raise ExecutorError(
                     ControlPlaneError(
-                        code="PARTIAL_COLLECT",
+                        code=error_code,
                         message="4/8 collected",
                         phase="execution",
                         outcome_known=True,

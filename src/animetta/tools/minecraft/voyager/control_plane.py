@@ -325,7 +325,7 @@ class UnifiedVoyagerController:
                     recover = getattr(strategy, "accept_partial_result", None)
                     recovered_state = None
                     if (
-                        exc.error.code == "PARTIAL_COLLECT"
+                        exc.error.code in {"PARTIAL_COLLECT", "BUDGET_EXHAUSTED"}
                         and exc.error.outcome_known
                         and decision.capability == "collect"
                         and result.receipt.outcome.value == "error"
