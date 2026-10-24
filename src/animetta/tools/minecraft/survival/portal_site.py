@@ -29,6 +29,23 @@ _GROUND = frozenset(
         "andesite",
         "tuff",
         "netherrack",
+        "terracotta",
+        "white_terracotta",
+        "orange_terracotta",
+        "magenta_terracotta",
+        "light_blue_terracotta",
+        "yellow_terracotta",
+        "lime_terracotta",
+        "pink_terracotta",
+        "gray_terracotta",
+        "light_gray_terracotta",
+        "cyan_terracotta",
+        "purple_terracotta",
+        "blue_terracotta",
+        "brown_terracotta",
+        "green_terracotta",
+        "red_terracotta",
+        "black_terracotta",
     )
 )
 _FALLING_GROUND = frozenset({"minecraft:sand", "minecraft:red_sand", "minecraft:gravel"})
