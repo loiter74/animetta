@@ -11,6 +11,7 @@ const MOVEMENT_CONTROLS = ['forward', 'back', 'left', 'right', 'jump', 'sprint',
 const POSITION_EPSILON = 0.02;
 const FLUID_HAZARDS = new Set(['water', 'flowing_water', 'lava', 'flowing_lava']);
 const LAVA_BLOCK_NAMES = new Set(['lava', 'flowing_lava']);
+const FALLING_BLOCK_NAMES = new Set(['sand', 'red_sand', 'gravel']);
 const NEIGHBOR_OFFSETS = Object.freeze([
   [1, 0, 0],
   [-1, 0, 0],
@@ -456,7 +457,15 @@ export function collectionDigSafety(bot, block) {
     return { safe: false, reason_code: 'UNSUPPORTED_DROP' };
   }
   for (const [dx, dy, dz] of NEIGHBOR_OFFSETS) {
-    const neighbor = bot.blockAt(offsetPosition(block.position, dx, dy, dz));
+    let neighborPosition = offsetPosition(block.position, dx, dy, dz);
+    let neighbor = bot.blockAt(neighborPosition);
+    if (dy === 1) {
+      const ceiling = (bot.game?.minY ?? -64) + (bot.game?.height ?? 384);
+      while (FALLING_BLOCK_NAMES.has(neighbor?.name)) {
+        neighborPosition = offsetPosition(neighborPosition, 0, 1, 0);
+        neighbor = neighborPosition.y < ceiling ? bot.blockAt(neighborPosition) : null;
+      }
+    }
     if (!neighbor || isLavaBlock(neighbor) || isWaterBlock(neighbor)) {
       return { safe: false, reason_code: 'FLUID_BREACH', block: neighbor?.name ?? 'unknown' };
     }

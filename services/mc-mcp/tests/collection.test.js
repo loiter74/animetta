@@ -30,6 +30,64 @@ const {
   waitForCollectionMovementToSettle,
 } = collection;
 
+function gravityCoveredGravelFixture(cap) {
+  const registry = minecraftData('1.21.1');
+  const Block = prismarineBlock(registry);
+  const bot = {
+    game: { minY: -64, height: 384 }, entities: {},
+    entity: { position: new Vec3(3.5, 62, 0.5) },
+    blockAt(position) {
+      const p = position.floored();
+      const column = p.x === 0 && p.z === 0;
+      const name = column && p.y === 59 ? 'gravel'
+        : column && [60, 61].includes(p.y) ? 'sand'
+        : column && p.y === 62 ? cap
+        : column && p.y === 63 ? 'water' : 'stone';
+      if (name === null) return null;
+      const block = Block.fromStateId(registry.blocksByName[name].defaultState, 0);
+      block.position = p;
+      return block;
+    },
+  };
+  return { bot, target: bot.blockAt(new Vec3(0, 59, 0)), registry };
+}
+
+test('gravel rejects fluid above its falling sand column but accepts a fixed stone cap', () => {
+  // R23 typed column: gravel59, sand60/61, water62. This is not a physics replay.
+  for (const fluid of ['water', 'lava']) {
+    const { bot, target } = gravityCoveredGravelFixture(fluid);
+    const safety = collection.collectionDigSafety(bot, target);
+    assert.equal(safety.safe, false);
+    assert.equal(safety.reason_code, 'FLUID_BREACH');
+    assert.equal(safety.block, fluid);
+  }
+  const { bot, target } = gravityCoveredGravelFixture('stone');
+  assert.equal(collection.collectionDigSafety(bot, target).safe, true,
+    'a non-falling roof separates the target from water above it');
+});
+
+test('falling-column checks fail closed at unloaded cap or the known world ceiling', () => {
+  const { bot, target } = gravityCoveredGravelFixture(null);
+  assert.equal(collection.collectionDigSafety(bot, target).safe, false);
+  let highestRead = 0;
+  bot.game.height = 128; bot.game.minY = 0;
+  bot.blockAt = position => {
+    highestRead = Math.max(highestRead, position.y);
+    return { name: 'gravel', boundingBox: 'block', position };
+  };
+  assert.equal(collection.collectionDigSafety(bot, target).safe, false);
+  assert.ok(highestRead < 128, 'no scan beyond known dimension height');
+});
+
+test('native collection matcher skips fluid-capped gravel before choosing another dry target', () => {
+  const { bot, target, registry } = gravityCoveredGravelFixture('water');
+  const dry = { ...target, position: new Vec3(4, 59, 0) };
+  const matching = collection.createCollectionBlockMatcher(registry.blocksByName.gravel.id,
+    new Set(), block => collection.collectionDigSafety(bot, block).safe);
+  assert.equal(matching({ type: target.type }), true, 'SDK palette filtering stays position-free');
+  assert.equal([target, dry].find(matching), dry, 'do not spend a route on the wet gravel cluster');
+});
+
 test('collection approach requires an exposed reachable face rather than proximity through dirt', () => {
   const target = { position: new Vec3(29, 61, 96) };
   const standing = new Vec3(29, 64, 96);
