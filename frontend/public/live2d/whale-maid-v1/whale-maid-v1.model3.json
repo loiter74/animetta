@@ -1,57 +1,66 @@
 {
   "Version": 3,
   "FileReferences": {
-    "Moc": "whale-maid-v1.moc3",
+    "Moc": "v32/candidate.moc3",
     "Textures": [
-      "whale-maid-v1.2048/texture_00.png",
-      "whale-maid-v1.2048/texture_01.png",
-      "whale-maid-v1.2048/texture_02.png",
-      "whale-maid-v1.2048/texture_03.png",
-      "whale-maid-v1.2048/texture_04.png",
-      "whale-maid-v1.2048/texture_05.png",
-      "whale-maid-v1.2048/texture_06.png",
-      "whale-maid-v1.2048/texture_07.png",
-      "whale-maid-v1.2048/texture_08.png",
-      "whale-maid-v1.2048/texture_09.png",
-      "whale-maid-v1.2048/texture_10.png",
-      "whale-maid-v1.2048/texture_11.png",
-      "whale-maid-v1.2048/texture_12.png",
-      "whale-maid-v1.2048/texture_13.png"
+      "v32/candidate.2048/texture_00.png",
+      "v32/candidate.2048/texture_01.png",
+      "v32/candidate.2048/texture_02.png",
+      "v32/candidate.2048/texture_03.png",
+      "v32/candidate.2048/texture_04.png",
+      "v32/candidate.2048/texture_05.png",
+      "v32/candidate.2048/texture_06.png",
+      "v32/candidate.2048/texture_07.png",
+      "v32/candidate.2048/texture_08.png",
+      "v32/candidate.2048/texture_09.png",
+      "v32/candidate.2048/texture_10.png",
+      "v32/candidate.2048/texture_11.png",
+      "v32/candidate.2048/texture_12.png",
+      "v32/candidate.2048/texture_13.png",
+      "v32/candidate.2048/texture_14.png",
+      "v32/candidate.2048/texture_15.png",
+      "v32/candidate.2048/texture_16.png",
+      "v32/candidate.2048/texture_17.png",
+      "v32/candidate.2048/texture_18.png",
+      "v32/candidate.2048/texture_19.png",
+      "v32/candidate.2048/texture_20.png",
+      "v32/candidate.2048/texture_21.png",
+      "v32/candidate.2048/texture_22.png"
     ],
-    "Physics": "whale-maid-v1.physics3.json",
-    "DisplayInfo": "whale-maid-v1.cdi3.json",
+    "DisplayInfo": "v32/candidate.cdi3.json",
     "Motions": {
       "Idle": [
         {
-          "File": "whale-maid-v1.idle.motion3.json"
+          "File": "v32/whale-maid-v1.idle.motion3.json"
         }
       ],
       "Blink": [
         {
-          "File": "whale-maid-v1.blink.motion3.json"
+          "File": "v32/whale-maid-v1.blink.motion3.json"
         }
       ],
       "Nod": [
         {
-          "File": "whale-maid-v1.nod.motion3.json"
+          "File": "v32/whale-maid-v1.nod.motion3.json"
         }
       ],
       "Shake": [
         {
-          "File": "whale-maid-v1.shake.motion3.json"
+          "File": "v32/whale-maid-v1.shake.motion3.json"
         }
       ]
     },
     "Expressions": [
       {
         "Name": "standard",
-        "File": "standard.exp3.json"
+        "File": "v32/standard.exp3.json"
       },
       {
         "Name": "goofy",
-        "File": "goofy.exp3.json"
+        "File": "v32/goofy.exp3.json"
       }
-    ]
+    ],
+    "Physics": "v32/candidate.physics3.json"
   },
   "Groups": [
     {

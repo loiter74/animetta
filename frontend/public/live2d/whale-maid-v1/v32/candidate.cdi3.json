@@ -1,0 +1,582 @@
+{
+	"Version": 3,
+	"Parameters": [
+		{
+			"Id": "ParamSkirtSway",
+			"GroupId": "",
+			"Name": "裙摆与围裙摆动"
+		},
+		{
+			"Id": "ParamArmL",
+			"GroupId": "",
+			"Name": "左袖与手臂"
+		},
+		{
+			"Id": "ParamArmR",
+			"GroupId": "",
+			"Name": "右袖与手臂"
+		},
+		{
+			"Id": "ParamHairFringeL",
+			"GroupId": "",
+			"Name": "左侧前发簇"
+		},
+		{
+			"Id": "ParamHairFringeC",
+			"GroupId": "",
+			"Name": "中间前发簇"
+		},
+		{
+			"Id": "ParamHairFringeR",
+			"GroupId": "",
+			"Name": "右侧前发簇"
+		},
+		{
+			"Id": "ParamFinL",
+			"GroupId": "",
+			"Name": "左鲸鳍耳"
+		},
+		{
+			"Id": "ParamFinR",
+			"GroupId": "",
+			"Name": "右鲸鳍耳"
+		},
+		{
+			"Id": "ParamAngleX",
+			"GroupId": "ParamGroupFace",
+			"Name": "Angle X"
+		},
+		{
+			"Id": "ParamAngleY",
+			"GroupId": "ParamGroupFace",
+			"Name": "Angle Y"
+		},
+		{
+			"Id": "ParamAngleZ",
+			"GroupId": "ParamGroupFace",
+			"Name": "Angle Z"
+		},
+		{
+			"Id": "ParamEyeLOpen",
+			"GroupId": "ParamGroupEyes",
+			"Name": "Left Eye Open"
+		},
+		{
+			"Id": "ParamEyeROpen",
+			"GroupId": "ParamGroupEyes",
+			"Name": "Right Eye Open"
+		},
+		{
+			"Id": "ParamEyeBallX",
+			"GroupId": "ParamGroupEyes",
+			"Name": "EyeBall X"
+		},
+		{
+			"Id": "ParamEyeBallY",
+			"GroupId": "ParamGroupEyes",
+			"Name": "EyeBall Y"
+		},
+		{
+			"Id": "ParamEyeBallForm",
+			"GroupId": "ParamGroupEyes",
+			"Name": "Eye Jelly"
+		},
+		{
+			"Id": "ParamBrowLY",
+			"GroupId": "ParamGroupBrows",
+			"Name": "Left Brow Y"
+		},
+		{
+			"Id": "ParamBrowRY",
+			"GroupId": "ParamGroupBrows",
+			"Name": "Right Brow Y"
+		},
+		{
+			"Id": "ParamMouthForm",
+			"GroupId": "ParamGroupMouth",
+			"Name": "Mouth Form"
+		},
+		{
+			"Id": "ParamMouthOpenY",
+			"GroupId": "ParamGroupMouth",
+			"Name": "Mouth Open"
+		},
+		{
+			"Id": "ParamBodyAngleX",
+			"GroupId": "ParamGroupBody",
+			"Name": "Body Angle X"
+		},
+		{
+			"Id": "ParamBodyAngleY",
+			"GroupId": "ParamGroupBody",
+			"Name": "Body Angle Y"
+		},
+		{
+			"Id": "ParamBodyAngleZ",
+			"GroupId": "ParamGroupBody",
+			"Name": "Body Angle Z"
+		},
+		{
+			"Id": "ParamBodyLean",
+			"GroupId": "ParamGroupBody",
+			"Name": "Body Lean"
+		},
+		{
+			"Id": "ParamProportion",
+			"GroupId": "ParamGroupBody",
+			"Name": "Proportion (Chibi)"
+		},
+		{
+			"Id": "ParamBreath",
+			"GroupId": "ParamGroupBody",
+			"Name": "Breath"
+		},
+		{
+			"Id": "ParamHairFront",
+			"GroupId": "ParamGroupPhysics",
+			"Name": "Front Hair Sway"
+		},
+		{
+			"Id": "ParamHairBack",
+			"GroupId": "ParamGroupPhysics",
+			"Name": "Back Hair Sway"
+		},
+		{
+			"Id": "ParamTailAngle",
+			"GroupId": "",
+			"Name": "鲸尾摆动"
+		},
+		{
+			"Id": "ParamHandR",
+			"GroupId": "",
+			"Name": "右手腕局部"
+		},
+		{
+			"Id": "ParamHandL",
+			"GroupId": "",
+			"Name": "左手腕局部"
+		}
+	],
+	"ParameterGroups": [
+		{
+			"Id": "ParamGroupFace",
+			"GroupId": "",
+			"Name": "Face"
+		},
+		{
+			"Id": "ParamGroupEyes",
+			"GroupId": "",
+			"Name": "Eyes"
+		},
+		{
+			"Id": "ParamGroupBrows",
+			"GroupId": "",
+			"Name": "Brows"
+		},
+		{
+			"Id": "ParamGroupMouth",
+			"GroupId": "",
+			"Name": "Mouth"
+		},
+		{
+			"Id": "ParamGroupBody",
+			"GroupId": "",
+			"Name": "Body"
+		},
+		{
+			"Id": "ParamGroupPhysics",
+			"GroupId": "",
+			"Name": "Physics"
+		}
+	],
+	"Parts": [
+		{
+			"Id": "PartHead",
+			"Name": "Head"
+		},
+		{
+			"Id": "PartHairBack",
+			"Name": "Back Hair"
+		},
+		{
+			"Id": "PartFace",
+			"Name": "Face"
+		},
+		{
+			"Id": "PartHairFront",
+			"Name": "Front Hair"
+		},
+		{
+			"Id": "PartHeadAccessories",
+			"Name": "Head Accessories"
+		},
+		{
+			"Id": "PartExtra",
+			"Name": "Extra"
+		},
+		{
+			"Id": "PartBody",
+			"Name": "Body"
+		}
+	],
+	"CombinedParameters": [
+		[
+			"ParamAngleX",
+			"ParamAngleY"
+		],
+		[
+			"ParamEyeBallX",
+			"ParamEyeBallY"
+		],
+		[
+			"ParamBodyAngleX",
+			"ParamBodyAngleY"
+		]
+	],
+	"Drawables": [
+		{
+			"Id": "ArtMeshShoulderUnderpaintL",
+			"Name": "shoulder garment support L"
+		},
+		{
+			"Id": "ArtMeshShoulderUnderpaintR",
+			"Name": "shoulder garment support R"
+		},
+		{
+			"Id": "ArtMeshTail",
+			"Name": "tail"
+		},
+		{
+			"Id": "ArtMeshImage_2",
+			"Name": "左虹膜瞳孔高光"
+		},
+		{
+			"Id": "ArtMeshImage",
+			"Name": "右虹膜瞳孔高光"
+		},
+		{
+			"Id": "ArtMeshEyewhiteR2",
+			"Name": "右眼框上下睫毛"
+		},
+		{
+			"Id": "ArtMeshEyewhiteR3",
+			"Name": "右眼裂补白"
+		},
+		{
+			"Id": "ArtMeshEyewhiteL2",
+			"Name": "左眼框原睫毛"
+		},
+		{
+			"Id": "ArtMeshEyewhiteL3",
+			"Name": "左眼裂补白"
+		},
+		{
+			"Id": "ArtMeshMouthClose",
+			"Name": "mouth close"
+		},
+		{
+			"Id": "ArtMeshMouthOpen_lip_1",
+			"Name": "mouth open goofy / Lower lip outline"
+		},
+		{
+			"Id": "ArtMeshMouthOpen_lip_0",
+			"Name": "mouth open goofy / Upper lip outline"
+		},
+		{
+			"Id": "ArtMeshMouthOpen",
+			"Name": "mouth open goofy"
+		},
+		{
+			"Id": "ArtMeshTopwear3",
+			"Name": "原画连续颈部皮肤"
+		},
+		{
+			"Id": "ArtMeshTopwear5",
+			"Name": "Front hair upper_R"
+		},
+		{
+			"Id": "ArtMeshTopwear7",
+			"Name": "Front hair lower_R"
+		},
+		{
+			"Id": "ArtMeshTopwear9",
+			"Name": "Front hair upper_L"
+		},
+		{
+			"Id": "ArtMeshTopwear11",
+			"Name": "Front hair lower_L"
+		},
+		{
+			"Id": "ArtMeshHeadwear3",
+			"Name": "连续颈部皮肤"
+		},
+		{
+			"Id": "ArtMeshTopwear13",
+			"Name": "衣领前胸遮挡补画局部"
+		},
+		{
+			"Id": "ArtMeshTopwear12",
+			"Name": "未使用的服装补画原图"
+		},
+		{
+			"Id": "ArtMeshEyebrowR3",
+			"Name": "干净眉毛 R"
+		},
+		{
+			"Id": "ArtMeshEyebrowR2",
+			"Name": "眉部旧背景 R"
+		},
+		{
+			"Id": "ArtMeshEyebrowL3",
+			"Name": "干净眉毛 L"
+		},
+		{
+			"Id": "ArtMeshEyebrowL2",
+			"Name": "眉部旧背景 L"
+		},
+		{
+			"Id": "ArtMeshImage_5",
+			"Name": "独立颈部皮肤网格"
+		},
+		{
+			"Id": "ArtMeshTopwear15",
+			"Name": "无发丝中央衣片"
+		},
+		{
+			"Id": "ArtMeshTopwear14",
+			"Name": "中央衣片以外的源图"
+		},
+		{
+			"Id": "ArtMeshTopwear17",
+			"Name": "旧衣领顶部残线"
+		},
+		{
+			"Id": "ArtMeshHeadwear7",
+			"Name": "发丝接缝 L"
+		},
+		{
+			"Id": "ArtMeshHeadwear9",
+			"Name": "发丝接缝 R"
+		},
+		{
+			"Id": "ArtMeshHeadwear8",
+			"Name": "衣领后皮肤边缘"
+		},
+		{
+			"Id": "ArtMeshImage_7",
+			"Name": "透明闭眼睫毛 R"
+		},
+		{
+			"Id": "ArtMeshImage_8",
+			"Name": "透明闭眼睫毛 L"
+		},
+		{
+			"Id": "ArtMeshLayer2",
+			"Name": "右上睫毛"
+		},
+		{
+			"Id": "ArtMeshLayer",
+			"Name": "右下眼线"
+		},
+		{
+			"Id": "ArtMeshLayer4",
+			"Name": "左上睫毛"
+		},
+		{
+			"Id": "ArtMeshLayer3",
+			"Name": "左下眼线"
+		},
+		{
+			"Id": "ArtMeshHeadwear11",
+			"Name": "右侧肩后发束"
+		},
+		{
+			"Id": "ArtMeshHeadwear13",
+			"Name": "左侧肩后发束"
+		},
+		{
+			"Id": "ArtMeshHeadwear15",
+			"Name": "右耳原始平滑边缘"
+		},
+		{
+			"Id": "ArtMeshHeadwear17",
+			"Name": "左耳原始平滑边缘"
+		},
+		{
+			"Id": "ArtMeshImage_12",
+			"Name": "mouth_balanced_v13"
+		},
+		{
+			"Id": "ArtMeshImage_13",
+			"Name": "ear_fluffy_v13_R"
+		},
+		{
+			"Id": "ArtMeshImage_14",
+			"Name": "ear_fluffy_v13_L"
+		},
+		{
+			"Id": "ArtMeshLayer5",
+			"Name": "领口补画未使用区域"
+		},
+		{
+			"Id": "ArtMeshHeadwear19",
+			"Name": "旧右耳上缘残片"
+		},
+		{
+			"Id": "ArtMeshLayer7",
+			"Name": "领口旧方形裁边"
+		},
+		{
+			"Id": "ArtMeshLayer10",
+			"Name": "耳后发遮挡补画 R"
+		},
+		{
+			"Id": "ArtMeshLayer9",
+			"Name": "耳后补画多余矩形 R"
+		},
+		{
+			"Id": "ArtMeshLayer12",
+			"Name": "耳后发遮挡补画 L"
+		},
+		{
+			"Id": "ArtMeshLayer11",
+			"Name": "耳后补画多余矩形 L"
+		},
+		{
+			"Id": "ArtMeshLayer14",
+			"Name": "贴合颈部的小开口领"
+		},
+		{
+			"Id": "ArtMeshLayer13",
+			"Name": "领口多余上边缘"
+		},
+		{
+			"Id": "ArtMeshLayer16",
+			"Name": "右侧纯蓝蝴蝶结补画"
+		},
+		{
+			"Id": "ArtMeshLayer18",
+			"Name": "左侧纯蓝蝴蝶结补画"
+		},
+		{
+			"Id": "ArtMeshLayer17",
+			"Name": "未使用的头饰补画源"
+		},
+		{
+			"Id": "ArtMeshLayer20",
+			"Name": "方领上胸与衣料层次"
+		},
+		{
+			"Id": "ArtMeshLayer19",
+			"Name": "方领未使用源区域"
+		},
+		{
+			"Id": "ArtMeshImage_20",
+			"Name": "bodice_continuous_v14"
+		},
+		{
+			"Id": "ArtMeshLayer22",
+			"Name": "后发底层中未使用的面部区域"
+		},
+		{
+			"Id": "ArtMeshLayer24",
+			"Name": "后发底层中未使用的旧右耳"
+		},
+		{
+			"Id": "ArtMeshLayer26",
+			"Name": "后发底层中未使用的旧左耳"
+		},
+		{
+			"Id": "ArtMeshLayer25",
+			"Name": "连续后发遮挡补底"
+		},
+		{
+			"Id": "ArtMeshTopwear23",
+			"Name": "旧顶部蓝色碎片 R"
+		},
+		{
+			"Id": "ArtMeshTopwear22",
+			"Name": "旧顶部蓝色碎片 L"
+		},
+		{
+			"Id": "ArtMeshTopwear21",
+			"Name": "旧肩后蓝色碎片一"
+		},
+		{
+			"Id": "ArtMeshTopwear20",
+			"Name": "旧肩后蓝色碎片二"
+		},
+		{
+			"Id": "ArtMeshTopwear19",
+			"Name": "清理碎片后的身体服装"
+		},
+		{
+			"Id": "ArtMeshTopwear18",
+			"Name": "独立原有手部服装"
+		},
+		{
+			"Id": "ArtMeshLayer28",
+			"Name": "刘海下连续额头补画"
+		},
+		{
+			"Id": "ArtMeshLayer27",
+			"Name": "未使用额头素材源"
+		},
+		{
+			"Id": "ArtMeshHeadwear23",
+			"Name": "右刘海"
+		},
+		{
+			"Id": "ArtMeshHeadwear25",
+			"Name": "中刘海"
+		},
+		{
+			"Id": "ArtMeshHeadwear24",
+			"Name": "左刘海"
+		},
+		{
+			"Id": "ArtMeshHeadwear27",
+			"Name": "独立呆毛"
+		},
+		{
+			"Id": "ArtMeshHeadwear26",
+			"Name": "头脸静态基底"
+		},
+		{
+			"Id": "ArtMeshImage_23",
+			"Name": "fringe_R_v18_clean"
+		},
+		{
+			"Id": "ArtMeshImage_24",
+			"Name": "fringe_C_v18_clean"
+		},
+		{
+			"Id": "ArtMeshImage_25",
+			"Name": "fringe_L_v18_clean"
+		},
+		{
+			"Id": "ArtMeshImage_26",
+			"Name": "ahoge_v18_clean"
+		},
+		{
+			"Id": "ArtMeshImage_27",
+			"Name": "独立眨眼遮罩_R_V24"
+		},
+		{
+			"Id": "ArtMeshImage_28",
+			"Name": "独立眨眼遮罩_L_V24"
+		},
+		{
+			"Id": "ArtMeshImage_29",
+			"Name": "backhair_clean_v30_R"
+		},
+		{
+			"Id": "ArtMeshImage_30",
+			"Name": "backhair_clean_v30_L"
+		},
+		{
+			"Id": "ArtMeshImage_31",
+			"Name": "neck_root_upper_chest_underpaint_v32"
+		}
+	]
+}

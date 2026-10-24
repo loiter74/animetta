@@ -1,0 +1,813 @@
+{
+  "version": "v32",
+  "updatedAtUtc": "2026-10-24T05:40:57.847861+00:00",
+  "modelMocSha256": "7345b0aabb8033ecb47dcfde3a8a9f9334d641ecf068c833850faec56aa2254f",
+  "nativeMaster": {
+    "filename": "whale-maid-neck-underpaint-v32.psd2live",
+    "sha256": "01a6fd8146346f9a3f0c3b4fde2b8b66c8b61e4f538f7973ff3bf8e55dd86035",
+    "bytes": 1024749759,
+    "delivery": "本机独立交付目录；不作为 Git 大文件嵌入仓库。",
+    "reopenedAndReexported": true,
+    "byteIdenticalExportFiles": 26
+  },
+  "nativeSourceCanvas": [
+    1024,
+    1536
+  ],
+  "drawables": 86,
+  "parameters": 31,
+  "newUnderpaint": {
+    "mesh": "ArtMeshImage_31",
+    "vertices": 35,
+    "triangles": 36,
+    "parent": "DeformBodyZBreath",
+    "drawOrder": 170,
+    "newParameters": []
+  },
+  "currentCore": {
+    "uniquePoses": 36,
+    "existingMeshes": 85,
+    "existingMaximumDisplacementPx": 0,
+    "newFlips": 0,
+    "newDegeneracies": 0
+  },
+  "currentMaterials": {
+    "existingSamples": 521444,
+    "maximumRgbaError": 0.06586946547031403,
+    "limit": 0.15,
+    "gapAnchors": 4,
+    "bodyTrackedStates": 12
+  },
+  "currentSdk": {
+    "fps": 60,
+    "samples": [
+      {
+        "name": "standard-idle",
+        "frames": 1200,
+        "simulatedSeconds": 20,
+        "parameterRange": {
+          "ParamBreath": [
+            0,
+            0.949999988079071
+          ],
+          "ParamEyeLOpen": [
+            0.03333299979567528,
+            1
+          ],
+          "ParamEyeROpen": [
+            0.03333299979567528,
+            1
+          ],
+          "ParamTailAngle": [
+            -0.6499999761581421,
+            0.6499999761581421
+          ],
+          "ParamFinR": [
+            -0.21074329316616058,
+            0.21074329316616058
+          ],
+          "ParamFinL": [
+            -0.20499999821186066,
+            0.20499999821186066
+          ],
+          "ParamArmR": [
+            -0.1100873276591301,
+            0.1100873276591301
+          ],
+          "ParamArmL": [
+            -0.10499999672174454,
+            0.10499999672174454
+          ],
+          "ParamEyeBallX": [
+            -0.23000000417232513,
+            0.18000000715255737
+          ],
+          "ParamEyeBallY": [
+            -0.10499999672174454,
+            0.06499999761581421
+          ],
+          "ParamHandR": [
+            -0.10000000149011612,
+            0.11999999731779099
+          ],
+          "ParamHandL": [
+            -0.11999999731779099,
+            0.10000000149011612
+          ],
+          "ParamAngleY": [
+            0,
+            0
+          ],
+          "ParamBodyAngleY": [
+            0,
+            0
+          ],
+          "ParamAngleX": [
+            0,
+            0
+          ],
+          "ParamBodyAngleX": [
+            0,
+            0
+          ],
+          "ParamAngleZ": [
+            0,
+            0
+          ],
+          "ParamMouthForm": [
+            0,
+            0
+          ],
+          "ParamBodyAngleZ": [
+            0,
+            0
+          ],
+          "ParamHairBack": [
+            0,
+            0
+          ],
+          "ParamHairFringeR": [
+            -0.22615715861320496,
+            0.5053226947784424
+          ],
+          "ParamHairFringeC": [
+            -0.17348676919937134,
+            0.3517555892467499
+          ],
+          "ParamHairFringeL": [
+            -0.17074981331825256,
+            0.379906564950943
+          ],
+          "ParamSkirtSway": [
+            -0.3879830241203308,
+            0.20774702727794647
+          ],
+          "ParamHairFront": [
+            -0.21768911182880402,
+            0.4036465287208557
+          ],
+          "ParamMouthOpenY": [
+            0,
+            0
+          ]
+        },
+        "torsoVertexRangePixels": 19.702501695086923,
+        "fringeVertexRangePixels": 5.734181865533288,
+        "frontHairVertexRangePixels": 6.635771419922903,
+        "mouthVertexRangePixels": 5.336069305448042
+      },
+      {
+        "name": "goofy-idle",
+        "frames": 360,
+        "simulatedSeconds": 6,
+        "parameterRange": {
+          "ParamBreath": [
+            0,
+            0.949999988079071
+          ],
+          "ParamEyeLOpen": [
+            0.029333040118217468,
+            1
+          ],
+          "ParamEyeROpen": [
+            0.029333040118217468,
+            1
+          ],
+          "ParamTailAngle": [
+            0,
+            0.6499999761581421
+          ],
+          "ParamFinR": [
+            -0.21074329316616058,
+            0.21074329316616058
+          ],
+          "ParamFinL": [
+            -0.16762495040893555,
+            0.20499999821186066
+          ],
+          "ParamArmR": [
+            -0.1100873276591301,
+            0.10779006779193878
+          ],
+          "ParamArmL": [
+            -0.10499999672174454,
+            0.07181283831596375
+          ],
+          "ParamEyeBallX": [
+            0,
+            0.18000000715255737
+          ],
+          "ParamEyeBallY": [
+            0,
+            0.06499999761581421
+          ],
+          "ParamHandR": [
+            -0.10000000149011612,
+            0.003634982742369175
+          ],
+          "ParamHandL": [
+            -0.003634982742369175,
+            0.10000000149011612
+          ],
+          "ParamAngleY": [
+            0,
+            0
+          ],
+          "ParamBodyAngleY": [
+            0,
+            0
+          ],
+          "ParamAngleX": [
+            0,
+            0
+          ],
+          "ParamBodyAngleX": [
+            0,
+            0
+          ],
+          "ParamAngleZ": [
+            0,
+            0
+          ],
+          "ParamMouthForm": [
+            0,
+            0
+          ],
+          "ParamBodyAngleZ": [
+            0,
+            0
+          ],
+          "ParamHairBack": [
+            0,
+            0
+          ],
+          "ParamHairFringeR": [
+            -0.21774694323539734,
+            0.14984185993671417
+          ],
+          "ParamHairFringeC": [
+            -0.17243815958499908,
+            0.1205582469701767
+          ],
+          "ParamHairFringeL": [
+            -0.16222721338272095,
+            0.11098961532115936
+          ],
+          "ParamSkirtSway": [
+            -0.13412746787071228,
+            0.161148339509964
+          ],
+          "ParamHairFront": [
+            -0.21768911182880402,
+            0.1542682647705078
+          ],
+          "ParamMouthOpenY": [
+            0.8199999928474426,
+            0.8199999928474426
+          ]
+        },
+        "torsoVertexRangePixels": 19.702501695086923,
+        "fringeVertexRangePixels": 5.442135616338931,
+        "frontHairVertexRangePixels": 5.831487213116924,
+        "mouthVertexRangePixels": 8.165544839492654
+      },
+      {
+        "name": "goofy-speaking",
+        "frames": 60,
+        "simulatedSeconds": 1,
+        "parameterRange": {
+          "ParamBreath": [
+            0.41541874408721924,
+            0.8471050262451172
+          ],
+          "ParamEyeLOpen": [
+            0.029333334416151047,
+            0.8799999952316284
+          ],
+          "ParamEyeROpen": [
+            0.029333334416151047,
+            0.8799999952316284
+          ],
+          "ParamTailAngle": [
+            0.6247020363807678,
+            0.6499990820884705
+          ],
+          "ParamFinR": [
+            0.004540691152215004,
+            0.14524267613887787
+          ],
+          "ParamFinL": [
+            -0.20473913848400116,
+            -0.01682979241013527
+          ],
+          "ParamArmR": [
+            0.10085711628198624,
+            0.1100873276591301
+          ],
+          "ParamArmL": [
+            0.07271502912044525,
+            0.1049584299325943
+          ],
+          "ParamEyeBallX": [
+            0.08861543238162994,
+            0.18000000715255737
+          ],
+          "ParamEyeBallY": [
+            0.03776305168867111,
+            0.06499999761581421
+          ],
+          "ParamHandR": [
+            0.004365505650639534,
+            0.0983615443110466
+          ],
+          "ParamHandL": [
+            -0.0983615443110466,
+            -0.004365505650639534
+          ],
+          "ParamAngleY": [
+            0,
+            0
+          ],
+          "ParamBodyAngleY": [
+            0,
+            0
+          ],
+          "ParamAngleX": [
+            0,
+            0
+          ],
+          "ParamBodyAngleX": [
+            0,
+            0
+          ],
+          "ParamAngleZ": [
+            0,
+            0
+          ],
+          "ParamMouthForm": [
+            0,
+            0
+          ],
+          "ParamBodyAngleZ": [
+            0,
+            0
+          ],
+          "ParamHairBack": [
+            0,
+            0
+          ],
+          "ParamHairFringeR": [
+            0.02304363250732422,
+            0.12961718440055847
+          ],
+          "ParamHairFringeC": [
+            0.007663307245820761,
+            0.10329152643680573
+          ],
+          "ParamHairFringeL": [
+            0.019775494933128357,
+            0.09615905582904816
+          ],
+          "ParamSkirtSway": [
+            -0.118478924036026,
+            -0.08530023694038391
+          ],
+          "ParamHairFront": [
+            -0.002280617831274867,
+            0.13056395947933197
+          ],
+          "ParamMouthOpenY": [
+            1,
+            1
+          ]
+        },
+        "torsoVertexRangePixels": 9.091036596198627,
+        "fringeVertexRangePixels": 2.498617562890967,
+        "frontHairVertexRangePixels": 2.769343982817353,
+        "mouthVertexRangePixels": 3.050085119833288
+      },
+      {
+        "name": "Nod",
+        "frames": 240,
+        "simulatedSeconds": 4,
+        "parameterRange": {
+          "ParamBreath": [
+            0.20808593928813934,
+            0.8999608755111694
+          ],
+          "ParamEyeLOpen": [
+            0.75,
+            1
+          ],
+          "ParamEyeROpen": [
+            0.75,
+            1
+          ],
+          "ParamTailAngle": [
+            0.30473434925079346,
+            0.6499990820884705
+          ],
+          "ParamFinR": [
+            0.004540691152215004,
+            0.21070437133312225
+          ],
+          "ParamFinL": [
+            -0.20473913848400116,
+            0.1674710512161255
+          ],
+          "ParamArmR": [
+            0.04365314170718193,
+            0.1072726920247078
+          ],
+          "ParamArmL": [
+            0.012284590862691402,
+            0.1049584299325943
+          ],
+          "ParamEyeBallX": [
+            4.1165346131855074e-10,
+            0.18000000715255737
+          ],
+          "ParamEyeBallY": [
+            4.025832740632042e-14,
+            0.06499999761581421
+          ],
+          "ParamHandR": [
+            4.203895392974451e-45,
+            0.0983615443110466
+          ],
+          "ParamHandL": [
+            -0.0983615443110466,
+            -4.203895392974451e-45
+          ],
+          "ParamAngleY": [
+            -5,
+            2
+          ],
+          "ParamBodyAngleY": [
+            -2,
+            0.800000011920929
+          ],
+          "ParamAngleX": [
+            0,
+            0
+          ],
+          "ParamBodyAngleX": [
+            0,
+            0
+          ],
+          "ParamAngleZ": [
+            0,
+            0
+          ],
+          "ParamMouthForm": [
+            0,
+            0
+          ],
+          "ParamBodyAngleZ": [
+            0,
+            0
+          ],
+          "ParamHairBack": [
+            0,
+            0
+          ],
+          "ParamHairFringeR": [
+            -0.20414595305919647,
+            0.13000556826591492
+          ],
+          "ParamHairFringeC": [
+            -0.15538276731967926,
+            0.10372605919837952
+          ],
+          "ParamHairFringeL": [
+            -0.15443679690361023,
+            0.09763216227293015
+          ],
+          "ParamSkirtSway": [
+            -0.0882074385881424,
+            0.15998680889606476
+          ],
+          "ParamHairFront": [
+            -0.18996398150920868,
+            0.13127008080482483
+          ],
+          "ParamMouthOpenY": [
+            0,
+            0
+          ]
+        },
+        "torsoVertexRangePixels": 14.374785129164739,
+        "fringeVertexRangePixels": 4.027044730269278,
+        "frontHairVertexRangePixels": 4.444654714406688,
+        "mouthVertexRangePixels": 6.217669609550198
+      },
+      {
+        "name": "Shake",
+        "frames": 240,
+        "simulatedSeconds": 4,
+        "parameterRange": {
+          "ParamBreath": [
+            0.26735275983810425,
+            0.8999608755111694
+          ],
+          "ParamEyeLOpen": [
+            1,
+            1
+          ],
+          "ParamEyeROpen": [
+            1,
+            1
+          ],
+          "ParamTailAngle": [
+            0.30182576179504395,
+            0.6207791566848755
+          ],
+          "ParamFinR": [
+            0.1151113361120224,
+            0.21070437133312225
+          ],
+          "ParamFinL": [
+            -0.0023852339945733547,
+            0.16747130453586578
+          ],
+          "ParamArmR": [
+            0.04423827677965164,
+            0.1072726920247078
+          ],
+          "ParamArmL": [
+            0.011556888930499554,
+            0.06999219954013824
+          ],
+          "ParamEyeBallX": [
+            8.361708547788282e-10,
+            0.18000000715255737
+          ],
+          "ParamEyeBallY": [
+            6.929505390719862e-14,
+            0.06499999761581421
+          ],
+          "ParamHandR": [
+            0,
+            0.002359626116231084
+          ],
+          "ParamHandL": [
+            -0.002359626116231084,
+            0
+          ],
+          "ParamAngleY": [
+            0.40492483973503113,
+            0.40492483973503113
+          ],
+          "ParamBodyAngleY": [
+            0.16196995973587036,
+            0.16196995973587036
+          ],
+          "ParamAngleX": [
+            -4.977008819580078,
+            5
+          ],
+          "ParamBodyAngleX": [
+            -1.990803599357605,
+            2
+          ],
+          "ParamAngleZ": [
+            -0.4000000059604645,
+            0.3981606960296631
+          ],
+          "ParamMouthForm": [
+            0,
+            0
+          ],
+          "ParamBodyAngleZ": [
+            0,
+            0
+          ],
+          "ParamHairBack": [
+            -0.1802522838115692,
+            0.18783940374851227
+          ],
+          "ParamHairFringeR": [
+            -0.1864399015903473,
+            0.3390248417854309
+          ],
+          "ParamHairFringeC": [
+            -0.13749960064888,
+            0.2500917315483093
+          ],
+          "ParamHairFringeL": [
+            -0.14337845146656036,
+            0.2570745050907135
+          ],
+          "ParamSkirtSway": [
+            -0.23891203105449677,
+            0.19610434770584106
+          ],
+          "ParamHairFront": [
+            -0.16454054415225983,
+            0.29928842186927795
+          ],
+          "ParamMouthOpenY": [
+            0,
+            0
+          ]
+        },
+        "torsoVertexRangePixels": 13.309379959352553,
+        "fringeVertexRangePixels": 3.9647489518857393,
+        "frontHairVertexRangePixels": 4.916687820545315,
+        "mouthVertexRangePixels": 4.961479453826295
+      },
+      {
+        "name": "Blink",
+        "frames": 240,
+        "simulatedSeconds": 4,
+        "parameterRange": {
+          "ParamBreath": [
+            0.26735275983810425,
+            0.8999608755111694
+          ],
+          "ParamEyeLOpen": [
+            0.004268038552254438,
+            1
+          ],
+          "ParamEyeROpen": [
+            0.004268038552254438,
+            1
+          ],
+          "ParamTailAngle": [
+            0.30182576179504395,
+            0.6495434641838074
+          ],
+          "ParamFinR": [
+            0.03662414848804474,
+            0.21070437133312225
+          ],
+          "ParamFinL": [
+            -0.18903328478336334,
+            0.16747130453586578
+          ],
+          "ParamArmR": [
+            0.04423827677965164,
+            0.1100873276591301
+          ],
+          "ParamArmL": [
+            0.011556888930499554,
+            0.102424755692482
+          ],
+          "ParamEyeBallX": [
+            8.361708547788282e-10,
+            0.18000000715255737
+          ],
+          "ParamEyeBallY": [
+            6.929505390719862e-14,
+            0.06499999761581421
+          ],
+          "ParamHandR": [
+            0,
+            0.07486110925674438
+          ],
+          "ParamHandL": [
+            -0.07486110925674438,
+            0
+          ],
+          "ParamAngleY": [
+            0.40492483973503113,
+            0.40492483973503113
+          ],
+          "ParamBodyAngleY": [
+            0.16196995973587036,
+            0.16196995973587036
+          ],
+          "ParamAngleX": [
+            -0.5061560273170471,
+            -0.5061560273170471
+          ],
+          "ParamBodyAngleX": [
+            -0.20246241986751556,
+            -0.20246241986751556
+          ],
+          "ParamAngleZ": [
+            0.05061560496687889,
+            0.05061560496687889
+          ],
+          "ParamMouthForm": [
+            0,
+            0
+          ],
+          "ParamBodyAngleZ": [
+            0,
+            0
+          ],
+          "ParamHairBack": [
+            0.00046127315727062523,
+            0.0013609849847853184
+          ],
+          "ParamHairFringeR": [
+            -0.18645083904266357,
+            0.33921852707862854
+          ],
+          "ParamHairFringeC": [
+            -0.1374901831150055,
+            0.250296026468277
+          ],
+          "ParamHairFringeL": [
+            -0.1433774083852768,
+            0.25719931721687317
+          ],
+          "ParamSkirtSway": [
+            -0.2437073290348053,
+            0.19464880228042603
+          ],
+          "ParamHairFront": [
+            -0.16459205746650696,
+            0.29949960112571716
+          ],
+          "ParamMouthOpenY": [
+            0,
+            0
+          ]
+        },
+        "torsoVertexRangePixels": 13.155733820636796,
+        "fringeVertexRangePixels": 3.8328383494838287,
+        "frontHairVertexRangePixels": 4.517881110966898,
+        "mouthVertexRangePixels": 3.5535933217673503
+      }
+    ],
+    "profile": {
+      "automaticBreathing": false,
+      "fixedStepPhysics": true,
+      "expressions": {
+        "standard": {
+          "label": "标准表情",
+          "mouthRest": 0
+        },
+        "goofy": {
+          "label": "傻笑",
+          "mouthRest": 0.82
+        }
+      },
+      "emotionExpressions": {
+        "neutral": "standard",
+        "happy": "goofy",
+        "joy": "goofy",
+        "excited": "goofy",
+        "amused": "goofy",
+        "relieved": "goofy",
+        "sad": "standard",
+        "angry": "standard",
+        "surprised": "standard",
+        "thinking": "standard",
+        "confident": "standard",
+        "focused": "standard",
+        "alert": "standard",
+        "calm": "standard"
+      }
+    },
+    "scope": "Actual installed SDK InternalModel.update with the existing authored motions, expression manager and production fixed-step physics; no WebGL or network execution"
+  },
+  "candidateUhd": {
+    "canvasPixels": [
+      3840,
+      2160
+    ],
+    "screenshotPixels": [
+      3840,
+      2160
+    ],
+    "hardwareRenderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 5090 D v2 (0x00002B8C) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "pageErrors": [],
+    "scope": "V32 candidate at the formal 3010 /live.html via gated muted review. Actual hardware output and asset identity only; no commercial, CMO3, audio, OBS or performance acceptance."
+  },
+  "layeredSource": {
+    "file": "whale-maid-v32-layered-source.psd",
+    "layers": 94,
+    "visible": 39,
+    "hidden": 55,
+    "rgbaRoundtripExact": true,
+    "nativeSourceUnchanged": true,
+    "limitations": "PSD contains editable source cutouts in actual default visibility/order; Cubism mesh deformation and runtime clipping masks are not baked or converted. It is not an exact MOC frame or a native 4K art claim."
+  },
+  "limitations": [
+    "4K 是画布与截图输出契约，不代表全部原画为原生 4K。",
+    "源 PSD 未烘焙网格形变或转换 Cubism clipping mask；完整绑定、蒙版和原始密度素材保存在原生工程。",
+    "手腕为关节局部动作，不是逐指绑定；现有情绪映射使用标准和傻笑两套差分。",
+    "OBS 和帧率性能评审未纳入本轮输出验收。",
+    "原生导出仍报告遗留 Glue0 的未知 drawable 引用；其端点归属尚未确认，不宣称导出零损失或已交付兼容 Cubism 的 CMO3。当前运行 MOC 已单独完成动作与画面检查。"
+  ],
+  "currentVisualReview": {
+    "date": "2026-10-24",
+    "modelMocSha256": "7345b0aabb8033ecb47dcfde3a8a9f9334d641ecf068c833850faec56aa2254f",
+    "renderer": "Actual browser WebGL / current V32",
+    "states": [
+      "standard and goofy neutral",
+      "closed eyes",
+      "half eyes and half mouth",
+      "AngleX=18, AngleY=-12, AngleZ=-30, BodyZ=10, Breath=1, eyes=.5, gaze=(.6,-.4), standard mouth=.5",
+      "AngleX=-18, AngleY=12, AngleZ=30, BodyZ=-10, Breath=1, eyes=.5, gaze=(-.6,.4), goofy speaking=.5"
+    ],
+    "result": "Inspected face, neck root, collar and front/back hair in representative combinations; no new visible transparent gap or mouth detachment observed. This is sampled visual review, not every possible parameter combination."
+  },
+  "nativeExportWarnings": {
+    "Glue0": "Native exporter reports GlueNamesAnUnknownDrawable; workspace inspection cannot resolve Glue0 as an editable glue. Endpoint ownership is unconfirmed. The warning also exists in earlier exports; current runtime MOC and all textures reproduce byte-identically after native reopen.",
+    "hiddenDrawables": "8 superseded hidden drawables are omitted by the explicit export option."
+  }
+}

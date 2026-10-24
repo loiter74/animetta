@@ -1,0 +1,82 @@
+{
+  "Version": 3,
+  "FileReferences": {
+    "Moc": "candidate.moc3",
+    "Textures": [
+      "candidate.2048/texture_00.png",
+      "candidate.2048/texture_01.png",
+      "candidate.2048/texture_02.png",
+      "candidate.2048/texture_03.png",
+      "candidate.2048/texture_04.png",
+      "candidate.2048/texture_05.png",
+      "candidate.2048/texture_06.png",
+      "candidate.2048/texture_07.png",
+      "candidate.2048/texture_08.png",
+      "candidate.2048/texture_09.png",
+      "candidate.2048/texture_10.png",
+      "candidate.2048/texture_11.png",
+      "candidate.2048/texture_12.png",
+      "candidate.2048/texture_13.png",
+      "candidate.2048/texture_14.png",
+      "candidate.2048/texture_15.png",
+      "candidate.2048/texture_16.png",
+      "candidate.2048/texture_17.png",
+      "candidate.2048/texture_18.png",
+      "candidate.2048/texture_19.png",
+      "candidate.2048/texture_20.png",
+      "candidate.2048/texture_21.png",
+      "candidate.2048/texture_22.png"
+    ],
+    "DisplayInfo": "candidate.cdi3.json",
+    "Motions": {
+      "Idle": [
+        {
+          "File": "whale-maid-v1.idle.motion3.json"
+        }
+      ],
+      "Blink": [
+        {
+          "File": "whale-maid-v1.blink.motion3.json"
+        }
+      ],
+      "Nod": [
+        {
+          "File": "whale-maid-v1.nod.motion3.json"
+        }
+      ],
+      "Shake": [
+        {
+          "File": "whale-maid-v1.shake.motion3.json"
+        }
+      ]
+    },
+    "Expressions": [
+      {
+        "Name": "standard",
+        "File": "standard.exp3.json"
+      },
+      {
+        "Name": "goofy",
+        "File": "goofy.exp3.json"
+      }
+    ],
+    "Physics": "candidate.physics3.json"
+  },
+  "Groups": [
+    {
+      "Target": "Parameter",
+      "Name": "LipSync",
+      "Ids": [
+        "ParamMouthOpenY"
+      ]
+    },
+    {
+      "Target": "Parameter",
+      "Name": "EyeBlink",
+      "Ids": [
+        "ParamEyeLOpen",
+        "ParamEyeROpen"
+      ]
+    }
+  ]
+}

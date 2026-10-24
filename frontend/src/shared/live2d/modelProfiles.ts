@@ -31,7 +31,7 @@ const WHALE_MAID_MODEL_PROFILE: Live2DModelProfile = {
   id: 'whale-maid-v1',
   automaticBreathing: false,
   fixedStepPhysics: true,
-  modelUrl: '/live2d/whale-maid-v1/whale-maid-v1.model3.json',
+  modelUrl: '/live2d/whale-maid-v1/v32/whale-maid-v32.model3.json',
   mouthParameters: ['ParamMouthOpenY'],
   framing: { scale: 0.9, x: 0.5, y: 0.46 },
   performance: {

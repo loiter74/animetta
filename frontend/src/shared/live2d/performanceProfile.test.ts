@@ -212,7 +212,9 @@ describe('versioned Live2D model assets', () => {
       'ParamHairFringeC',
       'ParamHairFringeL',
       'ParamSkirtSway',
+      'ParamHairFront',
     ])
+    expect(new Set(physicsOutputs).size).toBe(physicsOutputs.length)
     for (const setting of physics.PhysicsSettings) {
       for (const input of setting.Input) {
         expect(declaredParameters.has(input.Source.Id)).toBe(true)
