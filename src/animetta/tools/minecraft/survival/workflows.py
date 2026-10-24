@@ -109,18 +109,24 @@ def _iron_progression_steps(iron_quantity: int = 3) -> tuple[ExecuteStep, ...]:
         _step("craft", {"recipe": "oak_planks", "count": 32}),
         _step("craft", {"recipe": "crafting_table", "count": 1}),
         _step("craft", {"recipe": "stick", "count": 4}),
-        _step("craft", {"recipe": "wooden_pickaxe", "count": 1}),
+        _step("craft", {"recipe": "wooden_pickaxe", "count": 1}, travel=8, blocks=8),
         # Collection includes the bounded shaft preparation before gathering stone.
         _step("collect", {"block_type": "stone", "count": 16}, travel=96, blocks=96),
-        _step("craft", {"recipe": "stone_pickaxe", "count": 1}),
-        _step("craft", {"recipe": "furnace", "count": 1}),
+        _step("craft", {"recipe": "stone_pickaxe", "count": 1}, travel=8, blocks=8),
         _step(
             "collect",
             {"block_type": "iron_ore", "count": iron_quantity},
             travel=192,
             blocks=192,
         ),
-        _step("smelt", {"item": "raw_iron", "fuel": "oak_planks", "count": iron_quantity}),
+        # Set up the stationary workstation at the ore site, after travelling.
+        _step("craft", {"recipe": "furnace", "count": 1}, travel=8, blocks=8),
+        _step(
+            "smelt",
+            {"item": "raw_iron", "fuel": "oak_planks", "count": iron_quantity},
+            travel=8,
+            blocks=8,
+        ),
     )
 
 
@@ -135,8 +141,8 @@ def _iron_progression_collection_targets(
         None,
         InventoryThreshold(item="cobblestone", quantity=16),
         None,
-        None,
         InventoryThreshold(item="raw_iron", quantity=iron_quantity),
+        None,
         None,
     )
 
@@ -151,8 +157,8 @@ def _iron_progression_checkpoints() -> tuple[WorkflowCheckpoint, ...]:
             {"diamond": 1},
         ),
         _inventory_checkpoint({"stone_pickaxe": 1}, {"iron_pickaxe": 1}, {"diamond": 1}),
-        _inventory_checkpoint({"furnace": 1}, {"iron_ingot": 3}, {"iron_pickaxe": 1}),
         _inventory_checkpoint({"raw_iron": 3}, {"iron_ingot": 3}, {"iron_pickaxe": 1}),
+        _inventory_checkpoint({"furnace": 1}, {"iron_ingot": 3}, {"iron_pickaxe": 1}),
         _inventory_checkpoint({"iron_ingot": 3}, {"iron_pickaxe": 1}),
     )
 
@@ -162,6 +168,7 @@ def _bounded_diamond_descent() -> tuple[ExecuteStep, ...]:
         _step(
             "mine_shaft",
             {"target_y": target_y, "minimum_cobblestone": 0},
+            travel=24,
             blocks=24,
         )
         for target_y in range(56, -49, -8)
@@ -169,6 +176,7 @@ def _bounded_diamond_descent() -> tuple[ExecuteStep, ...]:
         _step(
             "mine_shaft",
             {"target_y": -54, "minimum_cobblestone": 0},
+            travel=24,
             blocks=18,
         ),
     )
@@ -243,10 +251,10 @@ def nether_preparation_workflows() -> tuple[WorkflowDefinition, ...]:
     pickaxe_steps = (
         _step("collect", {"block_type": "stone", "count": 6}, travel=48, blocks=16),
         _step("craft", {"recipe": "stick", "count": 8}),
-        _step("craft", {"recipe": "stone_pickaxe", "count": 2}),
+        _step("craft", {"recipe": "stone_pickaxe", "count": 2}, travel=8, blocks=8),
         *diamond.steps,
         _step("craft", {"recipe": "stick", "count": 4}),
-        _step("craft", {"recipe": "diamond_pickaxe", "count": 1}),
+        _step("craft", {"recipe": "diamond_pickaxe", "count": 1}, travel=8, blocks=8),
     )
     pickaxe_collection_targets = (
         InventoryThreshold(item="cobblestone", quantity=6),
@@ -281,8 +289,8 @@ def nether_preparation_workflows() -> tuple[WorkflowDefinition, ...]:
             collection_targets=_iron_progression_collection_targets(7),
             checkpoints=(
                 *_iron_progression_checkpoints()[:7],
-                _inventory_checkpoint({"furnace": 1}, {"iron_ingot": 7}),
                 _inventory_checkpoint({"raw_iron": 7}, {"iron_ingot": 7}),
+                _inventory_checkpoint({"furnace": 1}, {"iron_ingot": 7}),
                 _inventory_checkpoint({"iron_ingot": 7}),
             ),
         ),
@@ -304,8 +312,8 @@ def nether_preparation_workflows() -> tuple[WorkflowDefinition, ...]:
             intent="acquire",
             target="water_bucket",
             steps=(
-                _step("craft", {"recipe": "bucket", "count": 1}),
-                _step("fill_water_bucket", {}, travel=128, blocks=1),
+                _step("craft", {"recipe": "bucket", "count": 1}, travel=8, blocks=8),
+                _step("fill_water_bucket", {}, travel=120, blocks=1),
             ),
             checkpoints=(
                 _inventory_checkpoint({"bucket": 1}, {"water_bucket": 1}),
@@ -334,7 +342,12 @@ def nether_preparation_workflows() -> tuple[WorkflowDefinition, ...]:
                 _step("collect", {"block_type": "oak_log", "count": 2}, travel=64, blocks=2),
                 _step("craft", {"recipe": "oak_planks", "count": 8}),
                 _step("collect", {"block_type": "iron_ore", "count": 1}, travel=64, blocks=1),
-                _step("smelt", {"item": "raw_iron", "fuel": "oak_planks", "count": 1}),
+                _step(
+                    "smelt",
+                    {"item": "raw_iron", "fuel": "oak_planks", "count": 1},
+                    travel=8,
+                    blocks=8,
+                ),
                 _step("acquire_flint", {"max_attempts": 16}, travel=64, blocks=48),
                 _step("craft", {"recipe": "flint_and_steel", "count": 1}),
             ),

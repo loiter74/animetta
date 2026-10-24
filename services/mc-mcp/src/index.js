@@ -955,7 +955,7 @@ function craftError(message, code, extra = {}) {
   return err;
 }
 
-async function _ensureCraftingTable(mcData) {
+async function _ensureCraftingTable(mcData, context = {}) {
   const waitUntilGround = async (timeoutMs = 3000) => {
     const deadline = Date.now() + timeoutMs;
     while (Date.now() < deadline) {
@@ -969,6 +969,10 @@ async function _ensureCraftingTable(mcData) {
     const veryClose = bot.findBlock({ matching: mcData.blocksByName.crafting_table.id, maxDistance: 5 });
     if (veryClose) return veryClose;
   } catch (e) {}
+
+  if (context.budget?.max_blocks_changed === 0) {
+    throw craftError('当前动作没有方块预算，且附近没有可复用的工作台。', 'NO_CRAFTING_TABLE');
+  }
 
   // Second: place a fresh table from inventory. Avoid pathing to stale tables
   // from previous runs when the bot can make a local survival-valid table.
@@ -1109,7 +1113,8 @@ async function _ensureCraftingTable(mcData) {
   return null;
 }
 
-async function _reclaimCraftingTable(craftingTable) {
+async function _reclaimCraftingTable(craftingTable, context = {}) {
+  if (context.keep_crafting_table || context.budget?.max_blocks_changed === 0) return;
   if (!craftingTable) return;
   if (bot.inventory.items().some(i => i.name === 'crafting_table')) return;
   try {
@@ -1143,7 +1148,7 @@ const FALLBACK_RECIPES = {
   chest: { ingredients: { oak_planks: 8 }, result: 1, requiresTable: true },
 };
 
-async function _craftWithFallback(recipe, count, craftingTable) {
+async function _craftWithFallback(recipe, count, craftingTable, context = {}) {
   const fallback = FALLBACK_RECIPES[recipe];
   if (!fallback) return null;
 
@@ -1232,7 +1237,7 @@ async function _craftWithFallback(recipe, count, craftingTable) {
                     craftingTable,
                   );
                   await _waitForInventoryIncrease(recipe, before, 1);
-                  await _reclaimCraftingTable(craftingTable);
+                  await _reclaimCraftingTable(craftingTable, context);
                   return `Crafted ${count} ${recipe} (fallback-table)`;
                 } catch (e) { /* try next */ }
               }
@@ -1249,7 +1254,7 @@ async function _craftWithFallback(recipe, count, craftingTable) {
         craftingTable || null,
       );
       await _waitForInventoryIncrease(recipe, before, 1);
-      await _reclaimCraftingTable(craftingTable);
+      await _reclaimCraftingTable(craftingTable, context);
       return `Crafted ${count} ${recipe}`;
     } catch (e) {
       if (e.code) throw e;
@@ -1276,7 +1281,7 @@ async function _craftWithFallback(recipe, count, craftingTable) {
         craftingTable,
       );
       await _waitForInventoryIncrease(recipe, before, 1);
-      await _reclaimCraftingTable(craftingTable);
+      await _reclaimCraftingTable(craftingTable, context);
       return `Crafted ${count} ${recipe}`;
     }
 
@@ -1301,7 +1306,7 @@ async function _craftWithFallback(recipe, count, craftingTable) {
             craftingTable,
           );
           await _waitForInventoryIncrease(recipe, before, 1);
-          await _reclaimCraftingTable(craftingTable);
+          await _reclaimCraftingTable(craftingTable, context);
           return `Crafted ${count} ${recipe} (fallback)`;
         } catch (e) { /* continue */ }
       }
@@ -1316,6 +1321,7 @@ async function _craftWithFallback(recipe, count, craftingTable) {
 
 async function _craft(recipe, count = 1, context = {}) {
   context.operation_scope?.checkpoint();
+  context = { ...context, keep_crafting_table: recipe === 'furnace' };
   const mcData = await getMcData();
   const fallbackRecipe = FALLBACK_RECIPES[recipe] || null;
   const needsCraftingTable = fallbackRecipe ? fallbackRecipe.requiresTable : null;
@@ -1329,7 +1335,7 @@ async function _craft(recipe, count = 1, context = {}) {
   // Only locate/place a table for recipes that may actually need one.
   // Inventory recipes like logs -> planks must stay local, otherwise the bot can
   // waste the command timeout pathing to an old table in the world.
-  const craftingTable = needsCraftingTable === false ? null : await _ensureCraftingTable(mcData);
+  const craftingTable = needsCraftingTable === false ? null : await _ensureCraftingTable(mcData, context);
   const presentationTarget = await presentBlockTarget({
     context,
     phase: 'aiming',
@@ -1337,7 +1343,7 @@ async function _craft(recipe, count = 1, context = {}) {
   });
   context.report_phase?.('acting', presentationTarget ? { target: presentationTarget } : {});
   if (fallbackRecipe?.requiresTable) {
-    const deterministicResult = await _craftWithFallback(recipe, count, craftingTable);
+    const deterministicResult = await _craftWithFallback(recipe, count, craftingTable, context);
     if (deterministicResult) return deterministicResult;
   }
   let allRecipes = [];
@@ -1369,7 +1375,7 @@ async function _craft(recipe, count = 1, context = {}) {
   if (!allRecipes || allRecipes.length === 0) {
     // Try hardcoded fallback recipes (1.21.4 compatibility)
     const fallbackTable = fallbackRecipe?.requiresTable ? craftingTable : null;
-    const fallbackResult = await _craftWithFallback(recipe, count, fallbackTable);
+    const fallbackResult = await _craftWithFallback(recipe, count, fallbackTable, context);
     if (fallbackResult) {
       return fallbackResult;
     }
@@ -1395,14 +1401,14 @@ async function _craft(recipe, count = 1, context = {}) {
           needsCraftingTable === false ? null : craftingTable || null,
         );
         await _waitForInventoryIncrease(recipe, before, 1);
-        await _reclaimCraftingTable(needsCraftingTable === false ? null : craftingTable || null);
+        await _reclaimCraftingTable(needsCraftingTable === false ? null : craftingTable || null, context);
         return `Crafted ${count} ${recipe} (tried-all)`;
       } catch (e) { /* try next */ }
     }
     if (fallbackRecipe) {
-      const fallbackTable = fallbackRecipe.requiresTable ? (craftingTable || await _ensureCraftingTable(mcData)) : null;
-      const fallbackResult = await _craftWithFallback(recipe, count, fallbackTable);
-      await _reclaimCraftingTable(fallbackTable);
+      const fallbackTable = fallbackRecipe.requiresTable ? (craftingTable || await _ensureCraftingTable(mcData, context)) : null;
+      const fallbackResult = await _craftWithFallback(recipe, count, fallbackTable, context);
+      await _reclaimCraftingTable(fallbackTable, context);
       return fallbackResult;
     }
     const missing = _checkCraftMaterials(allRecipes[0], count);
@@ -1419,7 +1425,7 @@ async function _craft(recipe, count = 1, context = {}) {
         needsCraftingTable === false ? null : craftingTable || null,
       );
       await _waitForInventoryIncrease(recipe, before, 1);
-      await _reclaimCraftingTable(needsCraftingTable === false ? null : craftingTable || null);
+      await _reclaimCraftingTable(needsCraftingTable === false ? null : craftingTable || null, context);
       return `Crafted ${count} ${recipe}`;
     } catch (e) { /* try next */ }
   }
@@ -1434,15 +1440,15 @@ async function _craft(recipe, count = 1, context = {}) {
         needsCraftingTable === false ? null : craftingTable || null,
       );
       await _waitForInventoryIncrease(recipe, before, 1);
-      await _reclaimCraftingTable(needsCraftingTable === false ? null : craftingTable || null);
+      await _reclaimCraftingTable(needsCraftingTable === false ? null : craftingTable || null, context);
       return `Crafted ${count} ${recipe} (all-recipes)`;
     } catch (e) { /* try next */ }
   }
 
   if (fallbackRecipe) {
-    const fallbackTable = fallbackRecipe.requiresTable ? (craftingTable || await _ensureCraftingTable(mcData)) : null;
-    const fallbackResult = await _craftWithFallback(recipe, count, fallbackTable);
-    await _reclaimCraftingTable(fallbackTable);
+    const fallbackTable = fallbackRecipe.requiresTable ? (craftingTable || await _ensureCraftingTable(mcData, context)) : null;
+    const fallbackResult = await _craftWithFallback(recipe, count, fallbackTable, context);
+    await _reclaimCraftingTable(fallbackTable, context);
     return fallbackResult;
   }
 

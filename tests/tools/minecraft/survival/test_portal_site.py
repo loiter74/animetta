@@ -1,0 +1,99 @@
+"""A canopy spawn must not become the permanent return target."""
+
+import json
+from pathlib import Path
+
+import pytest
+
+from animetta.tools.gamebot.contracts.v2 import (
+    Observation,
+    Position,
+    RegionBounds,
+    RegionInspection,
+)
+from animetta.tools.minecraft.survival.portal_site import (
+    nether_portal_survey_bounds,
+    select_nether_portal_site,
+)
+
+_MESSAGES = json.loads(
+    (Path(__file__).resolve().parents[4] / "contracts/gamebot/v2/fixtures/golden.json").read_text(
+        encoding="utf-8"
+    )
+)["messages"]
+
+
+def _survey() -> tuple[Observation, RegionInspection]:
+    observation = Observation.model_validate(
+        {
+            **_MESSAGES["Observation"],
+            "position": {"x": 0, "y": 75, "z": 0},
+            "inventory": {},
+        }
+    )
+    blocks = {f"{x},{y},0": "minecraft:air" for x in range(5) for y in range(63, 81)}
+    blocks.update({f"{x},63,0": "minecraft:grass_block" for x in range(5)})
+    inspection = RegionInspection(
+        inspection_id="site-survey",
+        correlation_id="site-survey",
+        runtime_instance_id=observation.runtime_instance_id,
+        world_identity=observation.world_identity,
+        captured_at_ms=observation.captured_at_ms,
+        tick=observation.tick,
+        observation_id=observation.observation_id,
+        observation_hash=observation.content_hash,
+        content_hash="a" * 64,
+        bounds=RegionBounds(min=Position(x=0, y=63, z=0), max=Position(x=4, y=80, z=0)),
+        blocks=blocks,
+    )
+    return observation, inspection
+
+
+def test_portal_site_uses_known_ground_below_a_canopy_spawn() -> None:
+    observation, inspection = _survey()
+    site = select_nether_portal_site(observation, (inspection,))
+    assert site.home == (0, 64, 0)
+    assert site.origin == (1, 64, 0)
+    assert observation.position.y == 75
+    assert all(bounds.volume <= 4096 for bounds in nether_portal_survey_bounds(observation))
+    assert len(nether_portal_survey_bounds(observation)) == 8
+
+
+@pytest.mark.parametrize(
+    "support",
+    ["minecraft:spruce_leaves", "minecraft:spruce_log", "minecraft:sand", "minecraft:water"],
+)
+def test_portal_site_rejects_temporary_or_unsafe_support(support: str) -> None:
+    observation, inspection = _survey()
+    inspection.blocks["0,63,0"] = support
+    with pytest.raises(ValueError, match="no permanent"):
+        select_nether_portal_site(observation, (inspection,))
+
+
+def test_portal_site_does_not_infer_air_from_missing_or_occluded_voxels() -> None:
+    observation, inspection = _survey()
+    del inspection.blocks["2,66,0"]
+    with pytest.raises(ValueError, match="no permanent"):
+        select_nether_portal_site(observation, (inspection,))
+    inspection.blocks["2,66,0"] = "minecraft:air"
+    inspection.blocks["0,76,0"] = "minecraft:spruce_leaves"
+    with pytest.raises(ValueError, match="no permanent"):
+        select_nether_portal_site(observation, (inspection,))
+
+
+def test_portal_site_rejects_another_world_and_conflicting_inspections() -> None:
+    observation, inspection = _survey()
+    other = inspection.model_copy(
+        update={
+            "world_identity": inspection.world_identity.model_copy(
+                update={"world_identity_hash": "f" * 64},
+            )
+        }
+    )
+    with pytest.raises(ValueError, match="another world"):
+        select_nether_portal_site(observation, (other,))
+    conflict = inspection.model_copy(
+        update={"blocks": {**inspection.blocks, "0,63,0": "minecraft:stone"}}
+    )
+    with pytest.raises(ValueError, match="conflicting"):
+        select_nether_portal_site(observation, (inspection, conflict))

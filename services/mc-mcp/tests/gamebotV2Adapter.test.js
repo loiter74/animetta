@@ -121,6 +121,112 @@ function request(adapter, capability, parameters, correlationId) {
   };
 }
 
+function nativeWorldWork(bot) {
+  bot.entity.position = new Vec3(3, 68, 0);
+  bot.emit('move');
+  bot.health = 18;
+  bot.emit('health');
+  const stone = { name: 'stone', type: 1, position: new Vec3(1, 64, 0) };
+  const air = { ...stone, name: 'air', type: 0 };
+  bot.emit('blockUpdate', stone, air);
+  bot.emit('diggingCompleted', air);
+  bot.emit('blockPlaced', air, { ...stone, name: 'crafting_table', type: 2 });
+}
+
+test('generic action evidence charges goto work before an ordinary timeout', async () => {
+  const fixture = adapterFixture({ actions: { goto: async () => {
+    nativeWorldWork(fixture.bot);
+    throw Object.assign(new Error('navigation timed out'), { code: 'ACTION_DEADLINE_EXPIRED' });
+  } } });
+  const receipt = await fixture.adapter.runtime.executeAction(request(
+    fixture.adapter, 'goto', { x: 3, y: 68, z: 0 }, 'generic-goto-timeout',
+  ));
+  assert.equal(receipt.error.code, 'ACTION_DEADLINE_EXPIRED');
+  assert.equal(receipt.budget_usage.max_actions, 1);
+  assert.equal(receipt.budget_usage.max_travel_distance, 5);
+  assert.equal(receipt.budget_usage.max_damage_taken, 2);
+  assert.equal(receipt.budget_usage.max_blocks_changed, 2);
+  assert.ok(receipt.explained_mutations.some(m => m.kind === 'block'
+    && m.details.block_type === 'minecraft:crafting_table'));
+  fixture.adapter.dispose();
+});
+
+test('generic action evidence includes craft world work and preserves explicit annotations', async () => {
+  const fixture = adapterFixture({ actions: { craft: async () => {
+    nativeWorldWork(fixture.bot);
+    return { output: 'crafted', explained_mutations: [{
+      kind: 'block', subject: 'block:minecraft:overworld:2:64:0', delta: 1,
+      details: { block_type: 'minecraft:nether_portal' },
+    }], budget_usage: { max_actions: 1, max_blocks_changed: 1 } };
+  } } });
+  const receipt = await fixture.adapter.runtime.executeAction(request(
+    fixture.adapter, 'craft', { recipe: 'stone_pickaxe', count: 1 }, 'generic-craft',
+  ));
+  assert.equal(receipt.outcome, 'success');
+  assert.equal(receipt.budget_usage.max_travel_distance, 5);
+  assert.equal(receipt.budget_usage.max_damage_taken, 2);
+  assert.equal(receipt.budget_usage.max_blocks_changed, 3);
+  assert.ok(receipt.explained_mutations.some(m => m.details?.block_type === 'minecraft:nether_portal'));
+  fixture.adapter.dispose();
+});
+
+test('generic action evidence does not double charge nested collection or leak listeners', async () => {
+  const fixture = adapterFixture({ actions: { collectWithEvidence: async () => withCollectionEvidence(
+    fixture.bot, async mutations => {
+      nativeWorldWork(fixture.bot);
+      mutations.push({ kind: 'block', subject: 'block:minecraft:overworld:1:64:0', delta: -1,
+        details: { block_type: 'minecraft:stone' } });
+      return 'collected';
+    },
+  ) } });
+  const events = ['move', 'health', 'blockUpdate', 'diggingCompleted', 'blockPlaced'];
+  const before = events.map(event => fixture.bot.listenerCount(event));
+  const receipt = await fixture.adapter.runtime.executeAction(request(
+    fixture.adapter, 'collect', { block_type: 'stone', count: 1 }, 'generic-nested',
+  ));
+  assert.equal(receipt.outcome, 'success');
+  assert.equal(receipt.budget_usage.max_actions, 1);
+  assert.equal(receipt.budget_usage.max_travel_distance, 5);
+  assert.equal(receipt.budget_usage.max_damage_taken, 2);
+  assert.equal(receipt.budget_usage.max_blocks_changed, 2);
+  assert.deepEqual(events.map(event => fixture.bot.listenerCount(event)), before);
+  fixture.adapter.dispose();
+});
+
+test('generic action evidence keeps read-only recipe inspection free', async () => {
+  const fixture = adapterFixture();
+  const receipt = await fixture.adapter.runtime.executeAction(request(
+    fixture.adapter, 'recipes', { item: 'iron_pickaxe' }, 'generic-read-only',
+  ));
+  assert.equal(receipt.outcome, 'success');
+  assert.equal(receipt.budget_usage.max_actions, 0);
+  fixture.adapter.dispose();
+});
+
+test('generic budget guard permits stationary zero-block crafting and stops damage during goto', async () => {
+  let continued = false;
+  const fixture = adapterFixture({ actions: { goto: async (_x, _y, _z, context) => {
+    nativeWorldWork(fixture.bot);
+    context.signal.throwIfAborted();
+    continued = true;
+  } } });
+  const craft = request(fixture.adapter, 'craft', { recipe: 'iron_pickaxe', count: 1 }, 'stationary-craft');
+  craft.remaining_budget = budget({ max_travel_distance: 0, max_blocks_changed: 0, max_damage_taken: 0 });
+  const crafted = await fixture.adapter.runtime.executeAction(craft);
+  assert.equal(crafted.outcome, 'success');
+  assert.equal(crafted.budget_usage.max_blocks_changed, 0);
+  const goto = request(fixture.adapter, 'goto', { x: 3, y: 68, z: 0 }, 'goto-damage-stop');
+  goto.remaining_budget = budget({ max_damage_taken: 0 });
+  const stopped = await fixture.adapter.runtime.executeAction(goto);
+  assert.equal(continued, false);
+  assert.equal(stopped.outcome, 'unknown');
+  assert.equal(stopped.error.code, 'BUDGET_CONTRACT_VIOLATION');
+  assert.equal(stopped.budget_usage.max_damage_taken, 2);
+  assert.equal(stopped.budget_usage.max_travel_distance, 5);
+  assert.equal(stopped.budget_usage.max_blocks_changed, 2);
+  fixture.adapter.dispose();
+});
+
 test('real SDK metadata from another entity cannot replace the bot own air supply', async () => {
   let bot;
   const fixture = adapterFixture({ actions: { goto: async (_x, _y, _z, context) => {

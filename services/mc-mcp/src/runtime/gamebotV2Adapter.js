@@ -9,6 +9,7 @@ import {
 import { createGameBotRuntimeV2 } from '../gamebotRuntimeV2.js';
 import { AIR_RECOVERY_MS, surfaceEscapePlan } from '../navigation.js';
 import { ownOxygenLevel } from './playerVitals.js';
+import { withActionEvidence } from './actionEvidence.js';
 import {
   BroadcastMotionPolicy,
   resolvePresentationConfig,
@@ -357,7 +358,7 @@ function guardBotAction(
     let lifecycleError = null;
     let invocationSettlement = Promise.resolve();
     let invocationEvidence;
-    const collectionBudget = context.capability === 'collect' ? context.budget : null;
+    const actionBudget = ['observe', 'status', 'recipes'].includes(context.capability) ? null : context.budget;
     let previousPosition = { ...bot.entity?.position };
     let previousHealth = bot.health;
     let travel = 0;
@@ -385,13 +386,14 @@ function guardBotAction(
       abortLifecycle(message);
       void Promise.resolve(abortActive()).catch(() => {});
     };
-    const checkCollectionBudget = () => {
-      if (!collectionBudget) return;
+    const checkActionBudget = () => {
+      if (!actionBudget) return;
       // Dry navigation walks without sprinting/parkour. Stop two blocks early
       // for the current physics tick and braking; never alter charged usage.
-      if (travel >= Math.max(0, collectionBudget.max_travel_distance - 2)
-        || damage > collectionBudget.max_damage_taken) {
-        fail('BUDGET_EXHAUSTED', '采集接近移动预算上限或已超过伤害预算，已停止当前动作。', {
+      if (((context.capability === 'collect' || travel > 0)
+        && travel >= Math.max(0, actionBudget.max_travel_distance - 2))
+        || damage > actionBudget.max_damage_taken) {
+        fail('BUDGET_EXHAUSTED', '动作接近移动预算上限或已超过伤害预算，已停止当前动作。', {
           travel_distance: travel, damage_taken: damage, stopping_reserve: 2,
         });
       }
@@ -402,12 +404,12 @@ function guardBotAction(
       travel += Math.hypot(position.x - previousPosition.x,
         position.y - previousPosition.y, position.z - previousPosition.z);
       previousPosition = { ...position };
-      checkCollectionBudget();
+      checkActionBudget();
     };
     const onHealth = () => {
       damage += Math.max(0, previousHealth - bot.health);
       previousHealth = bot.health;
-      checkCollectionBudget();
+      checkActionBudget();
     };
     const onDeath = () => fail('BOT_DIED', 'Bot died during capability execution');
     const onBreath = () => {
@@ -460,7 +462,7 @@ function guardBotAction(
     bot.once('death', onDeath);
     bot.once('end', onEnd);
     bot.on('breath', onBreath);
-    if (collectionBudget) {
+    if (actionBudget) {
       bot.on('move', onMove);
       bot.on('health', onHealth);
     }
@@ -470,7 +472,7 @@ function guardBotAction(
       return;
     }
     onBreath();
-    checkCollectionBudget();
+    checkActionBudget();
     if (context.signal?.aborted) return;
     const invocationPromise = Promise.resolve().then(invoke);
     invocationSettlement = invocationPromise.then(
@@ -585,7 +587,7 @@ function runtimeCapabilities(bot, actions, abortActive, motionPolicy) {
             operation_scope: scope,
             presentation: presentationFacade,
           });
-          const value = await runWithOperationScope(scope, () => guardBotAction(
+          const invoke = () => runWithOperationScope(scope, () => guardBotAction(
             bot,
             abortActive,
             async () => {
@@ -615,7 +617,11 @@ function runtimeCapabilities(bot, actions, abortActive, motionPolicy) {
             (reason) => lifecycleController.abort(reason),
             airRecoveryDeadline,
           ));
-          return normalizeCapabilityResult(value, { readOnly });
+          const normalizeResult = value => {
+            return normalizeCapabilityResult(value, { readOnly });
+          };
+          return readOnly ? normalizeResult(await invoke())
+            : withActionEvidence(bot, invoke, { normalizeResult });
         },
       }];
     }),

@@ -216,11 +216,12 @@ def test_survival_workflows_declare_absolute_collection_targets() -> None:
 
     assert iron.collection_targets[0] == InventoryThreshold(item="oak_log", quantity=8)
     assert iron.collection_targets[5] == InventoryThreshold(item="cobblestone", quantity=16)
-    assert iron.collection_targets[8] == InventoryThreshold(item="raw_iron", quantity=3)
+    assert iron.steps[7].parameters == {"block_type": "iron_ore", "count": 3}
+    assert iron.collection_targets[7] == InventoryThreshold(item="raw_iron", quantity=3)
     assert all(
         target is None
         for index, target in enumerate(iron.collection_targets)
-        if index not in {0, 5, 8}
+        if index not in {0, 5, 7}
     )
     assert len(diamond.collection_targets) == len(diamond.steps)
     assert diamond.collection_targets[-1] == InventoryThreshold(item="diamond", quantity=1)

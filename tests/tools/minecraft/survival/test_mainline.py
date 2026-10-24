@@ -36,6 +36,34 @@ MESSAGES = json.loads(
 )["messages"]
 
 
+def test_workstation_reservations_fit_unchanged_iron_budget_and_leave_a_local_table() -> None:
+    mission = build_nether_portal_mission(mission_id="workstations", home=(0, 64, 0))
+    registry = WorkflowRegistry()
+    for workflow in nether_preparation_workflows():
+        registry.register(workflow)
+    iron, pickaxe = mission.objectives[:2]
+    workflow = registry.resolve(iron.goal)
+    assert workflow is not None
+    assert iron.budget.max_travel_distance == 512
+    assert iron.budget.max_blocks_changed == 256
+    assert pickaxe.budget.max_travel_distance == pickaxe.budget.max_blocks_changed == 0
+    assert len(mission.objectives) == 9
+    assert [step.capability for step in workflow.steps[-3:]] == ["collect", "craft", "smelt"]
+    assert workflow.steps[-2].parameters["recipe"] == "furnace"
+    for step in workflow.steps:
+        if step.capability == "smelt" or step.parameters.get("recipe") in {
+            "wooden_pickaxe",
+            "stone_pickaxe",
+            "furnace",
+        }:
+            assert step.maximum_cost.max_blocks_changed == 8
+            assert step.maximum_cost.max_travel_distance == 8
+    assert sum(step.maximum_cost.max_travel_distance for step in workflow.steps) == 512
+    water = registry.resolve(mission.objectives[3].goal)
+    assert water is not None and water.target == "water_bucket"
+    assert sum(step.maximum_cost.max_travel_distance for step in water.steps) == 128
+
+
 @pytest.mark.parametrize("wood", ["spruce", "birch", "dark_oak", "mangrove", "cherry"])
 def test_wood_bootstrap_binds_observed_species_through_crafting_and_fuel(wood: str) -> None:
     workflow = next(w for w in nether_preparation_workflows() if w.target == "nether_iron_kit")
@@ -215,7 +243,7 @@ def test_stone_preparation_cost_and_inventory_resume_cover_real_retry8_receipt()
     assert stone.maximum_cost.max_blocks_changed >= 47
     assert stone.maximum_cost.max_travel_distance >= 56.48043503820463
     # Iron collection also owns the shaft from the surface down to Y16.
-    iron = workflow.steps[-2]
+    iron = next(step for step in workflow.steps if step.parameters.get("block_type") == "iron_ore")
     assert iron.maximum_cost.max_blocks_changed >= (64 - 16) * 3 + 7
     assert mission.objectives[0].budget.max_blocks_changed >= (
         workflow.steps[0].maximum_cost.max_blocks_changed
@@ -345,8 +373,11 @@ def test_water_preparation_reserves_iron_before_deep_mining() -> None:
         registry.register(workflow)
     kit = registry.resolve(iron.goal)
     assert kit is not None
-    assert kit.steps[-2].parameters["count"] == 7
-    raw_threshold = kit.collection_targets[-2]
+    ore_index = next(
+        i for i, step in enumerate(kit.steps) if step.parameters.get("block_type") == "iron_ore"
+    )
+    assert kit.steps[ore_index].parameters["count"] == 7
+    raw_threshold = kit.collection_targets[ore_index]
     assert raw_threshold is not None and raw_threshold.quantity == 7
     water_workflow = registry.resolve(water.goal)
     assert water_workflow is not None

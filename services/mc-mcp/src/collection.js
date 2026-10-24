@@ -1,4 +1,5 @@
 import { withTimeout } from './actionDeadline.js';
+export { blockMutation as collectionResourceMutation, withActionEvidence as withCollectionEvidence } from './runtime/actionEvidence.js';
 import { operationWait } from './runtime/operationScope.js';
 import { getResourceDefinition, isUndergroundCategory } from './resources/registry.js';
 import Vec3 from 'vec3';
@@ -279,20 +280,6 @@ export function collectionExcavationGoal(block) {
   return new pathfinderPkg.goals.GoalGetToBlock(x, y, z);
 }
 
-export function collectionResourceMutation(blockType, position, dimension = 'minecraft:overworld', delta = -1) {
-  const normalizedBlock = String(blockType).includes(':')
-    ? String(blockType)
-    : `minecraft:${blockType}`;
-  const normalizedDimension = String(dimension).includes(':')
-    ? String(dimension)
-    : `minecraft:${dimension}`;
-  return {
-    kind: 'block',
-    subject: `block:${normalizedDimension}:${position.x}:${position.y}:${position.z}`,
-    delta,
-    details: { block_type: normalizedBlock },
-  };
-}
 
 export function createCollectionBlockMatcher(blockId, excludedKeys = new Set(), eligible = () => true) {
   const blockIds = blockId instanceof Set
@@ -707,95 +694,4 @@ export function incompleteCollectionError(blockType, dropItem, collected, reques
   error.reason = `inventory gained ${collected} ${dropItem}`;
   error.details = diagnostics;
   return error;
-}
-
-export async function withCollectionEvidence(bot, collect) {
-  const resourceMutations = [];
-  const nativeMutations = [];
-  const removedBlocks = new Map();
-  const onBlockUpdate = (before, after) => {
-    if (before?.position && before.type !== 0 && after?.type === 0) {
-      removedBlocks.set(collectionBlockKey(before), before);
-    }
-  };
-  const onDiggingCompleted = after => {
-    // Mineflayer emits the new air block, after the general blockUpdate event.
-    const key = collectionBlockKey(after);
-    const block = removedBlocks.get(key);
-    if (!block) return;
-    removedBlocks.delete(key);
-    nativeMutations.push(collectionResourceMutation(
-      block.name, block.position, bot.game?.dimension || 'minecraft:overworld',
-    ));
-  };
-  const onBlockPlaced = (before, after) => {
-    if (!after?.position || after.type === 0 || before?.type === after.type) return;
-    nativeMutations.push(collectionResourceMutation(
-      after.name, after.position, bot.game?.dimension || 'minecraft:overworld', 1,
-    ));
-  };
-  let previousPosition = { ...bot.entity.position };
-  let previousHealth = bot.health;
-  let travel = 0;
-  let damage = 0;
-  const onMove = () => {
-    const current = bot.entity.position;
-    travel += Math.hypot(
-      current.x - previousPosition.x,
-      current.y - previousPosition.y,
-      current.z - previousPosition.z,
-    );
-    previousPosition = { ...current };
-  };
-  const onHealth = () => {
-    damage += Math.max(0, previousHealth - bot.health);
-    previousHealth = bot.health;
-  };
-  const evidence = () => {
-    // Explicit target/backfill annotations may describe the same confirmed
-    // native dig or placement; match each event once, preserving repeat changes.
-    const unmatchedNative = [...nativeMutations];
-    const annotations = resourceMutations.filter(mutation => {
-      const index = unmatchedNative.findIndex(native => native.subject === mutation.subject
-        && native.delta === mutation.delta && native.details.block_type === mutation.details?.block_type);
-      if (index < 0) return true;
-      unmatchedNative.splice(index, 1);
-      return false;
-    });
-    const mutations = [...nativeMutations, ...annotations];
-    return {
-      explained_mutations: mutations,
-      budget_usage: {
-        max_actions: 1,
-        max_travel_distance: travel,
-        max_blocks_changed: mutations.length,
-        max_damage_taken: damage,
-      },
-    };
-  };
-  bot.on('move', onMove);
-  bot.on('health', onHealth);
-  bot.on('blockUpdate', onBlockUpdate);
-  bot.on('diggingCompleted', onDiggingCompleted);
-  bot.on('blockPlaced', onBlockPlaced);
-  try {
-    const output = await collect(resourceMutations);
-    onMove();
-    onHealth();
-    return { output, ...evidence() };
-  } catch (error) {
-    onMove();
-    onHealth();
-    // AbortSignal.throwIfAborted() may throw a string reason. Attaching fields
-    // to that primitive cannot preserve them for the receipt boundary.
-    const failure = error instanceof Error ? error : new Error(String(error), { cause: error });
-    Object.assign(failure, evidence());
-    throw failure;
-  } finally {
-    bot.removeListener('move', onMove);
-    bot.removeListener('health', onHealth);
-    bot.removeListener('blockUpdate', onBlockUpdate);
-    bot.removeListener('diggingCompleted', onDiggingCompleted);
-    bot.removeListener('blockPlaced', onBlockPlaced);
-  }
 }
