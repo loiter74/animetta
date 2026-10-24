@@ -26,6 +26,7 @@ import {
   digCollectionBlock,
   findCollectionTarget,
   findPickupItemEntities,
+  pickupInventoryCount,
   incompleteCollectionError,
   isCollectionFluidHazard,
   isCollectionSettleHazard,
@@ -874,6 +875,8 @@ async function _collectInner(block_type, count, mcData, context = {}) {
     }
 
     // Dig block (with retry on abort)
+    const pickupItemName = resolvedBlockType === 'gravel' ? ['gravel', 'flint'] : dropItem;
+    const minimumPickupCount = pickupInventoryCount(bot, pickupItemName) + 1;
     context.report_phase?.('acting', {
       attempt: attempts,
       ...(presentationTarget ? { target: presentationTarget } : {}),
@@ -933,8 +936,7 @@ async function _collectInner(block_type, count, mcData, context = {}) {
       }
       // Wait for item entity to register and pick up drops
       await operationWait(500);
-      await _pickupDroppedItems(8000, block.position,
-        resolvedBlockType === 'gravel' ? ['gravel', 'flint'] : dropItem, minimumY);
+      await _pickupDroppedItems(8000, block.position, pickupItemName, minimumY, minimumPickupCount);
       context.signal?.throwIfAborted();
       const actual = Math.max(0, _inventoryCount(dropItem) - startingCount);
       collected = Math.min(actual, count);

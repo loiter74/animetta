@@ -532,6 +532,13 @@ function pickupItemNames(itemName) {
     .map(name => name.replace(/^minecraft:/, ''))) : null;
 }
 
+export function pickupInventoryCount(bot, itemName) {
+  const acceptedNames = pickupItemNames(itemName);
+  return (bot.inventory?.items?.() || [])
+    .filter(item => acceptedNames?.has(item.name.replace(/^minecraft:/, '')))
+    .reduce((total, item) => total + item.count, 0);
+}
+
 export function findPickupItemEntities(bot, radius = 20, itemName = null) {
   const items = [];
   const acceptedNames = pickupItemNames(itemName);
@@ -600,9 +607,7 @@ export async function safePickupDroppedItems(bot, {
   const attemptsByEntity = new Map();
   const acceptedNames = pickupItemNames(itemName);
   const hasEnoughItems = () => minimumInventoryCount !== null && acceptedNames !== null
-    && (bot.inventory?.items?.() || [])
-      .filter(item => acceptedNames.has(item.name.replace(/^minecraft:/, '')))
-      .reduce((total, item) => total + item.count, 0) >= minimumInventoryCount;
+    && pickupInventoryCount(bot, itemName) >= minimumInventoryCount;
   let navigating = false;
   const stopOnCompletion = () => {
     if (!navigating || !hasEnoughItems()) return;

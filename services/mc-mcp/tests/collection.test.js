@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { EventEmitter } from 'node:events';
+import { readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
 import Vec3 from 'vec3';
 import pathfinderPkg from 'mineflayer-pathfinder';
 import minecraftData from 'minecraft-data';
@@ -165,13 +167,13 @@ test('safe pickup waits at a supported edge for a delayed floating item', async 
   assert.ok(elapsed >= 1500 && elapsed < 8000);
 });
 
-function targetedPickupFixture() {
+function targetedPickupFixture(itemName = 'crafting_table') {
   const bag = [];
   const bot = new EventEmitter();
   bot.inventory = Object.assign(new EventEmitter(), { items: () => bag });
   bot.entity = { position: new Vec3(0.5, 64, 0.5) };
   const drop = (name, x) => ({ name: 'item', position: new Vec3(x, 64, 0.5), getDroppedItem: () => ({ name }) });
-  bot.entities = { 1: drop('birch_sapling', 1.5), 2: drop('crafting_table', 4.5) };
+  bot.entities = { 1: drop('birch_sapling', 1.5), 2: drop(itemName, 4.5) };
   bot.blockAt = position => ({ name: position.y < 64 ? 'stone' : 'air',
     boundingBox: position.y < 64 ? 'block' : 'empty', position });
   bot.setControlState = () => {};
@@ -180,7 +182,7 @@ function targetedPickupFixture() {
   bot.pathfinder = { movements: original, setMovements(value) { this.movements = value; },
     stop() {}, setGoal() {}, async goto(goal) { goals.push(goal); delete bot.entities[2]; } };
   let elapsed = 0;
-  const options = { itemName: 'crafting_table', minimumInventoryCount: 1,
+  const options = { itemName, minimumInventoryCount: 1,
     fallbackPos: new Vec3(4, 64, 0), GoalNear: pathfinderPkg.goals.GoalNear,
     movements: {}, nowMs: () => elapsed, waitMs: async ms => { elapsed += ms; } };
   return { bot, bag, original, goals, options };
@@ -193,6 +195,102 @@ test('targeted pickup skips a recovered workstation instead of chasing saplings 
   assert.equal(result.navigations, 0);
   assert.deepEqual(fixture.goals, []);
   assert.equal(fixture.bot.pathfinder.movements, fixture.original);
+});
+
+test('ore pickup skips the old landing spot when the mined drop already entered inventory', async () => {
+  const { bot, bag, goals, options } = targetedPickupFixture('raw_iron');
+  bag.push({ name: 'raw_iron', count: 2 });
+  const minimumInventoryCount = collection.pickupInventoryCount(bot, options.itemName) + 1;
+  bag.push({ name: 'minecraft:raw_iron', count: 1 });
+  const result = await collection.safePickupDroppedItems(bot, { ...options, minimumInventoryCount });
+  assert.equal(result.navigations, 0);
+  assert.deepEqual(goals, []);
+});
+
+test('ore pickup clears an active goal as soon as the new drop enters inventory', async () => {
+  const { bot, bag, options } = targetedPickupFixture('raw_iron');
+  bag.push({ name: 'raw_iron', count: 2 });
+  const minimumInventoryCount = collection.pickupInventoryCount(bot, options.itemName) + 1;
+  let hardStopped = false;
+  let walkedPastPickup = false;
+  bot.pathfinder.setGoal = goal => { if (goal === null) hardStopped = true; };
+  bot.pathfinder.goto = async () => {
+    assert.equal(hardStopped, false);
+    bag[0].count += 1;
+    bot.inventory.emit('updateSlot', 0, null, bag[0]);
+    walkedPastPickup = !hardStopped;
+  };
+  const result = await collection.safePickupDroppedItems(bot, { ...options, minimumInventoryCount });
+  assert.equal(result.navigations, 1);
+  assert.equal(hardStopped, true);
+  assert.equal(walkedPastPickup, false);
+  assert.equal(result.path_failures, 0);
+  assert.equal(bot.inventory.listenerCount('updateSlot'), 0);
+});
+
+test('gravel pickup needs a new gravel or flint item beyond their combined existing stock', async () => {
+  const { bot, bag, options } = targetedPickupFixture('gravel');
+  bag.push({ name: 'gravel', count: 2 }, { name: 'minecraft:flint', count: 4 },
+    { name: 'raw_iron', count: 10 });
+  const itemName = ['minecraft:gravel', 'flint'];
+  const minimumInventoryCount = collection.pickupInventoryCount(bot, itemName) + 1;
+  assert.equal(minimumInventoryCount, 7);
+  let hardStopped = false;
+  bot.pathfinder.setGoal = goal => { if (goal === null) hardStopped = true; };
+  bot.pathfinder.goto = async () => {
+    assert.equal(hardStopped, false, 'old flint stock must not satisfy a new pickup');
+    bag[1].count += 1;
+    bot.inventory.emit('updateSlot', 1, null, bag[1]);
+    assert.equal(hardStopped, true);
+  };
+  const result = await collection.safePickupDroppedItems(bot, { ...options, itemName, minimumInventoryCount });
+  assert.equal(result.navigations, 1);
+  assert.equal(collection.pickupInventoryCount(bot, itemName), 7);
+});
+
+test('native collection passes the pre-dig inventory threshold to ordinary ore pickup', async () => {
+  const { bot, bag, goals, options } = targetedPickupFixture('raw_iron');
+  const ore = { name: 'iron_ore', type: 15, position: new Vec3(4, 64, 0) };
+  bot.findBlock = () => ore;
+  let dug = false;
+  const source = readFileSync(new URL('../src/index.js', import.meta.url), 'utf8');
+  const start = source.indexOf('async function _collectInner(');
+  const end = source.indexOf('\nfunction craftError(', start);
+  assert.ok(start >= 0 && end > start);
+  // Execute the actual private native function without starting Mineflayer.
+  const collect = runInNewContext(`(${source.slice(start, end)})`, {
+    ...collection,
+    bot,
+    ITEM_TO_BLOCK: {},
+    BLOCK_DROP_ITEM: { iron_ore: 'raw_iron' },
+    resolveRequestedBlockName: () => 'iron_ore',
+    resolveRequestedBlockNames: () => ['iron_ore'],
+    shouldPrepareUndergroundCollection: () => null,
+    collectionDigSafety: () => ({ safe: true }),
+    collectionApproachGoal: () => ({ isEnd: () => true }),
+    presentBlockTarget: async () => null,
+    _stabilizePosition: async () => true,
+    _collectDebug() {},
+    _inventoryCount: item => collection.pickupInventoryCount(bot, item),
+    _equipToolForBlock: async () => {},
+    digCollectionBlock: async () => { dug = true; },
+    operationWait: async ms => {
+      if (dug && ms === 500) {
+        bag.push({ name: 'raw_iron', count: 1 });
+        delete bot.entities[2];
+      }
+    },
+    _pickupDroppedItems: async (timeoutMs, fallbackPos, itemName, minimumY, minimumInventoryCount) => (
+      collection.safePickupDroppedItems(bot, {
+        ...options, timeoutMs, fallbackPos, itemName, minimumY, minimumInventoryCount,
+      })
+    ),
+  });
+  const result = await collect('iron_ore', 1, { blocksByName: { iron_ore: { id: 15 } } });
+  assert.equal(result, 'Collected 1 iron_ore');
+  assert.equal(dug, true);
+  assert.equal(collection.pickupInventoryCount(bot, 'raw_iron'), 1);
+  assert.deepEqual(goals, [], 'an automatically collected ore must not start an old fallback route');
 });
 
 test('targeted pickup stops an active route on inventory evidence and keeps the absolute threshold', async () => {
