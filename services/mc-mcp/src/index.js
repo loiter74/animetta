@@ -1329,13 +1329,14 @@ async function _craft(recipe, count = 1, context = {}) {
   context = { ...context, keep_crafting_table: recipe === 'furnace' };
   const mcData = await getMcData();
   const fallbackRecipe = FALLBACK_RECIPES[recipe] || null;
-  const needsCraftingTable = fallbackRecipe ? fallbackRecipe.requiresTable : null;
 
   // Look up item by name
   const item = mcData.itemsByName[recipe];
   if (!item) {
     throw craftError(`Item not found: ${recipe}`, 'NO_RECIPE');
   }
+  const inventoryRecipes = fallbackRecipe ? [] : (bot.recipesFor(item.id, null, count, null) || []);
+  const needsCraftingTable = fallbackRecipe?.requiresTable ?? (inventoryRecipes.length === 0);
 
   // Only locate/place a table for recipes that may actually need one.
   // Inventory recipes like logs -> planks must stay local, otherwise the bot can
@@ -1351,8 +1352,8 @@ async function _craft(recipe, count = 1, context = {}) {
     const deterministicResult = await _craftWithFallback(recipe, count, craftingTable, context);
     if (deterministicResult) return deterministicResult;
   }
-  let allRecipes = [];
-  if (needsCraftingTable !== true) {
+  let allRecipes = inventoryRecipes;
+  if (allRecipes.length === 0 && needsCraftingTable !== true) {
     allRecipes = bot.recipesAll(item.id, null, null) || [];
   }
   if (allRecipes.length === 0 && craftingTable) {
