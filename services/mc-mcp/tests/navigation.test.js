@@ -156,3 +156,51 @@ test('recovery can reach a supported breathing station through a known surface-w
   assert.equal(result.status, 'success');
   assert.ok(result.path.every(node => node.y === -54 && node.toBreak.length === 0 && node.toPlace.length === 0));
 });
+
+test('real SDK can leave an anchored canopy by supported steps without breaking its footing', () => {
+  const registry = minecraftData('1.21');
+  const Block = prismarineBlock(registry);
+  let unstable = false;
+  let obstructed = false;
+  const heights = [74, 74, 73, 72, 71];
+  const bot = { registry, inventory: { items: () => [] }, entities: {}, game: { minY: -64 },
+    entity: { position: new Vec3(0.5, 75, 0.5), effects: {} },
+    pathfinder: { bestHarvestTool: () => null },
+    blockAt(position) {
+      const p = position.floored();
+      if (p.x < 0 || p.x > 4 || p.z !== 0 || p.y < 70 || p.y > 77) return null;
+      const name = obstructed && p.x === 1 && p.y === 75 ? 'oak_leaves'
+        : p.y > heights[p.x] ? 'air' : p.x < 3 ? 'oak_leaves' : 'stone';
+      const block = name === 'oak_leaves'
+        ? Block.fromProperties(registry.blocksByName[name].id,
+          { distance: unstable && p.x === 1 ? 7 : 1, persistent: false, waterlogged: false }, 0)
+        : Block.fromStateId(registry.blocksByName[name].defaultState, 0);
+      block.position = p;
+      return block;
+    },
+  };
+  const movements = configureDryNavigation(new pathfinderPackage.Movements(bot), bot);
+  movements.allowEntityDetection = false;
+  const search = () => new AStar(new Move(0, 75, 0, 0, 0), movements,
+    new pathfinderPackage.goals.GoalBlock(4, 72, 0), 1000, 1000).compute();
+  const result = search();
+  assert.equal(result.status, 'success');
+  assert.ok(result.path.every(node => node.toBreak.length === 0 && node.toPlace.length === 0));
+  for (const [index, node] of result.path.entries()) {
+    const previousY = index ? result.path[index - 1].y : 75;
+    assert.ok(previousY - node.y <= 1);
+    assert.ok(node.y <= 75);
+  }
+  assert.equal(movements.safeToBreak(bot.blockAt(new Vec3(0, 74, 0))), false);
+  const downward = [];
+  movements.getMoveDown(new Move(1, 75, 0, 0, 0), downward);
+  assert.deepEqual(downward, [], 'future path nodes cannot excavate their leaf footing either');
+  obstructed = true;
+  const clearedPath = search();
+  assert.equal(clearedPath.status, 'success');
+  assert.ok(clearedPath.path.some(node => node.toBreak.some(p => p.equals(new Vec3(1, 75, 0)))));
+  assert.ok(clearedPath.path.flatMap(node => node.toBreak).every(p => p.y >= 75));
+  obstructed = false;
+  unstable = true;
+  assert.notEqual(search().status, 'success', 'decaying unanchored leaves remain forbidden');
+});

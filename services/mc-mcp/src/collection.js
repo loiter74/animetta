@@ -26,18 +26,49 @@ export function isWaterBlock(block) {
   return block?.name === 'water' || block?.name === 'flowing_water';
 }
 
+function isAnchoredLeafSupport(block) {
+  if (!block?.name?.endsWith('_leaves') || block.boundingBox !== 'block') return false;
+  const properties = block.getProperties?.() || {};
+  return properties.persistent === true || properties.persistent === 'true'
+    || (Number(properties.distance) >= 1 && Number(properties.distance) <= 6);
+}
+
 export function configureDryNavigation(movements, bot, { allowSurfaceSwimming = false } = {}) {
   // The SDK compares the supporting floor, one cell below the actual landing.
   movements.maxDropDown = 2;
   movements.allowParkour = false;
   movements.allowSprinting = false;
+  const origin = bot.entity?.position ? flooredPosition(bot.entity.position) : null;
+  const canopyHeight = origin && isAnchoredLeafSupport(bot.blockAt(offsetPosition(origin, 0, -1, 0)))
+    ? origin.y : null;
+  if (canopyHeight !== null) {
+    // Clear adjacent leaf obstructions if needed, but never plan a shaft
+    // through the leaf floor or dig away the bot's actual current footing.
+    movements.allow1by1towers = false;
+    movements.exclusionAreasBreak.push(block => {
+      const feet = flooredPosition(bot.entity.position);
+      return block.position.x === feet.x && block.position.z === feet.z
+        && block.position.y === feet.y - 1 ? Infinity : 0;
+    });
+    const getMoveDown = movements.getMoveDown.bind(movements);
+    movements.getMoveDown = (node, neighbors) => {
+      if (bot.blockAt(new Vec3(node.x, node.y - 1, node.z))?.name?.endsWith('_leaves')) return;
+      getMoveDown(node, neighbors);
+    };
+    const getNeighbors = movements.getNeighbors.bind(movements);
+    movements.getNeighbors = node => getNeighbors(node).filter(move => (
+      move.y <= canopyHeight
+      || !bot.blockAt(new Vec3(move.x, move.y - 1, move.z))?.name?.endsWith('_leaves')
+    ));
+  }
   const stepCost = node => {
     const position = node.position ?? node;
     const feet = new Vec3(position.x, position.y, position.z);
     const body = bot.blockAt(feet);
     const head = bot.blockAt(feet.offset(0, 1, 0));
-    // Leaves can decay or be removed while approaching a trunk; use solid terrain.
-    if (bot.blockAt(feet.offset(0, -1, 0))?.name?.endsWith('_leaves')) return Infinity;
+    const support = bot.blockAt(feet.offset(0, -1, 0));
+    if (support?.name?.endsWith('_leaves') && (canopyHeight === null
+      || !isAnchoredLeafSupport(support))) return Infinity;
     if (isLavaBlock(body) || isLavaBlock(head) || isWaterBlock(head)) return Infinity;
     if (!allowSurfaceSwimming && isWaterBlock(body)
       && bot.blockAt(feet.offset(0, -1, 0))?.boundingBox !== 'block') return Infinity;
