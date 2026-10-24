@@ -14,7 +14,7 @@ import { createBranchMine } from '../branch_mine.js';
 import { TOOL_TIER } from './registry.js';
 
 const { goals } = pathfinderPkg;
-const { GoalBlock } = goals;
+const { GoalXZ } = goals;
 
 const HOSTILE_NAMES = new Set([
   'zombie',
@@ -75,7 +75,7 @@ function _blockId(mcData, name) {
   return src && src[name] ? src[name].id : null;
 }
 
-// 在 maxDistance 内找最近的一个匹配 block（blocks 优先级顺序）。
+// One SDK scan finds the nearest matching variant across a shared palette.
 export function findNearestMatchingBlock(
   bot,
   mcData,
@@ -83,28 +83,25 @@ export function findNearestMatchingBlock(
   maxDistance,
   excludedTargets = new Set(),
 ) {
-  for (const name of blockNames) {
-    const id = _blockId(mcData, name);
-    if (id == null) continue;
-    try {
-      const b = bot.findBlock({
-        matching: (block) => {
-          if (!block || block.type !== id) return false;
-          // Mineflayer first invokes functional matchers against palette-only
-          // blocks, which intentionally have no world position.
-          if (!block.position) return true;
-          return !excludedTargets.has(
-            `${Math.floor(block.position.x)},${Math.floor(block.position.y)},${Math.floor(block.position.z)}`,
-          );
-        },
-        maxDistance,
-      });
-      if (b) return b;
-    } catch (_e) {
-      // findBlock 偶发异常（区块未加载等）→ 试下一个
-    }
+  const ids = new Set(blockNames.map(name => _blockId(mcData, name)).filter(id => id != null));
+  if (!ids.size) return null;
+  try {
+    return bot.findBlock({
+      matching: (block) => {
+        if (!block || !ids.has(block.type)) return false;
+        // Mineflayer first invokes functional matchers against palette-only
+        // blocks, which intentionally have no world position.
+        if (!block.position) return true;
+        return !excludedTargets.has(
+          `${Math.floor(block.position.x)},${Math.floor(block.position.y)},${Math.floor(block.position.z)}`,
+        );
+      },
+      maxDistance,
+    }) || null;
+  } catch (_e) {
+    // Missing chunks or a transient SDK failure leave this scan without a candidate.
+    return null;
   }
-  return null;
 }
 
 // 当前最佳镐子 tier（徒手=0）。
@@ -175,12 +172,14 @@ function _withinBudget(ctx) {
 }
 
 // 受限移动（pathfinder），自带超时；失败静默（策略继续扫描或返回 null）。
-async function _tryMove(bot, x, y, z, timeoutMs = 6000) {
+async function _tryMove(bot, x, z, deadline) {
   if (!bot || !bot.pathfinder || !bot.pathfinder.goto) return;
+  const timeoutMs = Math.min(6000, deadline - Date.now());
+  if (timeoutMs <= 0) return;
   let timer = null;
   try {
     await Promise.race([
-      bot.pathfinder.goto(new GoalBlock(x, y, z)),
+      bot.pathfinder.goto(new GoalXZ(x, z)),
       new Promise((_, rej) => {
         timer = setTimeout(() => rej(new Error('locator move timeout')), timeoutMs);
       }),
@@ -244,7 +243,7 @@ async function surfaceSweep(bot, ctx) {
     ctx.attempts += 1;
     if (!pos) break;
     const step = ring * 8;
-    await _tryMove(bot, pos.x + step, pos.y, pos.z);
+    await _tryMove(bot, pos.x + step, pos.z, ctx.deadline);
     found = findNearestMatchingBlock(
       bot,
       ctx.mcData,
@@ -253,7 +252,8 @@ async function surfaceSweep(bot, ctx) {
       ctx.options.excludedTargets,
     );
     if (found) return _candidate(bot, found, 'surface_sweep');
-    await _tryMove(bot, pos.x - step, pos.y, pos.z + step);
+    if (!_withinBudget(ctx)) break;
+    await _tryMove(bot, pos.x - step, pos.z + step, ctx.deadline);
     found = findNearestMatchingBlock(
       bot,
       ctx.mcData,
@@ -280,7 +280,7 @@ async function spiralScan(bot, ctx) {
       [0, -step],
     ]) {
       if (!_withinBudget(ctx)) break;
-      await _tryMove(bot, pos.x + dx, pos.y, pos.z + dz);
+      await _tryMove(bot, pos.x + dx, pos.z + dz, ctx.deadline);
       const found = findNearestMatchingBlock(
         bot,
         ctx.mcData,

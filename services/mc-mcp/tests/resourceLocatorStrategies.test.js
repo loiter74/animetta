@@ -72,6 +72,82 @@ function pos(x, y, z) {
   };
 }
 
+test('multi-species locator scans one palette and returns the actual nearest species', () => {
+  const far = { name: 'oak_log', type: 11, position: pos(30, 64, 0) };
+  const near = { name: 'birch_log', type: 12, position: pos(3, 64, 0) };
+  let scans = 0;
+  const bot = {
+    findBlock({ matching, maxDistance }) {
+      scans++;
+      assert.equal(maxDistance, 48);
+      return [near, far].find(matching) || null;
+    },
+  };
+  const found = findNearestMatchingBlock(bot, {
+    blocksByName: { oak_log: { id: 11 }, birch_log: { id: 12 } },
+  }, ['oak_log', 'birch_log'], 48);
+  assert.equal(found, near, 'species priority must not hide a closer usable tree');
+  assert.equal(scans, 1);
+});
+
+function surfaceSearchContext(deadline = Date.now() + 20_000) {
+  return {
+    def: getResourceDefinition('any_log'), memory: new ResourceMemory(),
+    options: { maxDistance: 48, excludedTargets: new Set() },
+    mcData: { blocksByName: { oak_log: { id: 11 }, birch_log: { id: 12 } } },
+    deadline, attempts: 0,
+  };
+}
+
+test('surface exploration accepts natural ground height instead of an occupied old altitude', async () => {
+  const ctx = surfaceSearchContext();
+  let moved = false;
+  const goals = [];
+  const birch = { name: 'birch_log', type: 12, position: pos(-180, 72, -600) };
+  const bot = {
+    entity: { position: pos(-195, 71, -600) },
+    findBlock: ({ matching }) => moved && matching(birch) ? birch : null,
+    pathfinder: {
+      stop() {},
+      async goto(goal) {
+        goals.push(goal);
+        // R21 typed survey: (-187,71,-600) is grass; feet must be at Y=72.
+        const surface = pos(goal.x, 72, goal.z);
+        if (!goal.isEnd(surface)) throw new Error('goal requires the old height inside ground');
+        bot.entity.position = surface;
+        moved = true;
+      },
+    },
+  };
+  const found = await STRATEGIES.surface_sweep(bot, ctx);
+  assert.equal(found?.block, 'birch_log');
+  assert.equal(goals.length, 1);
+  assert.equal(ctx.attempts, 1);
+  assert.equal(goals[0].isEnd(pos(-187, 72, -600)), true, 'installed SDK goal permits surface height');
+});
+
+test('surface movement uses remaining deadline and admits no second move after expiry', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: 10_000 });
+  const originalTimeout = globalThis.setTimeout;
+  const timeouts = [];
+  t.mock.method(globalThis, 'setTimeout', (callback, ms) => {
+    timeouts.push(ms);
+    return originalTimeout(callback, ms);
+  });
+  const ctx = surfaceSearchContext(12_000);
+  let moves = 0;
+  const bot = {
+    entity: { position: pos(0, 64, 0) }, findBlock: () => null,
+    pathfinder: {
+      stop() {},
+      async goto() { moves++; t.mock.timers.setTime(14_001); },
+    },
+  };
+  assert.equal(await STRATEGIES.surface_sweep(bot, ctx), null);
+  assert.equal(moves, 1);
+  assert.deepEqual(timeouts, [2000], 'the existing 6s move allowance is capped by time remaining');
+});
+
 test('resource scans ignore caller-excluded block coordinates', () => {
   const excluded = { name: 'iron_ore', type: 42, position: pos(11, 28, 0) };
   const available = { name: 'iron_ore', type: 42, position: pos(18, 16, 4) };
