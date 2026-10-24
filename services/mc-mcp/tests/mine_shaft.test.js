@@ -1,7 +1,82 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import Vec3 from 'vec3';
+import minecraftData from 'minecraft-data';
+import prismarineBlock from 'prismarine-block';
+import { Physics, PlayerState } from 'prismarine-physics';
 import { createMineShaft } from '../src/mine_shaft.js';
+
+function shaftPhysicsFixture(t, x = 0.95, z = 0.95) {
+  const registry = minecraftData('1.21.1');
+  const Block = prismarineBlock(registry);
+  const changed = new Map();
+  let elapsed = 0;
+  let routes = 0;
+  const digs = [];
+  const controls = {};
+  const bot = {
+    version: '1.21.1',
+    entity: { position: new Vec3(x, 80, z), velocity: new Vec3(0, 0, 0), onGround: true,
+      yaw: 0, pitch: 0, eyeHeight: 1.62, effects: {}, attributes: {} },
+    inventory: { slots: Array(46).fill(null), items: () => [
+      { name: 'stone_pickaxe', count: 1 }, { name: 'cobblestone', count: 40 },
+    ] },
+    async equip() {},
+    async lookAt(point) {
+      const delta = point.minus(this.entity.position);
+      this.entity.yaw = Math.atan2(-delta.x, -delta.z);
+    },
+    setControlState(control, value) { controls[control] = value; },
+    blockAt(position) {
+      const pos = position.floored();
+      const name = changed.get(pos.toString()) ?? (pos.y < 80 ? 'stone' : 'air');
+      const block = Block.fromStateId(registry.blocksByName[name].defaultState);
+      block.position = pos;
+      return block;
+    },
+    async dig(block) { changed.set(block.position.toString(), 'air'); digs.push(block.position.clone()); },
+    async placeBlock(block, face) { changed.set(block.position.plus(face).toString(), 'cobblestone'); },
+    pathfinder: { async goto() { routes++; throw new Error('No alternative ledge path'); }, stop() {} },
+  };
+  const world = { getBlock: position => bot.blockAt(position) };
+  const physics = Physics(registry, world);
+  t.mock.method(Date, 'now', () => elapsed);
+  const wait = async ms => {
+    elapsed += ms;
+    for (let tick = 0; tick < Math.ceil(ms / 50); tick++) {
+      physics.simulatePlayer(new PlayerState(bot, controls), world).apply(bot);
+    }
+  };
+  return { bot, wait, digs, get routes() { return routes; } };
+}
+
+test('real player physics needs the entire footprint over the shaft before digging down', async t => {
+  const fixture = shaftPhysicsFixture(t);
+  const result = await createMineShaft(fixture).mineShaft(79);
+  assert.match(result, /y=79/);
+  assert.equal(Math.floor(fixture.bot.entity.position.y), 79);
+  assert.equal(fixture.routes, 0, 'a supported vertical drop must not require global ledge detours');
+  assert.equal(fixture.digs.length, 1, 'do not dig and refill neighboring support repeatedly');
+  assert.equal(fixture.bot.entity.onGround, true);
+});
+
+test('real supported player descends without unnecessary horizontal steering', async t => {
+  const fixture = shaftPhysicsFixture(t, 0.7, 0.3);
+  await createMineShaft(fixture).mineShaft(79);
+  assert.equal(Math.floor(fixture.bot.entity.position.y), 79);
+  assert.equal(fixture.bot.entity.position.x, 0.7);
+  assert.equal(fixture.bot.entity.position.z, 0.3);
+  assert.equal(fixture.routes, 0);
+});
+
+test('real player keeps descending through a deep solid column without ledge detours', async t => {
+  const fixture = shaftPhysicsFixture(t);
+  await createMineShaft(fixture).mineShaft(16);
+  assert.equal(Math.floor(fixture.bot.entity.position.y), 16);
+  assert.equal(fixture.routes, 0);
+  assert.equal(fixture.digs.length, 64);
+  assert.equal(fixture.bot.entity.onGround, true);
+});
 
 test('mineShaft throws when it gets stuck above targetY', async () => {
   const bot = {

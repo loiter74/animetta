@@ -630,6 +630,31 @@ test('receipt usage above the request budget becomes a contract violation receip
 });
 
 
+test('over-budget failure preserves the stop cause and unmodified consumed usage', async () => {
+  const usage = budget({ max_actions: 1, max_travel_distance: 32.13 });
+  const stopDetails = { travel_distance: 30.1, stopping_reserve: 2,
+    position: { x: -25.5, y: 97, z: -14.5 } };
+  const { runtime } = fixture({
+    invoke: async () => {
+      throw Object.assign(new Error('Movement budget exhausted'), {
+        code: 'BUDGET_EXHAUSTED', details: stopDetails, budget_usage: usage,
+      });
+    },
+  });
+
+  const receipt = await runtime.executeAction(request());
+
+  assert.equal(receipt.outcome, 'unknown');
+  assert.equal(receipt.reconciliation, 'pending');
+  assert.equal(receipt.error.code, 'BUDGET_CONTRACT_VIOLATION');
+  assert.deepEqual(receipt.budget_usage, usage);
+  assert.equal(receipt.error.details.cause.code, 'BUDGET_EXHAUSTED');
+  assert.deepEqual(receipt.error.details.cause.details, { ...stopDetails, budget_usage: usage });
+  assert.deepEqual(receipt.error.details.budget_usage, usage);
+  assert.deepEqual(receipt.error.details.remaining_budget, request().remaining_budget);
+});
+
+
 test('v2 runtime has no arbitrary-code execution surface', () => {
   const { runtime } = fixture();
 

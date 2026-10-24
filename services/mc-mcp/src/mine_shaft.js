@@ -137,6 +137,38 @@ export function createMineShaft({
     }
   }
 
+  async function centerAboveSupport() {
+    const base = bot.entity.position.floored();
+    const center = base.offset(0.5, 0, 0.5);
+    const centered = tolerance => Math.abs(bot.entity.position.x - center.x) <= tolerance
+      && Math.abs(bot.entity.position.z - center.z) <= tolerance;
+    if (centered(0.2)) return true; // The 0.6m footprint already fits on this support.
+    if (typeof bot.lookAt !== 'function' || typeof bot.setControlState !== 'function'
+      || !isSolid(bot.blockAt(base.offset(0, -1, 0)))
+      || !isClear(bot.blockAt(base)) || !isClear(bot.blockAt(base.offset(0, 1, 0)))) return false;
+    // A player straddling two floor blocks does not fall when just one is dug.
+    // Align inside this known clear tile; sneaking limits drift before digging.
+    stopMovement();
+    try {
+      for (let step = 0; step < 20 && !centered(0.05); step++) {
+        assertDryState();
+        const current = bot.entity.position.floored();
+        if (current.x !== base.x || current.z !== base.z) return false;
+        await withActionTimeout(() => bot.lookAt(
+          center.offset(0, bot.entity.eyeHeight || 1.62, 0), true,
+        ), 2000, 'align above shaft support');
+        bot.setControlState('sneak', true);
+        bot.setControlState('forward', true);
+        await wait(50);
+      }
+    } finally {
+      stopMovement();
+    }
+    await wait(150);
+    assertDryState();
+    return centered(0.18) && bot.entity.onGround !== false;
+  }
+
   async function advanceIntoSideStep(target) {
     assertDryState();
     if (!isStableSupport(bot.blockAt(target.offset(0, -1, 0)))
@@ -443,6 +475,7 @@ export function createMineShaft({
   }
 
   async function digVerticalStep(shouldStop = () => false) {
+    if (!await centerAboveSupport()) return false;
     const startY = Math.floor(bot.entity.position.y);
     const startExactY = bot.entity.position.y;
     const base = bot.entity.position.floored();

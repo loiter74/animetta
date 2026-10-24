@@ -905,6 +905,11 @@ export function createGameBotRuntimeV2({
             outcomeKnown: false,
             worldMayHaveChanged: true,
             operatorAction: 'quarantine runtime and reconcile the action receipt',
+            details: {
+              cause: error,
+              budget_usage: budgetUsage,
+              remaining_budget: request.remaining_budget,
+            },
           });
         }
         const reconciliation = !postAction.stable || outcome === 'unknown'
