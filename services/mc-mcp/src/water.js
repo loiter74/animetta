@@ -98,11 +98,37 @@ export async function fillWaterBucket(bot, context = {}, { wait = operationWait 
     if (hasItem(bot, 'water_bucket')) return { filled: true, already_present: true };
     const bucket = hasItem(bot, 'bucket');
     if (!bucket) fail('TOOL_REQUIRED', '装水前需要先合成铁桶。');
-    const positions = bot.findBlocks({ matching: bot.registry.blocksByName.water.id, maxDistance: 64, count: 512 });
-    const sources = positions.map(position => bot.blockAt(position)).filter(block => (
-      isWaterSource(block) && isAirLikeForStanding(bot.blockAt(block.position.offset(0, 1, 0)))
-    ));
-    if (!sources.length) fail('WATER_SOURCE_NOT_FOUND', '附近未观察到可以装取的静态水源。');
+    const scan = { search_radius: 64, candidate_limit: 512, source_checks: 0,
+      check_scope: 'sdk_pre_radius_and_final_live_recheck',
+      origin: bot.entity.position.floored(), samples: {},
+      rejected_non_source: 0, rejected_covered: 0, rejected_unknown_above: 0 };
+    const reject = (reason, block, above = null) => {
+      scan[`rejected_${reason}`]++;
+      // One sample per reason (at most three), never an unbounded voxel trace.
+      if (!Object.hasOwn(scan.samples, reason)) {
+        const level = block?.getProperties?.()?.level;
+        scan.samples[reason] = { position: block?.position ?? null, state_id: block?.stateId ?? null,
+          level: level ?? null, level_type: typeof level, metadata: block?.metadata ?? null,
+          above_name: above?.name ?? null, above_bounding_box: above?.boundingBox ?? null };
+      }
+      return false;
+    };
+    const eligible = block => {
+      scan.source_checks++;
+      if (!isWaterSource(block)) return reject('non_source', block);
+      const above = bot.blockAt(block.position.offset(0, 1, 0));
+      if (!above) return reject('unknown_above', block);
+      if (!isAirLikeForStanding(above)) return reject('covered', block, above);
+      return true;
+    };
+    // Retain the palette's water-ID fast path, but reject unusable cells before
+    // the SDK's chunk-layer early stop and candidate truncation can hide shores.
+    const positions = bot.findBlocks({ matching: bot.registry.blocksByName.water.id,
+      maxDistance: 64, count: 512, useExtraInfo: eligible });
+    const sources = positions.map(position => bot.blockAt(position)).filter(eligible);
+    if (!sources.length) fail('WATER_SOURCE_NOT_FOUND', '附近未观察到可以装取的静态水源。', {
+      ...scan, returned_candidates: positions.length,
+    });
     let source;
     for (const candidate of sources.slice(0, 16)) {
       try {

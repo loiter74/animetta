@@ -6,6 +6,9 @@ import pathfinderPkg from 'mineflayer-pathfinder';
 import minecraftData from 'minecraft-data';
 import blockLoader from 'prismarine-block';
 import WorldSync from 'prismarine-world/src/worldsync.js';
+import ChunkLoader from 'prismarine-chunk';
+import WorldLoader from 'prismarine-world';
+import injectBlocks from 'mineflayer/lib/plugins/blocks.js';
 import { fillWaterBucket, isWaterSource, prepareObsidian } from '../src/water.js';
 import { configureDryNavigation, digCollectionBlock, isSafeStandingPosition, restrictNavigationHeight, safePickupDroppedItems } from '../src/collection.js';
 
@@ -101,6 +104,63 @@ test('real SDK water level strings distinguish static sources from flowing water
   for (let stateId = minStateId + 1; stateId <= maxStateId; stateId++) {
     assert.equal(isWaterSource(Block.fromStateId(stateId, 0)), false);
   }
+});
+
+test('installed SDK water search filters covered water before the unchanged candidate limit', async () => {
+  const bot = waterBot();
+  bot.registry = minecraftData('1.21.1');
+  bot.version = '1.21.1';
+  bot.game = { minY: -64, height: 384 };
+  bot._client = new EventEmitter();
+  const Chunk = ChunkLoader(bot.registry);
+  const World = WorldLoader(bot.registry);
+  const world = new World(null).sync;
+  const center = new Chunk({ minY: -64, worldHeight: 384 });
+  const diagonal = new Chunk({ minY: -64, worldHeight: 384 });
+  const ids = bot.registry.blocksByName;
+  for (let x=0;x<16;x++) for (let z=0;z<16;z++) {
+    center.setBlockStateId(new Vec3(x,63,z),ids.stone.defaultState);
+    diagonal.setBlockStateId(new Vec3(x,63,z),ids.stone.defaultState);
+  }
+  for (let x=1;x<=8;x++) for (let z=1;z<=8;z++) {
+    for (let y=64;y<72;y++) center.setBlockStateId(new Vec3(x,y,z),ids.water.defaultState);
+    center.setBlockStateId(new Vec3(x,72,z),ids.stone.defaultState);
+  }
+  const shore = new Vec3(-1,64,-1);
+  diagonal.setBlockStateId(new Vec3(15,64,15),ids.water.defaultState);
+  world.setColumn(0,0,center);
+  world.setColumn(-1,-1,diagonal);
+  bot.world = world;
+  injectBlocks(bot,{version:bot.version});
+  const initial = bot.findBlocks({ matching:ids.water.id,maxDistance:64,count:512 });
+  assert.equal(initial.length,512);
+  assert.equal(initial.some(position=>position.equals(shore)),false);
+  const findBlocks = bot.findBlocks;
+  bot.findBlocks = options => {
+    assert.equal(options.maxDistance,64);
+    assert.equal(options.count,512);
+    return findBlocks(options);
+  };
+  const result = await fillWaterBucket(bot);
+  assert.equal(result.output.filled,true);
+  assert.deepEqual(result.output.source,shore);
+  bot.items = [{ name:'bucket',count:1 }];
+  const getBlock = world.getBlock.bind(world);
+  world.getBlock = position => position.equals(shore.offset(0,1,0)) ? null : getBlock(position);
+  await assert.rejects(fillWaterBucket(bot),error => error.code === 'WATER_SOURCE_NOT_FOUND'
+    && error.details.rejected_unknown_above > 0 && error.details.returned_candidates === 0
+    && error.details.samples.unknown_above.above_name === null
+    && Object.keys(error.details.samples).length <= 3);
+});
+
+test('missing source diagnostics preserve the original search bounds without extra attempts', async () => {
+  const bot = waterBot();
+  let searches = 0;
+  bot.findBlocks = () => { searches++; return []; };
+  await assert.rejects(fillWaterBucket(bot),error => error.code === 'WATER_SOURCE_NOT_FOUND'
+    && error.details.search_radius === 64 && error.details.candidate_limit === 512
+    && error.details.source_checks === 0);
+  assert.equal(searches,1);
 });
 
 test('water fill skips an inaccessible source and uses the next exposed shore source', async () => {
