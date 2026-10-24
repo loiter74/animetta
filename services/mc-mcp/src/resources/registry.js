@@ -150,6 +150,14 @@ for (const wood of OVERWORLD_WOOD_TYPES.filter(wood => wood !== 'oak')) {
   };
 }
 
+REGISTRY.any_log = {
+  ...REGISTRY.oak_log,
+  canonical: 'any_log',
+  aliases: ['any_log'],
+  blocks: OVERWORLD_WOOD_TYPES.map(wood => `${wood}_log`),
+  drops: OVERWORLD_WOOD_TYPES.map(wood => `${wood}_log`),
+};
+
 // 别名 → canonical 查找表（含 canonical 自身）。
 const ALIAS_TO_CANONICAL = {};
 for (const canonical of Object.keys(REGISTRY)) {

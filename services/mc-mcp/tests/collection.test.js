@@ -11,6 +11,7 @@ import sdkGoto from 'mineflayer-pathfinder/lib/goto.js';
 import injectCraft from 'mineflayer/lib/plugins/craft.js';
 
 import * as collection from '../src/collection.js';
+import * as resourceRegistry from '../src/resources/registry.js';
 
 const {
   collectionBlockKey,
@@ -298,6 +299,103 @@ test('native collection passes the pre-dig inventory threshold to ordinary ore p
   assert.equal(toolChecks, 2, 'tool qualification is checked before navigation and again after excavation');
   assert.equal(collection.pickupInventoryCount(bot, 'raw_iron'), 1);
   assert.deepEqual(goals, [], 'an automatically collected ore must not start an old fallback route');
+});
+
+function nativeWoodFixture(starting = 0, locateFirst = false) {
+  const registry = minecraftData('1.21.1');
+  const Block = prismarineBlock(registry);
+  const bag = { birch_log: starting, spruce_log: 5 };
+  const blocks = ['birch_log', 'spruce_log', 'birch_log'].map((name, index) => {
+    const block = Block.fromStateId(registry.blocksByName[name].defaultState, 0);
+    block.position = new Vec3(index + 1, 64, 0);
+    return block;
+  });
+  const remaining = new Map(blocks.map(block => [block.position.toString(), block]));
+  const dug = [], searches = [], pickups = [];
+  let finds = 0;
+  const bot = {
+    entity: { position: new Vec3(0, 64, 0) },
+    pathfinder: { stop() {}, goto: async () => assert.fail('already reachable') },
+    inventory: { items: () => Object.entries(bag).map(([name, count]) => ({ name, count })) },
+    blockAt: position => remaining.get(position.toString()) || null,
+    findBlock: ({ matching }) => {
+      if (locateFirst && ++finds <= 2) return null;
+      return [...remaining.values()].find(matching) || null;
+    },
+  };
+  const source = readFileSync(new URL('../src/index.js', import.meta.url), 'utf8');
+  const start = source.indexOf('async function _collectInner(');
+  const end = source.indexOf('\nfunction craftError(', start);
+  const collect = runInNewContext(`(${source.slice(start, end)})`, {
+    ...collection, ...resourceRegistry, bot, Vec3,
+    ITEM_TO_BLOCK: {}, BLOCK_DROP_ITEM: {},
+    shouldPrepareUndergroundCollection: () => null,
+    collectionDigSafety: () => ({ safe: true }),
+    collectionApproachGoal: () => ({ isEnd: () => true }),
+    collectionExcavationGoal: () => null,
+    presentBlockTarget: async () => null,
+    _stabilizePosition: async () => true, _collectDebug() {},
+    getMcData: async () => registry,
+    _inventoryCount: name => bag[name] || 0,
+    _equipToolForBlock: async () => {},
+    locateResource: async (_bot, name) => {
+      searches.push(name);
+      if (locateFirst) return { position: blocks[0].position };
+      throw Object.assign(new Error('No requested tree'), { code: 'RESOURCE_NOT_FOUND' });
+    },
+    _explore_for_block: async () => {},
+    digCollectionBlock: async (_bot, block) => {
+      dug.push(block.name);
+      remaining.delete(block.position.toString());
+      bag[block.name] = (bag[block.name] || 0) + 1;
+    },
+    operationWait: async () => {},
+    _pickupDroppedItems: async (_ms, _position, name, _minimumY, threshold) => {
+      pickups.push(name);
+      assert.equal(bag[name], threshold, 'pickup counts the actual species and its pre-dig stock');
+    },
+  });
+  return { collect: (name, count) => collect(name, count, registry), dug, searches, pickups, bag };
+}
+
+test('native any_log locks one species and excludes carried stock from the requested delta', async () => {
+  for (const starting of [0, 5]) {
+    const fixture = nativeWoodFixture(starting);
+    assert.equal(await fixture.collect('any_log', 2), 'Collected 2 any_log');
+    assert.deepEqual(fixture.dug, ['birch_log', 'birch_log']);
+    assert.deepEqual(fixture.pickups, ['birch_log', 'birch_log']);
+    assert.equal(fixture.bag.birch_log, starting + 2);
+    assert.equal(fixture.bag.spruce_log, 5, 'nearer other species remains untouched');
+    assert.deepEqual(fixture.searches, []);
+  }
+});
+
+test('native any_log uses one generic locator search before binding the actual tree', async () => {
+  const fixture = nativeWoodFixture(0, true);
+  await fixture.collect('any_log', 2);
+  assert.deepEqual(fixture.searches, ['any_log']);
+  assert.deepEqual(fixture.dug, ['birch_log', 'birch_log']);
+});
+
+test('native exact oak request cannot harvest nearby birch or spruce', async () => {
+  const fixture = nativeWoodFixture();
+  await assert.rejects(fixture.collect('oak_log', 1), error => error.code === 'RESOURCE_NOT_FOUND');
+  assert.deepEqual(fixture.dug, []);
+  assert.deepEqual(fixture.searches, ['oak_log']);
+});
+
+test('native fallback exploration resolves explicit any_log without another walking attempt', async () => {
+  const registry = minecraftData('1.21.1');
+  const target = { name: 'birch_log', type: registry.blocksByName.birch_log.id, position: new Vec3(1, 64, 0) };
+  const bot = { findBlock: ({ matching }) => matching(target) ? target : null };
+  const source = readFileSync(new URL('../src/index.js', import.meta.url), 'utf8');
+  const start = source.indexOf('async function _explore_for_block(');
+  const end = source.indexOf('\nasync function _mine(', start);
+  const explore = runInNewContext(`(${source.slice(start, end)})`, {
+    ...resourceRegistry, ...collection, bot, ITEM_TO_BLOCK: {},
+    getMcData: async () => registry, UNDERGROUND_BLOCKS: new Set(),
+  });
+  assert.equal(await explore('any_log', 32, 3), 'Found any_log at (1, 64, 0)');
 });
 
 function nativeHarvestToolFixture(stock) {

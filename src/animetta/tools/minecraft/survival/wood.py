@@ -9,7 +9,21 @@ from .workflows import InventoryThreshold, WorkflowDefinition
 _WOOD_TYPES = ("oak", "spruce", "birch", "jungle", "acacia", "dark_oak", "mangrove", "cherry")
 
 
-def _observed_wood(observation: Observation) -> str:
+def inventory_resource_count(observation: Observation, item: str) -> int:
+    """Count exact items, or the largest single-species log stock."""
+    resource = item.removeprefix("minecraft:")
+    names = {f"{wood}_log" for wood in _WOOD_TYPES} if resource == "any_log" else {resource}
+    return max(
+        (
+            count
+            for key, count in observation.inventory.items()
+            if key.removeprefix("minecraft:") in names
+        ),
+        default=0,
+    )
+
+
+def _observed_wood(observation: Observation) -> str | None:
     inventory: dict[str, int] = {}
     for item, count in observation.inventory.items():
         name = item.removeprefix("minecraft:")
@@ -36,7 +50,7 @@ def _observed_wood(observation: Observation) -> str:
             ),
         )
         return nearest.block_id.removeprefix("minecraft:").removesuffix("_log")
-    return "oak"
+    return None
 
 
 def bind_workflow_wood(
@@ -46,14 +60,18 @@ def bind_workflow_wood(
     if not workflow.adaptive_wood:
         return workflow
     wood = _observed_wood(observation)
-    replacements = {"oak_log": f"{wood}_log", "oak_planks": f"{wood}_planks"}
+    replacements = (
+        {"oak_log": f"{wood}_log", "any_log": f"{wood}_log", "oak_planks": f"{wood}_planks"}
+        if wood is not None
+        else {"oak_log": "any_log"}
+    )
 
     def threshold(item: InventoryThreshold) -> InventoryThreshold:
         return item.model_copy(update={"item": replacements.get(item.item, item.item)})
 
     return workflow.model_copy(
         update={
-            "adaptive_wood": False,
+            "adaptive_wood": wood is None,
             "steps": tuple(
                 step.model_copy(
                     update={

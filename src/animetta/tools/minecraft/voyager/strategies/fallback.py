@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from animetta.tools.gamebot.contracts.v2 import Observation
 from animetta.tools.minecraft.survival.registry import WorkflowRegistry
-from animetta.tools.minecraft.survival.wood import bind_workflow_wood
+from animetta.tools.minecraft.survival.wood import bind_workflow_wood, inventory_resource_count
 from animetta.tools.minecraft.survival.workflows import (
     InventoryThreshold,
     WorkflowCheckpoint,
@@ -107,15 +107,7 @@ class FallbackStrategy:
 
     @staticmethod
     def _inventory_count(observation: Observation, item: str) -> int:
-        resource = item.removeprefix("minecraft:")
-        return max(
-            (
-                count
-                for key, count in observation.inventory.items()
-                if key.removeprefix("minecraft:") == resource
-            ),
-            default=0,
-        )
+        return inventory_resource_count(observation, item)
 
     @staticmethod
     def _checkpoint_satisfied(checkpoint: WorkflowCheckpoint, observation: Observation) -> bool:

@@ -128,7 +128,19 @@ for (const name of [
 }
 
 // 元数据完整性（T3.3）
-assert(Object.keys(REGISTRY).length === 17, '17 canonical resources including eight exact wood species');
+assert(Object.keys(REGISTRY).length === 18, '18 canonical resources including explicit substitutable logs');
+assert(normalizeResourceName('wood') === 'oak_log', 'legacy wood remains exact oak');
+assert(normalizeResourceName('log') === 'oak_log', 'legacy log remains exact oak');
+const allLogs = registry.OVERWORLD_WOOD_TYPES.map(wood => `${wood}_log`);
+const woodMetadata = Object.fromEntries(allLogs.map((name, id) => [name, { id }]));
+assert(JSON.stringify(resolveRequestedBlockNames('any_log', woodMetadata)) === JSON.stringify(allLogs),
+  'explicit any_log resolves all supported species');
+assert(JSON.stringify(resolveRequestedBlockNames('oak_log', woodMetadata)) === '["oak_log"]',
+  'exact oak never substitutes another species');
+for (const key of ['maxDistance', 'attemptBudget', 'timeBudgetMs', 'category', 'strategies']) {
+  assert(JSON.stringify(REGISTRY.any_log?.[key]) === JSON.stringify(REGISTRY.oak_log[key]),
+    `any_log retains the original oak ${key}`);
+}
 assert(REGISTRY.obsidian.requiredTool === 'diamond_pickaxe', 'obsidian needs diamond_pickaxe');
 assert(normalizeResourceName('flint') === 'gravel', 'flint resolves to its gravel source');
 for (const [canonical, def] of Object.entries(REGISTRY)) {

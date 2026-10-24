@@ -65,6 +65,64 @@ def observation_with(inventory: dict[str, int]) -> Observation:
     )
 
 
+def test_unknown_adaptive_wood_defers_binding_without_changing_costs() -> None:
+    registry = WorkflowRegistry()
+    workflow = iron_survival_workflow()
+    registry.register(workflow)
+    strategy = FallbackStrategy(registry=registry)
+    state = strategy.prepare(goal())
+    first = strategy.propose(state, observation_with({}))
+    assert first.parameters == {"block_type": "any_log", "count": 8}
+    assert first.maximum_cost == workflow.steps[0].maximum_cost
+    assert state["workflow"].adaptive_wood is True
+    assert state["workflow"].collection_targets[0].item == "any_log"
+    after = observation_with({"minecraft:spruce_log": 8})
+    assert strategy.accept_partial_result(state, observation_with({}), after) is not None
+    craft = strategy.propose(state, after)
+    assert craft.parameters == {"recipe": "spruce_planks", "count": 32}
+    assert state["workflow"].adaptive_wood is False
+    assert (
+        next(s for s in state["workflow"].steps if s.capability == "smelt").parameters["fuel"]
+        == "spruce_planks"
+    )
+    assert tuple(s.maximum_cost for s in state["workflow"].steps) == tuple(
+        s.maximum_cost for s in workflow.steps
+    )
+
+
+def test_unknown_wood_partial_stock_locks_species_and_collects_only_gap() -> None:
+    registry = WorkflowRegistry()
+    registry.register(iron_survival_workflow())
+    strategy = FallbackStrategy(registry=registry)
+    state = strategy.prepare(goal())
+    strategy.propose(state, observation_with({}))
+    decision = strategy.propose(state, observation_with({"spruce_log": 3}))
+    assert decision.parameters == {"block_type": "spruce_log", "count": 5}
+    assert state["workflow"].adaptive_wood is False
+    assert state["workflow"].collection_targets[0].item == "spruce_log"
+    assert all(
+        t.item != "any_log"
+        for checkpoint in state["workflow"].checkpoints
+        if checkpoint
+        for clause in checkpoint.any_of
+        for t in clause.inventory_all
+    )
+
+
+def test_any_log_threshold_requires_same_species_without_namespace_double_counting() -> None:
+    observation = observation_with({"oak_log": 4, "minecraft:oak_log": 4, "birch_log": 4})
+    assert FallbackStrategy._inventory_count(observation, "any_log") == 4
+    assert FallbackStrategy._inventory_count(observation, "minecraft:oak_log") == 4
+
+
+def test_explicit_nonadaptive_workflow_keeps_exact_oak_request() -> None:
+    registry = WorkflowRegistry()
+    registry.register(iron_survival_workflow().model_copy(update={"adaptive_wood": False}))
+    strategy = FallbackStrategy(registry=registry)
+    decision = strategy.propose(strategy.prepare(goal()), observation_with({"spruce_log": 8}))
+    assert decision.parameters == {"block_type": "oak_log", "count": 8}
+
+
 def test_atomic_strategy_proposes_exactly_one_manifest_valid_action() -> None:
     manifest = RuntimeManifest.model_validate(MESSAGES["RuntimeManifest"])
     strategy = AtomicStrategy(
@@ -165,7 +223,7 @@ def test_diamond_workflow_uses_deterministic_carried_planks_instead_of_optional_
 
 def test_fallback_propose_collects_only_the_remaining_declared_gap() -> None:
     registry = WorkflowRegistry()
-    registry.register(iron_survival_workflow())
+    registry.register(iron_survival_workflow().model_copy(update={"adaptive_wood": False}))
     strategy = FallbackStrategy(registry=registry)
 
     full = strategy.propose(strategy.prepare(goal()), observation_with({"oak_log": 0}))

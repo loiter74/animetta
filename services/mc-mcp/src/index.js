@@ -199,8 +199,9 @@ async function _explore_for_block(
   excludedTargets = new Set(),
 ) {
   const mcData = await getMcData();
-  const blockInfo = mcData.blocksByName[block_type];
-  if (!blockInfo) throw new Error(`Unknown block: ${block_type}`);
+  const blockNames = resolveRequestedBlockNames(block_type, mcData.blocksByName, ITEM_TO_BLOCK);
+  const blockIds = blockNames.map(name => mcData.blocksByName[name].id);
+  if (!blockIds.length) throw new Error(`Unknown block: ${block_type}`);
 
   const isUnderground = UNDERGROUND_BLOCKS.has(block_type);
 
@@ -208,7 +209,7 @@ async function _explore_for_block(
     // Check if block is already nearby
     const block = findCollectionTarget(
       bot,
-      blockInfo.id,
+      blockIds,
       max_distance,
       excludedTargets,
     );
@@ -235,7 +236,7 @@ async function _explore_for_block(
         // Check again after digging down
         const found = findCollectionTarget(
           bot,
-          blockInfo.id,
+          blockIds,
           max_distance,
           excludedTargets,
         );
@@ -737,10 +738,14 @@ async function _collectInner(block_type, count, mcData, context = {}) {
   const bi = resolvedBlockType ? mcData.blocksByName[resolvedBlockType] : null;
   if (!bi) throw new Error(`Unknown block: ${block_type}`);
 
-  const dropItem = BLOCK_DROP_ITEM[resolvedBlockType] || block_type;
+  const genericWood = String(block_type).trim().toLowerCase() === 'any_log';
+  const initialWoodCounts = genericWood
+    ? new Map(resolvedBlockTypes.map(name => [name, _inventoryCount(name)])) : null;
+  let selectedWood = null;
+  let dropItem = genericWood ? resolvedBlockType : BLOCK_DROP_ITEM[resolvedBlockType] || block_type;
   let minimumY = resolvedBlockType === 'obsidian'
     ? Math.floor(bot.entity.position.y) : Number.NEGATIVE_INFINITY;
-  const startingCount = _inventoryCount(dropItem);
+  let startingCount = _inventoryCount(dropItem);
   _collectDebug(`start block=${block_type} resolved=${resolvedBlockType} drop=${dropItem} need=${count} starting=${startingCount}`);
   let collected = 0;
   const excludedTargets = context.excludedTargets instanceof Set
@@ -751,6 +756,7 @@ async function _collectInner(block_type, count, mcData, context = {}) {
     blockIds,
     excludedTargets,
     block => collectionDigSafety(bot, block).safe
+      && (!selectedWood || block.name === selectedWood)
       && (resolvedBlockType !== 'obsidian' || isPreparedObsidianTarget(bot, block, minimumY)),
   );
   const workTargets = resolvedBlockType === 'obsidian'
@@ -807,12 +813,13 @@ async function _collectInner(block_type, count, mcData, context = {}) {
     let block = discoveredTarget
       || bot.findBlock({ matching: matchesAvailableTarget, maxDistance: 32 });
     discoveredTarget = null;
+    const searchResource = selectedWood || (genericWood ? 'any_log' : resolvedBlockType);
 
     // If not found, use Resource Locator (registry strategies + memory) first,
     // then fall back to blind _explore_for_block for compatibility.
     if (!block) {
       try {
-        const cand = await locateResource(bot, resolvedBlockType, {
+        const cand = await locateResource(bot, searchResource, {
           mcData,
           getMcData,
           excludedTargets,
@@ -834,7 +841,7 @@ async function _collectInner(block_type, count, mcData, context = {}) {
     }
     if (!block) {
       try {
-        await _explore_for_block(resolvedBlockType, 32, 3, excludedTargets);
+        await _explore_for_block(searchResource, 32, 3, excludedTargets);
         block = bot.findBlock({ matching: matchesAvailableTarget, maxDistance: 32 });
       } catch (e) {
         context.signal?.throwIfAborted();
@@ -846,6 +853,12 @@ async function _collectInner(block_type, count, mcData, context = {}) {
     if (!collectionDigSafety(bot, block).safe) {
       excludedTargets.add(collectionBlockKey(block));
       continue;
+    }
+    if (genericWood && !selectedWood) {
+      selectedWood = block.name;
+      dropItem = selectedWood;
+      startingCount = initialWoodCounts.get(selectedWood);
+      _collectDebug(`bound wood=${selectedWood} starting=${startingCount}`);
     }
     await _equipToolForBlock(block, context);
     _collectDebug(`target block=${block.name}@${block.position.x},${block.position.y},${block.position.z}`);
