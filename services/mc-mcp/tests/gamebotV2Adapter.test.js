@@ -407,6 +407,30 @@ test('collection damage immediately stops work without hiding a real budget over
   fixture.adapter.dispose();
 });
 
+test('a newly approaching skeleton stops collection before damage and removes threat listeners', async () => {
+  let continued = false;
+  const fixture = adapterFixture({ actions: {
+    collectWithEvidence: async (_block, _count, context) => withCollectionEvidence(fixture.bot, async () => {
+      fixture.bot.entities[540] = { id: 540, name: 'skeleton', position: new Vec3(18, 64, 0) };
+      fixture.bot.emit('entityMoved', fixture.bot.entities[540]);
+      await context.operation_scope.wait(1);
+      continued = true;
+    }),
+  } });
+  fixture.bot.entities = {};
+  const action = request(fixture.adapter, 'collect', { block_type: 'iron_ore', count: 7 }, 'approaching-skeleton');
+  action.remaining_budget = budget({ max_damage_taken: 0 });
+  const receipt = await fixture.adapter.runtime.executeAction(action);
+  assert.equal(continued, false);
+  assert.equal(receipt.outcome, 'error');
+  assert.equal(receipt.reconciliation, 'accepted');
+  assert.equal(receipt.error.code, 'UNSAFE_AREA');
+  assert.equal(receipt.error.details.threat.entity_type, 'skeleton');
+  assert.equal(receipt.budget_usage.max_damage_taken, 0);
+  for (const event of ['physicsTick', 'entityMoved', 'entitySpawn']) assert.equal(fixture.bot.listenerCount(event), 0);
+  fixture.adapter.dispose();
+});
+
 test('navigation refuses a new route whose minimum distance cannot fit before the existing stopping reserve', async () => {
   let navigated = false;
   const fixture = adapterFixture({ actions: {

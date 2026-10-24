@@ -4,6 +4,7 @@ import { operationWait } from './runtime/operationScope.js';
 import { getResourceDefinition, isUndergroundCategory } from './resources/registry.js';
 import Vec3 from 'vec3';
 import pathfinderPkg from 'mineflayer-pathfinder';
+import { findHostileThreat } from './survivalThreats.js';
 
 const SOFT_LOCATOR_FAILURES = new Set(['RESOURCE_NOT_FOUND', 'SEARCH_TIMEOUT']);
 const MOVEMENT_CONTROLS = ['forward', 'back', 'left', 'right', 'jump', 'sprint', 'sneak'];
@@ -68,6 +69,7 @@ export function configureDryNavigation(movements, bot, { allowSurfaceSwimming = 
     const body = bot.blockAt(feet);
     const head = bot.blockAt(feet.offset(0, 1, 0));
     const support = bot.blockAt(feet.offset(0, -1, 0));
+    if (findHostileThreat(bot, feet.offset(0.5, 0, 0.5))) return Infinity;
     if (support?.name?.endsWith('_leaves') && (canopyHeight === null
       || !isAnchoredLeafSupport(support))) return Infinity;
     if (isLavaBlock(body) || isLavaBlock(head) || isWaterBlock(head)) return Infinity;
@@ -440,6 +442,8 @@ export function obsidianWorkMinimumY(bot, targets) {
 }
 
 export function collectionDigSafety(bot, block) {
+  const threat = block?.position && findHostileThreat(bot, block.position);
+  if (threat) return { safe: false, reason_code: 'HOSTILE_THREAT', threat };
   if (block?.name === 'obsidian') return obsidianDigSafety(bot, block);
   if (!block?.position || typeof bot.blockAt !== 'function') {
     return { safe: false, reason_code: 'REGION_NOT_LOADED' };

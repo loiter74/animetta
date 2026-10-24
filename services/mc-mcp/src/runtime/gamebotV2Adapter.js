@@ -10,6 +10,7 @@ import { createGameBotRuntimeV2 } from '../gamebotRuntimeV2.js';
 import { AIR_RECOVERY_MS, surfaceEscapePlan } from '../navigation.js';
 import { ownOxygenLevel } from './playerVitals.js';
 import { withActionEvidence } from './actionEvidence.js';
+import { findHostileThreat } from '../survivalThreats.js';
 import {
   BroadcastMotionPolicy,
   resolvePresentationConfig,
@@ -369,6 +370,9 @@ function guardBotAction(
       bot.removeListener('breath', onBreath);
       bot.removeListener('move', onMove);
       bot.removeListener('health', onHealth);
+      bot.removeListener('physicsTick', checkSurvivalThreat);
+      bot.removeListener('entityMoved', checkSurvivalThreat);
+      bot.removeListener('entitySpawn', checkSurvivalThreat);
       context.signal?.removeEventListener('abort', onAbort);
     };
     const fail = (code, message, details = {}) => {
@@ -405,6 +409,11 @@ function guardBotAction(
         position.y - previousPosition.y, position.z - previousPosition.z);
       previousPosition = { ...position };
       checkActionBudget();
+    };
+    const checkSurvivalThreat = () => {
+      if (!actionBudget || context.capability === 'attack') return;
+      const threat = findHostileThreat(bot);
+      if (threat) fail('UNSAFE_AREA', '附近敌对生物已进入预警范围，已停止危险动作。', { threat });
     };
     const onHealth = () => {
       damage += Math.max(0, previousHealth - bot.health);
@@ -465,6 +474,9 @@ function guardBotAction(
     if (actionBudget) {
       bot.on('move', onMove);
       bot.on('health', onHealth);
+      bot.on('physicsTick', checkSurvivalThreat);
+      bot.on('entityMoved', checkSurvivalThreat);
+      bot.on('entitySpawn', checkSurvivalThreat);
     }
     context.signal?.addEventListener('abort', onAbort, { once: true });
     if (context.signal?.aborted) {
@@ -473,6 +485,7 @@ function guardBotAction(
     }
     onBreath();
     checkActionBudget();
+    checkSurvivalThreat();
     if (context.signal?.aborted) return;
     const invocationPromise = Promise.resolve().then(() => invoke((minimumDistance) => {
       if (!actionBudget || minimumDistance <= 0) return;

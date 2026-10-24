@@ -750,7 +750,8 @@ async function _collectInner(block_type, count, mcData, context = {}) {
   const matchesAvailableTarget = createCollectionBlockMatcher(
     blockIds,
     excludedTargets,
-    resolvedBlockType === 'obsidian' ? block => isPreparedObsidianTarget(bot, block, minimumY) : undefined,
+    block => collectionDigSafety(bot, block).safe
+      && (resolvedBlockType !== 'obsidian' || isPreparedObsidianTarget(bot, block, minimumY)),
   );
   const workTargets = resolvedBlockType === 'obsidian'
     ? bot.findBlocks({
