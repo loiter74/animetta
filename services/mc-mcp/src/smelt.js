@@ -193,6 +193,8 @@ export function createSmelt({ bot, getMcData, wait = operationWait }) {
     }
     if (!targetBlock || replaceableBlocks.has(targetBlock.name)) return true;
     if (targetBlock.name === 'water' || targetBlock.name === 'lava' || targetBlock.name === 'bedrock') return false;
+    // Keep the table needed by subsequent crafts; try another furnace site.
+    if (targetBlock.name === 'crafting_table') return false;
 
     const digTool = bot.inventory.items().find((i) => (
       i.name === 'iron_pickaxe'

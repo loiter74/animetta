@@ -400,6 +400,98 @@ test('smelt clears an occupied target block before placing a carried furnace', a
   assert(calls.some((call) => call[0] === 'placeBlock'));
 });
 
+test('smelt preserves an existing crafting table when placing a carried furnace', async () => {
+  const calls = [];
+  // Player base block is (-15, 48, -13): the first fixed placement candidate
+  // targets (-14, 48, -13) on top of the support at (-14, 47, -13).
+  const tablePos = { x: -14, y: 48, z: -13 };
+  const altSupportPos = { x: -16, y: 47, z: -13 };
+  const altTargetPos = { x: -16, y: 48, z: -13 };
+  const craftingTable = { name: 'crafting_table', position: { ...tablePos } };
+  const tableSupport = { name: 'stone', position: { x: -14, y: 47, z: -13 } };
+  const altSupport = { name: 'stone', position: { ...altSupportPos } };
+  let tableDug = false;
+  let furnaceAt = null;
+  const furnaceWindow = {
+    putInput: async () => {},
+    putFuel: async () => {},
+    outputItem: () => ({ name: 'iron_ingot', count: 1 }),
+    takeOutput: async () => ({ name: 'iron_ingot', count: 1 }),
+    close: async () => {},
+  };
+
+  const bot = {
+    entity: {
+      position: { x: -14.7, y: 48, z: -12.7 },
+    },
+    inventory: {
+      items: () => [{ name: 'furnace', count: 1 }, { name: 'stone_pickaxe', count: 1 }],
+    },
+    findBlock: ({ matching }) => (
+      matching === 61 && furnaceAt ? { name: 'furnace', position: { ...furnaceAt } } : null
+    ),
+    blockAt: (pos) => {
+      if (furnaceAt && pos.x === furnaceAt.x && pos.y === furnaceAt.y && pos.z === furnaceAt.z) {
+        return { name: 'furnace', position: { ...furnaceAt } };
+      }
+      if (pos.x === tablePos.x && pos.y === tablePos.y && pos.z === tablePos.z) {
+        return tableDug ? { name: 'air', position: { ...tablePos } } : craftingTable;
+      }
+      if (pos.x === -14 && pos.y === 47 && pos.z === -13) return tableSupport;
+      if (pos.x === altSupportPos.x && pos.y === altSupportPos.y && pos.z === altSupportPos.z) return altSupport;
+      return { name: 'air', position: { x: pos.x, y: pos.y, z: pos.z } };
+    },
+    equip: async (item) => calls.push(['equip', item.name]),
+    dig: async (block) => {
+      calls.push(['dig', block.name, block.position.x, block.position.y, block.position.z]);
+      if (block.name === 'crafting_table') tableDug = true;
+    },
+    lookAt: async () => {},
+    setControlState: () => {},
+    placeBlock: async (ref, face) => {
+      const target = {
+        x: ref.position.x + face.x,
+        y: ref.position.y + face.y,
+        z: ref.position.z + face.z,
+      };
+      calls.push(['placeBlock', ref.name, target.x, target.y, target.z]);
+      furnaceAt = target;
+    },
+    openFurnace: async (block) => {
+      calls.push(['openFurnace', block.name, block.position.x, block.position.y, block.position.z]);
+      return furnaceWindow;
+    },
+    chat: () => {},
+  };
+
+  const smelt = createSmelt({
+    bot,
+    getMcData: async () => createMcData(),
+    wait: async () => {},
+  });
+
+  const result = await smelt.smelt('raw_iron', 'coal', 1);
+
+  assert.match(result, /Smelted 1\/1 raw_iron -> iron_ingot/);
+  assert(!calls.some((call) => call[0] === 'dig' && call[1] === 'crafting_table'));
+  assert(!calls.some((call) => (
+    call[0] === 'placeBlock'
+    && call[2] === tablePos.x
+    && call[3] === tablePos.y
+    && call[4] === tablePos.z
+  )));
+  assert.equal(bot.blockAt(tablePos).name, 'crafting_table');
+  assert(calls.some((call) => (
+    call[0] === 'placeBlock'
+    && call[1] === 'stone'
+    && call[2] === altTargetPos.x
+    && call[3] === altTargetPos.y
+    && call[4] === altTargetPos.z
+  )));
+  assert.equal(bot.blockAt(altTargetPos).name, 'furnace');
+  assert(calls.some((call) => call[0] === 'openFurnace' && call[1] === 'furnace'));
+});
+
 test('smelt still reports missing furnace when none is nearby or carried', async () => {
   const bot = {
     entity: {
