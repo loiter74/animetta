@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { EventEmitter } from 'node:events';
 import Vec3 from 'vec3';
 import minecraftData from 'minecraft-data';
 import pathfinderPackage from 'mineflayer-pathfinder';
@@ -25,6 +26,63 @@ function fixture(y) {
   } };
   return { bot, goals };
 }
+
+function diagnosticFixture(t) {
+  const previous = process.env.COLLECT_DEBUG;
+  process.env.COLLECT_DEBUG = '1';
+  t.after(() => { if (previous === undefined) delete process.env.COLLECT_DEBUG; else process.env.COLLECT_DEBUG = previous; });
+  const { bot } = fixture(64);
+  const emitter = Object.assign(new EventEmitter(), bot);
+  emitter.entity.velocity = new Vec3(0, 0, 0);
+  emitter.entity.onGround = true;
+  emitter.controlState = { forward: false, jump: false, sprint: false };
+  return emitter;
+}
+
+test('failed navigation retains bounded passive path evidence and removes observers', async t => {
+  const bot = diagnosticFixture(t);
+  const failure = new Error('native route stalled');
+  let calls = 0;
+  bot.pathfinder.goto = async () => {
+    calls++;
+    bot.emit('path_update', { status: 'success', path: [new Vec3(17.5, 65, 86.5)] });
+    bot.emit('physicsTick');
+    bot.emit('path_reset', 'stuck');
+    bot.emit('path_update', { status: 'noPath', path: [] });
+    throw failure;
+  };
+  await assert.rejects(navigateTo(bot, { x: 17, y: 65, z: 86 }), error => {
+    assert.equal(error, failure);
+    const trace = error.details.navigation_trace;
+    assert.equal(trace.latest_update.status, 'noPath');
+    assert.equal(trace.last_reset.reason, 'stuck');
+    assert.equal(trace.last_motion.on_ground, true);
+    assert.deepEqual(trace.last_motion.controls, bot.controlState);
+    assert.equal(trace.first_update.next_node.y, 65);
+    return true;
+  });
+  assert.equal(calls, 1, 'observation must not submit another navigation');
+  for (const name of ['path_update', 'path_reset', 'physicsTick']) assert.equal(bot.listenerCount(name), 0);
+  assert.deepEqual(bot.controlState, { forward: false, jump: false, sprint: false });
+});
+
+test('successful navigation removes passive observers without changing controls or allowances', async t => {
+  const bot = diagnosticFixture(t);
+  const controls = { ...bot.controlState };
+  let calls = 0;
+  bot.pathfinder.goto = async goal => {
+    calls++;
+    bot.emit('path_update', { status: 'success', path: [new Vec3(goal.x, goal.y, goal.z)] });
+    bot.entity.position = new Vec3(goal.x, goal.y, goal.z);
+    bot.emit('physicsTick');
+  };
+  await navigateTo(bot, { x: 17, y: 65, z: 86 });
+  assert.equal(calls, 1);
+  for (const name of ['path_update', 'path_reset', 'physicsTick']) assert.equal(bot.listenerCount(name), 0);
+  assert.deepEqual(bot.controlState, controls);
+  assert.equal(bot.pathfinder.thinkTimeout, 5000);
+  assert.equal(bot.pathfinder.movements.allow1by1towers, true);
+});
 
 test('underground return reaches the surface through bounded native height goals', async () => {
   const { bot, goals } = fixture(26);

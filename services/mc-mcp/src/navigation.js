@@ -2,6 +2,7 @@ import pathfinderPkg from 'mineflayer-pathfinder';
 import Vec3 from 'vec3';
 import { configureDryNavigation, isAirLikeForStanding, isSafeStandingPosition, isWaterBlock } from './collection.js';
 import { operationWait } from './runtime/operationScope.js';
+import { createNavigationTrace } from './navigationDiagnostics.js';
 
 const { GoalBlock, GoalY } = pathfinderPkg.goals;
 const ASCENT_STEP = 4;
@@ -82,6 +83,7 @@ export async function navigateTo(bot, destination, context = {}) {
   const originalTowers = movements?.allow1by1towers;
   if (extendedPlanning) bot.pathfinder.thinkTimeout = Math.max(15_000, originalThinkTimeout || 0);
   if (ascending && movements) movements.allow1by1towers = false;
+  const trace = createNavigationTrace(bot, Boolean(process.env.COLLECT_DEBUG));
   try {
     // A nearby height goal lets the native planner excavate a stair;
     // solving the full three-dimensional surface destination can exhaust A* first.
@@ -90,6 +92,7 @@ export async function navigateTo(bot, destination, context = {}) {
       context.signal?.throwIfAborted();
       const nextY = Math.min(target.y, Math.floor(bot.entity.position.y) + ASCENT_STEP);
       const goal = new GoalY(nextY);
+      trace?.begin(goal);
       await bot.pathfinder.goto(goal);
       if (!goal.isEnd(bot.entity.position.floored())) {
         throw Object.assign(new Error('上升导航没有到达已请求的高度。'), { code: 'NAVIGATION_ASCENT_STALLED' });
@@ -98,7 +101,9 @@ export async function navigateTo(bot, destination, context = {}) {
     context.operation_scope?.checkpoint();
     context.signal?.throwIfAborted();
     try {
-      await bot.pathfinder.goto(new GoalBlock(target.x, target.y, target.z));
+      const goal = new GoalBlock(target.x, target.y, target.z);
+      trace?.begin(goal);
+      await bot.pathfinder.goto(goal);
     } catch (error) {
       const feet = bot.entity.position.floored();
       error.details = { ...error.details, recovery_phase: 'ordinary_navigation',
@@ -107,7 +112,11 @@ export async function navigateTo(bot, destination, context = {}) {
         head_block: bot.blockAt?.(feet.offset(0, 1, 0))?.name ?? null };
       throw error;
     }
+  } catch (error) {
+    if (trace) error.details = { ...error.details, navigation_trace: trace.snapshot() };
+    throw error;
   } finally {
+    trace?.close();
     if (extendedPlanning) {
       if (originalThinkTimeout === undefined) delete bot.pathfinder.thinkTimeout;
       else bot.pathfinder.thinkTimeout = originalThinkTimeout;
