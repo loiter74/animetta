@@ -26,6 +26,9 @@ export function isWaterSource(block) {
   return Number(block.getProperties?.().level ?? block.metadata) === 0;
 }
 
+// Exposed level-zero water occupies 8/9 of the block, unlike a solid top face.
+const waterFillTarget = position => position.offset(0.5, 8 / 9 - 0.01, 0.5);
+
 async function confirm(context, predicate, wait = operationWait) {
   for (let attempt = 0; attempt < 30; attempt++) {
     context.operation_scope?.checkpoint();
@@ -36,17 +39,25 @@ async function confirm(context, predicate, wait = operationWait) {
   return false;
 }
 
-async function approach(bot, position, context, { excavate = false } = {}) {
-  const target = position.offset(0.5, 0.5, 0.5);
-  const inReach = () => bot.entity.position.offset(0, 1.62, 0).distanceTo(target) <= 4.25;
+async function approach(bot, position, context, { excavate = false, interactionTarget = null } = {}) {
+  const target = interactionTarget ?? position.offset(0.5, 0.5, 0.5);
+  const inReachFrom = feet => {
+    const eye = feet.offset(0, 1.62, 0);
+    const delta = target.minus(eye);
+    if (delta.norm() > 4.25) return false;
+    if (!interactionTarget) return true;
+    const hit = bot.world.raycast(eye, delta.scaled(1 / delta.norm()), delta.norm());
+    return !hit || hit.position.equals(position);
+  };
+  const inReach = () => inReachFrom(bot.entity.position);
   if (inReach() && isSafeStandingPosition(bot, bot.entity.position.floored())) return;
   const candidates = [];
   for (let dx = -3; dx <= 3; dx++) {
     for (let dz = -3; dz <= 3; dz++) {
       for (let dy = -1; dy <= 2; dy++) {
         const feet = position.offset(dx, dy, dz);
-        if (feet.offset(0.5, 1.62, 0.5).distanceTo(target) <= 4.25
-          && isSafeStandingPosition(bot, feet)) candidates.push(feet);
+        if (isSafeStandingPosition(bot, feet)
+          && inReachFrom(feet.offset(0.5, 0, 0.5))) candidates.push(feet);
       }
     }
   }
@@ -95,7 +106,9 @@ export async function fillWaterBucket(bot, context = {}, { wait = operationWait 
     let source;
     for (const candidate of sources.slice(0, 16)) {
       try {
-        await approach(bot, candidate.position, context);
+        await approach(bot, candidate.position, context, {
+          interactionTarget: waterFillTarget(candidate.position),
+        });
         source = candidate;
         break;
       } catch (error) {
@@ -105,7 +118,7 @@ export async function fillWaterBucket(bot, context = {}, { wait = operationWait 
     if (!source) fail('WATER_TARGET_UNREACHABLE', '有限次水源检查没有找到安全岸边站位。');
     if (!isWaterSource(bot.blockAt(source.position))) fail('WATER_SOURCE_CHANGED', '装水前水源发生变化。');
     await bot.equip(bucket, 'hand');
-    const target = source.position.offset(0.5, 0.99, 0.5);
+    const target = waterFillTarget(source.position);
     await bot.lookAt(target, false);
     context.operation_scope?.checkpoint();
     bot.activateItem();

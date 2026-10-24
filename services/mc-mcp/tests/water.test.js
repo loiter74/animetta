@@ -16,6 +16,7 @@ function waterBot() {
   bot.registry = { blocksByName: { water: { id: 1 }, obsidian: { id: 2 } } };
   bot.items = [{ name: 'bucket', count: 1 }];
   bot.inventory = { items: () => bot.items };
+  bot.world = { raycast: () => null };
   bot.findBlocks = () => [new Vec3(2, 64, 0)];
   bot.blockAt = position => ({
     name: position.y < 64 ? 'stone' : position.equals(new Vec3(2, 64, 0)) ? 'water' : 'air',
@@ -132,6 +133,7 @@ test('water fill aims above a real SDK shoreline obstruction and waits for ordin
   const source = new Vec3(8, 62, 60);
   const bank = new Set(['9,62,61', '8,62,61', '9,62,60']);
   const world = new WorldSync(null);
+  bot.world = world;
   world.getBlock = position => {
     const name = bank.has(`${position.x},${position.y},${position.z}`) ? 'grass_block' : 'air';
     const block = Block.fromStateId(registry.blocksByName[name].defaultState, 0);
@@ -160,6 +162,79 @@ test('water fill aims above a real SDK shoreline obstruction and waits for ordin
     bot.items = [{ name: 'water_bucket', count: 1 }];
   };
   assert.equal((await fillWaterBucket(bot)).output.filled, true);
+});
+
+function sourceRayBot(position, source, solids = new Set(), floor = position.y) {
+  const bot = waterBot();
+  const registry = minecraftData('1.21.1');
+  const Block = blockLoader(registry);
+  bot.registry = registry;
+  bot.entity.position = position;
+  bot.findBlocks = () => [source];
+  bot.blockAt = point => {
+    const name = point.equals(source) ? 'water'
+      : point.y < floor || solids.has(`${point.x},${point.y},${point.z}`) ? 'stone' : 'air';
+    const block = Block.fromStateId(registry.blocksByName[name].defaultState, 0);
+    block.position = point;
+    return block;
+  };
+  bot.world = new WorldSync(null);
+  bot.world.getBlock = bot.blockAt;
+  const fluidWorld = new WorldSync(null);
+  fluidWorld.getBlock = point => {
+    const block = bot.blockAt(point);
+    // A source with air above has fluid height 1 - (level + 1) / 9.
+    if (point.equals(source)) block.shapes = [[0, 0, 0, 1, 8 / 9, 1]];
+    return block;
+  };
+  const ray = (world, target) => {
+    const eye = bot.entity.position.offset(0, 1.62, 0);
+    const delta = target.minus(eye);
+    return world.raycast(eye, delta.scaled(1 / delta.norm()), delta.norm());
+  };
+  let target;
+  bot.lookAt = async (point, force) => {
+    assert.equal(force, false);
+    target = point;
+  };
+  bot.activateItem = () => {
+    if (ray(fluidWorld, target)?.position.equals(source)) {
+      bot.items = [{ name: 'water_bucket', count: 1 }];
+    }
+  };
+  const original = {};
+  const goals = [];
+  bot.pathfinder = {
+    movements: original, setMovements(value) { this.movements = value; }, stop() {},
+    async goto(goal) {
+      goals.push(goal);
+      assert.equal(isSafeStandingPosition(bot, new Vec3(goal.x, goal.y, goal.z)), true);
+      bot.entity.position = new Vec3(goal.x + 0.5, goal.y, goal.z + 0.5);
+    },
+  };
+  return { bot, ray, fluidWorld, goals, original };
+}
+
+test('low-eye water fill aims inside the source fluid instead of above its surface', async () => {
+  const source = new Vec3(2, 63, 0);
+  const { bot, ray, fluidWorld, goals } = sourceRayBot(new Vec3(0.5, 62, 0.5), source);
+  assert.equal(ray(fluidWorld, source.offset(0.5, 0.99, 0.5)), null);
+  assert.equal((await fillWaterBucket(bot, {}, { wait: async () => {} })).output.filled, true);
+  assert.equal(goals.length, 0);
+});
+
+test('water fill leaves the R15 obstructed stance for a supported visible source approach', async () => {
+  const source = new Vec3(-88, 55, 106);
+  const solids = new Set(['-89,55,104', '-88,55,105', '-90,54,104']);
+  const { bot, ray, fluidWorld, goals, original } = sourceRayBot(
+    new Vec3(-89.5, 54, 103.60271738777713), source, solids,
+  );
+  assert.equal(ray(bot.world, source.offset(0.5, 0.99, 0.5)).name, 'stone');
+  assert.equal(ray(fluidWorld, source.offset(0.5, 8 / 9 - 0.01, 0.5)).name, 'stone');
+  assert.equal((await fillWaterBucket(bot, {}, { wait: async () => {} })).output.filled, true);
+  assert.equal(goals.length, 1);
+  assert.ok(Math.abs(goals[0].y - 54) <= 1, 'the visible stance is reachable by an ordinary step');
+  assert.equal(bot.pathfinder.movements, original);
 });
 
 test('a bucket-use event without inventory change never reports filled', async () => {
