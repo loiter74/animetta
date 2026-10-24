@@ -104,3 +104,55 @@ test('the block being considered for excavation cannot itself prove protective c
   bot.entities[540].position = new Vec3(11.5, 64, 0.5);
   assert.equal(findHostileThreat(bot)?.entity_type, 'warden', 'special abilities retain conservative proximity checks');
 });
+
+function horizontalCoverFixture() {
+  const bot = fixture();
+  const Block = BlockLoader(bot.registry);
+  bot.entity.position = new Vec3(3.5, 88, -9.681217716364884);
+  bot.entity.height = 1.8;
+  bot.entity.width = 0.6;
+  Object.assign(bot.entities[540], {
+    position: new Vec3(-10.756484719099214, 71, -0.7782001352427272),
+    height: 1.99, width: 0.6,
+  });
+  let cover = 'full';
+  const world = new WorldSync(null);
+  world.getBlock = position => {
+    const p = position.floored();
+    const gap = p.x === -10 && p.z === -3;
+    if (p.y === 74 && gap && cover === 'unloaded') return null;
+    const name = p.y !== 74 || (gap && cover === 'hole') ? 'air'
+      : cover === 'slab' ? 'oak_slab' : 'stone';
+    const block = Block.fromStateId(bot.registry.blocksByName[name].defaultState, 0);
+    block.position = p;
+    return block;
+  };
+  bot.world = world;
+  bot.blockAt = world.getBlock;
+  return { bot, setCover(value) { cover = value; } };
+}
+
+test('a complete horizontal rock layer blocks steep physical attack lanes in either direction', () => {
+  const { bot } = horizontalCoverFixture();
+  assert.equal(findHostileThreat(bot), null);
+  const upper = bot.entity.position;
+  bot.entity.position = bot.entities[540].position;
+  bot.entities[540].position = upper;
+  assert.equal(findHostileThreat(bot), null);
+});
+
+test('horizontal cover needs the entire body-width cross section to be known full cubes', () => {
+  const { bot, setCover } = horizontalCoverFixture();
+  for (const cover of ['hole', 'unloaded', 'slab']) {
+    setCover(cover);
+    assert.equal(findHostileThreat(bot)?.warning_radius, 24, cover);
+  }
+});
+
+test('a planned excavation inside the roof and special attacks retain their warning', () => {
+  const { bot } = horizontalCoverFixture();
+  assert.equal(findHostileThreat(bot, new Vec3(-10, 74, -3))?.entity_type, 'skeleton');
+  bot.entities[540].name = 'warden';
+  bot.entities[540].position = new Vec3(3.5, 78, -9.68);
+  assert.equal(findHostileThreat(bot)?.warning_radius, 12);
+});

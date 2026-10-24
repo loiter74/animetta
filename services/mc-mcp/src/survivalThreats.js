@@ -14,6 +14,41 @@ const isFullCube = block => block?.shapes?.some(shape => (
   shape.length === 6 && shape.every((value, index) => value === (index < 3 ? 0 : 1))
 ));
 
+function hasHorizontalCover(bot, origin, entity, heights) {
+  const end = entity.position;
+  const halfWidths = [bot.entity?.width, entity.width].map(width => Math.max(0.6, Number(width) || 0.6) / 2);
+  if (![origin.x, origin.y, origin.z, end.x, end.y, end.z, ...heights, ...halfWidths].every(Number.isFinite)) return false;
+  // A whole layer must lie strictly between the bodies. This also excludes
+  // the candidate excavation cell and any block overlapping either body.
+  const lowerTop = Math.min(origin.y + heights[0], end.y + heights[1]);
+  const upperFeet = Math.max(origin.y, end.y);
+  for (let y = Math.floor(upperFeet) - 1; y >= Math.ceil(lowerTop); y--) {
+    let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+    // Bound every straight lane between the two full body boxes at both
+    // faces of this layer, including widths, rather than sampling three rays.
+    for (const fromY of [origin.y, origin.y + heights[0]]) {
+      for (const toY of [end.y, end.y + heights[1]]) {
+        for (const faceY of [y, y + 1]) {
+          const t = (faceY - fromY) / (toY - fromY);
+          const width = halfWidths[0] * (1 - t) + halfWidths[1] * t;
+          const x = origin.x + (end.x - origin.x) * t;
+          const z = origin.z + (end.z - origin.z) * t;
+          minX = Math.min(minX, x - width); maxX = Math.max(maxX, x + width);
+          minZ = Math.min(minZ, z - width); maxZ = Math.max(maxZ, z + width);
+        }
+      }
+    }
+    let complete = true;
+    for (let x = Math.floor(minX); x <= Math.floor(maxX) && complete; x++) {
+      for (let z = Math.floor(minZ); z <= Math.floor(maxZ); z++) {
+        if (!isFullCube(bot.blockAt(new Vec3(x, y, z)))) { complete = false; break; }
+      }
+    }
+    if (complete) return true;
+  }
+  return false;
+}
+
 function hasSolidCover(bot, origin, entity) {
   if (typeof bot.world?.raycast !== 'function' || typeof bot.blockAt !== 'function') return false;
   const heights = [Math.max(1.8, bot.entity?.height || 1.8), entity.height || 1.8];
@@ -24,6 +59,7 @@ function hasSolidCover(bot, origin, entity) {
   ));
   const hits = [];
   try {
+    if (hasHorizontalCover(bot, origin, entity, heights)) return true;
     for (const fraction of [0, 0.5, 1]) {
       const start = new Vec3(origin.x, origin.y + 0.01 + fraction * (heights[0] - 0.02), origin.z);
       const end = new Vec3(entity.position.x, entity.position.y + 0.01 + fraction * (heights[1] - 0.02), entity.position.z);
@@ -49,7 +85,7 @@ function hasSolidCover(bot, origin, entity) {
 }
 
 // Retain the resource locator's melee warning and R17's earlier ranged warning.
-// Only a complete known solid column can hide ordinary physical attackers.
+// Only a complete known solid column or separating layer can hide physical attackers.
 export function findHostileThreat(bot, origin = bot.entity?.position, radius = null) {
   if (!origin) return null;
   let nearest = null;
