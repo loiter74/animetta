@@ -302,7 +302,11 @@ class BuiltinMissionStrategy:
             parameters=placement.parameters,
             maximum_cost=BudgetUsage(
                 max_actions=1,
-                max_blocks_changed=len(placement.effect_positions),
+                max_blocks_changed=len(placement.effect_positions)
+                + int(
+                    compiled.blueprint_id == "nether-portal-v1"
+                    and placement.relative_position[1] == 0
+                ),
                 max_travel_distance=8 if compiled.blueprint_id == "nether-portal-v1" else 0,
             ),
         )

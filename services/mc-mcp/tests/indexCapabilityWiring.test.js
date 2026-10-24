@@ -159,13 +159,15 @@ test('v2 collection returns exact resource-instance mutations for independent va
 });
 
 test('v2 placement uses adjacent references and returns exact block mutations', async () => {
-  const [source, adapter] = await Promise.all([
+  const [source, adapter, placement] = await Promise.all([
     readFile(indexUrl, 'utf8'),
     readFile(adapterUrl, 'utf8'),
+    readFile(new URL('../src/placement.js', import.meta.url), 'utf8'),
   ]);
 
-  assert.match(source, /findPlacementReference\(bot, targetPosition, Vec3\)/);
-  assert.match(source, /placeOrientedBlock\(bot, placement, blockName, facing\)/);
+  assert.match(source, /placeBlockAt\(bot, \{ blockName, targetPosition, facing, context \}/);
+  assert.match(placement, /findPlacementReference\(bot, targetPosition, targetPosition\.constructor\)/);
+  assert.match(placement, /placeOrientedBlock\(bot, placement, blockName, facing\)/);
   assert.match(source, /placementMutations\(\s*block_type,\s*targetPosition/);
   assert.match(source, /max_blocks_changed:\s*explainedMutations\.length/);
   assert.match(

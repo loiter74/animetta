@@ -192,3 +192,32 @@ def test_portal_site_accepts_mixed_terracotta_palette_ground() -> None:
     site = select_nether_portal_site(observation, (inspection,))
     assert site.home == (0, 64, 0)
     assert site.origin == (1, 64, 0)
+
+
+def test_snow_cover_keeps_a_grounded_home_band_and_a_clearable_bottom_row() -> None:
+    observation, inspection = _survey()
+    inspection.blocks.update({f"{x},64,0": "minecraft:snow" for x in range(5)})
+    site = select_nether_portal_site(observation, (inspection,))
+    assert site.home == (0, 64.5, 0)
+    assert site.origin == (1, 64, 0)
+    assert len(nether_portal_survey_bounds(observation)) == 8
+
+
+@pytest.mark.parametrize("cover", ["minecraft:powder_snow", "minecraft:snow_block", None])
+def test_snow_site_does_not_accept_an_unknown_or_different_ground_cover(cover: str | None) -> None:
+    observation, inspection = _survey()
+    inspection.blocks.update({f"{x},64,0": "minecraft:snow" for x in range(5)})
+    if cover is None:
+        del inspection.blocks["2,64,0"]
+    else:
+        inspection.blocks["2,64,0"] = cover
+    with pytest.raises(ValueError, match="no permanent"):
+        select_nether_portal_site(observation, (inspection,))
+
+
+def test_snow_cover_above_the_bottom_row_is_not_inferred_clear() -> None:
+    observation, inspection = _survey()
+    inspection.blocks.update({f"{x},64,0": "minecraft:snow" for x in range(5)})
+    inspection.blocks["2,65,0"] = "minecraft:snow"
+    with pytest.raises(ValueError, match="no permanent"):
+        select_nether_portal_site(observation, (inspection,))

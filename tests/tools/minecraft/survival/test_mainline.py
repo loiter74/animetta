@@ -26,6 +26,7 @@ from animetta.tools.minecraft.voyager.budget import (
     RequestedBudget,
     effective_budget,
 )
+from animetta.tools.minecraft.voyager.goal_verifier import GoalVerifier
 from animetta.tools.minecraft.voyager.strategies.builtin import BuiltinMissionStrategy
 from animetta.tools.minecraft.voyager.strategies.fallback import FallbackStrategy
 
@@ -519,6 +520,46 @@ def test_portal_build_places_only_frame_then_ignites_and_retains_interior_eviden
     assert list(compiled.expected_blocks.values()).count("minecraft:obsidian") == 10
     assert list(compiled.expected_blocks.values()).count("minecraft:cobbled_deepslate") == 4
     assert len(compiled.expected_blocks) == 20
+
+
+def test_snow_clearance_reservations_fit_the_original_portal_limits() -> None:
+    mission = build_nether_portal_mission(mission_id="snow-budget", home=(0, 64.5, 0))
+    strategy = BuiltinMissionStrategy(
+        manifest=RuntimeManifest.model_validate(MESSAGES["RuntimeManifest"]),
+        blueprint_origins={"nether-portal-v1": (1, 64, 0)},
+    )
+    state = strategy.prepare(mission.objectives[-1].goal)
+    observation = Observation.model_validate(MESSAGES["Observation"])
+    decisions = []
+    for _ in range(16):
+        decision = strategy.propose(state, observation)
+        decisions.append(decision)
+        state = strategy.accept_result(state, {})
+    placements = decisions[:14]
+    assert sum(d.maximum_cost.max_blocks_changed == 2 for d in placements) == 4
+    assert all(
+        d.maximum_cost.max_blocks_changed == (2 if d.parameters["y"] == 64 else 1)
+        for d in placements
+    )
+    assert sum(d.maximum_cost.max_actions for d in decisions) == 16
+    assert sum(d.maximum_cost.max_blocks_changed for d in decisions) == 24
+    assert mission.objectives[-1].budget.max_actions == 20
+    assert mission.objectives[-1].budget.max_blocks_changed == 24
+    assert mission.budget.max_actions == 117
+    assert mission.budget.max_blocks_changed == 1088
+
+
+@pytest.mark.parametrize("position", [(x, y, z) for x in (0, 1) for y in (64, 65) for z in (0, 1)])
+def test_snow_home_observation_rounding_uses_the_original_location_tolerance(
+    position: tuple[int, int, int],
+) -> None:
+    mission = build_nether_portal_mission(mission_id="snow-home", home=(0, 64.5, 0))
+    goal = next(o.goal for o in mission.objectives if o.objective_id == "water-return")
+    final = Observation.model_validate(
+        {**MESSAGES["Observation"], "position": dict(zip(("x", "y", "z"), position, strict=True))}
+    )
+    assert goal.success_predicates[0].tolerance == 1.5
+    assert GoalVerifier().verify(goal=goal, final=final)["satisfied"] is True
 
 
 def test_portal_blueprint_requires_six_real_portal_blocks() -> None:

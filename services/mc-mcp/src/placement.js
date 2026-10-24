@@ -2,6 +2,80 @@ export function normalizePlacementBlockName(blockType) {
   return String(blockType).replace(/^minecraft:/, '');
 }
 
+export async function placeBlockAt(bot, { blockName, targetPosition, facing, context = {} }, { navigate, dig, wait }) {
+  const checkpoint = () => {
+    context.operation_scope?.checkpoint();
+    context.signal?.throwIfAborted();
+  };
+  const failure = (code, message) => Object.assign(new Error(message), { code });
+  const placementChanges = blockName.endsWith('_door') || blockName.endsWith('_bed') ? 2 : 1;
+  const inspectTarget = () => {
+    checkpoint();
+    const block = bot.blockAt(targetPosition);
+    if (!block) throw failure('REGION_NOT_LOADED', '放置目标尚未加载。');
+    if (block.name === blockName) return block;
+    if (!['air', 'water', 'lava', 'snow'].includes(block.name)) {
+      throw failure('TARGET_OCCUPIED', `放置目标被 ${block.name} 占用。`);
+    }
+    const required = placementChanges + Number(block.name === 'snow');
+    if ((context.budget?.max_blocks_changed ?? placementChanges) < required) {
+      throw failure('BUDGET_EXHAUSTED', '本次预约不足以覆盖清雪与放置，已停止。');
+    }
+    return block;
+  };
+  const result = placed => ({ placed, output: placed
+    ? `Placed ${blockName} at (${targetPosition.x}, ${targetPosition.y}, ${targetPosition.z})`
+    : `Block already present at (${targetPosition.x}, ${targetPosition.y}, ${targetPosition.z})` });
+  let current = inspectTarget();
+  if (current.name === blockName) return result(false);
+  if (!bot.inventory.items().some(item => item.name === blockName && item.count > 0)) {
+    throw failure('MISSING_MATERIAL', `背包中没有 ${blockName}。`);
+  }
+  // Approach cannot spend a placement reservation on excavation or scaffolds.
+  const movements = bot.pathfinder?.movements;
+  const keys = ['canDig', 'allow1by1towers', 'scafoldingBlocks', 'canOpenDoors'];
+  const previous = movements && keys.map(key => [key, Object.hasOwn(movements, key), movements[key]]);
+  if (movements) Object.assign(movements, { canDig: false, allow1by1towers: false, scafoldingBlocks: [], canOpenDoors: false });
+  try {
+    await navigate();
+  } finally {
+    try { bot.pathfinder?.setGoal?.(null); } catch {}
+    try { bot.pathfinder?.stop?.(); } catch {}
+    if (movements) for (const [key, present, value] of previous) {
+      if (present) movements[key] = value;
+      else delete movements[key];
+    }
+  }
+  current = inspectTarget();
+  if (current.name === blockName) return result(false);
+  if (current.name === 'snow') {
+    await dig(current);
+    checkpoint();
+    if (bot.blockAt(targetPosition)?.name !== 'air') {
+      throw failure('PLACEMENT_CLEARANCE_FAILED', '清雪后未确认目标为空气，已停止放置。');
+    }
+  }
+  const placement = findPlacementReference(bot, targetPosition, targetPosition.constructor);
+  if (!placement) throw failure('PLACEMENT_REFERENCE_MISSING', '目标旁没有可用的放置支撑。');
+  const item = bot.inventory.items().find(stack => stack.name === blockName && stack.count > 0);
+  if (!item) throw failure('MISSING_MATERIAL', `背包中没有 ${blockName}。`);
+  await bot.equip(item, 'hand');
+  if (bot.heldItem?.name !== blockName) {
+    throw failure('PLACEMENT_ITEM_CHANGED', '装备物品与预期放置材料不一致，已停止。');
+  }
+  if (typeof bot.lookAt === 'function') await bot.lookAt(targetPosition.offset(0.5, 0.5, 0.5), true);
+  checkpoint();
+  if (bot.heldItem?.name !== blockName) {
+    throw failure('PLACEMENT_ITEM_CHANGED', '瞄准后装备材料已变化，已停止放置。');
+  }
+  await placeOrientedBlock(bot, placement, blockName, facing);
+  await wait(250);
+  if (bot.blockAt(targetPosition)?.name !== blockName) {
+    throw failure('PLACEMENT_NOT_OBSERVED', '未观测到预期方块，已停止。');
+  }
+  return result(true);
+}
+
 const PLACEMENT_YAW = Object.freeze({
   // Beds extend from the foot in the placing player's horizontal look direction.
   // Mineflayer uses 0 for north and rotates clockwise toward west.

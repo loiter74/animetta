@@ -50,6 +50,7 @@ _GROUND = frozenset(
 )
 _FALLING_GROUND = frozenset({"minecraft:sand", "minecraft:red_sand", "minecraft:gravel"})
 _AIR = frozenset({"minecraft:air", "minecraft:cave_air"})
+_FOOT_COVER = _AIR | {"minecraft:snow"}
 
 
 def _supported_ground(blocks: dict[tuple[int, int, int], str], point: tuple[int, int, int]) -> bool:
@@ -61,7 +62,7 @@ def _supported_ground(blocks: dict[tuple[int, int, int], str], point: tuple[int,
 
 @dataclass(frozen=True)
 class NetherPortalSite:
-    home: tuple[int, int, int]
+    home: tuple[float, float, float]
     origin: tuple[int, int, int]
 
 
@@ -119,11 +120,15 @@ def select_nether_portal_site(
         # fully known open column, so a cave or a harvested canopy is not home.
         if y + dimensions.height > ceiling + 1:
             continue
-        if not all(blocks.get((x, yy, z)) in _AIR for yy in range(y, ceiling + 1)):
+        cover = blocks.get((x, y, z))
+        if cover not in _FOOT_COVER or not all(
+            blocks.get((x, yy, z)) in _AIR for yy in range(y + 1, ceiling + 1)
+        ):
             continue
         if not all(
             _supported_ground(blocks, (xx, y - 1, z))
-            and all(blocks.get((xx, yy, z)) in _AIR for yy in range(y, y + dimensions.height))
+            and blocks.get((xx, y, z)) in _FOOT_COVER
+            and all(blocks.get((xx, yy, z)) in _AIR for yy in range(y + 1, y + dimensions.height))
             for xx in range(x + 1, x + 1 + dimensions.width)
         ):
             continue
@@ -132,8 +137,10 @@ def select_nether_portal_site(
             + (y - observation.position.y) ** 2
             + (z - observation.position.z) ** 2
         )
-        candidates.append((distance, x, y, z))
+        candidates.append((distance, x, y, z, cover == "minecraft:snow"))
     if not candidates:
         raise ValueError("no permanent, clear portal site in the inspected region")
-    _, x, y, z = min(candidates)
-    return NetherPortalSite(home=(x, y, z), origin=(x + 1, y, z))
+    _, x, y, z, snow = min(candidates)
+    # All SDK snow-layer collision tops lie in [0, 1). Center this standing
+    # band without changing the navigation cell or the existing 1.5 tolerance.
+    return NetherPortalSite(home=(x, y + 0.5 if snow else y, z), origin=(x + 1, y, z))

@@ -50,9 +50,8 @@ import { backfillObsidianHole } from './obsidianSupport.js';
 import { acquireFlint, ignitePortal } from './portal.js';
 import { fillWaterBucket, prepareObsidian } from './water.js';
 import {
-  findPlacementReference,
   normalizePlacementBlockName,
-  placeOrientedBlock,
+  placeBlockAt,
   placementMutations,
 } from './placement.js';
 import { locateResource } from './resources/locator.js';
@@ -382,44 +381,27 @@ async function _mineInner(block_type, count, context = {}) {
   return `Mined ${mined} ${block_type}`;
 }
 
-async function _place(block_type, x, y, z, facing = undefined, context = {}) {
+async function _placeResult(block_type, x, y, z, facing = undefined, context = {}) {
   context.operation_scope?.checkpoint();
   await setupMovements();
   const targetPosition = new Vec3(Math.floor(x), Math.floor(y), Math.floor(z));
   const blockName = normalizePlacementBlockName(block_type);
-  const current = bot.blockAt(targetPosition);
-  if (current && current.name === blockName) {
-    return `Block already present at (${x}, ${y}, ${z})`;
-  }
-  if (current && !['air', 'water', 'lava'].includes(current.name)) {
-    throw new Error(`Target occupied by ${current.name}`);
-  }
-  const item = bot.inventory.items().find(i => i.name === blockName);
-  if (!item) throw new Error(`No ${block_type} in inventory`);
-  await bot.pathfinder.goto(new GoalNear(
-    targetPosition.x,
-    Math.floor(bot.entity.position.y),
-    targetPosition.z,
-    4,
-  ));
-  const placement = findPlacementReference(bot, targetPosition, Vec3);
-  if (!placement) throw new Error('No solid adjacent placement reference');
-  await bot.equip(item, 'hand');
-  if (typeof bot.lookAt === 'function') {
-    await bot.lookAt(targetPosition.offset(0.5, 0.5, 0.5), true);
-  }
-  await placeOrientedBlock(bot, placement, blockName, facing);
-  await operationWait(250);
-  const placed = bot.blockAt(targetPosition);
-  if (!placed || placed.name !== blockName) {
-    throw new Error(`Placement not observed at (${x}, ${y}, ${z})`);
-  }
-  return `Placed ${block_type} at (${x}, ${y}, ${z})`;
+  return placeBlockAt(bot, { blockName, targetPosition, facing, context }, {
+    navigate: () => bot.pathfinder.goto(new GoalNear(
+      targetPosition.x, Math.floor(bot.entity.position.y), targetPosition.z, 4,
+    )),
+    dig: block => digCollectionBlock(bot, block),
+    wait: operationWait,
+  });
+}
+
+async function _place(...parameters) {
+  return (await _placeResult(...parameters)).output;
 }
 
 async function _placeWithEvidence(block_type, x, y, z, facing = undefined, context = {}) {
   const targetPosition = new Vec3(Math.floor(x), Math.floor(y), Math.floor(z));
-  const output = await _place(block_type, x, y, z, facing, context);
+  const { output, placed } = await _placeResult(block_type, x, y, z, facing, context);
   const blockName = normalizePlacementBlockName(block_type);
   const observedSecondaryPositions = blockName.endsWith('_bed')
     ? [
@@ -429,19 +411,19 @@ async function _placeWithEvidence(block_type, x, y, z, facing = undefined, conte
         targetPosition.offset(0, 0, -1),
       ].filter(position => bot.blockAt(position)?.name === blockName)
     : [];
-  const explainedMutations = placementMutations(
+  const explainedMutations = placed ? placementMutations(
     block_type,
     targetPosition,
     bot.game?.dimension || 'minecraft:overworld',
     observedSecondaryPositions,
-  );
+  ) : [];
   return {
     output,
     explained_mutations: explainedMutations,
     budget_usage: {
       max_actions: 1,
       max_strategy_attempts: 0,
-      max_travel_distance: 8,
+      max_travel_distance: placed ? 8 : 0,
       max_blocks_changed: explainedMutations.length,
       max_damage_taken: 0,
       protected_items: [],
