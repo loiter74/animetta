@@ -8,6 +8,19 @@ function nodeSnapshot(node) {
   };
 }
 
+function localBlockSnapshot(bot) {
+  const origin = bot.entity?.position?.floored?.();
+  if (!origin || typeof bot.blockAt !== 'function') return [];
+  const blocks = [];
+  for (let dy = -1; dy <= 3; dy++) for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) {
+    const position = origin.offset(dx, dy, dz);
+    const block = bot.blockAt(position);
+    blocks.push({ x: position.x, y: position.y, z: position.z,
+      name: block?.name ?? null, state_id: block?.stateId ?? null });
+  }
+  return blocks;
+}
+
 export function createNavigationTrace(bot, enabled = false) {
   if (!enabled || typeof bot.on !== 'function' || typeof bot.off !== 'function') return null;
   let path = [];
@@ -33,13 +46,14 @@ export function createNavigationTrace(bot, enabled = false) {
   const onTick = () => {
     state.last_motion = { position: nodeSnapshot(bot.entity?.position), velocity: nodeSnapshot(bot.entity?.velocity),
       on_ground: bot.entity?.onGround ?? null, next_node: nodeSnapshot(path[0]),
-      controls: Object.fromEntries(Object.entries(bot.controlState ?? {}).filter(([, value]) => typeof value === 'boolean')) };
+      controls: Object.fromEntries(['forward', 'back', 'left', 'right', 'jump', 'sprint', 'sneak']
+        .map(name => [name, bot.controlState?.[name]]).filter(([, value]) => typeof value === 'boolean')) };
   };
   begin(null);
   bot.on('path_update', onUpdate);
   bot.on('path_reset', onReset);
   bot.on('physicsTick', onTick);
-  return { begin, snapshot: () => ({ ...state }), close() {
+  return { begin, snapshot: () => ({ ...state, local_blocks: localBlockSnapshot(bot) }), close() {
     bot.off('path_update', onUpdate);
     bot.off('path_reset', onReset);
     bot.off('physicsTick', onTick);

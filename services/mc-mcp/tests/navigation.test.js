@@ -84,6 +84,49 @@ test('successful navigation removes passive observers without changing controls 
   assert.equal(bot.pathfinder.movements.allow1by1towers, true);
 });
 
+test('passive navigation evidence reads nonenumerable native controls without changing them', async t => {
+  const bot = diagnosticFixture(t);
+  const expected = { forward: false, back: false, left: true, right: false, jump: false, sprint: false, sneak: true };
+  bot.controlState = {};
+  for (const [name, value] of Object.entries(expected)) {
+    Object.defineProperty(bot.controlState, name, { get: () => value });
+  }
+  assert.deepEqual(Object.entries(bot.controlState), [], 'matches native Mineflayer property descriptors');
+  bot.pathfinder.goto = async () => {
+    bot.emit('physicsTick');
+    throw new Error('route stalled');
+  };
+  await assert.rejects(navigateTo(bot, { x: 17, y: 65, z: 86 }), error => {
+    assert.deepEqual(error.details.navigation_trace.last_motion.controls, expected);
+    return true;
+  });
+  for (const [name, value] of Object.entries(expected)) assert.equal(bot.controlState[name], value);
+  for (const name of ['path_update', 'path_reset', 'physicsTick']) assert.equal(bot.listenerCount(name), 0);
+});
+
+test('failed navigation retains bounded final collision states including unknown cells', async t => {
+  const bot = diagnosticFixture(t);
+  const reads = [];
+  bot.blockAt = point => {
+    reads.push(point.clone());
+    if (point.x === 17) return null;
+    return { name: point.y < 64 ? 'stone' : 'air', stateId: point.y < 64 ? 1 : 0 };
+  };
+  const failure = new Error('route stalled');
+  bot.pathfinder.goto = async () => { bot.emit('physicsTick'); throw failure; };
+  await assert.rejects(navigateTo(bot, { x: 17, y: 65, z: 86 }), error => {
+    assert.equal(error, failure);
+    const terrain = error.details.navigation_trace.local_blocks;
+    assert.equal(terrain.length, 45);
+    assert.deepEqual(terrain.find(p => p.x === 18 && p.y === 63 && p.z === 86),
+      { x: 18, y: 63, z: 86, name: 'stone', state_id: 1 });
+    assert.deepEqual(terrain.find(p => p.x === 17 && p.y === 64 && p.z === 86),
+      { x: 17, y: 64, z: 86, name: null, state_id: null });
+    return true;
+  });
+  assert.equal(reads.length, 48, '45 passive collision reads plus the existing head and failure checks');
+});
+
 test('underground return reaches the surface through bounded native height goals', async () => {
   const { bot, goals } = fixture(26);
   await navigateTo(bot, { x: 11, y: 64, z: 75 });
