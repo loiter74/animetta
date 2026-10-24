@@ -527,10 +527,14 @@ export async function digCollectionBlock(bot, block, timeoutMs) {
   }
 }
 
+function pickupItemNames(itemName) {
+  return itemName ? new Set((Array.isArray(itemName) ? itemName : [itemName])
+    .map(name => name.replace(/^minecraft:/, ''))) : null;
+}
+
 export function findPickupItemEntities(bot, radius = 20, itemName = null) {
   const items = [];
-  const acceptedNames = itemName ? new Set((Array.isArray(itemName) ? itemName : [itemName])
-    .map(name => name.replace(/^minecraft:/, ''))) : null;
+  const acceptedNames = pickupItemNames(itemName);
   const selfPosition = bot?.entity?.position;
   for (const entity of Object.values(bot?.entities ?? {})) {
     if (!entity || entity.name !== 'item' || !entity.position || !selfPosition) continue;
@@ -572,6 +576,7 @@ export async function safePickupDroppedItems(bot, {
   maxAttemptsPerEntity = 2,
   scanRadius = 20,
   itemName = null,
+  minimumInventoryCount = null,
   nowMs = () => Date.now(),
   waitMs = operationWait,
   GoalNear = null,
@@ -593,6 +598,19 @@ export async function safePickupDroppedItems(bot, {
   context.operation_scope?.checkpoint();
   const deadline = nowMs() + Math.max(0, timeoutMs);
   const attemptsByEntity = new Map();
+  const acceptedNames = pickupItemNames(itemName);
+  const hasEnoughItems = () => minimumInventoryCount !== null && acceptedNames !== null
+    && (bot.inventory?.items?.() || [])
+      .filter(item => acceptedNames.has(item.name.replace(/^minecraft:/, '')))
+      .reduce((total, item) => total + item.count, 0) >= minimumInventoryCount;
+  let navigating = false;
+  const stopOnCompletion = () => {
+    if (!navigating || !hasEnoughItems()) return;
+    // stop() only requests a stop at the next path step. Clear this pickup
+    // goal now so the SDK settles goto without walking past the collected item.
+    try { bot.pathfinder.setGoal?.(null); } catch {}
+    stopCollectionMovement(bot);
+  };
   let triedFallbackPosition = false;
   let previousMovements;
   if (movements && typeof bot.pathfinder.setMovements === 'function') {
@@ -606,8 +624,12 @@ export async function safePickupDroppedItems(bot, {
     return attempts;
   };
   const exhausted = (entity) => (attemptsByEntity.get(entity) || 0) >= maxAttemptsPerEntity;
+  if (minimumInventoryCount !== null && acceptedNames !== null) {
+    bot.on?.('move', stopOnCompletion);
+    bot.inventory?.on?.('updateSlot', stopOnCompletion);
+  }
   try {
-    while (nowMs() < deadline && outcome.navigations < maxNavigations) {
+    while (nowMs() < deadline && outcome.navigations < maxNavigations && !hasEnoughItems()) {
       context.operation_scope?.checkpoint();
       const [nearest] = findPickupItemEntities(bot, scanRadius, itemName)
         .filter(({ entity }) => !exhausted(entity));
@@ -640,9 +662,14 @@ export async function safePickupDroppedItems(bot, {
         continue;
       }
       outcome.navigations += 1;
+      navigating = true;
       try {
         await withTimeout(
-          () => bot.pathfinder.goto(new GoalNear(goalPosition.x, goalPosition.y, goalPosition.z, 0)),
+          async () => {
+            if (!hasEnoughItems()) {
+              await bot.pathfinder.goto(new GoalNear(goalPosition.x, goalPosition.y, goalPosition.z, 0));
+            }
+          },
           Math.max(1, deadline - nowMs()),
           'safe drop pickup',
           () => bot.pathfinder.stop?.(),
@@ -651,22 +678,26 @@ export async function safePickupDroppedItems(bot, {
         // Waterborne drops can take time to rise into pickup range. Reaching
         // a safe edge alone does not prove that the item has been collected.
         for (let sample = 0; sample < 40 && nowMs() < deadline && trackedEntity
-          && Object.values(bot.entities ?? {}).includes(trackedEntity); sample++) {
+          && Object.values(bot.entities ?? {}).includes(trackedEntity) && !hasEnoughItems(); sample++) {
           context.operation_scope?.checkpoint();
           await waitMs(Math.min(100, Math.max(0, deadline - nowMs())));
         }
       } catch (error) {
         context.signal?.throwIfAborted();
         context.operation_scope?.checkpoint();
-        outcome.path_failures += 1;
+        if (!hasEnoughItems()) outcome.path_failures += 1;
         // A failed path is never replaced by blind manual movement.
       } finally {
+        navigating = false;
         try { bot.pathfinder.stop?.(); } catch {}
         if (trackedEntity) markAttempt(trackedEntity);
       }
+      if (hasEnoughItems()) break;
       await waitMs(200);
     }
   } finally {
+    bot.removeListener?.('move', stopOnCompletion);
+    bot.inventory?.removeListener?.('updateSlot', stopOnCompletion);
     if (movements && typeof bot.pathfinder.setMovements === 'function') {
       try { bot.pathfinder.setMovements(previousMovements); } catch {}
     }

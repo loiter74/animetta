@@ -649,7 +649,10 @@ async function _equipToolForBlock(block) {
   return null;
 }
 
-async function _pickupDroppedItems(timeout = 5000, fallbackPos = null, itemName = null, minimumY = Number.NEGATIVE_INFINITY) {
+async function _pickupDroppedItems(
+  timeout = 5000, fallbackPos = null, itemName = null,
+  minimumY = Number.NEGATIVE_INFINITY, minimumInventoryCount = null,
+) {
   const mcData = await getMcData();
   const movements = new Movements(bot, mcData);
   configureDryNavigation(movements, bot);
@@ -667,7 +670,7 @@ async function _pickupDroppedItems(timeout = 5000, fallbackPos = null, itemName 
   };
   debugDrops('before');
   const result = await safePickupDroppedItems(bot, {
-    timeoutMs: timeout, fallbackPos, itemName, GoalNear, movements, minimumY,
+    timeoutMs: timeout, fallbackPos, itemName, GoalNear, movements, minimumY, minimumInventoryCount,
     context: { operation_scope: activeOperationScope(), signal: activeOperationScope()?.signal },
   });
   debugDrops('after');
@@ -1122,7 +1125,7 @@ async function _reclaimCraftingTable(craftingTable, context = {}) {
     if (!block || block.name !== 'crafting_table') return;
     await _equipToolForBlock(block);
     await bot.dig(block);
-    await _pickupDroppedItems(5000, block.position);
+    await _pickupDroppedItems(5000, block.position, 'crafting_table', Number.NEGATIVE_INFINITY, 1);
   } catch (e) {
     if (process.env.CRAFT_DEBUG) {
       process.stderr.write(`[craft-debug] reclaim table failed: ${e.message}\n`);

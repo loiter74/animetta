@@ -5,6 +5,7 @@ import Vec3 from 'vec3';
 import pathfinderPkg from 'mineflayer-pathfinder';
 import minecraftData from 'minecraft-data';
 import prismarineBlock from 'prismarine-block';
+import sdkGoto from 'mineflayer-pathfinder/lib/goto.js';
 
 import * as collection from '../src/collection.js';
 
@@ -162,6 +163,110 @@ test('safe pickup waits at a supported edge for a delayed floating item', async 
   assert.equal(outcome.navigations, 1);
   assert.equal(bot.entities[1], undefined);
   assert.ok(elapsed >= 1500 && elapsed < 8000);
+});
+
+function targetedPickupFixture() {
+  const bag = [];
+  const bot = new EventEmitter();
+  bot.inventory = Object.assign(new EventEmitter(), { items: () => bag });
+  bot.entity = { position: new Vec3(0.5, 64, 0.5) };
+  const drop = (name, x) => ({ name: 'item', position: new Vec3(x, 64, 0.5), getDroppedItem: () => ({ name }) });
+  bot.entities = { 1: drop('birch_sapling', 1.5), 2: drop('crafting_table', 4.5) };
+  bot.blockAt = position => ({ name: position.y < 64 ? 'stone' : 'air',
+    boundingBox: position.y < 64 ? 'block' : 'empty', position });
+  bot.setControlState = () => {};
+  const original = {};
+  const goals = [];
+  bot.pathfinder = { movements: original, setMovements(value) { this.movements = value; },
+    stop() {}, setGoal() {}, async goto(goal) { goals.push(goal); delete bot.entities[2]; } };
+  let elapsed = 0;
+  const options = { itemName: 'crafting_table', minimumInventoryCount: 1,
+    fallbackPos: new Vec3(4, 64, 0), GoalNear: pathfinderPkg.goals.GoalNear,
+    movements: {}, nowMs: () => elapsed, waitMs: async ms => { elapsed += ms; } };
+  return { bot, bag, original, goals, options };
+}
+
+test('targeted pickup skips a recovered workstation instead of chasing saplings or fallback', async () => {
+  const fixture = targetedPickupFixture();
+  fixture.bag.push({ name: 'crafting_table', count: 1 });
+  const result = await collection.safePickupDroppedItems(fixture.bot, fixture.options);
+  assert.equal(result.navigations, 0);
+  assert.deepEqual(fixture.goals, []);
+  assert.equal(fixture.bot.pathfinder.movements, fixture.original);
+});
+
+test('targeted pickup stops an active route on inventory evidence and keeps the absolute threshold', async () => {
+  const { bot, bag, original, options } = targetedPickupFixture();
+  bag.push({ name: 'crafting_table', count: 1 });
+  let stopped = false;
+  let walkedPastPickup = false;
+  const goals = [];
+  bot.pathfinder.stop = () => { stopped = true; };
+  bot.pathfinder.goto = async goal => {
+    goals.push(goal);
+    bag[0].count = 2;
+    bot.inventory.emit('updateSlot', 0, null, bag[0]);
+    if (stopped) throw new Error('path stopped');
+    walkedPastPickup = true;
+    bot.entity.position = new Vec3(goal.x + 0.5, goal.y, goal.z + 0.5);
+  };
+  const result = await collection.safePickupDroppedItems(bot, { ...options, minimumInventoryCount: 2 });
+  assert.equal(walkedPastPickup, false);
+  assert.equal(goals.length, 1);
+  assert.equal(goals[0].x, 4, 'the closer sapling is not the requested workstation');
+  assert.equal(result.path_failures, 0);
+  assert.equal(bot.pathfinder.movements, original);
+  assert.equal(bot.inventory.listenerCount('updateSlot'), 0);
+  assert.equal(bot.listenerCount('move'), 0);
+});
+
+test('targeted pickup does not treat a vanished drop as inventory gain', async () => {
+  const { bot, bag, goals, options } = targetedPickupFixture();
+  await collection.safePickupDroppedItems(bot, options);
+  assert.equal(bag.length, 0);
+  assert.equal(goals.length, 2, 'the uncollected target still permits the one bounded fallback');
+  assert.ok(goals.every(goal => goal.x === 4));
+});
+
+test('targeted pickup cancellation restores movements and removes completion listeners', async () => {
+  const { bot, original, options } = targetedPickupFixture();
+  const controller = new AbortController();
+  bot.pathfinder.goto = async () => { controller.abort('operator stop'); throw new Error('stopped'); };
+  await assert.rejects(collection.safePickupDroppedItems(bot, {
+    ...options, context: { signal: controller.signal },
+  }), error => error === 'operator stop');
+  assert.equal(bot.pathfinder.movements, original);
+  assert.equal(bot.inventory.listenerCount('updateSlot'), 0);
+  assert.equal(bot.listenerCount('move'), 0);
+});
+
+test('targeted pickup settles the real SDK goto without waiting for another path step', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const { bot, bag, options } = targetedPickupFixture();
+  let activeGoal;
+  bot.pathfinder.goto = goal => sdkGoto(bot, goal);
+  bot.pathfinder.setGoal = goal => {
+    activeGoal = goal;
+    bot.emit('goal_updated', goal);
+    if (goal) queueMicrotask(() => {
+      bag.push({ name: 'crafting_table', count: 1 });
+      bot.inventory.emit('updateSlot', 0, null, bag[0]);
+    });
+  };
+  // The installed SDK's stop() only sets a flag until another path step.
+  bot.pathfinder.stop = () => {};
+  const pending = collection.safePickupDroppedItems(bot, options);
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.equal(activeGoal, null);
+  t.mock.timers.tick(0);
+  const result = await pending;
+  assert.equal(result.path_failures, 0);
+  assert.equal(result.navigations_succeeded, 0, 'inventory gain is distinct from reaching the old route goal');
+  for (const event of ['goal_updated', 'goal_reached', 'path_stop', 'path_update', 'move']) {
+    assert.equal(bot.listenerCount(event), 0);
+  }
+  assert.equal(bot.inventory.listenerCount('updateSlot'), 0);
 });
 
 test('obsidian mining switches from scaffold to diamond pickaxe before calculating dig duration', async (t) => {
