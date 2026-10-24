@@ -21,6 +21,8 @@ _GROUND = frozenset(
         "podzol",
         "mycelium",
         "stone",
+        "sandstone",
+        "red_sandstone",
         "deepslate",
         "granite",
         "diorite",
@@ -29,7 +31,15 @@ _GROUND = frozenset(
         "netherrack",
     )
 )
+_FALLING_GROUND = frozenset({"minecraft:sand", "minecraft:red_sand", "minecraft:gravel"})
 _AIR = frozenset({"minecraft:air", "minecraft:cave_air"})
+
+
+def _supported_ground(blocks: dict[tuple[int, int, int], str], point: tuple[int, int, int]) -> bool:
+    x, y, z = point
+    while blocks.get((x, y, z)) in _FALLING_GROUND:
+        y -= 1
+    return blocks.get((x, y, z)) in _GROUND
 
 
 @dataclass(frozen=True)
@@ -84,8 +94,8 @@ def select_nether_portal_site(
     dimensions = nether_portal_blueprint().dimensions
     ceiling = max(point[1] for point in blocks)
     candidates = []
-    for (x, support_y, z), block in blocks.items():
-        if block not in _GROUND:
+    for x, support_y, z in blocks:
+        if not _supported_ground(blocks, (x, support_y, z)):
             continue
         y = support_y + 1
         # The home stands beside the portal, on permanent ground. Require a
@@ -95,7 +105,7 @@ def select_nether_portal_site(
         if not all(blocks.get((x, yy, z)) in _AIR for yy in range(y, ceiling + 1)):
             continue
         if not all(
-            blocks.get((xx, y - 1, z)) in _GROUND
+            _supported_ground(blocks, (xx, y - 1, z))
             and all(blocks.get((xx, yy, z)) in _AIR for yy in range(y, y + dimensions.height))
             for xx in range(x + 1, x + 1 + dimensions.width)
         ):

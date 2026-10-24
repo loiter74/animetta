@@ -97,3 +97,53 @@ def test_portal_site_rejects_another_world_and_conflicting_inspections() -> None
     )
     with pytest.raises(ValueError, match="conflicting"):
         select_nether_portal_site(observation, (inspection, conflict))
+
+
+def _supported_survey(
+    material: str = "sand", foundation: str = "stone"
+) -> tuple[Observation, RegionInspection]:
+    observation, inspection = _survey()
+    blocks = {
+        **inspection.blocks,
+        **{f"{x},{y},0": f"minecraft:{material}" for x in range(5) for y in range(61, 64)},
+        **{f"{x},60,0": f"minecraft:{foundation}" for x in range(5)},
+    }
+    return observation, inspection.model_copy(
+        update={
+            "blocks": blocks,
+            "bounds": RegionBounds(min=Position(x=0, y=60, z=0), max=Position(x=4, y=80, z=0)),
+        }
+    )
+
+
+@pytest.mark.parametrize("material", ["sand", "red_sand", "gravel"])
+@pytest.mark.parametrize("foundation", ["stone", "sandstone"])
+def test_portal_site_accepts_a_fully_inspected_supported_gravity_column(
+    material: str, foundation: str
+) -> None:
+    observation, inspection = _supported_survey(material, foundation)
+    site = select_nether_portal_site(observation, (inspection,))
+    assert site.home == (0, 64, 0)
+    assert site.origin == (1, 64, 0)
+
+
+@pytest.mark.parametrize("gap", ["minecraft:water", "minecraft:lava", "minecraft:air", None])
+@pytest.mark.parametrize("column", [0, 2])
+def test_portal_site_rejects_a_gap_under_home_or_portal_gravity_support(
+    gap: str | None, column: int
+) -> None:
+    observation, inspection = _supported_survey()
+    key = f"{column},62,0"
+    if gap is None:
+        del inspection.blocks[key]
+    else:
+        inspection.blocks[key] = gap
+    with pytest.raises(ValueError, match="no permanent"):
+        select_nether_portal_site(observation, (inspection,))
+
+
+@pytest.mark.parametrize("material", ["sandstone", "red_sandstone"])
+def test_portal_site_accepts_non_falling_sandstone_ground(material: str) -> None:
+    observation, inspection = _survey()
+    inspection.blocks.update({f"{x},63,0": f"minecraft:{material}" for x in range(5)})
+    assert select_nether_portal_site(observation, (inspection,)).home == (0, 64, 0)
