@@ -608,3 +608,102 @@ test('buried gravel uses its observed layer without inventing a blind descent ta
   assert.equal(shouldPrepareUndergroundCollection('gravel', 1, 60, false, 58), null);
   assert.equal(shouldPrepareUndergroundCollection('oak_log', 1, 62, false, 30), null);
 });
+
+test('observed safe underground layer overrides the blind registry default for iron', () => {
+  const { getUndergroundCollectionPreparation, shouldPrepareUndergroundCollection } = collection;
+
+  assert.deepEqual(getUndergroundCollectionPreparation('iron_ore', 7, 30), {
+    targetY: 32,
+    minimumCobblestone: 0,
+  });
+  assert.deepEqual(shouldPrepareUndergroundCollection('iron_ore', 7, 40, false, 30), {
+    targetY: 32,
+    minimumCobblestone: 0,
+  });
+  // Already at or below the prepared layer: no climb, no preparation.
+  assert.equal(shouldPrepareUndergroundCollection('iron_ore', 7, 32, false, 30), null);
+  // A nearby visible target still suppresses preparation entirely.
+  assert.equal(shouldPrepareUndergroundCollection('iron_ore', 7, 40, true, 30), null);
+  // Without observation the registry defaults remain untouched.
+  assert.deepEqual(getUndergroundCollectionPreparation('iron_ore', 7), {
+    targetY: 16,
+    minimumCobblestone: 0,
+  });
+  // Deep-ore observations are honored too; no iron-only special case.
+  assert.deepEqual(getUndergroundCollectionPreparation('diamond_ore', 1, -51), {
+    targetY: -49,
+    minimumCobblestone: 0,
+  });
+});
+
+test('collection evidence counts SDK-confirmed placements and not raw server block updates', async () => {
+  const bot = new EventEmitter();
+  bot.entity = { position: { x: 0, y: 64, z: 0 } };
+  bot.health = 20;
+  const position = { x: 5, y: 60, z: -3 };
+  const evidence = await collection.withCollectionEvidence(bot, async () => {
+    bot.emit('blockPlaced', { name: 'air', type: 0, position },
+      { name: 'cobblestone', type: 1, position });
+    bot.emit('blockUpdate', { name: 'air', type: 0, position: { x: 6, y: 60, z: -3 } },
+      { name: 'cobblestone', type: 1, position: { x: 6, y: 60, z: -3 } });
+  });
+  assert.deepEqual(evidence.explained_mutations, [{
+    kind: 'block',
+    subject: 'block:minecraft:overworld:5:60:-3',
+    delta: 1,
+    details: { block_type: 'minecraft:cobblestone' },
+  }]);
+  assert.equal(evidence.budget_usage.max_blocks_changed, 1);
+  assert.equal(bot.listenerCount('blockPlaced'), 0);
+});
+
+test('placement annotations merge with confirmed native placements event by event', async () => {
+  const bot = new EventEmitter();
+  bot.entity = { position: { x: 0, y: 64, z: 0 } };
+  bot.health = 20;
+  const evidence = await collection.withCollectionEvidence(bot, async (mutations) => {
+    for (const position of [{ x: 1, y: -50, z: 2 }, { x: 1, y: -49, z: 2 }]) {
+      bot.emit('blockPlaced', { name: 'air', type: 0, position },
+        { name: 'cobblestone', type: 1, position });
+      mutations.push(collectionResourceMutation('cobblestone', position, 'minecraft:overworld', 1));
+    }
+    // An annotation without a confirming native event stays attributed.
+    mutations.push(collectionResourceMutation('cobblestone', { x: 1, y: -50, z: 2 }, 'minecraft:overworld', 1));
+  });
+  assert.deepEqual(evidence.explained_mutations.map(({ subject, delta }) => ({ subject, delta })), [
+    { subject: 'block:minecraft:overworld:1:-50:2', delta: 1 },
+    { subject: 'block:minecraft:overworld:1:-49:2', delta: 1 },
+    { subject: 'block:minecraft:overworld:1:-50:2', delta: 1 },
+  ]);
+  assert.equal(evidence.budget_usage.max_blocks_changed, 3);
+});
+
+test('same-position place, break, and re-place each count once on an abort receipt', async () => {
+  const bot = new EventEmitter();
+  bot.entity = { position: { x: 0, y: 64, z: 0 } };
+  bot.health = 20;
+  const position = { x: -16, y: 30, z: 7 };
+  const controller = new AbortController();
+  await assert.rejects(collection.withCollectionEvidence(bot, async () => {
+    bot.emit('blockPlaced', { name: 'air', type: 0, position },
+      { name: 'cobblestone', type: 1, position });
+    bot.emit('blockUpdate', { name: 'cobblestone', type: 1, position },
+      { name: 'air', type: 0, position });
+    bot.emit('diggingCompleted', { name: 'air', type: 0, position });
+    bot.emit('blockPlaced', { name: 'air', type: 0, position },
+      { name: 'cobblestone', type: 1, position });
+    controller.abort('budget guard stopped collection');
+    controller.signal.throwIfAborted();
+  }), (error) => {
+    assert.ok(error instanceof Error);
+    assert.equal(error.message, 'budget guard stopped collection');
+    assert.deepEqual(error.explained_mutations.map(({ subject, delta }) => ({ subject, delta })), [
+      { subject: 'block:minecraft:overworld:-16:30:7', delta: 1 },
+      { subject: 'block:minecraft:overworld:-16:30:7', delta: -1 },
+      { subject: 'block:minecraft:overworld:-16:30:7', delta: 1 },
+    ]);
+    assert.equal(error.budget_usage.max_blocks_changed, 3);
+    return true;
+  });
+  assert.equal(bot.listenerCount('blockPlaced'), 0);
+});

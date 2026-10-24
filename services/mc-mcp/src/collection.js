@@ -279,7 +279,7 @@ export function collectionExcavationGoal(block) {
   return new pathfinderPkg.goals.GoalGetToBlock(x, y, z);
 }
 
-export function collectionResourceMutation(blockType, position, dimension = 'minecraft:overworld') {
+export function collectionResourceMutation(blockType, position, dimension = 'minecraft:overworld', delta = -1) {
   const normalizedBlock = String(blockType).includes(':')
     ? String(blockType)
     : `minecraft:${blockType}`;
@@ -289,7 +289,7 @@ export function collectionResourceMutation(blockType, position, dimension = 'min
   return {
     kind: 'block',
     subject: `block:${normalizedDimension}:${position.x}:${position.y}:${position.z}`,
-    delta: -1,
+    delta,
     details: { block_type: normalizedBlock },
   };
 }
@@ -335,8 +335,8 @@ export function shouldRetryStructuredResourceSearch(resourceName, error) {
 export function getUndergroundCollectionPreparation(resourceName, count, observedTargetY = null) {
   try {
     const definition = getResourceDefinition(resourceName);
-    const targetY = definition.targetY ?? (definition.category === 'common_underground'
-      && Number.isFinite(observedTargetY) ? Math.floor(observedTargetY) + 2 : null);
+    const targetY = Number.isFinite(observedTargetY)
+      ? Math.floor(observedTargetY) + 2 : definition.targetY ?? null;
     if (!isUndergroundCategory(definition.category) || !Number.isFinite(targetY)) {
       return null;
     }
@@ -711,7 +711,7 @@ export function incompleteCollectionError(blockType, dropItem, collected, reques
 
 export async function withCollectionEvidence(bot, collect) {
   const resourceMutations = [];
-  const dugMutations = [];
+  const nativeMutations = [];
   const removedBlocks = new Map();
   const onBlockUpdate = (before, after) => {
     if (before?.position && before.type !== 0 && after?.type === 0) {
@@ -724,8 +724,14 @@ export async function withCollectionEvidence(bot, collect) {
     const block = removedBlocks.get(key);
     if (!block) return;
     removedBlocks.delete(key);
-    dugMutations.push(collectionResourceMutation(
+    nativeMutations.push(collectionResourceMutation(
       block.name, block.position, bot.game?.dimension || 'minecraft:overworld',
+    ));
+  };
+  const onBlockPlaced = (before, after) => {
+    if (!after?.position || after.type === 0 || before?.type === after.type) return;
+    nativeMutations.push(collectionResourceMutation(
+      after.name, after.position, bot.game?.dimension || 'minecraft:overworld', 1,
     ));
   };
   let previousPosition = { ...bot.entity.position };
@@ -746,17 +752,17 @@ export async function withCollectionEvidence(bot, collect) {
     previousHealth = bot.health;
   };
   const evidence = () => {
-    // Native shaft/pathfinder excavation also changes blocks. Explicit target
-    // annotations describe the same digs; match each event once, not twice.
-    const unmatchedDigs = [...dugMutations];
+    // Explicit target/backfill annotations may describe the same confirmed
+    // native dig or placement; match each event once, preserving repeat changes.
+    const unmatchedNative = [...nativeMutations];
     const annotations = resourceMutations.filter(mutation => {
-      const index = unmatchedDigs.findIndex(dig => dig.subject === mutation.subject
-        && dig.delta === mutation.delta && dig.details.block_type === mutation.details?.block_type);
+      const index = unmatchedNative.findIndex(native => native.subject === mutation.subject
+        && native.delta === mutation.delta && native.details.block_type === mutation.details?.block_type);
       if (index < 0) return true;
-      unmatchedDigs.splice(index, 1);
+      unmatchedNative.splice(index, 1);
       return false;
     });
-    const mutations = [...dugMutations, ...annotations];
+    const mutations = [...nativeMutations, ...annotations];
     return {
       explained_mutations: mutations,
       budget_usage: {
@@ -771,6 +777,7 @@ export async function withCollectionEvidence(bot, collect) {
   bot.on('health', onHealth);
   bot.on('blockUpdate', onBlockUpdate);
   bot.on('diggingCompleted', onDiggingCompleted);
+  bot.on('blockPlaced', onBlockPlaced);
   try {
     const output = await collect(resourceMutations);
     onMove();
@@ -789,5 +796,6 @@ export async function withCollectionEvidence(bot, collect) {
     bot.removeListener('health', onHealth);
     bot.removeListener('blockUpdate', onBlockUpdate);
     bot.removeListener('diggingCompleted', onDiggingCompleted);
+    bot.removeListener('blockPlaced', onBlockPlaced);
   }
 }

@@ -6,7 +6,11 @@ import pathfinderPackage from 'mineflayer-pathfinder';
 import prismarineBlock from 'prismarine-block';
 import AStar from 'mineflayer-pathfinder/lib/astar.js';
 import Move from 'mineflayer-pathfinder/lib/move.js';
-import { configureDryNavigation } from '../src/collection.js';
+import {
+  collectionExcavationGoal,
+  configureDryNavigation,
+  getUndergroundCollectionPreparation,
+} from '../src/collection.js';
 import { escapeWaterToShore, navigateTo, surfaceEscapePlan } from '../src/navigation.js';
 
 function fixture(y) {
@@ -203,4 +207,49 @@ test('real SDK can leave an anchored canopy by supported steps without breaking 
   obstructed = false;
   unstable = true;
   assert.notEqual(search().status, 'success', 'decaying unanchored leaves remain forbidden');
+});
+
+test('prepared iron access stays at the observed vein layer without pillaring back up a blind shaft', () => {
+  // Synthetic bounded regression fixture for target-layer selection; this is
+  // not a replay of any live map.
+  const preparation = getUndergroundCollectionPreparation('iron_ore', 7, 30);
+  assert.deepEqual(preparation, { targetY: 32, minimumCobblestone: 0 });
+  const registry = minecraftData('1.21');
+  const Block = prismarineBlock(registry);
+  const search = startY => {
+    const bot = {
+      registry, inventory: { items: () => [
+        { name: 'cobblestone', type: registry.itemsByName.cobblestone.id, count: 64 },
+      ] }, entities: {}, game: { minY: -64 },
+      entity: { position: new Vec3(0.5, startY, 0.5), effects: {} },
+      pathfinder: { bestHarvestTool: () => ({ type: registry.itemsByName.stone_pickaxe.id }) },
+      blockAt(position) {
+        const p = position.floored();
+        if (p.x < 0 || p.x > 2 || p.z !== 0 || p.y < 15 || p.y > 34) return null;
+        const name = p.x === 1 && p.y === 30 ? 'iron_ore'
+          : p.x === 0 && p.y >= startY ? 'air' : 'stone';
+        const block = Block.fromStateId(registry.blocksByName[name].defaultState, 0);
+        block.position = p;
+        return block;
+      },
+    };
+    const movements = configureDryNavigation(new pathfinderPackage.Movements(bot), bot);
+    movements.allowEntityDetection = false;
+    return new AStar(new Move(0, startY, 0, 64, 0), movements,
+      collectionExcavationGoal({ name: 'iron_ore', position: new Vec3(1, 30, 0) }),
+      1000, 1000).compute();
+  };
+  const blind = search(16);
+  assert.equal(blind.status, 'success');
+  assert.ok(blind.path.some(node => node.toPlace.length > 0),
+    'the original deeper shaft can reach the vein only by building back up');
+  const result = search(preparation.targetY);
+  assert.equal(result.status, 'success');
+  assert.ok(result.path.every(node => node.toPlace.length === 0),
+    'access to the observed vein must not pillar up the shaft');
+  assert.ok(result.path.every(node => node.y <= preparation.targetY),
+    'access must not climb above the prepared layer');
+  assert.ok(result.path.every(node => node.y >= 30),
+    'access must not tunnel below the observed vein floor');
+  assert.equal(result.path.flatMap(node => node.toBreak).length, 2);
 });
