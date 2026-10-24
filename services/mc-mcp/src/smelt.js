@@ -34,6 +34,13 @@ export function fuelUnitsForSmelt(fuel, count) {
   return Math.max(1, Math.ceil(requested / capacity));
 }
 
+function preparationMustStop(error) {
+  return error?.name === 'AbortError' || [
+    'BUDGET_EXHAUSTED', 'ACTION_DEADLINE_EXPIRED', 'ACTION_CANCELLED',
+    'ACTION_SETTLEMENT_TIMEOUT', 'CANCEL_SETTLEMENT_TIMEOUT', 'FURNACE_ITEM_CHANGED',
+  ].includes(error?.code);
+}
+
 export function createSmelt({ bot, getMcData, wait = operationWait }) {
   const replaceableBlocks = new Set(['air', 'cave_air', 'void_air']);
   const supportItemNames = [
@@ -57,12 +64,27 @@ export function createSmelt({ bot, getMcData, wait = operationWait }) {
 
   async function moveNear(block, radius = 2) {
     if (!block?.position || !bot.pathfinder?.goto) return;
+    const movements = bot.pathfinder.movements;
+    const keys = ['canDig', 'allow1by1towers', 'scafoldingBlocks', 'canOpenDoors'];
+    const previous = movements && keys.map(key => [key, Object.hasOwn(movements, key), movements[key]]);
+    if (movements) {
+      movements.canDig = false;
+      movements.allow1by1towers = false;
+      movements.scafoldingBlocks = [];
+      movements.canOpenDoors = false;
+    }
     try {
       await bot.pathfinder.goto(new GoalNear(block.position.x, block.position.y, block.position.z, radius));
-    } catch (_) {
+    } catch (error) {
+      if (preparationMustStop(error)) throw error;
       // Opening may still work if already close enough.
     } finally {
+      try { bot.pathfinder.setGoal?.(null); } catch (_) {}
       try { bot.pathfinder.stop(); } catch (_) {}
+      if (movements) for (const [key, present, value] of previous) {
+        if (present) movements[key] = value;
+        else delete movements[key];
+      }
     }
     await waitUntilStable();
   }
@@ -153,8 +175,13 @@ export function createSmelt({ bot, getMcData, wait = operationWait }) {
     return [...fixed, ...dynamic];
   }
 
-  async function placeWithVerification({ item, ref, face, targetPos, isDirectUnderfootTop = false }) {
+  async function equipCurrent(expected) {
+    const item = bot.inventory.items().find(candidate => candidate.name === expected.name && (candidate.count ?? 1) > 0);
+    if (!item) throw new Error(`布置所需物品已不在背包中：${expected.name}`);
     await bot.equip(item, 'hand');
+  }
+
+  async function placeWithVerification({ item, ref, face, targetPos, isDirectUnderfootTop = false }, beforeBlockChange) {
     const canControl = typeof bot.setControlState === 'function';
     if (canControl && isDirectUnderfootTop) {
       bot.setControlState('jump', true);
@@ -174,6 +201,11 @@ export function createSmelt({ bot, getMcData, wait = operationWait }) {
       await wait(100);
     }
     try {
+      await equipCurrent(item);
+      if (bot.heldItem?.name && bot.heldItem.name !== item.name) {
+        throw Object.assign(new Error(`手持物品已变化，停止布置：期望 ${item.name}。`), { code: 'FURNACE_ITEM_CHANGED' });
+      }
+      beforeBlockChange();
       await bot.placeBlock(ref, face);
     } finally {
       if (canControl) {
@@ -182,7 +214,7 @@ export function createSmelt({ bot, getMcData, wait = operationWait }) {
     }
   }
 
-  async function clearTargetBlock(targetPos, furnaceItem) {
+  async function clearTargetBlock(targetPos, furnaceItem, beforeBlockChange) {
     let targetBlock = bot.blockAt(targetPos);
     if (targetBlock?.position && (
       targetBlock.position.x !== targetPos.x
@@ -206,22 +238,21 @@ export function createSmelt({ bot, getMcData, wait = operationWait }) {
       try { await bot.equip(digTool, 'hand'); } catch (_) {}
     }
     try {
+      beforeBlockChange();
       await bot.dig(targetBlock);
       await wait(500);
-    } catch (_) {
+    } catch (error) {
+      if (preparationMustStop(error)) throw error;
       return false;
     } finally {
-      try { await bot.equip(furnaceItem, 'hand'); } catch (_) {}
+      try { await equipCurrent(furnaceItem); } catch (_) {}
     }
 
     targetBlock = bot.blockAt(targetPos);
     return !targetBlock || replaceableBlocks.has(targetBlock.name);
   }
 
-  async function tryBuildSupportAndPlaceFurnace(furnaceId, furnaceItem) {
-    const supportItem = bot.inventory.items().find((i) => supportItemNames.includes(i.name));
-    if (!supportItem) return null;
-
+  async function tryBuildSupportAndPlaceFurnace(furnaceId, furnaceItem, beforeBlockChange) {
     await waitUntilStable();
     const pos = bot.entity.position;
     const baseX = Math.floor(pos.x);
@@ -239,6 +270,8 @@ export function createSmelt({ bot, getMcData, wait = operationWait }) {
     ];
 
     for (const dir of directions) {
+      const supportItem = bot.inventory.items().find((i) => supportItemNames.includes(i.name));
+      if (!supportItem) return null;
       const supportTarget = new Vec3(baseX + dir.x, baseY - 1, baseZ + dir.z);
       const furnaceTarget = new Vec3(baseX + dir.x, baseY, baseZ + dir.z);
       if (isPlayerSpace(furnaceTarget, baseX, baseY, baseZ)) continue;
@@ -251,20 +284,20 @@ export function createSmelt({ bot, getMcData, wait = operationWait }) {
             ref: underfoot,
             face: dir,
             targetPos: supportTarget,
-          });
+          }, beforeBlockChange);
           await wait(500);
           supportBlock = bot.blockAt(supportTarget);
         }
         if (isBlockedForPlacement(supportBlock)) continue;
 
-        const targetIsClear = await clearTargetBlock(furnaceTarget, furnaceItem);
+        const targetIsClear = await clearTargetBlock(furnaceTarget, furnaceItem, beforeBlockChange);
         if (!targetIsClear) continue;
         await placeWithVerification({
           item: furnaceItem,
           ref: supportBlock,
           face: new Vec3(0, 1, 0),
           targetPos: furnaceTarget,
-        });
+        }, beforeBlockChange);
         await wait(1000);
         let furnaceBlock = bot.blockAt(furnaceTarget);
         if (furnaceBlock?.name === 'furnace') {
@@ -276,16 +309,17 @@ export function createSmelt({ bot, getMcData, wait = operationWait }) {
           await moveNear(furnaceBlock);
           return furnaceBlock;
         }
-      } catch (_) {
+      } catch (error) {
+        if (preparationMustStop(error)) throw error;
         // Try a different side around the player.
       } finally {
-        try { await bot.equip(furnaceItem, 'hand'); } catch (_) {}
+        try { await equipCurrent(furnaceItem); } catch (_) {}
       }
     }
     return null;
   }
 
-  async function findOrPlaceFurnace(mcData) {
+  async function findOrPlaceFurnace(mcData, beforeBlockChange) {
     const furnaceId = mcData.blocksByName.furnace.id;
     let furnaceBlock = bot.findBlock({ matching: furnaceId, maxDistance: 5 });
     if (furnaceBlock) {
@@ -314,7 +348,7 @@ export function createSmelt({ bot, getMcData, wait = operationWait }) {
     for (const { refPos, ref, face, targetPos, isDirectUnderfootTop } of candidates) {
       try {
         if (!isDirectUnderfootTop && isPlayerSpace(targetPos, baseX, baseY, baseZ)) continue;
-        const targetIsClear = await clearTargetBlock(targetPos, furnaceItem);
+        const targetIsClear = await clearTargetBlock(targetPos, furnaceItem, beforeBlockChange);
         if (!targetIsClear) continue;
         let placeErr = null;
         for (let placeAttempt = 0; placeAttempt < 3; placeAttempt += 1) {
@@ -325,10 +359,11 @@ export function createSmelt({ bot, getMcData, wait = operationWait }) {
               face,
               targetPos,
               isDirectUnderfootTop,
-            });
+            }, beforeBlockChange);
             placeErr = null;
             break;
           } catch (err) {
+            if (preparationMustStop(err)) throw err;
             placeErr = err;
             await wait(1000);
             furnaceBlock = bot.blockAt(targetPos);
@@ -358,10 +393,11 @@ export function createSmelt({ bot, getMcData, wait = operationWait }) {
           return { block: furnaceBlock, placed: true };
         }
       } catch (err) {
+        if (preparationMustStop(err)) throw err;
         lastError = err;
         placementErrors.push(`${ref.name}@${refPos.x},${refPos.y},${refPos.z} face=${face.x},${face.y},${face.z}: ${err.message}`);
         if (placementErrors.length >= 4) {
-          const supportedFurnace = await tryBuildSupportAndPlaceFurnace(furnaceId, furnaceItem);
+          const supportedFurnace = await tryBuildSupportAndPlaceFurnace(furnaceId, furnaceItem, beforeBlockChange);
           if (supportedFurnace) {
             return { block: supportedFurnace, placed: true };
           }
@@ -378,6 +414,22 @@ export function createSmelt({ bot, getMcData, wait = operationWait }) {
 
   async function smelt(item, fuel, count = 1, context = {}) {
     context.operation_scope?.checkpoint();
+    let reservedMutationAttempts = 0;
+    const maximumBlockChanges = context.budget?.max_blocks_changed ?? Number.POSITIVE_INFINITY;
+    const beforeBlockChange = () => {
+      context.operation_scope?.checkpoint();
+      context.signal?.throwIfAborted();
+      // An unconfirmed attempt retains its worst-case slot; action evidence
+      // continues to report actual changes independently of these reservations.
+      if (reservedMutationAttempts >= maximumBlockChanges) {
+        throw Object.assign(new Error('炉子布置的方块变更预约已用尽，停止继续尝试。'), {
+          code: 'BUDGET_EXHAUSTED',
+          details: { operation: 'furnace_placement', reserved_mutation_attempts: reservedMutationAttempts,
+            maximum_block_changes: maximumBlockChanges },
+        });
+      }
+      reservedMutationAttempts++;
+    };
     const runContainerOperation = (label, operation, timeoutMs = 10_000) => (
       context.operation_scope?.runInterruptible
         ? context.operation_scope.runInterruptible(operation, {
@@ -390,7 +442,7 @@ export function createSmelt({ bot, getMcData, wait = operationWait }) {
     const result = SMELT_RESULT[item];
     if (!result) throw new Error(`Unknown smelt recipe for ${item} (add to SMELT_RESULT if needed)`);
     const mcData = await getMcData();
-    let furnaceInfo = await findOrPlaceFurnace(mcData);
+    let furnaceInfo = await findOrPlaceFurnace(mcData, beforeBlockChange);
     let furnaceBlock = furnaceInfo.block;
     const inputItem = mcData.itemsByName[item];
     const fuelItem = mcData.itemsByName[fuel];
@@ -427,7 +479,7 @@ export function createSmelt({ bot, getMcData, wait = operationWait }) {
       for (let attempt = 0; attempt < 3; attempt += 1) {
         try {
           if (attempt > 0) {
-            furnaceInfo = await findOrPlaceFurnace(mcData);
+            furnaceInfo = await findOrPlaceFurnace(mcData, beforeBlockChange);
             furnaceBlock = furnaceInfo.block;
           }
           await moveNear(furnaceBlock);
@@ -449,6 +501,7 @@ export function createSmelt({ bot, getMcData, wait = operationWait }) {
             () => bot.openFurnace(furnaceBlock),
           );
         } catch (err) {
+          if (preparationMustStop(err)) throw err;
           lastError = err;
           if (attempt < 2) {
             context.report_phase?.('recovering', {

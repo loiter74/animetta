@@ -1,8 +1,136 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { EventEmitter } from 'node:events';
+import Vec3 from 'vec3';
+import minecraftData from 'minecraft-data';
+import injectSimpleInventory from 'mineflayer/lib/plugins/simple_inventory.js';
 
 import { createSmelt, fuelUnitsForSmelt } from '../src/smelt.js';
 import { createOperationScope } from '../src/runtime/operationScope.js';
+import { withActionEvidence } from '../src/runtime/actionEvidence.js';
+
+function sdkFurnaceFixture({ rejectAll = false, solidRoom = false } = {}) {
+  const registry = minecraftData('1.21.1');
+  const bot = new EventEmitter();
+  const slots = Array(46).fill(null);
+  const stack = (name, slot, count = 8) => ({ name, type: registry.itemsByName[name].id, slot, count });
+  slots[9] = stack('furnace', 9, 1);
+  slots[10] = stack('raw_iron', 10, 7);
+  slots[11] = stack('coal', 11, 1);
+  ['stone_pickaxe', 'dirt', 'cobblestone', 'andesite', 'diorite', 'granite', 'oak_planks', 'stone', 'deepslate']
+    .forEach((name, index) => { slots[36 + index] = stack(name, 36 + index); });
+  const blocks = new Map();
+  const key = p => `${p.x},${p.y},${p.z}`;
+  const block = (name, p) => ({ name, type: registry.blocksByName[name].id, position: p.floored(), boundingBox: name === 'air' ? 'empty' : 'block' });
+  let firstPlacement = true;
+  const attempts = [];
+  const mutations = [];
+  Object.assign(bot, {
+    health: 20, game: { dimension: 'minecraft:overworld' },
+    entity: { position: new Vec3(0.5, 64, 0.5), onGround: true }, quickBarSlot: 0,
+    supportFeature: () => false, _client: { write() {} },
+    inventory: { slots, items: () => slots.filter(i => i?.count > 0),
+      findInventoryItem: type => slots.find(i => i?.type === type && i.count > 0),
+      firstEmptySlotRange: (start, end) => { for (let i = start; i < end; i++) if (!slots[i]) return i; return null; } },
+    updateHeldItem() { bot.heldItem = slots[36 + bot.quickBarSlot]; },
+    async moveSlotItem(from, to) {
+      const a = slots[from], b = slots[to];
+      slots[from] = b ? { ...b, slot: from } : null;
+      slots[to] = a ? { ...a, slot: to } : null;
+      bot.updateHeldItem();
+    },
+    blockAt(position) {
+      const p = position.floored();
+      if (blocks.has(key(p))) return blocks.get(key(p));
+      const playerSpace = p.x === 0 && p.z === 0 && [64, 65].includes(p.y);
+      return block(p.y < (solidRoom ? 66 : 64) && !playerSpace ? 'stone' : 'air', p);
+    },
+    findBlock: () => [...blocks.values()].find(b => b.name === 'furnace') || null,
+    async dig(before) {
+      const after = block('air', before.position);
+      blocks.set(key(before.position), after); mutations.push(['dig', before.name]);
+      bot.emit('blockUpdate', before, after); bot.emit('diggingCompleted', after);
+    },
+    async placeBlock(ref, face) {
+      const name = bot.heldItem?.name;
+      attempts.push(name);
+      if (firstPlacement || (rejectAll && name === 'furnace')) {
+        firstPlacement = false;
+        throw new Error('Event blockUpdate did not fire within timeout of 5000ms');
+      }
+      if (!registry.blocksByName[name]) throw new Error('held item is not placeable');
+      const p = ref.position.plus(face), before = bot.blockAt(p), after = block(name, p);
+      blocks.set(key(p), after); mutations.push(['place', name]);
+      bot.heldItem.count--; if (!bot.heldItem.count) slots[bot.heldItem.slot] = null;
+      bot.updateHeldItem(); bot.emit('blockPlaced', before, after);
+      if (name !== 'furnace') throw new Error('expected furnace update was not observed');
+    },
+    pathfinder: { stop() {}, setGoal() {}, async goto() {} }, lookAt: async () => {},
+    async openFurnace() {
+      return { putInput: async () => {}, putFuel: async () => {},
+        outputItem: () => ({ name: 'iron_ingot', count: 1 }),
+        takeOutput: async () => { slots[12] = stack('iron_ingot', 12, 1); return slots[12]; }, close: async () => {} };
+    },
+  });
+  injectSimpleInventory(bot); bot.updateHeldItem();
+  const smelt = createSmelt({ bot, getMcData: async () => registry, wait: async () => {} });
+  return { bot, registry, smelt, attempts, mutations, blocks, block };
+}
+
+test('furnace retries resolve live slots using the installed SDK equip implementation', async () => {
+  const { smelt, attempts, mutations } = sdkFurnaceFixture();
+  const result = await smelt.smelt('raw_iron', 'coal', 1, { budget: { max_blocks_changed: 8 } });
+  assert.match(result, /Smelted 1\/1/);
+  assert.deepEqual(attempts, ['furnace', 'furnace'], 'a cached slot must not equip the pickaxe or construction stock');
+  assert.deepEqual(mutations, [['place', 'furnace']]);
+});
+
+test('furnace preparation reserves the original block allowance and keeps actual evidence unchanged', async () => {
+  const { bot, smelt, mutations } = sdkFurnaceFixture({ rejectAll: true, solidRoom: true });
+  await assert.rejects(withActionEvidence(bot, () => smelt.smelt('raw_iron', 'coal', 1,
+    { budget: { max_blocks_changed: 2 } })), error => {
+    assert.equal(error.code, 'BUDGET_EXHAUSTED');
+    assert.equal(error.details.reserved_mutation_attempts, 2);
+    assert.equal(error.budget_usage.max_blocks_changed, mutations.length, 'report actual changes, never reservation or a clamp');
+    assert.equal(mutations.length, 1, 'one dig plus an unconfirmed placement occupy both reservations');
+    return true;
+  });
+});
+
+test('approaching an existing furnace cannot add unreserved digging or scaffolding', async () => {
+  const { bot, smelt, blocks, block } = sdkFurnaceFixture();
+  blocks.set('3,64,0', block('furnace', new Vec3(3, 64, 0)));
+  const movements = { canDig: true, allow1by1towers: true, scafoldingBlocks: [1], canOpenDoors: true };
+  bot.pathfinder.movements = movements;
+  let destructive = false;
+  bot.pathfinder.goto = async () => {
+    destructive ||= movements.canDig || movements.allow1by1towers || movements.scafoldingBlocks.length > 0;
+  };
+  await smelt.smelt('raw_iron', 'coal', 1, { budget: { max_blocks_changed: 0 } });
+  assert.equal(destructive, false);
+  assert.deepEqual(movements, { canDig: true, allow1by1towers: true, scafoldingBlocks: [1], canOpenDoors: true });
+});
+
+test('furnace preparation does not swallow cancellation into another placement attempt', async () => {
+  const { bot, smelt } = sdkFurnaceFixture();
+  const controller = new AbortController();
+  const failure = Object.assign(new Error('cancel furnace placement'), { name: 'AbortError', code: 'ACTION_CANCELLED' });
+  let calls = 0;
+  bot.placeBlock = async () => { calls++; controller.abort(); throw failure; };
+  await assert.rejects(smelt.smelt('raw_iron', 'coal', 1,
+    { signal: controller.signal, budget: { max_blocks_changed: 8 } }), error => error === failure);
+  assert.equal(calls, 1);
+});
+
+test('furnace placement rejects a different held item before any world mutation', async () => {
+  const { bot, smelt, attempts, mutations } = sdkFurnaceFixture();
+  const equip = bot.equip;
+  bot.equip = async (...args) => { await equip(...args); bot.heldItem = { name: 'dirt' }; };
+  await assert.rejects(smelt.smelt('raw_iron', 'coal', 1,
+    { budget: { max_blocks_changed: 8 } }), error => error.code === 'FURNACE_ITEM_CHANGED');
+  assert.deepEqual(attempts, []);
+  assert.deepEqual(mutations, []);
+});
 
 test('smelt allocates two planks for three furnace operations', () => {
   assert.equal(fuelUnitsForSmelt('oak_planks', 3), 2);
