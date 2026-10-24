@@ -3,7 +3,7 @@ import Vec3 from 'vec3';
 export const HOSTILE_NAMES = new Set([
   'blaze', 'cave_spider', 'creeper', 'drowned', 'enderman', 'endermite', 'evoker',
   'ghast', 'guardian', 'hoglin', 'husk', 'magma_cube', 'phantom', 'piglin_brute',
-  'pillager', 'ravager', 'shulker', 'silverfish', 'skeleton', 'slime', 'spider',
+  'pillager', 'polar_bear', 'ravager', 'shulker', 'silverfish', 'skeleton', 'slime', 'spider',
   'stray', 'vex', 'vindicator', 'warden', 'witch', 'wither_skeleton', 'zoglin',
   'zombie', 'zombie_villager', 'zombified_piglin',
 ]);

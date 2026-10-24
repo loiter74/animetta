@@ -53,6 +53,35 @@ test('dry navigation rejects a threatened path node and still permits distant or
   assert.equal(movements.allowSprinting, false);
 });
 
+test('R32 polar bears exclude the observed attack position and tree before more damage', () => {
+  const bot = fixture();
+  bot.entity.position = new Vec3(-5.499999999999962, 110, 27.332291181750815);
+  bot.entities = {
+    3: { id: 3, name: 'polar_bear', kind: 'Passive mobs', position: new Vec3(-5.014011325890211, 110, 26.29286605782957) },
+    4: { id: 4, name: 'minecraft:polar_bear', kind: 'Passive mobs', position: new Vec3(-7.223787424897574, 110, 21.817199273317748) },
+  };
+  const threat = findHostileThreat(bot);
+  assert.equal(threat?.entity_id, '3');
+  assert.equal(threat.warning_radius, 12);
+  const log = { name: 'spruce_log', type: bot.registry.blocksByName.spruce_log.id, position: new Vec3(-6, 115, 28) };
+  assert.equal(collectionDigSafety(bot, log).reason_code, 'HOSTILE_THREAT');
+  const movements = configureDryNavigation(new pathfinderPkg.Movements(bot), bot);
+  assert.equal(movements.exclusionStep(bot.blockAt(bot.entity.position.floored())), Infinity);
+});
+
+test('polar bear warning preserves the existing melee radius and ordinary livestock behavior', () => {
+  const bot = fixture();
+  bot.entities = { 3: { id: 3, name: 'minecraft:polar_bear', kind: 'Passive mobs', position: bot.entity.position.offset(12, 0, 0) } };
+  assert.equal(findHostileThreat(bot)?.warning_radius, 12);
+  bot.entities[3].position.x += 0.01;
+  assert.equal(findHostileThreat(bot), null);
+  bot.entities[3].name = 'skeleton';
+  assert.equal(findHostileThreat(bot)?.warning_radius, 24);
+  bot.entities[3].name = 'cow';
+  bot.entities[3].position = bot.entity.position.offset(1, 0, 0);
+  assert.equal(findHostileThreat(bot), null);
+});
+
 test('R18 distant melee warning uses the existing 12-block policy while ranged threats retain 24', () => {
   const bot = fixture();
   bot.entity.position = new Vec3(7.5, 85, 0.5);
