@@ -8,6 +8,7 @@ import pathfinderPkg from 'mineflayer-pathfinder';
 import minecraftData from 'minecraft-data';
 import prismarineBlock from 'prismarine-block';
 import sdkGoto from 'mineflayer-pathfinder/lib/goto.js';
+import injectCraft from 'mineflayer/lib/plugins/craft.js';
 
 import * as collection from '../src/collection.js';
 
@@ -253,6 +254,8 @@ test('native collection passes the pre-dig inventory threshold to ordinary ore p
   const ore = { name: 'iron_ore', type: 15, position: new Vec3(4, 64, 0) };
   bot.findBlock = () => ore;
   let dug = false;
+  const context = { budget: { max_blocks_changed: 192 } };
+  let toolChecks = 0;
   const source = readFileSync(new URL('../src/index.js', import.meta.url), 'utf8');
   const start = source.indexOf('async function _collectInner(');
   const end = source.indexOf('\nfunction craftError(', start);
@@ -272,7 +275,10 @@ test('native collection passes the pre-dig inventory threshold to ordinary ore p
     _stabilizePosition: async () => true,
     _collectDebug() {},
     _inventoryCount: item => collection.pickupInventoryCount(bot, item),
-    _equipToolForBlock: async () => {},
+    _equipToolForBlock: async (_block, actualContext) => {
+      assert.equal(actualContext, context);
+      toolChecks++;
+    },
     digCollectionBlock: async () => { dug = true; },
     operationWait: async ms => {
       if (dug && ms === 500) {
@@ -286,11 +292,83 @@ test('native collection passes the pre-dig inventory threshold to ordinary ore p
       })
     ),
   });
-  const result = await collect('iron_ore', 1, { blocksByName: { iron_ore: { id: 15 } } });
+  const result = await collect('iron_ore', 1, { blocksByName: { iron_ore: { id: 15 } } }, context);
   assert.equal(result, 'Collected 1 iron_ore');
   assert.equal(dug, true);
+  assert.equal(toolChecks, 2, 'tool qualification is checked before navigation and again after excavation');
   assert.equal(collection.pickupInventoryCount(bot, 'raw_iron'), 1);
   assert.deepEqual(goals, [], 'an automatically collected ore must not start an old fallback route');
+});
+
+function nativeHarvestToolFixture(stock) {
+  const registry = minecraftData('1.21.1');
+  const Block = prismarineBlock(registry);
+  const equipped = [];
+  const crafts = [];
+  const bot = {
+    registry, inventory: {
+      count: id => stock[registry.items[id]?.name] || 0,
+      items: () => Object.entries(stock).filter(([, count]) => count > 0).map(([name, count]) => ({
+        name, count, type: registry.itemsByName[name].id,
+      })),
+    },
+    equip: async item => equipped.push(item.name),
+  };
+  injectCraft(bot);
+  const source = readFileSync(new URL('../src/index.js', import.meta.url), 'utf8');
+  const start = source.indexOf('const PICKAXE_TIERS =');
+  const end = source.indexOf('\nasync function _pickupDroppedItems(', start);
+  const equip = runInNewContext(`${source.slice(start, end)}; _equipToolForBlock`, {
+    bot, _collectDebug() {}, getMcData: async () => registry,
+    _inventoryCount: name => stock[name] || 0,
+    _craft: async (name, count, context) => {
+      assert.equal(context.budget.max_blocks_changed, 192);
+      crafts.push({ name, count });
+      const recipe = bot.recipesFor(registry.itemsByName[name].id, null, count, {})[0];
+      assert.ok(recipe, 'the installed SDK must contain a supported vanilla recipe');
+      const operations = Math.ceil(count / recipe.result.count);
+      for (const delta of recipe.delta) {
+        const item = registry.items[delta.id].name;
+        stock[item] = (stock[item] || 0) + delta.count * operations;
+        assert.ok(stock[item] >= 0);
+      }
+    },
+  });
+  const block = name => Block.fromStateId(registry.blocksByName[name].defaultState, 0);
+  return { equip, block, stock, equipped, crafts };
+}
+
+test('native tool selection uses real SDK harvest eligibility for every ore tier', async () => {
+  for (const name of ['iron_ore', 'deepslate_iron_ore', 'copper_ore', 'lapis_ore']) {
+    const f = nativeHarvestToolFixture({ wooden_pickaxe: 1 });
+    await assert.rejects(f.equip(f.block(name)), error => error.code === 'TOOL_REQUIRED');
+    assert.deepEqual(f.equipped, []);
+  }
+  const f = nativeHarvestToolFixture({ wooden_pickaxe: 1, stone_pickaxe: 1 });
+  assert.equal(await f.equip(f.block('iron_ore')), 'stone_pickaxe');
+  await assert.rejects(f.equip(f.block('obsidian')), error => error.code === 'TOOL_REQUIRED');
+});
+
+test('collection replaces an exhausted stone tool using existing materials within the same budget', async () => {
+  const f = nativeHarvestToolFixture({ wooden_pickaxe: 1, cobblestone: 6, oak_planks: 8 });
+  assert.equal(await f.equip(f.block('iron_ore'), { budget: { max_blocks_changed: 192 } }), 'stone_pickaxe');
+  assert.deepEqual(f.crafts, [{ name: 'stick', count: 2 }, { name: 'stone_pickaxe', count: 1 }]);
+  assert.equal(f.stock.cobblestone, 3);
+  assert.equal(f.stock.oak_planks, 6);
+  assert.equal(f.stock.stick, 2);
+  assert.deepEqual(f.equipped, ['stone_pickaxe']);
+});
+
+test('collection tool recovery cannot invent materials or replace a required iron tier with stone', async () => {
+  for (const [name, stock] of [
+    ['iron_ore', { wooden_pickaxe: 1, cobblestone: 2, oak_planks: 8 }],
+    ['diamond_ore', { wooden_pickaxe: 1, cobblestone: 6, oak_planks: 8 }],
+  ]) {
+    const f = nativeHarvestToolFixture(stock);
+    await assert.rejects(f.equip(f.block(name), { budget: { max_blocks_changed: 192 } }), error => error.code === 'TOOL_REQUIRED');
+    assert.deepEqual(f.crafts, []);
+    assert.deepEqual(f.equipped, []);
+  }
 });
 
 test('targeted pickup stops an active route on inventory evidence and keeps the absolute threshold', async () => {

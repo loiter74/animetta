@@ -626,7 +626,7 @@ const PICKAXE_BLOCKS = new Set([
 ]);
 const AXE_SUFFIXES = ['_log', '_wood', '_stem', '_hyphae'];
 
-async function _equipToolForBlock(block) {
+async function _equipToolForBlock(block, context = null) {
   const name = block?.name;
   if (!name) return null;
 
@@ -641,11 +641,30 @@ async function _equipToolForBlock(block) {
 
   for (const toolName of candidates) {
     const item = bot.inventory.items().find(i => i.name === toolName);
-    if (item) {
+    if (item && (typeof block.canHarvest !== 'function' || block.canHarvest(item.type))) {
       await bot.equip(item, 'hand');
       _collectDebug(`equipped ${toolName} for ${name}`);
       return toolName;
     }
+  }
+  if (typeof block.canHarvest === 'function' && !block.canHarvest(null)) {
+    // A path can consume the last stone pickaxe before reaching the ore.
+    // Replace it from observed stock inside this action's original budget.
+    const mcData = context ? await getMcData() : null;
+    const replacement = mcData?.itemsByName.stone_pickaxe;
+    const sticks = _inventoryCount('stick');
+    const planks = bot.inventory.items().reduce((sum, item) => (
+      sum + (item.name.endsWith('_planks') ? item.count : 0)
+    ), 0);
+    if (replacement && block.canHarvest(replacement.id) && _inventoryCount('cobblestone') >= 3
+      && (sticks >= 2 || planks >= 2)) {
+      if (sticks < 2) await _craft('stick', 2 - sticks, context);
+      await _craft('stone_pickaxe', 1, context);
+      return _equipToolForBlock(block);
+    }
+    throw Object.assign(new Error(`采集 ${name} 缺少可获得掉落物的工具。`), {
+      code: 'TOOL_REQUIRED', details: { block_type: name },
+    });
   }
   return null;
 }
@@ -827,6 +846,7 @@ async function _collectInner(block_type, count, mcData, context = {}) {
       excludedTargets.add(collectionBlockKey(block));
       continue;
     }
+    await _equipToolForBlock(block, context);
     _collectDebug(`target block=${block.name}@${block.position.x},${block.position.y},${block.position.z}`);
     const presentationTarget = await presentBlockTarget({
       context,
@@ -884,7 +904,7 @@ async function _collectInner(block_type, count, mcData, context = {}) {
     let digSuccess = false;
     for (let retry = 0; retry < 3 && !digSuccess; retry++) {
       try {
-        await _equipToolForBlock(block);
+        await _equipToolForBlock(block, context);
         await digCollectionBlock(bot, block);
         digSuccess = true;
         const afterBlock = bot.blockAt(block.position);

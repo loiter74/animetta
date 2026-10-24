@@ -4,6 +4,7 @@ import test from 'node:test';
 import Vec3 from 'vec3';
 import minecraftData from 'minecraft-data';
 import injectEntities from 'mineflayer/lib/plugins/entities.js';
+import pathfinderPkg from 'mineflayer-pathfinder';
 
 import { createGameBotV2Adapter } from '../src/runtime/gamebotV2Adapter.js';
 import { withCollectionEvidence } from '../src/collection.js';
@@ -404,6 +405,52 @@ test('collection damage immediately stops work without hiding a real budget over
   assert.equal(fixture.bot.listenerCount('move'), 0);
   assert.equal(fixture.bot.listenerCount('health'), 0);
   fixture.adapter.dispose();
+});
+
+test('navigation refuses a new route whose minimum distance cannot fit before the existing stopping reserve', async () => {
+  let navigated = false;
+  const fixture = adapterFixture({ actions: {
+    collectWithEvidence: async (_block, _count, context) => withCollectionEvidence(fixture.bot, async () => {
+      fixture.bot.entity.position.x = 189;
+      fixture.bot.emit('move');
+      const goal = new pathfinderPkg.goals.GoalBlock(200, 64, 0);
+      await context.operation_scope.navigate(goal, async () => {
+        navigated = true;
+        fixture.bot.entity.position.x = 200;
+        fixture.bot.emit('move');
+      });
+    }),
+  } });
+  const action = request(fixture.adapter, 'collect', { block_type: 'iron_ore', count: 7 }, 'route-admission');
+  action.remaining_budget = budget({ max_travel_distance: 192 });
+  const receipt = await fixture.adapter.runtime.executeAction(action);
+  assert.equal(navigated, false);
+  assert.equal(receipt.outcome, 'error');
+  assert.equal(receipt.error.code, 'BUDGET_EXHAUSTED');
+  assert.equal(receipt.budget_usage.max_travel_distance, 189);
+  assert.equal(receipt.error.details.stopping_reserve, 2);
+  fixture.adapter.dispose();
+});
+
+test('navigation budget admission respects the real SDK goal radius and foot cell', async () => {
+  for (const goal of [new pathfinderPkg.goals.GoalNear(200, 64, 0, 16), new pathfinderPkg.goals.GoalBlock(189, 64, 0)]) {
+    let navigated = false;
+    const fixture = adapterFixture({ actions: {
+      collectWithEvidence: async (_block, _count, context) => withCollectionEvidence(fixture.bot, async () => {
+        fixture.bot.entity.position.x = 189;
+        fixture.bot.emit('move');
+        await context.operation_scope.navigate(goal, async () => { navigated = true; });
+        return 'already inside the goal region';
+      }),
+    } });
+    const action = request(fixture.adapter, 'collect', { block_type: 'iron_ore', count: 1 }, `admission-${goal.constructor.name}`);
+    action.remaining_budget = budget({ max_travel_distance: 192 });
+    const receipt = await fixture.adapter.runtime.executeAction(action);
+    assert.equal(navigated, true);
+    assert.equal(receipt.outcome, 'success');
+    assert.equal(receipt.budget_usage.max_travel_distance, 189);
+    fixture.adapter.dispose();
+  }
 });
 
 for (const completion of ['throw-abort-reason', 'return-after-abort', 'external-cancel']) {

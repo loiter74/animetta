@@ -474,7 +474,15 @@ function guardBotAction(
     onBreath();
     checkActionBudget();
     if (context.signal?.aborted) return;
-    const invocationPromise = Promise.resolve().then(invoke);
+    const invocationPromise = Promise.resolve().then(() => invoke((minimumDistance) => {
+      if (!actionBudget || minimumDistance <= 0) return;
+      if (travel + minimumDistance + 2 > actionBudget.max_travel_distance) {
+        fail('BUDGET_EXHAUSTED', '剩余移动预算不足以完成下一段路径并安全停止。', {
+          travel_distance: travel, minimum_navigation_distance: minimumDistance, stopping_reserve: 2,
+        });
+        context.signal?.throwIfAborted();
+      }
+    }));
     invocationSettlement = invocationPromise.then(
       (value) => { invocationEvidence = value; },
       (error) => {
@@ -521,11 +529,13 @@ function runtimeCapabilities(bot, actions, abortActive, motionPolicy) {
           const operationSignal = context.signal
             ? AbortSignal.any([context.signal, lifecycleController.signal])
             : lifecycleController.signal;
+          let checkNavigationBudget = () => {};
           const scope = createOperationScope({
             bot,
             signal: operationSignal,
             deadlineMs: context.deadline_ms,
             reportPhase: context.report_phase,
+            checkNavigationBudget: distance => checkNavigationBudget(distance),
             containerCapable: ['craft', 'smelt'].includes(name),
           });
           const targetPosition = descriptor.target?.(parameters) || null;
@@ -590,7 +600,8 @@ function runtimeCapabilities(bot, actions, abortActive, motionPolicy) {
           const invoke = () => runWithOperationScope(scope, () => guardBotAction(
             bot,
             abortActive,
-            async () => {
+            async (navigationBudgetGuard) => {
+              checkNavigationBudget = navigationBudgetGuard;
               if (name === 'goto') {
                 if (!airRecoveryDeadline) {
                   context.report_phase?.('aiming', { target });

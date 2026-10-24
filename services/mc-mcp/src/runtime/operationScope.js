@@ -1,5 +1,6 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import Vec3 from 'vec3';
+import pathfinderPkg from 'mineflayer-pathfinder';
 
 
 export const DEFAULT_QUIESCENCE_TIMEOUT_MS = 2_000;
@@ -75,6 +76,20 @@ function goalSatisfied(goal, entityPosition) {
     && node.z === Math.floor(target.z);
 }
 
+function minimumNavigationDistance(goal, position) {
+  if (!position) return 0;
+  const { GoalBlock, GoalNear, GoalGetToBlock, GoalXZ, GoalNearXZ, GoalY } = pathfinderPkg.goals;
+  const type = goal?.constructor;
+  if (![GoalBlock, GoalNear, GoalGetToBlock, GoalXZ, GoalNearXZ, GoalY].includes(type)) return 0;
+  const axes = type === GoalY ? ['y'] : [GoalXZ, GoalNearXZ].includes(type) ? ['x', 'z'] : ['x', 'y', 'z'];
+  // Goals accept floored foot cells, not an exact point at the cell's origin.
+  const distance = Math.hypot(...axes.map(axis => Math.max(
+    goal[axis] - position[axis], position[axis] - goal[axis] - 1, 0,
+  )));
+  const radius = type === GoalGetToBlock ? 2 : Math.sqrt(goal.rangeSq || 0);
+  return Math.max(0, distance - radius);
+}
+
 
 export class OperationScope {
   constructor({
@@ -84,6 +99,7 @@ export class OperationScope {
     nowMs = () => Date.now(),
     waitMs = null,
     reportPhase = () => {},
+    checkNavigationBudget = () => {},
     containerCapable = false,
     quiescenceTimeoutMs = DEFAULT_QUIESCENCE_TIMEOUT_MS,
     containerQuiescenceTimeoutMs = CONTAINER_QUIESCENCE_TIMEOUT_MS,
@@ -101,6 +117,7 @@ export class OperationScope {
     this.usesDefaultWait = waitMs === null;
     this.waitMs = waitMs || ((delayMs) => new Promise((resolve) => setTimeout(resolve, delayMs)));
     this.reportPhase = typeof reportPhase === 'function' ? reportPhase : () => {};
+    this.checkNavigationBudget = checkNavigationBudget;
     this.lastWaitingPhaseAt = this.nowMs();
     this.containerCapable = containerCapable === true;
     this.quiescenceTimeoutMs = quiescenceTimeoutMs;
@@ -317,6 +334,7 @@ export class OperationScope {
       target.x - origin.x, target.y - origin.y, target.z - origin.z,
     ) : 0;
     const verticalOnly = target === null && Number.isFinite(goal?.y);
+    this.checkNavigationBudget(minimumNavigationDistance(goal, origin));
     const navigationTimeoutMs = timeoutMs ?? (verticalOnly
       ? 30_000 : Math.min(120_000, Math.max(15_000, distance * 1_500)));
     let result;
