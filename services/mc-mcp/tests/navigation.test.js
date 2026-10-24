@@ -36,8 +36,8 @@ test('underground return reaches the surface through bounded native height goals
   assert.equal(bot.pathfinder.movements.allow1by1towers, true);
 });
 
-test('ascent suppresses real SDK jump-place tower edges and restores movement policy', async () => {
-  const { bot } = fixture(26);
+function towerFixture(y) {
+  const { bot } = fixture(y);
   bot.registry = minecraftData('1.21.1');
   const movements = new pathfinderPackage.Movements(bot);
   movements.getNumEntitiesAt = () => 0;
@@ -47,7 +47,13 @@ test('ascent suppresses real SDK jump-place tower edges and restores movement po
     liquid: false, climbable: false, replaceable: true, physical: dy < 0,
     height: node.y + dy + 1,
   });
-  const node = { x: 18, y: 26, z: 86, remainingBlocks: 63 };
+  const node = { x: 18, y, z: 86, remainingBlocks: 63 };
+  bot.pathfinder.movements = movements;
+  return { bot, movements, node };
+}
+
+test('ascent suppresses real SDK jump-place tower edges and restores movement policy', async () => {
+  const { bot, movements, node } = towerFixture(26);
   const before = [];
   movements.getMoveUp(node, before);
   assert.equal(before[0].toPlace[0].jump, true);
@@ -61,6 +67,42 @@ test('ascent suppresses real SDK jump-place tower edges and restores movement po
   };
   await navigateTo(bot, { x: 11, y: 64, z: 75 });
   assert.equal(movements.allow1by1towers, true);
+});
+
+for (const rise of [1, 4]) {
+  test(`short ascent of ${rise} blocks also excludes native jump-place edges without extending planning`, async () => {
+    const { bot, movements, node } = towerFixture(115);
+    const before = [];
+    movements.getMoveUp(node, before);
+    assert.equal(before[0].toPlace[0].jump, true);
+    const originalGoto = bot.pathfinder.goto;
+    let calls = 0;
+    bot.pathfinder.goto = async goal => {
+      calls++;
+      assert.equal(bot.pathfinder.thinkTimeout, 5000, 'short routes keep the original planning allowance');
+      const edges = [];
+      movements.getMoveUp(node, edges);
+      assert.deepEqual(edges, [], 'short ascent must not admit the same SDK pillar primitive');
+      await originalGoto.call(bot.pathfinder, goal);
+    };
+    await navigateTo(bot, { x: 19, y: 115 + rise, z: 86 });
+    assert.equal(calls, 1, 'no additional navigation action or retry');
+    assert.equal(movements.allow1by1towers, true);
+    assert.equal(bot.pathfinder.thinkTimeout, 5000);
+  });
+}
+
+test('failed short ascent restores an originally absent tower policy', async () => {
+  const { bot } = fixture(115);
+  delete bot.pathfinder.movements.allow1by1towers;
+  const error = new Error('native route blocked');
+  bot.pathfinder.goto = async () => {
+    assert.equal(bot.pathfinder.movements.allow1by1towers, false);
+    throw error;
+  };
+  await assert.rejects(navigateTo(bot, { x: 19, y: 119, z: 86 }), actual => actual === error);
+  assert.equal(Object.hasOwn(bot.pathfinder.movements, 'allow1by1towers'), false);
+  assert.equal(bot.pathfinder.thinkTimeout, 5000);
 });
 
 test('flat travel keeps one native goal and does not change planning settings', async () => {

@@ -75,8 +75,8 @@ export async function navigateTo(bot, destination, context = {}) {
   const startY = Math.floor(bot.entity.position.y);
   const segments = Math.ceil(Math.max(0, target.y - startY) / ASCENT_STEP);
   if (segments > 128) throw Object.assign(new Error('上升范围超过有限导航边界。'), { code: 'NAVIGATION_RANGE_TOO_LARGE' });
-  const ascending = segments > 1;
-  const extendedPlanning = ascending || bot.entity.position.distanceTo(new Vec3(target.x, target.y, target.z)) > 16;
+  const ascending = target.y > startY;
+  const extendedPlanning = segments > 1 || bot.entity.position.distanceTo(new Vec3(target.x, target.y, target.z)) > 16;
   const originalThinkTimeout = bot.pathfinder.thinkTimeout;
   const movements = bot.pathfinder.movements;
   const originalTowers = movements?.allow1by1towers;
