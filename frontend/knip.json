@@ -18,7 +18,6 @@
         "src/components/live2d/useLive2DModel.ts",
         "src/minecraft-gameplay/main.ts",
         "src/earth-prototype/main.ts",
-        "electron/preload.cjs",
         "scripts/*.mjs"
       ],
       "project": [

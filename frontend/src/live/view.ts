@@ -1,4 +1,4 @@
-import type { BilibiliStatusPayload } from '@/constants/socket-events'
+import type { BilibiliStatusPayload } from '@/shared/contracts/socket-events'
 import type { DanmakuItem } from '@/types/chat'
 import type { BackgroundConfig, LiveView } from './controller'
 import type { PublicActivityView } from '@/shared/broadcast/publicActivity'

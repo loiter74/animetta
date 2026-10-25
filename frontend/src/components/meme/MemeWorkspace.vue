@@ -2,7 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { getSocket } from '@/composables/useSocket'
 import { fetchCommandTask, readCommandTask, startCommandTask } from '@/services/commandTasks'
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 
 interface MemeItem {
   id: string

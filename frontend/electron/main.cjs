@@ -1,4 +1,4 @@
-const { app, BrowserWindow, screen, ipcMain } = require('electron')
+const { app, BrowserWindow, screen } = require('electron')
 const path = require('path')
 
 // Disable GPU acceleration for compatibility
@@ -28,7 +28,6 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.cjs'),
     },
     title: 'Animetta Live Stream',
     icon: path.join(__dirname, '../public/favicon.svg'),
@@ -55,37 +54,6 @@ function createWindow() {
     console.error('[Electron] Failed to load:', errorCode, errorDescription)
   })
 }
-
-// IPC handlers for window control
-ipcMain.on('set-always-on-top', (event, flag) => {
-  if (mainWindow) {
-    mainWindow.setAlwaysOnTop(flag)
-  }
-})
-
-ipcMain.on('set-transparent', (event, flag) => {
-  if (mainWindow) {
-    mainWindow.setBackgroundColor(flag ? '#00000000' : '#0a0a0f')
-  }
-})
-
-ipcMain.on('set-aspect-ratio', (event, ratio) => {
-  if (mainWindow) {
-    if (ratio === '9:16') {
-      mainWindow.setAspectRatio(9 / 16)
-    } else if (ratio === '3:4') {
-      mainWindow.setAspectRatio(3 / 4)
-    } else {
-      mainWindow.setAspectRatio(0) // Free resize
-    }
-  }
-})
-
-ipcMain.on('set-size', (event, { width, height }) => {
-  if (mainWindow) {
-    mainWindow.setSize(width, height)
-  }
-})
 
 app.whenReady().then(createWindow)
 

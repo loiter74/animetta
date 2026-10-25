@@ -1576,7 +1576,9 @@ components:
 
   socket-events-contract:
     domain: repository
-    paths: [config/socket-events.json]
+    paths:
+      - config/socket-events.json
+      - scripts/validate-events.py
     direct_groups:
       - backend-events-contract
       - backend-server-unit

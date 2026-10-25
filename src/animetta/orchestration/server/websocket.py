@@ -540,14 +540,18 @@ class WebSocketServer:
             raise RuntimeError("prometheus mirror is unavailable")
         await asyncio.gather(*(mirror.probe() for mirror in mirrors))
 
-    def set_config(self, config: EffectiveConfig) -> None:
-        """Set application config"""
+    def _install_effective_config(self, config: EffectiveConfig) -> None:
+        """Install one config across every application-level holder."""
         self.config = config
         translation_state.apply_runtime_config(config)
-        self.runtime_reloader = RuntimeConfigReloader(config)
         self.provider_pool.configure_runtime(config, self.model_manager)
         if self.route_handlers:
             self.route_handlers.set_global_config(config)
+
+    def set_config(self, config: EffectiveConfig) -> None:
+        """Set application config"""
+        self._install_effective_config(config)
+        self.runtime_reloader = RuntimeConfigReloader(config)
 
     async def _apply_reloaded_config(
         self,
@@ -555,14 +559,10 @@ class WebSocketServer:
         version: int,
     ) -> RuntimeConfigApplyResult:
         """Apply a successfully reloaded config to active runtime holders."""
-        self.config = config
-        translation_state.apply_runtime_config(config)
+        self._install_effective_config(config)
         if self.runtime_reloader is not None:
             self.runtime_reloader._config = config
             self.runtime_reloader.version = version
-        if self.route_handlers:
-            self.route_handlers.set_global_config(config)
-        self.provider_pool.configure_runtime(config, self.model_manager)
 
         llm_config = config.agent.llm_config if config.agent else None
         runtime_prompt = build_runtime_system_prompt(config)

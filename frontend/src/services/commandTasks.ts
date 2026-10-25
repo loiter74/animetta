@@ -1,5 +1,5 @@
 import type { Socket } from 'socket.io-client'
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 import type { CommandTaskSnapshot } from '@/shared/contracts/socket-events'
 
 const PREFIX = 'animetta.command-task.'

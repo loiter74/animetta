@@ -1,7 +1,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useSubtitleStore } from '@/stores/subtitle'
 import { getSocket } from './useSocket'
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 import type {
   AudioWithExpressionEvent,
   ChatControlEvent,

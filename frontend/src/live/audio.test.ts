@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 import { createLiveAudioController } from './audio'
 import type { LiveSocket } from './controller'
 import { SINGING_PLAYBACK_STORAGE_KEY, writeSingingPlayback } from '@/singing/playback-sync'

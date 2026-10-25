@@ -1,4 +1,4 @@
-import type { BilibiliStatusPayload } from '@/constants/socket-events'
+import type { BilibiliStatusPayload } from '@/shared/contracts/socket-events'
 import type { DanmakuItem } from '@/types/chat'
 import type { ReviewDefinition, ReviewScene, ScheduledAction } from '@/review/contracts'
 

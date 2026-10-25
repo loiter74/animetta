@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { getSocket } from '@/composables/useSocket'
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 
 type ApprovalTool = {
   tool_call_id: string

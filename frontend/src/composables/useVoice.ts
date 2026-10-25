@@ -1,6 +1,6 @@
 import { ref, onUnmounted } from 'vue'
 import { getSocket } from './useSocket'
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 
 export function useVoice() {
   const isRecording = ref(false)

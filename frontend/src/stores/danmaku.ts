@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import type { DanmakuItem, DanmakuStatus, DanmakuReply } from '@/types/chat'
-import type { BilibiliCommandAck, LivestreamState } from '@/constants/socket-events'
+import type { BilibiliCommandAck, LivestreamState } from '@/shared/contracts/socket-events'
 
 export const useDanmakuStore = defineStore('danmaku', () => {
   const messages = ref<DanmakuItem[]>([])

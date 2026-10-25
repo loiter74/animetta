@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { Events, type BilibiliStatusPayload } from '@/constants/socket-events'
+import { Events, type BilibiliStatusPayload } from '@/shared/contracts/socket-events'
 import { createLiveController, type LiveSocket, type LiveView } from '../controller'
 
 const controllers: ReturnType<typeof createLiveController>[] = []

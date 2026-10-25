@@ -1,4 +1,4 @@
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 import type { EarthSocket } from '../contracts'
 import type { EarthCommand, EarthNarration, EarthSnapshot, EarthTransport } from '../controller'
 

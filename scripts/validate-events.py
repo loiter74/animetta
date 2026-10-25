@@ -13,7 +13,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 EVENTS_JSON = ROOT / "config" / "socket-events.json"
-TS_FILE = ROOT / "frontend" / "src" / "constants" / "socket-events.ts"
+TS_FILE = ROOT / "frontend" / "src" / "shared" / "contracts" / "socket-events.ts"
 FRONTEND_SRC_DIR = ROOT / "frontend" / "src"
 FRONTEND_ENTRY_FILES = [
     ROOT / "frontend" / "live.html",

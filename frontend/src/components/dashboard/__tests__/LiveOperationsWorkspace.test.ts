@@ -2,7 +2,7 @@ import { mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import LiveOperationsWorkspace from '@/components/dashboard/LiveOperationsWorkspace.vue'
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 import { useDanmakuStore } from '@/stores/danmaku'
 
 const socket = vi.hoisted(() => ({ emit: vi.fn(), on: vi.fn(), off: vi.fn() }))

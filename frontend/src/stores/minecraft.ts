@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { getSocket } from '@/services/socket'
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 import { isStageIOView, type StageIOView } from '@/types/minecraft-stage'
 
 export interface MinecraftStatus {

@@ -3,7 +3,7 @@ import { io } from 'socket.io-client'
 
 import { createLiveController, type LiveSocket } from '@/live/controller'
 import { createLiveAudioController } from '@/live/audio'
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 import { isStageIOView, type StageIOView } from '@/types/minecraft-stage'
 import { createLive2DStage } from '@/review/live2d-stage'
 import { createPublicActivityController } from '@/shared/broadcast/publicActivity'

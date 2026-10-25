@@ -3,7 +3,7 @@ import { useChatStore } from '@/stores/chat'
 import { useMemoryStore } from '@/stores/memory'
 import type { Transcript } from '@/types/chat'
 import { getSocket } from './useSocket'
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 import { sendCanonicalChatText } from './chatTransport'
 import type {
   AudioWithExpressionEvent,

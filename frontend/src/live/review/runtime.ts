@@ -1,4 +1,4 @@
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 import type { ReviewClock } from '@/review/contracts'
 import { createTimelinePlayer } from '@/review/timeline'
 import type { LiveSocket } from '../controller'

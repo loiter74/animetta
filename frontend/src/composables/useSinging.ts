@@ -1,5 +1,5 @@
 import { getSocket } from './useSocket'
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 import { useSingingStore } from '@/stores/singing'
 import { fetchCommandTask, readCommandTask, startCommandTask } from '@/services/commandTasks'
 import type { SongResult } from '@/types/singing'

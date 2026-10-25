@@ -5,7 +5,7 @@ import { useModelLoadingStore } from '@/stores/modelLoading'
 import { useSingingStore } from '@/stores/singing'
 import type { ModelStatusPayload } from '@/types/model-loading'
 import type { PipelineStage } from '@/types/singing'
-import { Events, type SingCompletePayload } from '@/constants/socket-events'
+import { Events, type SingCompletePayload } from '@/shared/contracts/socket-events'
 import { fetchAuthenticatedSession, type AuthStatus } from '@/auth/session'
 import { getSocket as readSocket, setSocket } from '@/services/socket'
 

@@ -4,7 +4,6 @@ All handler logic is extracted into server/handlers/ modules.
 RouteHandlers acts as a facade that delegates to domain-specific handlers.
 """
 
-import asyncio
 import time
 from typing import TYPE_CHECKING, Any
 
@@ -184,24 +183,6 @@ class RouteHandlers:
         else:
             await self.sio.emit(event, payload, to=to)
 
-    @property
-    def _bilibili_service(self):
-        """Backward-compat: Bilibili danmaku service (now on BilibiliHandlers)."""
-        return self.bilibili._bilibili_service
-
-    @_bilibili_service.setter
-    def _bilibili_service(self, value: Any) -> None:
-        self.bilibili._bilibili_service = value
-
-    @property
-    def _main_loop(self) -> asyncio.AbstractEventLoop | None:
-        """Backward-compat: main event loop (now on BilibiliHandlers)."""
-        return self.bilibili._main_loop
-
-    @_main_loop.setter
-    def _main_loop(self, value: asyncio.AbstractEventLoop | None) -> None:
-        self.bilibili._main_loop = value
-
     # ── Config setters (backward compat) ──────────────────────────────
 
     def set_global_config(self, config: EffectiveConfig) -> None:
@@ -217,28 +198,6 @@ class RouteHandlers:
     def set_user_settings(self, user_settings: UserSettings) -> None:
         """Set user settings — delegates to domain handlers."""
         self.user_settings = user_settings
-
-    # ── Shared utility (backward compat) ─────────────────────────────
-
-    async def broadcast_to_desktop_clients(self, client_type: str, event: str, data: dict) -> None:
-        """Broadcast to desktop clients — delegates to BaseSocketHandler."""
-        return await self.base.broadcast_to_desktop_clients(client_type, event, data)
-
-    # ── Bilibili service (backward compat — called by WebSocketServer) ─
-
-    async def start_bilibili(
-        self,
-        room_id: int,
-        sessdata: str | None = None,
-    ) -> dict[str, Any]:
-        """Start Bilibili danmaku service — delegates to BilibiliHandlers."""
-        if not self.capability_enabled("bilibili"):
-            return _task_error("CAPABILITY_DISABLED", "Capability 'bilibili' is disabled")
-        return await self.bilibili.start_bilibili(room_id, sessdata)
-
-    async def stop_bilibili(self) -> dict[str, Any]:
-        """Stop Bilibili danmaku service — delegates to BilibiliHandlers."""
-        return await self.bilibili.stop_bilibili()
 
     async def start_runtime(self) -> None:
         """Start async domain runtimes during the ASGI lifespan."""

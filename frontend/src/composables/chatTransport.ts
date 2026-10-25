@@ -1,4 +1,4 @@
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 import type {
   ChatCommandPayload,
   SandboxHistoryMessage,

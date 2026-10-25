@@ -55,8 +55,6 @@ class TestRouteHandlersInit:
         assert handlers.session_manager is mock_session_manager
         assert handlers.desktop_manager is not None
         assert handlers.live2d_manager is not None
-        assert handlers._bilibili_service is None
-        assert handlers._main_loop is None
         assert handlers.global_config is None
         assert handlers.user_settings is None
 
@@ -978,7 +976,7 @@ class TestRouteHandlersBroadcast:
             "sid_b": {"client_type": "live2d", "connected": True},
         }
 
-        await handlers.broadcast_to_desktop_clients("live2d", "live2d.action", {"foo": "bar"})
+        await handlers.base.broadcast_to_desktop_clients("live2d", "live2d.action", {"foo": "bar"})
 
         assert mock_socketio.emit.call_count == 2
         mock_socketio.emit.assert_any_call("live2d.action", {"foo": "bar"}, to="sid_a")

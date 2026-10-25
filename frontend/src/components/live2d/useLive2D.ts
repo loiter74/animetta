@@ -1,7 +1,7 @@
 import { onMounted, onUnmounted, type Ref } from 'vue'
 import type { Live2DAction } from '@/types/live2d'
 import { getSocket } from '@/composables/useSocket'
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 import type {
   AudioStreamChunkEvent,
   AudioStreamEndEvent,

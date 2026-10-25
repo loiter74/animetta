@@ -2,7 +2,7 @@ import type { MemoryKnowledge, KnowledgeStats } from '@/types/memoryKnowledge'
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { getSocket } from '@/services/socket'
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 import { fetchCommandTask, readCommandTask, startCommandTask } from '@/services/commandTasks'
 
 export interface MemoryRelation {

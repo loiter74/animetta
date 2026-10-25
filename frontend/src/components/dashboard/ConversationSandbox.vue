@@ -3,7 +3,7 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { sendSandboxChatText } from '@/composables/chatTransport'
 import { clearCommandTask, fetchCommandTask, startCommandTask } from '@/services/commandTasks'
 import { getSocket } from '@/composables/useSocket'
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 import { fetchRuntimeStatus } from '@/services/runtimeStatus'
 import type {
   SandboxChunkEvent,

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { getSocket } from '@/services/socket'
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 
 export const usePersonalityStore = defineStore('personality', () => {
   const currentMode = ref<'default' | 'streaming'>('default')

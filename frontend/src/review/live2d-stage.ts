@@ -1,4 +1,4 @@
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 import type { Live2DAction } from '@/types/live2d'
 import type { LiveSocket } from '@/shared/transport/liveSocket'
 import type { PublicLive2DCue } from '@/shared/broadcast/publicActivity'

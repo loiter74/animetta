@@ -6,7 +6,7 @@ import {
   Events,
   type BilibiliCommandAck,
   type BilibiliStatusPayload,
-} from '@/constants/socket-events'
+} from '@/shared/contracts/socket-events'
 import { useDanmaku } from '@/composables/useDanmaku'
 import { useDanmakuStore } from '@/stores/danmaku'
 import { useChatStore } from '@/stores/chat'

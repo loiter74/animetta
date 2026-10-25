@@ -8,7 +8,7 @@ import ToolApprovalQueue from '@/components/dashboard/ToolApprovalQueue.vue'
 import { sendDeveloperChatText } from '@/composables/chatTransport'
 import { useDanmaku } from '@/composables/useDanmaku'
 import { getSocket } from '@/composables/useSocket'
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 import { useDanmakuStore } from '@/stores/danmaku'
 import { useSubtitleStore } from '@/stores/subtitle'
 import {

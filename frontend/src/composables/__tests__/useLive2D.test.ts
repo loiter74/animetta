@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ref, type Ref } from 'vue'
 import { activateChatTask, resetChatTaskGate } from '@/composables/chatTaskGate'
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 
 // Mock pixi.js before any imports
 vi.mock('pixi.js', () => ({

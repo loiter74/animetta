@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createIndexedDbMediaLockManager, type MediaLeaseStore } from './mediaLeaseLock'
 import * as mediaLeaseLock from './mediaLeaseLock'
 
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 import type { LiveSocket } from '@/shared/transport/liveSocket'
 import {
   createPublicMediaOwnership,

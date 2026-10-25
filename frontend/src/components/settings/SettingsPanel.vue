@@ -6,7 +6,7 @@ import { useDanmaku } from '@/composables/useDanmaku'
 import { useSubtitleStore } from '@/stores/subtitle'
 import { useMinecraftStore } from '@/stores/minecraft'
 import BackgroundSettings from './BackgroundSettings.vue'
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 import { fetchRuntimeStatus } from '@/services/runtimeStatus'
 import type { ProviderIdentity, RuntimeServiceStatus } from '@/types/runtime-status'
 

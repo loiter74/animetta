@@ -2,7 +2,7 @@
 import { nextTick, ref, watch } from 'vue'
 import { useDanmaku } from '@/composables/useDanmaku'
 import { getSocket } from '@/composables/useSocket'
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 import BackgroundSettings from '@/components/settings/BackgroundSettings.vue'
 import SectionTabs, { type SectionTab } from '@/components/shared/SectionTabs.vue'
 import { fetchRuntimeStatus } from '@/services/runtimeStatus'

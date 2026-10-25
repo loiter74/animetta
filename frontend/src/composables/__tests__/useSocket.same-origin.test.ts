@@ -129,7 +129,7 @@ describe('useSocket same-origin bootstrap', () => {
     const pinia = createPinia()
     const { useSocket } = await import('../useSocket')
     const { useSingingStore } = await import('@/stores/singing')
-    const { Events } = await import('@/constants/socket-events')
+    const { Events } = await import('@/shared/contracts/socket-events')
     const Host = defineComponent({
       setup() {
         useSocket()

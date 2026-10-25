@@ -1,4 +1,4 @@
-import { Events, type BilibiliStatusPayload } from '@/constants/socket-events'
+import { Events, type BilibiliStatusPayload } from '@/shared/contracts/socket-events'
 import type { DanmakuItem } from '@/types/chat'
 import type { LiveSocket } from '@/shared/transport/liveSocket'
 import {

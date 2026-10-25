@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 import { createReviewSocket, resolveReviewRequest, type ReviewClock } from '../review-socket'
 
 function manualClock() {

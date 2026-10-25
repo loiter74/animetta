@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { resolveLive2DModelProfile } from '@/shared/live2d/modelProfiles'
 import { bindLive2DEmotionSocket } from '@/shared/live2d/emotionSocket'
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 import type { LiveSocket } from '@/shared/transport/liveSocket'
 
 const mao = resolveLive2DModelProfile('mao')

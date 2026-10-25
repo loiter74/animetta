@@ -3,7 +3,7 @@ import { useDanmakuStore } from '@/stores/danmaku'
 import { useChatStore } from '@/stores/chat'
 import type { DanmakuItem, DanmakuStatus, DanmakuReply } from '@/types/chat'
 import { getSocket } from './useSocket'
-import { Events, type BilibiliCommandAck } from '@/constants/socket-events'
+import { Events, type BilibiliCommandAck } from '@/shared/contracts/socket-events'
 
 export interface UseDanmakuOptions {
   canControl?: boolean

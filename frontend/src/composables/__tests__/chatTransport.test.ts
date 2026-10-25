@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 import {
   CHAT_CONVERSATION_STORAGE_KEY,
   DEVELOPER_CONVERSATION_STORAGE_KEY,

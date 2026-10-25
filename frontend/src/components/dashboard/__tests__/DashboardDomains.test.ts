@@ -7,7 +7,7 @@ import ValidationWorkspace from '@/components/dashboard/ValidationWorkspace.vue'
 import AvatarWorkspace from '@/components/dashboard/AvatarWorkspace.vue'
 import MemoryWorkspace from '@/components/memory/MemoryWorkspace.vue'
 import MemeWorkspace from '@/components/meme/MemeWorkspace.vue'
-import { Events } from '@/constants/socket-events'
+import { Events } from '@/shared/contracts/socket-events'
 import { useMemoryStore, type WikiPageEntry } from '@/stores/memory'
 
 const socket = vi.hoisted(() => ({
