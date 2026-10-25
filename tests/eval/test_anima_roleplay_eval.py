@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from animetta.orchestration.prompting.roleplay_guard import detect_drift
+from animetta.services.dialogue.roleplay_guard import detect_drift
 
 
 @dataclass

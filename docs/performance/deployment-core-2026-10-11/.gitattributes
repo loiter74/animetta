@@ -1,5 +1,0 @@
-# Preserve measured evidence bytes so archived SHA256 values survive checkout.
-# Raw Windows records retain CRLF; keep all other default whitespace checks.
-*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
-runtime-log.md -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
-runtime-evidence/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

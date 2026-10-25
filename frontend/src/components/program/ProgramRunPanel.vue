@@ -10,7 +10,7 @@ import {
   type ProgramRunSnapshot,
   type ProgramScriptSummary,
 } from '@/services/programScripts'
-import { fetchCommandTask, readCommandTask, startCommandTask } from '@/composables/commandTasks'
+import { fetchCommandTask, readCommandTask, startCommandTask } from '@/services/commandTasks'
 import { getSocket } from '@/composables/useSocket'
 
 const creatorId = 'dashboard'

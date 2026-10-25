@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useChatStore } from '@/stores/chat'
-import type { ChatIdentity, SentenceEvent } from '@/types/socket-events'
+import type { ChatIdentity, SentenceEvent } from '@/shared/contracts/socket-events'
 import type { ChatMessage } from '@/types/chat'
 
 const fetchAvailablePersonasMock = vi.hoisted(() => vi.fn())

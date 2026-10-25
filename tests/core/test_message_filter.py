@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from animetta.core.message_filter import (
+from animetta.services.dialogue.message_filter import (
     is_inspection_probe,
     is_probe_message,
     should_skip_llm,

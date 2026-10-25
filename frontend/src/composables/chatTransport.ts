@@ -3,7 +3,7 @@ import type {
   ChatCommandPayload,
   SandboxHistoryMessage,
   SandboxRequestEvent,
-} from '@/types/socket-events'
+} from '@/shared/contracts/socket-events'
 import { activateChatTask } from './chatTaskGate'
 
 export const CHAT_CONVERSATION_STORAGE_KEY = 'animetta.chat.conversation_id'

@@ -29,7 +29,7 @@
 | 已核实事实 | 对精简的意义 | 依据 |
 | --- | --- | --- |
 | 主 Compose 只有应用和 Redis；Dockerfile 明确将 GPU 包排除在主镜像之外 | 已有轻量主应用的基础，首轮应继续收紧边界 | [Compose](../../docker-compose.yml)、[Dockerfile](../../Dockerfile) |
-| `requirements.txt` 有 119 条锁定包声明；`requirements-local-ai.txt` 有 24 条带版本约束的依赖声明，并包含主依赖清单 | 前者含间接依赖和平台条件，不等于当前机器安装包数；后者混合 ASR、TTS、向量检索、RVC 等多种环境 | [主依赖](../../requirements.txt)、[本地 AI 依赖](../../requirements-local-ai.txt) |
+| `requirements.txt` 有 119 条锁定包声明（本地 AI 依赖清单 `requirements-local-ai.txt` 已于 2026-10-25 移除） | 前者含间接依赖和平台条件，不等于当前机器安装包数 | [主依赖](../../requirements.txt) |
 | `anima-up`、`anima-dev`、`anima-deploy` 的生命周期计划固定加入 Qwen 与 RVC 启动、预检 | 不使用唱歌也会进入 RVC 的准备链，这是优先解除的运行耦合 | [生命周期计划](../../tooling/execution_feedback/lifecycle.py) |
 | ProviderPool 通过临时 `ServiceContext` 加载完整配置，再提取共享引擎并清理会话资源；加载路径包含 ASR、VAD、音频处理等 | 共享模型初始化与会话能力初始化交织；需要先建立按能力加载，再视实际收益收紧组装责任 | [模型池](../../src/animetta/runtime/provider_pool.py)、[会话上下文](../../src/animetta/runtime/session_context.py) |
 | 主依赖包含 `langchain-community`；当前源码直接引用出现在网页搜索的 DuckDuckGo 回退路径 | 一个可选工具可能带来更大的依赖闭包，应按用途审计并移出默认安装 | [项目依赖](../../pyproject.toml)、[搜索工具](../../src/animetta/tools/base.py) |

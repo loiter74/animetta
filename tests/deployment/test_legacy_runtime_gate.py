@@ -81,7 +81,6 @@ def test_deployment_and_manifest_sources_do_not_contain_literal_credentials() ->
     paths = [
         ROOT / "config/animetta.yaml",
         ROOT / "docker-compose.yml",
-        ROOT / "fly.toml",
         ROOT / "zeabur.json",
     ]
     suspicious_prefixes = ("sk-", "Bearer ", "hf_")

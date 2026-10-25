@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { getSocket } from '@/composables/useSocket'
-import { fetchCommandTask, readCommandTask, startCommandTask } from '@/composables/commandTasks'
+import { fetchCommandTask, readCommandTask, startCommandTask } from '@/services/commandTasks'
 import { Events } from '@/constants/socket-events'
 
 interface MemeItem {

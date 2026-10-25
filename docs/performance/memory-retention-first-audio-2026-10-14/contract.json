@@ -1,8 +1,0 @@
-{
-  "frozen_before_changes": true,
-  "memory_prediction": "Recent task IDs and each latency sample list cap at 1024; idle chat locks disappear; reply_success remains cumulative; recent duplicate commits remain rejected and durable Command Inbox replay stays unchanged.",
-  "memory_samples": [1000, 10000, 30000],
-  "independent_repetitions": 3,
-  "latency_plan": "After repair and runtime update: 3 sequential short non-sensitive developer turns through real production LangGraph to /live.html. Measure dispatch-to-first-text, dispatch-to-first-audio-event and dispatch-to-native-playing. Preserve task-linked playback count, time advancement, natural ended and nonzero audio. First sample is first after restart, subsequent samples are warm. This establishes a baseline, no latency optimization or speedup claim.",
-  "latency_budget": "maximum 3 model/TTS turns, each at most 90 seconds; no Bilibili connection, singing, OBS or configuration changes; close probe browser/socket afterwards"
-}

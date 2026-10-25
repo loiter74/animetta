@@ -8,8 +8,8 @@ import pytest
 import yaml
 
 from animetta.config.manifest import EffectiveConfig, load_effective_config
-from animetta.config.runtime_reload import (
-    RuntimeConfigReloader,
+from animetta.config.runtime_reloader import RuntimeConfigReloader
+from animetta.services.runtime_config import (
     apply_lightweight_llm_config,
     apply_runtime_config_to_contexts,
 )

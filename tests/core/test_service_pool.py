@@ -17,8 +17,8 @@ def pool():
 
 
 async def test_legacy_facade_forwards_without_owning_state(pool, monkeypatch):
-    from animetta.core.service_pool import ServicePool
     from animetta.runtime import provider_pool
+    from animetta.runtime.provider_pool import ServicePool
 
     monkeypatch.setattr(provider_pool, "default_provider_pool", pool)
     engine = MagicMock(close=AsyncMock())

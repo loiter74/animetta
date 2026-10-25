@@ -7,7 +7,7 @@ import pytest
 from starlette.testclient import TestClient
 
 from animetta.config.manifest import RuntimeSettings
-from animetta.config.runtime_reload import ReloadResult
+from animetta.config.runtime_reloader import ReloadResult
 from animetta.config.security import SecurityConfig
 from animetta.orchestration.server.websocket import WebSocketServer
 

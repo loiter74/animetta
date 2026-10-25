@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { ConnectionStatus } from '@/types/socket-events'
+import type { ConnectionStatus } from '@/shared/contracts/socket-events'
 import type { AuthSessionSnapshot, AuthStatus, AuthUser } from '@/auth/session'
 
 export const useConnectionStore = defineStore('connection', () => {

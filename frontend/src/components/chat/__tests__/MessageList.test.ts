@@ -11,14 +11,6 @@ vi.mock('@/components/chat/MessageBubble.vue', () => ({
   default: { template: '<div />', props: ['message'] },
 }))
 
-vi.mock('@/composables/useMessageStore', () => ({
-  useMessageStore: () => ({
-    loadMessages: vi.fn().mockResolvedValue([]),
-    saveMessages: vi.fn().mockResolvedValue(undefined),
-    pruneMessages: vi.fn().mockResolvedValue(undefined),
-  }),
-}))
-
 describe('MessageList', () => {
   it('uses a stable scroll container that prevents browser scroll anchoring jumps', () => {
     const wrapper = mount(MessageList, {

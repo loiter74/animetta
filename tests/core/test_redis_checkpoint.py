@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from animetta.core.redis_checkpoint import RedisCheckpointRuntime
+from animetta.runtime.checkpoint import RedisCheckpointRuntime
 
 
 class _SaverContext:

@@ -34,7 +34,7 @@ from animetta.config.providers.tts import (
     RemoteTTSConfig,
 )
 from animetta.config.providers.vad import MimoVADConfig, MockVADConfig
-from animetta.config.runtime_reload import RuntimeConfigReloader
+from animetta.config.runtime_reloader import RuntimeConfigReloader
 from animetta.host_tts_contract import HOST_TTS_CONTRACT
 
 pytestmark = pytest.mark.config_unit

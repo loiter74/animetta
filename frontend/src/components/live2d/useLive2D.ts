@@ -8,7 +8,7 @@ import type {
   AudioStreamStartEvent,
   AudioWithExpressionEvent,
   ChatIdentity,
-} from '@/types/socket-events'
+} from '@/shared/contracts/socket-events'
 import { isCurrentChatTask } from '@/composables/chatTaskGate'
 
 // ===== Public exports for backward compatibility =====

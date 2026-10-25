@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { sendSandboxChatText } from '@/composables/chatTransport'
-import { clearCommandTask, fetchCommandTask, startCommandTask } from '@/composables/commandTasks'
+import { clearCommandTask, fetchCommandTask, startCommandTask } from '@/services/commandTasks'
 import { getSocket } from '@/composables/useSocket'
 import { Events } from '@/constants/socket-events'
 import { fetchRuntimeStatus } from '@/services/runtimeStatus'
@@ -9,7 +9,7 @@ import type {
   SandboxChunkEvent,
   SandboxHistoryMessage,
   SandboxRequestEvent,
-} from '@/types/socket-events'
+} from '@/shared/contracts/socket-events'
 
 interface SandboxMessage {
   id: number

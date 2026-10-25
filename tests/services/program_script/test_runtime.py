@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from animetta.orchestration.graph.checkpointing import CheckpointRequest
+from animetta.checkpointing import CheckpointRequest
 from animetta.services.program_script import (
     ProgramRuntimeError,
     ProgramScriptRepository,

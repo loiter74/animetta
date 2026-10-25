@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { Live2DPerformancePlanV1 } from '@/types/socket-events'
+import type { Live2DPerformancePlanV1 } from '@/shared/contracts/socket-events'
 import {
   MAO_PERFORMANCE_OWNED_PARAMETERS,
   MAO_PERFORMANCE_PROFILE,

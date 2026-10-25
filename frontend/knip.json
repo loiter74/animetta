@@ -11,7 +11,6 @@
     "pngjs",
     "tsx"
   ],
-  "ignoreFiles": ["src/composables/useMessageStore.ts"],
   "ignoreExportsUsedInFile": true,
   "workspaces": {
     ".": {
@@ -20,8 +19,7 @@
         "src/minecraft-gameplay/main.ts",
         "src/earth-prototype/main.ts",
         "electron/preload.cjs",
-        "scripts/*.mjs",
-        "streaming-tts-smoke.mjs"
+        "scripts/*.mjs"
       ],
       "project": [
         "src/**/*.{ts,vue}",

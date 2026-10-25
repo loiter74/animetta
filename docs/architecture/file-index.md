@@ -1,8 +1,8 @@
 # Animetta 文件索引
 
-扫描日期：2026-10-10（Asia/Shanghai）。用于后续架构定位与阅读导航；目录职责参考现有 module-map.md 和根目录 AGENTS.md，文件列表来自当前工作区。职责说明不代表已逐文件验证依赖关系。
+扫描日期：2026-10-10（Asia/Shanghai）；2026-10-25 清理已删除文件条目。用于后续架构定位与阅读导航；目录职责参考现有 module-map.md 和根目录 AGENTS.md，文件列表来自当前工作区。职责说明不代表已逐文件验证依赖关系。
 
-扫描基线提交：`f53f6a891e62f156700660b37ee46d5c5fbd888f`。共 **2063** 个文件；索引自身计入。
+扫描基线提交：`f53f6a891e62f156700660b37ee46d5c5fbd888f`。共 **1922** 个文件；索引自身计入。
 
 范围：Git 跟踪文件及未被忽略的未跟踪文件，仅保留当前存在的文件。排除运行数据、模型、日志、依赖、缓存、构建输出及本地 CodeGraph 数据；不读取配置值或运行数据内容。被 Git 忽略的其他本地文件不在清单内。
 
@@ -376,14 +376,12 @@
 - [docker-compose.dev.yml](../../docker-compose.dev.yml)
 - [docker-compose.yml](../../docker-compose.yml)
 - [Dockerfile](../../Dockerfile)
-- [fly.toml](../../fly.toml)
 - [LICENSE](../../LICENSE)
 - [Makefile](../../Makefile)
 - [pyproject.toml](../../pyproject.toml)
 - [README.md](../../README.md)
 - [README.zh-CN.md](../../README.zh-CN.md)
 - [requirements-dev.txt](../../requirements-dev.txt)
-- [requirements-local-ai.txt](../../requirements-local-ai.txt)
 - [requirements.txt](../../requirements.txt)
 - [SECURITY.md](../../SECURITY.md)
 - [start-anima.cmd](../../start-anima.cmd)
@@ -511,17 +509,14 @@
 
 #### docker
 
-- [docker/build-frontend.sh](../../docker/build-frontend.sh)
 - [docker/entrypoint.sh](../../docker/entrypoint.sh)
 - [docker/nginx.conf](../../docker/nginx.conf)
 
 #### docker/mcp-filesystem
 
-- [docker/mcp-filesystem/Dockerfile](../../docker/mcp-filesystem/Dockerfile)
 
 #### docker/minecraft-server/client-mods
 
-- [docker/minecraft-server/client-mods/fabric-api-0.102.0+1.21.jar](../../docker/minecraft-server/client-mods/fabric-api-0.102.0%2B1.21.jar)
 - [docker/minecraft-server/client-mods/spectatorplus-fabric-1.2.1-mc1.21.jar](../../docker/minecraft-server/client-mods/spectatorplus-fabric-1.2.1-mc1.21.jar)
 
 ### docs
@@ -797,13 +792,6 @@
 
 #### frontend/public/backgrounds
 
-- [frontend/public/backgrounds/落日.png](../../frontend/public/backgrounds/%E8%90%BD%E6%97%A5.png)
-- [frontend/public/backgrounds/赛博都市.png](../../frontend/public/backgrounds/%E8%B5%9B%E5%8D%9A%E9%83%BD%E5%B8%82.png)
-- [frontend/public/backgrounds/森林.png](../../frontend/public/backgrounds/%E6%A3%AE%E6%9E%97.png)
-- [frontend/public/backgrounds/深海.png](../../frontend/public/backgrounds/%E6%B7%B1%E6%B5%B7.png)
-- [frontend/public/backgrounds/温馨直播室.png](../../frontend/public/backgrounds/%E6%B8%A9%E9%A6%A8%E7%9B%B4%E6%92%AD%E5%AE%A4.png)
-- [frontend/public/backgrounds/午夜.png](../../frontend/public/backgrounds/%E5%8D%88%E5%A4%9C.png)
-- [frontend/public/backgrounds/樱花夜.png](../../frontend/public/backgrounds/%E6%A8%B1%E8%8A%B1%E5%A4%9C.png)
 
 #### frontend/public/backgrounds/vertical
 
@@ -1417,42 +1405,25 @@
 
 #### openspec/changes/add-mcbot-readable-agency
 
-- [openspec/changes/add-mcbot-readable-agency/.openspec.yaml](../../openspec/changes/add-mcbot-readable-agency/.openspec.yaml)
-- [openspec/changes/add-mcbot-readable-agency/design.md](../../openspec/changes/add-mcbot-readable-agency/design.md)
-- [openspec/changes/add-mcbot-readable-agency/proposal.md](../../openspec/changes/add-mcbot-readable-agency/proposal.md)
-- [openspec/changes/add-mcbot-readable-agency/tasks.md](../../openspec/changes/add-mcbot-readable-agency/tasks.md)
 
 #### openspec/changes/add-mcbot-readable-agency/specs/livestream-narration-director
 
-- [openspec/changes/add-mcbot-readable-agency/specs/livestream-narration-director/spec.md](../../openspec/changes/add-mcbot-readable-agency/specs/livestream-narration-director/spec.md)
 
 #### openspec/changes/add-mcbot-readable-agency/specs/minecraft-broadcast-presentation
 
-- [openspec/changes/add-mcbot-readable-agency/specs/minecraft-broadcast-presentation/spec.md](../../openspec/changes/add-mcbot-readable-agency/specs/minecraft-broadcast-presentation/spec.md)
 
 #### openspec/changes/add-mcbot-readable-agency/specs/minecraft-public-activity
 
-- [openspec/changes/add-mcbot-readable-agency/specs/minecraft-public-activity/spec.md](../../openspec/changes/add-mcbot-readable-agency/specs/minecraft-public-activity/spec.md)
 
 ### pitch
 
 #### pitch
 
-- [pitch/.gitignore](../../pitch/.gitignore)
-- [pitch/Animetta-投资人汇报-华为胶片版.pptx](../../pitch/Animetta-%E6%8A%95%E8%B5%84%E4%BA%BA%E6%B1%87%E6%8A%A5-%E5%8D%8E%E4%B8%BA%E8%83%B6%E7%89%87%E7%89%88.pptx)
-- [pitch/Animetta-投资人简报.pptx](../../pitch/Animetta-%E6%8A%95%E8%B5%84%E4%BA%BA%E7%AE%80%E6%8A%A5.pptx)
-- [pitch/build_deck_hw.js](../../pitch/build_deck_hw.js)
-- [pitch/build_deck.js](../../pitch/build_deck.js)
-- [pitch/package-lock.json](../../pitch/package-lock.json)
-- [pitch/package.json](../../pitch/package.json)
-- [pitch/qa_check.py](../../pitch/qa_check.py)
 
 ### scripts
 
 #### scripts
 
-- [scripts/baseline_golden_path.py](../../scripts/baseline_golden_path.py)
-- [scripts/bench.py](../../scripts/bench.py)
 - [scripts/benchmark_host_tts.py](../../scripts/benchmark_host_tts.py)
 - [scripts/benchmark_startup.py](../../scripts/benchmark_startup.py)
 - [scripts/benchmark_storage.py](../../scripts/benchmark_storage.py)
@@ -1465,17 +1436,14 @@
 - [scripts/collect_live_danmaku.py](../../scripts/collect_live_danmaku.py)
 - [scripts/conversation_continuity_canary.py](../../scripts/conversation_continuity_canary.py)
 - [scripts/demucs_fix.py](../../scripts/demucs_fix.py)
-- [scripts/download-models.sh](../../scripts/download-models.sh)
 - [scripts/generate_gamebot_v2_contracts.py](../../scripts/generate_gamebot_v2_contracts.py)
 - [scripts/generate_minecraft_mission_contracts.py](../../scripts/generate_minecraft_mission_contracts.py)
 - [scripts/health_check.py](../../scripts/health_check.py)
 - [scripts/manage_users.py](../../scripts/manage_users.py)
-- [scripts/measure_storage_telemetry.ps1](../../scripts/measure_storage_telemetry.ps1)
 - [scripts/minecraft_adaptive_micro_gate.py](../../scripts/minecraft_adaptive_micro_gate.py)
 - [scripts/minecraft_adaptive_showcase.py](../../scripts/minecraft_adaptive_showcase.py)
 - [scripts/minecraft_gameplay_review_harness.py](../../scripts/minecraft_gameplay_review_harness.py)
 - [scripts/minecraft_real_model_contract.py](../../scripts/minecraft_real_model_contract.py)
-- [scripts/probe_release_turn.py](../../scripts/probe_release_turn.py)
 - [scripts/qwen_preflight.py](../../scripts/qwen_preflight.py)
 - [scripts/README.md](../../scripts/README.md)
 - [scripts/release_runtime_gate.py](../../scripts/release_runtime_gate.py)
@@ -1483,14 +1451,9 @@
 - [scripts/route_smoke.py](../../scripts/route_smoke.py)
 - [scripts/runtime_lifecycle.py](../../scripts/runtime_lifecycle.py)
 - [scripts/rvc_preflight.py](../../scripts/rvc_preflight.py)
-- [scripts/smoke_bilibili_room.py](../../scripts/smoke_bilibili_room.py)
-- [scripts/smoke_real_profile.py](../../scripts/smoke_real_profile.py)
 - [scripts/soak_golden_path.py](../../scripts/soak_golden_path.py)
-- [scripts/sync_feishu_to_docs.py](../../scripts/sync_feishu_to_docs.py)
 - [scripts/tts_audition.py](../../scripts/tts_audition.py)
-- [scripts/tts_failover_review_harness.py](../../scripts/tts_failover_review_harness.py)
 - [scripts/validate-events.py](../../scripts/validate-events.py)
-- [scripts/verify_minecraft_migration.py](../../scripts/verify_minecraft_migration.py)
 - [scripts/voyager_real_e2e.py](../../scripts/voyager_real_e2e.py)
 
 #### scripts/train
@@ -1717,11 +1680,9 @@
 
 #### sources
 
-- [sources/research_singing_voice_conversion_hoarseness_20260818.md](../../sources/research_singing_voice_conversion_hoarseness_20260818.md)
 
 #### sources/experiments
 
-- [sources/experiments/singing_voice_method_compare_20260818.md](../../sources/experiments/singing_voice_method_compare_20260818.md)
 
 ### src
 
@@ -1758,7 +1719,6 @@
 - [src/animetta/acceptance/live_danmaku_collector.py](../../src/animetta/acceptance/live_danmaku_collector.py)
 - [src/animetta/acceptance/minecraft_gameplay_review.py](../../src/animetta/acceptance/minecraft_gameplay_review.py)
 - [src/animetta/acceptance/minecraft_showcase.py](../../src/animetta/acceptance/minecraft_showcase.py)
-- [src/animetta/acceptance/tts_failover_review.py](../../src/animetta/acceptance/tts_failover_review.py)
 
 #### src/animetta/acceptance/tts_audition
 
@@ -1815,7 +1775,6 @@
 - [src/animetta/config/manifest.py](../../src/animetta/config/manifest.py)
 - [src/animetta/config/observability.py](../../src/animetta/config/observability.py)
 - [src/animetta/config/proactive_topics.py](../../src/animetta/config/proactive_topics.py)
-- [src/animetta/config/runtime_reload.py](../../src/animetta/config/runtime_reload.py)
 - [src/animetta/config/runtime_reloader.py](../../src/animetta/config/runtime_reloader.py)
 - [src/animetta/config/scene_analysis.py](../../src/animetta/config/scene_analysis.py)
 - [src/animetta/config/security.py](../../src/animetta/config/security.py)
@@ -1909,15 +1868,6 @@
 
 - [src/animetta/core/__init__.py](../../src/animetta/core/__init__.py)
 - [src/animetta/core/AGENTS.md](../../src/animetta/core/AGENTS.md)
-- [src/animetta/core/component_readiness.py](../../src/animetta/core/component_readiness.py)
-- [src/animetta/core/golden_preflight.py](../../src/animetta/core/golden_preflight.py)
-- [src/animetta/core/message_filter.py](../../src/animetta/core/message_filter.py)
-- [src/animetta/core/model_loading_manager.py](../../src/animetta/core/model_loading_manager.py)
-- [src/animetta/core/readiness.py](../../src/animetta/core/readiness.py)
-- [src/animetta/core/redis_checkpoint.py](../../src/animetta/core/redis_checkpoint.py)
-- [src/animetta/core/service_context.py](../../src/animetta/core/service_context.py)
-- [src/animetta/core/service_pool.py](../../src/animetta/core/service_pool.py)
-- [src/animetta/core/shared_memory_runtime.py](../../src/animetta/core/shared_memory_runtime.py)
 - [src/animetta/core/socketio_server.py](../../src/animetta/core/socketio_server.py)
 
 #### src/animetta/inspection
@@ -1954,7 +1904,6 @@
 - [src/animetta/memory/v2/metabolism.py](../../src/animetta/memory/v2/metabolism.py)
 - [src/animetta/memory/v2/reconsolidation.py](../../src/animetta/memory/v2/reconsolidation.py)
 - [src/animetta/memory/v2/search.py](../../src/animetta/memory/v2/search.py)
-- [src/animetta/memory/v2/seed_generator.py](../../src/animetta/memory/v2/seed_generator.py)
 - [src/animetta/memory/v2/store.py](../../src/animetta/memory/v2/store.py)
 - [src/animetta/memory/v2/system.py](../../src/animetta/memory/v2/system.py)
 
@@ -1966,7 +1915,6 @@
 - [src/animetta/notifier/email.py](../../src/animetta/notifier/email.py)
 - [src/animetta/notifier/feishu.py](../../src/animetta/notifier/feishu.py)
 - [src/animetta/notifier/manager.py](../../src/animetta/notifier/manager.py)
-- [src/animetta/notifier/server.py](../../src/animetta/notifier/server.py)
 
 #### src/animetta/notifier/templates
 
@@ -2012,7 +1960,6 @@
 - [src/animetta/orchestration/graph/AGENTS.md](../../src/animetta/orchestration/graph/AGENTS.md)
 - [src/animetta/orchestration/graph/asr_node.py](../../src/animetta/orchestration/graph/asr_node.py)
 - [src/animetta/orchestration/graph/builder.py](../../src/animetta/orchestration/graph/builder.py)
-- [src/animetta/orchestration/graph/checkpointing.py](../../src/animetta/orchestration/graph/checkpointing.py)
 - [src/animetta/orchestration/graph/conversation_session.py](../../src/animetta/orchestration/graph/conversation_session.py)
 - [src/animetta/orchestration/graph/delivery_nodes.py](../../src/animetta/orchestration/graph/delivery_nodes.py)
 - [src/animetta/orchestration/graph/dialogue_nodes.py](../../src/animetta/orchestration/graph/dialogue_nodes.py)
@@ -2032,7 +1979,6 @@
 - [src/animetta/orchestration/graph/output_node.py](../../src/animetta/orchestration/graph/output_node.py)
 - [src/animetta/orchestration/graph/persistence_policy.py](../../src/animetta/orchestration/graph/persistence_policy.py)
 - [src/animetta/orchestration/graph/personality_node.py](../../src/animetta/orchestration/graph/personality_node.py)
-- [src/animetta/orchestration/graph/scheduler.py](../../src/animetta/orchestration/graph/scheduler.py)
 - [src/animetta/orchestration/graph/state.py](../../src/animetta/orchestration/graph/state.py)
 - [src/animetta/orchestration/graph/subtitle_translator.py](../../src/animetta/orchestration/graph/subtitle_translator.py)
 - [src/animetta/orchestration/graph/tool_execution_policy.py](../../src/animetta/orchestration/graph/tool_execution_policy.py)
@@ -2049,8 +1995,6 @@
 - [src/animetta/orchestration/prompting/context.py](../../src/animetta/orchestration/prompting/context.py)
 - [src/animetta/orchestration/prompting/delivery.py](../../src/animetta/orchestration/prompting/delivery.py)
 - [src/animetta/orchestration/prompting/pipeline.py](../../src/animetta/orchestration/prompting/pipeline.py)
-- [src/animetta/orchestration/prompting/reasoning_classifier.py](../../src/animetta/orchestration/prompting/reasoning_classifier.py)
-- [src/animetta/orchestration/prompting/roleplay_guard.py](../../src/animetta/orchestration/prompting/roleplay_guard.py)
 - [src/animetta/orchestration/prompting/sources.py](../../src/animetta/orchestration/prompting/sources.py)
 - [src/animetta/orchestration/prompting/types.py](../../src/animetta/orchestration/prompting/types.py)
 
@@ -2201,7 +2145,6 @@
 #### src/animetta/services/llm
 
 - [src/animetta/services/llm/__init__.py](../../src/animetta/services/llm/__init__.py)
-- [src/animetta/services/llm/deepseek_policy.py](../../src/animetta/services/llm/deepseek_policy.py)
 - [src/animetta/services/llm/factory.py](../../src/animetta/services/llm/factory.py)
 - [src/animetta/services/llm/glm_llm.py](../../src/animetta/services/llm/glm_llm.py)
 - [src/animetta/services/llm/glm_message_converter.py](../../src/animetta/services/llm/glm_message_converter.py)
@@ -2322,19 +2265,11 @@
 #### src/animetta/tools/gamebot
 
 - [src/animetta/tools/gamebot/__init__.py](../../src/animetta/tools/gamebot/__init__.py)
-- [src/animetta/tools/gamebot/client.py](../../src/animetta/tools/gamebot/client.py)
 - [src/animetta/tools/gamebot/runtime.py](../../src/animetta/tools/gamebot/runtime.py)
-- [src/animetta/tools/gamebot/state_collector.py](../../src/animetta/tools/gamebot/state_collector.py)
-- [src/animetta/tools/gamebot/stdio_transport.py](../../src/animetta/tools/gamebot/stdio_transport.py)
-- [src/animetta/tools/gamebot/tools.py](../../src/animetta/tools/gamebot/tools.py)
-- [src/animetta/tools/gamebot/transport.py](../../src/animetta/tools/gamebot/transport.py)
 
 #### src/animetta/tools/gamebot/contracts
 
 - [src/animetta/tools/gamebot/contracts/__init__.py](../../src/animetta/tools/gamebot/contracts/__init__.py)
-- [src/animetta/tools/gamebot/contracts/commands.py](../../src/animetta/tools/gamebot/contracts/commands.py)
-- [src/animetta/tools/gamebot/contracts/errors.py](../../src/animetta/tools/gamebot/contracts/errors.py)
-- [src/animetta/tools/gamebot/contracts/events.py](../../src/animetta/tools/gamebot/contracts/events.py)
 - [src/animetta/tools/gamebot/contracts/status.py](../../src/animetta/tools/gamebot/contracts/status.py)
 - [src/animetta/tools/gamebot/contracts/voyager.py](../../src/animetta/tools/gamebot/contracts/voyager.py)
 
@@ -2359,20 +2294,11 @@
 
 #### src/animetta/tools/minecraft/autonomous
 
-- [src/animetta/tools/minecraft/autonomous/__init__.py](../../src/animetta/tools/minecraft/autonomous/__init__.py)
-- [src/animetta/tools/minecraft/autonomous/curriculum.py](../../src/animetta/tools/minecraft/autonomous/curriculum.py)
-- [src/animetta/tools/minecraft/autonomous/planner.py](../../src/animetta/tools/minecraft/autonomous/planner.py)
-- [src/animetta/tools/minecraft/autonomous/rules_engine.py](../../src/animetta/tools/minecraft/autonomous/rules_engine.py)
-- [src/animetta/tools/minecraft/autonomous/training.py](../../src/animetta/tools/minecraft/autonomous/training.py)
 
 #### src/animetta/tools/minecraft/benchmark
 
 - [src/animetta/tools/minecraft/benchmark/__init__.py](../../src/animetta/tools/minecraft/benchmark/__init__.py)
-- [src/animetta/tools/minecraft/benchmark/criteria.py](../../src/animetta/tools/minecraft/benchmark/criteria.py)
-- [src/animetta/tools/minecraft/benchmark/main.py](../../src/animetta/tools/minecraft/benchmark/main.py)
 - [src/animetta/tools/minecraft/benchmark/models.py](../../src/animetta/tools/minecraft/benchmark/models.py)
-- [src/animetta/tools/minecraft/benchmark/report.py](../../src/animetta/tools/minecraft/benchmark/report.py)
-- [src/animetta/tools/minecraft/benchmark/scenarios.py](../../src/animetta/tools/minecraft/benchmark/scenarios.py)
 
 #### src/animetta/tools/minecraft/blueprint
 
@@ -2393,10 +2319,6 @@
 
 #### src/animetta/tools/minecraft/demo
 
-- [src/animetta/tools/minecraft/demo/__init__.py](../../src/animetta/tools/minecraft/demo/__init__.py)
-- [src/animetta/tools/minecraft/demo/__main__.py](../../src/animetta/tools/minecraft/demo/__main__.py)
-- [src/animetta/tools/minecraft/demo/cli.py](../../src/animetta/tools/minecraft/demo/cli.py)
-- [src/animetta/tools/minecraft/demo/scenario.py](../../src/animetta/tools/minecraft/demo/scenario.py)
 
 #### src/animetta/tools/minecraft/discovery
 
@@ -2424,16 +2346,11 @@
 
 #### src/animetta/tools/minecraft/other
 
-- [src/animetta/tools/minecraft/other/__init__.py](../../src/animetta/tools/minecraft/other/__init__.py)
-- [src/animetta/tools/minecraft/other/trace_recorder.py](../../src/animetta/tools/minecraft/other/trace_recorder.py)
-- [src/animetta/tools/minecraft/other/world_state.py](../../src/animetta/tools/minecraft/other/world_state.py)
 
 #### src/animetta/tools/minecraft/showcase
 
 - [src/animetta/tools/minecraft/showcase/__init__.py](../../src/animetta/tools/minecraft/showcase/__init__.py)
-- [src/animetta/tools/minecraft/showcase/dialogue_regression.py](../../src/animetta/tools/minecraft/showcase/dialogue_regression.py)
 - [src/animetta/tools/minecraft/showcase/historical_audit.py](../../src/animetta/tools/minecraft/showcase/historical_audit.py)
-- [src/animetta/tools/minecraft/showcase/live.py](../../src/animetta/tools/minecraft/showcase/live.py)
 - [src/animetta/tools/minecraft/showcase/micro_gates.py](../../src/animetta/tools/minecraft/showcase/micro_gates.py)
 - [src/animetta/tools/minecraft/showcase/presentation.py](../../src/animetta/tools/minecraft/showcase/presentation.py)
 - [src/animetta/tools/minecraft/showcase/projection_relay.py](../../src/animetta/tools/minecraft/showcase/projection_relay.py)
@@ -2448,7 +2365,6 @@
 - [src/animetta/tools/minecraft/skill/applicability.py](../../src/animetta/tools/minecraft/skill/applicability.py)
 - [src/animetta/tools/minecraft/skill/catalog.py](../../src/animetta/tools/minecraft/skill/catalog.py)
 - [src/animetta/tools/minecraft/skill/conditions.py](../../src/animetta/tools/minecraft/skill/conditions.py)
-- [src/animetta/tools/minecraft/skill/extractor.py](../../src/animetta/tools/minecraft/skill/extractor.py)
 - [src/animetta/tools/minecraft/skill/independent_validation.py](../../src/animetta/tools/minecraft/skill/independent_validation.py)
 - [src/animetta/tools/minecraft/skill/ir.py](../../src/animetta/tools/minecraft/skill/ir.py)
 - [src/animetta/tools/minecraft/skill/library.py](../../src/animetta/tools/minecraft/skill/library.py)
@@ -2458,16 +2374,11 @@
 - [src/animetta/tools/minecraft/skill/selection.py](../../src/animetta/tools/minecraft/skill/selection.py)
 - [src/animetta/tools/minecraft/skill/store.py](../../src/animetta/tools/minecraft/skill/store.py)
 - [src/animetta/tools/minecraft/skill/trust.py](../../src/animetta/tools/minecraft/skill/trust.py)
-- [src/animetta/tools/minecraft/skill/validator.py](../../src/animetta/tools/minecraft/skill/validator.py)
-- [src/animetta/tools/minecraft/skill/verifier.py](../../src/animetta/tools/minecraft/skill/verifier.py)
 
 #### src/animetta/tools/minecraft/survival
 
 - [src/animetta/tools/minecraft/survival/__init__.py](../../src/animetta/tools/minecraft/survival/__init__.py)
-- [src/animetta/tools/minecraft/survival/benchmark.py](../../src/animetta/tools/minecraft/survival/benchmark.py)
-- [src/animetta/tools/minecraft/survival/inventory.py](../../src/animetta/tools/minecraft/survival/inventory.py)
 - [src/animetta/tools/minecraft/survival/models.py](../../src/animetta/tools/minecraft/survival/models.py)
-- [src/animetta/tools/minecraft/survival/recovery.py](../../src/animetta/tools/minecraft/survival/recovery.py)
 - [src/animetta/tools/minecraft/survival/registry.py](../../src/animetta/tools/minecraft/survival/registry.py)
 - [src/animetta/tools/minecraft/survival/SKILLS.md](../../src/animetta/tools/minecraft/survival/SKILLS.md)
 - [src/animetta/tools/minecraft/survival/workflows.py](../../src/animetta/tools/minecraft/survival/workflows.py)
@@ -2478,7 +2389,6 @@
 - [src/animetta/tools/minecraft/tech_tree/adapter.py](../../src/animetta/tools/minecraft/tech_tree/adapter.py)
 - [src/animetta/tools/minecraft/tech_tree/defaults.py](../../src/animetta/tools/minecraft/tech_tree/defaults.py)
 - [src/animetta/tools/minecraft/tech_tree/graph.py](../../src/animetta/tools/minecraft/tech_tree/graph.py)
-- [src/animetta/tools/minecraft/tech_tree/main.py](../../src/animetta/tools/minecraft/tech_tree/main.py)
 - [src/animetta/tools/minecraft/tech_tree/models.py](../../src/animetta/tools/minecraft/tech_tree/models.py)
 - [src/animetta/tools/minecraft/tech_tree/report.py](../../src/animetta/tools/minecraft/tech_tree/report.py)
 
@@ -2491,7 +2401,6 @@
 - [src/animetta/tools/minecraft/voyager/command_models.py](../../src/animetta/tools/minecraft/voyager/command_models.py)
 - [src/animetta/tools/minecraft/voyager/control_plane.py](../../src/animetta/tools/minecraft/voyager/control_plane.py)
 - [src/animetta/tools/minecraft/voyager/events.py](../../src/animetta/tools/minecraft/voyager/events.py)
-- [src/animetta/tools/minecraft/voyager/faults.py](../../src/animetta/tools/minecraft/voyager/faults.py)
 - [src/animetta/tools/minecraft/voyager/gateway.py](../../src/animetta/tools/minecraft/voyager/gateway.py)
 - [src/animetta/tools/minecraft/voyager/goal_evidence.py](../../src/animetta/tools/minecraft/voyager/goal_evidence.py)
 - [src/animetta/tools/minecraft/voyager/goal_models.py](../../src/animetta/tools/minecraft/voyager/goal_models.py)
@@ -2522,7 +2431,6 @@
 #### src/animetta/utils
 
 - [src/animetta/utils/__init__.py](../../src/animetta/utils/__init__.py)
-- [src/animetta/utils/auto_config.py](../../src/animetta/utils/auto_config.py)
 - [src/animetta/utils/env_helper.py](../../src/animetta/utils/env_helper.py)
 - [src/animetta/utils/logger_manager.py](../../src/animetta/utils/logger_manager.py)
 - [src/animetta/utils/service_availability.py](../../src/animetta/utils/service_availability.py)
@@ -2550,7 +2458,6 @@
 - [tests/acceptance/test_tts_audition_evidence.py](../../tests/acceptance/test_tts_audition_evidence.py)
 - [tests/acceptance/test_tts_audition_plan.py](../../tests/acceptance/test_tts_audition_plan.py)
 - [tests/acceptance/test_tts_audition_runner.py](../../tests/acceptance/test_tts_audition_runner.py)
-- [tests/acceptance/test_tts_failover_review.py](../../tests/acceptance/test_tts_failover_review.py)
 
 #### tests/agent_skills
 
@@ -2610,7 +2517,6 @@
 - [tests/core/test_component_readiness.py](../../tests/core/test_component_readiness.py)
 - [tests/core/test_effective_config_propagation.py](../../tests/core/test_effective_config_propagation.py)
 - [tests/core/test_effective_runtime_readiness.py](../../tests/core/test_effective_runtime_readiness.py)
-- [tests/core/test_golden_preflight.py](../../tests/core/test_golden_preflight.py)
 - [tests/core/test_message_filter.py](../../tests/core/test_message_filter.py)
 - [tests/core/test_model_loading_manager.py](../../tests/core/test_model_loading_manager.py)
 - [tests/core/test_notifier.py](../../tests/core/test_notifier.py)
@@ -2630,7 +2536,6 @@
 #### tests/eval
 
 - [tests/eval/__init__.py](../../tests/eval/__init__.py)
-- [tests/eval/anima_eval_runner.py](../../tests/eval/anima_eval_runner.py)
 - [tests/eval/conftest.py](../../tests/eval/conftest.py)
 - [tests/eval/test_anima_eval_scoring.py](../../tests/eval/test_anima_eval_scoring.py)
 - [tests/eval/test_anima_roleplay_eval.py](../../tests/eval/test_anima_roleplay_eval.py)
@@ -2691,18 +2596,6 @@
 
 #### tests/integration
 
-- [tests/integration/__init__.py](../../tests/integration/__init__.py)
-- [tests/integration/conftest.py](../../tests/integration/conftest.py)
-- [tests/integration/test_asr_pipeline.py](../../tests/integration/test_asr_pipeline.py)
-- [tests/integration/test_conversation_flow.py](../../tests/integration/test_conversation_flow.py)
-- [tests/integration/test_emotion_pipeline.py](../../tests/integration/test_emotion_pipeline.py)
-- [tests/integration/test_golden_socket_contract.py](../../tests/integration/test_golden_socket_contract.py)
-- [tests/integration/test_health.py](../../tests/integration/test_health.py)
-- [tests/integration/test_live2d_pipeline.py](../../tests/integration/test_live2d_pipeline.py)
-- [tests/integration/test_memory.py](../../tests/integration/test_memory.py)
-- [tests/integration/test_minecraft.py](../../tests/integration/test_minecraft.py)
-- [tests/integration/test_tool_calling.py](../../tests/integration/test_tool_calling.py)
-- [tests/integration/test_translation.py](../../tests/integration/test_translation.py)
 
 #### tests/mcp/bilibili
 
@@ -2722,7 +2615,6 @@
 - [tests/memory_v2/test_reconsolidation.py](../../tests/memory_v2/test_reconsolidation.py)
 - [tests/memory_v2/test_scoped_recall.py](../../tests/memory_v2/test_scoped_recall.py)
 - [tests/memory_v2/test_search.py](../../tests/memory_v2/test_search.py)
-- [tests/memory_v2/test_seed_generator.py](../../tests/memory_v2/test_seed_generator.py)
 - [tests/memory_v2/test_shared_schema.py](../../tests/memory_v2/test_shared_schema.py)
 - [tests/memory_v2/test_store_async.py](../../tests/memory_v2/test_store_async.py)
 - [tests/memory_v2/test_store.py](../../tests/memory_v2/test_store.py)
@@ -2790,7 +2682,6 @@
 - [tests/orchestration/graph/test_prompt_assembler.py](../../tests/orchestration/graph/test_prompt_assembler.py)
 - [tests/orchestration/graph/test_prompt_pipeline.py](../../tests/orchestration/graph/test_prompt_pipeline.py)
 - [tests/orchestration/graph/test_roleplay_guard.py](../../tests/orchestration/graph/test_roleplay_guard.py)
-- [tests/orchestration/graph/test_scheduler.py](../../tests/orchestration/graph/test_scheduler.py)
 - [tests/orchestration/graph/test_state.py](../../tests/orchestration/graph/test_state.py)
 - [tests/orchestration/graph/test_subtitle_translator.py](../../tests/orchestration/graph/test_subtitle_translator.py)
 - [tests/orchestration/graph/test_tool_approval.py](../../tests/orchestration/graph/test_tool_approval.py)
@@ -2834,24 +2725,20 @@
 
 #### tests/persona_lab
 
-- [tests/persona_lab/test_training_lab_runtime_boundary.py](../../tests/persona_lab/test_training_lab_runtime_boundary.py)
 
 #### tests/scripts
 
-- [tests/scripts/test_baseline_golden_path.py](../../tests/scripts/test_baseline_golden_path.py)
 - [tests/scripts/test_benchmark_host_tts.py](../../tests/scripts/test_benchmark_host_tts.py)
 - [tests/scripts/test_benchmark_startup.py](../../tests/scripts/test_benchmark_startup.py)
 - [tests/scripts/test_benchmark_storage.py](../../tests/scripts/test_benchmark_storage.py)
 - [tests/scripts/test_conversation_continuity_canary.py](../../tests/scripts/test_conversation_continuity_canary.py)
 - [tests/scripts/test_manage_users.py](../../tests/scripts/test_manage_users.py)
-- [tests/scripts/test_probe_release_turn.py](../../tests/scripts/test_probe_release_turn.py)
 - [tests/scripts/test_python_lock.py](../../tests/scripts/test_python_lock.py)
 - [tests/scripts/test_qwen_preflight.py](../../tests/scripts/test_qwen_preflight.py)
 - [tests/scripts/test_release_runtime_gate.py](../../tests/scripts/test_release_runtime_gate.py)
 - [tests/scripts/test_runtime_lifecycle_feedback.py](../../tests/scripts/test_runtime_lifecycle_feedback.py)
 - [tests/scripts/test_runtime_lifecycle.py](../../tests/scripts/test_runtime_lifecycle.py)
 - [tests/scripts/test_rvc_preflight.py](../../tests/scripts/test_rvc_preflight.py)
-- [tests/scripts/test_smoke_real_profile.py](../../tests/scripts/test_smoke_real_profile.py)
 - [tests/scripts/test_startup_cache.py](../../tests/scripts/test_startup_cache.py)
 
 #### tests/scripts/train
@@ -2934,7 +2821,6 @@
 #### tests/services/llm
 
 - [tests/services/llm/__init__.py](../../tests/services/llm/__init__.py)
-- [tests/services/llm/test_deepseek_policy.py](../../tests/services/llm/test_deepseek_policy.py)
 - [tests/services/llm/test_explicit_history_contract.py](../../tests/services/llm/test_explicit_history_contract.py)
 - [tests/services/llm/test_history_trimming.py](../../tests/services/llm/test_history_trimming.py)
 - [tests/services/llm/test_stream_handler.py](../../tests/services/llm/test_stream_handler.py)
@@ -3013,7 +2899,6 @@
 #### tests/smoke
 
 - [tests/smoke/__init__.py](../../tests/smoke/__init__.py)
-- [tests/smoke/conversation_e2e.py](../../tests/smoke/conversation_e2e.py)
 - [tests/smoke/test_check_secrets.py](../../tests/smoke/test_check_secrets.py)
 - [tests/smoke/test_docker_frontend.py](../../tests/smoke/test_docker_frontend.py)
 - [tests/smoke/test_frontend_agents_docs.py](../../tests/smoke/test_frontend_agents_docs.py)
@@ -3031,7 +2916,6 @@
 
 - [tests/tooling/execution_feedback/test_core.py](../../tests/tooling/execution_feedback/test_core.py)
 - [tests/tooling/execution_feedback/test_execution_feedback_cli.py](../../tests/tooling/execution_feedback/test_execution_feedback_cli.py)
-- [tests/tooling/execution_feedback/test_minecraft_adapter.py](../../tests/tooling/execution_feedback/test_minecraft_adapter.py)
 - [tests/tooling/execution_feedback/test_plan_and_failures.py](../../tests/tooling/execution_feedback/test_plan_and_failures.py)
 - [tests/tooling/execution_feedback/test_recovery_and_leases.py](../../tests/tooling/execution_feedback/test_recovery_and_leases.py)
 
@@ -3067,16 +2951,8 @@
 
 #### tests/tools/gamebot
 
-- [tests/tools/gamebot/test_client.py](../../tests/tools/gamebot/test_client.py)
-- [tests/tools/gamebot/test_command_contract.py](../../tests/tools/gamebot/test_command_contract.py)
 - [tests/tools/gamebot/test_contract_fixture_parity.py](../../tests/tools/gamebot/test_contract_fixture_parity.py)
-- [tests/tools/gamebot/test_error_contract.py](../../tests/tools/gamebot/test_error_contract.py)
-- [tests/tools/gamebot/test_event_contract.py](../../tests/tools/gamebot/test_event_contract.py)
-- [tests/tools/gamebot/test_state_collector.py](../../tests/tools/gamebot/test_state_collector.py)
 - [tests/tools/gamebot/test_status_contract.py](../../tests/tools/gamebot/test_status_contract.py)
-- [tests/tools/gamebot/test_stdio_transport.py](../../tests/tools/gamebot/test_stdio_transport.py)
-- [tests/tools/gamebot/test_tool_adapter.py](../../tests/tools/gamebot/test_tool_adapter.py)
-- [tests/tools/gamebot/test_transport_protocol.py](../../tests/tools/gamebot/test_transport_protocol.py)
 - [tests/tools/gamebot/test_voyager_contract.py](../../tests/tools/gamebot/test_voyager_contract.py)
 
 #### tests/tools/gamebot/contracts/v2
@@ -3091,9 +2967,7 @@
 - [tests/tools/minecraft/conftest.py](../../tests/tools/minecraft/conftest.py)
 - [tests/tools/minecraft/SMOKE_TESTS_resource_locator.md](../../tests/tools/minecraft/SMOKE_TESTS_resource_locator.md)
 - [tests/tools/minecraft/test_control_plane_characterization.py](../../tests/tools/minecraft/test_control_plane_characterization.py)
-- [tests/tools/minecraft/test_migration_verification.py](../../tests/tools/minecraft/test_migration_verification.py)
 - [tests/tools/minecraft/test_spectator.py](../../tests/tools/minecraft/test_spectator.py)
-- [tests/tools/minecraft/test_voyager_benchmark.py](../../tests/tools/minecraft/test_voyager_benchmark.py)
 - [tests/tools/minecraft/test_voyager_bridge_wiring.py](../../tests/tools/minecraft/test_voyager_bridge_wiring.py)
 
 #### tests/tools/minecraft/benchmark
@@ -3114,15 +2988,10 @@
 - [tests/tools/minecraft/core/test_config.py](../../tests/tools/minecraft/core/test_config.py)
 - [tests/tools/minecraft/core/test_control_plane_assembly.py](../../tests/tools/minecraft/core/test_control_plane_assembly.py)
 - [tests/tools/minecraft/core/test_gamebot_v2_adapter.py](../../tests/tools/minecraft/core/test_gamebot_v2_adapter.py)
-- [tests/tools/minecraft/core/test_planner.py](../../tests/tools/minecraft/core/test_planner.py)
 - [tests/tools/minecraft/core/test_public_gateway_tools.py](../../tests/tools/minecraft/core/test_public_gateway_tools.py)
-- [tests/tools/minecraft/core/test_rules_engine.py](../../tests/tools/minecraft/core/test_rules_engine.py)
-- [tests/tools/minecraft/core/test_trace_recorder.py](../../tests/tools/minecraft/core/test_trace_recorder.py)
-- [tests/tools/minecraft/core/test_world_state.py](../../tests/tools/minecraft/core/test_world_state.py)
 
 #### tests/tools/minecraft/demo
 
-- [tests/tools/minecraft/demo/test_scenario.py](../../tests/tools/minecraft/demo/test_scenario.py)
 
 #### tests/tools/minecraft/discovery
 
@@ -3157,7 +3026,6 @@
 
 - [tests/tools/minecraft/showcase/__init__.py](../../tests/tools/minecraft/showcase/__init__.py)
 - [tests/tools/minecraft/showcase/test_bounded_feedback.py](../../tests/tools/minecraft/showcase/test_bounded_feedback.py)
-- [tests/tools/minecraft/showcase/test_dialogue_regression.py](../../tests/tools/minecraft/showcase/test_dialogue_regression.py)
 - [tests/tools/minecraft/showcase/test_historical_audit.py](../../tests/tools/minecraft/showcase/test_historical_audit.py)
 - [tests/tools/minecraft/showcase/test_live_evidence.py](../../tests/tools/minecraft/showcase/test_live_evidence.py)
 - [tests/tools/minecraft/showcase/test_micro_gates.py](../../tests/tools/minecraft/showcase/test_micro_gates.py)
@@ -3176,9 +3044,7 @@
 - [tests/tools/minecraft/skill/test_acquisition_skill_reuse.py](../../tests/tools/minecraft/skill/test_acquisition_skill_reuse.py)
 - [tests/tools/minecraft/skill/test_applicability_selection.py](../../tests/tools/minecraft/skill/test_applicability_selection.py)
 - [tests/tools/minecraft/skill/test_craft_integration.py](../../tests/tools/minecraft/skill/test_craft_integration.py)
-- [tests/tools/minecraft/skill/test_extractor.py](../../tests/tools/minecraft/skill/test_extractor.py)
 - [tests/tools/minecraft/skill/test_independent_validation.py](../../tests/tools/minecraft/skill/test_independent_validation.py)
-- [tests/tools/minecraft/skill/test_planner_skill_integration.py](../../tests/tools/minecraft/skill/test_planner_skill_integration.py)
 - [tests/tools/minecraft/skill/test_predefined_skills.py](../../tests/tools/minecraft/skill/test_predefined_skills.py)
 - [tests/tools/minecraft/skill/test_revision_trust.py](../../tests/tools/minecraft/skill/test_revision_trust.py)
 - [tests/tools/minecraft/skill/test_skill_applicability.py](../../tests/tools/minecraft/skill/test_skill_applicability.py)
@@ -3189,15 +3055,11 @@
 - [tests/tools/minecraft/skill/test_skill_trust_matching.py](../../tests/tools/minecraft/skill/test_skill_trust_matching.py)
 - [tests/tools/minecraft/skill/test_skill_trust_persistence.py](../../tests/tools/minecraft/skill/test_skill_trust_persistence.py)
 - [tests/tools/minecraft/skill/test_skill.py](../../tests/tools/minecraft/skill/test_skill.py)
-- [tests/tools/minecraft/skill/test_validator.py](../../tests/tools/minecraft/skill/test_validator.py)
 
 #### tests/tools/minecraft/survival
 
 - [tests/tools/minecraft/survival/__init__.py](../../tests/tools/minecraft/survival/__init__.py)
-- [tests/tools/minecraft/survival/test_benchmark.py](../../tests/tools/minecraft/survival/test_benchmark.py)
-- [tests/tools/minecraft/survival/test_inventory.py](../../tests/tools/minecraft/survival/test_inventory.py)
 - [tests/tools/minecraft/survival/test_models.py](../../tests/tools/minecraft/survival/test_models.py)
-- [tests/tools/minecraft/survival/test_recovery.py](../../tests/tools/minecraft/survival/test_recovery.py)
 
 #### tests/tools/minecraft/tech_tree
 
@@ -3212,7 +3074,6 @@
 - [tests/tools/minecraft/voyager/test_control_plane_evidence.py](../../tests/tools/minecraft/voyager/test_control_plane_evidence.py)
 - [tests/tools/minecraft/voyager/test_control_plane_models.py](../../tests/tools/minecraft/voyager/test_control_plane_models.py)
 - [tests/tools/minecraft/voyager/test_events_projection.py](../../tests/tools/minecraft/voyager/test_events_projection.py)
-- [tests/tools/minecraft/voyager/test_fault_harness.py](../../tests/tools/minecraft/voyager/test_fault_harness.py)
 - [tests/tools/minecraft/voyager/test_gateway.py](../../tests/tools/minecraft/voyager/test_gateway.py)
 - [tests/tools/minecraft/voyager/test_goal_verifier.py](../../tests/tools/minecraft/voyager/test_goal_verifier.py)
 - [tests/tools/minecraft/voyager/test_mocked_cross_runtime.py](../../tests/tools/minecraft/voyager/test_mocked_cross_runtime.py)
@@ -3234,7 +3095,6 @@
 #### tests/utils
 
 - [tests/utils/__init__.py](../../tests/utils/__init__.py)
-- [tests/utils/test_auto_config.py](../../tests/utils/test_auto_config.py)
 - [tests/utils/test_env_helper.py](../../tests/utils/test_env_helper.py)
 - [tests/utils/test_logger_manager.py](../../tests/utils/test_logger_manager.py)
 
@@ -3261,7 +3121,6 @@
 - [tooling/execution_feedback/failures.py](../../tooling/execution_feedback/failures.py)
 - [tooling/execution_feedback/leases.py](../../tooling/execution_feedback/leases.py)
 - [tooling/execution_feedback/lifecycle.py](../../tooling/execution_feedback/lifecycle.py)
-- [tooling/execution_feedback/minecraft.py](../../tooling/execution_feedback/minecraft.py)
 - [tooling/execution_feedback/models.py](../../tooling/execution_feedback/models.py)
 - [tooling/execution_feedback/plan.py](../../tooling/execution_feedback/plan.py)
 - [tooling/execution_feedback/process_runner.py](../../tooling/execution_feedback/process_runner.py)

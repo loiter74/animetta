@@ -33,15 +33,9 @@ _BACKEND_FORBIDDEN: dict[str, frozenset[str]] = {
     "inspection": frozenset({"core", "orchestration", "services", "memory", "avatar", "tools"}),
 }
 
-# ADR-013 permits these terminal import facades for one released version. The
-# canonical production tree must never import them; remove both entries when
-# the compatibility window closes.
-_COMPATIBILITY_FACADES = frozenset(
-    {
-        PurePosixPath("src/animetta/config/runtime_reload.py"),
-        PurePosixPath("src/animetta/tools/minecraft/showcase/live.py"),
-    }
-)
+# ADR-013 permitted terminal import facades for one released version; the
+# compatibility window has closed and the facades were removed.
+_COMPATIBILITY_FACADES: frozenset[PurePosixPath] = frozenset()
 
 _FRONTEND_IMPORT_RE = re.compile(r"(?:from\s+|import\s*\(\s*|import\s+)[\"']([^\"']+)[\"']")
 _EARTH_FRONTEND = PurePosixPath("frontend/src/features/earth")

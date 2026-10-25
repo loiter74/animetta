@@ -4,7 +4,7 @@ Ensures correction text and eval fixtures reference Anima v0.1
 (cyber tavern, Summoner X) and NOT old characters (久遠寺有珠).
 """
 
-from animetta.orchestration.prompting.roleplay_guard import CORRECTION_SECTION
+from animetta.services.dialogue.roleplay_guard import CORRECTION_SECTION
 from tests.eval.test_anima_roleplay_eval import ANIMA_CASES
 
 # ── Old character markers that must NOT appear ────────────────

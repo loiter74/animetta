@@ -1,3 +1,0 @@
-* -text whitespace=trailing-space,space-before-tab,cr-at-eol
-# Preserve native captured Redis logs, including trailing spaces.
-*.log whitespace=-trailing-space,space-before-tab,cr-at-eol

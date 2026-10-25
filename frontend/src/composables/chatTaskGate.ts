@@ -1,4 +1,4 @@
-import type { ChatIdentity } from '@/types/socket-events'
+import type { ChatIdentity } from '@/shared/contracts/socket-events'
 
 let currentTaskId: string | null = null
 

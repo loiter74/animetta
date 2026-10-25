@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { Live2DPerformancePlanV1 } from '@/types/socket-events'
+import type { Live2DPerformancePlanV1 } from '@/shared/contracts/socket-events'
 import { PERFORMANCE_ACCENTS, PERFORMANCE_BASES, PERFORMANCE_REVIEW_PLANS } from './catalog'
 import { mountLive2DPerformanceReview } from './main'
 

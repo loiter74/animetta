@@ -1,5 +1,5 @@
 from animetta.avatar.prompts import PerformancePromptBuilder
-from animetta.config.runtime_reload import build_live2d_prompt
+from animetta.services.runtime_config import build_live2d_prompt
 
 
 def test_performance_prompt_requires_one_leading_bounded_marker() -> None:

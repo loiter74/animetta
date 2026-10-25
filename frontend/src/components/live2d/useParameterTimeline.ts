@@ -1,4 +1,4 @@
-import type { ParameterTimeline, ParameterTimelineFrame } from '@/types/socket-events'
+import type { ParameterTimeline, ParameterTimelineFrame } from '@/shared/contracts/socket-events'
 import { getModel } from './useLive2DModel'
 import {
   playAudio,

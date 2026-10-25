@@ -1,3 +1,0 @@
-* -text whitespace=trailing-space,space-before-tab,cr-at-eol
-# Redis emits trailing spaces; raw captured logs must retain their hashed bytes.
-*.log whitespace=-trailing-space,space-before-tab,cr-at-eol

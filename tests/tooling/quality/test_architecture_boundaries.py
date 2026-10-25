@@ -37,15 +37,6 @@ def test_backend_composition_root_may_import_application_and_domains() -> None:
     assert violations == ()
 
 
-def test_declared_one_release_compatibility_facade_is_terminal() -> None:
-    violations = audit_python_source(
-        PurePosixPath("src/animetta/config/runtime_reload.py"),
-        "from animetta.services.runtime_config import RuntimePrompt\n",
-    )
-
-    assert violations == ()
-
-
 def test_frontend_rejects_legacy_cycles_and_live_dashboard_dependencies() -> None:
     store = audit_frontend_source(
         PurePosixPath("frontend/src/stores/chat.ts"),

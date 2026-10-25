@@ -10,12 +10,9 @@
 | --- | --- |
 | `whale-maid-v1.model3.json` | 稳定入口，引用 V32 资源 |
 | `v32/whale-maid-v32.model3.json` | 固定版本入口；同目录提供 MOC、23 页贴图、物理、动作与双表情 |
-| `v32/source/whale-maid-v32-layered-source.psd` | 94 层原画整理稿，39 层默认可见、55 层备选隐藏；图层名对应原生 source ID |
-| `v32/source/layer-map.json` | 原画名称、网格、默认顺序和 mask 关系对照 |
-| `v32/source/material-provenance.json` | 本次后发与颈根补画的来源、内置 image_gen 提示词和像素哈希 |
-| `v32/source/rig-validation.json` | 当前 MOC 身份、原生工程哈希、检查范围、结果及限制 |
+制作源文件（94 层整理 PSD、layer-map.json、material-provenance.json、rig-validation.json 等）已于 2026-10-25 移出仓库，保存在仓库外本地备份 `../anima-live2d-authoring-backup/`。
 
-完整可编辑绑定母版为独立交付的 `whale-maid-neck-underpaint-v32.psd2live`，SHA-256 为 `01a6fd8146346f9a3f0c3b4fde2b8b66c8b61e4f538f7973ff3bf8e55dd86035`。该约 1GB 工程保留原始密度素材、层级、网格、Glue、关键形态及历史；不嵌入 Git。使用 PSD2Live 3.4.5 打开。仓库中旧 `source/` 与根目录旧贴图保留为历史素材，不能代替 V32 母版。
+完整可编辑绑定母版为独立交付的 `whale-maid-neck-underpaint-v32.psd2live`，SHA-256 为 `01a6fd8146346f9a3f0c3b4fde2b8b66c8b61e4f538f7973ff3bf8e55dd86035`。该约 1GB 工程保留原始密度素材、层级、网格、Glue、关键形态及历史；不嵌入 Git。使用 PSD2Live 3.4.5 打开。仓库中旧 `source/` 与 V1 根层旧贴图已于 2026-10-25 移出或删除；如需历史素材请使用外部备份。
 
 整理 PSD 的画布为 1024×1536。其默认可见性及顺序来自实际 V32 Core，94 层像素经官方 PsdReader/PsdWriter 往返核对一致。源 PSD 不烘焙网格变形，也不把 Cubism clipping mask 转成 PSD 蒙版；完整绑定与原始高密度素材保存在原生母版。它用于继续修画，不能把 PSD 的静态合成当成运行模型或原生 4K 原画。
 
@@ -36,4 +33,4 @@ Idle 负责呼吸、眨眼、鲸尾、鲸鳍、双臂、轻微手腕及带停留
 - 当前成品经实际安装的 SDK、现有动作／表情管理器与生产物理路径连续运行，覆盖标准待机、傻笑待机、说话、Nod、Shake 和 Blink；口型、呼吸及发束具有真实顶点位移。
 - `/live.html` 使用实际硬件 WebGL 输出 3840×2160 画布与同尺寸截图。4K 指输出尺寸；原画、分层 PSD 和贴图的尺寸分别记录。
 
-完整检查范围和限制以 `v32/source/rig-validation.json` 为准。OBS 与帧率性能评审不在本轮输出验收范围内。模型资源来自本项目基于用户参考定制的原画与补画，未使用外部成品 Live2D 模型；制作工具不是 Animetta 的运行依赖。
+完整检查范围和限制以外部备份中的 `rig-validation.json` 为准。OBS 与帧率性能评审不在本轮输出验收范围内。模型资源来自本项目基于用户参考定制的原画与补画，未使用外部成品 Live2D 模型；制作工具不是 Animetta 的运行依赖。

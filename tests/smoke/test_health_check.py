@@ -22,7 +22,6 @@ def _clear_python_dependency_probe_cache() -> Iterator[None]:
 def test_requirements_entrypoints_have_one_way_dependency_layers() -> None:
     runtime = (health_check.ROOT / "requirements.txt").read_text(encoding="utf-8")
     dev = (health_check.ROOT / "requirements-dev.txt").read_text(encoding="utf-8")
-    local_ai = (health_check.ROOT / "requirements-local-ai.txt").read_text(encoding="utf-8")
     runtime_entries = [
         line.strip()
         for line in runtime.splitlines()
@@ -46,14 +45,12 @@ def test_requirements_entrypoints_have_one_way_dependency_layers() -> None:
     assert not {"torch", "torchaudio", "transformers", "demucs"} & {
         name for name, _version in specifications(runtime)
     }
-    assert "-r requirements.txt" in local_ai
 
 
 def test_requirement_files_are_ascii_for_windows_pip() -> None:
     for name in (
         "requirements.txt",
         "requirements-dev.txt",
-        "requirements-local-ai.txt",
         "requirements-bilibili.txt",
         "requirements-search.txt",
         "requirements-memory-semantic.txt",

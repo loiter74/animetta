@@ -12,8 +12,6 @@ root with `PYTHONPATH=src`.
 | `release_runtime_gate.py` | Production release gate for full/nightly CI: verifies host Qwen identity, cold-builds the image, requires app health + frontend HTTP + clean logs |
 | `qwen_preflight.py` | Read-only readiness preflight for the persistent local Qwen TTS service on `:8767` |
 | `soak_golden_path.py` | Real 600 s / 12-turn golden-path acceptance gate |
-| `baseline_golden_path.py` | Captures fail-closed evidence for the golden-path baseline |
-| `probe_release_turn.py` | Probes one production Socket.IO turn for typed TTS degradation |
 
 Use `anima-up` for the current checkout; it builds `animetta:local` before
 starting the application. Use `anima-deploy` to pull and start a GHCR image that
@@ -51,7 +49,6 @@ plane (`mc_connection` / `mc_operate_bot`), through mc-mcp rather than direct la
 | `minecraft_adaptive_micro_gate.py` | Runs one lowest-layer real Minecraft gate without the full R8 scene |
 | `minecraft_real_model_contract.py` | Captures a real-model natural-language → MissionSpec contract result |
 | `voyager_real_e2e.py` | Real GameBot v2 acceptance: cooperative stop and disconnect quarantine |
-| `verify_minecraft_migration.py` | Verifies additive control-plane migration on a backed-up skill DB |
 | `generate_gamebot_v2_contracts.py` | Generates canonical GameBot v2 JSON schema and golden messages |
 | `generate_minecraft_mission_contracts.py` | Generates the versioned adaptive Minecraft mission contract bundle |
 
@@ -60,16 +57,12 @@ plane (`mc_connection` / `mc_operate_bot`), through mc-mcp rather than direct la
 | Script | Purpose |
 |--------|---------|
 | `minecraft_gameplay_review_harness.py` | Loopback-only Minecraft gameplay review harness (uvicorn) |
-| `tts_failover_review_harness.py` | Loopback-only OBS TTS failover review harness (uvicorn) |
 
 ## Benchmarks & smoke gates
 
 | Script | Purpose |
 |--------|---------|
-| `bench.py` | LangGraph pipeline latency benchmark suite (`quick/full/compare/report`) |
 | `benchmark_host_tts.py` | Measures the authenticated Windows host TTS streaming contract |
-| `smoke_real_profile.py` | Real DeepSeek/MiMo smoke gate with sanitized evidence |
-| `smoke_bilibili_room.py` | Opt-in real Bilibili room handshake smoke (never starts the AI pipeline) |
 
 ## Danmaku collection
 
@@ -87,9 +80,7 @@ Bilibili 进程级实时会话由开发智能体 MCP 控制：
 | Script | Purpose |
 |--------|---------|
 | `reset_observability.py` | Deletes disposable observation DBs and bootstraps schema version 2 |
-| `sync_feishu_to_docs.py` | Syncs project data from Feishu sheets to docs via `lark-cli` (cron) |
 | `tts_audition.py` | Anonymous DashScope emotive TTS audition (24 samples, no Docker) |
-| `download-models.sh` | Pre-downloads Kokoro / Qwen3 / Whisper models via `huggingface_hub` |
 
 ## Training pipeline (`train/`)
 

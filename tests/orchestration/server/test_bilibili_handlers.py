@@ -7,8 +7,8 @@ from uuid import uuid4
 
 import pytest
 
+from animetta.checkpointing import CheckpointRequest
 from animetta.config import ReplyPolicyConfig
-from animetta.orchestration.graph.checkpointing import CheckpointRequest
 from animetta.orchestration.graph.orchestrator import LangGraphOrchestrator
 from animetta.orchestration.server.handlers.bilibili_handlers import BilibiliHandlers
 from animetta.services.bilibili import (

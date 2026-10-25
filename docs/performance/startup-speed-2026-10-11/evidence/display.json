@@ -1,9 +1,0 @@
-{
-  "url": "http://localhost/live.html",
-  "resolver": "pnpm --silent -C frontend run review -- --feature live --base-url http://localhost --print-url",
-  "browser": "Codex in-app browser",
-  "visible": true,
-  "kept_open_with_markDeliverable": true,
-  "observed_accessibility_text": ["服务已连接", "直播未启动", "Live2D 已加载"],
-  "visual_confirmation": "Live2D character and stage visible in the screenshot returned by cua_repl; no extra review browser or live broadcast started."
-}

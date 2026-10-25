@@ -1,3 +1,0 @@
-Using CPython 3.13.14 interpreter at: C:\Users\30262\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\python.exe
-Creating virtual environment at: .zcode\performance\deployment-core-20261011\baseline-install\warm-3
-Activate with: .zcode\performance\deployment-core-20261011\baseline-install\warm-3\Scripts\activate

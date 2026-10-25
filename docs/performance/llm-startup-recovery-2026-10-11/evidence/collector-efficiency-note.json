@@ -1,5 +1,0 @@
-{
-  "observer_root": "RemoteDisconnected is ConnectionError, omitted by the temporary collector; catch and log safe type, never fake readiness",
-  "final_collector_root": "Substring scan of all argv matched parent PowerShell command text; actual interpreter + script entrypoint matching prevents this false active-process result",
-  "scope": "Temporary collection scripts only; no product/AGENTS/quality edits or extra lifecycle"
-}

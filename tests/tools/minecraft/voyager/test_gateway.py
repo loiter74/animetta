@@ -95,17 +95,17 @@ async def _noop() -> None:
 def test_mission_uses_its_configured_cumulative_ceiling() -> None:
     from animetta.tools.minecraft.core.assembly import _budget_policy
     from animetta.tools.minecraft.core.config import MinecraftConfig, MinecraftSafetyConfig
-    from animetta.tools.minecraft.survival.mainline import build_nether_portal_mission
+    from animetta.tools.minecraft.showcase.micro_gates import build_combat_mission
 
     service = gateway(InMemoryCommandJournal())
-    mission = build_nether_portal_mission(mission_id="cumulative-travel", home=(0, 64, 0))
+    mission = build_combat_mission(mission_id="cumulative-travel", entity="minecraft:zombie")
     service._budget_policy = _budget_policy(MinecraftConfig())
     request = ExecuteMissionRequest(
         request_id="mission-travel", mission=mission, contract_version="2", kind="mission"
     )
-    assert service._authorized_mission(request).budget.max_travel_distance == 1984
+    assert service._authorized_mission(request).budget.max_travel_distance == 96
     service._budget_policy = _budget_policy(
-        MinecraftConfig(safety=MinecraftSafetyConfig(max_mission_travel_distance=500))
+        MinecraftConfig(safety=MinecraftSafetyConfig(max_mission_travel_distance=32))
     )
     with pytest.raises(ValueError):
         service._authorized_mission(request)

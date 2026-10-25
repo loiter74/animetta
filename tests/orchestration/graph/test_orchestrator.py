@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from animetta.checkpointing import CheckpointRequest
 from animetta.observability.ports import NoOpObservationRecorder
-from animetta.orchestration.graph.checkpointing import CheckpointRequest
 from animetta.orchestration.graph.conversation_session import ConversationSessionRegistry
 from animetta.orchestration.graph.orchestrator import LangGraphOrchestrator
 

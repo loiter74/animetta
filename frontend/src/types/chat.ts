@@ -1,4 +1,4 @@
-import type { ChatIdentity } from './socket-events'
+import type { ChatIdentity } from '@/shared/contracts/socket-events'
 
 export type MessageRole = 'user' | 'assistant' | 'system'
 export type MessageStatus = 'streaming' | 'complete'

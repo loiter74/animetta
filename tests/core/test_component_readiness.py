@@ -6,11 +6,11 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from prometheus_client import CollectorRegistry, generate_latest
 
-from animetta.core.component_readiness import ComponentReadinessCache
 from animetta.inspection.runtime import InspectionRuntime
 from animetta.observability.domain import ObservationHealth
 from animetta.observability.ledger import SQLiteObservationLedger
 from animetta.observability.mirrors import PrometheusMirror
+from animetta.runtime.component_readiness import ComponentReadinessCache
 
 
 def runtime() -> InspectionRuntime:

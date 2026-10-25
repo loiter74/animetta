@@ -1,6 +1,0 @@
-{
-  "failure": "AssertionError: literal uppercase PING not found in lower-case redis-cli ping",
-  "actual_healthcheck": "redis-cli ping and COMMAND INFO FT.CREATE/JSON.SET",
-  "resolution": "Case-insensitive command detection; offline successful bytes reused, no repeat offline native execution",
-  "product_failure": false
-}

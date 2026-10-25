@@ -8,7 +8,7 @@ import type {
   ChatIdentity,
   SentenceEvent,
   AudioWithExpressionEvent,
-} from '@/types/socket-events'
+} from '@/shared/contracts/socket-events'
 
 export interface TaskMediaState {
   status: 'pending' | 'ready' | 'degraded' | 'completed'

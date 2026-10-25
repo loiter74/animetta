@@ -9,10 +9,10 @@ import httpx
 import pytest
 from openai import APIConnectionError, APIStatusError
 
-from animetta.core.model_loading_manager import ModelLoadingManager
-from animetta.core.service_context import ServiceContext
 from animetta.observability.service_proxy import InstrumentedServiceProxy
+from animetta.runtime.model_loading import ModelLoadingManager
 from animetta.runtime.provider_pool import ProviderPool
+from animetta.runtime.session_context import ServiceContext
 from animetta.services.llm.mock_llm import MockLLM
 from animetta.services.llm.openai_llm import OpenAILLM
 from animetta.services.tts.mock_tts import MockTTS

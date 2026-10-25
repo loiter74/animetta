@@ -106,7 +106,6 @@ input_sets:
       - tests/AGENTS.md
       - .github/assets/**
       - docs/**
-      - openspec/**/*.md
       - tests/smoke/test_readme_alignment.py
       - tests/smoke/test_frontend_agents_docs.py
 
@@ -1151,7 +1150,6 @@ components:
       - src/animetta/core/redis_checkpoint.py
       - src/animetta/checkpointing.py
       - src/animetta/runtime/checkpoint.py
-      - src/animetta/orchestration/graph/checkpointing.py
       - src/animetta/orchestration/graph/builder.py
       - src/animetta/orchestration/graph/orchestrator.py
       - src/animetta/orchestration/graph/tool_node.py
@@ -1463,6 +1461,7 @@ components:
     domain: backend
     paths:
       - src/animetta/core/__init__.py
+      - src/animetta/core/socketio_server.py
       - src/animetta/core/component_readiness.py
       - src/animetta/core/golden_preflight.py
       - src/animetta/core/message_filter.py
@@ -1471,7 +1470,8 @@ components:
       - src/animetta/core/redis_checkpoint.py
       - src/animetta/core/service_context.py
       - src/animetta/core/service_pool.py
-      - src/animetta/core/socketio_server.py
+      - src/animetta/core/shared_memory_runtime.py
+      - scripts/bench.py
       - src/animetta/__init__.py
       - src/animetta/runtime/__init__.py
       - src/animetta/runtime/component_readiness.py
@@ -1479,7 +1479,6 @@ components:
       - src/animetta/runtime/provider_pool.py
       - src/animetta/runtime/readiness.py
       - src/animetta/runtime/session_context.py
-      - scripts/bench.py
       - tests/smoke/test_main_path.py
     direct_groups:
       - backend-core-unit
@@ -1495,7 +1494,6 @@ components:
   backend-memory-runtime:
     domain: backend
     paths:
-      - src/animetta/core/shared_memory_runtime.py
       - src/animetta/runtime/shared_memory.py
     direct_groups:
       - backend-core-unit
@@ -1938,7 +1936,6 @@ components:
     domain: repository
     paths:
       - scripts/benchmark_storage.py
-      - scripts/measure_storage_telemetry.ps1
       - tests/scripts/test_benchmark_storage.py
     direct_groups:
       - runtime-lifecycle-unit
@@ -1988,6 +1985,33 @@ components:
     paths:
       - scripts/benchmark_core_install.py
     direct_groups: [python-format, backend-static, backend-support-typecheck]
+    impacts: []
+    risk: normal
+
+  legacy-cleanup-paths:
+    domain: repository
+    paths:
+      - .codex-remote-attachments/**
+      - pitch/**
+      - sources/**
+      - scripts/sync_feishu_to_docs.py
+      - scripts/smoke_real_profile.py
+      - scripts/baseline_golden_path.py
+      - scripts/probe_release_turn.py
+      - scripts/smoke_bilibili_room.py
+      - scripts/tts_failover_review_harness.py
+      - scripts/verify_minecraft_migration.py
+      - src/animetta/notifier/server.py
+      - src/animetta/utils/auto_config.py
+      - tests/eval/**
+      - tests/integration/**
+      - tests/persona_lab/**
+      - tests/scripts/test_baseline_golden_path.py
+      - tests/scripts/test_probe_release_turn.py
+      - tests/scripts/test_smoke_real_profile.py
+      - tests/smoke/conversation_e2e.py
+      - tests/utils/test_auto_config.py
+    direct_groups: [python-format, backend-static]
     impacts: []
     risk: normal
 
@@ -2048,13 +2072,13 @@ components:
   documentation:
     domain: repository
     paths:
+      - openspec/**/*.md
       - README*.md
       - CONTRIBUTING.md
       - STYLE_GUIDE.md
       - design-system/**
       - .github/assets/**
       - docs/**
-      - openspec/**/*.md
       - scripts/README.md
       - tests/smoke/test_readme_alignment.py
       - tests/smoke/test_frontend_agents_docs.py

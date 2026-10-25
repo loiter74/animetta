@@ -7,7 +7,7 @@ import contextlib
 
 import pytest
 
-from animetta.core.model_loading_manager import ModelLoadingManager, ModelLoadState, ModelSlot
+from animetta.runtime.model_loading import ModelLoadingManager, ModelLoadState, ModelSlot
 
 # ── Fixtures ───────────────────────────────────────────────────────
 

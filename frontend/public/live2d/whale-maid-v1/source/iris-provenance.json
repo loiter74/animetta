@@ -1,9 +1,0 @@
-{
-  "generator": "OpenAI image_gen",
-  "kind": "new generated transparent anime iris pair",
-  "reference": "face-direction-v2.png (style and blue eye colour only)",
-  "rawImage": "iris-pair-anime-v3.png",
-  "rawSha256": "baf89e1548d583ca5b4f4c4f9933ae0304ea6c61fb75907d14006431f6e935ff",
-  "prompt": "iris-pair-anime-v3-prompt.txt",
-  "registration": "Independent left/right iris resources selected from the two discs; native aperture masks and gaze bindings; source PNG pixels are unchanged."
-}

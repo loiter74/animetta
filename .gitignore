@@ -116,6 +116,9 @@ junit.xml
 
 # Temp files
 *.tmp
+# Live2D authoring sources live outside the repo (../anima-live2d-authoring-backup)
+frontend/public/live2d/whale-maid-v1/source/
+frontend/public/live2d/whale-maid-v1/v32/source/
 
 # ============================================
 # Governance: Generated reports & runtime data

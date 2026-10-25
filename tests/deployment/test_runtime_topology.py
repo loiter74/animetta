@@ -261,7 +261,6 @@ def test_deployment_descriptors_do_not_select_business_providers() -> None:
         for path in (
             "docker-compose.yml",
             "docker/entrypoint.sh",
-            "fly.toml",
             "zeabur.json",
             "frontend/vite.config.ts",
         )
@@ -322,11 +321,8 @@ def test_animetta_starts_and_preflights_host_tts_before_build() -> None:
 
 
 def test_hosted_descriptors_use_core_image_and_production_profile() -> None:
-    fly = _text("fly.toml")
     zeabur = json.loads(_text("zeabur.json"))
 
-    assert 'dockerfile = "Dockerfile"' in fly
-    assert 'ANIMETTA_PROFILE = "production"' in fly
     backend = zeabur["services"]["backend"]
     assert backend["dockerfile"] == "Dockerfile"
     assert backend["env"]["ANIMETTA_PROFILE"] == "production"
@@ -343,6 +339,7 @@ def test_removed_legacy_manifests_and_combined_cuda_image_are_absent() -> None:
         "docker-compose.cpu.yml",
         "docker-compose.core.yml",
         "docker-compose.selftest.yml",
+        "fly.toml",
         "requirements-qwen-tts.txt",
         "requirements-core.txt",
         "requirements-host-tts.txt",

@@ -8,7 +8,7 @@ import type {
   ChatIdentity,
   SentenceEvent,
   SubtitleTranslationEvent,
-} from '@/types/socket-events'
+} from '@/shared/contracts/socket-events'
 import { activateChatTask, isCurrentChatTask } from './chatTaskGate'
 
 export function useSubtitle() {

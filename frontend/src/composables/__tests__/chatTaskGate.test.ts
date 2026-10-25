@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { activateChatTask, isCurrentChatTask, resetChatTaskGate } from '../chatTaskGate'
-import type { ChatIdentity } from '@/types/socket-events'
+import type { ChatIdentity } from '@/shared/contracts/socket-events'
 
 const identity = (taskId: string): ChatIdentity => ({
   message_id: '00000000-0000-4000-8000-000000000001',

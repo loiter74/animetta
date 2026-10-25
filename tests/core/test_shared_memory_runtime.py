@@ -6,12 +6,12 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from animetta.core.service_context import ServiceContext
-from animetta.core.shared_memory_runtime import ConversationTurn, SharedMemoryRuntime
 from animetta.memory.v2.atom import MemoryScope, MemoryVisibility
 from animetta.memory.v2.context import MemoryContext
 from animetta.orchestration.server.session import SessionManager
 from animetta.runtime.provider_pool import ProviderPool
+from animetta.runtime.session_context import ServiceContext
+from animetta.runtime.shared_memory import ConversationTurn, SharedMemoryRuntime
 
 
 class FakeMemorySystem:

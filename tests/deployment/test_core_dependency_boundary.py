@@ -28,7 +28,6 @@ def test_runtime_requirements_exclude_local_model_runtimes() -> None:
         for line in (ROOT / "requirements.txt").read_text(encoding="utf-8").splitlines()
         if line.split("#", 1)[0].strip()
     )
-    local = (ROOT / "requirements-local-ai.txt").read_text(encoding="utf-8").lower()
 
     assert "starlette" in core
     assert "fastapi" not in core
@@ -36,9 +35,6 @@ def test_runtime_requirements_exclude_local_model_runtimes() -> None:
     assert "langchain-community" not in core
     for package in PROHIBITED_PACKAGES:
         assert package not in core
-    assert "torch" in local
-    assert "faster-whisper" in local
-    assert "silero-vad" in local
 
 
 def test_core_server_imports_when_local_model_packages_are_unavailable() -> None:
@@ -60,7 +56,7 @@ def guarded_import(name, globals=None, locals=None, fromlist=(), level=0):
 
 builtins.__import__ = guarded_import
 import animetta.core.socketio_server
-import animetta.core.service_pool
+import animetta.runtime.provider_pool
 
 loaded = set(sys.modules)
 assert not any(name == item or name.startswith(item + ".") for item in blocked for name in loaded)

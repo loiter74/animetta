@@ -11,7 +11,7 @@ import type {
   ChatErrorEvent,
   ChatIdentity,
   SentenceEvent,
-} from '@/types/socket-events'
+} from '@/shared/contracts/socket-events'
 
 export function useChat() {
   const store = useChatStore()

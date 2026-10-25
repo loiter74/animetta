@@ -2,7 +2,6 @@ import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
-from animetta.core.shared_memory_runtime import ConversationTurn, SharedMemoryRuntime
 from animetta.memory.v2.context import MemoryContext
 from animetta.observability.context import (
     ObservationCarrier,
@@ -11,6 +10,7 @@ from animetta.observability.context import (
 )
 from animetta.observability.domain import PrivacyMode
 from animetta.orchestration.graph.memory_middleware import MemoryMiddleware
+from animetta.runtime.shared_memory import ConversationTurn, SharedMemoryRuntime
 
 
 class Recorder:

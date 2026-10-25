@@ -8,9 +8,9 @@ import pytest
 import yaml
 
 from animetta.config.manifest import EffectiveConfig, load_effective_config
-from animetta.core.readiness import resolve_service_identity
 from animetta.orchestration.server.stats_api import health_check
 from animetta.runtime.provider_pool import ProviderPool
+from animetta.runtime.readiness import resolve_service_identity
 from animetta.services.tts.mock_tts import MockTTS
 
 

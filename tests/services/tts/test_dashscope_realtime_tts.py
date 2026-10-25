@@ -12,7 +12,7 @@ from typing import Any
 
 import pytest
 
-from animetta.core.readiness import unwrap_tracing_proxy
+from animetta.runtime.readiness import unwrap_tracing_proxy
 from animetta.services.tts.factory import TTSFactory
 
 

@@ -9,7 +9,7 @@ from animetta.orchestration.graph.personality_node import (
     personality_node,
 )
 from animetta.orchestration.prompting.pipeline import compile as compile_prompt
-from animetta.orchestration.prompting.roleplay_guard import (
+from animetta.services.dialogue.roleplay_guard import (
     CORRECTION_SECTION,
     detect_drift,
     has_drift,
