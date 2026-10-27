@@ -14,37 +14,47 @@ const isFullCube = block => block?.shapes?.some(shape => (
   shape.length === 6 && shape.every((value, index) => value === (index < 3 ? 0 : 1))
 ));
 
-function hasHorizontalCover(bot, origin, entity, heights) {
+function hasSeparatingCover(bot, origin, entity, heights) {
   const end = entity.position;
   const halfWidths = [bot.entity?.width, entity.width].map(width => Math.max(0.6, Number(width) || 0.6) / 2);
-  if (![origin.x, origin.y, origin.z, end.x, end.y, end.z, ...heights, ...halfWidths].every(Number.isFinite)) return false;
-  // A whole layer must lie strictly between the bodies. This also excludes
-  // the candidate excavation cell and any block overlapping either body.
-  const lowerTop = Math.min(origin.y + heights[0], end.y + heights[1]);
-  const upperFeet = Math.max(origin.y, end.y);
-  for (let y = Math.floor(upperFeet) - 1; y >= Math.ceil(lowerTop); y--) {
-    let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
-    // Bound every straight lane between the two full body boxes at both
-    // faces of this layer, including widths, rather than sampling three rays.
-    for (const fromY of [origin.y, origin.y + heights[0]]) {
-      for (const toY of [end.y, end.y + heights[1]]) {
-        for (const faceY of [y, y + 1]) {
-          const t = (faceY - fromY) / (toY - fromY);
-          const width = halfWidths[0] * (1 - t) + halfWidths[1] * t;
-          const x = origin.x + (end.x - origin.x) * t;
-          const z = origin.z + (end.z - origin.z) * t;
-          minX = Math.min(minX, x - width); maxX = Math.max(maxX, x + width);
-          minZ = Math.min(minZ, z - width); maxZ = Math.max(maxZ, z + width);
+  if (![origin.x, origin.y, origin.z, end.x, end.y, end.z, ...heights, ...halfWidths].every(Number.isFinite)
+    || heights.some(height => height <= 0)) return false;
+  const boxes = [origin, end].map((feet, index) => [
+    [feet.x - halfWidths[index], feet.x + halfWidths[index]],
+    [feet.y, feet.y + heights[index]],
+    [feet.z - halfWidths[index], feet.z + halfWidths[index]],
+  ]);
+  if (!boxes.flat(2).every(Number.isFinite)) return false;
+  for (const axis of [0, 1, 2]) {
+    const [from, to] = boxes[0][axis][1] <= boxes[1][axis][0] ? boxes : [boxes[1], boxes[0]];
+    // A complete cube layer must fit between both entire bodies, including
+    // the proposed excavation position. Overlapping bodies cannot prove cover.
+    const transverse = [0, 1, 2].filter(index => index !== axis);
+    for (let layer = Math.ceil(from[axis][1]); layer < Math.floor(to[axis][0]); layer++) {
+      const bounds = transverse.map(() => [Infinity, -Infinity]);
+      // Bound every body-to-body lane at both layer faces. The extrema occur
+      // at body endpoints; all transverse endpoints are interpolated as well.
+      for (const fromFace of from[axis]) for (const toFace of to[axis]) {
+        for (const face of [layer, layer + 1]) {
+          const t = (face - fromFace) / (toFace - fromFace);
+          for (const [index, other] of transverse.entries()) {
+            bounds[index][0] = Math.min(bounds[index][0], from[other][0] * (1 - t) + to[other][0] * t);
+            bounds[index][1] = Math.max(bounds[index][1], from[other][1] * (1 - t) + to[other][1] * t);
+          }
         }
       }
-    }
-    let complete = true;
-    for (let x = Math.floor(minX); x <= Math.floor(maxX) && complete; x++) {
-      for (let z = Math.floor(minZ); z <= Math.floor(maxZ); z++) {
-        if (!isFullCube(bot.blockAt(new Vec3(x, y, z)))) { complete = false; break; }
+      let complete = true;
+      for (let a = Math.floor(bounds[0][0]); a <= Math.floor(bounds[0][1]) && complete; a++) {
+        for (let b = Math.floor(bounds[1][0]); b <= Math.floor(bounds[1][1]); b++) {
+          const position = [0, 0, 0];
+          position[axis] = layer;
+          position[transverse[0]] = a;
+          position[transverse[1]] = b;
+          if (!isFullCube(bot.blockAt(new Vec3(...position)))) { complete = false; break; }
+        }
       }
+      if (complete) return true;
     }
-    if (complete) return true;
   }
   return false;
 }
@@ -59,7 +69,7 @@ function hasSolidCover(bot, origin, entity) {
   ));
   const hits = [];
   try {
-    if (hasHorizontalCover(bot, origin, entity, heights)) return true;
+    if (hasSeparatingCover(bot, origin, entity, heights)) return true;
     for (const fraction of [0, 0.5, 1]) {
       const start = new Vec3(origin.x, origin.y + 0.01 + fraction * (heights[0] - 0.02), origin.z);
       const end = new Vec3(entity.position.x, entity.position.y + 0.01 + fraction * (heights[1] - 0.02), entity.position.z);

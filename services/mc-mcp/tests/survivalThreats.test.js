@@ -185,3 +185,60 @@ test('a planned excavation inside the roof and special attacks retain their warn
   bot.entities[540].position = new Vec3(3.5, 78, -9.68);
   assert.equal(findHostileThreat(bot)?.warning_radius, 12);
 });
+
+function r33WallFixture(axis = 'x', reversed = false) {
+  const bot = fixture();
+  const Block = BlockLoader(bot.registry);
+  const transpose = p => axis === 'x' ? p : new Vec3(p.z, p.y, p.x);
+  const bodies = [
+    { position: transpose(new Vec3(4.457569119409204, 86, 9.500102459971263)), height: 1.8, width: 0.6 },
+    { position: transpose(new Vec3(27.55315511485964, 82.00129881501198, 11.295175302477936)), height: 1.99, width: 0.6 },
+  ];
+  if (reversed) bodies.reverse();
+  Object.assign(bot.entity, bodies[0]);
+  Object.assign(bot.entities[540], bodies[1]);
+  let missing = null;
+  let replacement = 'air';
+  const world = new WorldSync(null);
+  world.getBlock = position => {
+    const p = position.floored();
+    const original = transpose(p);
+    if (original.x === 5 && original.y === missing && original.z === 9 && replacement === null) return null;
+    const wall = original.x === 5 && original.z === 9 && original.y >= 85 && original.y <= 87;
+    const floor = original.x === 4 && original.y === 85 && original.z === 9;
+    const name = wall ? original.y === missing ? replacement : 'stone' : floor ? 'stone' : 'air';
+    const block = Block.fromStateId(bot.registry.blocksByName[name].defaultState, 0);
+    block.position = p;
+    return block;
+  };
+  bot.world = world;
+  bot.blockAt = world.getBlock;
+  return { bot, transpose, changeCell(y, name) { missing = y; replacement = name; } };
+}
+
+test('R33 complete X and Z walls cover both full bodies despite different first-hit columns', () => {
+  for (const axis of ['x', 'z']) for (const reversed of [false, true]) {
+    const { bot } = r33WallFixture(axis, reversed);
+    assert.equal(findHostileThreat(bot), null, `${axis} reversed=${reversed}`);
+  }
+});
+
+test('R33 every critical wall cell must be a known full cube', () => {
+  for (const axis of ['x', 'z']) for (const y of [85, 86, 87]) for (const block of ['air', 'oak_slab', null]) {
+    const { bot, changeCell } = r33WallFixture(axis);
+    changeCell(y, block);
+    assert.equal(findHostileThreat(bot)?.entity_type, 'skeleton', `${axis} y=${y} ${block}`);
+  }
+});
+
+test('R33 body-overlapping excavation and special attackers cannot use the wall exemption', () => {
+  for (const axis of ['x', 'z']) {
+    const { bot, transpose } = r33WallFixture(axis);
+    assert.equal(findHostileThreat(bot, transpose(new Vec3(5.1, 86, 9.5)))?.entity_type, 'skeleton');
+    assert.equal(findHostileThreat(bot, transpose(new Vec3(4.9, 86, 9.5)))?.entity_type, 'skeleton', 'full body width overlaps the wall');
+    for (const name of ['warden', 'polar_bear']) {
+      bot.entities[540].name = name;
+      assert.equal(findHostileThreat(bot, bot.entity.position, 24)?.entity_type, name);
+    }
+  }
+});
