@@ -348,7 +348,10 @@ export class OperationScope {
         timeoutMs: navigationTimeoutMs,
       });
     } catch (error) {
-      try { this.bot.pathfinder?.stop?.(); } catch {}
+      // Replaced SDK goals reject later; their cleanup must not stop a successor.
+      try {
+        if (this.bot.pathfinder?.goal === goal) this.bot.pathfinder.stop?.();
+      } catch {}
       throw error;
     }
     if (!goalSatisfied(goal, this.bot.entity?.position)) {

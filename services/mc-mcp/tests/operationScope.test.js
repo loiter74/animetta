@@ -7,6 +7,17 @@ import Vec3 from 'vec3';
 
 import { createOperationScope } from '../src/runtime/operationScope.js';
 
+function nativePathfinderFixture(y = 64) {
+  const bot = new EventEmitter();
+  bot.registry = minecraftData('1.21.1');
+  bot.entity = { position: new Vec3(0, y, 0), onGround: true, velocity: new Vec3(0, 0, 0) };
+  bot.inventory = { items: () => [] };
+  bot.clearControlStates = () => {};
+  bot.setControlState = () => {};
+  pathfinderPackage.pathfinder(bot);
+  return bot;
+}
+
 test('interaction navigation supports SDK goals with pos and vector-based visibility checks', async () => {
   const target = new Vec3(29, 61, 96);
   const bot = new EventEmitter();
@@ -19,13 +30,7 @@ test('interaction navigation supports SDK goals with pos and vector-based visibi
 });
 
 test('navigation clears an idle stop request before the real pathfinder accepts a new goal', async () => {
-  const bot = new EventEmitter();
-  bot.registry = minecraftData('1.21.1');
-  bot.entity = { position: new Vec3(0, 64, 0), onGround: true, velocity: new Vec3(0, 0, 0) };
-  bot.inventory = { items: () => [] };
-  bot.clearControlStates = () => {};
-  bot.setControlState = () => {};
-  pathfinderPackage.pathfinder(bot);
+  const bot = nativePathfinderFixture();
   bot.pathfinder.stop();
   const goal = new pathfinderPackage.goals.GoalBlock(1, 64, 0);
   const scope = createOperationScope({ bot, deadlineMs: Date.now() + 5_000 });
@@ -41,19 +46,53 @@ test('navigation clears an idle stop request before the real pathfinder accepts 
 });
 
 test('navigation timeout cancels the real SDK goal without waiting for its next waypoint', async () => {
-  const bot = new EventEmitter();
-  bot.registry = minecraftData('1.21.1');
-  bot.entity = { position: new Vec3(0, 26, 0), onGround: true, velocity: new Vec3(0, 0, 0) };
-  bot.inventory = { items: () => [] };
-  bot.clearControlStates = () => {};
-  bot.setControlState = () => {};
-  pathfinderPackage.pathfinder(bot);
+  const bot = nativePathfinderFixture(26);
   const goal = new pathfinderPackage.goals.GoalY(30);
   const scope = createOperationScope({ bot, deadlineMs: Date.now() + 5000, quiescenceTimeoutMs: 100 });
   await assert.rejects(scope.navigate(goal, () => bot.pathfinder.goto(goal), { timeoutMs: 20 }),
     error => error.code === 'ACTION_DEADLINE_EXPIRED');
   assert.equal(bot.pathfinder.goal, null);
   assert.equal(bot.listenerCount('goal_reached'), 0);
+});
+
+test('delayed navigation failure cannot stop the real SDK replacement goal', async () => {
+  const bot = nativePathfinderFixture();
+  const scope = createOperationScope({ bot, deadlineMs: Date.now() + 5_000 });
+  const previous = new pathfinderPackage.goals.GoalXZ(8, 0);
+  const replacement = new pathfinderPackage.goals.GoalXZ(-8, 8);
+  const first = scope.navigate(previous, () => bot.pathfinder.goto(previous)).catch(error => error);
+  await new Promise(setImmediate);
+  // A resource-search caller can finish its Promise.race before native goto
+  // settles, leaving a deferred stop for the following waypoint to consume.
+  bot.pathfinder.stop();
+  const second = scope.navigate(replacement, () => bot.pathfinder.goto(replacement))
+    .then(() => 'reached', error => error.name);
+  const oldError = await first;
+  // A native reset consumes any deferred stop. It must leave the replacement
+  // active after the old SDK GoalChanged promise has settled.
+  bot.pathfinder.setMovements(bot.pathfinder.movements);
+  if (bot.pathfinder.goal === replacement) {
+    bot.entity.position = new Vec3(-8, 64, 8);
+    bot.emit('goal_reached', replacement);
+  }
+  const result = await second;
+  bot.pathfinder.setGoal(null);
+  assert.equal(oldError.name, 'GoalChanged');
+  assert.equal(result, 'reached');
+  for (const name of ['goal_reached', 'path_update', 'goal_updated', 'path_stop']) assert.equal(bot.listenerCount(name), 0);
+});
+
+test('failed navigation still stops its own real SDK goal', async () => {
+  const bot = nativePathfinderFixture();
+  const scope = createOperationScope({ bot, deadlineMs: Date.now() + 5_000 });
+  const goal = new pathfinderPackage.goals.GoalXZ(8, 0);
+  const failure = new Error('native navigation failed');
+  await assert.rejects(scope.navigate(goal, async () => {
+    bot.pathfinder.setGoal(goal);
+    throw failure;
+  }), error => error === failure);
+  bot.pathfinder.setMovements(bot.pathfinder.movements);
+  assert.equal(bot.pathfinder.goal, null, 'the failed current goal must consume its stop request');
 });
 
 test('distant navigation can finish beyond the short navigation window', async (t) => {
