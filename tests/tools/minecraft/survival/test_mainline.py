@@ -65,6 +65,82 @@ def test_workstation_reservations_fit_unchanged_iron_budget_and_leave_a_local_ta
     assert sum(step.maximum_cost.max_travel_distance for step in water.steps) == 128
 
 
+@pytest.mark.parametrize("raw_iron", [0, 2, 6, 7])
+def test_iron_kit_collects_successful_small_batches_before_smelting_seven(raw_iron: int) -> None:
+    mission = build_nether_portal_mission(mission_id="iron-batches")
+    registry = WorkflowRegistry()
+    workflow = next(w for w in nether_preparation_workflows() if w.target == "nether_iron_kit")
+    registry.register(workflow)
+    strategy = FallbackStrategy(registry=registry)
+    state = strategy.prepare(mission.objectives[0].goal)
+    observation = Observation.model_validate(MESSAGES["Observation"]).model_copy(
+        update={
+            "inventory": {"stone_pickaxe": 1, "furnace": 1, "oak_planks": 7, "raw_iron": raw_iron}
+        }
+    )
+    account = BudgetAccount(
+        limit=mission.budget.model_copy(update=mission.objectives[0].budget.model_dump())
+    )
+    count = 0
+    for stock in range(raw_iron, 7):
+        decision = strategy.propose(state, observation)
+        assert decision.kind == "execute" and decision.capability == "collect"
+        assert decision.parameters == {"block_type": "iron_ore", "count": 1}
+        assert decision.maximum_cost == workflow.steps[7].maximum_cost
+        count += 1
+        account = account.reserve(str(stock), decision.maximum_cost).settle(
+            str(stock), BudgetUsage(max_actions=1, max_blocks_changed=1, max_travel_distance=10)
+        )
+        state = strategy.accept_result(state, {})
+        observation = observation.model_copy(
+            update={"inventory": {**observation.inventory, "raw_iron": stock + 1}}
+        )
+    decision = strategy.propose(state, observation)
+    assert decision.kind == "execute" and decision.capability == "smelt"
+    assert decision.parameters == {"item": "raw_iron", "fuel": "oak_planks", "count": 7}
+    assert count == 7 - raw_iron
+    assert account.used.max_actions == count
+    assert len(workflow.steps) == 10
+    assert len(workflow.steps) - 1 + 7 == mission.objectives[0].budget.max_actions == 16
+    assert sum(step.maximum_cost.max_travel_distance for step in workflow.steps) == 512
+    state = strategy.accept_result(state, {})
+    final = observation.model_copy(update={"inventory": {"iron_ingot": 7}})
+    assert strategy.propose(state, final).kind == "complete"
+
+
+def test_iron_batches_keep_the_existing_command_account_and_per_call_limits() -> None:
+    mission = build_nether_portal_mission(mission_id="iron-account")
+    workflow = next(w for w in nether_preparation_workflows() if w.target == "nether_iron_kit")
+    ore = workflow.steps[7]
+    limit = mission.budget.model_copy(update=mission.objectives[0].budget.model_dump())
+    # A controlled accounting case, not a prediction or replay of a new native route.
+    used = BudgetUsage(max_actions=8, max_blocks_changed=41, max_travel_distance=265.4591884092872)
+    account = BudgetAccount(limit=limit, used=used)
+    assert ore.maximum_cost.max_travel_distance == ore.maximum_cost.max_blocks_changed == 192
+    settled = account.reserve("last-ore", ore.maximum_cost).settle("last-ore", ore.maximum_cost)
+    assert settled.limit == limit
+    assert settled.used.max_actions == 9
+    assert settled.used.max_travel_distance == used.max_travel_distance + 192
+    assert settled.used.max_blocks_changed == 233
+    with pytest.raises(ValueError):
+        settled.reserve("cannot-reset-the-account", ore.maximum_cost)
+
+
+def test_iron_kit_skips_remaining_batches_when_seven_ingots_are_observed() -> None:
+    mission = build_nether_portal_mission(mission_id="iron-already-smelted")
+    registry = WorkflowRegistry()
+    registry.register(
+        next(w for w in nether_preparation_workflows() if w.target == "nether_iron_kit")
+    )
+    strategy = FallbackStrategy(registry=registry)
+    state = strategy.prepare(mission.objectives[0].goal)
+    state["step_index"] = 7
+    observation = Observation.model_validate(MESSAGES["Observation"]).model_copy(
+        update={"inventory": {"iron_ingot": 7}}
+    )
+    assert strategy.propose(state, observation).kind == "complete"
+
+
 @pytest.mark.parametrize("wood", ["spruce", "birch", "dark_oak", "mangrove", "cherry"])
 def test_wood_bootstrap_binds_observed_species_through_crafting_and_fuel(wood: str) -> None:
     workflow = next(w for w in nether_preparation_workflows() if w.target == "nether_iron_kit")
@@ -377,7 +453,7 @@ def test_water_preparation_reserves_iron_before_deep_mining() -> None:
     ore_index = next(
         i for i, step in enumerate(kit.steps) if step.parameters.get("block_type") == "iron_ore"
     )
-    assert kit.steps[ore_index].parameters["count"] == 7
+    assert kit.steps[ore_index].parameters["count"] == 1
     raw_threshold = kit.collection_targets[ore_index]
     assert raw_threshold is not None and raw_threshold.quantity == 7
     water_workflow = registry.resolve(water.goal)

@@ -45,6 +45,7 @@ class FallbackStrategy:
             )
         workflow = bind_workflow_wood(state["workflow"], observation)
         state["workflow"] = workflow
+        state.pop("repeat_collection", None)
         index = state["step_index"]
         while index < len(workflow.steps):
             checkpoint = workflow.checkpoints[index] if workflow.checkpoints else None
@@ -62,6 +63,8 @@ class FallbackStrategy:
                 state["step_index"] = index
                 continue
             count = step.parameters.get("count")
+            if isinstance(count, int) and count < remaining:
+                state["repeat_collection"] = True
             if isinstance(count, int) and count > remaining:
                 return step.model_copy(
                     update={"parameters": {**step.parameters, "count": remaining}}
@@ -125,4 +128,8 @@ class FallbackStrategy:
 
     def accept_result(self, state: dict, result: object) -> dict:
         del result
-        return {**state, "step_index": state["step_index"] + 1}
+        updated = {**state}
+        # Successful batches share the original command account and absolute target.
+        if not updated.pop("repeat_collection", False):
+            updated["step_index"] += 1
+        return updated

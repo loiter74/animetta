@@ -103,7 +103,9 @@ _BOOTSTRAP_COMPLETE = _inventory_checkpoint(
 )
 
 
-def _iron_progression_steps(iron_quantity: int = 3) -> tuple[ExecuteStep, ...]:
+def _iron_progression_steps(
+    iron_quantity: int = 3, *, ore_batch_size: int | None = None
+) -> tuple[ExecuteStep, ...]:
     return (
         _step("collect", {"block_type": "oak_log", "count": 8}, travel=192, blocks=16),
         _step("craft", {"recipe": "oak_planks", "count": 32}),
@@ -115,7 +117,10 @@ def _iron_progression_steps(iron_quantity: int = 3) -> tuple[ExecuteStep, ...]:
         _step("craft", {"recipe": "stone_pickaxe", "count": 1}, travel=8, blocks=8),
         _step(
             "collect",
-            {"block_type": "iron_ore", "count": iron_quantity},
+            {
+                "block_type": "iron_ore",
+                "count": iron_quantity if ore_batch_size is None else ore_batch_size,
+            },
             travel=192,
             blocks=192,
         ),
@@ -285,7 +290,7 @@ def nether_preparation_workflows() -> tuple[WorkflowDefinition, ...]:
             adaptive_wood=True,
             intent="acquire",
             target="nether_iron_kit",
-            steps=_iron_progression_steps(7),
+            steps=_iron_progression_steps(7, ore_batch_size=1),
             collection_targets=_iron_progression_collection_targets(7),
             checkpoints=(
                 *_iron_progression_checkpoints()[:7],
