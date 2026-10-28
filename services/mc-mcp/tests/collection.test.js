@@ -185,6 +185,71 @@ test('buried target access can be planned before its current-world visibility be
   assert.equal(visibility.isEnd(contact), true);
 });
 
+test('native wood collection disables navigation excavation while ore collection keeps it', async () => {
+  const source = readFileSync(new URL('../src/index.js', import.meta.url), 'utf8');
+  const start = source.indexOf('async function _collect(');
+  const end = source.indexOf('\nasync function _collectWithEvidence(', start);
+  assert.ok(start >= 0 && end > start);
+  for (const names of [['oak_log'], ['birch_log'], ['oak_wood'], ['oak_log', 'birch_log'], ['iron_ore']]) {
+    const movements = { canDig: true };
+    const bot = { pathfinder: { movements } };
+    const collect = runInNewContext(`(${source.slice(start, end)})`, {
+      ...collection, bot, ITEM_TO_BLOCK: {},
+      setupMovements: async () => {}, getMcData: async () => ({ blocksByName: {} }),
+      resolveRequestedBlockNames: () => names,
+      _collectInner: async () => {
+        assert.equal(movements.canDig, names[0] === 'iron_ore', 'wood routes must not spend the harvest allowance on leaves or incidental logs');
+        return 'collected';
+      },
+      stopCollectionMovement() {}, _stabilizePosition: async () => true,
+      waitForCollectionMovementToSettle: async () => {},
+    });
+    assert.equal(await collect(names.length === 1 ? names[0] : 'any_log', 8), 'collected');
+  }
+});
+
+test('installed SDK wood approach walks around leaves instead of excavating them', () => {
+  const bot = new EventEmitter();
+  const registry = minecraftData('1.21.1');
+  const Block = prismarineBlock(registry);
+  const world = new WorldSync(null);
+  const target = new Vec3(5, 64, 0);
+  world.getBlock = position => {
+    const p = position.floored();
+    const name = p.y < 63 ? 'stone' : p.y === 63 ? 'oak_leaves' : p.equals(target) ? 'oak_log'
+      : p.x === 1 && Math.abs(p.z) <= 3 && p.y < 71 ? 'oak_leaves' : 'air';
+    // R52 began on anchored leaves. Default SDK leaf states have distance7,
+    // which the survival policy correctly rejects as unstable support.
+    const block = name === 'oak_leaves'
+      ? Block.fromProperties(registry.blocksByName[name].id, { distance: 1, persistent: false, waterlogged: false }, 0)
+      : Block.fromStateId(registry.blocksByName[name].defaultState, 0);
+    block.position = p;
+    return block;
+  };
+  Object.assign(bot, {
+    registry, world, game: { minY: -64, height: 384 }, entities: {},
+    entity: { position: new Vec3(0.5, 64, 0.5), effects: {}, eyeHeight: 1.62 },
+    inventory: { items: () => [] }, blockAt: p => world.getBlock(p),
+  });
+  pathfinderPkg.pathfinder(bot);
+  const movements = collection.configureDryNavigation(new pathfinderPkg.Movements(bot, registry), bot);
+  const goal = collection.collectionApproachGoal(bot, bot.blockAt(target));
+  const plan = () => {
+    let result;
+    for (const planned of bot.pathfinder.getPathFromTo(movements, bot.entity.position, goal)) {
+      result = planned.result;
+      if (result.status !== 'partial') break;
+    }
+    assert.equal(result.status, 'success');
+    return result.path.flatMap(move => move.toBreak);
+  };
+  const directEdges = [];
+  movements.getMoveForward({ x: 0, y: 64, z: 0, remainingBlocks: 0 }, { x: 1, z: 0 }, directEdges);
+  assert.ok(directEdges.some(move => move.toBreak.length > 0), 'the original SDK movement policy admits excavation through leaves');
+  collection.configureCollectionNavigation(movements, ['oak_log']);
+  assert.deepEqual(plan(), [], 'the same native planner finds a walkable visible face without changing a block');
+});
+
 test('surface wood uses visible reach without forcing a climb into the tree', () => {
   const target = { name: 'oak_log', position: new Vec3(0, 68, 0) };
   const standing = new Vec3(3, 64, 0);

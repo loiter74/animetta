@@ -356,6 +356,7 @@ function guardBotAction(
   includeContainers,
   abortLifecycle,
   airRecoveryDeadline = 0,
+  readBlockChanges = () => 0,
 ) {
   return new Promise((resolve, reject) => {
     let settled = false;
@@ -369,6 +370,8 @@ function guardBotAction(
     let damage = 0;
     const originalSetControlState = bot.setControlState;
     let guardedSetControlState;
+    const guardedMutations = new Map();
+    let pendingBlockChanges = 0;
     const cleanup = () => {
       bot.removeListener('death', onDeath);
       bot.removeListener('end', onEnd);
@@ -381,6 +384,9 @@ function guardBotAction(
       context.signal?.removeEventListener('abort', onAbort);
       if (guardedSetControlState && bot.setControlState === guardedSetControlState) {
         bot.setControlState = originalSetControlState;
+      }
+      for (const [method, { original, guarded }] of guardedMutations) {
+        if (bot[method] === guarded) bot[method] = original;
       }
     };
     const fail = (code, message, details = {}) => {
@@ -502,6 +508,29 @@ function guardBotAction(
     bot.once('end', onEnd);
     bot.on('breath', onBreath);
     if (actionBudget) {
+      // Pathfinder digs and scaffolds through the same native methods. Admit
+      // them against the receipt's live evidence, before any world mutation.
+      for (const method of ['dig', 'placeBlock']) {
+        const original = bot[method];
+        if (typeof original !== 'function') continue;
+        const guarded = async function (...args) {
+          context.signal?.throwIfAborted();
+          const changed = readBlockChanges();
+          if (changed + pendingBlockChanges >= actionBudget.max_blocks_changed) {
+            fail('BUDGET_EXHAUSTED', '剩余方块预算不足以执行下一次挖掘或放置。', {
+              blocks_changed: changed, pending_block_changes: pendingBlockChanges,
+              maximum_blocks_changed: actionBudget.max_blocks_changed,
+            });
+            context.signal?.throwIfAborted();
+            throw lifecycleError;
+          }
+          pendingBlockChanges++;
+          try { return await original.apply(this, args); }
+          finally { pendingBlockChanges--; }
+        };
+        guardedMutations.set(method, { original, guarded });
+        bot[method] = guarded;
+      }
       if (typeof originalSetControlState === 'function') {
         guardedSetControlState = function (control, value) {
           if (value === true && context.signal?.aborted) return;
@@ -648,7 +677,7 @@ function runtimeCapabilities(bot, actions, abortActive, motionPolicy) {
             operation_scope: scope,
             presentation: presentationFacade,
           });
-          const invoke = () => runWithOperationScope(scope, () => guardBotAction(
+          const invoke = (_annotations, readBlockChanges) => runWithOperationScope(scope, () => guardBotAction(
             bot,
             abortActive,
             async (navigationBudgetGuard) => {
@@ -678,6 +707,7 @@ function runtimeCapabilities(bot, actions, abortActive, motionPolicy) {
             ['craft', 'smelt'].includes(name),
             (reason) => lifecycleController.abort(reason),
             airRecoveryDeadline,
+            readBlockChanges,
           ));
           const normalizeResult = value => {
             return normalizeCapabilityResult(value, { readOnly });

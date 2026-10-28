@@ -287,6 +287,65 @@ test('generic action evidence keeps read-only recipe inspection free', async () 
   fixture.adapter.dispose();
 });
 
+test('block admission stops SDK excavation before the seventeenth change and retains exact partial usage', async () => {
+  let nativeDigs = 0;
+  let work = 62;
+  const fixture = adapterFixture({ actions: {
+    collectWithEvidence: async () => withCollectionEvidence(fixture.bot, async () => {
+      // Reproduce the installed pathfinder cancellation clearing ordinary observers.
+      fixture.bot.removeAllListeners('diggingCompleted');
+      for (let x = 0; x < work; x++) await fixture.bot.dig({
+        name: x % 3 ? 'oak_leaves' : 'oak_log', type: 1, position: new Vec3(x, 64, 0),
+      });
+      return 'collected';
+    }),
+  } });
+  const dig = fixture.bot.dig = async block => {
+    nativeDigs++;
+    const air = { ...block, name: 'air', type: 0 };
+    fixture.bot.emit('blockUpdate', block, air);
+    fixture.bot.emit('diggingCompleted', air);
+  };
+  const action = request(fixture.adapter, 'collect', { block_type: 'oak_log', count: 8 }, 'canopy-overrun');
+  action.remaining_budget = budget({ max_blocks_changed: 16, max_travel_distance: 192 });
+  const receipt = await fixture.adapter.runtime.executeAction(action);
+  assert.equal(nativeDigs, 16, 'the unauthorized seventeenth native dig never starts');
+  assert.equal(receipt.outcome, 'error');
+  assert.equal(receipt.error.code, 'BUDGET_EXHAUSTED');
+  assert.equal(receipt.budget_usage.max_blocks_changed, 16, 'charge all actual changes without clamping');
+  assert.equal(receipt.explained_mutations.filter(m => m.kind === 'block' && m.delta !== undefined).length, 16);
+  assert.equal(fixture.bot.dig, dig);
+  work = 2;
+  const next = request(fixture.adapter, 'collect', { block_type: 'oak_log', count: 1 }, 'after-block-stop');
+  next.remaining_budget = budget({ max_blocks_changed: 2 });
+  const success = await fixture.adapter.runtime.executeAction(next);
+  assert.equal(success.outcome, 'success', 'a settled known failure does not quarantine later authorized work');
+  assert.equal(success.budget_usage.max_blocks_changed, 2);
+  assert.equal(nativeDigs, 18);
+  assert.equal(fixture.bot.dig, dig, 'native methods are restored after both failure and success');
+  fixture.adapter.dispose();
+});
+
+test('zero-block authorization rejects native placement before invoking it', async () => {
+  let nativePlacements = 0;
+  const fixture = adapterFixture({ actions: {
+    craft: async () => {
+      await fixture.bot.placeBlock({ position: new Vec3(0, 63, 0) }, new Vec3(0, 1, 0));
+      return 'placed';
+    },
+  } });
+  const place = fixture.bot.placeBlock = async () => { nativePlacements++; };
+  const action = request(fixture.adapter, 'craft', { recipe: 'crafting_table', count: 1 }, 'no-placement-allowance');
+  action.remaining_budget = budget({ max_blocks_changed: 0, max_travel_distance: 0 });
+  const receipt = await fixture.adapter.runtime.executeAction(action);
+  assert.equal(nativePlacements, 0);
+  assert.equal(receipt.outcome, 'error');
+  assert.equal(receipt.error.code, 'BUDGET_EXHAUSTED');
+  assert.equal(receipt.budget_usage.max_blocks_changed, 0);
+  assert.equal(fixture.bot.placeBlock, place);
+  fixture.adapter.dispose();
+});
+
 test('generic budget guard permits stationary zero-block crafting and stops damage during goto', async () => {
   let continued = false;
   const fixture = adapterFixture({ actions: { goto: async (_x, _y, _z, context) => {

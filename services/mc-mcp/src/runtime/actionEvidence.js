@@ -113,7 +113,8 @@ export async function withActionEvidence(bot, invoke, { normalizeResult } = {}) 
   for (const [event, listener] of Object.entries(listeners)) bot.on(event, listener);
   subscribeDiggingCompletion(bot, onDiggingCompleted);
   try {
-    const value = await invoke(annotations);
+    const value = await invoke(annotations, () => mergeMutations(native, annotations)
+      .filter(change => change.kind === 'block').length);
     const result = normalizeResult ? normalizeResult(value) : { output: value };
     return { ...result, ...evidence(result) };
   } catch (error) {

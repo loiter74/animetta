@@ -22,6 +22,7 @@ import {
   configureDryNavigation,
   restrictNavigationHeight,
   collectionResourceMutation,
+  configureCollectionNavigation,
   createCollectionBlockMatcher,
   digCollectionBlock,
   findCollectionTarget,
@@ -684,6 +685,8 @@ async function _pickupDroppedItems(
 async function _collect(block_type, count = 1, context = {}) {
   await setupMovements();
   const mcData = await getMcData();
+  configureCollectionNavigation(bot.pathfinder.movements,
+    resolveRequestedBlockNames(block_type, mcData.blocksByName, ITEM_TO_BLOCK));
 
   try {
     return await _collectInner(block_type, count, mcData, context);

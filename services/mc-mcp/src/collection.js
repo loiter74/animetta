@@ -291,6 +291,15 @@ export function collectionApproachGoal(bot, block) {
   return goal;
 }
 
+export function configureCollectionNavigation(movements, blockNames) {
+  // Reaching a visible wood face must not excavate the surrounding canopy or
+  // incidentally cut other logs whose falling drops cannot yet be collected.
+  if (blockNames.length && blockNames.every(name => name.endsWith('_log') || name.endsWith('_wood'))) {
+    movements.canDig = false;
+  }
+  return movements;
+}
+
 export function collectionExcavationGoal(block) {
   // Surface wood is harvested from visible reach, without climbing to touch it.
   if (block.name?.endsWith('_log') || block.name?.endsWith('_wood')) return null;
