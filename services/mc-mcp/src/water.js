@@ -1,4 +1,5 @@
 import pathfinderPkg from 'mineflayer-pathfinder';
+import Vec3 from 'vec3';
 import {
   collectionResourceMutation,
   collectionDigSafety,
@@ -16,7 +17,7 @@ import { navigateTo } from './navigation.js';
 import { restoreObsidianWorkSurface } from './obsidianSupport.js';
 import { operationWait } from './runtime/operationScope.js';
 
-const { Movements, goals: { GoalBlock } } = pathfinderPkg;
+const { Movements, goals: { GoalBlock, GoalCompositeAny } } = pathfinderPkg;
 
 function fail(code, message, details = {}) { throw Object.assign(new Error(message), { code, details }); }
 const hasItem = (bot, name) => bot.inventory.items().find(item => item.name === name && item.count > 0);
@@ -39,48 +40,49 @@ async function confirm(context, predicate, wait = operationWait) {
   return false;
 }
 
-async function approach(bot, position, context, { excavate = false, interactionTarget = null } = {}) {
+function canInteractFrom(bot, position, interactionTarget, feet) {
   const target = interactionTarget ?? position.offset(0.5, 0.5, 0.5);
-  const inReachFrom = feet => {
-    const eye = feet.offset(0, 1.62, 0);
-    const delta = target.minus(eye);
-    if (delta.norm() > 4.25) return false;
-    if (!interactionTarget) return true;
-    const hit = bot.world.raycast(eye, delta.scaled(1 / delta.norm()), delta.norm());
-    return !hit || hit.position.equals(position);
-  };
-  const inReach = () => inReachFrom(bot.entity.position);
-  if (inReach() && isSafeStandingPosition(bot, bot.entity.position.floored())) return;
+  const eye = feet.offset(0, 1.62, 0);
+  const delta = target.minus(eye);
+  if (delta.norm() > 4.25) return false;
+  if (!interactionTarget) return true;
+  const hit = bot.world.raycast(eye, delta.scaled(1 / delta.norm()), delta.norm());
+  return !hit || hit.position.equals(position);
+}
+
+function standingCandidates(bot, position, interactionTarget) {
   const candidates = [];
   for (let dx = -3; dx <= 3; dx++) {
     for (let dz = -3; dz <= 3; dz++) {
       for (let dy = -1; dy <= 2; dy++) {
         const feet = position.offset(dx, dy, dz);
         if (isSafeStandingPosition(bot, feet)
-          && inReachFrom(feet.offset(0.5, 0, 0.5))) candidates.push(feet);
+          && canInteractFrom(bot, position, interactionTarget, feet.offset(0.5, 0, 0.5))) candidates.push(feet);
       }
     }
   }
   candidates.sort((a, b) => bot.entity.position.distanceTo(a) - bot.entity.position.distanceTo(b));
+  return candidates.slice(0, 4);
+}
+
+async function approachObsidian(bot, position, context) {
+  const inReach = () => canInteractFrom(bot, position, null, bot.entity.position);
+  if (inReach() && isSafeStandingPosition(bot, bot.entity.position.floored())) return;
+  const candidates = standingCandidates(bot, position, null);
   const previous = bot.pathfinder.movements;
   const movements = new Movements(bot);
   configureDryNavigation(movements, bot);
-  movements.canDig = excavate;
+  movements.canDig = true;
   movements.allow1by1towers = false;
-  if (excavate) {
-    configureMineSupport(movements, bot.registry);
-    movements.blocksCantBreak.add(bot.registry.blocksByName.obsidian.id);
-    movements.exclusionAreasBreak.push(block => collectionDigSafety(bot, block).safe ? 0 : Infinity);
-  } else {
-    movements.scafoldingBlocks = [];
-  }
+  configureMineSupport(movements, bot.registry);
+  movements.blocksCantBreak.add(bot.registry.blocksByName.obsidian.id);
+  movements.exclusionAreasBreak.push(block => collectionDigSafety(bot, block).safe ? 0 : Infinity);
   bot.pathfinder.setMovements(movements);
   try {
-    for (const feet of candidates.slice(0, 4)) {
+    for (const feet of candidates) {
       context.operation_scope?.checkpoint();
       try {
-        if (excavate) await navigateTo(bot, feet, context);
-        else await bot.pathfinder.goto(new GoalBlock(feet.x, feet.y, feet.z));
+        await navigateTo(bot, feet, context);
         if (inReach() && isSafeStandingPosition(bot, bot.entity.position.floored())) return;
       } catch (error) {
         context.signal?.throwIfAborted();
@@ -93,6 +95,54 @@ async function approach(bot, position, context, { excavate = false, interactionT
     bot.pathfinder.setMovements(previous);
   }
   fail('WATER_TARGET_UNREACHABLE', '找不到有支撑且能安全接近目标的站位。');
+}
+
+async function approachWaterSources(bot, sources, context) {
+  const reachableSource = () => isSafeStandingPosition(bot, bot.entity.position.floored())
+    ? sources.find(source => canInteractFrom(bot, source.position,
+      waterFillTarget(source.position), bot.entity.position)) : undefined;
+  const nearby = reachableSource();
+  if (nearby) return nearby;
+  const candidates = new Map();
+  for (const source of sources) {
+    for (const feet of standingCandidates(bot, source.position, waterFillTarget(source.position))) {
+      candidates.set(feet.toString(), new GoalBlock(feet.x, feet.y, feet.z));
+    }
+  }
+  if (!candidates.size) fail('WATER_TARGET_UNREACHABLE', '有限次水源检查没有找到安全岸边站位。');
+  const previous = bot.pathfinder.movements;
+  const movements = configureDryNavigation(new Movements(bot), bot);
+  movements.canDig = false;
+  movements.allow1by1towers = false;
+  movements.scafoldingBlocks = [];
+  bot.pathfinder.setMovements(movements);
+  try {
+    // Plan within the SDK's existing search/time bounds before spending movement.
+    // The native navigation still uses a single GoalBlock and its unchanged guards.
+    const goal = new GoalCompositeAny([...candidates.values()]);
+    const planner = bot.pathfinder.getPathFromTo(movements, bot.entity.position, goal);
+    let result;
+    for (const planned of planner) {
+      context.operation_scope?.checkpoint();
+      context.signal?.throwIfAborted();
+      result = planned.result;
+      if (result.status !== 'partial') break;
+      await operationWait(1);
+    }
+    if (result?.status !== 'success') fail('WATER_TARGET_UNREACHABLE', '现有规划范围内没有找到通向安全岸边的完整路径。', {
+      planning_status: result?.status ?? null, candidate_standings: candidates.size,
+    });
+    const end = result.path.at(-1) ?? bot.entity.position.floored();
+    const target = candidates.get(new Vec3(Math.floor(end.x), Math.floor(end.y), Math.floor(end.z)).toString());
+    if (!target) fail('WATER_TARGET_UNREACHABLE', '规划终点不是已核验的安全岸边站位。');
+    await bot.pathfinder.goto(target);
+    const source = reachableSource();
+    if (source) return source;
+    fail('WATER_TARGET_UNREACHABLE', '导航结束后没有到达可安全取水的岸边站位。');
+  } finally {
+    stopCollectionMovement(bot);
+    bot.pathfinder.setMovements(previous);
+  }
 }
 
 export async function fillWaterBucket(bot, context = {}, { wait = operationWait } = {}) {
@@ -131,19 +181,7 @@ export async function fillWaterBucket(bot, context = {}, { wait = operationWait 
     if (!sources.length) fail('WATER_SOURCE_NOT_FOUND', '附近未观察到可以装取的静态水源。', {
       ...scan, returned_candidates: positions.length,
     });
-    let source;
-    for (const candidate of sources.slice(0, 16)) {
-      try {
-        await approach(bot, candidate.position, context, {
-          interactionTarget: waterFillTarget(candidate.position),
-        });
-        source = candidate;
-        break;
-      } catch (error) {
-        if (error.code !== 'WATER_TARGET_UNREACHABLE') throw error;
-      }
-    }
-    if (!source) fail('WATER_TARGET_UNREACHABLE', '有限次水源检查没有找到安全岸边站位。');
+    const source = await approachWaterSources(bot, sources.slice(0, 16), context);
     if (!isWaterSource(bot.blockAt(source.position))) fail('WATER_SOURCE_CHANGED', '装水前水源发生变化。');
     await bot.equip(bucket, 'hand');
     const target = waterFillTarget(source.position);
@@ -179,7 +217,7 @@ export async function prepareObsidian(bot, context = {}, { wait = operationWait 
     const position = usable.find(p => isWaterBlock(bot.blockAt(p.offset(0, 1, 0))))
       ?? usable.find(p => isNaturallySafeObsidianTarget(bot, bot.blockAt(p))) ?? usable[0];
     if (!position) fail('RESOURCE_NOT_FOUND', '附近没有可准备采集的黑曜石。');
-    await approach(bot, position, context, { excavate: true });
+    await approachObsidian(bot, position, context);
     const reference = bot.blockAt(position);
     const above = position.offset(0, 1, 0);
     if (reference?.name !== 'obsidian') fail('TARGET_CHANGED', '放水前黑曜石目标发生变化。');

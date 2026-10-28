@@ -12,6 +12,11 @@ import injectBlocks from 'mineflayer/lib/plugins/blocks.js';
 import { fillWaterBucket, isWaterSource, prepareObsidian } from '../src/water.js';
 import { configureDryNavigation, digCollectionBlock, isSafeStandingPosition, restrictNavigationHeight, safePickupDroppedItems } from '../src/collection.js';
 
+function* directWaterPath(_movements, _start, goal) {
+  const target = goal.goals[0];
+  yield { result: { status: 'success', path: [new Vec3(target.x, target.y, target.z)] } };
+}
+
 function waterBot() {
   const bot = new EventEmitter();
   bot.health = 20;
@@ -113,6 +118,7 @@ test('water approach cannot spend the source-change allowance on native SDK brid
   let goals = 0;
   bot.pathfinder = {
     movements: original, setMovements(value) { this.movements = value; }, stop() {},
+    getPathFromTo: directWaterPath,
     bestHarvestTool: () => null,
     async goto(goal) {
       goals++;
@@ -239,11 +245,117 @@ test('water fill skips an inaccessible source and uses the next exposed shore so
   const original = {};
   bot.pathfinder = {
     movements: original, setMovements(value) { this.movements = value; }, stop() {},
+    getPathFromTo: directWaterPath,
     async goto() { throw Object.assign(new Error('No dry route'), { name: 'NoPath' }); },
   };
   const result = await fillWaterBucket(bot);
   assert.equal(result.output.filled, true);
   assert.deepEqual(result.output.source, shore);
+  assert.equal(bot.pathfinder.movements, original);
+});
+
+test('water fill plans one reachable shore without walking separate sealed-source goals', async () => {
+  const bot = waterBot();
+  bot.registry = minecraftData('1.21.1');
+  bot.game = { minY: -64, height: 384 };
+  bot.entity.velocity = new Vec3(0, 0, 0);
+  bot.entity.effects = {};
+  bot.entities = {};
+  bot.clearControlStates = () => {};
+  bot.setControlState = () => {};
+  const Block = blockLoader(bot.registry);
+  const sealed = new Vec3(8, 64, 0);
+  const accessible = new Vec3(0, 64, 8);
+  const world = new WorldSync(null);
+  world.getBlock = position => {
+    const wall = position.y >= 64 && position.y <= 70
+      && (([4, 12].includes(position.x) && Math.abs(position.z) <= 4)
+        || (Math.abs(position.z) === 4 && position.x >= 4 && position.x <= 12));
+    const name = position.y < 64 || wall ? 'stone'
+      : position.equals(sealed) || position.equals(accessible) ? 'water' : 'air';
+    const block = Block.fromStateId(bot.registry.blocksByName[name].defaultState, 0);
+    block.position = position;
+    return block;
+  };
+  bot.world = world;
+  bot.blockAt = position => world.getBlock(position.floored());
+  bot.findBlocks = options => {
+    assert.equal(options.maxDistance, 64);
+    assert.equal(options.count, 512);
+    return [sealed, accessible];
+  };
+  pathfinderPkg.pathfinder(bot);
+  const nativePlanner = bot.pathfinder.getPathFromTo.bind(bot.pathfinder);
+  bot.pathfinder.getPathFromTo = function* (movements, start, goal, options) {
+    const before = bot.entity.position.clone();
+    if (goal instanceof pathfinderPkg.goals.GoalCompositeAny) {
+      assert.ok(goal.goals.length <= 2 * 4);
+      assert.equal(new Set(goal.goals.map(g => `${g.x},${g.y},${g.z}`)).size, goal.goals.length);
+    }
+    for (const planned of nativePlanner(movements, start, goal, options)) {
+      assert.deepEqual(bot.entity.position, before, 'planning must not move the bot');
+      yield planned;
+    }
+  };
+  let navigations = 0;
+  bot.pathfinder.goto = async goal => {
+    navigations++;
+    const generator = bot.pathfinder.getPathFromTo(bot.pathfinder.movements,
+      bot.entity.position, goal, { timeout: 100, tickTimeout: 20, optimizePath: false });
+    let result;
+    for (const value of generator) {
+      result = value.result;
+      if (result.status !== 'partial') break;
+    }
+    if (result.status !== 'success') {
+      throw Object.assign(new Error('sealed source'), { name: 'Timeout' });
+    }
+    assert.equal(result.path.some(move => move.toBreak.length || move.toPlace.length), false);
+    const end = result.path.at(-1);
+    bot.entity.position = new Vec3(end.x + 0.5, end.y, end.z + 0.5);
+  };
+  const result = await fillWaterBucket(bot);
+  assert.equal(result.output.filled, true);
+  assert.deepEqual(result.output.source, accessible);
+  assert.equal(navigations, 1, 'an unreachable source must not cause separate native navigation attempts');
+  assert.equal(result.budget_usage.max_blocks_changed, 1);
+});
+
+test('water planning timeout preserves zero movement and does not execute its partial route', async () => {
+  const bot = waterBot();
+  bot.registry = minecraftData('1.21.1');
+  bot.entity.position = new Vec3(-8.5, 64, 0.5);
+  const original = {};
+  let plans = 0;
+  bot.pathfinder = {
+    movements: original, setMovements(value) { this.movements = value; }, stop() {},
+    *getPathFromTo() { plans++; yield { result: { status: 'timeout', path: [new Vec3(0, 64, 0)] } }; },
+    goto: () => assert.fail('a partial route is not a proven shore route'),
+  };
+  await assert.rejects(fillWaterBucket(bot), error => error.code === 'WATER_TARGET_UNREACHABLE'
+    && error.details.planning_status === 'timeout' && error.budget_usage.max_travel_distance === 0
+    && error.budget_usage.max_blocks_changed === 0);
+  assert.equal(plans, 1);
+  assert.equal(bot.pathfinder.movements, original);
+});
+
+test('water planning observes cancellation before starting native navigation', async () => {
+  const bot = waterBot();
+  bot.registry = minecraftData('1.21.1');
+  bot.entity.position = new Vec3(-8.5, 64, 0.5);
+  const controller = new AbortController();
+  const original = {};
+  bot.pathfinder = {
+    movements: original, setMovements(value) { this.movements = value; }, stop() {},
+    *getPathFromTo() {
+      yield { result: { status: 'partial', path: [] } };
+      controller.abort();
+      yield { result: { status: 'success', path: [new Vec3(0, 64, 0)] } };
+    },
+    goto: () => assert.fail('cancelled planning must not start movement'),
+  };
+  await assert.rejects(fillWaterBucket(bot, { signal: controller.signal }), error => error.name === 'AbortError'
+    && error.budget_usage.max_travel_distance === 0);
   assert.equal(bot.pathfinder.movements, original);
 });
 
@@ -327,6 +439,7 @@ function sourceRayBot(position, source, solids = new Set(), floor = position.y) 
   const goals = [];
   bot.pathfinder = {
     movements: original, setMovements(value) { this.movements = value; }, stop() {},
+    getPathFromTo: directWaterPath,
     async goto(goal) {
       goals.push(goal);
       assert.equal(isSafeStandingPosition(bot, new Vec3(goal.x, goal.y, goal.z)), true);
