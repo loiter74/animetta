@@ -8,6 +8,11 @@ const { GoalBlock, GoalY } = pathfinderPkg.goals;
 const ASCENT_STEP = 4;
 export const AIR_RECOVERY_MS = 8000;
 
+function navigateGoal(bot, goal, context) {
+  const navigate = () => bot.pathfinder.goto(goal);
+  return context.operation_scope ? context.operation_scope.navigate(goal, navigate) : navigate();
+}
+
 export function surfaceEscapePlan(bot, destination) {
   const feet = bot.entity?.position?.floored?.();
   if (!feet || typeof bot.blockAt !== 'function' || !isWaterBlock(bot.blockAt(feet.offset(0, 1, 0)))) return null;
@@ -51,7 +56,7 @@ export async function escapeWaterToShore(bot, plan, context, { wait = operationW
     movements.allow1by1towers = false;
     bot.pathfinder.setMovements(movements);
     try {
-      await bot.pathfinder.goto(new GoalBlock(plan.target.x, plan.target.y, plan.target.z));
+      await navigateGoal(bot, new GoalBlock(plan.target.x, plan.target.y, plan.target.z), context);
     } catch (error) {
       error.details = { ...error.details, recovery_phase: 'shore_navigation',
         recovery_position: { ...bot.entity.position }, air_y: plan.air_y };
@@ -93,7 +98,7 @@ export async function navigateTo(bot, destination, context = {}) {
       const nextY = Math.min(target.y, Math.floor(bot.entity.position.y) + ASCENT_STEP);
       const goal = new GoalY(nextY);
       trace?.begin(goal);
-      await bot.pathfinder.goto(goal);
+      await navigateGoal(bot, goal, context);
       if (!goal.isEnd(bot.entity.position.floored())) {
         throw Object.assign(new Error('上升导航没有到达已请求的高度。'), { code: 'NAVIGATION_ASCENT_STALLED' });
       }
@@ -103,7 +108,7 @@ export async function navigateTo(bot, destination, context = {}) {
     try {
       const goal = new GoalBlock(target.x, target.y, target.z);
       trace?.begin(goal);
-      await bot.pathfinder.goto(goal);
+      await navigateGoal(bot, goal, context);
     } catch (error) {
       const feet = bot.entity.position.floored();
       error.details = { ...error.details, recovery_phase: 'ordinary_navigation',

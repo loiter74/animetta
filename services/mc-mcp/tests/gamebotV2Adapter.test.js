@@ -8,6 +8,7 @@ import pathfinderPkg from 'mineflayer-pathfinder';
 
 import { createGameBotV2Adapter } from '../src/runtime/gamebotV2Adapter.js';
 import { withCollectionEvidence } from '../src/collection.js';
+import { navigateTo } from '../src/navigation.js';
 
 
 function budget(overrides = {}) {
@@ -103,6 +104,25 @@ function adapterFixture({ actions: actionOverrides = {}, look = async () => {}, 
     presentation: presentation || { mode: 'off', tempo: 'normal', seed: 'test-seed' },
   });
   return { adapter, bot, protocolClient };
+}
+
+function navigationFixture(travelBeforeRoute) {
+  const fixture = adapterFixture({ actions: {
+    goto: async (x, y, z, context) => {
+      fixture.bot.entity.position.x = travelBeforeRoute;
+      fixture.bot.emit('move');
+      return navigateTo(fixture.bot, { x, y, z }, context);
+    },
+  } });
+  fixture.bot.entity.position = new Vec3(0, 64, 0);
+  let nativeRoutes = 0;
+  fixture.bot.pathfinder.goto = async goal => {
+    nativeRoutes++;
+    if (goal.constructor.name === 'GoalY') fixture.bot.entity.position.y = goal.y;
+    else fixture.bot.entity.position = new Vec3(goal.x, goal.y, goal.z);
+    fixture.bot.emit('move');
+  };
+  return { ...fixture, get nativeRoutes() { return nativeRoutes; } };
 }
 
 
@@ -453,6 +473,36 @@ test('navigation refuses a new route whose minimum distance cannot fit before th
   assert.equal(receipt.error.code, 'BUDGET_EXHAUSTED');
   assert.equal(receipt.budget_usage.max_travel_distance, 189);
   assert.equal(receipt.error.details.stopping_reserve, 2);
+  fixture.adapter.dispose();
+});
+
+for (const [leg, destination] of [
+  ['final', { x: 200, y: 64, z: 0 }],
+  ['ascent', { x: 189, y: 72, z: 0 }],
+]) {
+  test(`goto checks the remaining travel budget before its ${leg} leg`, async () => {
+    const fixture = navigationFixture(189);
+    const action = request(fixture.adapter, 'goto', destination, `goto-admission-${leg}`);
+    action.remaining_budget = budget({ max_travel_distance: 192 });
+    const receipt = await fixture.adapter.runtime.executeAction(action);
+    assert.equal(fixture.nativeRoutes, 0, 'do not start a route that cannot fit with the existing reserve');
+    assert.equal(receipt.outcome, 'error');
+    assert.equal(receipt.error.code, 'BUDGET_EXHAUSTED');
+    assert.equal(receipt.budget_usage.max_travel_distance, 189);
+    assert.equal(receipt.error.details.stopping_reserve, 2);
+    fixture.adapter.dispose();
+  });
+}
+
+test('goto completes scoped ascent and final legs that fit the unchanged travel budget', async () => {
+  const fixture = navigationFixture(180);
+  const action = request(fixture.adapter, 'goto', { x: 181, y: 72, z: 0 }, 'goto-admission-fits');
+  action.remaining_budget = budget({ max_travel_distance: 192 });
+  const receipt = await fixture.adapter.runtime.executeAction(action);
+  assert.equal(receipt.outcome, 'success');
+  assert.equal(fixture.nativeRoutes, 2);
+  assert.equal(receipt.budget_usage.max_travel_distance, 184 + Math.hypot(1, 4));
+  assert.deepEqual(fixture.bot.entity.position, new Vec3(181, 72, 0));
   fixture.adapter.dispose();
 });
 
