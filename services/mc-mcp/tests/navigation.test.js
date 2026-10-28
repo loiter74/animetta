@@ -68,6 +68,7 @@ test('failed navigation retains bounded passive path evidence and removes observ
 
 test('successful navigation removes passive observers without changing controls or allowances', async t => {
   const bot = diagnosticFixture(t);
+  bot._client = new EventEmitter();
   const controls = { ...bot.controlState };
   let calls = 0;
   bot.pathfinder.goto = async goal => {
@@ -79,9 +80,102 @@ test('successful navigation removes passive observers without changing controls 
   await navigateTo(bot, { x: 17, y: 65, z: 86 });
   assert.equal(calls, 1);
   for (const name of ['path_update', 'path_reset', 'physicsTick']) assert.equal(bot.listenerCount(name), 0);
+  assert.equal(bot.listenerCount('blockUpdate'), 0);
+  assert.equal(bot._client.listenerCount('block_change'), 0);
   assert.deepEqual(bot.controlState, controls);
   assert.equal(bot.pathfinder.thinkTimeout, 5000);
   assert.equal(bot.pathfinder.movements.allow1by1towers, true);
+});
+
+test('passive navigation distinguishes pending native digging from a server block rollback', async t => {
+  const bot = diagnosticFixture(t);
+  bot._client = new EventEmitter();
+  const position = new Vec3(17, 65, 86);
+  const stone = { name: 'stone', stateId: 1, position };
+  bot.pathfinder.isMining = () => true;
+  bot.pathfinder.isBuilding = () => false;
+  bot.targetDigBlock = stone;
+  bot.heldItem = { name: 'iron_pickaxe', type: 834 };
+  let calls = 0;
+  bot.pathfinder.goto = async () => {
+    calls++;
+    bot.emit('path_update', { status: 'success', path: [{ ...position, toBreak: [position] }] });
+    bot.emit('blockUpdate', stone, { name: 'air', stateId: 0, position });
+    bot._client.emit('block_change', { location: position, type: 1 });
+    bot.emit('physicsTick');
+    throw new Error('route stalled');
+  };
+  await assert.rejects(navigateTo(bot, { x: 17, y: 65, z: 86 }), error => {
+    const trace = error.details.navigation_trace;
+    assert.equal(trace.last_motion.mining, true);
+    assert.equal(trace.last_motion.building, false);
+    assert.deepEqual(trace.last_motion.target_dig_block, { name: 'stone', state_id: 1, position: { x: 17, y: 65, z: 86 } });
+    assert.equal(trace.last_motion.held_item, 'iron_pickaxe');
+    assert.deepEqual(trace.latest_update.next_node.break_targets, [{ x: 17, y: 65, z: 86 }]);
+    assert.equal(trace.block_updates.at(-1).after_state_id, 0);
+    assert.equal(trace.server_block_updates.at(-1).state_id, 1);
+    return true;
+  });
+  assert.equal(calls, 1);
+  assert.equal(bot.listenerCount('blockUpdate'), 0);
+  assert.equal(bot._client.listenerCount('block_change'), 0);
+  assert.equal(bot.targetDigBlock, stone, 'observation must not stop the native dig');
+});
+
+test('passive navigation retains bounded segment and block histories without adding goals', async t => {
+  const bot = diagnosticFixture(t);
+  bot.entity.position.y = 57;
+  bot._client = new EventEmitter();
+  const goals = [];
+  bot.pathfinder.goto = async goal => {
+    goals.push(goal.constructor.name);
+    for (let x = 0; x < 20; x++) {
+      bot.emit('blockUpdate', { stateId: 1, position: new Vec3(x, 65, 86) }, { stateId: 0, position: new Vec3(x, 65, 86) });
+      bot._client.emit('block_change', { location: new Vec3(x, 65, 86), type: 1 });
+    }
+    if (goal.constructor.name === 'GoalY') bot.entity.position.y = goal.y;
+    else throw new Error('route stalled');
+  };
+  await assert.rejects(navigateTo(bot, { x: 17, y: 69, z: 86 }), error => {
+    const trace = error.details.navigation_trace;
+    assert.deepEqual(trace.completed_segments.map(s => s.goal.y), [61, 65]);
+    assert.ok(trace.completed_segments.every(s => s.elapsed_ms >= 0));
+    assert.equal(trace.block_update_count, 20);
+    assert.equal(trace.server_block_update_count, 20);
+    assert.equal(trace.block_updates.length, 8);
+    assert.equal(trace.server_block_updates.length, 8);
+    assert.equal(trace.server_block_updates[0].position.x, 12);
+    return true;
+  });
+  assert.deepEqual(goals, ['GoalY', 'GoalY', 'GoalBlock']);
+  assert.equal(bot.listenerCount('blockUpdate'), 0);
+  assert.equal(bot._client.listenerCount('block_change'), 0);
+});
+
+test('passive navigation retains the last dig through settlement and tolerates unavailable activity', async t => {
+  const bot = diagnosticFixture(t);
+  const stone = { name: 'stone', stateId: 1, position: new Vec3(17, 65, 86) };
+  const failure = new Error('native failure');
+  bot.pathfinder.goto = async () => {
+    bot.targetDigBlock = stone;
+    bot.pathfinder.isMining = () => true;
+    bot.emit('physicsTick');
+    bot.targetDigBlock = null;
+    bot.pathfinder.isMining = () => { throw new Error('activity unavailable'); };
+    bot.emit('physicsTick');
+    throw failure;
+  };
+  await assert.rejects(navigateTo(bot, { x: 17, y: 65, z: 86 }), error => {
+    assert.equal(error, failure);
+    const trace = error.details.navigation_trace;
+    assert.equal(trace.last_motion.mining, null);
+    assert.equal(trace.last_motion.target_dig_block, null);
+    assert.equal(trace.last_dig.mining, true);
+    assert.deepEqual(trace.last_dig.target_dig_block.position, { x: 17, y: 65, z: 86 });
+    return true;
+  });
+  assert.equal(bot.listenerCount('physicsTick'), 0);
+  assert.equal(bot.listenerCount('blockUpdate'), 0);
 });
 
 test('passive navigation evidence reads nonenumerable native controls without changing them', async t => {
