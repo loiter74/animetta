@@ -250,6 +250,59 @@ test('installed SDK wood approach walks around leaves instead of excavating them
   assert.deepEqual(plan(), [], 'the same native planner finds a walkable visible face without changing a block');
 });
 
+test('native pickup configuration clears only a necessary leaf and preserves floor and nonleaf barriers', async () => {
+  const source = readFileSync(new URL('../src/index.js', import.meta.url), 'utf8');
+  const start = source.indexOf('async function _pickupDroppedItems(');
+  const end = source.indexOf('\nasync function _collect(', start);
+  assert.ok(start >= 0 && end > start);
+  for (const obstruction of ['birch_leaves', 'stone', 'birch_log']) {
+    const bot = new EventEmitter();
+    const registry = minecraftData('1.21.1');
+    const Block = prismarineBlock(registry), world = new WorldSync(null);
+    world.getBlock = position => {
+      const p = position.floored();
+      const name = p.y === 63 && p.z === 0 && p.x >= 0 && p.x <= 3 ? 'birch_leaves'
+        : p.equals(new Vec3(1, 65, 0)) ? obstruction : 'air';
+      const block = name === 'birch_leaves'
+        ? Block.fromProperties(registry.blocksByName[name].id, { distance: 1, persistent: false, waterlogged: false }, 0)
+        : Block.fromStateId(registry.blocksByName[name].defaultState, 0);
+      block.position = p;
+      return block;
+    };
+    Object.assign(bot, { registry, world, game: { minY: -64, height: 384 }, entities: {},
+      entity: { position: new Vec3(.5, 64, .5), effects: {} },
+      inventory: { items: () => [] }, blockAt: p => world.getBlock(p) });
+    pathfinderPkg.pathfinder(bot);
+    const pickup = runInNewContext(`(${source.slice(start, end)})`, {
+      ...collection, bot, Movements: pathfinderPkg.Movements, getMcData: async () => registry,
+      GoalNear: pathfinderPkg.goals.GoalNear, operationWait: async () => {},
+      activeOperationScope: () => null, _collectDebug() {}, process: { env: {} },
+      safePickupDroppedItems: async (actualBot, { movements }) => {
+        assert.equal(actualBot, bot);
+        assert.equal(movements.maxDropDown, 2);
+        assert.equal(movements.allow1by1towers, false);
+        assert.equal(movements.allowParkour, false);
+        assert.equal(movements.allowSprinting, false);
+        assert.equal(movements.safeToBreak(bot.blockAt(new Vec3(0, 63, 0))), false, 'current leaf footing cannot be removed');
+        let result;
+        for (const planned of bot.pathfinder.getPathFromTo(movements, bot.entity.position,
+          new pathfinderPkg.goals.GoalNear(2, 64, 0, 0))) {
+          result = planned.result;
+          if (result.status !== 'partial') break;
+        }
+        assert.equal(result.status, obstruction === 'birch_leaves' ? 'success' : 'noPath');
+        const breaks = result.path.flatMap(move => move.toBreak);
+        assert.equal(breaks.length, obstruction === 'birch_leaves' ? 1 : 0);
+        assert.ok(breaks.every(p => bot.blockAt(p).name === 'birch_leaves' && p.y === 65));
+        // This test checks native planning/configuration, not live inventory gain.
+        return { navigations: 1, navigations_succeeded: result.status === 'success' ? 1 : 0,
+          path_failures: result.status === 'success' ? 0 : 1, unsafe_targets_skipped: 0 };
+      },
+    });
+    await pickup(5000, new Vec3(2, 64, 0), 'birch_log');
+  }
+});
+
 test('surface wood uses visible reach without forcing a climb into the tree', () => {
   const target = { name: 'oak_log', position: new Vec3(0, 68, 0) };
   const standing = new Vec3(3, 64, 0);

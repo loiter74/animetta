@@ -23,6 +23,7 @@ import {
   restrictNavigationHeight,
   collectionResourceMutation,
   configureCollectionNavigation,
+  configurePickupNavigation,
   createCollectionBlockMatcher,
   digCollectionBlock,
   findCollectionTarget,
@@ -658,12 +659,7 @@ async function _pickupDroppedItems(
   minimumY = Number.NEGATIVE_INFINITY, minimumInventoryCount = null,
 ) {
   const mcData = await getMcData();
-  const movements = new Movements(bot, mcData);
-  configureDryNavigation(movements, bot);
-  movements.canDig = false;
-  movements.allow1by1towers = false;
-  movements.allowParkour = false;
-  movements.allowSprinting = false;
+  const movements = configurePickupNavigation(new Movements(bot, mcData), bot);
   await operationWait(300);
   const debugDrops = phase => {
     if (!process.env.COLLECT_DEBUG) return;

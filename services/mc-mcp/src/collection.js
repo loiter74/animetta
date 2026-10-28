@@ -300,6 +300,19 @@ export function configureCollectionNavigation(movements, blockNames) {
   return movements;
 }
 
+export function configurePickupNavigation(movements, bot) {
+  configureDryNavigation(movements, bot);
+  movements.canDig = true;
+  movements.allow1by1towers = false;
+  movements.exclusionAreasBreak.push(block => {
+    if (!block.name?.endsWith('_leaves')) return Infinity;
+    const feet = flooredPosition(bot.entity.position);
+    return block.position.x === feet.x && block.position.z === feet.z
+      && block.position.y === feet.y - 1 ? Infinity : 0;
+  });
+  return movements;
+}
+
 export function collectionExcavationGoal(block) {
   // Surface wood is harvested from visible reach, without climbing to touch it.
   if (block.name?.endsWith('_log') || block.name?.endsWith('_wood')) return null;
