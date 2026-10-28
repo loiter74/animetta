@@ -850,6 +850,12 @@
           "default": true,
           "title": "Reuse Trusted Skill",
           "type": "boolean"
+        },
+        "stop_on_action_failure": {
+          "default": false,
+          "description": "为 true 时，原生动作失败即终止该目标命令，不按部分进度继续。",
+          "title": "Stop On Action Failure",
+          "type": "boolean"
         }
       },
       "title": "ExecutionPolicy",
@@ -4280,6 +4286,12 @@
             "reuse_trusted_skill": {
               "default": true,
               "title": "Reuse Trusted Skill",
+              "type": "boolean"
+            },
+            "stop_on_action_failure": {
+              "default": false,
+              "description": "为 true 时，原生动作失败即终止该目标命令，不按部分进度继续。",
+              "title": "Stop On Action Failure",
               "type": "boolean"
             }
           },

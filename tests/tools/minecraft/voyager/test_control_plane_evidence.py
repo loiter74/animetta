@@ -189,9 +189,11 @@ async def test_controller_passes_collected_typed_evidence_to_goal_verifier() -> 
 
 @pytest.mark.parametrize("error_code", ["PARTIAL_COLLECT", "BUDGET_EXHAUSTED"])
 @pytest.mark.parametrize("recoverable", [True, False])
+@pytest.mark.parametrize("stop_on_action_failure", [False, True])
 async def test_controller_only_resumes_partial_collection_with_strategy_progress(
     recoverable: bool,
     error_code: str,
+    stop_on_action_failure: bool,
 ) -> None:
     class PartialStrategy(CompleteStrategy):
         def propose(self, state, observation):
@@ -263,13 +265,21 @@ async def test_controller_only_resumes_partial_collection_with_strategy_progress
     cmd = _command()
     cmd = cmd.model_copy(
         update={
+            "payload": {
+                **cmd.payload,
+                **(
+                    {"execution_policy": {"stop_on_action_failure": True}}
+                    if stop_on_action_failure
+                    else {}
+                ),
+            },
             "effective_budget": {
                 **cmd.effective_budget,
                 "max_actions": 3,
-            }
+            },
         }
     )
-    if not recoverable:
+    if not recoverable or stop_on_action_failure:
         with pytest.raises(CommandExecutionError, match="4/8 collected"):
             await controller.execute_command(cmd)
         assert len(executor.calls) == 1

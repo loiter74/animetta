@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from importlib import import_module
 
-from animetta.tools.minecraft.mission.models import MissionSpec
+import pytest
+
+from animetta.tools.minecraft.mission.models import ExecutionPolicy, MissionSpec
 from animetta.tools.minecraft.mission.repository import InMemoryMissionRepository
 from animetta.tools.minecraft.mission.verifier import MissionEvidenceSnapshot
 from animetta.tools.minecraft.voyager.budget import BudgetUsage
@@ -142,6 +144,32 @@ async def test_idempotent_submission_does_not_queue_a_second_child() -> None:
     assert reused.idempotency_reused is True
     assert reused.eligible_command_id == first.eligible_command_id
     assert len((await journal.read_projection("conversation:user-001")).commands) == 1
+
+
+@pytest.mark.parametrize("stop_on_action_failure", [False, True])
+async def test_coordinator_preserves_stop_on_action_failure_in_the_child_command(
+    stop_on_action_failure: bool,
+) -> None:
+    module = _coordinator_module()
+    repository = InMemoryMissionRepository()
+    journal = InMemoryCommandJournal()
+    coordinator = module.MissionCoordinator(repository=repository, journal=journal)
+    mission = _fixed_mission().model_copy(
+        update={"execution": ExecutionPolicy(stop_on_action_failure=stop_on_action_failure)}
+    )
+    submitted = await coordinator.submit(
+        caller_scope="conversation:strict-run",
+        request_id="strict-run-001",
+        spec=mission,
+        occurred_at_ms=1,
+    )
+    assert submitted.eligible_command_id is not None
+    command = await journal.get_command(submitted.eligible_command_id)
+    assert command is not None
+    assert command.payload["execution_policy"] == mission.execution.model_dump(mode="json")
+    assert (
+        "stop_on_action_failure" in command.payload["execution_policy"]
+    ) is stop_on_action_failure
 
 
 def test_coordinator_has_no_runtime_or_bridge_execution_dependency() -> None:

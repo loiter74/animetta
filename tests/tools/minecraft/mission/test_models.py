@@ -164,6 +164,22 @@ def test_mission_spec_is_immutable_and_has_a_stable_canonical_hash() -> None:
         first.mission_id = "changed"  # type: ignore[misc]
 
 
+def test_stop_on_action_failure_is_explicit_and_preserves_legacy_canonical_payload() -> None:
+    models = _models()
+    legacy = models.MissionSpec.model_validate(_mission_payload())
+    assert legacy.execution.stop_on_action_failure is False
+    assert "stop_on_action_failure" not in legacy.canonical_payload()["execution"]
+    assert legacy.execution.model_dump(mode="json") == _mission_payload()["execution"]
+
+    strict = legacy.model_copy(
+        update={"execution": legacy.execution.model_copy(update={"stop_on_action_failure": True})}
+    )
+    payload = strict.canonical_payload()
+    assert payload["execution"]["stop_on_action_failure"] is True
+    assert strict.canonical_hash != legacy.canonical_hash
+    assert models.MissionSpec.model_validate(payload).execution.stop_on_action_failure is True
+
+
 @pytest.mark.parametrize("objective_id", ["", "UPPER", "has space", "a" * 65])
 def test_mission_spec_rejects_invalid_objective_ids(objective_id: str) -> None:
     models = _models()

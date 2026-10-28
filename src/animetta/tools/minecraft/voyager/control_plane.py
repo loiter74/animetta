@@ -204,6 +204,11 @@ class UnifiedVoyagerController:
     async def _execute_active(self, command: JournalCommand) -> None:
         manifest = await self._runtime.get_manifest()
         payload = command.payload
+        execution_policy = payload.get("execution_policy", {})
+        stop_on_action_failure = (
+            isinstance(execution_policy, dict)
+            and execution_policy.get("stop_on_action_failure") is True
+        )
         goal = (
             TypeAdapter(GoalSpec).validate_python(payload["goal"]) if payload.get("goal") else None
         )
@@ -325,7 +330,8 @@ class UnifiedVoyagerController:
                     recover = getattr(strategy, "accept_partial_result", None)
                     recovered_state = None
                     if (
-                        exc.error.code in {"PARTIAL_COLLECT", "BUDGET_EXHAUSTED"}
+                        not stop_on_action_failure
+                        and exc.error.code in {"PARTIAL_COLLECT", "BUDGET_EXHAUSTED"}
                         and exc.error.outcome_known
                         and decision.capability == "collect"
                         and result.receipt.outcome.value == "error"

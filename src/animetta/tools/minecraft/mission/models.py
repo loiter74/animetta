@@ -117,6 +117,11 @@ class ExecutionPolicy(_FrozenModel):
     reuse_trusted_skill: bool = True
     allow_skill_learning: bool = False
     allow_deterministic_fallback: bool = False
+    stop_on_action_failure: bool = Field(
+        default=False,
+        exclude_if=lambda value: not value,
+        description="为 true 时，原生动作失败即终止该目标命令，不按部分进度继续。",
+    )
 
 
 class MissionObjective(_FrozenModel):
