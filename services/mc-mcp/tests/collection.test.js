@@ -14,6 +14,108 @@ import WorldSync from 'prismarine-world/src/worldsync.js';
 import * as collection from '../src/collection.js';
 import * as resourceRegistry from '../src/resources/registry.js';
 
+function occludedWoodFixture({ budget = 2, blocker = 'oak_leaves', wet = false,
+  knownProperties = true, footing = false, grounded = true, cancelAfterLeaf = false } = {}) {
+  const registry = minecraftData('1.21.1');
+  const Block = prismarineBlock(registry);
+  const position = footing ? new Vec3(0.5, 66, 0.5) : new Vec3(0.5, 64, 0.5);
+  const target = footing ? new Vec3(0, 63, 0) : new Vec3(0, 64, 3);
+  const obstruction = footing ? new Vec3(0, 65, 0) : new Vec3(0, 65, 1);
+  const removed = new Set(), digs = [], bag = [];
+  const controller = new AbortController();
+  const world = new WorldSync(null);
+  world.getBlock = point => {
+    const p = point.floored();
+    const name = removed.has(p.toString()) ? 'air' : p.equals(target) ? 'oak_log'
+      : p.equals(obstruction) ? blocker : p.y === (footing ? 64 : 63) ? 'stone' : 'air';
+    const block = Block.fromStateId(registry.blocksByName[name].defaultState, 0);
+    block.position = p;
+    if (p.equals(obstruction) && name.endsWith('_leaves')) {
+      const properties = block.getProperties();
+      block.getProperties = () => knownProperties ? { ...properties, waterlogged: wet } : {};
+    }
+    return block;
+  };
+  const bot = new EventEmitter();
+  let navigations = 0;
+  Object.assign(bot, { world, registry, entities: {}, health: 20,
+    game: { minY: -64, height: 384, dimension: 'overworld' },
+    entity: { position, eyeHeight: 1.62, onGround: grounded },
+    inventory: { items: () => bag }, blockAt: point => world.getBlock(point),
+    digTime: () => 0,
+    pathfinder: { stop() {}, goto: async () => {
+      navigations++;
+      throw Object.assign(new Error('NoPath'), { code: 'NO_PATH' });
+    } },
+    findBlock: ({ matching }) => {
+      const block = bot.blockAt(target);
+      return matching(block) ? block : null;
+    },
+    dig: async block => {
+      digs.push(block.name);
+      const before = bot.blockAt(block.position);
+      removed.add(block.position.toString());
+      bot.emit('blockUpdate', before, bot.blockAt(block.position));
+      bot.emit('diggingCompleted', before);
+      if (cancelAfterLeaf && block.name.endsWith('_leaves')) {
+        controller.abort(Object.assign(new Error('Cancelled after native leaf mutation'), { code: 'CANCELLED' }));
+      }
+    },
+  });
+  const source = readFileSync(new URL('../src/index.js', import.meta.url), 'utf8');
+  const start = source.indexOf('async function _collectInner(');
+  const end = source.indexOf('\nfunction craftError(', start);
+  const collectInner = runInNewContext(`(${source.slice(start, end)})`, {
+    ...collection, ...resourceRegistry, bot, Vec3, ITEM_TO_BLOCK: {}, BLOCK_DROP_ITEM: {},
+    shouldPrepareUndergroundCollection: () => null,
+    presentBlockTarget: async () => null, _stabilizePosition: async () => true,
+    _collectDebug() {}, _equipToolForBlock: async () => {}, operationWait: async () => {},
+    _inventoryCount: name => collection.pickupInventoryCount(bot, name),
+    _pickupDroppedItems: async () => {
+      assert.ok(removed.has(target.toString()), 'pickup must follow the actual log mutation');
+      bag.push({ name: 'oak_log', count: 1 });
+    },
+  });
+  const evidenceStart = source.indexOf('async function _collectWithEvidence(');
+  const collect = runInNewContext(`(${source.slice(evidenceStart, start)})`, {
+    bot, withCollectionEvidence: collection.withCollectionEvidence,
+    _collect: (name, count, context) => collectInner(name, count, registry, context),
+  });
+  return { bot, target, digs, bag, navigations: () => navigations,
+    collect: () => collect('oak_log', 1, { signal: controller.signal,
+      budget: { max_blocks_changed: budget } }) };
+}
+
+test('wood view clearing uses actual evidence and preserves the requested log allowance', async () => {
+  const fixture = occludedWoodFixture();
+  const result = await fixture.collect();
+  assert.equal(result.output, 'Collected 1 oak_log');
+  assert.deepEqual(fixture.digs, ['oak_leaves', 'oak_log']);
+  assert.equal(result.budget_usage.max_blocks_changed, 2);
+  assert.equal(result.explained_mutations.length, 2, 'explicit log annotation must deduplicate its native event');
+  assert.equal(collection.pickupInventoryCount(fixture.bot, 'oak_log'), 1);
+  assert.equal(fixture.navigations(), 0, 'nearby occlusion must be opened without navigation');
+});
+
+test('wood view clearing refuses reserved budget, wet or unknown leaves, structural blocks and footing', async () => {
+  for (const options of [{ budget: 1 }, { wet: true }, { knownProperties: false },
+    { blocker: 'stone' }, { footing: true }, { grounded: false }]) {
+    const fixture = occludedWoodFixture(options);
+    await assert.rejects(fixture.collect(), error => error.code === 'RESOURCE_NOT_FOUND');
+    assert.deepEqual(fixture.digs, [], JSON.stringify(options));
+    assert.equal(collection.pickupInventoryCount(fixture.bot, 'oak_log'), 0);
+  }
+});
+
+test('wood view cancellation retains the native leaf charge and never digs or navigates afterward', async () => {
+  const fixture = occludedWoodFixture({ cancelAfterLeaf: true });
+  await assert.rejects(fixture.collect(), error => error.code === 'CANCELLED'
+    && error.budget_usage.max_blocks_changed === 1 && error.explained_mutations.length === 1);
+  assert.deepEqual(fixture.digs, ['oak_leaves']);
+  assert.equal(fixture.navigations(), 0);
+  assert.equal(collection.pickupInventoryCount(fixture.bot, 'oak_log'), 0);
+});
+
 const {
   collectionBlockKey,
   collectionDigTimeoutMs,
@@ -648,6 +750,7 @@ function nativeWoodFixture(starting = 0, locateFirst = false) {
     collectionDigSafety: () => ({ safe: true }),
     collectionApproachGoal: () => ({ isEnd: () => true }),
     collectionExcavationGoal: () => null,
+    clearWoodView: async () => true,
     presentBlockTarget: async () => null,
     _stabilizePosition: async () => true, _collectDebug() {},
     getMcData: async () => registry,

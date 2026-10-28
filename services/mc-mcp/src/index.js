@@ -15,6 +15,7 @@ import {
 import {
   collectionBlockKey,
   collectionApproachGoal,
+  clearWoodView,
   collectionExcavationGoal,
   collectionDigTimeoutMs,
   collectionDigSafety,
@@ -31,6 +32,7 @@ import {
   pickupInventoryCount,
   incompleteCollectionError,
   isCollectionFluidHazard,
+  isSurfaceWood,
   isCollectionSettleHazard,
   isPreparedObsidianTarget,
   obsidianWorkMinimumY,
@@ -696,8 +698,8 @@ async function _collect(block_type, count = 1, context = {}) {
 }
 
 async function _collectWithEvidence(block_type, count = 1, context = {}) {
-  return withCollectionEvidence(bot, (resourceMutations) => (
-    _collect(block_type, count, { ...context, resourceMutations })
+  return withCollectionEvidence(bot, (resourceMutations, readBlockChanges) => (
+    _collect(block_type, count, { ...context, resourceMutations, readBlockChanges })
   ));
 }
 
@@ -854,13 +856,15 @@ async function _collectInner(block_type, count, mcData, context = {}) {
     // Reach a visible block face, rather than stopping above a buried target.
     const approachGoal = collectionApproachGoal(bot, block);
     const excavationGoal = collectionExcavationGoal(block);
+    const surfaceWood = isSurfaceWood(block.name);
+    const woodReachable = surfaceWood && await clearWoodView(bot, block, context, count - collected);
     try {
       // Visibility goals inspect the current world, so an enclosed ore cannot
       // satisfy them until a coordinate goal has first excavated its access.
       if (block.name !== 'obsidian' && excavationGoal && !approachGoal.isEnd(bot.entity.position.floored())) {
         await bot.pathfinder.goto(excavationGoal);
       }
-      if (!approachGoal.isEnd(bot.entity.position.floored())) {
+      if (!(surfaceWood ? woodReachable : approachGoal.isEnd(bot.entity.position.floored()))) {
         await bot.pathfinder.goto(approachGoal);
       }
     } catch (e) {
@@ -879,7 +883,8 @@ async function _collectInner(block_type, count, mcData, context = {}) {
       excludedTargets.add(collectionBlockKey(block));
       continue;
     }
-    if (!approachGoal.isEnd(bot.entity.position.floored())) {
+    if (!(surfaceWood ? await clearWoodView(bot, block, context, count - collected)
+      : approachGoal.isEnd(bot.entity.position.floored()))) {
       recordSearchFailure('reach', new Error('Target remains outside digging reach'), {
         ...block.position,
         distance: bot.entity.position.distanceTo(block.position),

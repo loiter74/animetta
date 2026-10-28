@@ -9,6 +9,7 @@ import { findHostileThreat } from './survivalThreats.js';
 const SOFT_LOCATOR_FAILURES = new Set(['RESOURCE_NOT_FOUND', 'SEARCH_TIMEOUT']);
 const MOVEMENT_CONTROLS = ['forward', 'back', 'left', 'right', 'jump', 'sprint', 'sneak'];
 const POSITION_EPSILON = 0.02;
+const COLLECTION_REACH = 4.5;
 const FLUID_HAZARDS = new Set(['water', 'flowing_water', 'lava', 'flowing_lava']);
 const LAVA_BLOCK_NAMES = new Set(['lava', 'flowing_lava']);
 const FALLING_BLOCK_NAMES = new Set(['sand', 'red_sand', 'gravel']);
@@ -263,38 +264,75 @@ export function collectionBlockKey(block) {
   return `${x},${y},${z}`;
 }
 
+function* collectionViewHits(bot, block, eye) {
+  const center = block.position.offset(0.5, 0.5, 0.5);
+  for (const axis of ['y', 'x', 'z']) {
+    const delta = eye[axis] - center[axis];
+    if (Math.abs(delta) <= 0.5) continue;
+    const face = center.clone();
+    face[axis] += Math.sign(delta) * 0.5;
+    const direction = face.minus(eye);
+    const distance = direction.norm();
+    if (distance > COLLECTION_REACH) continue;
+    const hit = bot.world.raycast(eye, direction.scaled(1 / distance), COLLECTION_REACH);
+    if (hit) yield hit;
+  }
+}
+
 export function collectionApproachGoal(bot, block) {
-  const reach = 4.5;
   const entityHeight = bot.entity?.eyeHeight || 1.62;
   const goal = new pathfinderPkg.goals.GoalLookAtBlock(block.position, bot.world, {
-    reach, entityHeight,
+    reach: COLLECTION_REACH, entityHeight,
   });
   // SDK 2.4.5 selects faces using the cell corner but casts from its center,
   // omitting the east/south face beside a covered block. Use the same eye
   // origin for face selection and the ordinary survival-distance raycast.
   goal.isEnd = node => {
     const eye = node.offset(0.5, entityHeight, 0.5);
-    const center = block.position.offset(0.5, 0.5, 0.5);
-    for (const axis of ['y', 'x', 'z']) {
-      const delta = eye[axis] - center[axis];
-      if (Math.abs(delta) <= 0.5) continue;
-      const face = center.clone();
-      face[axis] += Math.sign(delta) * 0.5;
-      const direction = face.minus(eye);
-      const distance = direction.norm();
-      if (distance > reach) continue;
-      const hit = bot.world.raycast(eye, direction.scaled(1 / distance), reach);
-      if (hit?.position.equals(block.position)) return true;
+    for (const hit of collectionViewHits(bot, block, eye)) {
+      if (hit.position.equals(block.position)) return true;
     }
     return false;
   };
   return goal;
 }
 
+export function isSurfaceWood(name) {
+  return Boolean(name?.endsWith('_log') || name?.endsWith('_wood'));
+}
+
+export async function clearWoodView(bot, block, context, remainingLogs) {
+  if (!isSurfaceWood(block.name) || typeof bot.world?.raycast !== 'function') return false;
+  while (true) {
+    context.signal?.throwIfAborted();
+    context.operation_scope?.checkpoint();
+    const eye = bot.entity.position.offset(0, bot.entity.eyeHeight || 1.62, 0);
+    const hits = [...collectionViewHits(bot, block, eye)];
+    if (hits.some(hit => hit.position.equals(block.position))) return true;
+    const limit = context.budget?.max_blocks_changed;
+    const used = context.readBlockChanges?.();
+    if (bot.entity.onGround !== true || !Number.isSafeInteger(limit) || !Number.isSafeInteger(used) || used < 0
+      || !Number.isSafeInteger(remainingLogs) || remainingLogs < 1 || limit - used <= remainingLogs) return false;
+    const footing = bot.entity.position.floored().offset(0, -1, 0);
+    const obstacle = hits.map(hit => bot.blockAt(hit.position)).find(candidate => {
+      const wet = candidate?.getProperties?.()?.waterlogged;
+      return candidate?.name.endsWith('_leaves') && (wet === false || wet === 'false')
+        && !candidate.position.equals(footing) && collectionDigSafety(bot, candidate).safe;
+    });
+    if (!obstacle) return false;
+    await digCollectionBlock(bot, obstacle);
+    context.signal?.throwIfAborted();
+    context.operation_scope?.checkpoint();
+    const after = bot.blockAt(obstacle.position);
+    // Require both world progress and its native receipt before spending again.
+    if (!after || after.type === obstacle.type || context.readBlockChanges() <= used) return false;
+  }
+}
+
 export function configureCollectionNavigation(movements, blockNames) {
   // Reaching a visible wood face must not excavate the surrounding canopy or
   // incidentally cut other logs whose falling drops cannot yet be collected.
-  if (blockNames.length && blockNames.every(name => name.endsWith('_log') || name.endsWith('_wood'))) {
+  if (blockNames.length && blockNames.every(isSurfaceWood)) {
     movements.canDig = false;
   }
   return movements;
@@ -315,7 +353,7 @@ export function configurePickupNavigation(movements, bot) {
 
 export function collectionExcavationGoal(block) {
   // Surface wood is harvested from visible reach, without climbing to touch it.
-  if (block.name?.endsWith('_log') || block.name?.endsWith('_wood')) return null;
+  if (isSurfaceWood(block.name)) return null;
   const { x, y, z } = block.position;
   return new pathfinderPkg.goals.GoalGetToBlock(x, y, z);
 }
