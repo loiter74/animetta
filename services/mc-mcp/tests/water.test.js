@@ -94,6 +94,67 @@ test('water fill needs actual source and inventory confirmation, and is idempote
   assert.equal((await fillWaterBucket(bot)).output.already_present, true);
 });
 
+test('water approach cannot spend the source-change allowance on native SDK bridges', async () => {
+  const bot = waterBot();
+  bot.registry = minecraftData('1.21.1');
+  const Block = blockLoader(bot.registry);
+  const source = new Vec3(8, 64, 0);
+  bot.findBlocks = () => [source];
+  bot.items.push({ name: 'dirt', type: bot.registry.itemsByName.dirt.id, count: 8 },
+    { name: 'cobblestone', type: bot.registry.itemsByName.cobblestone.id, count: 8 });
+  bot.blockAt = position => {
+    const gap = position.equals(new Vec3(1, 63, 0));
+    const name = position.equals(source) ? 'water' : position.y < 64 && !gap ? 'stone' : 'air';
+    const block = Block.fromStateId(bot.registry.blocksByName[name].defaultState, 0);
+    block.position = position;
+    return block;
+  };
+  const original = {};
+  let goals = 0;
+  bot.pathfinder = {
+    movements: original, setMovements(value) { this.movements = value; }, stop() {},
+    bestHarvestTool: () => null,
+    async goto(goal) {
+      goals++;
+      const edges = [];
+      this.movements.getMoveForward({ x: 0, y: 64, z: 0,
+        remainingBlocks: this.movements.countScaffoldingItems() }, { x: 1, z: 0 }, edges);
+      assert.equal(edges.some(edge => edge.toPlace.length > 0), false,
+        'a non-excavating water approach must not generate bridge placement edges');
+      bot.entity.position = new Vec3(goal.x + 0.5, goal.y, goal.z + 0.5);
+    },
+  };
+  const result = await fillWaterBucket(bot);
+  assert.equal(result.output.filled, true);
+  assert.equal(result.budget_usage.max_blocks_changed, 1);
+  assert.equal(goals, 1);
+  assert.equal(bot.pathfinder.movements, original);
+});
+
+test('unconfirmed water fill retains the interaction state before confirmation cleanup', async () => {
+  const bot = waterBot();
+  Object.assign(bot.entity, { eyeHeight: 1.62, yaw: 1.5, pitch: -0.2 });
+  bot.items[0].slot = 36;
+  bot.heldItem = bot.items[0];
+  let uses = 0;
+  bot.activateItem = () => { uses++; };
+  let waits = 0;
+  await assert.rejects(fillWaterBucket(bot, {}, { wait: async () => {
+    waits++;
+    bot.entity.pitch = 0;
+    bot.heldItem = null;
+  } }), error => {
+    assert.equal(error.code, 'WATER_FILL_UNCONFIRMED');
+    assert.deepEqual(error.details.interaction_at_use, {
+      eye_height: 1.62, yaw: 1.5, pitch: -0.2, held_item: 'bucket',
+      expected_bucket_slot: 36, live_bucket_slot: 36,
+    });
+    return true;
+  });
+  assert.equal(uses, 1);
+  assert.equal(waits, 30);
+});
+
 test('real SDK water level strings distinguish static sources from flowing water', () => {
   const registry = minecraftData('1.21.1');
   const Block = blockLoader(registry);

@@ -71,6 +71,8 @@ async function approach(bot, position, context, { excavate = false, interactionT
     configureMineSupport(movements, bot.registry);
     movements.blocksCantBreak.add(bot.registry.blocksByName.obsidian.id);
     movements.exclusionAreasBreak.push(block => collectionDigSafety(bot, block).safe ? 0 : Infinity);
+  } else {
+    movements.scafoldingBlocks = [];
   }
   bot.pathfinder.setMovements(movements);
   try {
@@ -147,11 +149,16 @@ export async function fillWaterBucket(bot, context = {}, { wait = operationWait 
     const target = waterFillTarget(source.position);
     await bot.lookAt(target, false);
     context.operation_scope?.checkpoint();
+    const interactionAtUse = {
+      eye_height: bot.entity.eyeHeight ?? null, yaw: bot.entity.yaw ?? null, pitch: bot.entity.pitch ?? null,
+      held_item: bot.heldItem?.name ?? null, expected_bucket_slot: bucket.slot ?? null,
+      live_bucket_slot: hasItem(bot, 'bucket')?.slot ?? null,
+    };
     bot.activateItem();
     try {
       if (!await confirm(context, () => hasItem(bot, 'water_bucket'), wait)) {
         fail('WATER_FILL_UNCONFIRMED', '使用铁桶后背包没有出现水桶。', {
-          source: source.position, target, position: bot.entity.position,
+          source: source.position, target, position: bot.entity.position, interaction_at_use: interactionAtUse,
         });
       }
     } finally { bot.deactivateItem?.(); }
