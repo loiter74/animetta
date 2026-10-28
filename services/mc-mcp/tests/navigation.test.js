@@ -178,6 +178,45 @@ test('passive navigation retains the last dig through settlement and tolerates u
   assert.equal(bot.listenerCount('blockUpdate'), 0);
 });
 
+test('stuck navigation retains pre-reset motion and collision evidence through settlement', async t => {
+  const bot = diagnosticFixture(t);
+  let settled = false;
+  bot.blockAt = point => ({ name: settled ? 'air' : 'stone', stateId: settled ? 0 : 1, position: point });
+  bot.pathfinder.isMining = () => false;
+  bot.pathfinder.isBuilding = () => false;
+  bot.pathfinder.goto = async () => {
+    bot.controlState.forward = true;
+    bot.entity.velocity = new Vec3(0.1, 0, 0);
+    bot.emit('path_update', { status: 'success', path: [new Vec3(17.5, 64, 86.5)] });
+    bot.emit('physicsTick');
+    // Native resetPath emits before it clears controls and the path. The
+    // interrupted operation then produces settled physics ticks before catch.
+    bot.emit('path_reset', 'stuck');
+    settled = true;
+    bot.controlState.forward = false;
+    bot.entity.position = new Vec3(19, 64, 87);
+    bot.entity.velocity = new Vec3(0, 0, 0);
+    bot.emit('path_reset', 'goal_updated');
+    bot.emit('physicsTick');
+    throw new Error('navigation deadline expired');
+  };
+  await assert.rejects(navigateTo(bot, { x: 17, y: 65, z: 86 }), error => {
+    const trace = error.details.navigation_trace;
+    assert.equal(trace.last_motion.controls.forward, false);
+    assert.equal(trace.last_reset.reason, 'goal_updated');
+    assert.ok(trace.last_stuck, 'settlement must preserve the last stuck event');
+    assert.equal(trace.last_stuck.motion.controls.forward, true);
+    assert.equal(trace.last_stuck.motion.velocity.x, 0.1);
+    assert.deepEqual(trace.last_stuck.motion.position, { x: 18, y: 64, z: 86, to_break: 0, to_place: 0, jump_place: false });
+    assert.equal(trace.last_stuck.motion.next_node.x, 17.5);
+    assert.equal(trace.last_stuck.local_blocks.length, 45);
+    assert.ok(trace.last_stuck.local_blocks.every(block => block.state_id === 1));
+    assert.ok(trace.local_blocks.every(block => block.state_id === 0));
+    return true;
+  });
+  for (const name of ['path_update', 'path_reset', 'physicsTick', 'blockUpdate']) assert.equal(bot.listenerCount(name), 0);
+});
+
 test('passive navigation evidence reads nonenumerable native controls without changing them', async t => {
   const bot = diagnosticFixture(t);
   const expected = { forward: false, back: false, left: true, right: false, jump: false, sprint: false, sneak: true };

@@ -46,7 +46,7 @@ export function createNavigationTrace(bot, enabled = false) {
     path = [];
     state = { goal: { type: goal?.constructor?.name, ...nodeSnapshot(goal) }, started_at_ms: Date.now(),
       updates: 0, resets: 0, first_update: null, latest_update: null, last_reset: null, last_motion: null,
-      last_dig: null, block_update_count: 0, server_block_update_count: 0, block_updates: [], server_block_updates: [] };
+      last_dig: null, last_stuck: null, block_update_count: 0, server_block_update_count: 0, block_updates: [], server_block_updates: [] };
   };
   const onUpdate = result => {
     path = result?.path ?? [];
@@ -59,21 +59,29 @@ export function createNavigationTrace(bot, enabled = false) {
   const onReset = reason => {
     state.resets++;
     state.last_reset = { reason: String(reason).slice(0, 160), next_node: nodeSnapshot(path[0]) };
+    if (state.last_reset.reason === 'stuck') {
+      // Native resetPath clears controls after this event; settlement ticks
+      // must not replace the motion and terrain that caused the replan.
+      state.last_stuck = { motion: motionSnapshot(), local_blocks: localBlockSnapshot(bot) };
+    }
     path = [];
   };
   const activity = name => {
     try { return bot.pathfinder?.[name]?.() ?? null; } catch { return null; }
   };
-  const onTick = () => {
+  const motionSnapshot = () => {
     const digBlock = bot.targetDigBlock;
-    state.last_motion = { position: nodeSnapshot(bot.entity?.position), velocity: nodeSnapshot(bot.entity?.velocity),
+    return { position: nodeSnapshot(bot.entity?.position), velocity: nodeSnapshot(bot.entity?.velocity),
       on_ground: bot.entity?.onGround ?? null, next_node: nodeSnapshot(path[0]),
       elapsed_ms: Date.now() - state.started_at_ms, mining: activity('isMining'), building: activity('isBuilding'),
       target_dig_block: digBlock ? { name: digBlock.name ?? null, state_id: digBlock.stateId ?? null,
         position: positionSnapshot(digBlock.position) } : null, held_item: bot.heldItem?.name ?? null,
       controls: Object.fromEntries(['forward', 'back', 'left', 'right', 'jump', 'sprint', 'sneak']
         .map(name => [name, bot.controlState?.[name]]).filter(([, value]) => typeof value === 'boolean')) };
-    if (state.last_motion.mining || digBlock) state.last_dig = state.last_motion;
+  };
+  const onTick = () => {
+    state.last_motion = motionSnapshot();
+    if (state.last_motion.mining || state.last_motion.target_dig_block) state.last_dig = state.last_motion;
   };
   const onBlockUpdate = (before, after) => {
     state.block_update_count++;
