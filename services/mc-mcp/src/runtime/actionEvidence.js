@@ -22,6 +22,41 @@ function mergeMutations(native, annotations) {
   })];
 }
 
+// The installed pathfinder cancels digging via
+// bot.removeAllListeners('diggingCompleted', ...). Node ignores the second
+// argument, so that call erases every completion listener added with bot.on.
+// Observe completions through one shared bot.emit wrapper per bot instead:
+// removeAllListeners cannot touch it, nested scopes share it by reference
+// count, and only diggingCompleted is intercepted before the original emit.
+const diggingObserverStates = new WeakMap();
+
+function subscribeDiggingCompletion(bot, observer) {
+  const state = diggingObserverStates.get(bot);
+  if (state) {
+    state.observers.add(observer);
+    return;
+  }
+  const created = { observers: new Set([observer]), originalEmit: bot.emit };
+  created.wrappedEmit = function (...args) {
+    if (args[0] === 'diggingCompleted') {
+      for (const subscribed of [...created.observers]) subscribed(...args.slice(1));
+    }
+    return created.originalEmit.apply(this, args);
+  };
+  diggingObserverStates.set(bot, created);
+  bot.emit = created.wrappedEmit;
+}
+
+function unsubscribeDiggingCompletion(bot, observer) {
+  const state = diggingObserverStates.get(bot);
+  if (!state) return;
+  state.observers.delete(observer);
+  if (state.observers.size > 0) return;
+  diggingObserverStates.delete(bot);
+  // Unwind only our own replacement; never clobber a third-party bot.emit.
+  if (bot.emit === state.wrappedEmit) bot.emit = state.originalEmit;
+}
+
 export async function withActionEvidence(bot, invoke, { normalizeResult } = {}) {
   const annotations = [];
   const native = [];
@@ -74,9 +109,9 @@ export async function withActionEvidence(bot, invoke, { normalizeResult } = {}) 
       },
     };
   };
-  const listeners = { move: onMove, health: onHealth, blockUpdate: onBlockUpdate,
-    diggingCompleted: onDiggingCompleted, blockPlaced: onBlockPlaced };
+  const listeners = { move: onMove, health: onHealth, blockUpdate: onBlockUpdate, blockPlaced: onBlockPlaced };
   for (const [event, listener] of Object.entries(listeners)) bot.on(event, listener);
+  subscribeDiggingCompletion(bot, onDiggingCompleted);
   try {
     const value = await invoke(annotations);
     const result = normalizeResult ? normalizeResult(value) : { output: value };
@@ -94,5 +129,6 @@ export async function withActionEvidence(bot, invoke, { normalizeResult } = {}) 
     throw failure;
   } finally {
     for (const [event, listener] of Object.entries(listeners)) bot.removeListener(event, listener);
+    unsubscribeDiggingCompletion(bot, onDiggingCompleted);
   }
 }
