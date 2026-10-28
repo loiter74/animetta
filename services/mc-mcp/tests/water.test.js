@@ -39,6 +39,100 @@ function waterBot() {
   return bot;
 }
 
+function offsetShoreFixture(unsupportedArrival = false) {
+  const bot = waterBot();
+  bot.registry = minecraftData('1.21.1');
+  bot.game = { minY: -64, height: 384 };
+  bot.entity.position = new Vec3(8.5, 64, 0.5);
+  bot.entity.velocity = new Vec3(0, 0, 0);
+  bot.entity.effects = {};
+  bot.entities = {};
+  const Block = blockLoader(bot.registry), world = new WorldSync(null);
+  const source = new Vec3(0, 62, 0);
+  let arrival, facing, navigations = 0, activations = 0, scans = 0;
+  world.getBlock = position => {
+    const p = position.floored();
+    const name = unsupportedArrival && arrival && p.equals(arrival.offset(0, -1, 0)) ? 'air'
+      : p.y < 62 || (p.x >= 3 && p.y < 64) ? 'stone' : p.equals(source) ? 'water' : 'air';
+    const block = Block.fromStateId(bot.registry.blocksByName[name].defaultState, 0);
+    block.position = p;
+    return block;
+  };
+  bot.world = world;
+  bot.blockAt = position => world.getBlock(position.floored());
+  bot.findBlocks = options => {
+    scans++;
+    assert.equal(options.maxDistance, 64);
+    assert.equal(options.count, 512);
+    return [source];
+  };
+  bot.controlState = {};
+  bot.clearControlStates = () => { for (const key of Object.keys(bot.controlState)) bot.controlState[key] = false; };
+  bot.setControlState = (key, value) => { bot.controlState[key] = value; };
+  bot.lookAt = async point => { facing = point; };
+  bot.activateItem = () => {
+    activations++;
+    const delta = source.offset(0.5, 8 / 9 - 0.01, 0.5).minus(bot.entity.position.offset(0, 1.62, 0));
+    assert.ok(delta.norm() <= 4.25, 'the bucket is used only from the actual reachable eye position');
+    bot.items = [{ name: 'water_bucket', count: 1 }];
+  };
+  pathfinderPkg.pathfinder(bot);
+  bot.pathfinder.goto = async goal => {
+    navigations++;
+    arrival = new Vec3(goal.x, goal.y, goal.z);
+    bot.entity.position = arrival.offset(0.9, 0, 0.9);
+    assert.equal(goal.isEnd(bot.entity.position.floored()), true, 'SDK arrival still satisfies the original cell goal');
+  };
+  const wait = async ms => {
+    // Controlled alignment movement; this fixture does not claim native physics.
+    if (ms !== 50 || !bot.controlState.forward) return;
+    assert.equal(bot.controlState.sneak, true);
+    const delta = new Vec3(facing.x - bot.entity.position.x, 0, facing.z - bot.entity.position.z);
+    bot.entity.position.add(delta.scaled(Math.min(0.06, delta.norm()) / delta.norm()));
+  };
+  return { bot, wait, counts: () => ({ navigations, activations, scans }) };
+}
+
+test('water fill centers an offset shore arrival before actual bucket interaction', async () => {
+  const { bot, wait, counts } = offsetShoreFixture();
+  const result = await fillWaterBucket(bot, {}, { wait });
+  assert.equal(result.output.filled, true);
+  assert.deepEqual(counts(), { navigations: 1, activations: 1, scans: 1 });
+  assert.equal(Object.values(bot.controlState).some(Boolean), false);
+});
+
+test('water fill never aligns or uses the bucket after shore support disappears', async () => {
+  const { bot, wait, counts } = offsetShoreFixture(true);
+  await assert.rejects(fillWaterBucket(bot, {}, { wait }), { code: 'WATER_TARGET_UNREACHABLE' });
+  assert.deepEqual(counts(), { navigations: 1, activations: 0, scans: 1 });
+  assert.equal(Object.values(bot.controlState).some(Boolean), false);
+});
+
+test('water shore alignment stops on cancellation without another route or bucket use', async () => {
+  const fixture = offsetShoreFixture();
+  const controller = new AbortController();
+  await assert.rejects(fillWaterBucket(fixture.bot, { signal: controller.signal }, {
+    wait: async ms => {
+      await fixture.wait(ms);
+      if (ms === 50) controller.abort();
+    },
+  }), { name: 'AbortError' });
+  assert.deepEqual(fixture.counts(), { navigations: 1, activations: 0, scans: 1 });
+  assert.equal(Object.values(fixture.bot.controlState).some(Boolean), false);
+});
+
+test('water interaction rejects drift after aiming without repeating alignment or navigation', async () => {
+  const fixture = offsetShoreFixture();
+  const lookAt = fixture.bot.lookAt;
+  fixture.bot.lookAt = async (point, force) => {
+    await lookAt(point, force);
+    if (force === false) fixture.bot.entity.position = fixture.bot.entity.position.floored().offset(0.9, 0, 0.9);
+  };
+  await assert.rejects(fillWaterBucket(fixture.bot, {}, { wait: fixture.wait }), { code: 'WATER_TARGET_UNREACHABLE' });
+  assert.deepEqual(fixture.counts(), { navigations: 1, activations: 0, scans: 1 });
+  assert.equal(Object.values(fixture.bot.controlState).some(Boolean), false);
+});
+
 test('survival navigation excludes submerged heads and unsupported water, while allowing shallow water', () => {
   const bot = waterBot();
   bot.registry = minecraftData('1.21');

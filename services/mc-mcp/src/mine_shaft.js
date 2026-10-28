@@ -137,12 +137,13 @@ export function createMineShaft({
     }
   }
 
-  async function centerAboveSupport() {
+  async function centerAboveSupport({ tolerance = 0.2, checkpoint = () => {} } = {}) {
+    checkpoint();
     const base = bot.entity.position.floored();
     const center = base.offset(0.5, 0, 0.5);
     const centered = tolerance => Math.abs(bot.entity.position.x - center.x) <= tolerance
       && Math.abs(bot.entity.position.z - center.z) <= tolerance;
-    if (centered(0.2)) return true; // The 0.6m footprint already fits on this support.
+    if (centered(tolerance)) return true; // The default keeps the 0.6m footprint on this support.
     if (typeof bot.lookAt !== 'function' || typeof bot.setControlState !== 'function'
       || !isSolid(bot.blockAt(base.offset(0, -1, 0)))
       || !isClear(bot.blockAt(base)) || !isClear(bot.blockAt(base.offset(0, 1, 0)))) return false;
@@ -151,6 +152,7 @@ export function createMineShaft({
     stopMovement();
     try {
       for (let step = 0; step < 20 && !centered(0.05); step++) {
+        checkpoint();
         assertDryState();
         const current = bot.entity.position.floored();
         if (current.x !== base.x || current.z !== base.z) return false;
@@ -165,8 +167,9 @@ export function createMineShaft({
       stopMovement();
     }
     await wait(150);
+    checkpoint();
     assertDryState();
-    return centered(0.18) && bot.entity.onGround !== false;
+    return centered(Math.min(0.18, tolerance)) && bot.entity.onGround !== false;
   }
 
   async function advanceIntoSideStep(target) {
@@ -706,5 +709,5 @@ export function createMineShaft({
       if (!keepSurvivalSystems && typeof enableAuto === 'function') enableAuto();
     }
   }
-  return { mineShaft };
+  return { mineShaft, centerAboveSupport };
 }

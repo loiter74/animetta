@@ -16,6 +16,7 @@ import { configureMineSupport } from './branch_mine.js';
 import { navigateTo } from './navigation.js';
 import { restoreObsidianWorkSurface } from './obsidianSupport.js';
 import { operationWait } from './runtime/operationScope.js';
+import { createMineShaft } from './mine_shaft.js';
 
 const { Movements, goals: { GoalBlock, GoalCompositeAny } } = pathfinderPkg;
 const MAX_WATER_SOURCES = 16;
@@ -120,7 +121,7 @@ function selectWaterSources(sources) {
   return selected;
 }
 
-async function approachWaterSources(bot, sources, context) {
+async function approachWaterSources(bot, sources, context, wait) {
   const reachableSource = pool => isSafeStandingPosition(bot, bot.entity.position.floored())
     ? pool.find(source => canInteractFrom(bot, source.position,
       waterFillTarget(source.position), bot.entity.position)) : undefined;
@@ -160,7 +161,19 @@ async function approachWaterSources(bot, sources, context) {
     const target = candidates.get(new Vec3(Math.floor(end.x), Math.floor(end.y), Math.floor(end.z)).toString());
     if (!target) fail('WATER_TARGET_UNREACHABLE', '规划终点不是已核验的安全岸边站位。');
     await bot.pathfinder.goto(target);
-    const source = reachableSource(selected);
+    let source = reachableSource(selected);
+    // GoalBlock admits a whole cell; the validated interaction used its center.
+    // Reuse bounded in-cell alignment without another navigation or source scan.
+    if (!source && target.isEnd(bot.entity.position.floored())) {
+      const aligned = await createMineShaft({ bot, wait }).centerAboveSupport({
+        tolerance: 0.05,
+        checkpoint: () => {
+          context.operation_scope?.checkpoint();
+          context.signal?.throwIfAborted();
+        },
+      });
+      if (aligned) source = reachableSource(selected);
+    }
     if (source) return source;
     fail('WATER_TARGET_UNREACHABLE', '导航结束后没有到达可安全取水的岸边站位。');
   } finally {
@@ -205,12 +218,17 @@ export async function fillWaterBucket(bot, context = {}, { wait = operationWait 
     if (!sources.length) fail('WATER_SOURCE_NOT_FOUND', '附近未观察到可以装取的静态水源。', {
       ...scan, returned_candidates: positions.length,
     });
-    const source = await approachWaterSources(bot, sources, context);
+    const source = await approachWaterSources(bot, sources, context, wait);
     if (!isWaterSource(bot.blockAt(source.position))) fail('WATER_SOURCE_CHANGED', '装水前水源发生变化。');
     await bot.equip(bucket, 'hand');
     const target = waterFillTarget(source.position);
     await bot.lookAt(target, false);
     context.operation_scope?.checkpoint();
+    context.signal?.throwIfAborted();
+    if (!isSafeStandingPosition(bot, bot.entity.position.floored())
+      || !canInteractFrom(bot, source.position, target, bot.entity.position)) {
+      fail('WATER_TARGET_UNREACHABLE', '使用铁桶前当前位置已不满足安全取水条件。');
+    }
     const interactionAtUse = {
       eye_height: bot.entity.eyeHeight ?? null, yaw: bot.entity.yaw ?? null, pitch: bot.entity.pitch ?? null,
       held_item: bot.heldItem?.name ?? null, expected_bucket_slot: bucket.slot ?? null,
