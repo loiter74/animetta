@@ -581,7 +581,8 @@ export function pickupStandingPosition(
     maxRadius,
     upRange,
     downRange,
-    nearestTo: itemPosition,
+    // Pathfinder stands at cell centers; compare those, rather than block corners.
+    nearestTo: offsetPosition(itemPosition, -0.5, 0, -0.5),
     minimumY,
   });
 }

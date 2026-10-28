@@ -191,7 +191,7 @@ test('pickup chooses a safe edge close to the drop instead of close to the bot',
   };
   const item = new Vec3(0.25, 63, 0.25);
   const standing = collection.pickupStandingPosition(bot, item);
-  assert.ok(standing.distanceTo(item) < 1.5);
+  assert.ok(standing.offset(0.5, 0, 0.5).distanceTo(item) < 1.5);
   assert.equal(collection.isSafeStandingPosition(bot, standing), true);
 });
 
@@ -247,6 +247,74 @@ function targetedPickupFixture(itemName = 'crafting_table') {
     movements: {}, nowMs: () => elapsed, waitMs: async ms => { elapsed += ms; } };
   return { bot, bag, original, goals, options };
 }
+
+function r36WorkstationPickupFixture() {
+  const bot = new EventEmitter();
+  const registry = minecraftData('1.21.1');
+  const Block = prismarineBlock(registry);
+  // Saved R36 pre-pickup cells, ordered by y, z, x. Unlogged leaf decay is not replayed.
+  const palette = ['air', 'dirt', 'grass_block', 'oak_leaves', 'oak_log', 'short_grass'];
+  const rows = [
+    '11111', '11111', '11111', '11111', '11111',
+    '11122', '22221', '21222', '22222', '22222',
+    '22205', '50004', '00000', '00000', '00000',
+    '33300', '33334', '30330', '03330', '03300',
+    '33300', '33334', '30330', '33330', '33330',
+  ];
+  const position = new Vec3(-411.50001, 68, -301.31);
+  const drop = { name: 'item', position: new Vec3(-410.2767057701357, 68.7501148342182, -301.4422326715269),
+    getDroppedItem: () => ({ name: 'crafting_table' }) };
+  const bag = [];
+  bot.entity = { position: position.clone() };
+  bot.entities = { 383: drop };
+  bot.inventory = Object.assign(new EventEmitter(), { items: () => bag });
+  bot.blockAt = point => {
+    const p = point.floored();
+    const x = p.x + 413, y = p.y - 66, z = p.z + 304;
+    if ([x, y, z].some(value => value < 0 || value >= 5)) return null;
+    const block = Block.fromStateId(registry.blocksByName[palette[Number(rows[y * 5 + z][x])]].defaultState, 0);
+    block.position = p;
+    return block;
+  };
+  bot.setControlState = () => {};
+  return { bot, drop, bag, position };
+}
+
+test('R36 pickup ranks player standing centers instead of cell corners', () => {
+  const { bot, drop, position } = r36WorkstationPickupFixture();
+  const standing = collection.pickupStandingPosition(bot, drop.position);
+  assert.equal(collection.isSafeStandingPosition(bot, standing), true);
+  assert.deepEqual(standing, position.floored());
+  assert.equal(new pathfinderPkg.goals.GoalNear(standing.x, standing.y, standing.z, 0).isEnd(position.floored()), true);
+});
+
+test('R36 nearby workstation pickup waits for inventory without walking away', async () => {
+  const { bot, drop, bag, position } = r36WorkstationPickupFixture();
+  const goals = [];
+  bot.pathfinder = { stop() {}, setGoal() {}, async goto(goal) {
+    goals.push(goal);
+    if (!goal.isEnd(bot.entity.position.floored())) bot.entity.position = new Vec3(goal.x + 0.5, goal.y, goal.z + 0.5);
+  } };
+  let elapsed = 0;
+  await collection.safePickupDroppedItems(bot, {
+    timeoutMs: 5000, itemName: 'crafting_table', minimumInventoryCount: 1,
+    fallbackPos: drop.position.floored(), GoalNear: pathfinderPkg.goals.GoalNear,
+    nowMs: () => elapsed, waitMs: async ms => {
+      elapsed += ms;
+      if (elapsed >= 500 && bot.entity.position.equals(position) && bag.length === 0) {
+        bag.push({ name: 'crafting_table', count: 1 });
+        delete bot.entities[383];
+        bot.inventory.emit('updateSlot', 0, null, bag[0]);
+      }
+    },
+  });
+  assert.equal(collection.pickupInventoryCount(bot, 'crafting_table'), 1);
+  assert.deepEqual(bot.entity.position, position);
+  assert.equal(goals.length, 1);
+  assert.equal(goals[0].isEnd(position.floored()), true);
+  assert.equal(elapsed, 500);
+  assert.equal(bot.inventory.listenerCount('updateSlot'), 0);
+});
 
 test('targeted pickup skips a recovered workstation instead of chasing saplings or fallback', async () => {
   const fixture = targetedPickupFixture();
