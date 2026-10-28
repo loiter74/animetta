@@ -5,6 +5,8 @@ import Vec3 from 'vec3';
 import minecraftData from 'minecraft-data';
 import injectEntities from 'mineflayer/lib/plugins/entities.js';
 import pathfinderPkg from 'mineflayer-pathfinder';
+import prismarineBlock from 'prismarine-block';
+import { Physics, PlayerState } from 'prismarine-physics';
 
 import { createGameBotV2Adapter } from '../src/runtime/gamebotV2Adapter.js';
 import { withCollectionEvidence } from '../src/collection.js';
@@ -123,6 +125,67 @@ function navigationFixture(travelBeforeRoute) {
     fixture.bot.emit('move');
   };
   return { ...fixture, get nativeRoutes() { return nativeRoutes; } };
+}
+
+function jumpPhysicsFixture(t, { prefix = 189.71167502464702, held = false, unknown = false } = {}) {
+  let timer;
+  let nativeJumpRequests = 0;
+  let modelUnknown = false;
+  const controls = { forward: false, back: false, left: false, right: false,
+    jump: false, sprint: false, sneak: false };
+  const fixture = adapterFixture({ actions: {
+    goto: async (_x, _y, _z, context) => {
+      fixture.bot.entity.position.x += prefix;
+      fixture.bot.emit('move');
+      modelUnknown = unknown;
+      if (held) {
+        controls.jump = true;
+        fixture.bot.jumpQueued = true;
+        fixture.bot.emit('physicsTick');
+      } else fixture.bot.setControlState('jump', true);
+      if (context.signal.aborted) fixture.bot.setControlState('forward', true);
+      context.signal.throwIfAborted();
+      if (unknown) return 'unexpectedly admitted an unknown jump';
+      await new Promise((resolve, reject) => {
+        let ticks = 0;
+        timer = setInterval(() => {
+          try {
+            fixture.bot.physics.simulatePlayer(new PlayerState(fixture.bot, controls), world).apply(fixture.bot);
+            assert.ok(['x', 'y', 'z'].every(axis => Number.isFinite(fixture.bot.entity.position[axis])));
+            fixture.bot.emit('move');
+            fixture.bot.emit('physicsTick');
+            if (!held) fixture.bot.setControlState('jump', false);
+            if (fixture.bot.entity.onGround && ticks > 0) { clearInterval(timer); resolve(); }
+            else if (++ticks > 32) { clearInterval(timer); reject(new Error('Jump fixture did not settle')); }
+          } catch (error) { clearInterval(timer); reject(error); }
+        }, 1);
+      });
+      return 'jump settled';
+    },
+  } });
+  const bot = fixture.bot;
+  bot.entity.position = new Vec3(.5, 64, .5);
+  bot.entity.velocity = new Vec3(0, 0, 0);
+  Object.assign(bot.entity, { yaw: 0, pitch: 0, effects: {}, attributes: {} });
+  bot.jumpTicks = 0;
+  bot.jumpQueued = false;
+  bot.controlState = controls;
+  bot.setControlState = (control, value) => {
+    controls[control] = value;
+    if (control === 'jump' && value) { bot.jumpQueued = true; nativeJumpRequests++; }
+  };
+  const Block = prismarineBlock(bot.registry);
+  bot.blockAt = position => {
+    if (modelUnknown) return null;
+    const pos = position.floored();
+    const block = Block.fromStateId(bot.registry.blocksByName[pos.y < 64 ? 'stone' : 'air'].defaultState);
+    block.position = pos;
+    return block;
+  };
+  const world = { getBlock: position => bot.blockAt(position) };
+  bot.physics = Physics(bot.registry, world);
+  t.after(() => { clearInterval(timer); fixture.adapter.dispose(); });
+  return { ...fixture, controls, get nativeJumpRequests() { return nativeJumpRequests; } };
 }
 
 
@@ -504,6 +567,51 @@ test('goto completes scoped ascent and final legs that fit the unchanged travel 
   assert.equal(receipt.budget_usage.max_travel_distance, 184 + Math.hypot(1, 4));
   assert.deepEqual(fixture.bot.entity.position, new Vec3(181, 72, 0));
   fixture.adapter.dispose();
+});
+
+for (const held of [false, true]) {
+  test(`jump motion admission rejects an unaffordable real flight before takeoff: held=${held}`, async t => {
+    const fixture = jumpPhysicsFixture(t, { held });
+    const setter = fixture.bot.setControlState;
+    const action = request(fixture.adapter, 'goto', { x: 200, y: 64, z: 0 }, `jump-motion-${held}`);
+    action.remaining_budget = budget({ max_travel_distance: 192 });
+    const receipt = await fixture.adapter.runtime.executeAction(action);
+    assert.equal(receipt.outcome, 'error');
+    assert.equal(receipt.error.code, 'BUDGET_EXHAUSTED');
+    assert.ok(Math.abs(receipt.budget_usage.max_travel_distance - 189.71167502464702) < 1e-9);
+    assert.equal(fixture.nativeJumpRequests, 0);
+    assert.equal(fixture.bot.entity.position.y, 64);
+    assert.equal(fixture.bot.jumpQueued, false);
+    assert.ok(Object.values(fixture.controls).every(value => value === false));
+    assert.deepEqual(fixture.bot.entity.velocity, new Vec3(0, 0, 0));
+    assert.equal(fixture.bot.setControlState, setter);
+    assert.equal(fixture.bot.listenerCount('physicsTick'), 0);
+    assert.equal(fixture.bot.listenerCount('move'), 0);
+  });
+}
+
+test('jump motion admission allows a real flight within the unchanged budget and charges it', async t => {
+  const fixture = jumpPhysicsFixture(t, { prefix: 180 });
+  const setter = fixture.bot.setControlState;
+  const action = request(fixture.adapter, 'goto', { x: 200, y: 64, z: 0 }, 'jump-motion-fits');
+  action.remaining_budget = budget({ max_travel_distance: 192 });
+  const receipt = await fixture.adapter.runtime.executeAction(action);
+  assert.equal(receipt.outcome, 'success');
+  assert.equal(fixture.nativeJumpRequests, 1);
+  assert.ok(Math.abs(receipt.budget_usage.max_travel_distance - 182.50440668050742) < 1e-9);
+  assert.equal(fixture.bot.entity.position.y, 64);
+  assert.equal(fixture.bot.setControlState, setter);
+});
+
+test('jump motion admission refuses an unknown landing without changing actual usage', async t => {
+  const fixture = jumpPhysicsFixture(t, { prefix: .8, unknown: true });
+  const action = request(fixture.adapter, 'goto', { x: 20, y: 64, z: 0 }, 'jump-motion-unknown');
+  action.remaining_budget = budget({ max_travel_distance: 192 });
+  const receipt = await fixture.adapter.runtime.executeAction(action);
+  assert.equal(receipt.outcome, 'error');
+  assert.equal(receipt.error.code, 'BUDGET_EXHAUSTED');
+  assert.ok(Math.abs(receipt.budget_usage.max_travel_distance - .8) < 1e-9);
+  assert.equal(fixture.nativeJumpRequests, 0);
 });
 
 test('navigation budget admission respects the real SDK goal radius and foot cell', async () => {

@@ -10,12 +10,14 @@ import { createGameBotRuntimeV2 } from '../gamebotRuntimeV2.js';
 import { AIR_RECOVERY_MS, surfaceEscapePlan } from '../navigation.js';
 import { ownOxygenLevel } from './playerVitals.js';
 import { withActionEvidence } from './actionEvidence.js';
+import { projectJumpTravel } from './motionBudget.js';
 import { findHostileThreat } from '../survivalThreats.js';
 import {
   BroadcastMotionPolicy,
   resolvePresentationConfig,
 } from './broadcastMotionPolicy.js';
 import {
+  MOVEMENT_CONTROLS,
   OperationScopeError,
   createOperationScope,
   runWithOperationScope,
@@ -27,6 +29,7 @@ import {
 } from './presentationPort.js';
 
 
+const MOVEMENT_STOPPING_RESERVE = 2;
 const schemaDigest = readFileSync(
   new URL('../../../../contracts/gamebot/v2/schema.sha256', import.meta.url),
   'utf8',
@@ -364,16 +367,21 @@ function guardBotAction(
     let previousHealth = bot.health;
     let travel = 0;
     let damage = 0;
+    const originalSetControlState = bot.setControlState;
+    let guardedSetControlState;
     const cleanup = () => {
       bot.removeListener('death', onDeath);
       bot.removeListener('end', onEnd);
       bot.removeListener('breath', onBreath);
       bot.removeListener('move', onMove);
       bot.removeListener('health', onHealth);
-      bot.removeListener('physicsTick', checkSurvivalThreat);
+      bot.removeListener('physicsTick', checkPhysicsSafety);
       bot.removeListener('entityMoved', checkSurvivalThreat);
       bot.removeListener('entitySpawn', checkSurvivalThreat);
       context.signal?.removeEventListener('abort', onAbort);
+      if (guardedSetControlState && bot.setControlState === guardedSetControlState) {
+        bot.setControlState = originalSetControlState;
+      }
     };
     const fail = (code, message, details = {}) => {
       if (settled || lifecycleError) return;
@@ -395,10 +403,10 @@ function guardBotAction(
       // Dry navigation walks without sprinting/parkour. Stop two blocks early
       // for the current physics tick and braking; never alter charged usage.
       if (((context.capability === 'collect' || travel > 0)
-        && travel >= Math.max(0, actionBudget.max_travel_distance - 2))
+        && travel >= Math.max(0, actionBudget.max_travel_distance - MOVEMENT_STOPPING_RESERVE))
         || damage > actionBudget.max_damage_taken) {
         fail('BUDGET_EXHAUSTED', '动作接近移动预算上限或已超过伤害预算，已停止当前动作。', {
-          travel_distance: travel, damage_taken: damage, stopping_reserve: 2,
+          travel_distance: travel, damage_taken: damage, stopping_reserve: MOVEMENT_STOPPING_RESERVE,
         });
       }
     };
@@ -414,6 +422,28 @@ function guardBotAction(
       if (!actionBudget || context.capability === 'attack') return;
       const threat = findHostileThreat(bot);
       if (threat) fail('UNSAFE_AREA', '附近敌对生物已进入预警范围，已停止危险动作。', { threat });
+    };
+    const checkJumpBudget = (requested = false) => {
+      if (!actionBudget || !bot.physics?.simulatePlayer || bot.entity?.onGround !== true
+        || bot.entity.isInWater || bot.entity.isInLava || bot.entity.elytraFlying) return true;
+      const current = bot.controlState || bot.controlStates || {};
+      if (!requested && !current.jump && !bot.jumpQueued) return true;
+      const controls = Object.fromEntries(MOVEMENT_CONTROLS.map(name => [name, current[name] === true]));
+      if (requested) controls.jump = true;
+      const distance = projectJumpTravel(bot, controls);
+      if (distance === null || travel + distance + MOVEMENT_STOPPING_RESERVE > actionBudget.max_travel_distance) {
+        fail('BUDGET_EXHAUSTED', '剩余移动预算无法覆盖已知跳跃和安全停止。', {
+          travel_distance: travel, minimum_motion_distance: distance,
+          motion_prediction: distance === null ? 'unknown' : 'settled',
+          stopping_reserve: MOVEMENT_STOPPING_RESERVE,
+        });
+        return false;
+      }
+      return true;
+    };
+    const checkPhysicsSafety = () => {
+      checkSurvivalThreat();
+      if (!context.signal?.aborted) checkJumpBudget();
     };
     const onHealth = () => {
       damage += Math.max(0, previousHealth - bot.health);
@@ -472,9 +502,17 @@ function guardBotAction(
     bot.once('end', onEnd);
     bot.on('breath', onBreath);
     if (actionBudget) {
+      if (typeof originalSetControlState === 'function') {
+        guardedSetControlState = function (control, value) {
+          if (value === true && context.signal?.aborted) return;
+          if (control === 'jump' && value === true && !checkJumpBudget(true)) return;
+          return originalSetControlState.call(bot, control, value);
+        };
+        bot.setControlState = guardedSetControlState;
+      }
       bot.on('move', onMove);
       bot.on('health', onHealth);
-      bot.on('physicsTick', checkSurvivalThreat);
+      bot.on('physicsTick', checkPhysicsSafety);
       bot.on('entityMoved', checkSurvivalThreat);
       bot.on('entitySpawn', checkSurvivalThreat);
     }
@@ -489,9 +527,9 @@ function guardBotAction(
     if (context.signal?.aborted) return;
     const invocationPromise = Promise.resolve().then(() => invoke((minimumDistance) => {
       if (!actionBudget || minimumDistance <= 0) return;
-      if (travel + minimumDistance + 2 > actionBudget.max_travel_distance) {
+      if (travel + minimumDistance + MOVEMENT_STOPPING_RESERVE > actionBudget.max_travel_distance) {
         fail('BUDGET_EXHAUSTED', '剩余移动预算不足以完成下一段路径并安全停止。', {
-          travel_distance: travel, minimum_navigation_distance: minimumDistance, stopping_reserve: 2,
+          travel_distance: travel, minimum_navigation_distance: minimumDistance, stopping_reserve: MOVEMENT_STOPPING_RESERVE,
         });
         context.signal?.throwIfAborted();
       }

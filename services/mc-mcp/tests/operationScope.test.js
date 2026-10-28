@@ -147,6 +147,14 @@ function botFixture(overrides = {}) {
   return { bot, controls, stops: () => stops };
 }
 
+test('interrupt clears queued jump input as well as held controls', async () => {
+  const { bot, controls } = botFixture({ jumpQueued: true });
+  const scope = createOperationScope({ bot });
+  assert.equal(await scope.interrupt(), true);
+  assert.equal(bot.jumpQueued, false);
+  assert.ok(Object.values(controls).every(value => value === false));
+});
+
 test('grounded gravity is settled but falling, jumping and horizontal drift are not', async () => {
   const { bot } = botFixture();
   bot.entity.velocity.y = -0.0784000015258789;

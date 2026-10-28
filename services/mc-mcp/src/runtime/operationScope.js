@@ -190,6 +190,7 @@ export class OperationScope {
     for (const control of MOVEMENT_CONTROLS) {
       try { this.bot.setControlState?.(control, false); } catch {}
     }
+    this.bot.jumpQueued = false;
     if (includeContainers) {
       const containers = new Set(this.containers);
       if (this.bot.currentWindow) containers.add(this.bot.currentWindow);
