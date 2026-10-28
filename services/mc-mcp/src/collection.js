@@ -266,14 +266,29 @@ export function collectionBlockKey(block) {
 export function collectionApproachGoal(bot, block) {
   const reach = 4.5;
   const entityHeight = bot.entity?.eyeHeight || 1.62;
-  // SDK 2.4.5's coarse range check compares feet to target + eye height,
-  // rejecting reachable overhead wood. Relax only that coarse check; actual
-  // line-of-sight rays still use the ordinary survival reach of 4.5 blocks.
-  return new pathfinderPkg.goals.GoalLookAtBlock(block.position, {
-    raycast: (origin, direction) => bot.world.raycast(origin, direction, reach),
-  }, {
-    reach: reach + 2 * entityHeight + Math.sqrt(3), entityHeight,
+  const goal = new pathfinderPkg.goals.GoalLookAtBlock(block.position, bot.world, {
+    reach, entityHeight,
   });
+  // SDK 2.4.5 selects faces using the cell corner but casts from its center,
+  // omitting the east/south face beside a covered block. Use the same eye
+  // origin for face selection and the ordinary survival-distance raycast.
+  goal.isEnd = node => {
+    const eye = node.offset(0.5, entityHeight, 0.5);
+    const center = block.position.offset(0.5, 0.5, 0.5);
+    for (const axis of ['y', 'x', 'z']) {
+      const delta = eye[axis] - center[axis];
+      if (Math.abs(delta) <= 0.5) continue;
+      const face = center.clone();
+      face[axis] += Math.sign(delta) * 0.5;
+      const direction = face.minus(eye);
+      const distance = direction.norm();
+      if (distance > reach) continue;
+      const hit = bot.world.raycast(eye, direction.scaled(1 / distance), reach);
+      if (hit?.position.equals(block.position)) return true;
+    }
+    return false;
+  };
+  return goal;
 }
 
 export function collectionExcavationGoal(block) {

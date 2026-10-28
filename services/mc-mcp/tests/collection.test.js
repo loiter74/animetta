@@ -9,6 +9,7 @@ import minecraftData from 'minecraft-data';
 import prismarineBlock from 'prismarine-block';
 import sdkGoto from 'mineflayer-pathfinder/lib/goto.js';
 import injectCraft from 'mineflayer/lib/plugins/craft.js';
+import WorldSync from 'prismarine-world/src/worldsync.js';
 
 import * as collection from '../src/collection.js';
 import * as resourceRegistry from '../src/resources/registry.js';
@@ -98,6 +99,76 @@ test('collection approach requires an exposed reachable face rather than proximi
   assert.equal(goal.isEnd(standing), false);
   obstruction = target.position;
   assert.equal(goal.isEnd(standing), true);
+});
+
+function sideVisibleGravelFixture() {
+  const registry = minecraftData('1.21.1');
+  const Block = prismarineBlock(registry);
+  const world = new WorldSync(null);
+  let removed = false;
+  let obstructed = false;
+  world.getBlock = position => {
+    const p = position.floored();
+    const name = p.y === 63 ? 'stone'
+      : p.z === 0 && (p.x === 0 || (p.x === 1 && obstructed))
+        && (p.y === 65 || (p.y === 64 && !removed)) ? 'gravel' : 'air';
+    const block = Block.fromStateId(registry.blocksByName[name].defaultState, 0);
+    block.position = p;
+    return block;
+  };
+  const bot = { world, entities: {}, game: { minY: -64, height: 384 },
+    entity: { position: new Vec3(1.5, 64, 0.5), eyeHeight: 1.62 },
+    blockAt: position => world.getBlock(position.floored()) };
+  return { bot, registry, target: bot.blockAt(new Vec3(0, 64, 0)),
+    remove: () => { removed = true; }, obstruct: () => { obstructed = true; } };
+}
+
+test('covered gravel remains visible from all four adjacent cells with real SDK raycasts', () => {
+  const { bot, target, obstruct } = sideVisibleGravelFixture();
+  const raycast = bot.world.raycast.bind(bot.world);
+  bot.world.raycast = (origin, direction, range) => {
+    assert.equal(range, 4.5, 'survival interaction reach stays unchanged');
+    return raycast(origin, direction, range);
+  };
+  for (const [x, z] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+    const feet = new Vec3(x, 64, z);
+    assert.equal(collection.collectionApproachGoal(bot, target).isEnd(feet), true,
+      `the uncovered side face must be usable from ${feet}`);
+  }
+  assert.equal(collection.collectionApproachGoal(bot, target).isEnd(new Vec3(5, 64, 0)), false,
+    'an exposed face beyond survival reach remains unusable');
+  obstruct();
+  assert.equal(collection.collectionApproachGoal(bot, target).isEnd(new Vec3(2, 64, 0)), false,
+    'a nearer gravel column still blocks the requested target');
+});
+
+test('native gravel collection digs the visible side before excluding the target or navigating', async () => {
+  const { bot, registry, target, remove } = sideVisibleGravelFixture();
+  const bag = [];
+  bot.inventory = { items: () => bag };
+  bot.findBlock = ({ matching }) => matching(bot.blockAt(target.position)) ? bot.blockAt(target.position) : null;
+  bot.pathfinder = { stop() {}, goto: async () => assert.fail('already within visible digging reach') };
+  let digs = 0;
+  const source = readFileSync(new URL('../src/index.js', import.meta.url), 'utf8');
+  const start = source.indexOf('async function _collectInner(');
+  const end = source.indexOf('\nfunction craftError(', start);
+  const collect = runInNewContext(`(${source.slice(start, end)})`, {
+    ...collection, ...resourceRegistry, bot, Vec3, ITEM_TO_BLOCK: {}, BLOCK_DROP_ITEM: {},
+    shouldPrepareUndergroundCollection: () => null,
+    presentBlockTarget: async () => null, _stabilizePosition: async () => true, _collectDebug() {},
+    _inventoryCount: name => collection.pickupInventoryCount(bot, name),
+    _equipToolForBlock: async () => {}, operationWait: async () => {},
+    _pickupDroppedItems: async () => {},
+    digCollectionBlock: async (_bot, block) => {
+      assert.deepEqual(block.position, target.position);
+      digs++;
+      remove();
+      bag.push({ name: 'gravel', count: 1 });
+    },
+  });
+  assert.equal(await collect('gravel', 1, registry), 'Collected 1 gravel');
+  assert.equal(digs, 1);
+  assert.equal(collection.pickupInventoryCount(bot, 'gravel'), 1);
 });
 
 test('buried target access can be planned before its current-world visibility becomes true', () => {
