@@ -18,6 +18,7 @@ import { restoreObsidianWorkSurface } from './obsidianSupport.js';
 import { operationWait } from './runtime/operationScope.js';
 
 const { Movements, goals: { GoalBlock, GoalCompositeAny } } = pathfinderPkg;
+const MAX_WATER_SOURCES = 16;
 
 function fail(code, message, details = {}) { throw Object.assign(new Error(message), { code, details }); }
 const hasItem = (bot, name) => bot.inventory.items().find(item => item.name === name && item.count > 0);
@@ -97,14 +98,37 @@ async function approachObsidian(bot, position, context) {
   fail('WATER_TARGET_UNREACHABLE', '找不到有支撑且能安全接近目标的站位。');
 }
 
+function selectWaterSources(sources) {
+  if (sources.length <= MAX_WATER_SOURCES) return sources;
+  const selected = [sources[0]];
+  const pending = sources.slice(1).map(source => ({
+    source, nearestSquared: source.position.distanceSquared(sources[0].position),
+  }));
+  // Keep the nearest source, then cover the returned water rather than one bank.
+  while (selected.length < MAX_WATER_SOURCES) {
+    let best = 0;
+    for (let i = 1; i < pending.length; i++) {
+      if (pending[i].nearestSquared > pending[best].nearestSquared) best = i;
+    }
+    const [{ source }] = pending.splice(best, 1);
+    selected.push(source);
+    for (const candidate of pending) {
+      candidate.nearestSquared = Math.min(candidate.nearestSquared,
+        candidate.source.position.distanceSquared(source.position));
+    }
+  }
+  return selected;
+}
+
 async function approachWaterSources(bot, sources, context) {
-  const reachableSource = () => isSafeStandingPosition(bot, bot.entity.position.floored())
-    ? sources.find(source => canInteractFrom(bot, source.position,
+  const reachableSource = pool => isSafeStandingPosition(bot, bot.entity.position.floored())
+    ? pool.find(source => canInteractFrom(bot, source.position,
       waterFillTarget(source.position), bot.entity.position)) : undefined;
-  const nearby = reachableSource();
+  const nearby = reachableSource(sources.slice(0, MAX_WATER_SOURCES));
   if (nearby) return nearby;
+  const selected = selectWaterSources(sources);
   const candidates = new Map();
-  for (const source of sources) {
+  for (const source of selected) {
     for (const feet of standingCandidates(bot, source.position, waterFillTarget(source.position))) {
       candidates.set(feet.toString(), new GoalBlock(feet.x, feet.y, feet.z));
     }
@@ -136,7 +160,7 @@ async function approachWaterSources(bot, sources, context) {
     const target = candidates.get(new Vec3(Math.floor(end.x), Math.floor(end.y), Math.floor(end.z)).toString());
     if (!target) fail('WATER_TARGET_UNREACHABLE', '规划终点不是已核验的安全岸边站位。');
     await bot.pathfinder.goto(target);
-    const source = reachableSource();
+    const source = reachableSource(selected);
     if (source) return source;
     fail('WATER_TARGET_UNREACHABLE', '导航结束后没有到达可安全取水的岸边站位。');
   } finally {
@@ -181,7 +205,7 @@ export async function fillWaterBucket(bot, context = {}, { wait = operationWait 
     if (!sources.length) fail('WATER_SOURCE_NOT_FOUND', '附近未观察到可以装取的静态水源。', {
       ...scan, returned_candidates: positions.length,
     });
-    const source = await approachWaterSources(bot, sources.slice(0, 16), context);
+    const source = await approachWaterSources(bot, sources, context);
     if (!isWaterSource(bot.blockAt(source.position))) fail('WATER_SOURCE_CHANGED', '装水前水源发生变化。');
     await bot.equip(bucket, 'hand');
     const target = waterFillTarget(source.position);

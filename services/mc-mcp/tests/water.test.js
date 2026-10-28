@@ -254,72 +254,77 @@ test('water fill skips an inaccessible source and uses the next exposed shore so
   assert.equal(bot.pathfinder.movements, original);
 });
 
-test('water fill plans one reachable shore without walking separate sealed-source goals', async () => {
-  const bot = waterBot();
-  bot.registry = minecraftData('1.21.1');
-  bot.game = { minY: -64, height: 384 };
-  bot.entity.velocity = new Vec3(0, 0, 0);
-  bot.entity.effects = {};
-  bot.entities = {};
-  bot.clearControlStates = () => {};
-  bot.setControlState = () => {};
-  const Block = blockLoader(bot.registry);
-  const sealed = new Vec3(8, 64, 0);
-  const accessible = new Vec3(0, 64, 8);
-  const world = new WorldSync(null);
-  world.getBlock = position => {
-    const wall = position.y >= 64 && position.y <= 70
-      && (([4, 12].includes(position.x) && Math.abs(position.z) <= 4)
-        || (Math.abs(position.z) === 4 && position.x >= 4 && position.x <= 12));
-    const name = position.y < 64 || wall ? 'stone'
-      : position.equals(sealed) || position.equals(accessible) ? 'water' : 'air';
-    const block = Block.fromStateId(bot.registry.blocksByName[name].defaultState, 0);
-    block.position = position;
-    return block;
-  };
-  bot.world = world;
-  bot.blockAt = position => world.getBlock(position.floored());
-  bot.findBlocks = options => {
-    assert.equal(options.maxDistance, 64);
-    assert.equal(options.count, 512);
-    return [sealed, accessible];
-  };
-  pathfinderPkg.pathfinder(bot);
-  const nativePlanner = bot.pathfinder.getPathFromTo.bind(bot.pathfinder);
-  bot.pathfinder.getPathFromTo = function* (movements, start, goal, options) {
-    const before = bot.entity.position.clone();
-    if (goal instanceof pathfinderPkg.goals.GoalCompositeAny) {
-      assert.ok(goal.goals.length <= 2 * 4);
-      assert.equal(new Set(goal.goals.map(g => `${g.x},${g.y},${g.z}`)).size, goal.goals.length);
-    }
-    for (const planned of nativePlanner(movements, start, goal, options)) {
-      assert.deepEqual(bot.entity.position, before, 'planning must not move the bot');
-      yield planned;
-    }
-  };
-  let navigations = 0;
-  bot.pathfinder.goto = async goal => {
-    navigations++;
-    const generator = bot.pathfinder.getPathFromTo(bot.pathfinder.movements,
-      bot.entity.position, goal, { timeout: 100, tickTimeout: 20, optimizePath: false });
-    let result;
-    for (const value of generator) {
-      result = value.result;
-      if (result.status !== 'partial') break;
-    }
-    if (result.status !== 'success') {
-      throw Object.assign(new Error('sealed source'), { name: 'Timeout' });
-    }
-    assert.equal(result.path.some(move => move.toBreak.length || move.toPlace.length), false);
-    const end = result.path.at(-1);
-    bot.entity.position = new Vec3(end.x + 0.5, end.y, end.z + 0.5);
-  };
-  const result = await fillWaterBucket(bot);
-  assert.equal(result.output.filled, true);
-  assert.deepEqual(result.output.source, accessible);
-  assert.equal(navigations, 1, 'an unreachable source must not cause separate native navigation attempts');
-  assert.equal(result.budget_usage.max_blocks_changed, 1);
-});
+for (const crowded of [false, true]) {
+  test(crowded ? 'water source beyond a crowded nearest prefix remains reachable within sixteen selected sources'
+    : 'water fill plans one reachable shore without walking separate sealed-source goals', async () => {
+    const bot = waterBot();
+    bot.registry = minecraftData('1.21.1');
+    bot.game = { minY: -64, height: 384 };
+    bot.entity.velocity = new Vec3(0, 0, 0);
+    bot.entity.effects = {};
+    bot.entities = {};
+    bot.clearControlStates = () => {};
+    bot.setControlState = () => {};
+    const Block = blockLoader(bot.registry);
+    const sealed = crowded ? Array.from({ length: 16 }, (_, i) => new Vec3(6 + i % 4, 64, -2 + Math.floor(i / 4)))
+      : [new Vec3(8, 64, 0)];
+    const accessible = new Vec3(0, 64, crowded ? 16 : 8);
+    const world = new WorldSync(null);
+    world.getBlock = position => {
+      const wall = position.y >= 64 && position.y <= 70
+        && (([4, 12].includes(position.x) && Math.abs(position.z) <= 4)
+          || (Math.abs(position.z) === 4 && position.x >= 4 && position.x <= 12));
+      const name = position.y < 64 || wall ? 'stone'
+        : sealed.some(source => position.equals(source)) || position.equals(accessible) ? 'water' : 'air';
+      const block = Block.fromStateId(bot.registry.blocksByName[name].defaultState, 0);
+      block.position = position;
+      return block;
+    };
+    bot.world = world;
+    bot.blockAt = position => world.getBlock(position.floored());
+    bot.findBlocks = options => {
+      assert.equal(options.maxDistance, 64);
+      assert.equal(options.count, 512);
+      return [...sealed, accessible];
+    };
+    pathfinderPkg.pathfinder(bot);
+    const nativePlanner = bot.pathfinder.getPathFromTo.bind(bot.pathfinder);
+    bot.pathfinder.getPathFromTo = function* (movements, start, goal, options) {
+      const before = bot.entity.position.clone();
+      if (goal instanceof pathfinderPkg.goals.GoalCompositeAny) {
+        assert.ok(goal.goals.length <= Math.min(16, sealed.length + 1) * 4);
+        assert.equal(new Set(goal.goals.map(g => `${g.x},${g.y},${g.z}`)).size, goal.goals.length);
+      }
+      for (const planned of nativePlanner(movements, start, goal,
+        options ?? (crowded ? { timeout: 200, tickTimeout: 40, optimizePath: false } : undefined))) {
+        assert.deepEqual(bot.entity.position, before, 'planning must not move the bot');
+        yield planned;
+      }
+    };
+    let navigations = 0;
+    bot.pathfinder.goto = async goal => {
+      navigations++;
+      const generator = bot.pathfinder.getPathFromTo(bot.pathfinder.movements,
+        bot.entity.position, goal, { timeout: 100, tickTimeout: 20, optimizePath: false });
+      let result;
+      for (const value of generator) {
+        result = value.result;
+        if (result.status !== 'partial') break;
+      }
+      if (result.status !== 'success') {
+        throw Object.assign(new Error('sealed source'), { name: 'Timeout' });
+      }
+      assert.equal(result.path.some(move => move.toBreak.length || move.toPlace.length), false);
+      const end = result.path.at(-1);
+      bot.entity.position = new Vec3(end.x + 0.5, end.y, end.z + 0.5);
+    };
+    const result = await fillWaterBucket(bot);
+    assert.equal(result.output.filled, true);
+    assert.deepEqual(result.output.source, accessible);
+    assert.equal(navigations, 1, 'an unreachable source must not cause separate native navigation attempts');
+    assert.equal(result.budget_usage.max_blocks_changed, 1);
+  });
+}
 
 test('water planning timeout preserves zero movement and does not execute its partial route', async () => {
   const bot = waterBot();
@@ -337,6 +342,22 @@ test('water planning timeout preserves zero movement and does not execute its pa
     && error.budget_usage.max_blocks_changed === 0);
   assert.equal(plans, 1);
   assert.equal(bot.pathfinder.movements, original);
+});
+
+test('visible nearby water is used before sampling a crowded source set', async () => {
+  const bot = waterBot();
+  const positions = [new Vec3(1, 64, 0), new Vec3(2, 64, 0),
+    ...Array.from({ length: 16 }, (_, i) => new Vec3(30 + i, 64, 0))];
+  const blockAt = bot.blockAt;
+  bot.blockAt = position => positions.some(source => position.equals(source))
+    ? { name: 'water', boundingBox: 'empty', metadata: 0, position } : blockAt(position);
+  bot.findBlocks = () => positions;
+  bot.world.raycast = (_eye, _direction, distance) => distance < 2
+    ? { position: new Vec3(0, 65, 0) } : null;
+  bot.pathfinder = { getPathFromTo: () => assert.fail('visible water must not trigger a route search') };
+  const result = await fillWaterBucket(bot);
+  assert.equal(result.output.filled, true);
+  assert.deepEqual(result.output.source, positions[1]);
 });
 
 test('water planning observes cancellation before starting native navigation', async () => {
