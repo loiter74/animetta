@@ -55,6 +55,7 @@ import { acquireFlint, ignitePortal } from './portal.js';
 import { fillWaterBucket, prepareObsidian } from './water.js';
 import {
   normalizePlacementBlockName,
+  isFullCubeReference,
   placeBlockAt,
   placementMutations,
 } from './placement.js';
@@ -1029,7 +1030,7 @@ async function _ensureCraftingTable(mcData, context = {}) {
       const by = Math.floor(pos.y) + dy;
       const bz = Math.floor(pos.z) + dz;
       const block = bot.blockAt(new Vec3(bx, by, bz));
-      if (block && block.name !== 'air' && block.name !== 'water' && block.name !== 'lava') {
+      if (isFullCubeReference(block)) {
         try {
           const targetPos = new Vec3(bx, by + 1, bz);
           let targetBlock = bot.blockAt(targetPos);
@@ -1100,7 +1101,7 @@ async function _ensureCraftingTable(mcData, context = {}) {
           for (const face of faces) {
             const refPos = targetPos.minus(face);
             const refBlock = bot.blockAt(refPos);
-            if (!refBlock || ['air', 'water', 'lava'].includes(refBlock.name)) continue;
+            if (!isFullCubeReference(refBlock)) continue;
             try {
               tableItem = bot.inventory.items().find(i => i.name === 'crafting_table');
               if (!tableItem) break;

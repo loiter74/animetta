@@ -7,6 +7,101 @@ import { runInNewContext } from 'node:vm';
 
 import { blockMutation, withActionEvidence } from '../src/runtime/actionEvidence.js';
 
+function nativePlacementFixture(mode) {
+  const bot = Object.assign(new EventEmitter(), {
+    entity: { position: new Vec3(-10, 64, 21) }, health: 20,
+    heldItem: { name: 'crafting_table', count: 1 },
+  });
+  const reference = { name: mode === 'replacement-timeout' ? 'fern' : 'dirt',
+    type: mode === 'replacement-timeout' ? 3 : 1, position: new Vec3(-9, 63, 21),
+    boundingBox: mode === 'replacement-timeout' ? 'empty' : 'block' };
+  const target = reference.position.offset(0, 1, 0);
+  const world = new Map([[String(reference.position), reference]]);
+  bot.blockAt = position => world.get(String(position)) || { name: 'air', type: 0, position };
+  const update = (position, name = 'crafting_table', type = 2) => {
+    const before = bot.blockAt(position);
+    const after = { name, type, position };
+    world.set(String(position), after);
+    bot.emit('blockUpdate', before, after);
+    return after;
+  };
+  bot._genericPlace = async () => {
+    if (mode === 'foreign-updates') {
+      update(target.offset(10, 0, 0));
+      update(target, 'stone', 1);
+    } else {
+      update(mode === 'replacement-timeout' ? reference.position : target);
+      bot.heldItem.count = 0;
+    }
+    if (mode === 'rejected-after-update' || mode === 'foreign-updates') {
+      throw Object.assign(new Error('native placement rejected after server update'), { code: 'ACTION_CANCELLED' });
+    }
+  };
+  // Execute the installed SDK verbatim; replace only its timed wait with a
+  // controlled timeout, keeping the real destination and event logic intact.
+  const sdk = { exports: {} };
+  runInNewContext(readFileSync(new URL('../node_modules/mineflayer/lib/plugins/place_block.js', import.meta.url), 'utf8'), {
+    module: sdk,
+    require: name => {
+      assert.equal(name, '../promise_utils');
+      return { onceWithCleanup: async (_bot, event, options) => {
+        assert.equal(event, `blockUpdate:${target}`);
+        assert.equal(options.timeout, 5000);
+        throw new Error(`Event ${event} did not fire within timeout of 5000ms`);
+      } };
+    },
+  });
+  sdk.exports(bot);
+  return { bot, reference, target, update };
+}
+
+for (const mode of ['success', 'replacement-timeout', 'rejected-after-update', 'foreign-updates']) {
+  test(`native placement evidence retains exact server changes: ${mode}`, async () => {
+    const { bot, reference, target } = nativePlacementFixture(mode);
+    const originalPlace = bot.placeBlock;
+    const originalEmit = bot.emit;
+    const verify = result => {
+      const expected = mode === 'foreign-updates' ? 0 : 1;
+      assert.equal(result.budget_usage.max_blocks_changed, expected);
+      assert.equal(result.explained_mutations.length, expected);
+      if (expected) {
+        const position = mode === 'replacement-timeout' ? reference.position : target;
+        assert.equal(result.explained_mutations[0].subject, `block:minecraft:overworld:${position.x}:${position.y}:${position.z}`);
+        assert.equal(result.explained_mutations[0].details.block_type, 'minecraft:crafting_table');
+        assert.equal(result.explained_mutations[0].delta, 1);
+      }
+    };
+    const action = () => withActionEvidence(bot, async () => {
+      await bot.placeBlock(reference, new Vec3(0, 1, 0));
+      return 'placed';
+    });
+    if (mode === 'success') verify(await action());
+    else await assert.rejects(action, error => { verify(error); return true; });
+    assert.equal(bot.placeBlock, originalPlace);
+    assert.equal(bot.emit, originalEmit);
+    assert.deepEqual(bot.eventNames(), []);
+  });
+}
+
+test('nested native placement evidence counts repeated place-dig-place occurrences once each', async () => {
+  const { bot, reference, target, update } = nativePlacementFixture('success');
+  const originalPlace = bot.placeBlock;
+  const originalEmit = bot.emit;
+  const result = await withActionEvidence(bot, () => withActionEvidence(bot, async () => {
+    await bot.placeBlock(reference, new Vec3(0, 1, 0));
+    const air = update(target, 'air', 0);
+    bot.emit('diggingCompleted', air);
+    bot.heldItem.count = 1;
+    await bot.placeBlock(reference, new Vec3(0, 1, 0));
+    return 'placed twice';
+  }), { normalizeResult: value => value });
+  assert.equal(result.budget_usage.max_blocks_changed, 3);
+  assert.deepEqual(result.explained_mutations.map(m => m.delta), [1, -1, 1]);
+  assert.equal(bot.placeBlock, originalPlace);
+  assert.equal(bot.emit, originalEmit);
+  assert.deepEqual(bot.eventNames(), []);
+});
+
 function installedSdkDiggingCancellation(bot) {
   const source = readFileSync(new URL('../node_modules/mineflayer-pathfinder/index.js', import.meta.url), 'utf8');
   const start = source.indexOf('function detectDiggingStopped () {');

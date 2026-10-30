@@ -346,6 +346,34 @@ test('zero-block authorization rejects native placement before invoking it', asy
   fixture.adapter.dispose();
 });
 
+test('failed native placement still consumes its block allowance before another placement is admitted', async () => {
+  let nativePlacements = 0;
+  const reference = { name: 'fern', type: 1, boundingBox: 'empty', position: new Vec3(1, 63, 0) };
+  const fixture = adapterFixture({ actions: {
+    craft: async () => {
+      try { await fixture.bot.placeBlock(reference, new Vec3(0, 1, 0)); } catch {}
+      await fixture.bot.placeBlock(reference, new Vec3(0, 1, 0));
+      return 'unexpected second placement';
+    },
+  } });
+  fixture.bot.heldItem = { name: 'crafting_table', count: 1 };
+  const place = fixture.bot.placeBlock = async () => {
+    nativePlacements++;
+    fixture.bot.emit('blockUpdate', reference, { ...reference, name: 'crafting_table', type: 2, boundingBox: 'block' });
+    throw Object.assign(new Error('SDK waited at the unmodified upper destination'), { code: 'ACTION_TIMEOUT' });
+  };
+  const action = request(fixture.adapter, 'craft', { recipe: 'wooden_pickaxe', count: 1 }, 'placed-before-error');
+  action.remaining_budget = budget({ max_blocks_changed: 1, max_travel_distance: 0 });
+  const receipt = await fixture.adapter.runtime.executeAction(action);
+  assert.equal(nativePlacements, 1);
+  assert.equal(receipt.outcome, 'error');
+  assert.equal(receipt.error.code, 'BUDGET_EXHAUSTED');
+  assert.equal(receipt.budget_usage.max_blocks_changed, 1);
+  assert.equal(receipt.explained_mutations.filter(m => m.kind === 'block').length, 1);
+  assert.equal(fixture.bot.placeBlock, place);
+  fixture.adapter.dispose();
+});
+
 test('generic budget guard permits stationary zero-block crafting and stops damage during goto', async () => {
   let continued = false;
   const fixture = adapterFixture({ actions: { goto: async (_x, _y, _z, context) => {

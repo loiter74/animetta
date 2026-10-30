@@ -108,7 +108,7 @@ export async function placeOrientedBlock(bot, placement, blockName, facing = 'no
   });
 }
 
-function isFullCubeReference(reference) {
+export function isFullCubeReference(reference) {
   return Array.isArray(reference?.shapes) && reference.shapes.some(shape => (
     Array.isArray(shape)
     && shape.length === 6

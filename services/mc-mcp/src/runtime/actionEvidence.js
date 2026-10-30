@@ -27,46 +27,95 @@ function mergeMutations(native, annotations) {
 // argument, so that call erases every completion listener added with bot.on.
 // Observe completions through one shared bot.emit wrapper per bot instead:
 // removeAllListeners cannot touch it, nested scopes share it by reference
-// count, and only diggingCompleted is intercepted before the original emit.
-const diggingObserverStates = new WeakMap();
+// count. Placement intents also identify server updates when the SDK rejects
+// before emitting blockPlaced, including replacement of the clicked plant.
+const nativeObserverStates = new WeakMap();
 
-function subscribeDiggingCompletion(bot, observer) {
-  const state = diggingObserverStates.get(bot);
+function subscribeNativeMutations(bot, observer) {
+  const state = nativeObserverStates.get(bot);
   if (state) {
     state.observers.add(observer);
     return;
   }
-  const created = { observers: new Set([observer]), originalEmit: bot.emit };
+  const created = {
+    observers: new Set([observer]), originalEmit: bot.emit, originalPlace: bot.placeBlock,
+  };
   created.wrappedEmit = function (...args) {
     if (args[0] === 'diggingCompleted') {
-      for (const subscribed of [...created.observers]) subscribed(...args.slice(1));
+      for (const subscribed of [...created.observers]) subscribed.onDiggingCompleted(...args.slice(1));
     }
     return created.originalEmit.apply(this, args);
   };
-  diggingObserverStates.set(bot, created);
+  if (typeof created.originalPlace === 'function') {
+    created.wrappedPlace = async function (...args) {
+      const started = [...created.observers].map(subscribed => (
+        [subscribed, subscribed.beginPlacement(...args)]
+      ));
+      try {
+        return await created.originalPlace.apply(this, args);
+      } finally {
+        for (const [subscribed, intent] of started) subscribed.endPlacement(intent);
+      }
+    };
+    bot.placeBlock = created.wrappedPlace;
+  }
+  nativeObserverStates.set(bot, created);
   bot.emit = created.wrappedEmit;
 }
 
-function unsubscribeDiggingCompletion(bot, observer) {
-  const state = diggingObserverStates.get(bot);
+function unsubscribeNativeMutations(bot, observer) {
+  const state = nativeObserverStates.get(bot);
   if (!state) return;
   state.observers.delete(observer);
   if (state.observers.size > 0) return;
-  diggingObserverStates.delete(bot);
+  nativeObserverStates.delete(bot);
   // Unwind only our own replacement; never clobber a third-party bot.emit.
   if (bot.emit === state.wrappedEmit) bot.emit = state.originalEmit;
+  if (state.wrappedPlace && bot.placeBlock === state.wrappedPlace) bot.placeBlock = state.originalPlace;
 }
 
 export async function withActionEvidence(bot, invoke, { normalizeResult } = {}) {
   const annotations = [];
   const native = [];
   const removed = new Map();
+  const placements = new Set();
   const key = block => `${block.position.x},${block.position.y},${block.position.z}`;
   const mutation = (block, delta) => blockMutation(
     block.name, block.position, bot.game?.dimension || 'minecraft:overworld', delta,
   );
+  const placementFor = block => [...placements].find(intent => (
+    intent.positions.has(key(block))
+    && intent.blockName === String(block.name).replace(/^minecraft:/, '')
+  ));
+  const beginPlacement = (reference, face) => {
+    if (!reference?.position || !face || !bot.heldItem?.name) return null;
+    const target = {
+      position: {
+        x: reference.position.x + face.x,
+        y: reference.position.y + face.y,
+        z: reference.position.z + face.z,
+      },
+    };
+    const positions = new Set([key(target)]);
+    if (reference.boundingBox === 'empty') positions.add(key(reference));
+    const intent = {
+      positions, blockName: String(bot.heldItem.name).replace(/^minecraft:/, ''),
+      recorded: new Set(),
+    };
+    placements.add(intent);
+    return intent;
+  };
+  const recordPlacement = (after, sdkCompleted = false) => {
+    const intent = placementFor(after);
+    if ((!intent && !sdkCompleted) || intent?.recorded.has(key(after))) return;
+    native.push(mutation(after, 1));
+    intent?.recorded.add(key(after));
+  };
   const onBlockUpdate = (before, after) => {
     if (before?.position && before.type !== 0 && after?.type === 0) removed.set(key(before), before);
+    if (before?.position && after?.position && after.type !== 0 && before.type !== after.type) {
+      recordPlacement(after);
+    }
   };
   const onDiggingCompleted = after => {
     if (!after?.position) return;
@@ -76,7 +125,8 @@ export async function withActionEvidence(bot, invoke, { normalizeResult } = {}) 
     native.push(mutation(block, -1));
   };
   const onBlockPlaced = (before, after) => {
-    if (after?.position && after.type !== 0 && before?.type !== after.type) native.push(mutation(after, 1));
+    if (!after?.position || after.type === 0 || before?.type === after.type) return;
+    recordPlacement(after, true);
   };
   let previousPosition = { ...bot.entity.position };
   let previousHealth = bot.health;
@@ -111,7 +161,8 @@ export async function withActionEvidence(bot, invoke, { normalizeResult } = {}) 
   };
   const listeners = { move: onMove, health: onHealth, blockUpdate: onBlockUpdate, blockPlaced: onBlockPlaced };
   for (const [event, listener] of Object.entries(listeners)) bot.on(event, listener);
-  subscribeDiggingCompletion(bot, onDiggingCompleted);
+  const observer = { onDiggingCompleted, beginPlacement, endPlacement: intent => placements.delete(intent) };
+  subscribeNativeMutations(bot, observer);
   try {
     const value = await invoke(annotations, () => mergeMutations(native, annotations)
       .filter(change => change.kind === 'block').length);
@@ -130,6 +181,6 @@ export async function withActionEvidence(bot, invoke, { normalizeResult } = {}) 
     throw failure;
   } finally {
     for (const [event, listener] of Object.entries(listeners)) bot.removeListener(event, listener);
-    unsubscribeDiggingCompletion(bot, onDiggingCompleted);
+    unsubscribeNativeMutations(bot, observer);
   }
 }
