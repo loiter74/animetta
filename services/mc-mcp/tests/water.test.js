@@ -9,12 +9,21 @@ import WorldSync from 'prismarine-world/src/worldsync.js';
 import ChunkLoader from 'prismarine-chunk';
 import WorldLoader from 'prismarine-world';
 import injectBlocks from 'mineflayer/lib/plugins/blocks.js';
+import injectPhysics from 'mineflayer/lib/plugins/physics.js';
+import conversions from 'mineflayer/lib/conversions.js';
 import { fillWaterBucket, isWaterSource, prepareObsidian } from '../src/water.js';
 import { configureDryNavigation, digCollectionBlock, isSafeStandingPosition, restrictNavigationHeight, safePickupDroppedItems } from '../src/collection.js';
 
 function* directWaterPath(_movements, _start, goal) {
   const target = goal.goals[0];
   yield { result: { status: 'success', path: [new Vec3(target.x, target.y, target.z)] } };
+}
+
+function completeWaterLook(bot, point) {
+  const delta = point.minus(bot.entity.position.offset(0, bot.entity.eyeHeight ?? 1.62, 0));
+  bot.entity.yaw = Math.atan2(-delta.x, -delta.z);
+  bot.entity.pitch = Math.atan2(delta.y, Math.hypot(delta.x, delta.z));
+  bot.emit('move');
 }
 
 function waterBot() {
@@ -33,10 +42,173 @@ function waterBot() {
     position,
   });
   bot.equip = async () => {};
-  bot.lookAt = async () => {};
+  bot.lookAt = async point => completeWaterLook(bot, point);
   bot.activateItem = () => { bot.items = [{ name: 'water_bucket', count: 1 }]; };
   bot.deactivateItem = () => {};
   return bot;
+}
+
+function waterUseFixture(placing) {
+  const bot = waterBot();
+  let placed = false;
+  if (placing) {
+    bot.items = [{ name: 'water_bucket', count: 1 }];
+    bot.findBlocks = () => [new Vec3(2, 64, 0)];
+    bot.blockAt = p => ({
+      name: p.equals(new Vec3(2, 64, 0)) ? 'obsidian'
+        : p.equals(new Vec3(2, 63, 0)) ? 'lava'
+          : placed && p.equals(new Vec3(2, 65, 0)) ? 'water' : p.y < 64 ? 'stone' : 'air',
+      boundingBox: p.y < 64 || p.equals(new Vec3(2, 64, 0)) ? 'block' : 'empty', position: p,
+    });
+  }
+  return { bot, change: () => {
+    if (placing) placed = true;
+    else bot.items = [{ name: 'water_bucket', count: 1 }];
+  }, run: (context, wait) => (placing ? prepareObsidian : fillWaterBucket)(bot, context, { wait }) };
+}
+
+for (const placing of [false, true]) {
+  const mode = placing ? 'placement' : 'fill';
+  test(`water ${mode} never activates without a sent look and removes its listener`, async () => {
+    const { bot, run } = waterUseFixture(placing);
+    let waits = 0, uses = 0;
+    const listeners = bot.listenerCount('move');
+    bot.lookAt = async () => {};
+    bot.activateItem = () => { uses++; };
+    await assert.rejects(run({}, async ms => { assert.equal(ms, 100); waits++; }), { code: 'WATER_TARGET_UNREACHABLE' });
+    assert.equal(waits, 30);
+    assert.equal(uses, 0);
+    assert.equal(bot.listenerCount('move'), listeners);
+  });
+
+  test(`water ${mode} cancels while awaiting its sent look without item use`, async () => {
+    const { bot, run } = waterUseFixture(placing);
+    const controller = new AbortController();
+    let aiming = false, uses = 0;
+    const listeners = bot.listenerCount('move');
+    bot.lookAt = async () => { aiming = true; };
+    bot.activateItem = () => { uses++; };
+    await assert.rejects(run({ signal: controller.signal }, async () => {
+      if (aiming) controller.abort();
+    }), { name: 'AbortError' });
+    assert.equal(uses, 0);
+    assert.equal(bot.listenerCount('move'), listeners);
+  });
+
+  test(`water ${mode} shares thirty waits across settling, sent look and actual result`, async () => {
+    const { bot, run, change } = waterUseFixture(placing);
+    let waits = 0, lookWaits = 0, lookTarget, sent = false, uses = 0, flowWaits = 0;
+    bot.lookAt = async point => { lookTarget = point; };
+    bot.activateItem = () => { uses++; };
+    const result = await run({}, async ms => {
+      if (ms === 2000) { flowWaits++; return; }
+      assert.equal(ms, 100);
+      waits++;
+      if (lookTarget && !sent && ++lookWaits === 3) {
+        completeWaterLook(bot, lookTarget);
+        sent = true;
+      }
+      if (uses && waits === 30) change();
+    });
+    assert.equal(placing ? result.output.protected : result.output.filled, true);
+    assert.equal(waits, 30);
+    assert.equal(uses, 1);
+    assert.equal(flowWaits, placing ? 1 : 0);
+    assert.equal(bot.listenerCount('move'), 0);
+  });
+}
+
+test('water use checks cancellation after the final settling sample before aiming', async () => {
+  const { bot, run } = waterUseFixture(false);
+  const controller = new AbortController();
+  let waits = 0;
+  bot.lookAt = async () => assert.fail('cancelled settling must not aim');
+  bot.activateItem = () => assert.fail('cancelled settling must not use the bucket');
+  await assert.rejects(run({ signal: controller.signal }, async () => {
+    if (++waits === 2) controller.abort();
+  }), { name: 'AbortError' });
+});
+
+for (const [initialY, pendingPitch] of [[64, false], [64.93005526531788, false], [64, true]]) {
+  test(`real SDK water use sends the pitch after settling from y=${initialY}, pending=${pendingPitch}`, async () => {
+    const bot = waterBot();
+    bot.registry = minecraftData('1.21.1');
+    bot.version = '1.21.1';
+    bot.supportFeature = name => bot.registry.supportFeature(name);
+    bot.game = { minY: -64, height: 384, gameMode: 'survival' };
+    bot.isAlive = true;
+    bot.entities = {};
+    Object.assign(bot.entity, {
+      position: new Vec3(13.505577908969148, initialY, 11.525726144884386),
+      velocity: new Vec3(0, 0, 0), yaw: 1.5577063574050376, pitch: 0,
+      eyeHeight: 1.62, height: 1.8, effects: {}, attributes: {},
+    });
+    bot.inventory.slots = [];
+    const source = new Vec3(11, 62, 11);
+    const Block = blockLoader(bot.registry);
+    const world = new WorldSync(null);
+    world.getBlock = point => {
+      const p = point.floored();
+      const name = p.equals(source) ? 'water'
+        : p.y < 62 || p.x >= 13 && p.y < 64 ? 'stone' : 'air';
+      const block = Block.fromStateId(bot.registry.blocksByName[name].defaultState, 0);
+      block.position = p;
+      return block;
+    };
+    bot.world = world;
+    bot.blockAt = point => world.getBlock(point);
+    bot.findBlocks = () => [source];
+    const fluid = new WorldSync(null);
+    fluid.getBlock = point => {
+      const block = world.getBlock(point);
+      if (block.position.equals(source)) block.shapes = [[0, 0, 0, 1, 8 / 9, 1]];
+      return block;
+    };
+    let sentYaw = bot.entity.yaw, sentPitch = 0, uses = 0;
+    bot._client = new EventEmitter();
+    bot._client.write = (name, packet) => {
+      if (name === 'look' || name === 'position_look') {
+        sentYaw = conversions.fromNotchianYaw(packet.yaw);
+        sentPitch = conversions.fromNotchianPitch(packet.pitch);
+      }
+    };
+    bot.activateItem = () => {
+      uses++;
+      const eye = bot.entity.position.offset(0, bot.entity.eyeHeight, 0);
+      const direction = new Vec3(-Math.sin(sentYaw) * Math.cos(sentPitch),
+        Math.sin(sentPitch), -Math.cos(sentYaw) * Math.cos(sentPitch));
+      if (fluid.raycast(eye, direction, 4.25)?.position.equals(source)) {
+        bot.items = [{ name: 'water_bucket', count: 1 }];
+      }
+    };
+    injectPhysics(bot, { physicsEnabled: true, maxCatchupTicks: 1 });
+    const listeners = bot.listenerCount('move');
+    bot.emit('login');
+    bot._client.emit('position', {
+      x: bot.entity.position.x, y: initialY, z: bot.entity.position.z,
+      yaw: conversions.toNotchianYaw(bot.entity.yaw), pitch: 0, flags: 0, teleportId: 1,
+    });
+    bot.entity.velocity.y = initialY > 64 ? -0.4 : 0;
+    if (pendingPitch) {
+      // SDK look(force) returns early when the entity already holds the target
+      // angles, even if the server's interpolated pitch has not caught up.
+      const delta = source.offset(0.5, 8 / 9 - 0.01, 0.5)
+        .minus(bot.entity.position.offset(0, 1.62, 0));
+      bot.entity.yaw = Math.atan2(-delta.x, -delta.z);
+      bot.entity.pitch = Math.atan2(delta.y, Math.hypot(delta.x, delta.z));
+    }
+    try {
+      const result = await fillWaterBucket(bot, {}, { wait: ms => new Promise(resolve => setTimeout(resolve, ms)) });
+      assert.equal(result.output.filled, true);
+      assert.equal(bot.entity.onGround, true);
+      assert.equal(bot.entity.position.y, 64);
+      assert.ok(Math.abs(sentPitch - bot.entity.pitch) < 0.001);
+      assert.equal(uses, 1);
+      assert.equal(bot.listenerCount('move'), listeners);
+    } finally {
+      bot.emit('end');
+    }
+  });
 }
 
 function offsetShoreFixture(unsupportedArrival = false) {
@@ -69,7 +241,7 @@ function offsetShoreFixture(unsupportedArrival = false) {
   bot.controlState = {};
   bot.clearControlStates = () => { for (const key of Object.keys(bot.controlState)) bot.controlState[key] = false; };
   bot.setControlState = (key, value) => { bot.controlState[key] = value; };
-  bot.lookAt = async point => { facing = point; };
+  bot.lookAt = async point => { facing = point; completeWaterLook(bot, point); };
   bot.activateItem = () => {
     activations++;
     const delta = source.offset(0.5, 8 / 9 - 0.01, 0.5).minus(bot.entity.position.offset(0, 1.62, 0));
@@ -126,7 +298,7 @@ test('water interaction rejects drift after aiming without repeating alignment o
   const lookAt = fixture.bot.lookAt;
   fixture.bot.lookAt = async (point, force) => {
     await lookAt(point, force);
-    if (force === false) fixture.bot.entity.position = fixture.bot.entity.position.floored().offset(0.9, 0, 0.9);
+    if (point.y < fixture.bot.entity.position.y) fixture.bot.entity.position = fixture.bot.entity.position.floored().offset(0.9, 0, 0.9);
   };
   await assert.rejects(fillWaterBucket(fixture.bot, {}, { wait: fixture.wait }), { code: 'WATER_TARGET_UNREACHABLE' });
   assert.deepEqual(fixture.counts(), { navigations: 1, activations: 0, scans: 1 });
@@ -236,17 +408,19 @@ test('unconfirmed water fill retains the interaction state before confirmation c
   Object.assign(bot.entity, { eyeHeight: 1.62, yaw: 1.5, pitch: -0.2 });
   bot.items[0].slot = 36;
   bot.heldItem = bot.items[0];
-  let uses = 0;
-  bot.activateItem = () => { uses++; };
+  let uses = 0, atUse;
+  bot.activateItem = () => { uses++; atUse = { yaw: bot.entity.yaw, pitch: bot.entity.pitch }; };
   let waits = 0;
   await assert.rejects(fillWaterBucket(bot, {}, { wait: async () => {
     waits++;
-    bot.entity.pitch = 0;
-    bot.heldItem = null;
+    if (uses) {
+      bot.entity.pitch = 0;
+      bot.heldItem = null;
+    }
   } }), error => {
     assert.equal(error.code, 'WATER_FILL_UNCONFIRMED');
     assert.deepEqual(error.details.interaction_at_use, {
-      eye_height: 1.62, yaw: 1.5, pitch: -0.2, held_item: 'bucket',
+      eye_height: 1.62, ...atUse, held_item: 'bucket',
       expected_bucket_slot: 36, live_bucket_slot: 36,
     });
     return true;
@@ -474,7 +648,7 @@ test('water planning observes cancellation before starting native navigation', a
   assert.equal(bot.pathfinder.movements, original);
 });
 
-test('water fill aims above a real SDK shoreline obstruction and waits for ordinary look completion', async () => {
+test('water fill aims above a real SDK shoreline obstruction and waits for a sent look', async () => {
   const bot = waterBot();
   const registry = minecraftData('1.21.1');
   const Block = blockLoader(registry);
@@ -500,10 +674,11 @@ test('water fill aims above a real SDK shoreline obstruction and waits for ordin
   });
   let aimed = false;
   bot.lookAt = async (point, force) => {
-    assert.equal(force, false);
+    assert.equal(force, true);
     const delta = point.minus(eye);
     assert.equal(world.raycast(eye, delta.scaled(1 / delta.norm()), delta.norm()), null);
     aimed = true;
+    completeWaterLook(bot, point);
   };
   bot.activateItem = () => {
     assert.equal(aimed, true);
@@ -542,8 +717,9 @@ function sourceRayBot(position, source, solids = new Set(), floor = position.y) 
   };
   let target;
   bot.lookAt = async (point, force) => {
-    assert.equal(force, false);
+    assert.equal(force, true);
     target = point;
+    completeWaterLook(bot, point);
   };
   bot.activateItem = () => {
     if (ray(fluidWorld, target)?.position.equals(source)) {

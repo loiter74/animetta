@@ -9,6 +9,7 @@ import {
   isSafeStandingPosition,
   isWaterBlock,
   stopCollectionMovement,
+  waitForCollectionMovementToSettle,
   withCollectionEvidence,
 } from './collection.js';
 import { placementMutation } from './placement.js';
@@ -32,14 +33,62 @@ export function isWaterSource(block) {
 // Exposed level-zero water occupies 8/9 of the block, unlike a solid top face.
 const waterFillTarget = position => position.offset(0.5, 8 / 9 - 0.01, 0.5);
 
-async function confirm(context, predicate, wait = operationWait) {
-  for (let attempt = 0; attempt < 30; attempt++) {
+function waterConfirmation(context, wait) {
+  let remaining = 30;
+  const checkpoint = () => {
     context.operation_scope?.checkpoint();
     context.signal?.throwIfAborted();
-    if (predicate()) return true;
+  };
+  const pause = async () => {
+    checkpoint();
+    if (!remaining) return false;
+    remaining--;
     await wait(100);
+    return true;
+  };
+  return { checkpoint, pause, until: async predicate => {
+    do {
+      checkpoint();
+      if (predicate()) return true;
+    } while (await pause());
+    return false;
+  } };
+}
+
+async function aimWaterItem(bot, target, confirmation) {
+  confirmation.checkpoint();
+  const settled = await waitForCollectionMovementToSettle(bot, {
+    timeoutMs: 3000,
+    waitMs: async () => {
+      if (!await confirmation.pause()) fail('WATER_TARGET_UNREACHABLE', '原有等待额度内没有稳定到达取放水站位。');
+    },
+  });
+  if (!settled) fail('WATER_TARGET_UNREACHABLE', '取放水前移动尚未稳定。');
+  confirmation.checkpoint();
+  const position = bot.entity.position.clone();
+  const eyeHeight = bot.entity.eyeHeight ?? 1.62;
+  let sent = false;
+  const onMove = () => { sent = true; };
+  bot.on('move', onMove);
+  try {
+    // Nonforced SDK look completion checks yaw alone. Force sets both pending
+    // angles; move is emitted only after the next position/look packet is sent.
+    await bot.lookAt(target, true);
+    if (!await confirmation.until(() => sent)) fail('WATER_TARGET_UNREACHABLE', '原有等待额度内没有确认取放水朝向已发送。');
+  } finally {
+    bot.removeListener('move', onMove);
   }
-  return false;
+  confirmation.checkpoint();
+  const entity = bot.entity;
+  const delta = target.minus(entity.position.offset(0, entity.eyeHeight ?? 1.62, 0));
+  const direction = new Vec3(-Math.sin(entity.yaw) * Math.cos(entity.pitch),
+    Math.sin(entity.pitch), -Math.cos(entity.yaw) * Math.cos(entity.pitch));
+  if (entity.position.distanceTo(position) > 0.01 || (entity.eyeHeight ?? 1.62) !== eyeHeight
+    || !isSafeStandingPosition(bot, entity.position.floored()) || entity.onGround === false
+    || delta.norm() > 4.25 || !Number.isFinite(direction.dot(delta))
+    || direction.dot(delta.scaled(1 / delta.norm())) < 1 - 0.00001) {
+    fail('WATER_TARGET_UNREACHABLE', '发送朝向后站位或瞄准已变化，停止取放水。');
+  }
 }
 
 function canInteractFrom(bot, position, interactionTarget, feet) {
@@ -219,16 +268,17 @@ export async function fillWaterBucket(bot, context = {}, { wait = operationWait 
       ...scan, returned_candidates: positions.length,
     });
     const source = await approachWaterSources(bot, sources, context, wait);
-    if (!isWaterSource(bot.blockAt(source.position))) fail('WATER_SOURCE_CHANGED', '装水前水源发生变化。');
     await bot.equip(bucket, 'hand');
     const target = waterFillTarget(source.position);
-    await bot.lookAt(target, false);
+    const confirmation = waterConfirmation(context, wait);
+    await aimWaterItem(bot, target, confirmation);
     context.operation_scope?.checkpoint();
     context.signal?.throwIfAborted();
     if (!isSafeStandingPosition(bot, bot.entity.position.floored())
       || !canInteractFrom(bot, source.position, target, bot.entity.position)) {
       fail('WATER_TARGET_UNREACHABLE', '使用铁桶前当前位置已不满足安全取水条件。');
     }
+    if (!isWaterSource(bot.blockAt(source.position))) fail('WATER_SOURCE_CHANGED', '装水前水源发生变化。');
     const interactionAtUse = {
       eye_height: bot.entity.eyeHeight ?? null, yaw: bot.entity.yaw ?? null, pitch: bot.entity.pitch ?? null,
       held_item: bot.heldItem?.name ?? null, expected_bucket_slot: bucket.slot ?? null,
@@ -236,7 +286,7 @@ export async function fillWaterBucket(bot, context = {}, { wait = operationWait 
     };
     bot.activateItem();
     try {
-      if (!await confirm(context, () => hasItem(bot, 'water_bucket'), wait)) {
+      if (!await confirmation.until(() => hasItem(bot, 'water_bucket'))) {
         fail('WATER_FILL_UNCONFIRMED', '使用铁桶后背包没有出现水桶。', {
           source: source.position, target, position: bot.entity.position, interaction_at_use: interactionAtUse,
         });
@@ -272,11 +322,12 @@ export async function prepareObsidian(bot, context = {}, { wait = operationWait 
       if (!bucket) fail('TOOL_REQUIRED', '安全采集黑曜石前需要装满的水桶。');
       if (!['air', 'cave_air'].includes(bot.blockAt(above)?.name)) fail('UNSAFE_AREA', '黑曜石上方没有安全放水空间。');
       await bot.equip(bucket, 'hand');
-      await bot.lookAt(position.offset(0.5, 0.99, 0.5), false);
+      const confirmation = waterConfirmation(context, wait);
+      await aimWaterItem(bot, position.offset(0.5, 0.99, 0.5), confirmation);
       context.operation_scope?.checkpoint();
       bot.activateItem();
       try {
-        if (!await confirm(context, () => isWaterBlock(bot.blockAt(above)), wait)) {
+        if (!await confirmation.until(() => isWaterBlock(bot.blockAt(above)))) {
           fail('WATER_PLACEMENT_UNCONFIRMED', '放水后没有观察到黑曜石上方的水。');
         }
       } finally { bot.deactivateItem?.(); }
