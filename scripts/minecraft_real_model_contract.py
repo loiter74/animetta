@@ -25,6 +25,9 @@ from animetta.tools.minecraft.blueprint import (
     BlueprintCompiler,
     starter_shelter_blueprint,
 )
+from animetta.tools.minecraft.core.assembly import _budget_policy
+from animetta.tools.minecraft.core.bridge import get_bridge
+from animetta.tools.minecraft.core.config import MinecraftConfig
 from animetta.tools.minecraft.core.tools import (
     MinecraftExecuteRequest,
     MinecraftOperateToolInput,
@@ -91,13 +94,12 @@ def _semantic_assertions(validated: MinecraftExecuteRequest) -> dict[str, bool]:
     ]
     completion = mission.completion_predicates
     serialized_mission = json.dumps(mission.model_dump(mode="json"), ensure_ascii=False).lower()
-    production_limits = {
-        "max_actions": 128,
-        "max_strategy_attempts": 8,
-        "max_travel_distance": 512,
-        "max_blocks_changed": 128,
-        "max_damage_taken": 8,
-    }
+    bridge = get_bridge()
+    ceiling = _budget_policy(bridge.config if bridge is not None else MinecraftConfig()).mission
+    assert ceiling is not None
+    production_limits = ceiling.model_dump(
+        mode="json", exclude={"protected_items", "resource_consumption"}
+    )
     return {
         "mission_branch": True,
         "three_monsters": {
@@ -181,18 +183,34 @@ async def _collect_independent_calls(
     invoke: Callable[[str, list[Any]], Awaitable[dict[str, Any]]],
     validate: Callable[[dict[str, Any]], tuple[dict[str, Any], str | None]] = _validate_response,
     independent_calls: int = 3,
+    user_text: str = USER_TEXT,
+    connection_status: dict[str, Any] | None = None,
+    max_attempts: int = 2,
 ) -> list[dict[str, Any]]:
     if independent_calls < 1:
         raise ValueError("independent_calls must be positive")
+    if not 1 <= max_attempts <= 2:
+        raise ValueError("max_attempts must be one or two")
+    task_text = user_text
+    status = (
+        connection_status
+        if connection_status is not None
+        else {
+            "state": "ready",
+            "server": {"state": "available"},
+            "bot": {"state": "ready"},
+            "viewer": {"state": "attached", "confirmed": True},
+        }
+    )
     calls: list[dict[str, Any]] = []
     for independent_call in range(1, independent_calls + 1):
         attempts: list[dict[str, Any]] = []
         history: list[Any] = []
         validation: dict[str, Any] = {"valid": False}
         error: str | None = None
-        for attempt in range(1, 3):
+        for attempt in range(1, max_attempts + 1):
             user_text = (
-                USER_TEXT
+                task_text
                 if attempt == 1
                 else (
                     "修复上一条 mc_operate_bot execute 调用。请重新输出完整 mission，"
@@ -201,8 +219,10 @@ async def _collect_independent_calls(
                 )
             )
             preflight_tool_calls: list[dict[str, Any]] = []
+            model_usages: list[Any] = []
             for _ in range(2):
                 response = await invoke(user_text, history)
+                model_usages.append(response.get("usage"))
                 if not _is_connection_status_call(response):
                     break
                 preflight_tool_calls.extend(response.get("tool_calls") or [])
@@ -210,16 +230,13 @@ async def _collect_independent_calls(
                     history,
                     user_text=user_text,
                     response=response,
-                    tool_result=lambda _call: {
-                        "state": "ready",
-                        "server": {"state": "available"},
-                        "bot": {"state": "ready"},
-                        "viewer": {"state": "attached", "confirmed": True},
-                    },
+                    tool_result=lambda _call: status,
                 )
                 user_text = (
                     "连接状态已确认 ready。现在直接调用 mc_operate_bot execute，"
                     "提交满足原始用户要求的完整 typed mission。"
+                    if status.get("state") == "ready"
+                    else "连接状态如上一条工具结果；按实际状态处理，未就绪时不要提交游戏任务。"
                 )
             validation, error = validate(response)
             attempts.append(
@@ -230,6 +247,9 @@ async def _collect_independent_calls(
                     "preflight_tool_calls": preflight_tool_calls,
                     "tool_calls": response.get("tool_calls") or [],
                     "finish_reason": response.get("finish_reason"),
+                    "usage": response.get("usage"),
+                    "model_calls": len(model_usages),
+                    "model_usages": model_usages,
                     "validation": validation,
                     "error": error,
                 }
@@ -243,7 +263,7 @@ async def _collect_independent_calls(
                 tool_result=lambda _call: {
                     "ok": False,
                     "error": error,
-                    "repair_remaining": attempt < 2,
+                    "repair_remaining": attempt < max_attempts,
                     "gameplay_submitted": False,
                 },
             )
@@ -301,7 +321,15 @@ def _extend_tool_history(
     )
 
 
-async def run(output_root: Path, *, independent_calls: int = 3) -> Path:
+async def run(
+    output_root: Path,
+    *,
+    independent_calls: int = 3,
+    user_text: str = USER_TEXT,
+    validate: Callable[[dict[str, Any]], tuple[dict[str, Any], str | None]] = _validate_response,
+    connection_status: dict[str, Any] | None = None,
+    max_attempts: int = 2,
+) -> Path:
     load_dotenv(Path(".env"), override=False)
     api_key = os.getenv("DEEPSEEK_API_KEY")
     if not api_key:
@@ -309,7 +337,7 @@ async def run(output_root: Path, *, independent_calls: int = 3) -> Path:
     tools = get_minecraft_tools()
     state = create_initial_state(
         "real-model-minecraft-contract",
-        user_text=USER_TEXT,
+        user_text=user_text,
         system_prompt="You are Anima. Acknowledge the request briefly and use tools precisely.",
     )
     config = {"configurable": {"tools_map": {item.name: item for item in tools}}}
@@ -328,17 +356,27 @@ async def run(output_root: Path, *, independent_calls: int = 3) -> Path:
     started_at_ms = int(time.time() * 1_000)
 
     async def invoke(user_text: str, history: list[Any]) -> dict[str, Any]:
-        return await llm.chat_with_tools(
+        response = await llm.chat_with_tools(
             user_text,
             tools=tools,
             langchain_history=history,
             system_prompt=compiled.system_prompt,
         )
+        usage = llm.consume_usage()
+        response["usage"] = usage.model_dump(mode="json") if usage is not None else None
+        return response
 
-    calls = await _collect_independent_calls(
-        invoke=invoke,
-        independent_calls=independent_calls,
-    )
+    try:
+        calls = await _collect_independent_calls(
+            invoke=invoke,
+            validate=validate,
+            independent_calls=independent_calls,
+            user_text=user_text,
+            connection_status=connection_status,
+            max_attempts=max_attempts,
+        )
+    finally:
+        await llm.close()
     success_count = sum(bool(call["final_validation"].get("valid")) for call in calls)
 
     finished_at_ms = int(time.time() * 1_000)
@@ -354,7 +392,14 @@ async def run(output_root: Path, *, independent_calls: int = 3) -> Path:
         "provider": "deepseek",
         "model": "deepseek-v4-flash",
         "tool_names": [item.name for item in tools],
-        "exact_user_text": USER_TEXT,
+        "exact_user_text": user_text,
+        "max_attempts_per_conversation": max_attempts,
+        "connection_context_source": "provided"
+        if connection_status is not None
+        else "synthetic_planning_fixture",
+        "model_calls": sum(
+            attempt["model_calls"] for call in calls for attempt in call["attempts"]
+        ),
         "required_independent_calls": independent_calls,
         "successful_independent_calls": success_count,
         "calls": calls,
@@ -382,8 +427,15 @@ def main() -> int:
         default=Path("artifacts/minecraft-adaptive-mission/real-model-contract"),
     )
     parser.add_argument("--independent-calls", type=int, default=3)
+    parser.add_argument("--max-attempts", type=int, choices=(1, 2), default=2)
     args = parser.parse_args()
-    output = asyncio.run(run(args.output_root, independent_calls=args.independent_calls))
+    output = asyncio.run(
+        run(
+            args.output_root,
+            independent_calls=args.independent_calls,
+            max_attempts=args.max_attempts,
+        )
+    )
     print(output.as_posix())
     return 0
 

@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from types import SimpleNamespace
 
+import pytest
+
 from animetta.acceptance.minecraft_showcase import (
     _added_advancement_ids,
     _mission_advancement_events,
@@ -15,6 +17,148 @@ from scripts.minecraft_real_model_contract import (
     _starter_shelter_budget_admissible,
     _starter_shelter_static_cost,
 )
+
+
+async def test_model_collector_keeps_custom_task_and_provided_connection_context() -> None:
+    task = "从空背包规划到点亮地狱门"
+    status = {"state": "ready", "profile": "independent-portal", "generation_id": 7}
+    prompts = []
+
+    async def invoke(user_text, history):
+        prompts.append(user_text)
+        if len(prompts) == 1:
+            assert user_text == task
+            return {
+                "tool_calls": [
+                    {"name": "mc_connection", "args": {"operation": "status"}, "id": "status-1"}
+                ]
+            }
+        assert json.loads(history[-1].content) == status
+        assert history[0].content == task
+        return {"content": "portal-plan", "tool_calls": []}
+
+    calls = await _collect_independent_calls(
+        invoke=invoke,
+        validate=lambda response: ({"valid": response.get("content") == "portal-plan"}, None),
+        independent_calls=1,
+        user_text=task,
+        connection_status=status,
+        max_attempts=1,
+    )
+    assert calls[0]["final_validation"]["valid"]
+    assert len(prompts) == 2
+    assert status == {"state": "ready", "profile": "independent-portal", "generation_id": 7}
+
+
+async def test_single_attempt_model_collector_records_failure_without_another_call() -> None:
+    prompts = []
+
+    async def invoke(user_text, _history):
+        prompts.append(user_text)
+        return {"tool_calls": [], "usage": {"total_tokens": 11}}
+
+    calls = await _collect_independent_calls(
+        invoke=invoke,
+        validate=lambda _response: ({"valid": False}, "invalid plan"),
+        independent_calls=1,
+        user_text="portal task",
+        max_attempts=1,
+    )
+    assert prompts == ["portal task"]
+    assert calls[0]["final_validation"]["valid"] is False
+    assert calls[0]["attempts"][0]["usage"] == {"total_tokens": 11}
+
+
+@pytest.mark.parametrize("attempts", [0, 3])
+async def test_model_collector_cannot_raise_existing_repair_attempt_limit(attempts) -> None:
+    async def invoke(_user_text, _history):
+        raise AssertionError("invalid limits must not call a model")
+
+    with pytest.raises(ValueError, match="max_attempts"):
+        await _collect_independent_calls(invoke=invoke, max_attempts=attempts)
+
+
+async def test_model_collector_does_not_turn_provided_disconnected_status_into_ready() -> None:
+    count = 0
+
+    async def invoke(user_text, history):
+        nonlocal count
+        count += 1
+        if count == 1:
+            return {
+                "tool_calls": [
+                    {"name": "mc_connection", "args": {"operation": "status"}, "id": "status-1"}
+                ]
+            }
+        assert json.loads(history[-1].content) == {"state": "disconnected"}
+        assert "已确认 ready" not in user_text
+        return {"tool_calls": []}
+
+    calls = await _collect_independent_calls(
+        invoke=invoke,
+        validate=lambda _response: ({"valid": False}, "not connected"),
+        independent_calls=1,
+        user_text="portal",
+        connection_status={"state": "disconnected"},
+        max_attempts=1,
+    )
+    assert calls[0]["final_validation"]["valid"] is False
+    assert calls[0]["attempts"][0]["model_calls"] == count == 2
+
+
+@pytest.mark.parametrize("validation_error", [False, True])
+async def test_real_model_runner_passes_task_contract_and_closes_its_provider(
+    monkeypatch,
+    tmp_path,
+    validation_error,
+) -> None:
+    from scripts import minecraft_real_model_contract as contract
+
+    class Provider:
+        closed = False
+
+        async def chat_with_tools(self, user_text, **_kwargs):
+            assert user_text == "portal task"
+            return {"content": "portal plan", "tool_calls": []}
+
+        def consume_usage(self):
+            return None
+
+        async def close(self):
+            self.closed = True
+
+    provider = Provider()
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "test-provider-key")
+    monkeypatch.setattr(contract.OpenAILLM, "from_config", lambda _config: provider)
+
+    def validate(response):
+        assert response["content"] == "portal plan"
+        if validation_error:
+            raise ValueError("invalid task contract")
+        return {"valid": True}, None
+
+    async def run():
+        return await contract.run(
+            tmp_path,
+            independent_calls=1,
+            user_text="portal task",
+            validate=validate,
+            max_attempts=1,
+            connection_status={"state": "ready"},
+        )
+
+    if validation_error:
+        with pytest.raises(ValueError, match="invalid task contract"):
+            await run()
+    else:
+        result = json.loads((await run()).read_text(encoding="utf-8"))
+        assert result["exact_user_text"] == "portal task"
+        assert result["max_attempts_per_conversation"] == 1
+        assert result["connection_context_source"] == "provided"
+        assert result["model_calls"] == 1
+        assert result["calls"][0]["attempts"][0]["model_usages"] == [None]
+        assert result["gameplay_executed"] is False
+    assert provider.closed
 
 
 async def test_real_model_gate_uses_three_fresh_independent_conversations() -> None:
