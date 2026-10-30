@@ -11,8 +11,9 @@ from animetta.tools.minecraft.survival.workflows import (
     WorkflowDefinition,
 )
 
+from ..budget import BudgetUsage, ExecutionBudget
 from ..goal_models import GoalSpec
-from .base import Complete, StrategyDecision, StrategyFailure
+from .base import Complete, ExecuteStep, StrategyDecision, StrategyFailure
 
 
 class FallbackStrategy:
@@ -66,10 +67,12 @@ class FallbackStrategy:
             if isinstance(count, int) and count < remaining:
                 state["repeat_collection"] = True
             if isinstance(count, int) and count > remaining:
-                return step.model_copy(
+                step = step.model_copy(
                     update={"parameters": {**step.parameters, "count": remaining}}
                 )
-            return step
+            return self._bounded_collection_step(
+                state, workflow, index, target, remaining, step, observation
+            )
         if index >= len(workflow.steps):
             return Complete(
                 output={
@@ -78,6 +81,63 @@ class FallbackStrategy:
                 }
             )
         return workflow.steps[index]
+
+    def _bounded_collection_step(
+        self,
+        state: dict,
+        workflow: WorkflowDefinition,
+        index: int,
+        target: InventoryThreshold,
+        remaining: int,
+        step: ExecuteStep,
+        observation: Observation,
+    ) -> ExecuteStep | StrategyFailure:
+        """Tighten repeated batches using the controller's current account snapshot."""
+        available = state.get("budget_remaining")
+        batch_size = workflow.steps[index].parameters.get("count")
+        if (
+            not isinstance(available, ExecutionBudget)
+            or not isinstance(batch_size, int)
+            or batch_size <= 0
+            or batch_size >= target.quantity
+        ):
+            return step
+        count = step.parameters["count"]
+        pending = remaining - count
+        followup = BudgetUsage(
+            max_actions=(pending + batch_size - 1) // batch_size,
+            max_blocks_changed=pending,
+        )
+        for future_index in range(index + 1, len(workflow.steps)):
+            checkpoint = workflow.checkpoints[future_index] if workflow.checkpoints else None
+            if checkpoint is not None and self._checkpoint_satisfied(checkpoint, observation):
+                continue
+            followup = followup.plus(workflow.steps[future_index].maximum_cost)
+        maximum = step.maximum_cost
+        blocks = min(
+            maximum.max_blocks_changed, available.max_blocks_changed - followup.max_blocks_changed
+        )
+        travel = min(
+            maximum.max_travel_distance,
+            available.max_travel_distance - followup.max_travel_distance,
+        )
+        # Keep the runtime's existing two-block stopping reserve in this batch.
+        if (
+            blocks < count + 2
+            or travel < 0
+            or available.max_actions < maximum.max_actions + followup.max_actions
+        ):
+            return StrategyFailure(
+                code="BUDGET_EXHAUSTED",
+                message="Remaining budget cannot cover the collection batch and remaining workflow",
+            )
+        return step.model_copy(
+            update={
+                "maximum_cost": maximum.model_copy(
+                    update={"max_blocks_changed": blocks, "max_travel_distance": travel}
+                )
+            }
+        )
 
     def accept_partial_result(
         self,

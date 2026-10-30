@@ -245,6 +245,7 @@ class UnifiedVoyagerController:
         ordinal = 0
         try:
             while True:
+                state["budget_remaining"] = account.remaining
                 decision = strategy.propose(state, observation)
                 if isinstance(decision, StrategyFailure):
                     raise RuntimeError(f"{decision.code}: {decision.message}")

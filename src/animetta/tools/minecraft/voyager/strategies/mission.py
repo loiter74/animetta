@@ -65,6 +65,8 @@ class MissionStrategy:
                     selected,
                 )
 
+            if "budget_remaining" in state:
+                state["strategy_state"]["budget_remaining"] = state["budget_remaining"]
             decision = self._strategies[selected].propose(
                 state["strategy_state"],
                 observation,

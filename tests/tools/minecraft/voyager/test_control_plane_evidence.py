@@ -187,6 +187,91 @@ async def test_controller_passes_collected_typed_evidence_to_goal_verifier() -> 
     assert activity.phases == ["observing", "checking"]
 
 
+async def test_controller_refreshes_canonical_budget_through_mission_fallback() -> None:
+    from animetta.tools.minecraft.survival.mainline import build_nether_portal_mission
+    from animetta.tools.minecraft.survival.registry import WorkflowRegistry
+    from animetta.tools.minecraft.survival.workflows import nether_preparation_workflows
+    from animetta.tools.minecraft.voyager.strategies.fallback import FallbackStrategy
+    from animetta.tools.minecraft.voyager.strategies.mission import MissionStrategy
+
+    mission = build_nether_portal_mission(mission_id="budget-context")
+    registry = WorkflowRegistry()
+    registry.register(
+        next(w for w in nether_preparation_workflows() if w.target == "nether_iron_kit")
+    )
+    strategy = MissionStrategy(live=None, learn=None, fallback=FallbackStrategy(registry=registry))
+    observation = Observation.model_validate(MESSAGES["Observation"]).model_copy(
+        update={"inventory": {"stone_pickaxe": 1, "oak_planks": 23, "raw_iron": 0}}
+    )
+
+    class OreRuntime(RuntimeStub):
+        async def observe(self, request):
+            return observation
+
+    class BudgetExecutor(ExecutorStub):
+        def __init__(self):
+            self.calls = []
+
+        async def execute_step(self, **kwargs):
+            self.calls.append(kwargs)
+            if len(self.calls) == 2:
+                raise ExecutorError(
+                    ControlPlaneError(
+                        code="TEST_STOP",
+                        message="End controlled budget transfer test",
+                        phase="admission",
+                        outcome_known=True,
+                        world_may_have_changed=False,
+                        caller_may_resubmit=False,
+                        operator_action="none",
+                    )
+                )
+            account = (
+                kwargs["account"]
+                .reserve("first-ore", kwargs["step"].maximum_cost)
+                .settle("first-ore", BudgetUsage(max_actions=1, max_blocks_changed=89))
+            )
+            return StepExecutionResult(
+                receipt=ActionReceipt.model_validate(MESSAGES["ActionReceipt"]),
+                after=observation.model_copy(
+                    update={"inventory": {**observation.inventory, "raw_iron": 1}}
+                ),
+                account=account,
+            )
+
+    executor = BudgetExecutor()
+    controller = UnifiedVoyagerController(
+        runtime=OreRuntime(),
+        repository=object(),
+        executor=executor,
+        strategy_factories={"mission": lambda _manifest, _command: strategy},
+        verifier=VerifierStub(),
+        evidence_collector=EvidenceCollectorStub(),
+        make_id=lambda prefix: f"{prefix}-id",
+        now_ms=lambda: 10,
+    )
+    cmd = _command().model_copy(
+        update={
+            "payload": {
+                "goal": mission.objectives[0].goal.model_dump(mode="json"),
+                "execution_policy": {"stop_on_action_failure": True},
+            },
+            "effective_budget": mission.budget.model_copy(
+                update=mission.objectives[0].budget.model_dump()
+            ).model_dump(mode="json"),
+        }
+    )
+    with pytest.raises(CommandExecutionError, match="End controlled budget transfer test"):
+        await controller.execute_command(cmd)
+    assert len(executor.calls) == 2
+    assert executor.calls[0]["account"].used.max_blocks_changed == 0
+    assert executor.calls[0]["step"].maximum_cost.max_blocks_changed == 192
+    assert executor.calls[1]["account"].used.max_blocks_changed == 89
+    assert executor.calls[1]["account"].remaining.max_blocks_changed == 167
+    assert executor.calls[1]["step"].maximum_cost.max_blocks_changed == 146
+    assert executor.calls[1]["account"].limit == executor.calls[0]["account"].limit
+
+
 @pytest.mark.parametrize("error_code", ["PARTIAL_COLLECT", "BUDGET_EXHAUSTED"])
 @pytest.mark.parametrize("recoverable", [True, False])
 @pytest.mark.parametrize("stop_on_action_failure", [False, True])

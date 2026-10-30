@@ -126,6 +126,100 @@ def test_iron_batches_keep_the_existing_command_account_and_per_call_limits() ->
         settled.reserve("cannot-reset-the-account", ore.maximum_cost)
 
 
+@pytest.mark.parametrize("wrapped", [False, True])
+def test_iron_batch_reservation_uses_current_account_and_preserves_remaining_work(
+    wrapped: bool,
+) -> None:
+    from animetta.tools.minecraft.voyager.strategies.mission import MissionStrategy
+
+    mission = build_nether_portal_mission(mission_id="remaining-iron")
+    registry = WorkflowRegistry()
+    registry.register(
+        next(w for w in nether_preparation_workflows() if w.target == "nether_iron_kit")
+    )
+    fallback = FallbackStrategy(registry=registry)
+    strategy = MissionStrategy(live=None, learn=None, fallback=fallback) if wrapped else fallback
+    state = strategy.prepare(mission.objectives[0].goal)
+    observation = Observation.model_validate(MESSAGES["Observation"]).model_copy(
+        update={
+            "inventory": {"stone_pickaxe": 1, "oak_planks": 23, "cobblestone": 40, "raw_iron": 1}
+        }
+    )
+    limit = mission.budget.model_copy(update=mission.objectives[0].budget.model_dump())
+    # R59 settled usage: the next batch must fit 167 blocks rather than request 192.
+    account = BudgetAccount(
+        limit=limit,
+        used=BudgetUsage(
+            max_actions=8, max_blocks_changed=89, max_travel_distance=63.67350095384333
+        ),
+    )
+    for stock in range(1, 7):
+        state["budget_remaining"] = account.remaining
+        decision = strategy.propose(state, observation)
+        assert decision.kind == "execute" and decision.parameters == {
+            "block_type": "iron_ore",
+            "count": 1,
+        }
+        # Keep both workstation ceilings and one mutation per still-needed later ore.
+        assert (
+            3
+            <= decision.maximum_cost.max_blocks_changed
+            <= account.remaining.max_blocks_changed - 16 - (6 - stock)
+        )
+        assert decision.maximum_cost.max_blocks_changed <= 192
+        assert decision.maximum_cost.max_travel_distance <= min(
+            192, account.remaining.max_travel_distance - 16
+        )
+        actual_blocks = decision.maximum_cost.max_blocks_changed - 2 if stock == 1 else 1
+        account = account.reserve(str(stock), decision.maximum_cost).settle(
+            str(stock), BudgetUsage(max_actions=1, max_blocks_changed=actual_blocks)
+        )
+        state = strategy.accept_result(state, {})
+        observation = observation.model_copy(
+            update={"inventory": {**observation.inventory, "raw_iron": stock + 1}}
+        )
+    for recipe in ("furnace", "smelt"):
+        state["budget_remaining"] = account.remaining
+        decision = strategy.propose(state, observation)
+        assert decision.capability == ("craft" if recipe == "furnace" else "smelt")
+        account = account.reserve(recipe, decision.maximum_cost).settle(
+            recipe, BudgetUsage(max_actions=1, max_blocks_changed=3)
+        )
+        state = strategy.accept_result(state, {})
+        inventory = {**observation.inventory, "furnace": 1}
+        if recipe == "smelt":
+            inventory.update(raw_iron=0, iron_ingot=7)
+        observation = observation.model_copy(update={"inventory": inventory})
+    assert strategy.propose(state, observation).kind == "complete"
+    assert account.limit == limit
+    assert account.used.max_actions == limit.max_actions == 16
+    assert account.used.max_blocks_changed <= limit.max_blocks_changed == 256
+
+
+@pytest.mark.parametrize(
+    "remaining_override",
+    [{"max_blocks_changed": 17}, {"max_actions": 7}, {"max_travel_distance": 15}],
+)
+def test_iron_batch_rejects_budget_that_cannot_cover_the_remaining_goal(
+    remaining_override: dict[str, int],
+) -> None:
+    mission = build_nether_portal_mission(mission_id="insufficient-iron")
+    registry = WorkflowRegistry()
+    registry.register(
+        next(w for w in nether_preparation_workflows() if w.target == "nether_iron_kit")
+    )
+    strategy = FallbackStrategy(registry=registry)
+    state = strategy.prepare(mission.objectives[0].goal)
+    state["budget_remaining"] = mission.budget.model_copy(
+        update={**mission.objectives[0].budget.model_dump(), **remaining_override}
+    )
+    observation = Observation.model_validate(MESSAGES["Observation"]).model_copy(
+        update={"inventory": {"stone_pickaxe": 1, "oak_planks": 23, "raw_iron": 1}}
+    )
+    decision = strategy.propose(state, observation)
+    assert decision.kind == "failure" and decision.code == "BUDGET_EXHAUSTED"
+
+
 def test_iron_kit_skips_remaining_batches_when_seven_ingots_are_observed() -> None:
     mission = build_nether_portal_mission(mission_id="iron-already-smelted")
     registry = WorkflowRegistry()
