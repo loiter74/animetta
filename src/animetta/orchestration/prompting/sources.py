@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 from animetta.services.bilibili.response_policy import MINECRAFT_NARRATION_SOURCE
 
 from .types import (
@@ -43,8 +45,23 @@ class MinecraftMissionPromptSource:
             content = ""
         else:
             from animetta.tools.minecraft.blueprint import starter_shelter_blueprint
+            from animetta.tools.minecraft.core.assembly import _budget_policy
+            from animetta.tools.minecraft.core.bridge import get_bridge
+            from animetta.tools.minecraft.core.config import MinecraftConfig
 
             shelter = starter_shelter_blueprint()
+            bridge = get_bridge()
+            ceiling = _budget_policy(
+                bridge.config if bridge is not None else MinecraftConfig()
+            ).mission
+            assert ceiling is not None
+            limits = json.dumps(
+                ceiling.model_dump(
+                    mode="json", exclude={"resource_consumption", "protected_items"}
+                ),
+                sort_keys=True,
+                separators=(",", ":"),
+            )
             content = (
                 "## Minecraft typed mission contract\n\n"
                 "Before acting, ensure mc_connection reports ready; use its connect operation "
@@ -59,19 +76,26 @@ class MinecraftMissionPromptSource:
                 "skill outcomes belong in typed mission completion predicates.\n\n"
                 "Keep the tool arguments compact: omit optional/default-valued fields, avoid "
                 "duplicate predicates, and emit strict complete JSON.\n\n"
-                "Use a deployable parent budget no larger than: queue_timeout_ms=60000, "
-                "execution_timeout_ms=900000, max_actions=128, max_strategy_attempts=8, "
-                "max_travel_distance=512, max_blocks_changed=128, max_damage_taken=8. "
+                f"Runtime mission admission ceilings: {limits}\n"
+                "These ceilings come from the same policy used by Voyager, not a budget "
+                "allocation or permission to spend them. Stricter user/task limits still apply; "
+                "never raise a budget, deadline, or retry allowance to make a plan fit. "
                 "For every quantitative field, the sum across all objective budgets must be "
                 "less than or equal to the parent value. Give zero damage/block cost to "
-                "objectives that do not need it, and express the two vanilla advancements as "
-                "a mission-level completion predicate rather than extra placeholder goals.\n\n"
+                "objectives that do not need it. Plan the initial DAG from the requested "
+                "outcome and committed observations, reusing verified prerequisites and "
+                "trusted skills. Autonomy mode off disables automatic child-goal expansion; "
+                "it does not forbid planning the initial mission.\n\n"
                 "When the concrete novel item and reusable skill are not known yet, do not "
                 "invent discover/learn/reuse placeholder objectives. Put novel_fact>=1 and "
                 "trusted_skill>=1 in mission completion predicates and authorize bounded "
-                "discovery/skill autonomy; curriculum will append concrete evidence-backed "
-                "children later. For the showcase-shaped request with zombie, skeleton, spider, "
+                "discovery/skill autonomy only within the user's authority; curriculum will "
+                "append concrete evidence-backed children later. The following are "
+                "showcase-specific examples, not general limits: for the showcase-shaped "
+                "request with zombie, skeleton, spider, "
                 "and starter shelter, the initial DAG therefore has exactly four fixed goals. "
+                "Express its two vanilla advancements as a mission-level completion "
+                "predicate rather than extra placeholder goals. "
                 "Use these conservative child budgets: each combat goal actions=4, attempts=2, "
                 "travel=32, blocks=0, damage=2; shelter actions=84, attempts=2, travel=32, "
                 "blocks=85, damage=0. Use exact namespaced entity IDs minecraft:zombie, "

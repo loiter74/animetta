@@ -1,12 +1,56 @@
 from __future__ import annotations
 
 import json
+import re
+from types import SimpleNamespace
 
 from animetta.orchestration.graph.state import create_initial_state
 from animetta.orchestration.graph.tool_node import tool_node
 from animetta.orchestration.prompting.pipeline import compile as compile_prompt
 from animetta.tools.minecraft.core.tools import MinecraftExecuteRequest, get_minecraft_tools
 from tests.tools.minecraft.mission.test_coordinator import _fixed_mission
+
+
+async def test_minecraft_prompt_uses_the_configured_runtime_mission_limits(monkeypatch) -> None:
+    from animetta.tools.minecraft.core import bridge as bridge_module
+    from animetta.tools.minecraft.core.assembly import _budget_policy
+    from animetta.tools.minecraft.core.config import MinecraftConfig
+
+    config = MinecraftConfig(safety={"max_mission_travel_distance": 137})
+    monkeypatch.setattr(bridge_module, "_bridge", SimpleNamespace(config=config))
+    state = create_initial_state("mission-limits", user_text="从零建成地狱门")
+    compiled = await compile_prompt(
+        state, {"configurable": {"tools_map": {tool.name: tool for tool in get_minecraft_tools()}}}
+    )
+    match = re.search(r"Runtime mission admission ceilings: (\{[^\n]+\})", compiled.system_prompt)
+    assert match is not None
+    advertised = json.loads(match.group(1))
+    policy = _budget_policy(config).mission
+    assert policy is not None
+    assert advertised == policy.model_dump(
+        mode="json", exclude={"resource_consumption", "protected_items"}
+    )
+    assert advertised["max_travel_distance"] == 137
+    assert "Stricter user/task limits still apply" in compiled.system_prompt
+
+
+async def test_full_portal_mission_fits_the_advertised_runtime_ceiling(monkeypatch) -> None:
+    from animetta.tools.minecraft.core import bridge as bridge_module
+    from animetta.tools.minecraft.survival.mainline import build_nether_portal_mission
+
+    monkeypatch.setattr(bridge_module, "_bridge", None)
+    state = create_initial_state("portal-planning", user_text="从空背包自主规划到点亮地狱门")
+    compiled = await compile_prompt(
+        state, {"configurable": {"tools_map": {tool.name: tool for tool in get_minecraft_tools()}}}
+    )
+    match = re.search(r"Runtime mission admission ceilings: (\{[^\n]+\})", compiled.system_prompt)
+    assert match is not None
+    ceiling = json.loads(match.group(1))
+    mission = build_nether_portal_mission(mission_id="portal-planning", home=(0, 64, 0))
+    assert len(mission.objectives) == 9
+    requested = mission.budget.model_dump(mode="json")
+    assert all(requested[key] <= value for key, value in ceiling.items())
+    assert "showcase-specific examples, not general limits" in compiled.system_prompt
 
 
 async def test_compiled_prompt_routes_fixed_and_compound_requests_to_typed_missions() -> None:
