@@ -242,3 +242,126 @@ test('R33 body-overlapping excavation and special attackers cannot use the wall 
     }
   }
 });
+
+function r62CreeperFixture() {
+  const bot = fixture();
+  const Block = BlockLoader(bot.registry);
+  const creeperData = bot.registry.entitiesByName.creeper;
+  bot.entity.position = new Vec3(-72.50431682764764, 36, 14.460011918950478);
+  // Raw R62 metadata was not retained, so this replay pairs the exact R62
+  // geometry with a controlled inactive/uncharged/unignited creeper state.
+  const metadata = [];
+  metadata[creeperData.metadataKeys.indexOf('swell_dir')] = -1;
+  metadata[creeperData.metadataKeys.indexOf('is_powered')] = false;
+  metadata[creeperData.metadataKeys.indexOf('is_ignited')] = false;
+  bot.entities = {
+    62: {
+      id: 62, name: 'creeper', metadata,
+      position: new Vec3(-76.70654874609782, 34, 3.4513750279456477),
+      height: creeperData.height, width: creeperData.width,
+    },
+  };
+  // Only the six verified R62 wall cells are known stone; every other
+  // position stays unknown (null) instead of forged air.
+  const wallCells = new Set([
+    '-76,34,8', '-76,35,8', '-76,36,8', '-75,34,8', '-75,35,8', '-75,36,8',
+  ]);
+  const replaced = new Map();
+  const world = new WorldSync(null);
+  world.getBlock = position => {
+    const p = position.floored();
+    const key = `${p.x},${p.y},${p.z}`;
+    const name = replaced.has(key) ? replaced.get(key) : wallCells.has(key) ? 'stone' : null;
+    if (name === null) return null;
+    const block = Block.fromStateId(bot.registry.blocksByName[name].defaultState, 0);
+    block.position = p;
+    return block;
+  };
+  world.raycast = () => null;
+  bot.world = world;
+  bot.blockAt = world.getBlock;
+  return {
+    bot, creeper: bot.entities[62],
+    breakCell(key, name) { replaced.set(key, name); },
+  };
+}
+
+test('R62 geometry with an explicitly safe creeper behind the verified stone layer is not an immediate threat', () => {
+  const { bot } = r62CreeperFixture();
+  assert.equal(findHostileThreat(bot), null);
+});
+
+test('R62 creeper cover exemption demands exact safe metadata and a complete known wall', () => {
+  const { bot, creeper, breakCell } = r62CreeperFixture();
+  const keys = bot.registry.entitiesByName.creeper.metadataKeys;
+  const safeCopy = () => {
+    const metadata = [];
+    metadata[keys.indexOf('swell_dir')] = -1;
+    metadata[keys.indexOf('is_powered')] = false;
+    metadata[keys.indexOf('is_ignited')] = false;
+    return metadata;
+  };
+  // Explicitly dangerous creeper states keep the melee warning.
+  for (const [key, value] of [['swell_dir', 1], ['is_powered', true], ['is_ignited', true]]) {
+    creeper.metadata = safeCopy();
+    creeper.metadata[keys.indexOf(key)] = value;
+    const threat = findHostileThreat(bot);
+    assert.equal(threat?.entity_type, 'creeper', `${key}=${value}`);
+    assert.equal(threat?.warning_radius, 12, `${key}=${value}`);
+  }
+  // Unknown, missing, or mistyped metadata never proves a safe creeper.
+  const registry = bot.registry;
+  bot.registry = { ...registry, entitiesByName: { ...registry.entitiesByName, creeper: undefined } };
+  creeper.metadata = safeCopy();
+  assert.equal(findHostileThreat(bot)?.entity_type, 'creeper', 'registry without creeper data');
+  bot.registry = { ...registry, entitiesByName: { ...registry.entitiesByName,
+    creeper: { ...registry.entitiesByName.creeper, metadataKeys: keys.filter(key => key !== 'swell_dir') } } };
+  assert.equal(findHostileThreat(bot)?.entity_type, 'creeper', 'metadataKeys missing swell_dir');
+  bot.registry = registry;
+  delete creeper.metadata;
+  assert.equal(findHostileThreat(bot)?.entity_type, 'creeper', 'entity without metadata');
+  creeper.metadata = safeCopy();
+  creeper.metadata[keys.indexOf('is_powered')] = 0;
+  assert.equal(findHostileThreat(bot)?.entity_type, 'creeper', 'numeric flag is not truthy-coerced to false');
+  creeper.metadata = safeCopy();
+  creeper.metadata[keys.indexOf('swell_dir')] = '-1';
+  assert.equal(findHostileThreat(bot)?.entity_type, 'creeper', 'string swell_dir is a wrong type');
+  // Any hole or unknown cell in the verified layer keeps the warning.
+  creeper.metadata = safeCopy();
+  breakCell('-75,35,8', 'air');
+  assert.equal(findHostileThreat(bot)?.entity_type, 'creeper', 'known hole in the wall');
+  breakCell('-75,35,8', null);
+  assert.equal(findHostileThreat(bot)?.entity_type, 'creeper', 'unknown wall cell');
+  breakCell('-75,35,8', 'stone');
+  // A proposed excavation origin inside the only wall cannot borrow the dug wall as cover.
+  assert.equal(findHostileThreat(bot, new Vec3(-75.5, 35, 8.5))?.entity_type, 'creeper', 'excavation origin inside the wall');
+  // The same geometry and metadata never exempt other special enemies.
+  creeper.name = 'enderman';
+  assert.equal(findHostileThreat(bot)?.entity_type, 'enderman', 'identical metadata on a non-creeper stays a threat');
+});
+
+test('R62 a safe creeper behind the wall never masks other visible enemies', () => {
+  const { bot } = r62CreeperFixture();
+  bot.entities[77] = { id: 77, name: 'skeleton', position: new Vec3(-68.5, 36, 12.5) };
+  const threat = findHostileThreat(bot);
+  assert.equal(threat?.entity_id, '77');
+  assert.equal(threat?.warning_radius, 24);
+});
+
+test('vanilla spawn metadata omits default creeper flags only after initial state is known', () => {
+  const { bot, creeper } = r62CreeperFixture();
+  const keys = bot.registry.entitiesByName.creeper.metadataKeys;
+  creeper.metadata = [];
+  assert.equal(findHostileThreat(bot)?.entity_type, 'creeper', 'spawn without initial metadata stays unknown');
+  creeper.metadata[keys.indexOf('health')] = 20;
+  assert.equal(findHostileThreat(bot), null, 'known vanilla initial metadata may omit all three default flags');
+  creeper.metadata[keys.indexOf('is_ignited')] = true;
+  assert.equal(findHostileThreat(bot)?.entity_type, 'creeper', 'later non-default state overrides the implicit default');
+  delete creeper.metadata[keys.indexOf('is_ignited')];
+  creeper.metadata[keys.indexOf('is_powered')] = undefined;
+  assert.equal(findHostileThreat(bot)?.entity_type, 'creeper', 'an explicitly malformed slot is not an omitted default');
+  delete creeper.metadata[keys.indexOf('is_powered')];
+  const registry = bot.registry;
+  bot.registry = { ...registry, version: { ...registry.version, version: -1 } };
+  assert.equal(findHostileThreat(bot)?.entity_type, 'creeper', 'unknown protocol defaults remain unknown');
+});

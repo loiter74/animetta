@@ -6,6 +6,7 @@ import minecraftData from 'minecraft-data';
 import injectEntities from 'mineflayer/lib/plugins/entities.js';
 import pathfinderPkg from 'mineflayer-pathfinder';
 import prismarineBlock from 'prismarine-block';
+import prismarineEntity from 'prismarine-entity';
 import { Physics, PlayerState } from 'prismarine-physics';
 
 import { createGameBotV2Adapter } from '../src/runtime/gamebotV2Adapter.js';
@@ -599,6 +600,75 @@ test('a newly approaching skeleton stops collection before damage and removes th
   assert.equal(receipt.budget_usage.max_damage_taken, 0);
   for (const event of ['physicsTick', 'entityMoved', 'entitySpawn']) assert.equal(fixture.bot.listenerCount(event), 0);
   fixture.adapter.dispose();
+});
+
+test('SDK creeper metadata changes stop collection after known covered dormancy', async () => {
+  for (const [key, value] of [['swell_dir', 1], ['is_powered', true], ['is_ignited', true]]) {
+    let passedProtectedCheck = false;
+    let continuedAfterDanger = false;
+    const fixture = adapterFixture({ actions: {
+      collectWithEvidence: async (_block, _count, context) => withCollectionEvidence(fixture.bot, async () => {
+        fixture.bot.emit('physicsTick');
+        await context.operation_scope.wait(1);
+        passedProtectedCheck = true;
+        fixture.protocolClient.emit('entity_metadata', {
+          entityId: 424,
+          metadata: [{ key: keys.indexOf(key), type: key === 'swell_dir' ? 'varint' : 'boolean', value }],
+        });
+        fixture.bot.emit('physicsTick');
+        await context.operation_scope.wait(1);
+        continuedAfterDanger = true;
+      }),
+    } });
+    const { bot } = fixture;
+    bot.entity.position = new Vec3(-72.50431682764764, 36, 14.460011918950478);
+    bot.supportFeature = bot.registry.supportFeature;
+    injectEntities(bot);
+    bot.entities[bot.entity.id] = bot.entity;
+    const Entity = prismarineEntity(bot.registry);
+    const creeper = new Entity(424);
+    const definition = bot.registry.entitiesByName.creeper;
+    const keys = definition.metadataKeys;
+    Object.assign(creeper, {
+      name: 'creeper', width: definition.width, height: definition.height,
+      position: new Vec3(-76.70654874609782, 34, 3.4513750279456477),
+    });
+    bot.entities[creeper.id] = creeper;
+    fixture.protocolClient.emit('entity_metadata', {
+      entityId: creeper.id,
+      metadata: [
+        { key: keys.indexOf('health'), type: 'float', value: 20 },
+      ],
+    });
+    assert.equal(Array.isArray(creeper.metadata), true, 'installed Entity and metadata plugin retain the array');
+    for (const name of ['swell_dir', 'is_powered', 'is_ignited']) {
+      assert.equal(Object.hasOwn(creeper.metadata, keys.indexOf(name)), false, 'vanilla omits default metadata');
+    }
+    const Block = prismarineBlock(bot.registry);
+    const wall = new Set(['-76,34,8', '-76,35,8', '-76,36,8', '-75,34,8', '-75,35,8', '-75,36,8']);
+    const originalBlockAt = bot.blockAt;
+    bot.blockAt = position => {
+      const p = position.floored();
+      if (!wall.has(`${p.x},${p.y},${p.z}`)) return originalBlockAt(position);
+      const block = Block.fromStateId(bot.registry.blocksByName.stone.defaultState, 0);
+      block.position = p;
+      return block;
+    };
+    bot.world = { raycast: () => null };
+    const events = ['physicsTick', 'entityMoved', 'entitySpawn'];
+    const before = Object.fromEntries(events.map(event => [event, bot.listenerCount(event)]));
+    const action = request(fixture.adapter, 'collect', { block_type: 'iron_ore', count: 1 }, `creeper-${key}`);
+    action.remaining_budget = budget({ max_damage_taken: 0 });
+    const receipt = await fixture.adapter.runtime.executeAction(action);
+    assert.equal(passedProtectedCheck, true, key);
+    assert.equal(continuedAfterDanger, false, key);
+    assert.equal(receipt.outcome, 'error', key);
+    assert.equal(receipt.error.code, 'UNSAFE_AREA', key);
+    assert.equal(receipt.error.details.threat.warning_radius, 12, key);
+    assert.equal(receipt.budget_usage.max_damage_taken, 0, key);
+    for (const event of events) assert.equal(bot.listenerCount(event), before[event], `${key}:${event}`);
+    fixture.adapter.dispose();
+  }
 });
 
 test('navigation refuses a new route whose minimum distance cannot fit before the existing stopping reserve', async () => {

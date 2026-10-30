@@ -10,6 +10,32 @@ export const HOSTILE_NAMES = new Set([
 
 const RANGED_HOSTILES = new Set(['skeleton', 'stray', 'pillager', 'witch', 'blaze', 'ghast', 'shulker', 'guardian', 'evoker', 'drowned']);
 const PHYSICAL_ATTACKERS = new Set(['zombie', 'skeleton', 'stray', 'pillager', 'husk', 'drowned', 'zombie_villager']);
+// Only explicitly dormant, uncharged, unignited creepers may use the existing
+// complete cover proof. A state change or lost cover keeps the warning.
+const DORMANT_CREEPER_METADATA = [
+  ['swell_dir', -1],
+  ['is_powered', false],
+  ['is_ignited', false],
+];
+
+function hasDormantCreeperMetadata(bot, entity) {
+  const keys = bot.registry?.entitiesByName?.creeper?.metadataKeys;
+  if (!Array.isArray(keys) || !Array.isArray(entity?.metadata)) return false;
+  // Protocol 767 sends only non-default metadata at spawn. Its health update
+  // proves initial metadata arrived; before that, absent flags remain unknown.
+  const healthIndex = keys.indexOf('health');
+  const health = healthIndex >= 0 ? entity.metadata[healthIndex] : null;
+  const knownVanillaDefaults = bot.registry.version?.version === 767
+    && Number.isFinite(health) && health > 0;
+  // Every key must exist in the schema. Only omitted protocol defaults may
+  // substitute for a slot; unknown or mistyped values retain the warning.
+  return DORMANT_CREEPER_METADATA.every(([key, expected]) => {
+    const index = keys.indexOf(key);
+    return index >= 0 && (entity.metadata[index] === expected
+      || (knownVanillaDefaults && !Object.hasOwn(entity.metadata, index)));
+  });
+}
+
 const isFullCube = block => block?.shapes?.some(shape => (
   shape.length === 6 && shape.every((value, index) => value === (index < 3 ? 0 : 1))
 ));
@@ -95,7 +121,8 @@ function hasSolidCover(bot, origin, entity) {
 }
 
 // Retain the resource locator's melee warning and R17's earlier ranged warning.
-// Only a complete known solid column or separating layer can hide physical attackers.
+// Only a complete known solid column or separating layer can hide physical
+// attackers, plus creepers explicitly confirmed safe by their metadata.
 export function findHostileThreat(bot, origin = bot.entity?.position, radius = null) {
   if (!origin) return null;
   let nearest = null;
@@ -107,8 +134,10 @@ export function findHostileThreat(bot, origin = bot.entity?.position, radius = n
     if (!position || !['x', 'y', 'z'].every(axis => Number.isFinite(position[axis]))) continue;
     const distance = Math.hypot(position.x - origin.x, position.y - origin.y, position.z - origin.z);
     const warningRadius = radius ?? (RANGED_HOSTILES.has(name) ? 24 : 12);
+    const mayProveCover = PHYSICAL_ATTACKERS.has(name)
+      || (name === 'creeper' && hasDormantCreeperMetadata(bot, entity));
     if (distance <= warningRadius && (!nearest || distance < nearest.distance)
-      && (!PHYSICAL_ATTACKERS.has(name) || !hasSolidCover(bot, origin, entity))) {
+      && (!mayProveCover || !hasSolidCover(bot, origin, entity))) {
       nearest = { entity_id: String(entity.id), entity_type: name, distance,
         position: { x: position.x, y: position.y, z: position.z }, warning_radius: warningRadius };
     }
