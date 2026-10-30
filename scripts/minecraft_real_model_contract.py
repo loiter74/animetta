@@ -15,6 +15,10 @@ from dotenv import load_dotenv
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from pydantic import ValidationError
 
+from animetta.acceptance.minecraft_planning import (
+    nether_plan_inventory_requirements,
+    validate_mission_plan,
+)
 from animetta.acceptance.minecraft_showcase import _normalize_model_execute_args
 from animetta.config.providers.llm.deepseek import DeepSeekLLMConfig
 from animetta.orchestration.graph.state import create_initial_state
@@ -178,6 +182,43 @@ def _validate_response(response: dict[str, Any]) -> tuple[dict[str, Any], str | 
     }, None if valid else "mission was schema-valid but missed required semantics"
 
 
+def _validate_planning_response(
+    response: dict[str, Any],
+    *,
+    reference: MinecraftExecuteRequest,
+    initial_inventory: dict[str, int],
+) -> tuple[dict[str, Any], str | None]:
+    try:
+        calls = response.get("tool_calls") or []
+        if len(calls) != 1 or calls[0].get("name") != "mc_operate_bot":
+            raise ValueError("expected exactly one mission call")
+        operate = MinecraftOperateToolInput.model_validate(
+            _normalize_model_execute_args(calls[0].get("args", {}))
+        )
+        if operate.operation != "execute" or operate.execute is None:
+            raise ValueError("expected execute operation")
+        request = operate.execute.request
+        expected = reference.request
+        if request.kind != "mission" or expected.kind != "mission":
+            raise ValueError("planning requires the mission branch")
+        if request.request_id != expected.request_id:
+            raise ValueError("request_id does not match planning authority")
+        issues = validate_mission_plan(
+            request.mission, reference=expected.mission, initial_inventory=initial_inventory
+        )
+    except (ValueError, TypeError, KeyError) as exc:
+        return {"valid": False, "planning_issues": []}, str(exc)
+    if issues:
+        problem = {
+            "code": "MC_PLAN_REJECTED",
+            "issues": [i.model_dump(mode="json") for i in issues],
+        }
+        return {"valid": False, "planning_issues": problem["issues"]}, json.dumps(
+            problem, ensure_ascii=False
+        )
+    return {"valid": True, "validated_request_hash": request.mission.canonical_hash}, None
+
+
 async def _collect_independent_calls(
     *,
     invoke: Callable[[str, list[Any]], Awaitable[dict[str, Any]]],
@@ -329,7 +370,13 @@ async def run(
     validate: Callable[[dict[str, Any]], tuple[dict[str, Any], str | None]] = _validate_response,
     connection_status: dict[str, Any] | None = None,
     max_attempts: int = 2,
+    planning_reference: MinecraftExecuteRequest | None = None,
+    initial_inventory: dict[str, int] | None = None,
 ) -> Path:
+    if planning_reference is not None and (
+        planning_reference.request.kind != "mission" or initial_inventory is None
+    ):
+        raise ValueError("planning reference requires a mission and explicit initial inventory")
     load_dotenv(Path(".env"), override=False)
     api_key = os.getenv("DEEPSEEK_API_KEY")
     if not api_key:
@@ -342,6 +389,26 @@ async def run(
     )
     config = {"configurable": {"tools_map": {item.name: item for item in tools}}}
     compiled = await compile_prompt(state, config)
+    planning_context: dict[str, Any] | None = None
+    if planning_reference is not None:
+        planning_context = {
+            "initial_inventory": initial_inventory,
+            "known_necessary_inventory_inputs": [
+                {
+                    "intent": intent,
+                    "target": target,
+                    **condition.model_dump(mode="json", exclude_none=True),
+                }
+                for (intent, target), condition in nether_plan_inventory_requirements().items()
+            ],
+        }
+        compiled.system_prompt += (
+            "\nPlanning inventory contract: "
+            + json.dumps(planning_context, ensure_ascii=False)
+            + "\n必要输入必须来自初始库存或已完成的前置目标。位置和库存证据可能被后续动作改变，"
+            "请据此安排依赖。结构化 planning_issues 可在原有一次修正额度内修正；"
+            "不得改动预算、目标或执行策略，也不得声称游戏已经执行。"
+        )
     llm = OpenAILLM.from_config(
         DeepSeekLLMConfig(
             api_key=api_key,
@@ -366,10 +433,20 @@ async def run(
         response["usage"] = usage.model_dump(mode="json") if usage is not None else None
         return response
 
+    def validate_candidate(response: dict[str, Any]) -> tuple[dict[str, Any], str | None]:
+        if planning_reference is not None:
+            assert initial_inventory is not None
+            result, error = _validate_planning_response(
+                response, reference=planning_reference, initial_inventory=initial_inventory
+            )
+            if not result["valid"]:
+                return result, error
+        return validate(response)
+
     try:
         calls = await _collect_independent_calls(
             invoke=invoke,
-            validate=validate,
+            validate=validate_candidate,
             independent_calls=independent_calls,
             user_text=user_text,
             connection_status=connection_status,
@@ -403,6 +480,7 @@ async def run(
         "required_independent_calls": independent_calls,
         "successful_independent_calls": success_count,
         "calls": calls,
+        "planning_context": planning_context,
         "final_validation": {
             "valid": success_count == independent_calls,
             "success_count": success_count,
