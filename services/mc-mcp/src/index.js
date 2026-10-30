@@ -658,7 +658,7 @@ async function _equipToolForBlock(block, context = null) {
 
 async function _pickupDroppedItems(
   timeout = 5000, fallbackPos = null, itemName = null,
-  minimumY = Number.NEGATIVE_INFINITY, minimumInventoryCount = null,
+  minimumY = Number.NEGATIVE_INFINITY, minimumInventoryCount = null, context = {},
 ) {
   const mcData = await getMcData();
   const movements = configurePickupNavigation(new Movements(bot, mcData), bot);
@@ -671,9 +671,10 @@ async function _pickupDroppedItems(
     _collectDebug(`pickup ${phase}=${JSON.stringify({ item: itemName, minimum_y: minimumY, drops })}`);
   };
   debugDrops('before');
+  const scope = context.operation_scope ?? activeOperationScope();
   const result = await safePickupDroppedItems(bot, {
     timeoutMs: timeout, fallbackPos, itemName, GoalNear, movements, minimumY, minimumInventoryCount,
-    context: { operation_scope: activeOperationScope(), signal: activeOperationScope()?.signal },
+    context: { ...context, operation_scope: scope, signal: context.signal ?? scope?.signal },
   });
   debugDrops('after');
   _collectDebug(`pickup outcome=${JSON.stringify(result)}`);
@@ -956,7 +957,9 @@ async function _collectInner(block_type, count, mcData, context = {}) {
       }
       // Wait for item entity to register and pick up drops
       await operationWait(500);
-      await _pickupDroppedItems(8000, block.position, pickupItemName, minimumY, minimumPickupCount);
+      await _pickupDroppedItems(8000, block.position, pickupItemName, minimumY, minimumPickupCount, {
+        ...context, remainingHarvestBlocks: surfaceWood ? Math.max(0, count - collected - 1) : undefined,
+      });
       context.signal?.throwIfAborted();
       const actual = Math.max(0, _inventoryCount(dropItem) - startingCount);
       collected = Math.min(actual, count);

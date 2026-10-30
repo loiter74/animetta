@@ -14,6 +14,127 @@ import WorldSync from 'prismarine-world/src/worldsync.js';
 import * as collection from '../src/collection.js';
 import * as resourceRegistry from '../src/resources/registry.js';
 
+function elevatedWoodDropFixture({ budget = 3, count = 1, wet = false,
+  knownProperties = true, blocker = 'spruce_leaves', landing = 'stone', cancelAfterLeaf = false } = {}) {
+  const registry = minecraftData('1.21.1'), Block = prismarineBlock(registry);
+  const removed = new Set(), digs = [], bag = [{ name: 'spruce_log', count: 5 }];
+  const controller = new AbortController(), world = new WorldSync(null);
+  const target = new Vec3(0, 69, 0);
+  world.getBlock = point => {
+    const p = point.floored();
+    const name = removed.has(p.toString()) ? 'air' : p.equals(target) ? 'spruce_log'
+      : p.x === 1 && p.z === 0 && [67, 68].includes(p.y) ? blocker
+        : p.y === 63 ? landing : 'air';
+    const block = Block.fromStateId(registry.blocksByName[name].defaultState, 0);
+    block.position = p;
+    if (name.endsWith('_leaves') && p.y > 63) {
+      const properties = block.getProperties();
+      block.getProperties = () => knownProperties ? { ...properties, waterlogged: wet } : {};
+    }
+    return block;
+  };
+  const bot = new EventEmitter();
+  let clock = 0, navigations = 0;
+  bot.inventory = new EventEmitter();
+  bot.inventory.items = () => bag;
+  Object.assign(bot, { world, registry, version: '1.21.1', entities: {}, health: 20,
+    game: { minY: -64, height: 384, dimension: 'overworld' },
+    entity: { position: new Vec3(0.49, 64, 0.30), eyeHeight: 1.62, onGround: true },
+    blockAt: point => world.getBlock(point), digTime: () => 0,
+    findBlock: ({ matching }) => matching(bot.blockAt(target)) ? bot.blockAt(target) : null,
+    pathfinder: { movements: {}, stop() {}, setGoal() {}, setMovements(value) { this.movements = value; },
+      goto: async () => { navigations++; throw Object.assign(new Error('NoPath'), { code: 'NO_PATH' }); } },
+    dig: async block => {
+      const before = bot.blockAt(block.position);
+      digs.push(block.name); removed.add(block.position.toString());
+      bot.emit('blockUpdate', before, bot.blockAt(block.position));
+      bot.emit('diggingCompleted', before);
+      if (block.name === 'spruce_log') bot.entities[319] = {
+        id: 319, name: 'item', position: new Vec3(1.022, 69, 0.470),
+        getDroppedItem: () => ({ name: 'spruce_log' }),
+      };
+      if (cancelAfterLeaf && block.name.endsWith('_leaves')) {
+        controller.abort(Object.assign(new Error('Cancelled after leaf charge'), { code: 'CANCELLED' }));
+      }
+    },
+  });
+  const wait = async ms => {
+    clock += ms;
+    const item = bot.entities[319];
+    if (!item) return;
+    // Controlled gravity/collection; the product must remove real solid support first.
+    while (item.position.y > 64
+      && bot.blockAt(item.position.floored().offset(0, -1, 0)).boundingBox !== 'block') item.position.y -= 1;
+    if (item.position.y === 64 && bot.blockAt(new Vec3(1, 63, 0)).boundingBox === 'block') {
+      bag[0].count++; delete bot.entities[319]; bot.inventory.emit('updateSlot');
+    }
+  };
+  class PickupMovements {
+    constructor() { this.exclusionAreasStep = []; this.exclusionAreasBreak = []; }
+    getLandingBlock() { return null; }
+  }
+  const source = readFileSync(new URL('../src/index.js', import.meta.url), 'utf8');
+  const pickupStart = source.indexOf('async function _pickupDroppedItems(');
+  const pickupEnd = source.indexOf('\nasync function _collect(', pickupStart);
+  const pickup = runInNewContext(`(${source.slice(pickupStart, pickupEnd)})`, {
+    ...collection, bot, getMcData: async () => registry, Movements: PickupMovements,
+    GoalNear: pathfinderPkg.goals.GoalNear, operationWait: wait, activeOperationScope: () => undefined,
+    process: { env: {} }, _collectDebug() {},
+    safePickupDroppedItems: (actualBot, options) => collection.safePickupDroppedItems(actualBot, {
+      ...options, nowMs: () => clock, waitMs: wait,
+    }),
+  });
+  const innerStart = source.indexOf('async function _collectInner(');
+  const innerEnd = source.indexOf('\nfunction craftError(', innerStart);
+  const collectInner = runInNewContext(`(${source.slice(innerStart, innerEnd)})`, {
+    ...collection, ...resourceRegistry, bot, Vec3, ITEM_TO_BLOCK: {}, BLOCK_DROP_ITEM: {},
+    shouldPrepareUndergroundCollection: () => null, presentBlockTarget: async () => null,
+    _stabilizePosition: async () => true, _collectDebug() {}, _equipToolForBlock: async () => {},
+    operationWait: wait, _inventoryCount: name => collection.pickupInventoryCount(bot, name),
+    _pickupDroppedItems: pickup,
+    locateResource: async () => { throw Object.assign(new Error('No more wood'), { code: 'RESOURCE_NOT_FOUND' }); },
+    _explore_for_block: async () => {},
+  });
+  const evidenceStart = source.indexOf('async function _collectWithEvidence(');
+  const collect = runInNewContext(`(${source.slice(evidenceStart, innerStart)})`, {
+    bot, withCollectionEvidence: collection.withCollectionEvidence,
+    _collect: (name, quantity, context) => collectInner(name, quantity, registry, context),
+  });
+  return { bot, digs, bag, navigations: () => navigations,
+    collect: () => collect('spruce_log', count, { signal: controller.signal,
+      budget: { max_blocks_changed: budget } }) };
+}
+
+test('wood drop lowering follows native collector wiring and charges two support leaves once', async () => {
+  const fixture = elevatedWoodDropFixture();
+  const result = await fixture.collect();
+  assert.equal(result.output, 'Collected 1 spruce_log');
+  assert.deepEqual(fixture.digs, ['spruce_log', 'spruce_leaves', 'spruce_leaves']);
+  assert.equal(result.budget_usage.max_blocks_changed, 3);
+  assert.equal(result.explained_mutations.length, 3);
+  assert.equal(fixture.bag[0].count, 6);
+  assert.equal(fixture.navigations(), 0);
+});
+
+test('wood drop lowering keeps future log allowance and refuses wet unknown structural or unsafe support', async () => {
+  for (const options of [{ wet: true }, { knownProperties: false }, { blocker: 'stone' },
+    { landing: 'water' }, { landing: 'spruce_leaves' }, { budget: 3, count: 3 }]) {
+    const fixture = elevatedWoodDropFixture(options);
+    await assert.rejects(fixture.collect(), error => error.code === 'RESOURCE_NOT_FOUND');
+    assert.deepEqual(fixture.digs, ['spruce_log'], JSON.stringify(options));
+    assert.equal(fixture.bag[0].count, 5);
+  }
+});
+
+test('wood drop lowering cancellation preserves the first support charge with no later action', async () => {
+  const fixture = elevatedWoodDropFixture({ cancelAfterLeaf: true });
+  await assert.rejects(fixture.collect(), error => error.code === 'CANCELLED'
+    && error.budget_usage.max_blocks_changed === 2);
+  assert.deepEqual(fixture.digs, ['spruce_log', 'spruce_leaves']);
+  assert.equal(fixture.bag[0].count, 5);
+  assert.equal(fixture.navigations(), 0);
+});
+
 function occludedWoodFixture({ budget = 2, blocker = 'oak_leaves', wet = false,
   knownProperties = true, footing = false, grounded = true, cancelAfterLeaf = false } = {}) {
   const registry = minecraftData('1.21.1');

@@ -301,6 +301,39 @@ export function isSurfaceWood(name) {
   return Boolean(name?.endsWith('_log') || name?.endsWith('_wood'));
 }
 
+function isDryCollectionLeaf(block) {
+  const wet = block?.getProperties?.()?.waterlogged;
+  return Boolean(block?.name?.endsWith('_leaves')) && (wet === false || wet === 'false');
+}
+
+function leafChangeUsage(context, reservedBlocks) {
+  const limit = context.budget?.max_blocks_changed;
+  const used = context.readBlockChanges?.();
+  return Number.isSafeInteger(limit) && Number.isSafeInteger(used) && used >= 0
+    && Number.isSafeInteger(reservedBlocks) && reservedBlocks >= 0 && limit - used > reservedBlocks
+    ? used : null;
+}
+
+function visibleCollectionLeaf(bot, hits, preferred = null) {
+  const footing = bot.entity.position.floored().offset(0, -1, 0);
+  const safe = block => isDryCollectionLeaf(block) && !block.position.equals(footing)
+    && collectionDigSafety(bot, block).safe;
+  if (preferred && hits.some(hit => hit.position.equals(preferred.position)) && safe(preferred)) return preferred;
+  return hits.map(hit => bot.blockAt(hit.position)).find(safe);
+}
+
+async function digVisibleCollectionLeaf(bot, leaf, context, reservedBlocks, timeoutMs) {
+  const used = leafChangeUsage(context, reservedBlocks);
+  if (bot.entity.onGround !== true || used === null || !leaf) return false;
+  context.signal?.throwIfAborted();
+  context.operation_scope?.checkpoint();
+  await digCollectionBlock(bot, leaf, timeoutMs);
+  context.signal?.throwIfAborted();
+  context.operation_scope?.checkpoint();
+  const after = bot.blockAt(leaf.position);
+  return Boolean(after) && after.type !== leaf.type && context.readBlockChanges() > used;
+}
+
 export async function clearWoodView(bot, block, context, remainingLogs) {
   if (!isSurfaceWood(block.name) || typeof bot.world?.raycast !== 'function') return false;
   while (true) {
@@ -309,23 +342,8 @@ export async function clearWoodView(bot, block, context, remainingLogs) {
     const eye = bot.entity.position.offset(0, bot.entity.eyeHeight || 1.62, 0);
     const hits = [...collectionViewHits(bot, block, eye)];
     if (hits.some(hit => hit.position.equals(block.position))) return true;
-    const limit = context.budget?.max_blocks_changed;
-    const used = context.readBlockChanges?.();
-    if (bot.entity.onGround !== true || !Number.isSafeInteger(limit) || !Number.isSafeInteger(used) || used < 0
-      || !Number.isSafeInteger(remainingLogs) || remainingLogs < 1 || limit - used <= remainingLogs) return false;
-    const footing = bot.entity.position.floored().offset(0, -1, 0);
-    const obstacle = hits.map(hit => bot.blockAt(hit.position)).find(candidate => {
-      const wet = candidate?.getProperties?.()?.waterlogged;
-      return candidate?.name.endsWith('_leaves') && (wet === false || wet === 'false')
-        && !candidate.position.equals(footing) && collectionDigSafety(bot, candidate).safe;
-    });
-    if (!obstacle) return false;
-    await digCollectionBlock(bot, obstacle);
-    context.signal?.throwIfAborted();
-    context.operation_scope?.checkpoint();
-    const after = bot.blockAt(obstacle.position);
-    // Require both world progress and its native receipt before spending again.
-    if (!after || after.type === obstacle.type || context.readBlockChanges() <= used) return false;
+    if (!Number.isSafeInteger(remainingLogs) || remainingLogs < 1
+      || !await digVisibleCollectionLeaf(bot, visibleCollectionLeaf(bot, hits), context, remainingLogs)) return false;
   }
 }
 
@@ -662,6 +680,26 @@ export function pickupStandingPosition(
   });
 }
 
+function pickupSupportLeaf(bot, entity, itemName, minimumY, context) {
+  if (typeof itemName !== 'string' || !isSurfaceWood(itemName) || bot.entity.onGround !== true
+    || leafChangeUsage(context, context.remainingHarvestBlocks) === null) return null;
+  const feet = bot.entity.position.floored();
+  const item = entity.position.floored();
+  if (feet.y < minimumY || item.y <= feet.y + 1) return null;
+  const landing = bot.blockAt(new Vec3(item.x, feet.y - 1, item.z));
+  if (landing?.boundingBox !== 'block' || landing.name.endsWith('_leaves')) return null;
+  // A known clearable column and stable floor keep the falling item above the
+  // current working height; never lower it into unknown terrain or fluid.
+  for (let y = feet.y; y < item.y; y++) {
+    const block = bot.blockAt(new Vec3(item.x, y, item.z));
+    if (!isAirLikeForStanding(block) && !isDryCollectionLeaf(block)) return null;
+  }
+  const support = bot.blockAt(item.offset(0, -1, 0));
+  if (!isDryCollectionLeaf(support)) return null;
+  const eye = bot.entity.position.offset(0, bot.entity.eyeHeight || 1.62, 0);
+  return visibleCollectionLeaf(bot, [...collectionViewHits(bot, support, eye)], support);
+}
+
 // Drops are only approached through pathfinder goals that end on a spot with
 // solid support and headroom. A failed path is never replaced by blind manual
 // forward motion, and movement states are always restored in `finally`.
@@ -691,6 +729,7 @@ export async function safePickupDroppedItems(bot, {
     stopCollectionMovement(bot);
     return outcome;
   }
+  context.signal?.throwIfAborted();
   context.operation_scope?.checkpoint();
   const deadline = nowMs() + Math.max(0, timeoutMs);
   const attemptsByEntity = new Map();
@@ -718,6 +757,19 @@ export async function safePickupDroppedItems(bot, {
     return attempts;
   };
   const exhausted = (entity) => (attemptsByEntity.get(entity) || 0) >= maxAttemptsPerEntity;
+  const settlePickup = async (entity, lowerLeaves = false) => {
+    for (let sample = 0; sample < 40 && nowMs() < deadline && entity
+      && Object.values(bot.entities ?? {}).includes(entity) && !hasEnoughItems(); sample++) {
+      context.signal?.throwIfAborted();
+      context.operation_scope?.checkpoint();
+      if (lowerLeaves) {
+        const leaf = pickupSupportLeaf(bot, entity, itemName, minimumY, context);
+        if (leaf && !await digVisibleCollectionLeaf(bot, leaf, context, context.remainingHarvestBlocks,
+          Math.min(collectionDigTimeoutMs(bot, leaf), Math.max(1, deadline - nowMs())))) return;
+      }
+      await waitMs(Math.min(100, Math.max(0, deadline - nowMs())));
+    }
+  };
   if (minimumInventoryCount !== null && acceptedNames !== null) {
     bot.on?.('move', stopOnCompletion);
     bot.inventory?.on?.('updateSlot', stopOnCompletion);
@@ -731,6 +783,13 @@ export async function safePickupDroppedItems(bot, {
       let trackedEntity = null;
       if (nearest) {
         trackedEntity = nearest.entity;
+        if (pickupSupportLeaf(bot, trackedEntity, itemName, minimumY, context)) {
+          stopCollectionMovement(bot);
+          markAttempt(trackedEntity);
+          await settlePickup(trackedEntity, true);
+          if (!hasEnoughItems()) await waitMs(200);
+          continue;
+        }
         goalPosition = pickupStandingPosition(bot, trackedEntity.position, { minimumY });
         if (!goalPosition) {
           // The drop has no safe standing spot nearby; skip it permanently.
@@ -771,11 +830,7 @@ export async function safePickupDroppedItems(bot, {
         outcome.navigations_succeeded += 1;
         // Waterborne drops can take time to rise into pickup range. Reaching
         // a safe edge alone does not prove that the item has been collected.
-        for (let sample = 0; sample < 40 && nowMs() < deadline && trackedEntity
-          && Object.values(bot.entities ?? {}).includes(trackedEntity) && !hasEnoughItems(); sample++) {
-          context.operation_scope?.checkpoint();
-          await waitMs(Math.min(100, Math.max(0, deadline - nowMs())));
-        }
+        await settlePickup(trackedEntity);
       } catch (error) {
         context.signal?.throwIfAborted();
         context.operation_scope?.checkpoint();
