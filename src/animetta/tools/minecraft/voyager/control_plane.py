@@ -353,7 +353,11 @@ class UnifiedVoyagerController:
                             recover = getattr(strategy, "recover_failed_step", None)
                             if callable(recover):
                                 recovered_state = recover(
-                                    {**state, "budget_remaining": account.remaining},
+                                    {
+                                        **state,
+                                        "budget_remaining": account.remaining,
+                                        "settled_error_code": exc.error.code,
+                                    },
                                     decision,
                                     observation,
                                     result.after,

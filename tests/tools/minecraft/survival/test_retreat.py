@@ -3,6 +3,7 @@
 import json
 from pathlib import Path
 
+import pytest
 from pydantic import TypeAdapter
 
 from animetta.tools.gamebot.contracts.v2 import Observation, RuntimeManifest
@@ -186,6 +187,72 @@ def test_failed_retreat_is_not_replayed_or_counted_as_workflow_success():
     assert recovered["strategy_state"]["step_index"] == 0
     assert recovered["executed_steps"] == 0
     assert strategy.propose(recovered, observed()).capability == "collect"
+
+
+@pytest.mark.parametrize("code", ["RESOURCE_NOT_FOUND", "SEARCH_TIMEOUT"])
+def test_resource_search_can_continue_at_a_new_observed_origin_but_never_replays_a_scene(code):
+    registry = WorkflowRegistry()
+    registry.register(iron_survival_workflow())
+    strategy = MissionStrategy(
+        manifest=manifest(), live=None, learn=None, fallback=FallbackStrategy(registry=registry)
+    )
+    goal = TypeAdapter(GoalSpec).validate_python(
+        {
+            "intent": "acquire",
+            "target": "iron_ingot",
+            "quantity": 1,
+            "success_predicates": [
+                {"kind": "inventory_at_least", "item": "iron_ingot", "quantity": 1}
+            ],
+        }
+    )
+    state = strategy.prepare(goal)
+    state.update(budget_remaining=available(), settled_error_code=code)
+
+    def sample(x, y, z):
+        base = observed([])
+        return base.model_copy(
+            update={
+                "position": base.position.model_copy(update={"x": x, "y": y, "z": z}),
+                "environment": {
+                    "blocks": {
+                        "feet": {"name": "air", "position": {"x": x, "y": y, "z": z}},
+                        "below1": {"name": "sand", "position": {"x": x, "y": y - 1, "z": z}},
+                    }
+                },
+            }
+        )
+
+    # R76's settled rounded positions; this is a pure control-plane replay,
+    # not a claim about whether the original world contained reachable wood.
+    before, after = sample(73, 65, 44), sample(68, 64, 47)
+    failed = strategy.propose(state, before)
+    assert failed.capability == "collect"
+    assert strategy.recover_failed_step(state, failed, before, before) is None
+    changed_count = failed.model_copy(
+        update={"parameters": {**failed.parameters, "count": failed.parameters["count"] - 1}}
+    )
+    assert strategy.recover_failed_step(state, changed_count, before, before) is None
+    assert (
+        strategy.recover_failed_step(
+            state, failed, before, after.model_copy(update={"environment": before.environment})
+        )
+        is None
+    )
+    recovered = strategy.recover_failed_step(state, failed, before, after)
+    assert recovered is not None
+    assert recovered["goal"] == goal
+    assert recovered["strategy_state"]["step_index"] == state["strategy_state"]["step_index"] == 0
+    assert recovered["executed_steps"] == 0
+    assert strategy.propose(recovered, after) == failed
+    assert strategy.recover_failed_step(recovered, failed, after, before) is None
+    assert (
+        strategy.recover_failed_step(
+            {**state, "settled_error_code": "UNSAFE_AREA"}, failed, before, after
+        )
+        is None
+    )
+    assert "search_origins" not in state
 
 
 def test_completed_mission_primitive_does_not_start_an_unnecessary_retreat():

@@ -102,18 +102,31 @@ class FallbackStrategy:
             or batch_size >= target.quantity
         ):
             return step
-        count = step.parameters["count"]
-        pending = remaining - count
-        followup = BudgetUsage(
-            max_actions=(pending + batch_size - 1) // batch_size,
-            max_blocks_changed=pending,
-        )
+        future = BudgetUsage()
         for future_index in range(index + 1, len(workflow.steps)):
             checkpoint = workflow.checkpoints[future_index] if workflow.checkpoints else None
             if checkpoint is not None and self._checkpoint_satisfied(checkpoint, observation):
                 continue
-            followup = followup.plus(workflow.steps[future_index].maximum_cost)
+            future = future.plus(workflow.steps[future_index].maximum_cost)
         maximum = step.maximum_cost
+        count = step.parameters["count"]
+        if maximum.max_actions == 1:
+            later_batches = available.max_actions - future.max_actions - 1
+            if later_batches >= 0:
+                # Pack already-authorized material work into this action instead
+                # of borrowing another action after a settled recovery.
+                count = max(count, remaining - later_batches * batch_size)
+        if count != step.parameters["count"]:
+            step = step.model_copy(update={"parameters": {**step.parameters, "count": count}})
+        if count == remaining:
+            state.pop("repeat_collection", None)
+        pending = remaining - count
+        followup = future.plus(
+            BudgetUsage(
+                max_actions=(pending + batch_size - 1) // batch_size,
+                max_blocks_changed=pending,
+            )
+        )
         blocks = min(
             maximum.max_blocks_changed, available.max_blocks_changed - followup.max_blocks_changed
         )

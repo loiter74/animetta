@@ -198,7 +198,7 @@ def test_iron_batch_reservation_uses_current_account_and_preserves_remaining_wor
 
 @pytest.mark.parametrize(
     "remaining_override",
-    [{"max_blocks_changed": 17}, {"max_actions": 7}, {"max_travel_distance": 15}],
+    [{"max_blocks_changed": 17}, {"max_actions": 2}, {"max_travel_distance": 15}],
 )
 def test_iron_batch_rejects_budget_that_cannot_cover_the_remaining_goal(
     remaining_override: dict[str, int],
@@ -218,6 +218,69 @@ def test_iron_batch_rejects_budget_that_cannot_cover_the_remaining_goal(
     )
     decision = strategy.propose(state, observation)
     assert decision.kind == "failure" and decision.code == "BUDGET_EXHAUSTED"
+
+
+def test_a_settled_failed_search_is_paid_for_by_packing_work_inside_the_same_iron_budget():
+    mission = build_nether_portal_mission(mission_id="recovery-packed-iron")
+    registry = WorkflowRegistry()
+    registry.register(
+        next(w for w in nether_preparation_workflows() if w.target == "nether_iron_kit")
+    )
+    strategy = FallbackStrategy(registry=registry)
+    state = strategy.prepare(mission.objectives[0].goal)
+    limit = mission.budget.model_copy(update=mission.objectives[0].budget.model_dump())
+    # One previously failed native search is included, never discarded or refunded.
+    account = BudgetAccount(
+        limit=limit,
+        used=BudgetUsage(max_actions=9, max_blocks_changed=89, max_travel_distance=174.94),
+    )
+    observation = Observation.model_validate(MESSAGES["Observation"]).model_copy(
+        update={
+            "inventory": {"stone_pickaxe": 1, "oak_planks": 23, "cobblestone": 40, "raw_iron": 1},
+        }
+    )
+    batches = []
+    while observation.inventory["raw_iron"] < 7:
+        state["budget_remaining"] = account.remaining
+        decision = strategy.propose(state, observation)
+        assert decision.capability == "collect"
+        count = decision.parameters["count"]
+        batches.append(count)
+        assert 1 <= count <= 7 - observation.inventory["raw_iron"]
+        assert decision.maximum_cost.max_actions == 1
+        assert decision.maximum_cost.max_blocks_changed <= 192
+        assert decision.maximum_cost.max_travel_distance <= 192
+        account = account.reserve(f"batch-{len(batches)}", decision.maximum_cost).settle(
+            f"batch-{len(batches)}", BudgetUsage(max_actions=1, max_blocks_changed=count)
+        )
+        state = strategy.accept_result(state, {})
+        observation = observation.model_copy(
+            update={
+                "inventory": {
+                    **observation.inventory,
+                    "raw_iron": observation.inventory["raw_iron"] + count,
+                }
+            }
+        )
+    assert batches == [2, 1, 1, 1, 1]
+    for capability in ("craft", "smelt"):
+        state["budget_remaining"] = account.remaining
+        decision = strategy.propose(state, observation)
+        assert decision.capability == capability
+        account = account.reserve(capability, decision.maximum_cost).settle(
+            capability, BudgetUsage(max_actions=1, max_blocks_changed=3)
+        )
+        state = strategy.accept_result(state, {})
+        inventory = {**observation.inventory, "furnace": 1}
+        if capability == "smelt":
+            inventory.update(raw_iron=0, iron_ingot=7)
+        observation = observation.model_copy(update={"inventory": inventory})
+    assert strategy.propose(state, observation).kind == "complete"
+    assert GoalVerifier().verify(goal=mission.objectives[0].goal, final=observation)["satisfied"]
+    assert account.limit == limit
+    assert account.used.max_actions == limit.max_actions == 16
+    assert account.used.max_blocks_changed <= limit.max_blocks_changed == 256
+    assert account.used.max_travel_distance == 174.94 < limit.max_travel_distance
 
 
 def test_iron_kit_skips_remaining_batches_when_seven_ingots_are_observed() -> None:

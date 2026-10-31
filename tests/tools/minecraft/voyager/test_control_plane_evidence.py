@@ -408,6 +408,7 @@ async def test_known_failure_recovery_preserves_account_deadline_and_receipt_cha
 
         def recover_failed_step(self, state, failed_step, before, after):
             self.recovery_calls += 1
+            assert state["settled_error_code"] == "UNSAFE_AREA"
             assert failed_step.capability == "collect"
             assert state["budget_remaining"].max_actions == (0 if mode == "exhausted" else 1)
             return {**state, "recovered": True} if mode not in {"declined", "exhausted"} else None

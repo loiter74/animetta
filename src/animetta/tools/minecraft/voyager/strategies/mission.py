@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from math import floor, isfinite
+
 from animetta.tools.gamebot.contracts.v2 import Observation, RuntimeManifest
 from animetta.tools.minecraft.survival.retreat import propose_retreat
 
@@ -146,7 +148,6 @@ class MissionStrategy:
         after: Observation,
     ) -> dict | None:
         """Re-evaluate the same goal after a known settled failure, without replay."""
-        del before
         selected = state.get("selected_strategy")
         delegated = state.get("strategy_state")
         if not isinstance(selected, str) or not isinstance(delegated, dict):
@@ -163,9 +164,65 @@ class MissionStrategy:
             return None
         if isinstance(decision, Complete):
             return candidate
-        if isinstance(decision, ExecuteStep) and (
-            decision.capability != failed_step.capability
-            or decision.parameters != failed_step.parameters
+        same_search = (
+            isinstance(decision, ExecuteStep)
+            and failed_step.capability == decision.capability == "collect"
+            and {k: v for k, v in failed_step.parameters.items() if k != "count"}
+            == {k: v for k, v in decision.parameters.items() if k != "count"}
+        )
+        if (
+            isinstance(decision, ExecuteStep)
+            and not same_search
+            and (
+                decision.capability != failed_step.capability
+                or decision.parameters != failed_step.parameters
+            )
         ):
             return candidate
+        if same_search and state.get("settled_error_code") in {
+            "RESOURCE_NOT_FOUND",
+            "SEARCH_TIMEOUT",
+        }:
+            previous_origin = self._search_origin(before)
+            origin = self._search_origin(after)
+            resource = failed_step.parameters.get("block_type")
+            visited = state.get("search_origins", ())
+            if (
+                isinstance(resource, str)
+                and previous_origin is not None
+                and origin is not None
+                and origin != previous_origin
+                and (resource, origin) not in visited
+                and self._known_cells(after) - self._known_cells(before)
+            ):
+                candidate["search_origins"] = (
+                    *visited,
+                    (resource, previous_origin),
+                    (resource, origin),
+                )
+                return candidate
         return None
+
+    @staticmethod
+    def _search_origin(observation: Observation) -> tuple[int, int, int] | None:
+        p = observation.position
+        if p is None or not all(isfinite(v) for v in (p.x, p.y, p.z)):
+            return None
+        return floor(p.x), floor(p.y), floor(p.z)
+
+    @staticmethod
+    def _known_cells(observation: Observation) -> set[tuple[str, int, int, int]]:
+        blocks = observation.environment.get("blocks")
+        if not isinstance(blocks, dict):
+            return set()
+        cells: set[tuple[str, int, int, int]] = set()
+        for block in blocks.values():
+            if not isinstance(block, dict) or not isinstance(block.get("name"), str):
+                continue
+            position = block.get("position")
+            if not isinstance(position, dict):
+                continue
+            values = tuple(position.get(axis) for axis in ("x", "y", "z"))
+            if all(type(v) in (int, float) and isfinite(v) for v in values):
+                cells.add((block["name"], floor(values[0]), floor(values[1]), floor(values[2])))
+        return cells
