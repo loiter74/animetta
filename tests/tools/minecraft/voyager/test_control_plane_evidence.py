@@ -377,6 +377,143 @@ async def test_controller_only_resumes_partial_collection_with_strategy_progress
     assert len(verifier.received["receipts"]) == 2
 
 
+@pytest.mark.parametrize("strict", [False, True])
+@pytest.mark.parametrize("error_code", ["BUDGET_EXHAUSTED", "PARTIAL_COLLECT"])
+async def test_controller_resumes_only_known_budget_limited_depth_progress(strict, error_code):
+    from animetta.tools.minecraft.survival.mainline import build_nether_portal_mission
+    from animetta.tools.minecraft.survival.registry import WorkflowRegistry
+    from animetta.tools.minecraft.survival.workflows import nether_preparation_workflows
+    from animetta.tools.minecraft.voyager.strategies.fallback import FallbackStrategy
+    from animetta.tools.minecraft.voyager.strategies.mission import MissionStrategy
+
+    mission = build_nether_portal_mission(mission_id="depth-recovery-controller")
+    objective = next(o for o in mission.objectives if o.objective_id == "diamond-pickaxe")
+    registry = WorkflowRegistry()
+    registry.register(
+        next(w for w in nether_preparation_workflows() if w.target == "diamond_pickaxe")
+    )
+    strategy = MissionStrategy(live=None, learn=None, fallback=FallbackStrategy(registry=registry))
+    before = Observation.model_validate(
+        {
+            **MESSAGES["Observation"],
+            "position": {"x": -18, "y": -24, "z": 22},
+            "inventory": {"iron_pickaxe": 1, "stone_pickaxe": 2, "stick": 4, "cobblestone": 40},
+        }
+    )
+
+    class DepthRuntime(RuntimeStub):
+        async def observe(self, _request):
+            return before
+
+    class DepthExecutor(ExecutorStub):
+        def __init__(self):
+            self.calls = []
+
+        async def execute_step(self, **kwargs):
+            self.calls.append(kwargs)
+            if len(self.calls) > 1:
+                # Stop this controller fixture before another world action or
+                # any claim that the whole diamond-pickaxe goal is complete.
+                raise ExecutorError(
+                    ControlPlaneError(
+                        code="TEST_STOP",
+                        message="End controlled depth continuation test",
+                        phase="execution",
+                        outcome_known=True,
+                        world_may_have_changed=False,
+                        caller_may_resubmit=False,
+                        operator_action="end fixture",
+                    )
+                )
+            receipt = ActionReceipt.model_validate(MESSAGES["ActionReceipt"])
+            receipt = receipt.model_copy(
+                update={
+                    "outcome": ReceiptOutcome.ERROR,
+                    "budget_usage": receipt.budget_usage.model_copy(
+                        update={
+                            "max_actions": 1,
+                            "max_blocks_changed": 24,
+                            "max_travel_distance": 8,
+                        }
+                    ),
+                }
+            )
+            result = StepExecutionResult(
+                receipt=receipt,
+                after=before.model_copy(
+                    update={"position": before.position.model_copy(update={"y": -29})}
+                ),
+                account=kwargs["account"].charge(
+                    BudgetUsage(
+                        max_actions=1,
+                        max_blocks_changed=24,
+                        max_travel_distance=8,
+                    )
+                ),
+            )
+            raise ExecutorError(
+                ControlPlaneError(
+                    code=error_code,
+                    message="Partial shaft cap exhausted",
+                    phase="execution",
+                    outcome_known=True,
+                    world_may_have_changed=True,
+                    caller_may_resubmit=False,
+                    operator_action="inspect receipt",
+                ),
+                settled_result=result,
+            )
+
+    executor = DepthExecutor()
+    controller = UnifiedVoyagerController(
+        runtime=DepthRuntime(),
+        repository=object(),
+        executor=executor,
+        strategy_factories={"mission": lambda _manifest, _command: strategy},
+        verifier=VerifierStub(),
+        evidence_collector=EvidenceCollectorStub(),
+        make_id=lambda prefix: f"{prefix}-id",
+        now_ms=lambda: 10,
+    )
+    cmd = _command().model_copy(
+        update={
+            "payload": {
+                "goal": objective.goal.model_dump(mode="json"),
+                "execution_policy": {"stop_on_action_failure": strict},
+            },
+            "effective_budget": mission.budget.model_copy(
+                update=objective.budget.model_dump()
+            ).model_dump(mode="json"),
+        }
+    )
+    can_continue = not strict and error_code == "BUDGET_EXHAUSTED"
+    with pytest.raises(
+        CommandExecutionError, match="End controlled" if can_continue else "Partial shaft"
+    ):
+        await controller.execute_command(cmd)
+    assert len(executor.calls) == (2 if can_continue else 1)
+    if can_continue:
+        first, second = executor.calls
+        assert (
+            second["step"].parameters
+            == first["step"].parameters
+            == {
+                "target_y": -32,
+                "minimum_cobblestone": 0,
+            }
+        )
+        assert (
+            first["step"].maximum_cost.max_blocks_changed
+            == second["step"].maximum_cost.max_blocks_changed
+            == 24
+        )
+        assert second["account"].used.max_blocks_changed == 24
+        assert second["account"].used.max_actions == 1
+        assert second["account"].limit == first["account"].limit
+        assert second["account"].limit.max_blocks_changed == 256
+        assert second["previous_receipt_hash"]
+
+
 @pytest.mark.parametrize(
     "mode",
     [

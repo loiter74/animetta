@@ -123,7 +123,7 @@ class MissionStrategy:
         before: Observation,
         after: Observation,
     ) -> dict | None:
-        """Forward a settled partial collect only to the selected fallback delegate."""
+        """Forward settled subgoal progress only to the selected fallback delegate."""
 
         if state.get("selected_strategy") != "fallback":
             return None
@@ -131,7 +131,10 @@ class MissionStrategy:
         accept = getattr(fallback, "accept_partial_result", None)
         if not callable(accept):
             return None
-        recovered = accept(state["strategy_state"], before, after)
+        delegated = state["strategy_state"]
+        if "settled_capability" in state:
+            delegated = {**delegated, "settled_capability": state["settled_capability"]}
+        recovered = accept(delegated, before, after)
         if recovered is None:
             return None
         return {

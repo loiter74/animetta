@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from math import isfinite
+
 from animetta.tools.gamebot.contracts.v2 import Observation
 from animetta.tools.minecraft.survival.registry import WorkflowRegistry
 from animetta.tools.minecraft.survival.wood import bind_workflow_wood, inventory_resource_count
@@ -158,13 +160,37 @@ class FallbackStrategy:
         before: Observation,
         after: Observation,
     ) -> dict | None:
-        """Accept a settled partial collect when the declared target made progress."""
+        """Keep a declared material or depth frontier when observed progress is partial."""
 
         workflow = state.get("workflow")
         index = state.get("step_index")
         if workflow is None or index is None or index >= len(workflow.steps):
             return None
         step = workflow.steps[index]
+        if state.get("settled_capability", step.capability) != step.capability:
+            return None
+        checkpoint = workflow.checkpoints[index] if workflow.checkpoints else None
+        if (
+            checkpoint is not None
+            and not self._checkpoint_satisfied(checkpoint, before)
+            and self._checkpoint_satisfied(checkpoint, after)
+        ):
+            return {**state}
+        if step.capability == "mine_shaft":
+            target_y = step.parameters.get("target_y")
+            if (
+                type(target_y) is int
+                and checkpoint is not None
+                and any(clause.maximum_y == target_y for clause in checkpoint.any_of)
+                and before.position is not None
+                and after.position is not None
+                and isfinite(before.position.y)
+                and isfinite(after.position.y)
+                and before.position.y > target_y
+                and after.position.y <= before.position.y - 1
+            ):
+                return {**state}
+            return None
         target = self._declared_collection_target(workflow, index)
         if target is None or step.capability != "collect":
             return None
@@ -195,7 +221,9 @@ class FallbackStrategy:
                 for threshold in clause.inventory_all
             )
             depth_satisfied = clause.maximum_y is None or (
-                observation.position is not None and observation.position.y <= clause.maximum_y
+                observation.position is not None
+                and isfinite(observation.position.y)
+                and observation.position.y <= clause.maximum_y
             )
             if inventory_satisfied and depth_satisfied:
                 return True

@@ -879,6 +879,145 @@ def test_ignition_reallocates_ore_budget_but_rejects_unaffordable_cold_chain(woo
     assert workflow.steps[2].maximum_cost.max_blocks_changed == 1
 
 
+@pytest.mark.parametrize("wrapped", [False, True])
+def test_partial_shaft_depth_resumes_the_same_checkpoint_in_the_original_charged_account(wrapped):
+    from animetta.tools.minecraft.voyager.strategies.mission import MissionStrategy
+
+    mission = build_nether_portal_mission(mission_id="partial-shaft-depth")
+    objective = next(o for o in mission.objectives if o.objective_id == "diamond-pickaxe")
+    registry = WorkflowRegistry()
+    registry.register(
+        next(w for w in nether_preparation_workflows() if w.target == "diamond_pickaxe")
+    )
+    fallback = FallbackStrategy(registry=registry)
+    strategy = MissionStrategy(live=None, learn=None, fallback=fallback) if wrapped else fallback
+    state = strategy.prepare(objective.goal)
+    limit = mission.budget.model_copy(update=objective.budget.model_dump())
+    account = BudgetAccount(
+        limit=limit,
+        used=BudgetUsage(
+            max_actions=12,
+            max_blocks_changed=96,
+            max_travel_distance=76,
+        ),
+    )
+    state["budget_remaining"] = account.remaining
+    before = Observation.model_validate(
+        {
+            **MESSAGES["Observation"],
+            "position": {"x": -18, "y": -24, "z": 22},
+            "inventory": {"iron_pickaxe": 1, "stone_pickaxe": 2, "stick": 4, "cobblestone": 40},
+        }
+    )
+    step = strategy.propose(state, before)
+    assert step.parameters == {"minimum_cobblestone": 0, "target_y": -32}
+    assert step.maximum_cost.max_blocks_changed == 24
+    delegate = state["strategy_state"] if wrapped else state
+    index = delegate["step_index"]
+    # R82 exhausted this local allowance while descending -24 -> -29. All24
+    # mutations remain charged against the unchanged256-block command limit.
+    account = account.reserve("partial", step.maximum_cost).settle(
+        "partial",
+        BudgetUsage(max_actions=1, max_blocks_changed=24, max_travel_distance=8),
+    )
+    after = before.model_copy(update={"position": before.position.model_copy(update={"y": -29})})
+    recovered = strategy.accept_partial_result(state, before, after)
+    assert recovered is not None and recovered["goal"] == objective.goal
+    delegate = recovered["strategy_state"] if wrapped else recovered
+    assert delegate["step_index"] == index
+    recovered["budget_remaining"] = account.remaining
+    remaining = strategy.propose(recovered, after)
+    assert remaining.parameters == step.parameters
+    assert remaining.maximum_cost == step.maximum_cost
+    assert account.used.max_blocks_changed == 120 and account.remaining.max_blocks_changed == 136
+    account = account.reserve("remaining-depth", remaining.maximum_cost).settle(
+        "remaining-depth",
+        BudgetUsage(max_actions=1, max_blocks_changed=6, max_travel_distance=3),
+    )
+    recovered = strategy.accept_result(recovered, {})
+    reached = after.model_copy(update={"position": after.position.model_copy(update={"y": -32})})
+    recovered["budget_remaining"] = account.remaining
+    assert strategy.propose(recovered, reached).parameters == {
+        "minimum_cobblestone": 0,
+        "target_y": -40,
+    }
+    assert account.limit == limit
+    assert account.used.max_blocks_changed == 126 and limit.max_blocks_changed == 256
+
+
+@pytest.mark.parametrize(
+    "after_y", [-24, -23, -24.25, float("nan"), float("inf"), float("-inf"), None]
+)
+def test_partial_shaft_requires_real_depth_progress_and_a_declared_checkpoint(after_y):
+    mission = build_nether_portal_mission(mission_id="partial-shaft-no-progress")
+    objective = next(o for o in mission.objectives if o.objective_id == "diamond-pickaxe")
+    registry = WorkflowRegistry()
+    registry.register(
+        next(w for w in nether_preparation_workflows() if w.target == "diamond_pickaxe")
+    )
+    strategy = FallbackStrategy(registry=registry)
+    state = strategy.prepare(objective.goal)
+    before = Observation.model_validate(
+        {
+            **MESSAGES["Observation"],
+            "position": {"x": -18, "y": -24, "z": 22},
+            "inventory": {"iron_pickaxe": 1, "stone_pickaxe": 2, "stick": 4, "cobblestone": 40},
+        }
+    )
+    assert strategy.propose(state, before).capability == "mine_shaft"
+    after = before.model_copy(
+        update={
+            "position": None
+            if after_y is None
+            else before.position.model_copy(update={"y": after_y})
+        }
+    )
+    assert strategy.accept_partial_result(state, before, after) is None
+    advanced = before.model_copy(update={"position": before.position.model_copy(update={"y": -29})})
+    state["workflow"] = state["workflow"].model_copy(update={"checkpoints": ()})
+    assert strategy.accept_partial_result(state, before, advanced) is None
+
+
+@pytest.mark.parametrize("target", ["water_bucket", "nether_iron_kit"])
+def test_observed_checkpoint_completion_is_recoverable_only_for_the_failed_primitive(target):
+    mission = build_nether_portal_mission(mission_id="completed-subgoal-progress")
+    objective = next(o for o in mission.objectives if o.goal.target == target)
+    registry = WorkflowRegistry()
+    registry.register(next(w for w in nether_preparation_workflows() if w.target == target))
+    strategy = FallbackStrategy(registry=registry)
+    state = strategy.prepare(objective.goal)
+    inventory = (
+        {"bucket": 1}
+        if target == "water_bucket"
+        else {
+            "stone_pickaxe": 1,
+            "raw_iron": 7,
+            "furnace": 1,
+            "oak_planks": 23,
+        }
+    )
+    before = Observation.model_validate({**MESSAGES["Observation"], "inventory": inventory})
+    step = strategy.propose(state, before)
+    state["settled_capability"] = step.capability
+    if target == "nether_iron_kit":
+        # A relative7-item smelt must not be replayed after only3 items arrive.
+        incomplete = before.model_copy(
+            update={"inventory": {**inventory, "raw_iron": 4, "iron_ingot": 3}}
+        )
+        assert strategy.accept_partial_result(state, before, incomplete) is None
+    after = before.model_copy(
+        update={"inventory": {"water_bucket": 1} if target == "water_bucket" else {"iron_ingot": 7}}
+    )
+    assert GoalVerifier().verify(goal=objective.goal, final=after)["satisfied"]
+    assert (
+        strategy.accept_partial_result({**state, "settled_capability": "goto"}, before, after)
+        is None
+    )
+    recovered = strategy.accept_partial_result(state, before, after)
+    assert recovered is not None and recovered["step_index"] == state["step_index"]
+    assert strategy.propose(recovered, after).kind == "complete"
+
+
 def test_mainline_resume_rejects_stage_missing_from_mission() -> None:
     with pytest.raises(ValueError, match="resume stage 'return-home'"):
         build_nether_portal_mission(mission_id="survival-resume-invalid", resume_from="return-home")

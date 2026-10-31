@@ -338,12 +338,18 @@ class UnifiedVoyagerController:
                         and CommandExecutor._observation_motion_settled(result.after)
                     ):
                         recover = getattr(strategy, "accept_partial_result", None)
-                        if (
-                            exc.error.code in {"PARTIAL_COLLECT", "BUDGET_EXHAUSTED"}
-                            and decision.capability == "collect"
-                            and callable(recover)
+                        if callable(recover) and (
+                            exc.error.code == "BUDGET_EXHAUSTED"
+                            or (
+                                exc.error.code == "PARTIAL_COLLECT"
+                                and decision.capability == "collect"
+                            )
                         ):
-                            recovered_state = recover(state, observation, result.after)
+                            recovered_state = recover(
+                                {**state, "settled_capability": decision.capability},
+                                observation,
+                                result.after,
+                            )
                         elif exc.error.code in {
                             "UNSAFE_AREA",
                             "NAVIGATION_TARGET_NOT_REACHED",
