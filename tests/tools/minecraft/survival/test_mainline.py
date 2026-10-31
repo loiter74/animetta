@@ -689,6 +689,131 @@ def test_two_diamonds_keep_three_diamond_descent_and_prepare_spare_pickaxes() ->
     assert craft.parameters == {"recipe": "diamond_pickaxe", "count": 1}
 
 
+@pytest.mark.parametrize("diamond_stock", [0, 2])
+def test_diamond_search_uses_unspent_command_blocks_and_keeps_the_pickaxe_reservation(
+    diamond_stock: int,
+) -> None:
+    mission = build_nether_portal_mission(mission_id="diamond-search-reservation")
+    objective = next(o for o in mission.objectives if o.objective_id == "diamond-pickaxe")
+    workflow = next(w for w in nether_preparation_workflows() if w.target == "diamond_pickaxe")
+    registry = WorkflowRegistry()
+    registry.register(workflow)
+    strategy = FallbackStrategy(registry=registry)
+    state = strategy.prepare(objective.goal)
+    limit = mission.budget.model_copy(update=objective.budget.model_dump())
+    # R77 reached -54 with 100/256 blocks spent. The old three-block
+    # reservation expired on tuff before the native preparation reached -58.
+    account = BudgetAccount(
+        limit=limit,
+        used=BudgetUsage(max_actions=14, max_blocks_changed=100, max_travel_distance=97.45877),
+    )
+    observation = Observation.model_validate(
+        {
+            **MESSAGES["Observation"],
+            "position": {"x": 1, "y": -54, "z": 54},
+            "inventory": {
+                "iron_pickaxe": 1,
+                "stone_pickaxe": 3,
+                "stick": 4,
+                "cobblestone": 162,
+                "diamond": diamond_stock,
+            },
+        }
+    )
+    state["budget_remaining"] = account.remaining
+    collect = strategy.propose(state, observation)
+    assert collect.capability == "collect"
+    assert collect.parameters == {"block_type": "diamond_ore", "count": 3 - diamond_stock}
+    assert collect.maximum_cost.max_blocks_changed == 148
+    assert collect.maximum_cost.max_travel_distance == 256
+    assert workflow.steps[state["step_index"]].maximum_cost.max_blocks_changed == 3
+    # Charge both necessary preparation and ore extraction to this same account.
+    account = account.reserve("diamonds", collect.maximum_cost).settle(
+        "diamonds", BudgetUsage(max_actions=1, max_blocks_changed=4 + 3 - diamond_stock)
+    )
+    state = strategy.accept_result(state, {})
+    observation = observation.model_copy(
+        update={"inventory": {**observation.inventory, "diamond": 3}}
+    )
+    state["budget_remaining"] = account.remaining
+    craft = strategy.propose(state, observation)
+    assert craft.parameters == {"recipe": "diamond_pickaxe", "count": 1}
+    assert craft.maximum_cost.max_blocks_changed == 8
+    account = account.reserve("pickaxe", craft.maximum_cost).settle(
+        "pickaxe", BudgetUsage(max_actions=1, max_blocks_changed=1)
+    )
+    final = observation.model_copy(update={"inventory": {"diamond_pickaxe": 1}})
+    assert GoalVerifier().verify(goal=objective.goal, final=final)["satisfied"]
+    assert account.limit == limit and limit.max_blocks_changed == 256
+    assert limit.max_actions == 40 and limit.max_travel_distance == 384
+    assert account.used.max_blocks_changed <= 108
+
+
+@pytest.mark.parametrize(
+    "spent", [{"max_blocks_changed": 244}, {"max_actions": 39}, {"max_travel_distance": 377}]
+)
+def test_diamond_search_cannot_borrow_the_stopping_or_future_work_budget(spent) -> None:
+    mission = build_nether_portal_mission(mission_id="diamond-search-no-budget")
+    objective = next(o for o in mission.objectives if o.objective_id == "diamond-pickaxe")
+    registry = WorkflowRegistry()
+    registry.register(
+        next(w for w in nether_preparation_workflows() if w.target == "diamond_pickaxe")
+    )
+    strategy = FallbackStrategy(registry=registry)
+    state = strategy.prepare(objective.goal)
+    account = BudgetAccount(
+        limit=mission.budget.model_copy(update=objective.budget.model_dump()),
+        used=BudgetUsage(**spent),
+    )
+    state["budget_remaining"] = account.remaining
+    observation = Observation.model_validate(
+        {
+            **MESSAGES["Observation"],
+            "position": {"x": 1, "y": -54, "z": 54},
+            "inventory": {"iron_pickaxe": 1, "stone_pickaxe": 3, "stick": 4},
+        }
+    )
+    decision = strategy.propose(state, observation)
+    assert decision.kind == "failure" and decision.code == "BUDGET_EXHAUSTED"
+
+
+@pytest.mark.parametrize("wood", ["birch", "any"])
+def test_ignition_reallocates_ore_budget_but_rejects_unaffordable_cold_chain(wood):
+    mission = build_nether_portal_mission(mission_id="ignition-search-reservation")
+    objective = next(o for o in mission.objectives if o.goal.target == "flint_and_steel")
+    workflow = next(w for w in nether_preparation_workflows() if w.target == "flint_and_steel")
+    registry = WorkflowRegistry()
+    registry.register(workflow)
+    strategy = FallbackStrategy(registry=registry)
+    state = strategy.prepare(objective.goal)
+    account = BudgetAccount(limit=mission.budget.model_copy(update=objective.budget.model_dump()))
+    state["budget_remaining"] = account.remaining
+    observation = Observation.model_validate(
+        {
+            **MESSAGES["Observation"],
+            "inventory": {},
+            "visible_blocks": []
+            if wood == "any"
+            else [{"block_id": "minecraft:birch_log", "position": {"x": 1, "y": 64, "z": 1}}],
+        }
+    )
+    logs = strategy.propose(state, observation)
+    # The original 128 travel cannot reserve the complete cold chain's 136
+    # future travel. Do not enlarge it just to make this standalone case run.
+    assert logs.kind == "failure" and logs.code == "BUDGET_EXHAUSTED"
+    assert state["workflow"].shared_collection_budget_items == (f"{wood}_log", "raw_iron")
+    observation = observation.model_copy(update={"inventory": {"birch_planks": 8}})
+    state["budget_remaining"] = account.remaining
+    ore = strategy.propose(state, observation)
+    assert ore.parameters == {"block_type": "iron_ore", "count": 1}
+    assert ore.maximum_cost.max_blocks_changed == 8
+    assert ore.maximum_cost.max_travel_distance == 56
+    assert account.limit.max_blocks_changed == 64
+    assert account.limit.max_travel_distance == 128
+    assert workflow.steps[0].maximum_cost.max_blocks_changed == 2
+    assert workflow.steps[2].maximum_cost.max_blocks_changed == 1
+
+
 def test_mainline_resume_rejects_stage_missing_from_mission() -> None:
     with pytest.raises(ValueError, match="resume stage 'return-home'"):
         build_nether_portal_mission(mission_id="survival-resume-invalid", resume_from="return-home")

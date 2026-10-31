@@ -86,6 +86,9 @@ def bind_workflow_wood(
             "collection_targets": tuple(
                 threshold(item) if item else None for item in workflow.collection_targets
             ),
+            "shared_collection_budget_items": tuple(
+                replacements.get(item, item) for item in workflow.shared_collection_budget_items
+            ),
             "checkpoints": tuple(
                 checkpoint.model_copy(
                     update={

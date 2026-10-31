@@ -92,14 +92,15 @@ class FallbackStrategy:
         step: ExecuteStep,
         observation: Observation,
     ) -> ExecuteStep | StrategyFailure:
-        """Tighten repeated batches using the controller's current account snapshot."""
+        """Allocate declared collection work from the current command account."""
         available = state.get("budget_remaining")
         batch_size = workflow.steps[index].parameters.get("count")
+        shared_blocks = target.item in workflow.shared_collection_budget_items
         if (
             not isinstance(available, ExecutionBudget)
             or not isinstance(batch_size, int)
             or batch_size <= 0
-            or batch_size >= target.quantity
+            or (batch_size >= target.quantity and not shared_blocks)
         ):
             return step
         future = BudgetUsage()
@@ -127,9 +128,9 @@ class FallbackStrategy:
                 max_blocks_changed=pending,
             )
         )
-        blocks = min(
-            maximum.max_blocks_changed, available.max_blocks_changed - followup.max_blocks_changed
-        )
+        blocks = available.max_blocks_changed - followup.max_blocks_changed
+        if not shared_blocks:
+            blocks = min(maximum.max_blocks_changed, blocks)
         travel = min(
             maximum.max_travel_distance,
             available.max_travel_distance - followup.max_travel_distance,

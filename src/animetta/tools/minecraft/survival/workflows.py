@@ -43,6 +43,8 @@ class WorkflowDefinition(BaseModel):
     steps: tuple[ExecuteStep, ...]
     checkpoints: tuple[WorkflowCheckpoint | None, ...] = ()
     collection_targets: tuple[InventoryThreshold | None, ...] = ()
+    # Opted-in targets share unspent command blocks with access/preparation work.
+    shared_collection_budget_items: tuple[str, ...] = ()
     adaptive_wood: bool = False
 
     @model_validator(mode="after")
@@ -55,6 +57,9 @@ class WorkflowDefinition(BaseModel):
     def align_collection_targets(self) -> WorkflowDefinition:
         if self.collection_targets and len(self.collection_targets) != len(self.steps):
             raise ValueError("workflow collection targets must align with steps")
+        declared = {target.item for target in self.collection_targets if target is not None}
+        if set(self.shared_collection_budget_items) - declared:
+            raise ValueError("shared collection budget requires a declared collection target")
         return self
 
 
@@ -215,6 +220,7 @@ def diamond_survival_workflow(diamond_quantity: int = 1) -> WorkflowDefinition:
     descent = _bounded_diamond_descent()
     return WorkflowDefinition(
         workflow_id="survival:diamond",
+        shared_collection_budget_items=("diamond",),
         adaptive_wood=True,
         intent="acquire",
         target="diamond",
@@ -327,6 +333,7 @@ def nether_preparation_workflows() -> tuple[WorkflowDefinition, ...]:
         ),
         WorkflowDefinition(
             workflow_id="survival:diamond-pickaxe",
+            shared_collection_budget_items=diamond.shared_collection_budget_items,
             adaptive_wood=True,
             intent="craft",
             target="diamond_pickaxe",
@@ -340,6 +347,7 @@ def nether_preparation_workflows() -> tuple[WorkflowDefinition, ...]:
         ),
         WorkflowDefinition(
             workflow_id="survival:ignition",
+            shared_collection_budget_items=("oak_log", "raw_iron"),
             adaptive_wood=True,
             intent="craft",
             target="flint_and_steel",
