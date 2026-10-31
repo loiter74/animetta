@@ -399,6 +399,12 @@ export function isCollectionBlockStillPresent(bot, block) {
   return current?.type === block.type;
 }
 
+export function hasCollectionApproachProgress(bot, block, previousDistance, error) {
+  if (isSurfaceWood(block.name) || error?.code !== 'ACTION_DEADLINE_EXPIRED') return false;
+  return previousDistance - bot.entity.position.distanceTo(block.position) > POSITION_EPSILON
+    && isCollectionBlockStillPresent(bot, block);
+}
+
 export function isRecoverableCollectionDigError(error) {
   return (
     error?.code === 'COLLECT_FAILED' ||

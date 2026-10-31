@@ -38,6 +38,7 @@ import {
   obsidianWorkMinimumY,
   safePickupDroppedItems,
   isCollectionBlockStillPresent,
+  hasCollectionApproachProgress,
   isRecoverableCollectionDigError,
   stopCollectionMovement,
   shouldPrepareUndergroundCollection,
@@ -860,6 +861,8 @@ async function _collectInner(block_type, count, mcData, context = {}) {
     const excavationGoal = collectionExcavationGoal(block);
     const surfaceWood = isSurfaceWood(block.name);
     const woodReachable = surfaceWood && await clearWoodView(bot, block, context, count - collected);
+    const previousDistance = bot.entity.position.distanceTo(block.position);
+    let navigationError;
     try {
       // Visibility goals inspect the current world, so an enclosed ore cannot
       // satisfy them until a coordinate goal has first excavated its access.
@@ -871,6 +874,7 @@ async function _collectInner(block_type, count, mcData, context = {}) {
       }
     } catch (e) {
       context.signal?.throwIfAborted();
+      navigationError = e;
       recordSearchFailure('navigate', e, { ...block.position });
       // A fresh interaction check below decides whether the current spot is usable.
     }
@@ -891,6 +895,12 @@ async function _collectInner(block_type, count, mcData, context = {}) {
         ...block.position,
         distance: bot.entity.position.distanceTo(block.position),
       });
+      // A settled time slice can still have opened access to this same vein.
+      // Continue within the original attempt count and shared command account.
+      if (hasCollectionApproachProgress(bot, block, previousDistance, navigationError)) {
+        discoveredTarget = block;
+        continue;
+      }
       excludedTargets.add(collectionBlockKey(block));
       _collectDebug(`excluded unreachable target=${collectionBlockKey(block)}`);
       continue;
