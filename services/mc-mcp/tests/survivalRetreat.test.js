@@ -54,17 +54,53 @@ function retreatCorridor(detour) {
 test('installed SDK cannot bridge a retreat gap even with scaffolding in the inventory', () => {
   const { bot } = fixture({ scaffolding: 7, terrain: retreatCorridor(false) });
   assert.equal(planRetreat(bot).result.status, 'noPath');
+  assert.deepEqual(projectRetreatCandidates(bot, [new Vec3(-5, 63, 0)]).candidates, []);
 });
 
 test('installed SDK finds a walking retreat around a gap without consuming scaffolding', () => {
   const { bot } = fixture({ scaffolding: 7, terrain: retreatCorridor(true) });
   const { result } = planRetreat(bot);
   assert.equal(result.status, 'success');
+  assert.deepEqual(projectRetreatCandidates(bot, [new Vec3(-5, 63, 0)]).candidates,
+    [{ x: -5, y: 64, z: 0 }]);
   assert.ok(result.path.some(move => Math.floor(move.z) === 1));
   for (const move of result.path) {
     assert.deepEqual(move.toBreak, []);
     assert.deepEqual(move.toPlace, []);
   }
+});
+
+test('retreat projection requires a completed native path without changing the active navigation', () => {
+  const { bot } = fixture();
+  const movements = bot.pathfinder.movements;
+  const activeGoal = bot.pathfinder.goal;
+  const thinkTimeout = bot.pathfinder.thinkTimeout;
+  const tickTimeout = bot.pathfinder.tickTimeout;
+  const getPath = bot.pathfinder.getPathFromTo;
+  for (const status of ['partial', 'timeout', 'noPath']) {
+    bot.pathfinder.getPathFromTo = function * () { yield { result: { status, path: [] } }; };
+    assert.deepEqual(projectRetreatCandidates(bot, [new Vec3(-5, 63, 0)]).candidates, [], status);
+  }
+  delete bot.pathfinder.getPathFromTo;
+  assert.deepEqual(projectRetreatCandidates(bot, [new Vec3(-5, 63, 0)]).candidates, []);
+  bot.pathfinder.getPathFromTo = function * (...args) {
+    yield { result: { status: 'partial', path: [] } };
+    yield * getPath(...args);
+  };
+  assert.deepEqual(projectRetreatCandidates(bot, [new Vec3(-5, 63, 0)]).candidates,
+    [{ x: -5, y: 64, z: 0 }]);
+  assert.equal(bot.pathfinder.movements, movements);
+  assert.equal(bot.pathfinder.goal, activeGoal);
+  assert.equal(bot.pathfinder.thinkTimeout, thinkTimeout);
+  assert.equal(bot.pathfinder.tickTimeout, tickTimeout);
+});
+
+test('native retreat proof retains integer search nodes across partial planning slices', () => {
+  const { bot } = fixture();
+  bot.pathfinder.tickTimeout = 0;
+  assert.deepEqual(projectRetreatCandidates(bot, [new Vec3(-5, 63, 0)]).candidates,
+    [{ x: -5, y: 64, z: 0 }]);
+  assert.equal(bot.pathfinder.tickTimeout, 0);
 });
 
 test('ordinary outward planning needs no repeated world or cover queries', () => {
@@ -113,8 +149,10 @@ test('retreat rejects an approaching step, a newly blocked exit and destinations
 
 test('a known complete shelter can be a retreat destination inside the unchanged warning radius', () => {
   const { bot, overrides } = fixture(), destination = new Vec3(-2, 64, 0);
-  for (let y = 64; y <= 66; y++) for (let z = -2; z <= 2; z++) {
-    overrides.set(new Vec3(-1, y, z).toString(), 'stone');
+  bot.entities[192].position = new Vec3(.5, 84, .5);
+  // A roof shelters the destination while leaving its walking entrance open.
+  for (let x = -3; x <= -1; x++) for (let z = -1; z <= 1; z++) {
+    overrides.set(new Vec3(x, 67, z).toString(), 'stone');
   }
   const policy = createRetreatPolicy(bot, destination);
   assert.ok(policy);
@@ -122,14 +160,14 @@ test('a known complete shelter can be a retreat destination inside the unchanged
   assert.equal(policy.permitsThreat(threat), true);
   assert.deepEqual(projectRetreatCandidates(bot, [destination.offset(0, -1, 0)]).candidates,
     [{ x: -2, y: 64, z: 0 }]);
-  assert.equal(policy.permitsMove(new Vec3(-3.5, 64, .5), new Vec3(-2.5, 64, .5)), true);
-  assert.equal(policy.permitsMove(bot.entity.position, bot.entity.position.offset(1, 0, 0)), false);
+  assert.equal(policy.permitsMove(new Vec3(-2.5, 64, .5), new Vec3(-1.5, 64, .5)), true);
+  assert.equal(policy.permitsMove(bot.entity.position, bot.entity.position.offset(0, 1, 0)), false);
   for (const gap of ['air', 'stone_slab', null]) {
-    overrides.set(new Vec3(-1, 65, 0).toString(), gap);
+    overrides.set(new Vec3(-2, 67, 0).toString(), gap);
     assert.equal(policy.permitsThreat(threat), false, String(gap));
     assert.deepEqual(projectRetreatCandidates(bot, [destination.offset(0, -1, 0)]).candidates, []);
   }
-  overrides.set(new Vec3(-1, 65, 0).toString(), 'stone');
+  overrides.set(new Vec3(-2, 67, 0).toString(), 'stone');
   bot.entities[192].name = 'witch';
   assert.equal(createRetreatPolicy(bot, destination), null, 'unsupported cover immunity remains forbidden');
 });

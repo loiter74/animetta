@@ -1,4 +1,6 @@
 import Vec3 from 'vec3';
+import pathfinder from 'mineflayer-pathfinder';
+import { configureDryNavigation } from './collection.js';
 import { findHostileThreat, hostileThreatAt, hostileWarningRadius } from './survivalThreats.js';
 
 const POSITION_EPSILON = 0.02;
@@ -72,5 +74,28 @@ export function projectRetreatCandidates(bot, observedPositions, maximumDistance
       candidates.set(target.toString(), { x: target.x, y: target.y, z: target.z });
     }
   }
-  return { origin: { x: origin.x, y: origin.y, z: origin.z }, candidates: [...candidates.values()] };
+  const evidence = { origin: { x: origin.x, y: origin.y, z: origin.z }, candidates: [] };
+  if (!candidates.size || !bot.registry || typeof bot.pathfinder?.getPathFromTo !== 'function') return evidence;
+  try {
+    const destinations = [...candidates.values()];
+    const policy = createRetreatPolicy(bot, destinations[0]);
+    if (!policy) return evidence;
+    const movements = configureDryNavigation(new pathfinder.Movements(bot), bot, { retreatPolicy: policy });
+    const goal = new pathfinder.goals.GoalCompositeAny(destinations.map(p => (
+      new pathfinder.goals.GoalBlock(p.x, p.y, p.z)
+    )));
+    // Continue the same native search within its original timeouts, without
+    // replacing its active goal or movements. Disable execution-coordinate
+    // postprocessing: it mutates shared A* nodes after a partial planning slice.
+    let result;
+    for (const planned of bot.pathfinder.getPathFromTo(movements, origin, goal, { optimizePath: false })) {
+      result = planned.result;
+      if (result.status !== 'partial') break;
+    }
+    if (result?.status !== 'success' || result.path.some(move => move.toBreak.length || move.toPlace.length)) return evidence;
+    const end = result.path.at(-1);
+    const destination = end && destinations.find(p => p.x === end.x && p.y === end.y && p.z === end.z);
+    if (destination) evidence.candidates.push(destination);
+  } catch { /* Unknown route or unloaded world never proves reachability. */ }
+  return evidence;
 }

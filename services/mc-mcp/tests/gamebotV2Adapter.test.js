@@ -643,6 +643,11 @@ function cooperativeCollectionFixture(mode = 'success') {
   bot.findBlock = ({ matching }) => ores.map(p => bot.blockAt(p))
     .filter(matching).sort((a, b) => a.position.distanceTo(bot.entity.position) - b.position.distanceTo(bot.entity.position))[0];
   bot.findBlocks = () => mode.includes('no-exit') ? [] : [new Vec3(-5, 63, 0)];
+  const navigation = bot.pathfinder;
+  pathfinderPkg.pathfinder(bot);
+  const { getPathFromTo, thinkTimeout, tickTimeout, searchRadius } = bot.pathfinder;
+  bot.pathfinder = Object.assign(navigation, { getPathFromTo, thinkTimeout, tickTimeout, searchRadius });
+  const listenerCounts = Object.fromEntries(['move', 'health', 'physicsTick', 'entityMoved', 'entitySpawn'].map(event => [event, bot.listenerCount(event)]));
   bot.pathfinder.movements = new pathfinderPkg.Movements(bot, registry);
   bot.pathfinder.setMovements = movements => { bot.pathfinder.movements = movements; };
   bot.pathfinder.setGoal = goal => {
@@ -722,7 +727,7 @@ function cooperativeCollectionFixture(mode = 'success') {
     locateResource: async () => { throw Object.assign(new Error('no other target'), { code: 'RESOURCE_NOT_FOUND' }); },
     _explore_for_block: async () => {},
   });
-  return { ...fixture, bag, removed, attempts, get preparations() { return preparations; },
+  return { ...fixture, bag, removed, attempts, listenerCounts, get preparations() { return preparations; },
     stats: async () => ({ nativeDigs, routes, blockedMutation: await blockedMutation,
       recoveries: context.collection_safety.recoveryCount, guardTravel: context.motion_usage.travel }),
   };
@@ -744,7 +749,7 @@ test('real collection pauses a native dig, escapes once and harvests another vei
   assert.equal(receipt.budget_usage.max_damage_taken, 0);
   assert.equal(receipt.explained_mutations.filter(m => m.subject === 'block:minecraft:overworld:-9:64:0' && m.delta === -1).length, 1,
     'nested evidence contains exactly one actual ore mutation');
-  for (const event of ['move', 'health', 'physicsTick', 'entityMoved', 'entitySpawn']) assert.equal(f.bot.listenerCount(event), 0);
+  for (const event of ['move', 'health', 'physicsTick', 'entityMoved', 'entitySpawn']) assert.equal(f.bot.listenerCount(event), f.listenerCounts[event]);
   f.adapter.dispose();
 });
 
