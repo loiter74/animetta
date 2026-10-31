@@ -105,6 +105,9 @@ export function configureDryNavigation(movements, bot, { allowSurfaceSwimming = 
   // landing. Apply every standing policy after all native move generators.
   const getNeighbors = movements.getNeighbors.bind(movements);
   movements.getNeighbors = node => getNeighbors(node).filter(move => {
+    // canDig and allow1by1towers do not disable the SDK's bridge placement.
+    // Every retreat edge must obey the runtime's no-world-mutation contract.
+    if (retreatPolicy && (move.toBreak?.length || move.toPlace?.length)) return false;
     const feet = new Vec3(Math.floor(move.x), move.y, Math.floor(move.z));
     const landing = bot.blockAt(feet);
     if (!landing || node.y - move.y > 1 || movements.exclusionStep(landing) >= 100) return false;

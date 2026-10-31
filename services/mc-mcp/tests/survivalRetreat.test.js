@@ -9,12 +9,12 @@ import WorldSync from 'prismarine-world/src/worldsync.js';
 import { configureDryNavigation } from '../src/collection.js';
 import { createRetreatPolicy, projectRetreatCandidates } from '../src/survivalRetreat.js';
 
-function fixture() {
+function fixture({ scaffolding = 0, terrain = p => p.y < 64 ? 'stone' : 'air' } = {}) {
   const registry = minecraftData('1.21.1'), Block = BlockLoader(registry);
   const world = new WorldSync(null), overrides = new Map(), bot = new EventEmitter();
   world.getBlock = point => {
     const p = point.floored(), key = p.toString();
-    const name = overrides.has(key) ? overrides.get(key) : p.y < 64 ? 'stone' : 'air';
+    const name = overrides.has(key) ? overrides.get(key) : terrain(p);
     if (name === null) return null;
     const block = Block.fromStateId(registry.blocksByName[name].defaultState, 0);
     block.position = p;
@@ -22,25 +22,56 @@ function fixture() {
   };
   Object.assign(bot, { registry, world, game: { minY: -64, height: 384 }, blockAt: p => world.getBlock(p),
     entity: { position: new Vec3(.5, 64, .5), effects: {} },
-    inventory: { items: () => [] },
+    inventory: { items: () => scaffolding ? [{ name: 'dirt', type: registry.itemsByName.dirt.id, count: scaffolding }] : [] },
     entities: { 192: { id: 192, name: 'skeleton', position: new Vec3(20.5, 64, .5) } },
   });
   pathfinder.pathfinder(bot);
   return { bot, overrides };
 }
 
+function planRetreat(bot) {
+  const destination = new Vec3(-5, 64, 0);
+  const policy = createRetreatPolicy(bot, destination);
+  assert.ok(policy);
+  const movements = configureDryNavigation(new pathfinder.Movements(bot), bot, { retreatPolicy: policy });
+  let result;
+  for (const planned of bot.pathfinder.getPathFromTo(movements, bot.entity.position,
+    new pathfinder.goals.GoalBlock(destination.x, destination.y, destination.z))) {
+    result = planned.result;
+    if (result.status !== 'partial') break;
+  }
+  return { result, movements, policy };
+}
+
+function retreatCorridor(detour) {
+  return p => {
+    if (p.x < -6 || p.x > 1 || p.z < 0 || p.z > (detour ? 1 : 0) || p.y < 60 || p.y > 67) return null;
+    if (p.y >= 64) return 'air';
+    return p.z === 0 && p.x >= -3 && p.x <= -1 ? 'air' : 'stone';
+  };
+}
+
+test('installed SDK cannot bridge a retreat gap even with scaffolding in the inventory', () => {
+  const { bot } = fixture({ scaffolding: 7, terrain: retreatCorridor(false) });
+  assert.equal(planRetreat(bot).result.status, 'noPath');
+});
+
+test('installed SDK finds a walking retreat around a gap without consuming scaffolding', () => {
+  const { bot } = fixture({ scaffolding: 7, terrain: retreatCorridor(true) });
+  const { result } = planRetreat(bot);
+  assert.equal(result.status, 'success');
+  assert.ok(result.path.some(move => Math.floor(move.z) === 1));
+  for (const move of result.path) {
+    assert.deepEqual(move.toBreak, []);
+    assert.deepEqual(move.toPlace, []);
+  }
+});
+
 test('installed SDK plans a dry, non-excavating retreat outside the unchanged warning radius', () => {
   const { bot } = fixture(), destination = new Vec3(-5, 64, 0);
   const candidates = projectRetreatCandidates(bot, [destination.offset(0, -1, 0)]);
   assert.deepEqual(candidates, { origin: { x: .5, y: 64, z: .5 }, candidates: [{ x: -5, y: 64, z: 0 }] });
-  const policy = createRetreatPolicy(bot, destination);
-  const movements = configureDryNavigation(new pathfinder.Movements(bot), bot, { retreatPolicy: policy });
-  let result;
-  for (const planned of bot.pathfinder.getPathFromTo(movements, bot.entity.position,
-    new pathfinder.goals.GoalBlock(-5, 64, 0))) {
-    result = planned.result;
-    if (result.status !== 'partial') break;
-  }
+  const { result, movements, policy } = planRetreat(bot);
   assert.equal(result.status, 'success');
   assert.ok(result.path.length >= 4);
   let previous = bot.entity.position;
