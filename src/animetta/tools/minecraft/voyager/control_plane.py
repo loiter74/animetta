@@ -344,6 +344,10 @@ class UnifiedVoyagerController:
                                 exc.error.code == "PARTIAL_COLLECT"
                                 and decision.capability == "collect"
                             )
+                            or (
+                                exc.error.code == "MINE_SHAFT_STUCK"
+                                and decision.capability == "mine_shaft"
+                            )
                         ):
                             recovered_state = recover(
                                 {**state, "settled_capability": decision.capability},

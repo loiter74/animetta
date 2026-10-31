@@ -272,7 +272,7 @@ async def test_controller_refreshes_canonical_budget_through_mission_fallback() 
     assert executor.calls[1]["account"].limit == executor.calls[0]["account"].limit
 
 
-@pytest.mark.parametrize("error_code", ["PARTIAL_COLLECT", "BUDGET_EXHAUSTED"])
+@pytest.mark.parametrize("error_code", ["PARTIAL_COLLECT", "BUDGET_EXHAUSTED", "MINE_SHAFT_STUCK"])
 @pytest.mark.parametrize("recoverable", [True, False])
 @pytest.mark.parametrize("stop_on_action_failure", [False, True])
 async def test_controller_only_resumes_partial_collection_with_strategy_progress(
@@ -364,7 +364,7 @@ async def test_controller_only_resumes_partial_collection_with_strategy_progress
             },
         }
     )
-    if not recoverable or stop_on_action_failure:
+    if not recoverable or stop_on_action_failure or error_code == "MINE_SHAFT_STUCK":
         with pytest.raises(CommandExecutionError, match="4/8 collected"):
             await controller.execute_command(cmd)
         assert len(executor.calls) == 1
@@ -378,8 +378,18 @@ async def test_controller_only_resumes_partial_collection_with_strategy_progress
 
 
 @pytest.mark.parametrize("strict", [False, True])
-@pytest.mark.parametrize("error_code", ["BUDGET_EXHAUSTED", "PARTIAL_COLLECT"])
-async def test_controller_resumes_only_known_budget_limited_depth_progress(strict, error_code):
+@pytest.mark.parametrize("progress", [True, False])
+@pytest.mark.parametrize(
+    "error_code,start_y,after_y,target_y,blocks,travel",
+    [
+        ("BUDGET_EXHAUSTED", -24, -29, -32, 24, 8),
+        ("MINE_SHAFT_STUCK", 32, 26, 24, 6, 6),
+        ("PARTIAL_COLLECT", 32, 26, 24, 6, 6),
+    ],
+)
+async def test_controller_resumes_only_known_settled_depth_progress(
+    strict, progress, error_code, start_y, after_y, target_y, blocks, travel
+):
     from animetta.tools.minecraft.survival.mainline import build_nether_portal_mission
     from animetta.tools.minecraft.survival.registry import WorkflowRegistry
     from animetta.tools.minecraft.survival.workflows import nether_preparation_workflows
@@ -396,7 +406,7 @@ async def test_controller_resumes_only_known_budget_limited_depth_progress(stric
     before = Observation.model_validate(
         {
             **MESSAGES["Observation"],
-            "position": {"x": -18, "y": -24, "z": 22},
+            "position": {"x": -18, "y": start_y, "z": 22},
             "inventory": {"iron_pickaxe": 1, "stone_pickaxe": 2, "stick": 4, "cobblestone": 40},
         }
     )
@@ -432,8 +442,8 @@ async def test_controller_resumes_only_known_budget_limited_depth_progress(stric
                     "budget_usage": receipt.budget_usage.model_copy(
                         update={
                             "max_actions": 1,
-                            "max_blocks_changed": 24,
-                            "max_travel_distance": 8,
+                            "max_blocks_changed": blocks,
+                            "max_travel_distance": travel,
                         }
                     ),
                 }
@@ -441,13 +451,17 @@ async def test_controller_resumes_only_known_budget_limited_depth_progress(stric
             result = StepExecutionResult(
                 receipt=receipt,
                 after=before.model_copy(
-                    update={"position": before.position.model_copy(update={"y": -29})}
+                    update={
+                        "position": before.position.model_copy(
+                            update={"y": after_y if progress else start_y}
+                        )
+                    }
                 ),
                 account=kwargs["account"].charge(
                     BudgetUsage(
                         max_actions=1,
-                        max_blocks_changed=24,
-                        max_travel_distance=8,
+                        max_blocks_changed=blocks,
+                        max_travel_distance=travel,
                     )
                 ),
             )
@@ -486,7 +500,7 @@ async def test_controller_resumes_only_known_budget_limited_depth_progress(stric
             ).model_dump(mode="json"),
         }
     )
-    can_continue = not strict and error_code == "BUDGET_EXHAUSTED"
+    can_continue = not strict and progress and error_code != "PARTIAL_COLLECT"
     with pytest.raises(
         CommandExecutionError, match="End controlled" if can_continue else "Partial shaft"
     ):
@@ -498,7 +512,7 @@ async def test_controller_resumes_only_known_budget_limited_depth_progress(stric
             second["step"].parameters
             == first["step"].parameters
             == {
-                "target_y": -32,
+                "target_y": target_y,
                 "minimum_cobblestone": 0,
             }
         )
@@ -507,10 +521,12 @@ async def test_controller_resumes_only_known_budget_limited_depth_progress(stric
             == second["step"].maximum_cost.max_blocks_changed
             == 24
         )
-        assert second["account"].used.max_blocks_changed == 24
+        assert second["account"].used.max_blocks_changed == blocks
+        assert second["account"].used.max_travel_distance == travel
         assert second["account"].used.max_actions == 1
         assert second["account"].limit == first["account"].limit
         assert second["account"].limit.max_blocks_changed == 256
+        assert second["command"] is first["command"]
         assert second["previous_receipt_hash"]
 
 
