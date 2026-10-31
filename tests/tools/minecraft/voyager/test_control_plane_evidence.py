@@ -409,6 +409,7 @@ async def test_known_failure_recovery_preserves_account_deadline_and_receipt_cha
         def recover_failed_step(self, state, failed_step, before, after):
             self.recovery_calls += 1
             assert state["settled_error_code"] == "UNSAFE_AREA"
+            assert state["settled_block_subjects"] == ("block:minecraft:overworld:24:110:18",)
             assert failed_step.capability == "collect"
             assert state["budget_remaining"].max_actions == (0 if mode == "exhausted" else 1)
             return {**state, "recovered": True} if mode not in {"declined", "exhausted"} else None
@@ -424,7 +425,26 @@ async def test_known_failure_recovery_preserves_account_deadline_and_receipt_cha
         async def execute_step(self, **kwargs):
             self.calls.append(kwargs)
             first = len(self.calls) == 1
-            receipt = ActionReceipt.model_validate(MESSAGES["ActionReceipt"])
+            receipt = ActionReceipt.model_validate(
+                {
+                    **MESSAGES["ActionReceipt"],
+                    "explained_mutations": [
+                        *MESSAGES["ActionReceipt"]["explained_mutations"],
+                        {
+                            "kind": "block",
+                            "subject": "block:minecraft:overworld:24:110:18",
+                            "delta": -1,
+                            "details": {"block_type": "minecraft:stone"},
+                        },
+                        {
+                            "kind": "block",
+                            "subject": "block:minecraft:overworld:25:110:18",
+                            "delta": 0,
+                            "details": {"block_type": "minecraft:stone"},
+                        },
+                    ],
+                }
+            )
             receipt = receipt.model_copy(
                 update={
                     "outcome": ReceiptOutcome.ERROR if first else ReceiptOutcome.SUCCESS,

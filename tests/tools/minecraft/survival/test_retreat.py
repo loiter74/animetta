@@ -255,6 +255,82 @@ def test_resource_search_can_continue_at_a_new_observed_origin_but_never_replays
     assert "search_origins" not in state
 
 
+@pytest.mark.parametrize("code", ["RESOURCE_NOT_FOUND", "SEARCH_TIMEOUT"])
+def test_stationary_search_continues_only_with_receipt_linked_known_block_progress(code):
+    registry = WorkflowRegistry()
+    registry.register(iron_survival_workflow())
+    strategy = MissionStrategy(
+        manifest=manifest(), live=None, learn=None, fallback=FallbackStrategy(registry=registry)
+    )
+    goal = TypeAdapter(GoalSpec).validate_python(
+        {
+            "intent": "acquire",
+            "target": "iron_ingot",
+            "quantity": 3,
+            "success_predicates": [
+                {"kind": "inventory_at_least", "item": "iron_ingot", "quantity": 3}
+            ],
+        }
+    )
+    state = strategy.prepare(goal)
+    state.update(budget_remaining=available(), settled_error_code=code)
+
+    def sample(west="stone", ceiling="stone"):
+        base = observed([])
+        return base.model_copy(
+            update={
+                "position": base.position.model_copy(update={"x": 26, "y": 111, "z": 18}),
+                "inventory": {"stone_pickaxe": 1, "raw_iron": 1},
+                "environment": {
+                    "dimension": "overworld",
+                    "blocks": {
+                        "west_support": {"name": west, "position": {"x": 24, "y": 110, "z": 18}},
+                        "ceiling": {"name": ceiling, "position": {"x": 25, "y": 113, "z": 18}},
+                    },
+                },
+            }
+        )
+
+    # R81's stationary search removed this observed support-side stone. No
+    # receipt-linked change, unknown old cell, or clock-only change can retry.
+    before, after = sample(), sample("air")
+    failed = strategy.propose(state, before)
+    assert failed.capability == "collect" and failed.parameters["block_type"] == "iron_ore"
+    index = state["strategy_state"]["step_index"]
+    assert strategy.recover_failed_step(state, failed, before, after) is None
+    subject = "block:minecraft:overworld:24:110:18"
+    linked = {**state, "settled_block_subjects": (subject,)}
+    assert strategy.recover_failed_step(linked, failed, before, before) is None
+    assert (
+        strategy.recover_failed_step(
+            {**linked, "settled_block_subjects": ("block:minecraft:the_nether:24:110:18",)},
+            failed,
+            before,
+            after,
+        )
+        is None
+    )
+    unknown = before.model_copy(update={"environment": {"dimension": "overworld", "blocks": {}}})
+    assert strategy.recover_failed_step(linked, failed, unknown, after) is None
+    recovered = strategy.recover_failed_step(linked, failed, before, after)
+    assert recovered is not None
+    assert recovered["goal"] == goal and recovered["executed_steps"] == 0
+    assert recovered["strategy_state"]["step_index"] == index
+    assert strategy.propose(recovered, after) == failed
+    assert strategy.recover_failed_step(recovered, failed, after, before) is None
+    more = {**recovered, "settled_block_subjects": ("block:minecraft:overworld:25:113:18",)}
+    assert strategy.recover_failed_step(more, failed, after, sample("air", "air")) is not None
+    assert (
+        strategy.recover_failed_step(
+            {**linked, "settled_error_code": "UNSAFE_AREA"},
+            failed,
+            before,
+            after,
+        )
+        is None
+    )
+
+
 def test_completed_mission_primitive_does_not_start_an_unnecessary_retreat():
     class Done:
         def prepare(self, goal):

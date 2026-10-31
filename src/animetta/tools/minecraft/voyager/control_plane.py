@@ -357,6 +357,11 @@ class UnifiedVoyagerController:
                                         **state,
                                         "budget_remaining": account.remaining,
                                         "settled_error_code": exc.error.code,
+                                        "settled_block_subjects": tuple(
+                                            mutation.subject
+                                            for mutation in result.receipt.explained_mutations
+                                            if mutation.kind == "block" and mutation.delta
+                                        ),
                                     },
                                     decision,
                                     observation,

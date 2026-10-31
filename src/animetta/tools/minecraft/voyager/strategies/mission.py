@@ -187,18 +187,47 @@ class MissionStrategy:
             origin = self._search_origin(after)
             resource = failed_step.parameters.get("block_type")
             visited = state.get("search_origins", ())
+            before_cells, after_cells = self._known_cells(before), self._known_cells(after)
+            old_names = {(x, y, z): name for name, x, y, z in before_cells}
+            dimension = after.environment.get("dimension")
+            changed_subjects: set[str] = set()
+            if (
+                isinstance(dimension, str)
+                and dimension
+                and before.environment.get("dimension") == dimension
+            ):
+                dimension = dimension if ":" in dimension else f"minecraft:{dimension}"
+                changed_subjects = {
+                    f"block:{dimension}:{x}:{y}:{z}"
+                    for name, x, y, z in after_cells
+                    if old_names.get((x, y, z), name) != name
+                }
+            moved = (
+                origin != previous_origin
+                and (resource, origin) not in visited
+                and bool(after_cells - before_cells)
+            )
+            changed_in_place = origin == previous_origin and bool(
+                changed_subjects.intersection(state.get("settled_block_subjects", ()))
+            )
+            scenes = state.get("search_scenes", ())
+            scene = (resource, origin, tuple(sorted(after_cells)))
             if (
                 isinstance(resource, str)
                 and previous_origin is not None
                 and origin is not None
-                and origin != previous_origin
-                and (resource, origin) not in visited
-                and self._known_cells(after) - self._known_cells(before)
+                and (moved or changed_in_place)
+                and scene not in scenes
             ):
                 candidate["search_origins"] = (
                     *visited,
                     (resource, previous_origin),
                     (resource, origin),
+                )
+                candidate["search_scenes"] = (
+                    *scenes,
+                    (resource, previous_origin, tuple(sorted(before_cells))),
+                    scene,
                 )
                 return candidate
         return None
