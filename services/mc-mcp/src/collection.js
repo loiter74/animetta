@@ -59,11 +59,6 @@ export function configureDryNavigation(movements, bot, { allowSurfaceSwimming = 
       if (bot.blockAt(new Vec3(node.x, node.y - 1, node.z))?.name?.endsWith('_leaves')) return;
       getMoveDown(node, neighbors);
     };
-    const getNeighbors = movements.getNeighbors.bind(movements);
-    movements.getNeighbors = node => getNeighbors(node).filter(move => (
-      move.y <= canopyHeight
-      || !bot.blockAt(new Vec3(move.x, move.y - 1, move.z))?.name?.endsWith('_leaves')
-    ));
   }
   const stepCost = node => {
     const position = node.position ?? node;
@@ -84,11 +79,6 @@ export function configureDryNavigation(movements, bot, { allowSurfaceSwimming = 
   if (retreatPolicy) {
     movements.canDig = false;
     movements.allow1by1towers = false;
-    const center = node => new Vec3(Math.floor(node.x) + 0.5, node.y, Math.floor(node.z) + 0.5);
-    const getNeighbors = movements.getNeighbors.bind(movements);
-    movements.getNeighbors = node => getNeighbors(node).filter(move => (
-      retreatPolicy.permitsMove(center(node), center(move))
-    ));
   }
   // Native downward moves do not apply exclusionStep to their landing block.
   const getLandingBlock = movements.getLandingBlock.bind(movements);
@@ -98,6 +88,19 @@ export function configureDryNavigation(movements, bot, { allowSurfaceSwimming = 
       || movements.exclusionStep(landing) >= 100) return null;
     return landing;
   };
+  // Diagonal descent checks safeOrBreak at the upper cell, not the actual
+  // landing. Apply every standing policy after all native move generators.
+  const getNeighbors = movements.getNeighbors.bind(movements);
+  movements.getNeighbors = node => getNeighbors(node).filter(move => {
+    const feet = new Vec3(Math.floor(move.x), move.y, Math.floor(move.z));
+    const landing = bot.blockAt(feet);
+    if (!landing || node.y - move.y > 1 || movements.exclusionStep(landing) >= 100) return false;
+    if (canopyHeight !== null && move.y > canopyHeight
+      && bot.blockAt(feet.offset(0, -1, 0))?.name?.endsWith('_leaves')) return false;
+    return !retreatPolicy || retreatPolicy.permitsMove(
+      new Vec3(Math.floor(node.x) + 0.5, node.y, Math.floor(node.z) + 0.5), feet.offset(0.5, 0, 0.5),
+    );
+  });
   return movements;
 }
 

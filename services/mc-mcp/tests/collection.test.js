@@ -72,6 +72,7 @@ function elevatedWoodDropFixture({ budget = 3, count = 1, wet = false,
   class PickupMovements {
     constructor() { this.exclusionAreasStep = []; this.exclusionAreasBreak = []; }
     getLandingBlock() { return null; }
+    getNeighbors() { return []; }
   }
   const source = readFileSync(new URL('../src/index.js', import.meta.url), 'utf8');
   const pickupStart = source.indexOf('async function _pickupDroppedItems(');
