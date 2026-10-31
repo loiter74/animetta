@@ -64,8 +64,9 @@ class FallbackStrategy:
                 state["step_index"] = index
                 continue
             count = step.parameters.get("count")
-            if isinstance(count, int) and count < remaining:
-                state["repeat_collection"] = True
+            # A native success is not proof that an absolute inventory target
+            # was met, especially when any_log yields a different species.
+            state["repeat_collection"] = True
             if isinstance(count, int) and count > remaining:
                 step = step.model_copy(
                     update={"parameters": {**step.parameters, "count": remaining}}
@@ -119,8 +120,6 @@ class FallbackStrategy:
                 count = max(count, remaining - later_batches * batch_size)
         if count != step.parameters["count"]:
             step = step.model_copy(update={"parameters": {**step.parameters, "count": count}})
-        if count == remaining:
-            state.pop("repeat_collection", None)
         pending = remaining - count
         followup = future.plus(
             BudgetUsage(
@@ -169,7 +168,9 @@ class FallbackStrategy:
         target = self._declared_collection_target(workflow, index)
         if target is None or step.capability != "collect":
             return None
-        if self._inventory_count(after, target.item) <= self._inventory_count(before, target.item):
+        if inventory_resource_count(
+            after, target.item, combine_species=True
+        ) <= inventory_resource_count(before, target.item, combine_species=True):
             return None
         return {**state}
 

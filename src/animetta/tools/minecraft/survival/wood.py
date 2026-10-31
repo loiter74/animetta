@@ -1,4 +1,4 @@
-"""Bind a substitutable survival wood chain once from observed inventory or logs."""
+"""Bind survival recipes only after the required carried wood stock is observed."""
 
 from __future__ import annotations
 
@@ -7,20 +7,21 @@ from animetta.tools.gamebot.contracts.v2 import Observation
 from .workflows import InventoryThreshold, WorkflowDefinition
 
 _WOOD_TYPES = ("oak", "spruce", "birch", "jungle", "acacia", "dark_oak", "mangrove", "cherry")
+_WOOD_LOGS = frozenset(f"{wood}_log" for wood in _WOOD_TYPES)
 
 
-def inventory_resource_count(observation: Observation, item: str) -> int:
-    """Count exact items, or the largest single-species log stock."""
+def inventory_resource_count(
+    observation: Observation, item: str, *, combine_species: bool = False
+) -> int:
+    """Count exact stock; any_log uses one species unless measuring combined growth."""
     resource = item.removeprefix("minecraft:")
-    names = {f"{wood}_log" for wood in _WOOD_TYPES} if resource == "any_log" else {resource}
-    return max(
-        (
-            count
-            for key, count in observation.inventory.items()
-            if key.removeprefix("minecraft:") in names
-        ),
-        default=0,
-    )
+    names = _WOOD_LOGS if resource == "any_log" else {resource}
+    stocks: dict[str, int] = {}
+    for key, count in observation.inventory.items():
+        name = key.removeprefix("minecraft:")
+        if name in names:
+            stocks[name] = max(stocks.get(name, 0), count)
+    return sum(stocks.values()) if combine_species else max(stocks.values(), default=0)
 
 
 def _observed_wood(observation: Observation) -> str | None:
@@ -28,28 +29,13 @@ def _observed_wood(observation: Observation) -> str | None:
     for item, count in observation.inventory.items():
         name = item.removeprefix("minecraft:")
         inventory[name] = max(inventory.get(name, 0), count)
-    # Reuse carried stock before switching to another tree during recovery.
+    # Recipe choice comes from carried materials rather than a visible tree.
     stock = {
         wood: inventory.get(f"{wood}_log", 0) * 4 + inventory.get(f"{wood}_planks", 0)
         for wood in _WOOD_TYPES
     }
     if max(stock.values()) > 0:
         return max(stock, key=lambda wood: stock[wood])
-    position = observation.position
-    candidates = [
-        block
-        for block in observation.visible_blocks
-        if block.block_id.removeprefix("minecraft:") in {f"{wood}_log" for wood in _WOOD_TYPES}
-    ]
-    if candidates and position is not None:
-        nearest = min(
-            candidates,
-            key=lambda block: sum(
-                (getattr(block.position, axis) - getattr(position, axis)) ** 2
-                for axis in ("x", "y", "z")
-            ),
-        )
-        return nearest.block_id.removeprefix("minecraft:").removesuffix("_log")
     return None
 
 
@@ -60,6 +46,21 @@ def bind_workflow_wood(
     if not workflow.adaptive_wood:
         return workflow
     wood = _observed_wood(observation)
+    log_target = next(
+        (
+            target
+            for target in workflow.collection_targets
+            if target is not None and (target.item == "any_log" or target.item in _WOOD_LOGS)
+        ),
+        None,
+    )
+    if (
+        wood is not None
+        and log_target is not None
+        and inventory_resource_count(observation, f"{wood}_log") < log_target.quantity
+        and not inventory_resource_count(observation, f"{wood}_planks")
+    ):
+        wood = None
     replacements = (
         {"oak_log": f"{wood}_log", "any_log": f"{wood}_log", "oak_planks": f"{wood}_planks"}
         if wood is not None

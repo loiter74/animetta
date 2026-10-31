@@ -90,23 +90,19 @@ def test_unknown_adaptive_wood_defers_binding_without_changing_costs() -> None:
     )
 
 
-def test_unknown_wood_partial_stock_locks_species_and_collects_only_gap() -> None:
+def test_unknown_wood_partial_stock_keeps_species_open_and_collects_only_gap() -> None:
     registry = WorkflowRegistry()
     registry.register(iron_survival_workflow())
     strategy = FallbackStrategy(registry=registry)
     state = strategy.prepare(goal())
     strategy.propose(state, observation_with({}))
     decision = strategy.propose(state, observation_with({"spruce_log": 3}))
-    assert decision.parameters == {"block_type": "spruce_log", "count": 5}
+    assert decision.parameters == {"block_type": "any_log", "count": 5}
+    assert state["workflow"].adaptive_wood is True
+    assert state["workflow"].collection_targets[0].item == "any_log"
+    enough = observation_with({"spruce_log": 3, "birch_log": 8})
+    assert strategy.propose(state, enough).parameters == {"recipe": "birch_planks", "count": 32}
     assert state["workflow"].adaptive_wood is False
-    assert state["workflow"].collection_targets[0].item == "spruce_log"
-    assert all(
-        t.item != "any_log"
-        for checkpoint in state["workflow"].checkpoints
-        if checkpoint
-        for clause in checkpoint.any_of
-        for t in clause.inventory_all
-    )
 
 
 def test_any_log_threshold_requires_same_species_without_namespace_double_counting() -> None:
@@ -261,7 +257,7 @@ def test_fallback_propose_resolves_namespaced_inventory_keys_for_declared_target
     decision = strategy.propose(state, observation_with({"minecraft:oak_log": 6}))
 
     assert decision.kind == "execute"
-    assert decision.parameters == {"block_type": "oak_log", "count": 2}
+    assert decision.parameters == {"block_type": "any_log", "count": 2}
 
 
 def test_survival_workflows_declare_absolute_collection_targets() -> None:
