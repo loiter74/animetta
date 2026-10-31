@@ -777,6 +777,9 @@ async function _collectInner(block_type, count, mcData, context = {}) {
       return `Collected ${collected} ${block_type}`;
     }
   }
+  context.collection_safety?.enable();
+  const safetyPause = error => context.collection_safety?.pending
+    || error?.code === 'COLLECTION_SAFETY_PAUSED';
   let attempts = 0;
   const maxAttempts = Math.max(count * 3, count + 3);
   const searchFailures = [];
@@ -792,189 +795,204 @@ async function _collectInner(block_type, count, mcData, context = {}) {
   };
   while (collected < count && attempts < maxAttempts) {
     context.signal?.throwIfAborted();
+    await context.collection_safety?.checkpoint();
     collected = Math.min(Math.max(0, _inventoryCount(dropItem) - startingCount), count);
     if (collected >= count) break;
     attempts++;
-    // Find block
-    let block = discoveredTarget
-      || bot.findBlock({ matching: matchesAvailableTarget, maxDistance: 32 });
-    discoveredTarget = null;
-    const searchResource = selectedWood || (genericWood ? 'any_log' : resolvedBlockType);
-
-    // If not found, use Resource Locator (registry strategies + memory) first,
-    // then fall back to blind _explore_for_block for compatibility.
-    if (!block) {
-      try {
-        const cand = await locateResource(bot, searchResource, {
-          mcData,
-          getMcData,
-          excludedTargets,
-        });
-        const at = bot.blockAt(new Vec3(cand.position.x, cand.position.y, cand.position.z));
-        if (at && matchesAvailableTarget(at)) block = at;
-      } catch (_locErr) {
-        context.signal?.throwIfAborted();
-        recordSearchFailure('locate', _locErr);
-        // Hard locator errors are actionable; do not hide them behind blind exploration.
-        if (_locErr && ['TOOL_REQUIRED', 'UNKNOWN_RESOURCE', 'UNSAFE_AREA'].includes(_locErr.code)) {
-          throw _locErr;
-        }
-        if (shouldRetryStructuredResourceSearch(resolvedBlockType, _locErr)) {
-          continue;
-        }
-        // Soft locator misses (RESOURCE_NOT_FOUND/SEARCH_TIMEOUT) → old fallback stays compatible.
-      }
-    }
-    if (!block) {
-      try {
-        await _explore_for_block(searchResource, 32, 3, excludedTargets);
-        block = bot.findBlock({ matching: matchesAvailableTarget, maxDistance: 32 });
-      } catch (e) {
-        context.signal?.throwIfAborted();
-        // Exploration failed
-      }
-    }
-
-    if (!block) break;
-    if (!collectionDigSafety(bot, block).safe) {
-      excludedTargets.add(collectionBlockKey(block));
-      continue;
-    }
-    if (genericWood && !selectedWood) {
-      selectedWood = block.name;
-      dropItem = selectedWood;
-      startingCount = initialWoodCounts.get(selectedWood);
-      _collectDebug(`bound wood=${selectedWood} starting=${startingCount}`);
-    }
-    await _equipToolForBlock(block, context);
-    _collectDebug(`target block=${block.name}@${block.position.x},${block.position.y},${block.position.z}`);
-    const presentationTarget = await presentBlockTarget({
-      context,
-      phase: 'locating',
-      position: block.position,
-      ordinal: attempts - 1,
-      data: { attempt: attempts },
-    });
-
-    // Reach a visible block face, rather than stopping above a buried target.
-    const approachGoal = collectionApproachGoal(bot, block);
-    const excavationGoal = collectionExcavationGoal(block);
-    const surfaceWood = isSurfaceWood(block.name);
-    const woodReachable = surfaceWood && await clearWoodView(bot, block, context, count - collected);
-    const previousDistance = bot.entity.position.distanceTo(block.position);
-    let navigationError;
     try {
-      // Visibility goals inspect the current world, so an enclosed ore cannot
-      // satisfy them until a coordinate goal has first excavated its access.
-      if (block.name !== 'obsidian' && excavationGoal && !approachGoal.isEnd(bot.entity.position.floored())) {
-        await bot.pathfinder.goto(excavationGoal);
-      }
-      if (!(surfaceWood ? woodReachable : approachGoal.isEnd(bot.entity.position.floored()))) {
-        await bot.pathfinder.goto(approachGoal);
-      }
-    } catch (e) {
-      context.signal?.throwIfAborted();
-      navigationError = e;
-      recordSearchFailure('navigate', e, { ...block.position });
-      // A fresh interaction check below decides whether the current spot is usable.
-    }
+      // Find block
+      let block = discoveredTarget
+        || bot.findBlock({ matching: matchesAvailableTarget, maxDistance: 32 });
+      discoveredTarget = null;
+      const searchResource = selectedWood || (genericWood ? 'any_log' : resolvedBlockType);
 
-    // Stop pathfinder and wait for bot to fully stop
-    bot.pathfinder.stop();
-    await operationWait(200);
-    collected = Math.min(Math.max(0, _inventoryCount(dropItem) - startingCount), count);
-    if (collected >= count) break;
-    _collectDebug(`after navigation pos=${bot.entity.position.x.toFixed(2)},${bot.entity.position.y.toFixed(2)},${bot.entity.position.z.toFixed(2)}`);
-    if (!collectionDigSafety(bot, block).safe) {
-      excludedTargets.add(collectionBlockKey(block));
-      continue;
-    }
-    if (!(surfaceWood ? await clearWoodView(bot, block, context, count - collected)
-      : approachGoal.isEnd(bot.entity.position.floored()))) {
-      recordSearchFailure('reach', new Error('Target remains outside digging reach'), {
-        ...block.position,
-        distance: bot.entity.position.distanceTo(block.position),
-      });
-      // A settled time slice can still have opened access to this same vein.
-      // Continue within the original attempt count and shared command account.
-      if (hasCollectionApproachProgress(bot, block, previousDistance, navigationError)) {
-        discoveredTarget = block;
+      // If not found, use Resource Locator (registry strategies + memory) first,
+      // then fall back to blind _explore_for_block for compatibility.
+      if (!block) {
+        try {
+          const cand = await locateResource(bot, searchResource, {
+            mcData,
+            getMcData,
+            excludedTargets,
+          });
+          const at = bot.blockAt(new Vec3(cand.position.x, cand.position.y, cand.position.z));
+          if (at && matchesAvailableTarget(at)) block = at;
+        } catch (_locErr) {
+          context.signal?.throwIfAborted();
+          if (safetyPause(_locErr)) throw _locErr;
+          recordSearchFailure('locate', _locErr);
+          // Hard locator errors are actionable; do not hide them behind blind exploration.
+          if (_locErr && ['TOOL_REQUIRED', 'UNKNOWN_RESOURCE', 'UNSAFE_AREA'].includes(_locErr.code)) {
+            throw _locErr;
+          }
+          if (shouldRetryStructuredResourceSearch(resolvedBlockType, _locErr)) {
+            continue;
+          }
+          // Soft locator misses (RESOURCE_NOT_FOUND/SEARCH_TIMEOUT) → old fallback stays compatible.
+        }
+      }
+      if (!block) {
+        try {
+          await _explore_for_block(searchResource, 32, 3, excludedTargets);
+          block = bot.findBlock({ matching: matchesAvailableTarget, maxDistance: 32 });
+        } catch (e) {
+          context.signal?.throwIfAborted();
+          if (safetyPause(e)) throw e;
+          // Exploration failed
+        }
+      }
+
+      if (!block) break;
+      if (!collectionDigSafety(bot, block).safe) {
+        excludedTargets.add(collectionBlockKey(block));
         continue;
       }
-      excludedTargets.add(collectionBlockKey(block));
-      _collectDebug(`excluded unreachable target=${collectionBlockKey(block)}`);
-      continue;
-    }
+      if (genericWood && !selectedWood) {
+        selectedWood = block.name;
+        dropItem = selectedWood;
+        startingCount = initialWoodCounts.get(selectedWood);
+        _collectDebug(`bound wood=${selectedWood} starting=${startingCount}`);
+      }
+      await _equipToolForBlock(block, context);
+      _collectDebug(`target block=${block.name}@${block.position.x},${block.position.y},${block.position.z}`);
+      const presentationTarget = await presentBlockTarget({
+        context,
+        phase: 'locating',
+        position: block.position,
+        ordinal: attempts - 1,
+        data: { attempt: attempts },
+      });
 
-    // Dig block (with retry on abort)
-    const pickupItemName = resolvedBlockType === 'gravel' ? ['gravel', 'flint'] : dropItem;
-    const minimumPickupCount = pickupInventoryCount(bot, pickupItemName) + 1;
-    context.report_phase?.('acting', {
-      attempt: attempts,
-      ...(presentationTarget ? { target: presentationTarget } : {}),
-    });
-    let digSuccess = false;
-    for (let retry = 0; retry < 3 && !digSuccess; retry++) {
+      // Reach a visible block face, rather than stopping above a buried target.
+      const approachGoal = collectionApproachGoal(bot, block);
+      const excavationGoal = collectionExcavationGoal(block);
+      const surfaceWood = isSurfaceWood(block.name);
+      const woodReachable = surfaceWood && await clearWoodView(bot, block, context, count - collected);
+      const previousDistance = bot.entity.position.distanceTo(block.position);
+      let navigationError;
       try {
-        await _equipToolForBlock(block, context);
-        await digCollectionBlock(bot, block);
-        digSuccess = true;
-        const afterBlock = bot.blockAt(block.position);
-        _collectDebug(`dig success afterBlock=${afterBlock?.name || 'null'}@${block.position.x},${block.position.y},${block.position.z}`);
+        // Visibility goals inspect the current world, so an enclosed ore cannot
+        // satisfy them until a coordinate goal has first excavated its access.
+        if (block.name !== 'obsidian' && excavationGoal && !approachGoal.isEnd(bot.entity.position.floored())) {
+          await bot.pathfinder.goto(excavationGoal);
+        }
+        if (!(surfaceWood ? woodReachable : approachGoal.isEnd(bot.entity.position.floored()))) {
+          await bot.pathfinder.goto(approachGoal);
+        }
       } catch (e) {
         context.signal?.throwIfAborted();
-        _collectDebug(`dig failed retry=${retry} message=${e.message}`);
-        if (retry < 2 && isRecoverableCollectionDigError(e)) {
-          if (!isCollectionBlockStillPresent(bot, block)) {
-            digSuccess = true;
-            break;
-          }
-          block = bot.blockAt(block.position) || block;
-          context.report_phase?.('recovering', {
-            attempt: retry + 2,
-            reason_code: 'DIG_RETRY',
-            ...(presentationTarget ? { target: presentationTarget } : {}),
-          });
-          if (presentationTarget?.position) {
-            await context.presentation?.focus?.({
-              phase: 'recovering',
-              ordinal: retry + 1,
-              target: presentationTarget.position,
+        if (safetyPause(e)) throw e;
+        navigationError = e;
+        recordSearchFailure('navigate', e, { ...block.position });
+        // A fresh interaction check below decides whether the current spot is usable.
+      }
+
+      if (await context.collection_safety?.checkpoint()) continue;
+
+      // Stop pathfinder and wait for bot to fully stop
+      bot.pathfinder.stop();
+      await operationWait(200);
+      collected = Math.min(Math.max(0, _inventoryCount(dropItem) - startingCount), count);
+      if (collected >= count) break;
+      _collectDebug(`after navigation pos=${bot.entity.position.x.toFixed(2)},${bot.entity.position.y.toFixed(2)},${bot.entity.position.z.toFixed(2)}`);
+      if (!collectionDigSafety(bot, block).safe) {
+        excludedTargets.add(collectionBlockKey(block));
+        continue;
+      }
+      if (!(surfaceWood ? await clearWoodView(bot, block, context, count - collected)
+        : approachGoal.isEnd(bot.entity.position.floored()))) {
+        recordSearchFailure('reach', new Error('Target remains outside digging reach'), {
+          ...block.position,
+          distance: bot.entity.position.distanceTo(block.position),
+        });
+        // A settled time slice can still have opened access to this same vein.
+        // Continue within the original attempt count and shared command account.
+        if (hasCollectionApproachProgress(bot, block, previousDistance, navigationError)) {
+          discoveredTarget = block;
+          continue;
+        }
+        excludedTargets.add(collectionBlockKey(block));
+        _collectDebug(`excluded unreachable target=${collectionBlockKey(block)}`);
+        continue;
+      }
+
+      // Dig block (with retry on abort)
+      const pickupItemName = resolvedBlockType === 'gravel' ? ['gravel', 'flint'] : dropItem;
+      const minimumPickupCount = pickupInventoryCount(bot, pickupItemName) + 1;
+      context.report_phase?.('acting', {
+        attempt: attempts,
+        ...(presentationTarget ? { target: presentationTarget } : {}),
+      });
+      let digSuccess = false;
+      for (let retry = 0; retry < 3 && !digSuccess; retry++) {
+        try {
+          await _equipToolForBlock(block, context);
+          await digCollectionBlock(bot, block);
+          digSuccess = true;
+          const afterBlock = bot.blockAt(block.position);
+          _collectDebug(`dig success afterBlock=${afterBlock?.name || 'null'}@${block.position.x},${block.position.y},${block.position.z}`);
+        } catch (e) {
+          context.signal?.throwIfAborted();
+          if (safetyPause(e)) throw e;
+          _collectDebug(`dig failed retry=${retry} message=${e.message}`);
+          if (retry < 2 && isRecoverableCollectionDigError(e)) {
+            if (!isCollectionBlockStillPresent(bot, block)) {
+              digSuccess = true;
+              break;
+            }
+            block = bot.blockAt(block.position) || block;
+            context.report_phase?.('recovering', {
+              attempt: retry + 2,
+              reason_code: 'DIG_RETRY',
+              ...(presentationTarget ? { target: presentationTarget } : {}),
             });
+            if (presentationTarget?.position) {
+              await context.presentation?.focus?.({
+                phase: 'recovering',
+                ordinal: retry + 1,
+                target: presentationTarget.position,
+              });
+            }
+            await operationWait(500);
+          } else if (isRecoverableCollectionDigError(e)) {
+            excludedTargets.add(collectionBlockKey(block));
+            _collectDebug(`excluded stalled dig target=${collectionBlockKey(block)}`);
+            break;
+          } else {
+            throw e;
           }
-          await operationWait(500);
-        } else if (isRecoverableCollectionDigError(e)) {
-          excludedTargets.add(collectionBlockKey(block));
-          _collectDebug(`excluded stalled dig target=${collectionBlockKey(block)}`);
-          break;
-        } else {
-          throw e;
         }
       }
-    }
 
-    if (!digSuccess) continue;
-    if (digSuccess) {
-      if (Array.isArray(context.resourceMutations)) {
-        context.resourceMutations.push(collectionResourceMutation(
-          block.name,
-          block.position,
-          bot.game?.dimension || 'minecraft:overworld',
-        ));
+      if (!digSuccess) continue;
+      if (await context.collection_safety?.checkpoint()) continue;
+      if (digSuccess) {
+        if (Array.isArray(context.resourceMutations)) {
+          context.resourceMutations.push(collectionResourceMutation(
+            block.name,
+            block.position,
+            bot.game?.dimension || 'minecraft:overworld',
+          ));
+        }
+        if (block.name === 'obsidian') {
+          const support = await backfillObsidianHole(bot, block.position, context);
+          if (support && Array.isArray(context.resourceMutations)) context.resourceMutations.push(support);
+        }
+        // Wait for item entity to register and pick up drops
+        await operationWait(500);
+        await _pickupDroppedItems(8000, block.position, pickupItemName, minimumY, minimumPickupCount, {
+          ...context, remainingHarvestBlocks: surfaceWood ? Math.max(0, count - collected - 1) : undefined,
+        });
+        context.signal?.throwIfAborted();
+        const actual = Math.max(0, _inventoryCount(dropItem) - startingCount);
+        collected = Math.min(actual, count);
+        _collectDebug(`after pickup actual=${actual} collected=${collected} inventoryCount=${_inventoryCount(dropItem)}`);
       }
-      if (block.name === 'obsidian') {
-        const support = await backfillObsidianHole(bot, block.position, context);
-        if (support && Array.isArray(context.resourceMutations)) context.resourceMutations.push(support);
-      }
-      // Wait for item entity to register and pick up drops
-      await operationWait(500);
-      await _pickupDroppedItems(8000, block.position, pickupItemName, minimumY, minimumPickupCount, {
-        ...context, remainingHarvestBlocks: surfaceWood ? Math.max(0, count - collected - 1) : undefined,
-      });
+    } catch (error) {
       context.signal?.throwIfAborted();
-      const actual = Math.max(0, _inventoryCount(dropItem) - startingCount);
-      collected = Math.min(actual, count);
-      _collectDebug(`after pickup actual=${actual} collected=${collected} inventoryCount=${_inventoryCount(dropItem)}`);
+      if (!safetyPause(error)) throw error;
+      await context.collection_safety?.checkpoint();
+      // A pause consumes the current original attempt; no retry budget is added.
     }
   }
   if (collected < count) {

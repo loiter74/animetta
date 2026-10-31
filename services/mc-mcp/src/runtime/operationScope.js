@@ -100,6 +100,7 @@ export class OperationScope {
     waitMs = null,
     reportPhase = () => {},
     checkNavigationBudget = () => {},
+    beforeOperation = null,
     containerCapable = false,
     quiescenceTimeoutMs = DEFAULT_QUIESCENCE_TIMEOUT_MS,
     containerQuiescenceTimeoutMs = CONTAINER_QUIESCENCE_TIMEOUT_MS,
@@ -118,6 +119,7 @@ export class OperationScope {
     this.waitMs = waitMs || ((delayMs) => new Promise((resolve) => setTimeout(resolve, delayMs)));
     this.reportPhase = typeof reportPhase === 'function' ? reportPhase : () => {};
     this.checkNavigationBudget = checkNavigationBudget;
+    this.beforeOperation = beforeOperation;
     this.lastWaitingPhaseAt = this.nowMs();
     this.containerCapable = containerCapable === true;
     this.quiescenceTimeoutMs = quiescenceTimeoutMs;
@@ -141,6 +143,7 @@ export class OperationScope {
   }
 
   async wait(delayMs, { reserveMs = 0 } = {}) {
+    if (this.beforeOperation) await this.beforeOperation();
     const boundedDelay = Math.max(0, Math.trunc(Number(delayMs) || 0));
     this.checkpoint({ reserveMs: boundedDelay + reserveMs });
     if (this.nowMs() - this.lastWaitingPhaseAt >= 5_000) {
@@ -329,6 +332,7 @@ export class OperationScope {
   }
 
   async navigate(goal, operation, { timeoutMs } = {}) {
+    if (this.beforeOperation) await this.beforeOperation();
     const target = goalPosition(goal);
     const origin = this.bot.entity?.position;
     const distance = target && origin ? Math.hypot(

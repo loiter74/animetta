@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
+import { readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
 import test from 'node:test';
 import Vec3 from 'vec3';
 import minecraftData from 'minecraft-data';
@@ -8,6 +10,9 @@ import pathfinderPkg from 'mineflayer-pathfinder';
 import prismarineBlock from 'prismarine-block';
 import prismarineEntity from 'prismarine-entity';
 import { Physics, PlayerState } from 'prismarine-physics';
+import WorldSync from 'prismarine-world/src/worldsync.js';
+import * as collection from '../src/collection.js';
+import * as resources from '../src/resources/registry.js';
 
 import { createGameBotV2Adapter } from '../src/runtime/gamebotV2Adapter.js';
 import { withCollectionEvidence } from '../src/collection.js';
@@ -612,6 +617,181 @@ function retreatFixture(move) {
     boundingBox: position.y < 64 ? 'block' : 'empty', shapes: position.y < 64 ? [[0, 0, 0, 1, 1, 1]] : [] });
   return fixture;
 }
+
+function cooperativeCollectionFixture(mode = 'success') {
+  const bag = [], removed = new Set(), attempts = [];
+  let context, nativeDigs = 0, routes = 0, rejectDig, rejectNavigation, blockedMutation, waitingWarning = false;
+  const fixture = adapterFixture({ actions: {
+    collectWithEvidence: async (_block, _count, scoped) => {
+      context = scoped;
+      return withCollectionEvidence(fixture.bot, () => collect('iron_ore', 1, registry, context));
+    },
+  } });
+  const { bot } = fixture, registry = bot.registry, Block = prismarineBlock(registry);
+  const world = new WorldSync(null), ores = [new Vec3(mode === 'navigation-warning' ? 7 : 2, 64, 0), new Vec3(-9, 64, 0)];
+  bot.entity.position = new Vec3(.5, 64, .5);
+  bot.world = world;
+  bot.inventory.items = () => [{ name: 'stone_pickaxe', type: registry.itemsByName.stone_pickaxe.id, count: 1 }, ...bag];
+  world.getBlock = position => {
+    const p = position.floored(), name = p.y < 64 ? 'stone'
+      : !removed.has(p.toString()) && ores.some(ore => ore.equals(p)) ? 'iron_ore' : 'air';
+    const block = Block.fromStateId(registry.blocksByName[name].defaultState, 0);
+    block.position = p;
+    return block;
+  };
+  bot.blockAt = p => world.getBlock(p);
+  bot.findBlock = ({ matching }) => ores.map(p => bot.blockAt(p))
+    .filter(matching).sort((a, b) => a.position.distanceTo(bot.entity.position) - b.position.distanceTo(bot.entity.position))[0];
+  bot.findBlocks = () => mode === 'no-exit' ? [] : [new Vec3(-5, 63, 0)];
+  bot.pathfinder.movements = new pathfinderPkg.Movements(bot, registry);
+  bot.pathfinder.setMovements = movements => { bot.pathfinder.movements = movements; };
+  bot.pathfinder.setGoal = goal => {
+    bot.pathfinder.goal = goal;
+    if (goal === null && rejectNavigation) {
+      const reject = rejectNavigation; rejectNavigation = null;
+      reject(Object.assign(new Error('SDK goal replaced'), { code: 'PATH_STOPPED' }));
+    }
+  };
+  bot.pathfinder.isMoving = () => rejectNavigation !== undefined && rejectNavigation !== null;
+  bot.pathfinder.goto = async goal => context.operation_scope.navigate(goal, async () => {
+    if (mode === 'navigation-warning' && !context.collection_safety.retreatPolicy) {
+      bot.entity.position.x++; bot.emit('move');
+      const interrupted = new Promise((_resolve, reject) => { rejectNavigation = reject; });
+      bot.pathfinder.goal = goal;
+      bot.entities[458] = { id: 458, name: 'skeleton', position: new Vec3(20.5, 64, .5) };
+      bot.emit('entityMoved', bot.entities[458]);
+      return interrupted;
+    }
+    routes++;
+    assert.ok(context.collection_safety.retreatPolicy, 'the real navigator enters the cooperative outward policy');
+    assert.equal(bot.targetDigBlock, null, 'old digging must settle before navigation');
+    assert.equal(bot.pathfinder.movements.canDig, false);
+    if (mode === 'retreat-mutation') await bot.dig(bot.blockAt(new Vec3(-5, 63, 0)));
+    const points = [];
+    if (mode === 'detour-budget') points.push(new Vec3(.5, 64, 1.5), new Vec3(.5, 64, 2.5));
+    for (let x = bot.entity.position.x - 1; x >= goal.x + .5; x--) points.push(new Vec3(x, 64, mode === 'detour-budget' ? 2.5 : .5));
+    if (mode === 'detour-budget') points.push(new Vec3(goal.x + .5, 64, 1.5), new Vec3(goal.x + .5, 64, .5));
+    for (const p of points) {
+      context.signal.throwIfAborted();
+      bot.entity.position = p; bot.emit('move'); bot.emit('physicsTick');
+      await Promise.resolve();
+    }
+  });
+  bot.stopDigging = () => {
+    bot.targetDigBlock = null;
+    const reject = rejectDig; rejectDig = null;
+    if (!reject) return;
+    if (mode === 'braking-budget') { bot.entity.position.x++; bot.emit('move'); }
+    reject(Object.assign(new Error('Digging aborted by pause'), { code: 'DIG_ABORTED' }));
+  };
+  bot.dig = async block => {
+    nativeDigs++;
+    if (nativeDigs === 1 && !['navigation-warning', 'waiting-warning'].includes(mode)) {
+      bot.targetDigBlock = block;
+      const interrupted = new Promise((_resolve, reject) => { rejectDig = reject; });
+      bot.entities[458] = { id: 458, name: 'skeleton', position: new Vec3(20.5, 64, .5) };
+      bot.emit('entityMoved', bot.entities[458]);
+      blockedMutation = bot.dig(block).then(() => 'unexpected mutation', error => error.code);
+      return interrupted;
+    }
+    const before = bot.blockAt(block.position);
+    removed.add(block.position.toString());
+    bot.emit('blockUpdate', before, bot.blockAt(block.position));
+    bot.emit('diggingCompleted', bot.blockAt(block.position));
+    bag.push({ name: 'raw_iron', count: 1 });
+  };
+  const source = readFileSync(new URL('../src/index.js', import.meta.url), 'utf8');
+  const start = source.indexOf('async function _collectInner('), end = source.indexOf('\nfunction craftError(', start);
+  const collect = runInNewContext(`(${source.slice(start, end)})`, {
+    ...collection, ...resources, bot, Vec3, ITEM_TO_BLOCK: {}, BLOCK_DROP_ITEM: { iron_ore: 'raw_iron' },
+    shouldPrepareUndergroundCollection: () => null, _stabilizePosition: async () => {}, _collectDebug() {},
+    presentBlockTarget: async ({ ordinal }) => { attempts.push(ordinal); return null; },
+    _equipToolForBlock: async () => {}, operationWait: async () => {
+      if (mode !== 'waiting-warning') return;
+      if (!waitingWarning) {
+        waitingWarning = true;
+        bot.entities[458] = { id: 458, name: 'skeleton', position: new Vec3(20.5, 64, .5) };
+        bot.emit('entityMoved', bot.entities[458]);
+      }
+      return context.operation_scope.wait(0);
+    }, _pickupDroppedItems: async () => {},
+    _inventoryCount: item => collection.pickupInventoryCount(bot, item), getMcData: async () => registry,
+    locateResource: async () => { throw Object.assign(new Error('no other target'), { code: 'RESOURCE_NOT_FOUND' }); },
+    _explore_for_block: async () => {},
+  });
+  return { ...fixture, bag, removed, attempts,
+    stats: async () => ({ nativeDigs, routes, blockedMutation: await blockedMutation,
+      recoveries: context.collection_safety.recoveryCount, guardTravel: context.motion_usage.travel }),
+  };
+}
+
+test('real collection pauses a native dig, escapes once and harvests another vein in one receipt', async () => {
+  const f = cooperativeCollectionFixture();
+  const action = request(f.adapter, 'collect', { block_type: 'iron_ore', count: 1 }, 'cooperative-collection');
+  action.remaining_budget = budget({ max_blocks_changed: 1, max_damage_taken: 0, max_travel_distance: 12 });
+  const receipt = await f.adapter.runtime.executeAction(action);
+  assert.equal(receipt.outcome, 'success', JSON.stringify(receipt.error));
+  assert.deepEqual(await f.stats(), { nativeDigs: 2, routes: 1, blockedMutation: 'COLLECTION_SAFETY_PAUSED', recoveries: 1, guardTravel: 5 });
+  assert.deepEqual(f.attempts, [0, 1], 'recovery consumes an existing collection attempt');
+  assert.equal(f.bag[0].count, 1);
+  assert.equal(f.removed.size, 1);
+  assert.equal(receipt.budget_usage.max_actions, 1);
+  assert.equal(receipt.budget_usage.max_blocks_changed, 1);
+  assert.equal(receipt.budget_usage.max_travel_distance, 5);
+  assert.equal(receipt.budget_usage.max_damage_taken, 0);
+  assert.equal(receipt.explained_mutations.filter(m => m.subject === 'block:minecraft:overworld:-9:64:0' && m.delta === -1).length, 1,
+    'nested evidence contains exactly one actual ore mutation');
+  for (const event of ['move', 'health', 'physicsTick', 'entityMoved', 'entitySpawn']) assert.equal(f.bot.listenerCount(event), 0);
+  f.adapter.dispose();
+});
+
+test('collection also settles interrupted native navigation before escape and replanning', async () => {
+  const f = cooperativeCollectionFixture('navigation-warning');
+  const action = request(f.adapter, 'collect', { block_type: 'iron_ore', count: 1 }, 'cooperative-navigation');
+  action.remaining_budget = budget({ max_blocks_changed: 1, max_damage_taken: 0, max_travel_distance: 12 });
+  const receipt = await f.adapter.runtime.executeAction(action);
+  assert.equal(receipt.outcome, 'success', JSON.stringify(receipt.error));
+  assert.deepEqual(await f.stats(), { nativeDigs: 1, routes: 1, blockedMutation: undefined, recoveries: 1, guardTravel: 7 });
+  assert.deepEqual(f.attempts, [0, 1]);
+  assert.equal(receipt.budget_usage.max_actions, 1);
+  assert.equal(receipt.budget_usage.max_travel_distance, 7, 'access and escape share the same live counter');
+  assert.equal(receipt.budget_usage.max_blocks_changed, 1);
+  assert.equal(receipt.budget_usage.max_damage_taken, 0);
+  f.adapter.dispose();
+});
+
+test('collection processes a safety pause before starting another timed wait', async () => {
+  const f = cooperativeCollectionFixture('waiting-warning');
+  const action = request(f.adapter, 'collect', { block_type: 'iron_ore', count: 1 }, 'cooperative-wait');
+  action.remaining_budget = budget({ max_blocks_changed: 1, max_damage_taken: 0, max_travel_distance: 12 });
+  const receipt = await f.adapter.runtime.executeAction(action);
+  assert.equal(receipt.outcome, 'success', JSON.stringify(receipt.error));
+  assert.equal((await f.stats()).recoveries, 1);
+  assert.deepEqual(f.attempts, [0, 1]);
+  assert.equal(receipt.budget_usage.max_travel_distance, 5);
+  assert.equal(receipt.budget_usage.max_blocks_changed, 1);
+  f.adapter.dispose();
+});
+
+test('cooperative collection retains hard stops for missing exits, braking costs, retreat mutations and route overrun', async () => {
+  for (const [mode, maximum, code, travel] of [
+    ['no-exit', 12, 'UNSAFE_AREA', 0], ['braking-budget', 8, 'UNSAFE_AREA', 1],
+    ['retreat-mutation', 12, 'UNSAFE_AREA', 0], ['detour-budget', 10, 'BUDGET_EXHAUSTED', 8],
+  ]) {
+    const f = cooperativeCollectionFixture(mode);
+    const action = request(f.adapter, 'collect', { block_type: 'iron_ore', count: 1 }, `cooperative-${mode}`);
+    action.remaining_budget = budget({ max_blocks_changed: 1, max_damage_taken: 0, max_travel_distance: maximum });
+    const receipt = await f.adapter.runtime.executeAction(action);
+    assert.equal(receipt.outcome, 'error', `${mode}: ${JSON.stringify(receipt.error)}`);
+    assert.equal(receipt.error.code, code, mode);
+    assert.equal(receipt.budget_usage.max_travel_distance, travel, mode);
+    assert.equal(receipt.budget_usage.max_blocks_changed, 0, mode);
+    assert.equal((await f.stats()).nativeDigs, 1, mode);
+    assert.equal(f.removed.size, 0, mode);
+    assert.deepEqual(f.bag, [], mode);
+    f.adapter.dispose();
+  }
+});
 
 test('verified outward goto retreats under the original warning and charges actual movement', async () => {
   const fixture = retreatFixture(async (bot, context) => {

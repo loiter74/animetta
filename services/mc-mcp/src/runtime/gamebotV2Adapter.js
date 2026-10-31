@@ -11,6 +11,7 @@ import { AIR_RECOVERY_MS, surfaceEscapePlan } from '../navigation.js';
 import { ownOxygenLevel } from './playerVitals.js';
 import { withActionEvidence } from './actionEvidence.js';
 import { projectJumpTravel } from './motionBudget.js';
+import { createCollectionSafety, MOVEMENT_STOPPING_RESERVE } from './collectionSafety.js';
 import { findHostileThreat } from '../survivalThreats.js';
 import { createRetreatPolicy } from '../survivalRetreat.js';
 import {
@@ -30,7 +31,6 @@ import {
 } from './presentationPort.js';
 
 
-const MOVEMENT_STOPPING_RESERVE = 2;
 const schemaDigest = readFileSync(
   new URL('../../../../contracts/gamebot/v2/schema.sha256', import.meta.url),
   'utf8',
@@ -367,13 +367,15 @@ function guardBotAction(
     const actionBudget = ['observe', 'status', 'recipes'].includes(context.capability) ? null : context.budget;
     let previousPosition = { ...bot.entity?.position };
     let previousHealth = bot.health;
-    let travel = 0;
+    const motionUsage = context.motion_usage;
+    const retreatPolicy = () => context.retreat_policy || context.collection_safety?.retreatPolicy;
     let damage = 0;
     const originalSetControlState = bot.setControlState;
     let guardedSetControlState;
     const guardedMutations = new Map();
     let pendingBlockChanges = 0;
     const cleanup = () => {
+      context.collection_safety?.dispose();
       bot.removeListener('death', onDeath);
       bot.removeListener('end', onEnd);
       bot.removeListener('breath', onBreath);
@@ -409,21 +411,21 @@ function guardBotAction(
       if (!actionBudget) return;
       // Dry navigation walks without sprinting/parkour. Stop two blocks early
       // for the current physics tick and braking; never alter charged usage.
-      if (((context.capability === 'collect' || travel > 0)
-        && travel >= Math.max(0, actionBudget.max_travel_distance - MOVEMENT_STOPPING_RESERVE))
+      if (((context.capability === 'collect' || motionUsage.travel > 0)
+        && motionUsage.travel >= Math.max(0, actionBudget.max_travel_distance - MOVEMENT_STOPPING_RESERVE))
         || damage > actionBudget.max_damage_taken) {
         fail('BUDGET_EXHAUSTED', '动作接近移动预算上限或已超过伤害预算，已停止当前动作。', {
-          travel_distance: travel, damage_taken: damage, stopping_reserve: MOVEMENT_STOPPING_RESERVE,
+          travel_distance: motionUsage.travel, damage_taken: damage, stopping_reserve: MOVEMENT_STOPPING_RESERVE,
         });
       }
     };
     const onMove = () => {
       const position = bot.entity?.position;
       if (!position) return;
-      if (context.retreat_policy && !context.retreat_policy.permitsMove(previousPosition, position, true)) {
+      if (retreatPolicy() && !retreatPolicy().permitsMove(previousPosition, position, true)) {
         fail('UNSAFE_AREA', '避险移动开始靠近敌对生物，已停止当前动作。');
       }
-      travel += Math.hypot(position.x - previousPosition.x,
+      motionUsage.travel += Math.hypot(position.x - previousPosition.x,
         position.y - previousPosition.y, position.z - previousPosition.z);
       previousPosition = { ...position };
       checkActionBudget();
@@ -431,7 +433,8 @@ function guardBotAction(
     const checkSurvivalThreat = () => {
       if (!actionBudget || context.capability === 'attack') return;
       const threat = findHostileThreat(bot);
-      if (threat && !context.retreat_policy?.permitsThreat(threat)) {
+      if (threat && !retreatPolicy()?.permitsThreat(threat)
+        && !context.collection_safety?.requestPause(threat)) {
         fail('UNSAFE_AREA', '附近敌对生物已进入预警范围，已停止危险动作。', { threat });
       }
     };
@@ -443,9 +446,9 @@ function guardBotAction(
       const controls = Object.fromEntries(MOVEMENT_CONTROLS.map(name => [name, current[name] === true]));
       if (requested) controls.jump = true;
       const distance = projectJumpTravel(bot, controls);
-      if (distance === null || travel + distance + MOVEMENT_STOPPING_RESERVE > actionBudget.max_travel_distance) {
+      if (distance === null || motionUsage.travel + distance + MOVEMENT_STOPPING_RESERVE > actionBudget.max_travel_distance) {
         fail('BUDGET_EXHAUSTED', '剩余移动预算无法覆盖已知跳跃和安全停止。', {
-          travel_distance: travel, minimum_motion_distance: distance,
+          travel_distance: motionUsage.travel, minimum_motion_distance: distance,
           motion_prediction: distance === null ? 'unknown' : 'settled',
           stopping_reserve: MOVEMENT_STOPPING_RESERVE,
         });
@@ -521,10 +524,13 @@ function guardBotAction(
         if (typeof original !== 'function') continue;
         const guarded = async function (...args) {
           context.signal?.throwIfAborted();
-          if (context.retreat_policy) {
+          if (retreatPolicy()) {
             fail('UNSAFE_AREA', '避险移动禁止挖掘或放置方块。');
             context.signal?.throwIfAborted();
             throw lifecycleError;
+          }
+          if (context.collection_safety?.pending) {
+            throw new OperationScopeError('COLLECTION_SAFETY_PAUSED', '采集正在安全暂停，暂不允许新的方块操作。');
           }
           const changed = readBlockChanges();
           if (changed + pendingBlockChanges >= actionBudget.max_blocks_changed) {
@@ -545,6 +551,7 @@ function guardBotAction(
       if (typeof originalSetControlState === 'function') {
         guardedSetControlState = function (control, value) {
           if (value === true && context.signal?.aborted) return;
+          if (value === true && context.collection_safety?.pending && !retreatPolicy()) return;
           if (control === 'jump' && value === true && !checkJumpBudget(true)) return;
           return originalSetControlState.call(bot, control, value);
         };
@@ -567,9 +574,9 @@ function guardBotAction(
     if (context.signal?.aborted) return;
     const invocationPromise = Promise.resolve().then(() => invoke((minimumDistance) => {
       if (!actionBudget || minimumDistance <= 0) return;
-      if (travel + minimumDistance + MOVEMENT_STOPPING_RESERVE > actionBudget.max_travel_distance) {
+      if (motionUsage.travel + minimumDistance + MOVEMENT_STOPPING_RESERVE > actionBudget.max_travel_distance) {
         fail('BUDGET_EXHAUSTED', '剩余移动预算不足以完成下一段路径并安全停止。', {
-          travel_distance: travel, minimum_navigation_distance: minimumDistance, stopping_reserve: MOVEMENT_STOPPING_RESERVE,
+          travel_distance: motionUsage.travel, minimum_navigation_distance: minimumDistance, stopping_reserve: MOVEMENT_STOPPING_RESERVE,
         });
         context.signal?.throwIfAborted();
       }
@@ -621,14 +628,26 @@ function runtimeCapabilities(bot, actions, abortActive, motionPolicy) {
             ? AbortSignal.any([context.signal, lifecycleController.signal])
             : lifecycleController.signal;
           let checkNavigationBudget = () => {};
+          let collectionSafety = null;
+          const motionUsage = { travel: 0 };
           const scope = createOperationScope({
             bot,
             signal: operationSignal,
             deadlineMs: context.deadline_ms,
             reportPhase: context.report_phase,
             checkNavigationBudget: distance => checkNavigationBudget(distance),
+            beforeOperation: name === 'collect' ? async () => {
+              if (await collectionSafety?.checkpoint()) {
+                throw new OperationScopeError('COLLECTION_SAFETY_PAUSED', '避险已完成，请重新选择安全的采集目标。');
+              }
+            } : null,
             containerCapable: ['craft', 'smelt'].includes(name),
           });
+          if (name === 'collect') {
+            collectionSafety = createCollectionSafety({
+              bot, scope, signal: operationSignal, budget: context.budget, motionUsage,
+            });
+          }
           const targetPosition = descriptor.target?.(parameters) || null;
           const target = targetPosition
             ? { kind: name === 'place' ? 'block' : 'position', position: targetPosition }
@@ -688,6 +707,8 @@ function runtimeCapabilities(bot, actions, abortActive, motionPolicy) {
             operation_scope: scope,
             presentation: presentationFacade,
             retreat_policy: name === 'goto' ? createRetreatPolicy(bot, parameters) : null,
+            collection_safety: collectionSafety,
+            motion_usage: motionUsage,
           });
           const invoke = (_annotations, readBlockChanges) => runWithOperationScope(scope, () => guardBotAction(
             bot,
@@ -710,6 +731,7 @@ function runtimeCapabilities(bot, actions, abortActive, motionPolicy) {
                 context.report_phase?.('acting');
               }
               const result = await descriptor.invoke(parameters, scopedContext);
+              if (!operationSignal.aborted) await collectionSafety?.checkpoint();
               if (targetPosition && ['goto', 'place'].includes(name)) {
                 await safeFocus({ phase: 'verifying', ordinal: 1 });
               }
