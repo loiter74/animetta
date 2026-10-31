@@ -91,6 +91,57 @@ function minimumNavigationDistance(goal, position) {
 }
 
 
+async function awaitPathfinderGoal(bot, goal, operation) {
+  if (typeof bot.on !== 'function' || typeof bot.removeListener !== 'function') return operation();
+  let emptyPartial = false;
+  let latestStatus;
+  let waitingUpdate = null;
+  let cleanupWait = () => {};
+  const onPathUpdate = result => {
+    latestStatus = result.status;
+    emptyPartial ||= result.status === 'partial' && result.path?.length === 0;
+    waitingUpdate?.(result);
+  };
+  bot.on('path_update', onPathUpdate);
+  try {
+    const result = await operation();
+    // SDK goto resolves even for an empty partial A* slice, while its original
+    // goal is still active. Keep waiting inside the SAME runInterruptible call;
+    // never restart the SDK goal or grant another deadline/attempt.
+    const unfinished = emptyPartial && !goalSatisfied(goal, bot.entity?.position);
+    if (unfinished && bot.pathfinder?.goal !== goal) {
+      throw Object.assign(new Error('导航目标在完成前被替换。'), { name: 'GoalChanged' });
+    }
+    if (unfinished && !['noPath', 'timeout'].includes(latestStatus)) {
+      await new Promise((resolve, reject) => {
+        const onReached = () => { if (goalSatisfied(goal, bot.entity?.position)) resolve(); };
+        const onChanged = next => {
+          if (next !== goal) reject(Object.assign(new Error('导航目标在完成前被替换。'), { name: 'GoalChanged' }));
+        };
+        const onStopped = () => reject(Object.assign(new Error('导航在抵达前停止。'), { name: 'PathStopped' }));
+        waitingUpdate = update => {
+          if (['noPath', 'timeout'].includes(update.status)) resolve();
+          else onReached();
+        };
+        cleanupWait = () => {
+          waitingUpdate = null;
+          bot.removeListener('goal_reached', onReached);
+          bot.removeListener('goal_updated', onChanged);
+          bot.removeListener('path_stop', onStopped);
+        };
+        bot.on('goal_reached', onReached);
+        bot.on('goal_updated', onChanged);
+        bot.on('path_stop', onStopped);
+      });
+    }
+    return result;
+  } finally {
+    cleanupWait();
+    bot.removeListener('path_update', onPathUpdate);
+  }
+}
+
+
 export class OperationScope {
   constructor({
     bot,
@@ -347,7 +398,7 @@ export class OperationScope {
       result = await this.runInterruptible(() => {
         // Mineflayer stop() is deferred; consume it before goto installs listeners.
         this.bot.pathfinder?.setGoal?.(null);
-        return operation();
+        return awaitPathfinderGoal(this.bot, goal, operation);
       }, {
         label: 'pathfinder navigation',
         timeoutMs: navigationTimeoutMs,
