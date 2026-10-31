@@ -97,10 +97,26 @@ test('retreat projection requires a completed native path without changing the a
 
 test('native retreat proof retains integer search nodes across partial planning slices', () => {
   const { bot } = fixture();
-  bot.pathfinder.tickTimeout = 0;
+  bot.pathfinder.tickTimeout = 1;
   assert.deepEqual(projectRetreatCandidates(bot, [new Vec3(-5, 63, 0)]).candidates,
     [{ x: -5, y: 64, z: 0 }]);
-  assert.equal(bot.pathfinder.tickTimeout, 0);
+  assert.equal(bot.pathfinder.tickTimeout, 1);
+});
+
+test('native path proof enforces the existing total timeout when the SDK only returns partials', t => {
+  const { bot } = fixture(), limit = bot.pathfinder.thinkTimeout;
+  t.mock.timers.enable({ apis: ['Date'], now: 10_000 });
+  let slices = 0;
+  bot.pathfinder.getPathFromTo = function * () {
+    for (let index = 0; index < 3; index++) {
+      slices++;
+      t.mock.timers.setTime(Date.now() + limit / 2);
+      yield { result: { status: 'partial', path: [] } };
+    }
+  };
+  assert.deepEqual(projectRetreatCandidates(bot, [new Vec3(-5, 63, 0)]).candidates, []);
+  assert.equal(slices, 2);
+  assert.equal(bot.pathfinder.thinkTimeout, limit);
 });
 
 test('ordinary outward planning needs no repeated world or cover queries', () => {

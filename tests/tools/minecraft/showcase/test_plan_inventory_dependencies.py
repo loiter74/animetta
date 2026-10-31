@@ -35,6 +35,31 @@ def test_existing_full_plan_satisfies_known_inventory_dependencies() -> None:
     assert validate_mission_plan(mission, reference=mission, initial_inventory={}) == ()
 
 
+@pytest.mark.parametrize("inventory", [{}, {"bucket": 1}, {"iron_ingot": 3}])
+def test_obsidian_preparation_needs_water_provisioned_before_its_goal(inventory) -> None:
+    mission = reference()
+    data = mission.model_dump(mode="json")
+    for objective in data["objectives"]:
+        if objective["objective_id"] == "diamond-pickaxe":
+            objective["dependencies"] = ["iron-pickaxe"]
+        if objective["objective_id"] == "obsidian":
+            objective["dependencies"] = ["diamond-pickaxe"]
+    plan = MissionSpec.model_validate(data)
+    original = plan.canonical_hash
+    issues = validate_mission_plan(plan, reference=mission, initial_inventory=inventory)
+    assert len(issues) == 1 and issues[0].objective_id == "obsidian"
+    assert issues[0].code == "MISSING_WORKFLOW_INPUTS"
+    assert issues[0].candidate_dependencies == ("water-bucket",)
+    assert all(
+        any(item.item == "water_bucket" for item in clause.inventory_all)
+        for clause in issues[0].required_any_of
+        if not any(item.item == "obsidian" for item in clause.inventory_all)
+    )
+    assert plan.canonical_hash == original
+    for supplied in [{"water_bucket": 1}, {"minecraft:obsidian": 10}]:
+        assert validate_mission_plan(plan, reference=mission, initial_inventory=supplied) == ()
+
+
 def test_empty_inventory_water_before_iron_returns_actionable_dependency_error() -> None:
     mission = reference()
     issues = validate_mission_plan(missing_iron(mission), reference=mission, initial_inventory={})

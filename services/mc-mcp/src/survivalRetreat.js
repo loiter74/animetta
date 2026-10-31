@@ -1,6 +1,7 @@
 import Vec3 from 'vec3';
 import pathfinder from 'mineflayer-pathfinder';
 import { configureDryNavigation } from './collection.js';
+import { iteratePathSearch } from './navigation.js';
 import { findHostileThreat, hostileThreatAt, hostileWarningRadius } from './survivalThreats.js';
 
 const POSITION_EPSILON = 0.02;
@@ -84,11 +85,9 @@ export function projectRetreatCandidates(bot, observedPositions, maximumDistance
     const goal = new pathfinder.goals.GoalCompositeAny(destinations.map(p => (
       new pathfinder.goals.GoalBlock(p.x, p.y, p.z)
     )));
-    // Continue the same native search within its original timeouts, without
-    // replacing its active goal or movements. Disable execution-coordinate
-    // postprocessing: it mutates shared A* nodes after a partial planning slice.
+    // Planning never replaces the bot's active goal or movements.
     let result;
-    for (const planned of bot.pathfinder.getPathFromTo(movements, origin, goal, { optimizePath: false })) {
+    for (const planned of iteratePathSearch(bot, movements, goal)) {
       result = planned.result;
       if (result.status !== 'partial') break;
     }

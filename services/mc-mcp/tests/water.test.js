@@ -556,10 +556,13 @@ for (const crowded of [false, true]) {
       return [...sealed, accessible];
     };
     pathfinderPkg.pathfinder(bot);
+    bot.pathfinder.tickTimeout = 1;
+    const thinkTimeout = bot.pathfinder.thinkTimeout;
     const nativePlanner = bot.pathfinder.getPathFromTo.bind(bot.pathfinder);
     bot.pathfinder.getPathFromTo = function* (movements, start, goal, options) {
       const before = bot.entity.position.clone();
       if (goal instanceof pathfinderPkg.goals.GoalCompositeAny) {
+        assert.equal(options?.optimizePath, false, 'partial planning must retain original A* node coordinates');
         assert.ok(goal.goals.length <= Math.min(16, sealed.length + 1) * 4);
         assert.equal(new Set(goal.goals.map(g => `${g.x},${g.y},${g.z}`)).size, goal.goals.length);
       }
@@ -590,6 +593,8 @@ for (const crowded of [false, true]) {
     assert.equal(result.output.filled, true);
     assert.deepEqual(result.output.source, accessible);
     assert.equal(navigations, 1, 'an unreachable source must not cause separate native navigation attempts');
+    assert.equal(bot.pathfinder.tickTimeout, 1);
+    assert.equal(bot.pathfinder.thinkTimeout, thinkTimeout);
     assert.equal(result.budget_usage.max_blocks_changed, 1);
   });
 }

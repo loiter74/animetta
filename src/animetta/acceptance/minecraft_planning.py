@@ -49,7 +49,9 @@ def nether_plan_inventory_requirements() -> dict[tuple[str, str], WorkflowCheckp
             {"water_bucket": 1}, {"bucket": 1}, {"iron_ingot": 3}
         ),
         ("acquire", "obsidian"): alternatives(
-            {"obsidian": 10}, {"diamond_pickaxe": 1}, {"netherite_pickaxe": 1}
+            {"obsidian": 10},
+            {"diamond_pickaxe": 1, "water_bucket": 1},
+            {"netherite_pickaxe": 1, "water_bucket": 1},
         ),
     }
 

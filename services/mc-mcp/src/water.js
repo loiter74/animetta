@@ -12,11 +12,11 @@ import {
   waitForCollectionMovementToSettle,
   withCollectionEvidence,
 } from './collection.js';
-import { placementMutation } from './placement.js';
+import { isFullCubeReference, placementMutation } from './placement.js';
 import { configureMineSupport } from './branch_mine.js';
-import { navigateTo } from './navigation.js';
+import { iteratePathSearch, navigateTo } from './navigation.js';
 import { restoreObsidianWorkSurface } from './obsidianSupport.js';
-import { operationWait } from './runtime/operationScope.js';
+import { OperationScopeError, operationWait } from './runtime/operationScope.js';
 import { createMineShaft } from './mine_shaft.js';
 
 const { Movements, goals: { GoalBlock, GoalCompositeAny } } = pathfinderPkg;
@@ -91,24 +91,25 @@ async function aimWaterItem(bot, target, confirmation) {
   }
 }
 
-function canInteractFrom(bot, position, interactionTarget, feet) {
+function canInteractFrom(bot, position, interactionTarget, feet, expectedFace) {
   const target = interactionTarget ?? position.offset(0.5, 0.5, 0.5);
   const eye = feet.offset(0, 1.62, 0);
   const delta = target.minus(eye);
   if (delta.norm() > 4.25) return false;
   if (!interactionTarget) return true;
   const hit = bot.world.raycast(eye, delta.scaled(1 / delta.norm()), delta.norm());
-  return !hit || hit.position.equals(position);
+  return hit ? hit.position.equals(position) && (expectedFace === undefined || hit.face === expectedFace)
+    : expectedFace === undefined;
 }
 
-function standingCandidates(bot, position, interactionTarget) {
+function standingCandidates(bot, position, interactionTarget, expectedFace) {
   const candidates = [];
   for (let dx = -3; dx <= 3; dx++) {
     for (let dz = -3; dz <= 3; dz++) {
       for (let dy = -1; dy <= 2; dy++) {
         const feet = position.offset(dx, dy, dz);
         if (isSafeStandingPosition(bot, feet)
-          && canInteractFrom(bot, position, interactionTarget, feet.offset(0.5, 0, 0.5))) candidates.push(feet);
+          && canInteractFrom(bot, position, interactionTarget, feet.offset(0.5, 0, 0.5), expectedFace)) candidates.push(feet);
       }
     }
   }
@@ -116,14 +117,17 @@ function standingCandidates(bot, position, interactionTarget) {
   return candidates.slice(0, 4);
 }
 
-async function approachObsidian(bot, position, context) {
-  const inReach = () => canInteractFrom(bot, position, null, bot.entity.position);
+async function approachObsidian(bot, position, context, {
+  interactionTarget = null, expectedFace, allowDig = true,
+} = {}) {
+  const inReach = () => canInteractFrom(bot, position, interactionTarget, bot.entity.position, expectedFace);
   if (inReach() && isSafeStandingPosition(bot, bot.entity.position.floored())) return;
-  const candidates = standingCandidates(bot, position, null);
+  const candidates = standingCandidates(bot, position, interactionTarget, expectedFace);
   const previous = bot.pathfinder.movements;
   const movements = new Movements(bot);
   configureDryNavigation(movements, bot);
-  movements.canDig = true;
+  movements.canDig = allowDig;
+  if (!allowDig) movements.scafoldingBlocks = [];
   movements.allow1by1towers = false;
   configureMineSupport(movements, bot.registry);
   movements.blocksCantBreak.add(bot.registry.blocksByName.obsidian.id);
@@ -194,7 +198,7 @@ async function approachWaterSources(bot, sources, context, wait) {
     // Plan within the SDK's existing search/time bounds before spending movement.
     // The native navigation still uses a single GoalBlock and its unchanged guards.
     const goal = new GoalCompositeAny([...candidates.values()]);
-    const planner = bot.pathfinder.getPathFromTo(movements, bot.entity.position, goal);
+    const planner = iteratePathSearch(bot, movements, goal);
     let result;
     for (const planned of planner) {
       context.operation_scope?.checkpoint();
@@ -297,6 +301,154 @@ export async function fillWaterBucket(bot, context = {}, { wait = operationWait 
   });
 }
 
+const BASIN_SIDES = [
+  { x: 1, z: 0, face: 4 }, { x: -1, z: 0, face: 5 },
+  { x: 0, z: 1, face: 2 }, { x: 0, z: -1, face: 3 },
+];
+const isLavaSource = block => block?.name === 'lava'
+  && Number(block.getProperties?.().level ?? block.metadata) === 0;
+const castingAir = block => ['air', 'cave_air'].includes(block?.name);
+
+function closedLavaBasin(bot, start, maximum, origin) {
+  const cells = new Map(), pending = [start];
+  while (pending.length) {
+    const p = pending.pop(), key = p.toString();
+    if (cells.has(key)) continue;
+    if (cells.size >= maximum || p.distanceTo(origin) > 64
+      || !isLavaSource(bot.blockAt(p))
+      || !isFullCubeReference(bot.blockAt(p.offset(0, -1, 0)))
+      || !castingAir(bot.blockAt(p.offset(0, 1, 0)))) return null;
+    cells.set(key, p);
+    for (const side of BASIN_SIDES) {
+      const adjacent = p.offset(side.x, 0, side.z);
+      const boundary = bot.blockAt(adjacent.offset(0, 1, 0));
+      if (isFullCubeReference(boundary)) continue;
+      // Known full walls and floors contain the whole water reaction. An open,
+      // flowing or unloaded boundary cannot support a bounded conversion proof.
+      if (!castingAir(boundary) || !isLavaSource(bot.blockAt(adjacent))) return null;
+      pending.push(adjacent);
+    }
+  }
+  return [...cells.values()];
+}
+
+async function castObservedObsidian(bot, context, mutations, wait) {
+  if (!hasItem(bot, 'water_bucket')) fail('TOOL_REQUIRED', '制备黑曜石前需要装满的水桶。');
+  const maximum = context.budget?.max_blocks_changed;
+  if (!Number.isSafeInteger(maximum) || maximum < 2) fail('BUDGET_EXHAUSTED', '剩余方块额度不足以制备黑曜石。');
+  const lavaId = bot.registry.blocksByName.lava?.id;
+  if (lavaId === undefined) fail('RESOURCE_NOT_FOUND', '附近没有可制备黑曜石的已知熔岩源。');
+  const origin = bot.entity.position.clone();
+  const sources = bot.findBlocks({ matching: lavaId, maxDistance: 64, count: 64 });
+  const seen = new Set(), basins = [];
+  for (const source of sources) {
+    if (seen.has(source.toString())) continue;
+    const basin = closedLavaBasin(bot, source, maximum - 1, origin);
+    if (!basin) continue;
+    for (const p of basin) seen.add(p.toString());
+    basins.push(basin);
+  }
+  basins.sort((a, b) => b.length - a.length || a[0].distanceTo(origin) - b[0].distanceTo(origin));
+  const selected = [];
+  let remaining = maximum;
+  for (const basin of basins) {
+    const cost = basin.length + 1 + (selected.length ? 1 : 0);
+    if (cost > remaining) continue;
+    selected.push(basin); remaining -= cost;
+  }
+  if (!selected.length) fail('RESOURCE_NOT_FOUND', '原范围和预算内没有已知封闭、可安全制备的熔岩盆地。');
+  const confirmation = waterConfirmation(context, wait), created = new Map();
+  let lastWater;
+  for (let index = 0; index < selected.length; index++) {
+    confirmation.checkpoint();
+    const basin = selected[index];
+    const options = basin.flatMap(p => BASIN_SIDES.flatMap(side => {
+      const water = p.offset(0, 1, 0), reference = water.offset(side.x, 0, side.z);
+      if (!isFullCubeReference(bot.blockAt(reference))) return [];
+      return [{ water, reference, face: side.face,
+        target: reference.offset(.5 - side.x * (.5 - .01), .5, .5 - side.z * (.5 - .01)),
+        span: Math.max(...basin.map(cell => Math.abs(cell.x - p.x) + Math.abs(cell.z - p.z))) }];
+    })).sort((a, b) => a.span - b.span || a.water.distanceTo(bot.entity.position) - b.water.distanceTo(bot.entity.position));
+    const placement = options.find(option => standingCandidates(bot, option.reference, option.target, option.face).length);
+    if (!placement) fail('WATER_TARGET_UNREACHABLE', '封闭熔岩盆地没有可安全瞄准的放水面。');
+    await approachObsidian(bot, placement.reference, context, {
+      interactionTarget: placement.target, expectedFace: placement.face, allowDig: false,
+    });
+    const keys = new Set(basin.map(p => p.toString()));
+    let placed = false, recovered = false, retrieving = false, activated = false, settled = false;
+    const recordWater = () => {
+      if (!placed) { mutations.push(placementMutation('water', placement.water, bot.game?.dimension)); placed = true; }
+    };
+    const recordPickup = () => {
+      if (!recovered) { mutations.push(collectionResourceMutation('water', placement.water, bot.game?.dimension)); recovered = true; }
+    };
+    const recordObsidian = p => {
+      if (created.has(p.toString())) return;
+      created.set(p.toString(), p);
+      mutations.push(placementMutation('obsidian', p, bot.game?.dimension));
+    };
+    const onUpdate = (before, after) => {
+      if (!activated || !after?.position) return;
+      if (keys.has(after.position.toString()) && before?.name === 'lava' && after.name === 'obsidian') recordObsidian(after.position);
+      if (!after.position.equals(placement.water)) return;
+      if (isWaterSource(after)) recordWater();
+      else if (retrieving && isWaterSource(before)) recordPickup();
+    };
+    bot.on('blockUpdate', onUpdate);
+    try {
+      await bot.equip(hasItem(bot, 'water_bucket'), 'hand');
+      await aimWaterItem(bot, placement.target, confirmation);
+      const live = closedLavaBasin(bot, basin[0], maximum - 1, origin);
+      if (!live || live.length !== basin.length || !live.every(p => basin.some(cell => cell.equals(p)))) {
+        fail('TARGET_CHANGED', '放水前熔岩盆地或封闭边界发生变化。');
+      }
+      if (!canInteractFrom(bot, placement.reference, placement.target, bot.entity.position, placement.face)
+        || !castingAir(bot.blockAt(placement.water))) fail('TARGET_CHANGED', '使用水桶前放水面已失效。');
+      activated = true;
+      bot.activateItem();
+      try {
+        if (!await confirmation.until(() => isWaterSource(bot.blockAt(placement.water))
+          && basin.every(p => bot.blockAt(p)?.name === 'obsidian'))) {
+          fail('WATER_PLACEMENT_UNCONFIRMED', '原等待额度内没有确认封闭盆地完成黑曜石转化。');
+        }
+      } finally { bot.deactivateItem?.(); }
+      recordWater();
+      for (const p of basin) recordObsidian(p);
+      if (index + 1 < selected.length) {
+        const bucket = hasItem(bot, 'bucket');
+        if (!bucket) fail('WATER_FILL_UNCONFIRMED', '回收水源前没有观察到空铁桶。');
+        await bot.equip(bucket, 'hand');
+        const target = waterFillTarget(placement.water);
+        await aimWaterItem(bot, target, confirmation);
+        if (!isWaterSource(bot.blockAt(placement.water))
+          || !canInteractFrom(bot, placement.water, target, bot.entity.position)) fail('TARGET_CHANGED', '回收前水源或安全站位发生变化。');
+        retrieving = true;
+        bot.activateItem();
+        try {
+          if (!await confirmation.until(() => hasItem(bot, 'water_bucket') && !isWaterSource(bot.blockAt(placement.water)))) {
+            fail('WATER_FILL_UNCONFIRMED', '原等待额度内没有确认水源回收。');
+          }
+        } finally { bot.deactivateItem?.(); }
+        recordPickup();
+      }
+      settled = true;
+      lastWater = placement.water;
+    } catch (error) {
+      if (activated && !settled) throw new OperationScopeError('ACTION_SETTLEMENT_TIMEOUT',
+        '放水后的转化或回收结果尚未确认，已禁止重放并保留实际消耗。', { cause_code: error.code ?? null });
+      throw error;
+    } finally {
+      bot.removeListener('blockUpdate', onUpdate);
+      if (activated) {
+        for (const p of basin) if (bot.blockAt(p)?.name === 'obsidian') recordObsidian(p);
+        if (isWaterSource(bot.blockAt(placement.water))) recordWater();
+        else if (retrieving && placed) recordPickup();
+      }
+    }
+  }
+  return { position: lastWater.offset(0, -1, 0), created: [...created.values()] };
+}
+
 export async function prepareObsidian(bot, context = {}, { wait = operationWait } = {}) {
   return withCollectionEvidence(bot, async mutations => {
     const positions = bot.findBlocks({ matching: bot.registry.blocksByName.obsidian.id, maxDistance: 64, count: 64 });
@@ -306,17 +458,23 @@ export async function prepareObsidian(bot, context = {}, { wait = operationWait 
       const above = bot.blockAt(p.offset(0, 1, 0));
       return isWaterBlock(above) || ['air', 'cave_air'].includes(above?.name);
     });
-    const position = usable.find(p => isWaterBlock(bot.blockAt(p.offset(0, 1, 0))))
+    let position = usable.find(p => isWaterBlock(bot.blockAt(p.offset(0, 1, 0))))
       ?? usable.find(p => isNaturallySafeObsidianTarget(bot, bot.blockAt(p))) ?? usable[0];
-    if (!position) fail('RESOURCE_NOT_FOUND', '附近没有可准备采集的黑曜石。');
-    await approachObsidian(bot, position, context);
+    let created = [];
+    if (!position) {
+      const prepared = await castObservedObsidian(bot, context, mutations, wait);
+      position = prepared.position;
+      created = prepared.created;
+    }
+    await approachObsidian(bot, position, context, { allowDig: !created.length });
     const reference = bot.blockAt(position);
     const above = position.offset(0, 1, 0);
     if (reference?.name !== 'obsidian') fail('TARGET_CHANGED', '放水前黑曜石目标发生变化。');
     if (!isWaterBlock(bot.blockAt(above))) {
       if (isNaturallySafeObsidianTarget(bot, reference)) {
         await restoreObsidianWorkSurface(bot, context, mutations);
-        return { protected: true, natural_support: true, water_position: null };
+        return { protected: true, natural_support: true, water_position: null,
+          ...(created.length ? { created_obsidian: created } : {}) };
       }
       const bucket = hasItem(bot, 'water_bucket');
       if (!bucket) fail('TOOL_REQUIRED', '安全采集黑曜石前需要装满的水桶。');
@@ -337,6 +495,7 @@ export async function prepareObsidian(bot, context = {}, { wait = operationWait 
     await wait(2000);
     if (!isWaterBlock(bot.blockAt(above))) fail('WATER_PROTECTION_LOST', '采矿前水流保护已消失。');
     await restoreObsidianWorkSurface(bot, context, mutations);
-    return { protected: true, water_position: above };
+    return { protected: true, water_position: above,
+      ...(created.length ? { created_obsidian: created } : {}) };
   });
 }

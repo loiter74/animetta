@@ -8,6 +8,21 @@ const { GoalBlock, GoalY } = pathfinderPkg.goals;
 const VERTICAL_STEP = 4;
 export const AIR_RECOVERY_MS = 8000;
 
+export function* iteratePathSearch(bot, movements, goal) {
+  const timeout = bot.pathfinder.thinkTimeout;
+  const deadline = Number.isFinite(timeout) && timeout >= 0 ? Date.now() + timeout : null;
+  // SDK postprocessing mutates A* nodes between partial slices. Its slice
+  // check also precedes the total-time check, so enforce that same limit here.
+  for (const planned of bot.pathfinder.getPathFromTo(movements, bot.entity.position, goal, { optimizePath: false })) {
+    if (planned.result.status === 'partial' && deadline !== null && Date.now() >= deadline) {
+      yield { ...planned, result: { ...planned.result, status: 'timeout' } };
+      return;
+    }
+    yield planned;
+    if (planned.result.status !== 'partial') return;
+  }
+}
+
 function navigateGoal(bot, goal, context) {
   const navigate = () => bot.pathfinder.goto(goal);
   return context.operation_scope ? context.operation_scope.navigate(goal, navigate) : navigate();
