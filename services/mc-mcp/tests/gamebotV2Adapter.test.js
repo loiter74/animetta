@@ -602,6 +602,71 @@ test('a newly approaching skeleton stops collection before damage and removes th
   fixture.adapter.dispose();
 });
 
+function retreatFixture(move) {
+  const fixture = adapterFixture({ actions: {
+    goto: async (_x, _y, _z, context) => move(fixture.bot, context),
+  } });
+  fixture.bot.entity.position = new Vec3(.5, 64, .5);
+  fixture.bot.entities[192] = { id: 192, name: 'skeleton', position: new Vec3(18.5, 64, .5) };
+  fixture.bot.blockAt = position => ({ position, name: position.y < 64 ? 'stone' : 'air',
+    boundingBox: position.y < 64 ? 'block' : 'empty', shapes: position.y < 64 ? [[0, 0, 0, 1, 1, 1]] : [] });
+  return fixture;
+}
+
+test('verified outward goto retreats under the original warning and charges actual movement', async () => {
+  const fixture = retreatFixture(async (bot, context) => {
+    assert.ok(context.retreat_policy);
+    for (let step = 0; step < 8; step++) {
+      bot.entity.position.x--;
+      bot.emit('move');
+      bot.emit('physicsTick');
+      await context.operation_scope.wait(1);
+    }
+    return 'retreated';
+  });
+  const action = request(fixture.adapter, 'goto', { x: -8, y: 64, z: 0 }, 'safe-retreat');
+  action.remaining_budget = budget({ max_travel_distance: 11, max_blocks_changed: 0, max_damage_taken: 0 });
+  const receipt = await fixture.adapter.runtime.executeAction(action);
+  assert.equal(receipt.outcome, 'success', JSON.stringify(receipt.error));
+  assert.equal(receipt.budget_usage.max_travel_distance, 8);
+  assert.equal(receipt.budget_usage.max_blocks_changed, 0);
+  assert.equal(receipt.budget_usage.max_damage_taken, 0);
+  assert.equal(fixture.bot.listenerCount('entityMoved'), 0);
+  fixture.adapter.dispose();
+});
+
+test('retreat still stops on approach, excavation or a new enemy blocking its destination', async () => {
+  for (const mode of ['approach', 'micro-approach', 'dig', 'new-enemy']) {
+    let mutated = false;
+    const fixture = retreatFixture(async (bot, context) => {
+      if (mode === 'dig') await bot.dig(bot.blockAt(new Vec3(0, 63, 0)));
+      else if (mode === 'micro-approach') {
+        for (let step = 0; step < 20; step++) {
+          bot.entity.position.x += 0.01;
+          bot.emit('move');
+          await context.operation_scope.wait(1);
+        }
+      } else if (mode === 'approach') {
+        bot.entity.position.x++;
+        bot.emit('move');
+      } else {
+        bot.entities[193] = { id: 193, name: 'zombie', position: new Vec3(-6, 64, .5) };
+        bot.emit('entitySpawn', bot.entities[193]);
+      }
+      await context.operation_scope.wait(1);
+    });
+    fixture.bot.dig = async () => { mutated = true; };
+    const action = request(fixture.adapter, 'goto', { x: -8, y: 64, z: 0 }, `unsafe-retreat-${mode}`);
+    action.remaining_budget = budget({ max_damage_taken: 0 });
+    const receipt = await fixture.adapter.runtime.executeAction(action);
+    assert.equal(receipt.outcome, 'error', mode);
+    assert.equal(receipt.error.code, 'UNSAFE_AREA', mode);
+    assert.equal(mutated, false);
+    assert.equal(receipt.budget_usage.max_blocks_changed, 0);
+    fixture.adapter.dispose();
+  }
+});
+
 test('SDK creeper metadata changes stop collection after known covered dormancy', async () => {
   for (const [key, value] of [['swell_dir', 1], ['is_powered', true], ['is_ignited', true]]) {
     let passedProtectedCheck = false;

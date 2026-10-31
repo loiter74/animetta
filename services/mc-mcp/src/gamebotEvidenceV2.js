@@ -1,4 +1,5 @@
 import Vec3 from 'vec3';
+import { projectRetreatCandidates } from './survivalRetreat.js';
 
 
 const MAX_VISIBLE_BLOCKS = 512;
@@ -72,6 +73,7 @@ export function projectVisibleDiscovery(bot, {
   return {
     visible_blocks: visibleBlocks,
     visible_entities: visibleEntities,
+    survival_retreat: projectRetreatCandidates(bot, positions.slice(0, boundedBlockCount), Math.max(1, Number(blockRadius) || 16)),
   };
 }
 

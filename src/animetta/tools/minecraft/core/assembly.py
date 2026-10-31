@@ -481,6 +481,7 @@ async def assemble_control_plane(
         execution_policy = command.payload.get("execution_policy", {})
         policy = execution_policy if isinstance(execution_policy, dict) else {}
         return MissionStrategy(
+            manifest=current_manifest,
             builtin=BuiltinMissionStrategy(
                 manifest=current_manifest,
                 blueprint_origins=blueprint_origins,

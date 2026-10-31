@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from animetta.tools.gamebot.contracts.v2 import Observation
+from animetta.tools.gamebot.contracts.v2 import Observation, RuntimeManifest
+from animetta.tools.minecraft.survival.retreat import propose_retreat
 
 from ..goal_models import GoalSpec
-from .base import BoundedStrategy, Complete, StrategyDecision, StrategyFailure
+from .base import BoundedStrategy, Complete, ExecuteStep, StrategyDecision, StrategyFailure
 
 
 class MissionStrategy:
@@ -18,7 +19,11 @@ class MissionStrategy:
         live: BoundedStrategy | None,
         learn: BoundedStrategy | None,
         fallback: BoundedStrategy | None,
+        manifest: RuntimeManifest | None = None,
     ) -> None:
+        self._can_retreat = manifest is not None and any(
+            capability.name == "goto" for capability in manifest.capabilities
+        )
         self._strategies = {
             name: strategy
             for name, strategy in (
@@ -73,6 +78,14 @@ class MissionStrategy:
             )
             if isinstance(decision, Complete):
                 return Complete(output={**decision.output, "selected_strategy": selected})
+            if (
+                isinstance(decision, ExecuteStep)
+                and self._can_retreat
+                and state["goal"].intent != "combat"
+            ):
+                retreat = propose_retreat(state, observation)
+                if retreat is not None:
+                    return retreat
             if not isinstance(decision, StrategyFailure):
                 return decision
             if state["executed_steps"] > 0:
@@ -82,6 +95,13 @@ class MissionStrategy:
             state["strategy_state"] = None
 
     def accept_result(self, state: dict, result: object) -> dict:
+        target = state.get("pending_retreat")
+        if target is not None:
+            return {
+                **state,
+                "pending_retreat": None,
+                "retreat_destinations": (*state.get("retreat_destinations", ()), target),
+            }
         selected = state["selected_strategy"]
         if not isinstance(selected, str):
             raise ValueError("mission strategy has no selected delegate")

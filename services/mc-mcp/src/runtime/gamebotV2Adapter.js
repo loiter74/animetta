@@ -12,6 +12,7 @@ import { ownOxygenLevel } from './playerVitals.js';
 import { withActionEvidence } from './actionEvidence.js';
 import { projectJumpTravel } from './motionBudget.js';
 import { findHostileThreat } from '../survivalThreats.js';
+import { createRetreatPolicy } from '../survivalRetreat.js';
 import {
   BroadcastMotionPolicy,
   resolvePresentationConfig,
@@ -419,6 +420,9 @@ function guardBotAction(
     const onMove = () => {
       const position = bot.entity?.position;
       if (!position) return;
+      if (context.retreat_policy && !context.retreat_policy.permitsMove(previousPosition, position, true)) {
+        fail('UNSAFE_AREA', '避险移动开始靠近敌对生物，已停止当前动作。');
+      }
       travel += Math.hypot(position.x - previousPosition.x,
         position.y - previousPosition.y, position.z - previousPosition.z);
       previousPosition = { ...position };
@@ -427,7 +431,9 @@ function guardBotAction(
     const checkSurvivalThreat = () => {
       if (!actionBudget || context.capability === 'attack') return;
       const threat = findHostileThreat(bot);
-      if (threat) fail('UNSAFE_AREA', '附近敌对生物已进入预警范围，已停止危险动作。', { threat });
+      if (threat && !context.retreat_policy?.permitsThreat(threat)) {
+        fail('UNSAFE_AREA', '附近敌对生物已进入预警范围，已停止危险动作。', { threat });
+      }
     };
     const checkJumpBudget = (requested = false) => {
       if (!actionBudget || !bot.physics?.simulatePlayer || bot.entity?.onGround !== true
@@ -515,6 +521,11 @@ function guardBotAction(
         if (typeof original !== 'function') continue;
         const guarded = async function (...args) {
           context.signal?.throwIfAborted();
+          if (context.retreat_policy) {
+            fail('UNSAFE_AREA', '避险移动禁止挖掘或放置方块。');
+            context.signal?.throwIfAborted();
+            throw lifecycleError;
+          }
           const changed = readBlockChanges();
           if (changed + pendingBlockChanges >= actionBudget.max_blocks_changed) {
             fail('BUDGET_EXHAUSTED', '剩余方块预算不足以执行下一次挖掘或放置。', {
@@ -676,6 +687,7 @@ function runtimeCapabilities(bot, actions, abortActive, motionPolicy) {
             signal: operationSignal,
             operation_scope: scope,
             presentation: presentationFacade,
+            retreat_policy: name === 'goto' ? createRetreatPolicy(bot, parameters) : null,
           });
           const invoke = (_annotations, readBlockChanges) => runWithOperationScope(scope, () => guardBotAction(
             bot,
@@ -745,6 +757,7 @@ function observationState(bot, advancementAdapter) {
       fall_distance: snapshot.fall_distance,
       on_ground: snapshot.on_ground,
       velocity: snapshot.velocity,
+      ...(discovery.survival_retreat ? { survival_retreat: discovery.survival_retreat } : {}),
       ...(oxygen !== null ? { oxygen_level: oxygen } : {}),
     },
     biome,

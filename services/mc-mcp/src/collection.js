@@ -37,7 +37,7 @@ function isAnchoredLeafSupport(block) {
     || (Number(properties.distance) >= 1 && Number(properties.distance) <= 6);
 }
 
-export function configureDryNavigation(movements, bot, { allowSurfaceSwimming = false } = {}) {
+export function configureDryNavigation(movements, bot, { allowSurfaceSwimming = false, retreatPolicy = null } = {}) {
   // The SDK compares the supporting floor, one cell below the actual landing.
   movements.maxDropDown = 2;
   movements.allowParkour = false;
@@ -71,7 +71,8 @@ export function configureDryNavigation(movements, bot, { allowSurfaceSwimming = 
     const body = bot.blockAt(feet);
     const head = bot.blockAt(feet.offset(0, 1, 0));
     const support = bot.blockAt(feet.offset(0, -1, 0));
-    if (findHostileThreat(bot, feet.offset(0.5, 0, 0.5))) return Infinity;
+    if (findHostileThreat(bot, feet.offset(0.5, 0, 0.5))
+      && !retreatPolicy?.permitsMove(bot.entity.position, feet.offset(0.5, 0, 0.5))) return Infinity;
     if (support?.name?.endsWith('_leaves') && (canopyHeight === null
       || !isAnchoredLeafSupport(support))) return Infinity;
     if (isLavaBlock(body) || isLavaBlock(head) || isWaterBlock(head)) return Infinity;
@@ -80,6 +81,15 @@ export function configureDryNavigation(movements, bot, { allowSurfaceSwimming = 
     return 0;
   };
   movements.exclusionAreasStep.push(stepCost);
+  if (retreatPolicy) {
+    movements.canDig = false;
+    movements.allow1by1towers = false;
+    const center = node => new Vec3(Math.floor(node.x) + 0.5, node.y, Math.floor(node.z) + 0.5);
+    const getNeighbors = movements.getNeighbors.bind(movements);
+    movements.getNeighbors = node => getNeighbors(node).filter(move => (
+      retreatPolicy.permitsMove(center(node), center(move))
+    ));
+  }
   // Native downward moves do not apply exclusionStep to their landing block.
   const getLandingBlock = movements.getLandingBlock.bind(movements);
   movements.getLandingBlock = (node, direction) => {

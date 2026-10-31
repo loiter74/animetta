@@ -10,6 +10,12 @@ export const HOSTILE_NAMES = new Set([
 
 const RANGED_HOSTILES = new Set(['skeleton', 'stray', 'pillager', 'witch', 'blaze', 'ghast', 'shulker', 'guardian', 'evoker', 'drowned']);
 const PHYSICAL_ATTACKERS = new Set(['zombie', 'skeleton', 'stray', 'pillager', 'husk', 'drowned', 'zombie_villager']);
+
+export function hostileWarningRadius(entity) {
+  const name = String(entity?.name || entity?.type || '').replace(/^minecraft:/, '');
+  if (!HOSTILE_NAMES.has(name) && entity?.kind !== 'Hostile mobs') return null;
+  return RANGED_HOSTILES.has(name) ? 24 : 12;
+}
 // Only explicitly dormant, uncharged, unignited creepers may use the existing
 // complete cover proof. A state change or lost cover keeps the warning.
 const DORMANT_CREEPER_METADATA = [
@@ -133,7 +139,7 @@ export function findHostileThreat(bot, origin = bot.entity?.position, radius = n
     const position = entity.position;
     if (!position || !['x', 'y', 'z'].every(axis => Number.isFinite(position[axis]))) continue;
     const distance = Math.hypot(position.x - origin.x, position.y - origin.y, position.z - origin.z);
-    const warningRadius = radius ?? (RANGED_HOSTILES.has(name) ? 24 : 12);
+    const warningRadius = radius ?? hostileWarningRadius(entity);
     const mayProveCover = PHYSICAL_ATTACKERS.has(name)
       || (name === 'creeper' && hasDormantCreeperMetadata(bot, entity));
     if (distance <= warningRadius && (!nearest || distance < nearest.distance)

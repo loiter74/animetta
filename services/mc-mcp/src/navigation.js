@@ -88,6 +88,11 @@ export async function navigateTo(bot, destination, context = {}) {
   const originalTowers = movements?.allow1by1towers;
   if (extendedPlanning) bot.pathfinder.thinkTimeout = Math.max(15_000, originalThinkTimeout || 0);
   if (ascending && movements) movements.allow1by1towers = false;
+  if (context.retreat_policy) {
+    bot.pathfinder.setMovements(configureDryNavigation(new pathfinderPkg.Movements(bot), bot, {
+      retreatPolicy: context.retreat_policy,
+    }));
+  }
   const trace = createNavigationTrace(bot, Boolean(process.env.COLLECT_DEBUG));
   try {
     // A nearby height goal lets the native planner excavate a stair;
@@ -122,6 +127,7 @@ export async function navigateTo(bot, destination, context = {}) {
     throw error;
   } finally {
     trace?.close();
+    if (context.retreat_policy) bot.pathfinder.setMovements(movements);
     if (extendedPlanning) {
       if (originalThinkTimeout === undefined) delete bot.pathfinder.thinkTimeout;
       else bot.pathfinder.thinkTimeout = originalThinkTimeout;
