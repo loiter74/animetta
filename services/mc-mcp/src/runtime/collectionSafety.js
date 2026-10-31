@@ -31,19 +31,9 @@ export function createCollectionSafety({
     get retreatPolicy() { return pause?.retreating ? pause.policy : null; },
     get recoveryCount() { return recoveryCount; },
     requestPause(threat) {
-      if (!enabled || disposed || signal?.aborted) return false;
-      if (pause) return !pause.failure && !pause.retreating && pause.policy.permitsThreat(threat);
-      const candidates = discover().survival_retreat?.candidates || [];
-      const origin = bot.entity.position;
-      const ordered = [...candidates].sort((a, b) => (
-        origin.distanceTo(new Vec3(a.x + .5, a.y, a.z + .5))
-        - origin.distanceTo(new Vec3(b.x + .5, b.y, b.z + .5))
-      ));
-      for (const destination of ordered) {
-        const policy = available(destination) && createRetreatPolicy(bot, destination);
-        if (policy) { pause = { destination, policy, retreating: false }; break; }
-      }
-      if (!pause) return false;
+      if (!threat || !enabled || disposed || signal?.aborted) return false;
+      if (pause) return !pause.failure && !pause.retreating;
+      pause = { retreating: false };
       // Interrupt synchronously, before another native mutation can be admitted.
       try {
         pause.settlement = Promise.resolve(scope.interrupt({ includeContainers: false })).catch(() => false);
@@ -71,11 +61,27 @@ export function createCollectionSafety({
           throw error;
         }
         scope.checkpoint();
-        const policy = createRetreatPolicy(bot, current.destination);
-        if (disposed || !policy || !available(current.destination)) throw unsafe();
-        current.policy = policy;
+        if (disposed) throw unsafe();
+        // Braking can already put the player behind cover or outside warning
+        // range. Decide from this settled scene before requiring an escape.
+        if (!findHostileThreat(bot)) {
+          pause = null;
+          recoveryCount++;
+          scope.reportPhase('recovering', { reason_code: 'HOSTILE_CLEARED', count: recoveryCount });
+          return true;
+        }
+        const origin = bot.entity.position;
+        const ordered = [...(discover().survival_retreat?.candidates || [])].sort((a, b) => (
+          origin.distanceTo(new Vec3(a.x + .5, a.y, a.z + .5))
+          - origin.distanceTo(new Vec3(b.x + .5, b.y, b.z + .5))
+        ));
+        for (const destination of ordered) {
+          const policy = available(destination) && createRetreatPolicy(bot, destination);
+          if (policy) { current.destination = destination; current.policy = policy; break; }
+        }
+        if (!current.policy) throw unsafe();
         current.retreating = true;
-        await navigate(bot, current.destination, { operation_scope: scope, signal, retreat_policy: policy });
+        await navigate(bot, current.destination, { operation_scope: scope, signal, retreat_policy: current.policy });
         signal?.throwIfAborted();
         scope.checkpoint();
         if (findHostileThreat(bot)) throw unsafe();

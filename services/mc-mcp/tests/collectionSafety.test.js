@@ -49,30 +49,64 @@ test('one cooperative pause awaits settlement and shares recovery before resumin
   assert.equal(f.safety.requestPause(f.threat()), true);
   const one = f.safety.checkpoint(), two = f.safety.checkpoint();
   assert.equal(one, two);
-  assert.deepEqual(f.counts(), { discoveries: 1, interruptions: 1, routes: 0 });
+  assert.deepEqual(f.counts(), { discoveries: 0, interruptions: 1, routes: 0 });
   f.settle(true);
   assert.equal(await one, true);
   assert.equal(await two, true);
   assert.equal(f.safety.pending, false);
   assert.equal(f.safety.recoveryCount, 1);
+  assert.deepEqual(f.counts(), { discoveries: 1, interruptions: 1, routes: 1 });
   assert.equal(f.motionUsage.travel, 5);
   assert.equal(f.events[0][1].reason_code, 'HOSTILE_RETREAT');
   f.safety.dispose();
   assert.equal(f.safety.requestPause(f.threat()), false);
 });
 
-test('no known exit or an exact stopping-reserve boundary keeps the hard stop', () => {
+test('a threat cleared while settling resumes the same account without an escape', async () => {
+  for (const candidates of [[{ x: -5, y: 64, z: 0 }], []]) {
+    const f = fixture({ candidates });
+    f.safety.enable();
+    assert.equal(f.safety.requestPause(f.threat()), true);
+    f.motionUsage.travel = 3;
+    delete f.bot.entities[1];
+    f.settle(true);
+    assert.equal(await f.safety.checkpoint(), true);
+    assert.deepEqual(f.counts(), { discoveries: 0, interruptions: 1, routes: 0 });
+    assert.equal(f.motionUsage.travel, 3);
+    assert.equal(f.safety.pending, false);
+    assert.equal(f.safety.recoveryCount, 1);
+    assert.equal(f.events[0][1].reason_code, 'HOSTILE_CLEARED');
+  }
+});
+
+test('escape discovery uses the settled scene rather than a stale moving destination', async () => {
+  const candidates = [{ x: -5, y: 64, z: 0 }], f = fixture({ candidates });
+  f.safety.enable(); f.safety.requestPause(f.threat());
+  assert.equal(f.counts().discoveries, 0);
+  candidates[0] = { x: -8, y: 64, z: 0 };
+  f.settle(true);
+  assert.equal(await f.safety.checkpoint(), true);
+  assert.equal(f.bot.entity.position.x, -7.5);
+  assert.deepEqual(f.counts(), { discoveries: 1, interruptions: 1, routes: 1 });
+});
+
+test('no known exit or an exact stopping-reserve boundary keeps the hard stop', async () => {
   for (const options of [{ candidates: [] }, { remaining: 7 }]) {
     const f = fixture(options);
     f.safety.enable();
-    assert.equal(f.safety.requestPause(f.threat()), false);
-    assert.equal(f.counts().interruptions, 0);
+    assert.equal(f.safety.requestPause(f.threat()), true);
+    f.settle(true);
+    await assert.rejects(f.safety.checkpoint(), { code: 'UNSAFE_AREA' });
+    assert.equal(f.counts().interruptions, 1);
+    assert.equal(f.counts().routes, 0);
   }
 });
 
 test('failed settlement never starts escape and retains eventual-settlement evidence', async () => {
   const f = fixture();
-  f.safety.enable(); f.safety.requestPause(f.threat()); f.settle(false);
+  f.safety.enable(); f.safety.requestPause(f.threat());
+  delete f.bot.entities[1];
+  f.settle(false);
   await assert.rejects(f.safety.checkpoint(), error => {
     assert.equal(error.code, 'ACTION_SETTLEMENT_TIMEOUT');
     assert.equal(error.operationSettlement, f.eventual);
@@ -97,10 +131,11 @@ test('abort, a blocked exit or spent braking budget prevents escape', async () =
 test('the original deadline and terminal recovery failure cannot be retried', async () => {
   const f = fixture(), error = Object.assign(new Error('original deadline expired'), { code: 'ACTION_DEADLINE_EXPIRED' });
   f.safety.enable(); f.safety.requestPause(f.threat());
+  delete f.bot.entities[1];
   f.scope.checkpoint = () => { throw error; };
   f.settle(true);
   await assert.rejects(f.safety.checkpoint(), e => e === error);
   await assert.rejects(f.safety.checkpoint(), e => e === error);
   assert.equal(f.safety.requestPause(f.threat()), false);
-  assert.deepEqual(f.counts(), { discoveries: 1, interruptions: 1, routes: 0 });
+  assert.deepEqual(f.counts(), { discoveries: 0, interruptions: 1, routes: 0 });
 });
