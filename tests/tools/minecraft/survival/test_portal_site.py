@@ -221,3 +221,25 @@ def test_snow_cover_above_the_bottom_row_is_not_inferred_clear() -> None:
     inspection.blocks["2,65,0"] = "minecraft:snow"
     with pytest.raises(ValueError, match="no permanent"):
         select_nether_portal_site(observation, (inspection,))
+
+
+@pytest.mark.parametrize("cover", ["short_grass", "fern", "dead_bush"])
+def test_replaceable_ground_cover_does_not_require_a_precleared_world(cover: str) -> None:
+    observation, inspection = _survey()
+    inspection.blocks.update({f"{x},64,0": f"minecraft:{cover}" for x in range(5)})
+    site = select_nether_portal_site(observation, (inspection,))
+    assert site.home == (0, 64, 0)
+    assert site.origin == (1, 64, 0)
+    inspection.blocks["2,65,0"] = f"minecraft:{cover}"
+    with pytest.raises(ValueError, match="no permanent"):
+        select_nether_portal_site(observation, (inspection,))
+
+
+@pytest.mark.parametrize(
+    "cover", ["tall_grass", "large_fern", "sweet_berry_bush", "wither_rose", "cactus"]
+)
+def test_replaceable_ground_cover_does_not_admit_multicell_or_dangerous_plants(cover: str) -> None:
+    observation, inspection = _survey()
+    inspection.blocks["2,64,0"] = f"minecraft:{cover}"
+    with pytest.raises(ValueError, match="no permanent"):
+        select_nether_portal_site(observation, (inspection,))

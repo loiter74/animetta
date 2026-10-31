@@ -14,7 +14,7 @@ export async function placeBlockAt(bot, { blockName, targetPosition, facing, con
     const block = bot.blockAt(targetPosition);
     if (!block) throw failure('REGION_NOT_LOADED', '放置目标尚未加载。');
     if (block.name === blockName) return block;
-    if (!['air', 'water', 'lava', 'snow'].includes(block.name)) {
+    if (!['air', 'water', 'lava', 'snow', 'short_grass', 'fern', 'dead_bush'].includes(block.name)) {
       throw failure('TARGET_OCCUPIED', `放置目标被 ${block.name} 占用。`);
     }
     const required = placementChanges + Number(block.name === 'snow');

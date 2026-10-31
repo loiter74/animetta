@@ -50,7 +50,14 @@ _GROUND = frozenset(
 )
 _FALLING_GROUND = frozenset({"minecraft:sand", "minecraft:red_sand", "minecraft:gravel"})
 _AIR = frozenset({"minecraft:air", "minecraft:cave_air"})
-_FOOT_COVER = _AIR | {"minecraft:snow"}
+# Only known single-cell cover may occupy the standing/bottom placement row.
+# Snow is cleared explicitly; these non-solid plants are replaced by placement.
+_FOOT_COVER = _AIR | {
+    "minecraft:snow",
+    "minecraft:short_grass",
+    "minecraft:fern",
+    "minecraft:dead_bush",
+}
 
 
 def _supported_ground(blocks: dict[tuple[int, int, int], str], point: tuple[int, int, int]) -> bool:

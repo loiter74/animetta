@@ -226,6 +226,22 @@ test('snow with only a one-block reservation stops before movement or mutation',
   assert.deepEqual(f.calls, []);
 });
 
+test('single-cell replaceable ground cover uses one ordinary placement without extra excavation', async () => {
+  for (const name of ['short_grass', 'fern', 'dead_bush']) {
+    const f = snowPlacementFixture(name);
+    f.context.budget.max_blocks_changed = 1;
+    const result = await f.run();
+    assert.equal(result.output.placed, true, name);
+    assert.equal(result.budget_usage.max_blocks_changed, 1, name);
+    assert.deepEqual(f.calls, [['navigate'], ['equip', 10], ['place']], name);
+    assert.equal(result.explained_mutations.length, 1, name);
+    const empty = snowPlacementFixture(name);
+    empty.context.budget.max_blocks_changed = 0;
+    await assert.rejects(empty.run(), { code: 'BUDGET_EXHAUSTED' });
+    assert.deepEqual(empty.calls, [], name);
+  }
+});
+
 test('clear success followed by placement failure preserves the one actual change', async () => {
   const f = snowPlacementFixture();
   const failure = Object.assign(new Error('placement failed'), { code: 'ACTION_FAILED' });
@@ -242,7 +258,7 @@ test('an already-present block is idempotent without a phantom placement mutatio
 });
 
 test('snow clearance never admits other occupied or unknown target blocks', async () => {
-  for (const name of ['snow_block', 'powder_snow', 'stone', null]) {
+  for (const name of ['snow_block', 'powder_snow', 'stone', 'tall_grass', 'large_fern', 'sweet_berry_bush', 'wither_rose', 'cactus', null]) {
     const f = snowPlacementFixture(name);
     if (name === null) f.replaceTarget(null);
     await assert.rejects(f.run());
