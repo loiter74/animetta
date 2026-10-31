@@ -60,6 +60,21 @@ test('real player physics needs the entire footprint over the shaft before diggi
   assert.equal(fixture.bot.entity.onGround, true);
 });
 
+for (const code of ['COLLECTION_SAFETY_PAUSED', 'DIG_ABORT']) {
+  test(`shaft preparation propagates ${code} instead of selecting another excavation`, async t => {
+    const fixture = shaftPhysicsFixture(t, .5, .5);
+    const failure = Object.assign(new Error('cooperative interruption'), { code });
+    let digs = 0;
+    fixture.bot.dig = async () => { digs++; throw failure; };
+    await assert.rejects(createMineShaft(fixture).mineShaft(79, 0, {
+      collection_safety: { pending: code === 'DIG_ABORT' },
+    }), error => error === failure);
+    assert.equal(digs, 1);
+    assert.equal(fixture.routes, 0);
+    assert.equal(Math.floor(fixture.bot.entity.position.y), 80);
+  });
+}
+
 test('real supported player descends without unnecessary horizontal steering', async t => {
   const fixture = shaftPhysicsFixture(t, 0.7, 0.3);
   await createMineShaft(fixture).mineShaft(79);

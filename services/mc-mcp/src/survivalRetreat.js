@@ -1,5 +1,5 @@
 import Vec3 from 'vec3';
-import { hostileWarningRadius } from './survivalThreats.js';
+import { findHostileThreat, hostileThreatAt, hostileWarningRadius } from './survivalThreats.js';
 
 const POSITION_EPSILON = 0.02;
 const AIR = new Set(['air', 'cave_air', 'void_air']);
@@ -26,22 +26,21 @@ function clearStanding(bot, destination) {
       && shape.every((value, index) => value === (index < 3 ? 0 : 1)));
 }
 
-function safeDestination(bot, target, threats) {
-  return threats.every(({ entity, radius }) => distance(target, entity.position) > radius)
-    && clearStanding(bot, target);
+function safeDestination(bot, target) {
+  return clearStanding(bot, target) && !findHostileThreat(bot, target);
 }
 
 export function createRetreatPolicy(bot, destination) {
   const origin = bot.entity?.position;
   if (!origin || !['x', 'y', 'z'].every(axis => Number.isFinite(destination?.[axis]))) return null;
   const target = new Vec3(Math.floor(destination.x) + 0.5, Math.floor(destination.y), Math.floor(destination.z) + 0.5);
-  const threats = hostiles(bot);
-  if (!threats.some(({ entity, radius }) => distance(origin, entity.position) <= radius)
-    || !safeDestination(bot, target, threats)) return null;
+  if (!findHostileThreat(bot, origin) || !safeDestination(bot, target)) return null;
   const inwardDrift = new Map();
   return {
     permitsThreat(threat) {
-      return distance(target, threat.position) > threat.warning_radius;
+      if (distance(target, threat.position) > threat.warning_radius) return true;
+      const entity = Object.values(bot.entities || {}).find(e => String(e?.id) === threat.entity_id);
+      return Boolean(entity) && !hostileThreatAt(bot, entity, target, threat.warning_radius);
     },
     permitsMove(from, to, commit = false) {
       return hostiles(bot).every(({ entity, radius }) => {
@@ -49,6 +48,10 @@ export function createRetreatPolicy(bot, destination) {
         if (Math.min(before, after) > radius) return true;
         const key = entity.id ?? entity;
         const drift = Math.max(0, (commit ? inwardDrift.get(key) || 0 : 0) + before - after);
+        // Outward planning already satisfies the policy. Keep full cover proofs
+        // for inward candidates and committed motion, including its drift state.
+        if (!commit && drift <= POSITION_EPSILON) return true;
+        if (!hostileThreatAt(bot, entity, from, radius) && !hostileThreatAt(bot, entity, to, radius)) return true;
         if (commit) inwardDrift.set(key, drift);
         return drift <= POSITION_EPSILON;
       });
@@ -56,17 +59,16 @@ export function createRetreatPolicy(bot, destination) {
   };
 }
 
-// Reuse only the already bounded discovery cells. Unknown air, partial support,
-// fluids and destinations inside any warning radius never become candidates.
+// Reuse only the bounded discovery cells and the same verified cover proof.
+// Unknown air, partial support, fluids and exposed destinations remain excluded.
 export function projectRetreatCandidates(bot, observedPositions, maximumDistance = 16) {
   const origin = bot.entity?.position;
-  const threats = hostiles(bot);
-  if (!origin || !threats.some(({ entity, radius }) => distance(origin, entity.position) <= radius)) return null;
+  if (!origin || !findHostileThreat(bot, origin)) return null;
   const candidates = new Map();
   for (const p of observedPositions) {
     const target = new Vec3(p.x, p.y + 1, p.z).floored();
     const center = target.offset(0.5, 0, 0.5);
-    if (distance(origin, center) <= maximumDistance && safeDestination(bot, center, threats)) {
+    if (distance(origin, center) <= maximumDistance && safeDestination(bot, center)) {
       candidates.set(target.toString(), { x: target.x, y: target.y, z: target.z });
     }
   }

@@ -118,6 +118,76 @@ def test_retreat_rejects_unknown_evidence_and_preserves_two_block_stopping_reser
         assert propose_retreat(state, observed(invalid)) is None
 
 
+def test_known_failure_replans_from_fresh_evidence_without_advancing_the_workflow():
+    registry = WorkflowRegistry()
+    registry.register(iron_survival_workflow())
+    strategy = MissionStrategy(
+        manifest=manifest(),
+        live=None,
+        learn=None,
+        fallback=FallbackStrategy(registry=registry),
+    )
+    goal = TypeAdapter(GoalSpec).validate_python(
+        {
+            "intent": "acquire",
+            "target": "iron_ingot",
+            "quantity": 1,
+            "success_predicates": [
+                {"kind": "inventory_at_least", "item": "iron_ingot", "quantity": 1}
+            ],
+        }
+    )
+    state = strategy.prepare(goal)
+    state["budget_remaining"] = available()
+    before = observed([])
+    failed_collect = strategy.propose(state, before)
+    assert failed_collect.capability == "collect"
+    assert strategy.recover_failed_step(state, failed_collect, before, before) is None
+    assert "pending_retreat" not in state
+    recovered = strategy.recover_failed_step(state, failed_collect, before, observed())
+    assert recovered is not None
+    assert recovered["goal"] == goal
+    assert recovered["selected_strategy"] == state["selected_strategy"] == "fallback"
+    assert recovered["strategy_state"]["step_index"] == state["strategy_state"]["step_index"] == 0
+    assert recovered["executed_steps"] == 0
+    assert "pending_retreat" not in state
+    retreat = strategy.propose(recovered, observed())
+    assert retreat.capability == "goto"
+    resumed = strategy.accept_result(recovered, {"outcome": "success"})
+    assert strategy.propose(resumed, observed([])) == failed_collect
+
+
+def test_failed_retreat_is_not_replayed_or_counted_as_workflow_success():
+    registry = WorkflowRegistry()
+    registry.register(iron_survival_workflow())
+    strategy = MissionStrategy(
+        manifest=manifest(),
+        live=None,
+        learn=None,
+        fallback=FallbackStrategy(registry=registry),
+    )
+    goal = TypeAdapter(GoalSpec).validate_python(
+        {
+            "intent": "acquire",
+            "target": "iron_ingot",
+            "quantity": 1,
+            "success_predicates": [
+                {"kind": "inventory_at_least", "item": "iron_ingot", "quantity": 1}
+            ],
+        }
+    )
+    state = strategy.prepare(goal)
+    state["budget_remaining"] = available()
+    failed_retreat = strategy.propose(state, observed())
+    recovered = strategy.recover_failed_step(state, failed_retreat, observed(), observed())
+    assert recovered is not None
+    assert recovered["retreat_destinations"] == ((-8, 64, 0),)
+    assert state["pending_retreat"] == (-8, 64, 0)
+    assert recovered["strategy_state"]["step_index"] == 0
+    assert recovered["executed_steps"] == 0
+    assert strategy.propose(recovered, observed()).capability == "collect"
+
+
 def test_completed_mission_primitive_does_not_start_an_unnecessary_retreat():
     class Done:
         def prepare(self, goal):

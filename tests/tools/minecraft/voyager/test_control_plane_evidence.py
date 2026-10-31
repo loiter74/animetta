@@ -377,6 +377,143 @@ async def test_controller_only_resumes_partial_collection_with_strategy_progress
     assert len(verifier.received["receipts"]) == 2
 
 
+@pytest.mark.parametrize(
+    "mode",
+    [
+        "recover",
+        "strict",
+        "unknown",
+        "unreconciled",
+        "unstable",
+        "moving",
+        "declined",
+        "unhandled",
+        "exhausted",
+    ],
+)
+async def test_known_failure_recovery_preserves_account_deadline_and_receipt_chain(
+    mode: str,
+) -> None:
+    class RecoveringStrategy(CompleteStrategy):
+        recovery_calls = 0
+
+        def propose(self, state, observation):
+            if state.get("done"):
+                return super().propose(state, observation)
+            return ExecuteStep(
+                capability="goto" if state.get("recovered") else "collect",
+                parameters={"x": 0, "y": 64, "z": 0} if state.get("recovered") else {"count": 1},
+                maximum_cost=BudgetUsage(max_actions=1),
+            )
+
+        def recover_failed_step(self, state, failed_step, before, after):
+            self.recovery_calls += 1
+            assert failed_step.capability == "collect"
+            assert state["budget_remaining"].max_actions == (0 if mode == "exhausted" else 1)
+            return {**state, "recovered": True} if mode not in {"declined", "exhausted"} else None
+
+        def accept_result(self, state, result):
+            assert result["outcome"] == "success"
+            return {**state, "done": True}
+
+    class RecoveringExecutor(ExecutorStub):
+        def __init__(self):
+            self.calls = []
+
+        async def execute_step(self, **kwargs):
+            self.calls.append(kwargs)
+            first = len(self.calls) == 1
+            receipt = ActionReceipt.model_validate(MESSAGES["ActionReceipt"])
+            receipt = receipt.model_copy(
+                update={
+                    "outcome": ReceiptOutcome.ERROR if first else ReceiptOutcome.SUCCESS,
+                    **(
+                        {"reconciliation": type(receipt.reconciliation)("pending")}
+                        if mode == "unreconciled"
+                        else {}
+                    ),
+                    **(
+                        {"post_observation": type(receipt.post_observation)("unstable")}
+                        if mode == "unstable"
+                        else {}
+                    ),
+                }
+            )
+            after = kwargs["before"]
+            if mode == "moving":
+                after = after.model_copy(
+                    update={
+                        "environment": {
+                            **after.environment,
+                            "on_ground": False,
+                            "velocity": {"x": 0, "y": -0.1, "z": 0},
+                        }
+                    }
+                )
+            result = StepExecutionResult(
+                receipt=receipt,
+                after=after,
+                account=kwargs["account"].charge(BudgetUsage(max_actions=1)),
+            )
+            if first:
+                raise ExecutorError(
+                    ControlPlaneError(
+                        code="RUNTIME_DISCONNECTED" if mode == "unhandled" else "UNSAFE_AREA",
+                        message="known action stopped",
+                        phase="execution",
+                        outcome_known=mode != "unknown",
+                        world_may_have_changed=True,
+                        caller_may_resubmit=False,
+                        operator_action="inspect receipt",
+                    ),
+                    settled_result=result,
+                )
+            return result
+
+    executor, strategy, verifier = RecoveringExecutor(), RecoveringStrategy(), VerifierStub()
+    activity = ActivityRecorderStub()
+    controller = UnifiedVoyagerController(
+        runtime=RuntimeStub(),
+        repository=object(),
+        executor=executor,
+        strategy_factories={"mission": lambda _manifest, _command: strategy},
+        verifier=verifier,
+        evidence_collector=EvidenceCollectorStub(),
+        activity_recorder=activity,
+        make_id=lambda prefix: f"{prefix}-id",
+        now_ms=lambda: 10,
+    )
+    cmd = _command()
+    cmd = cmd.model_copy(
+        update={
+            "payload": {
+                **cmd.payload,
+                "execution_policy": {"stop_on_action_failure": mode == "strict"},
+            },
+            "effective_budget": {
+                **cmd.effective_budget,
+                "max_actions": 1 if mode == "exhausted" else 2,
+            },
+        }
+    )
+    if mode != "recover":
+        with pytest.raises(ExecutorError, match="known action stopped"):
+            await controller._execute_active(cmd)
+        assert len(executor.calls) == 1
+        assert strategy.recovery_calls == int(mode in {"declined", "exhausted"})
+        return
+    await controller._execute_active(cmd)
+    assert [call["step"].capability for call in executor.calls] == ["collect", "goto"]
+    assert [call["ordinal"] for call in executor.calls] == [1, 2]
+    assert executor.calls[1]["account"].used.max_actions == 1
+    assert all(call["command"] is cmd for call in executor.calls)
+    assert (
+        executor.calls[1]["previous_receipt_hash"] == verifier.received["receipts"][0].content_hash
+    )
+    assert len(verifier.received["receipts"]) == 2
+    assert activity.phases == ["observing", "recovering", "checking"]
+
+
 async def test_goal_verification_failure_retains_auditable_evidence() -> None:
     class FailingVerifier:
         def verify(self, **_kwargs):

@@ -620,7 +620,7 @@ function retreatFixture(move) {
 
 function cooperativeCollectionFixture(mode = 'success') {
   const bag = [], removed = new Set(), attempts = [];
-  let context, nativeDigs = 0, routes = 0, rejectDig, rejectNavigation, blockedMutation, waitingWarning = false;
+  let context, nativeDigs = 0, routes = 0, preparations = 0, rejectDig, rejectNavigation, blockedMutation, waitingWarning = false;
   const fixture = adapterFixture({ actions: {
     collectWithEvidence: async (_block, _count, scoped) => {
       context = scoped;
@@ -642,7 +642,7 @@ function cooperativeCollectionFixture(mode = 'success') {
   bot.blockAt = p => world.getBlock(p);
   bot.findBlock = ({ matching }) => ores.map(p => bot.blockAt(p))
     .filter(matching).sort((a, b) => a.position.distanceTo(bot.entity.position) - b.position.distanceTo(bot.entity.position))[0];
-  bot.findBlocks = () => mode === 'no-exit' ? [] : [new Vec3(-5, 63, 0)];
+  bot.findBlocks = () => mode.includes('no-exit') ? [] : [new Vec3(-5, 63, 0)];
   bot.pathfinder.movements = new pathfinderPkg.Movements(bot, registry);
   bot.pathfinder.setMovements = movements => { bot.pathfinder.movements = movements; };
   bot.pathfinder.setGoal = goal => {
@@ -704,7 +704,10 @@ function cooperativeCollectionFixture(mode = 'success') {
   const start = source.indexOf('async function _collectInner('), end = source.indexOf('\nfunction craftError(', start);
   const collect = runInNewContext(`(${source.slice(start, end)})`, {
     ...collection, ...resources, bot, Vec3, ITEM_TO_BLOCK: {}, BLOCK_DROP_ITEM: { iron_ore: 'raw_iron' },
-    shouldPrepareUndergroundCollection: () => null, _stabilizePosition: async () => {}, _collectDebug() {},
+    shouldPrepareUndergroundCollection: () => mode.startsWith('preparation-')
+      ? { targetY: 50, minimumCobblestone: 0 } : null,
+    mineShaftMod: { async mineShaft() { preparations++; await bot.dig(bot.blockAt(ores[0])); } },
+    _stabilizePosition: async () => {}, _collectDebug() {},
     presentBlockTarget: async ({ ordinal }) => { attempts.push(ordinal); return null; },
     _equipToolForBlock: async () => {}, operationWait: async () => {
       if (mode !== 'waiting-warning') return;
@@ -719,7 +722,7 @@ function cooperativeCollectionFixture(mode = 'success') {
     locateResource: async () => { throw Object.assign(new Error('no other target'), { code: 'RESOURCE_NOT_FOUND' }); },
     _explore_for_block: async () => {},
   });
-  return { ...fixture, bag, removed, attempts,
+  return { ...fixture, bag, removed, attempts, get preparations() { return preparations; },
     stats: async () => ({ nativeDigs, routes, blockedMutation: await blockedMutation,
       recoveries: context.collection_safety.recoveryCount, guardTravel: context.motion_usage.travel }),
   };
@@ -742,6 +745,35 @@ test('real collection pauses a native dig, escapes once and harvests another vei
   assert.equal(receipt.explained_mutations.filter(m => m.subject === 'block:minecraft:overworld:-9:64:0' && m.delta === -1).length, 1,
     'nested evidence contains exactly one actual ore mutation');
   for (const event of ['move', 'health', 'physicsTick', 'entityMoved', 'entitySpawn']) assert.equal(f.bot.listenerCount(event), 0);
+  f.adapter.dispose();
+});
+
+test('collection preparation escapes cooperatively without restarting the shaft or its action account', async () => {
+  const f = cooperativeCollectionFixture('preparation-warning');
+  const action = request(f.adapter, 'collect', { block_type: 'iron_ore', count: 1 }, 'preparation-warning');
+  action.remaining_budget = budget({ max_blocks_changed: 1, max_damage_taken: 0, max_travel_distance: 12 });
+  const receipt = await f.adapter.runtime.executeAction(action);
+  assert.equal(receipt.outcome, 'success', JSON.stringify(receipt.error));
+  assert.equal(f.preparations, 1);
+  assert.deepEqual(await f.stats(), { nativeDigs: 2, routes: 1, blockedMutation: 'COLLECTION_SAFETY_PAUSED', recoveries: 1, guardTravel: 5 });
+  assert.deepEqual(f.attempts, [0]);
+  assert.equal(receipt.budget_usage.max_actions, 1);
+  assert.equal(receipt.budget_usage.max_blocks_changed, 1);
+  assert.equal(receipt.budget_usage.max_travel_distance, 5);
+  assert.equal(f.bag[0].count, 1);
+  f.adapter.dispose();
+});
+
+test('collection preparation still stops when no verified escape is available', async () => {
+  const f = cooperativeCollectionFixture('preparation-no-exit');
+  const action = request(f.adapter, 'collect', { block_type: 'iron_ore', count: 1 }, 'preparation-no-exit');
+  action.remaining_budget = budget({ max_blocks_changed: 1, max_damage_taken: 0, max_travel_distance: 12 });
+  const receipt = await f.adapter.runtime.executeAction(action);
+  assert.equal(receipt.outcome, 'error');
+  assert.equal(receipt.error.code, 'UNSAFE_AREA');
+  assert.equal(f.preparations, 1);
+  assert.equal((await f.stats()).routes, 0);
+  assert.equal(f.bag.length, 0);
   f.adapter.dispose();
 });
 

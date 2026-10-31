@@ -328,22 +328,44 @@ class UnifiedVoyagerController:
                     account = result.account
                     receipts.append(result.receipt)
                     previous_hash = result.receipt.content_hash
-                    recover = getattr(strategy, "accept_partial_result", None)
                     recovered_state = None
                     if (
                         not stop_on_action_failure
-                        and exc.error.code in {"PARTIAL_COLLECT", "BUDGET_EXHAUSTED"}
                         and exc.error.outcome_known
-                        and decision.capability == "collect"
                         and result.receipt.outcome.value == "error"
                         and result.receipt.reconciliation.value == "accepted"
                         and result.receipt.post_observation.value == "stable"
                         and CommandExecutor._observation_motion_settled(result.after)
-                        and callable(recover)
                     ):
-                        recovered_state = recover(state, observation, result.after)
+                        recover = getattr(strategy, "accept_partial_result", None)
+                        if (
+                            exc.error.code in {"PARTIAL_COLLECT", "BUDGET_EXHAUSTED"}
+                            and decision.capability == "collect"
+                            and callable(recover)
+                        ):
+                            recovered_state = recover(state, observation, result.after)
+                        elif exc.error.code in {
+                            "UNSAFE_AREA",
+                            "NAVIGATION_TARGET_NOT_REACHED",
+                            "RESOURCE_NOT_FOUND",
+                            "SEARCH_TIMEOUT",
+                        }:
+                            recover = getattr(strategy, "recover_failed_step", None)
+                            if callable(recover):
+                                recovered_state = recover(
+                                    {**state, "budget_remaining": account.remaining},
+                                    decision,
+                                    observation,
+                                    result.after,
+                                )
                     if recovered_state is None:
                         raise
+                    if self._activity_recorder is not None:
+                        await self._activity_recorder.record_command(
+                            command,
+                            source_key=f"{command.command_id}:{result.receipt.receipt_id}:recovering",
+                            phase="recovering",
+                        )
                     state = recovered_state
                     observation = result.after
                     continue

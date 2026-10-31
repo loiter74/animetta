@@ -192,6 +192,7 @@ export function createMineShaft({
       const actual = bot.entity.position.floored();
       return actual.x === target.x && actual.y === target.y && actual.z === target.z;
     } catch (error) {
+      if (error?.code === 'COLLECTION_SAFETY_PAUSED') throw error;
       assertDryState();
       if (error.operationSettlement || error.current_position_unsafe) throw error;
       return false;
@@ -302,6 +303,7 @@ export function createMineShaft({
     try {
       await withDigTimeout(block, 8000);
     } catch (err) {
+      if (err?.code === 'COLLECTION_SAFETY_PAUSED') throw err;
       const refreshed = bot.blockAt(block.position);
       if (isClear(refreshed)) return true;
       if (String(err?.message || '').includes('Digging aborted')) {
@@ -353,6 +355,7 @@ export function createMineShaft({
         await wait(150);
         return isSolid(bot.blockAt(targetPos));
       } catch (err) {
+        if (err?.code === 'COLLECTION_SAFETY_PAUSED') throw err;
         debug(`seal failed at ${targetPos.x},${targetPos.y},${targetPos.z}: ${err?.message || err}`);
       }
     }
@@ -642,6 +645,7 @@ export function createMineShaft({
             }
           }
         } catch (e) {
+          if (context.collection_safety?.pending || e?.code === 'COLLECTION_SAFETY_PAUSED') throw e;
           if (e.current_position_unsafe || activeOperationScope()?.signal?.aborted) throw e;
           if (getSurvivalThreat()) {
             await waitForSurvivalThreatToClear();

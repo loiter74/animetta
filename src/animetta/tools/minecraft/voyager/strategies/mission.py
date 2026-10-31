@@ -137,3 +137,35 @@ class MissionStrategy:
             "strategy_state": recovered,
             "executed_steps": state["executed_steps"] + 1,
         }
+
+    def recover_failed_step(
+        self,
+        state: dict,
+        failed_step: ExecuteStep,
+        before: Observation,
+        after: Observation,
+    ) -> dict | None:
+        """Re-evaluate the same goal after a known settled failure, without replay."""
+        del before
+        selected = state.get("selected_strategy")
+        delegated = state.get("strategy_state")
+        if not isinstance(selected, str) or not isinstance(delegated, dict):
+            return None
+        candidate = {**state, "strategy_state": {**delegated}}
+        target = candidate.pop("pending_retreat", None)
+        if target is not None:
+            candidate["retreat_destinations"] = (
+                *candidate.get("retreat_destinations", ()),
+                target,
+            )
+        decision = self.propose(candidate, after)
+        if candidate.get("selected_strategy") != selected:
+            return None
+        if isinstance(decision, Complete):
+            return candidate
+        if isinstance(decision, ExecuteStep) and (
+            decision.capability != failed_step.capability
+            or decision.parameters != failed_step.parameters
+        ):
+            return candidate
+        return None

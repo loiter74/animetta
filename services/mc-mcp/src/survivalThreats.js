@@ -129,24 +129,26 @@ function hasSolidCover(bot, origin, entity) {
 // Retain the resource locator's melee warning and R17's earlier ranged warning.
 // Only a complete known solid column or separating layer can hide physical
 // attackers, plus creepers explicitly confirmed safe by their metadata.
+export function hostileThreatAt(bot, entity, origin, radius = null) {
+  if (!origin || !entity || entity === bot.entity) return null;
+  const name = String(entity.name || entity.type || '').replace(/^minecraft:/, '');
+  if (!HOSTILE_NAMES.has(name) && entity.kind !== 'Hostile mobs') return null;
+  const position = entity.position;
+  if (!position || !['x', 'y', 'z'].every(axis => Number.isFinite(position[axis]))) return null;
+  const distance = Math.hypot(position.x - origin.x, position.y - origin.y, position.z - origin.z);
+  const warningRadius = radius ?? hostileWarningRadius(entity);
+  const mayProveCover = PHYSICAL_ATTACKERS.has(name)
+    || (name === 'creeper' && hasDormantCreeperMetadata(bot, entity));
+  if (!(distance <= warningRadius) || (mayProveCover && hasSolidCover(bot, origin, entity))) return null;
+  return { entity_id: String(entity.id), entity_type: name, distance,
+    position: { x: position.x, y: position.y, z: position.z }, warning_radius: warningRadius };
+}
+
 export function findHostileThreat(bot, origin = bot.entity?.position, radius = null) {
-  if (!origin) return null;
   let nearest = null;
   for (const entity of Object.values(bot.entities || {})) {
-    if (!entity || entity === bot.entity) continue;
-    const name = String(entity.name || entity.type || '').replace(/^minecraft:/, '');
-    if (!HOSTILE_NAMES.has(name) && entity.kind !== 'Hostile mobs') continue;
-    const position = entity.position;
-    if (!position || !['x', 'y', 'z'].every(axis => Number.isFinite(position[axis]))) continue;
-    const distance = Math.hypot(position.x - origin.x, position.y - origin.y, position.z - origin.z);
-    const warningRadius = radius ?? hostileWarningRadius(entity);
-    const mayProveCover = PHYSICAL_ATTACKERS.has(name)
-      || (name === 'creeper' && hasDormantCreeperMetadata(bot, entity));
-    if (distance <= warningRadius && (!nearest || distance < nearest.distance)
-      && (!mayProveCover || !hasSolidCover(bot, origin, entity))) {
-      nearest = { entity_id: String(entity.id), entity_type: name, distance,
-        position: { x: position.x, y: position.y, z: position.z }, warning_radius: warningRadius };
-    }
+    const threat = hostileThreatAt(bot, entity, origin, radius);
+    if (threat && (!nearest || threat.distance < nearest.distance)) nearest = threat;
   }
   return nearest;
 }

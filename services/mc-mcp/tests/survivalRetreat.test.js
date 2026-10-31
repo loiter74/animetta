@@ -67,6 +67,20 @@ test('installed SDK finds a walking retreat around a gap without consuming scaff
   }
 });
 
+test('ordinary outward planning needs no repeated world or cover queries', () => {
+  const { bot } = fixture();
+  const policy = createRetreatPolicy(bot, new Vec3(-5, 64, 0));
+  let queries = 0;
+  const getBlock = bot.world.getBlock.bind(bot.world);
+  bot.world.getBlock = p => { queries++; return getBlock(p); };
+  for (let i = 0; i < 100; i++) {
+    assert.equal(policy.permitsMove(bot.entity.position, bot.entity.position.offset(-1, 0, 0)), true);
+  }
+  assert.equal(queries, 0);
+  assert.equal(policy.permitsMove(bot.entity.position, bot.entity.position.offset(1, 0, 0)), false);
+  assert.ok(queries > 0, 'inward planning still needs the complete-cover proof');
+});
+
 test('installed SDK plans a dry, non-excavating retreat outside the unchanged warning radius', () => {
   const { bot } = fixture(), destination = new Vec3(-5, 64, 0);
   const candidates = projectRetreatCandidates(bot, [destination.offset(0, -1, 0)]);
@@ -95,6 +109,29 @@ test('retreat rejects an approaching step, a newly blocked exit and destinations
   assert.equal(policy.permitsThreat(intruder), false);
   bot.entities[193] = { id: 193, name: 'zombie', position: new Vec3(-10, 64, 0) };
   assert.equal(policy.permitsMove(bot.entity.position, bot.entity.position.offset(-1, 0, 0)), false);
+});
+
+test('a known complete shelter can be a retreat destination inside the unchanged warning radius', () => {
+  const { bot, overrides } = fixture(), destination = new Vec3(-2, 64, 0);
+  for (let y = 64; y <= 66; y++) for (let z = -2; z <= 2; z++) {
+    overrides.set(new Vec3(-1, y, z).toString(), 'stone');
+  }
+  const policy = createRetreatPolicy(bot, destination);
+  assert.ok(policy);
+  const threat = { entity_id: '192', position: bot.entities[192].position, warning_radius: 24 };
+  assert.equal(policy.permitsThreat(threat), true);
+  assert.deepEqual(projectRetreatCandidates(bot, [destination.offset(0, -1, 0)]).candidates,
+    [{ x: -2, y: 64, z: 0 }]);
+  assert.equal(policy.permitsMove(new Vec3(-3.5, 64, .5), new Vec3(-2.5, 64, .5)), true);
+  assert.equal(policy.permitsMove(bot.entity.position, bot.entity.position.offset(1, 0, 0)), false);
+  for (const gap of ['air', 'stone_slab', null]) {
+    overrides.set(new Vec3(-1, 65, 0).toString(), gap);
+    assert.equal(policy.permitsThreat(threat), false, String(gap));
+    assert.deepEqual(projectRetreatCandidates(bot, [destination.offset(0, -1, 0)]).candidates, []);
+  }
+  overrides.set(new Vec3(-1, 65, 0).toString(), 'stone');
+  bot.entities[192].name = 'witch';
+  assert.equal(createRetreatPolicy(bot, destination), null, 'unsupported cover immunity remains forbidden');
 });
 
 test('only supplied discovery cells with known air and full support become retreat destinations', () => {

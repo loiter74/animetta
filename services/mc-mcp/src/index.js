@@ -756,6 +756,9 @@ async function _collectInner(block_type, count, mcData, context = {}) {
   }
   let discoveredTarget = workTargets?.map(position => bot.blockAt(position)).find(matchesAvailableTarget)
     ?? bot.findBlock({ matching: matchesAvailableTarget, maxDistance: 32 });
+  context.collection_safety?.enable();
+  const safetyPause = error => context.collection_safety?.pending
+    || error?.code === 'COLLECTION_SAFETY_PAUSED';
   const preparation = shouldPrepareUndergroundCollection(
     resolvedBlockType,
     count,
@@ -764,11 +767,19 @@ async function _collectInner(block_type, count, mcData, context = {}) {
     discoveredTarget && collectionDigSafety(bot, discoveredTarget).safe ? discoveredTarget.position.y : null,
   );
   if (preparation) {
-    await mineShaftMod.mineShaft(
-      preparation.targetY,
-      preparation.minimumCobblestone,
-      context,
-    );
+    try {
+      await mineShaftMod.mineShaft(
+        preparation.targetY,
+        preparation.minimumCobblestone,
+        context,
+      );
+    } catch (error) {
+      context.signal?.throwIfAborted();
+      if (!safetyPause(error)) throw error;
+      await context.collection_safety.checkpoint();
+      // Do not restart preparation or reuse its old target after a retreat.
+      discoveredTarget = null;
+    }
     collected = Math.min(
       Math.max(0, _inventoryCount(dropItem) - startingCount),
       count,
@@ -777,9 +788,6 @@ async function _collectInner(block_type, count, mcData, context = {}) {
       return `Collected ${collected} ${block_type}`;
     }
   }
-  context.collection_safety?.enable();
-  const safetyPause = error => context.collection_safety?.pending
-    || error?.code === 'COLLECTION_SAFETY_PAUSED';
   let attempts = 0;
   const maxAttempts = Math.max(count * 3, count + 3);
   const searchFailures = [];
