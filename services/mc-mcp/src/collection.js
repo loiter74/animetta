@@ -570,8 +570,10 @@ export function obsidianWorkMinimumY(bot, targets) {
   return surfaces.length ? Math.max(...surfaces.map(position => position.y)) : currentY;
 }
 
-export function collectionDigSafety(bot, block) {
-  const threat = block?.position && findHostileThreat(bot, block.position);
+export function collectionDigSafety(bot, block, { standingPosition } = {}) {
+  const origin = standingPosition && ['x', 'y', 'z'].every(axis => Number.isFinite(standingPosition[axis]))
+    ? standingPosition : block?.position;
+  const threat = origin && findHostileThreat(bot, origin);
   if (threat) return { safe: false, reason_code: 'HOSTILE_THREAT', threat };
   if (block?.name === 'obsidian') return obsidianDigSafety(bot, block);
   if (!block?.position || typeof bot.blockAt !== 'function') {

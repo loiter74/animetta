@@ -5,6 +5,7 @@ import minecraftData from 'minecraft-data';
 import prismarineBlock from 'prismarine-block';
 import { Physics, PlayerState } from 'prismarine-physics';
 import { createMineShaft } from '../src/mine_shaft.js';
+import { findHostileThreat } from '../src/survivalThreats.js';
 
 function shaftPhysicsFixture(t, x = 0.95, z = 0.95) {
   const registry = minecraftData('1.21.1');
@@ -803,6 +804,68 @@ test('mineShaft relocates onto a same-level supported ledge before descending', 
 
   assert.match(result, /Shaft mined 52 -> y=51/);
   assert.equal(movedToLedge, true);
+});
+
+function coveredShaftLedgeFixture(safeWest = true) {
+  const registry = minecraftData('1.21.1');
+  const Block = prismarineBlock(registry);
+  const cells = new Map(), digs = [];
+  const key = p => `${Math.floor(p.x)},${Math.floor(p.y)},${Math.floor(p.z)}`;
+  const stone = (x, y, z) => cells.set(`${x},${y},${z}`, 'stone');
+  stone(0, 61, 0); // A cap over a cavity too deep for the one-block descent.
+  for (const y of [61, 62, 63]) stone(1, y, 0);
+  if (safeWest) for (const y of [60, 61, 62, 63]) stone(-1, y, 0);
+  const position = new Vec3(.5, 62, .5);
+  const bot = {
+    registry, health: 20, food: 20,
+    entity: { position, onGround: true, yaw: 0, height: 1.8, width: .6 },
+    entities: { 785: { id: 785, name: 'zombie', position: new Vec3(6.5, 62, .5),
+      height: 1.8, width: .6 } },
+    // Full separating layers use real SDK block shapes. A missing layer must
+    // not gain a cover proof from an invented ray hit.
+    world: { raycast: () => null },
+    inventory: { items: () => [{ name: 'stone_pickaxe', count: 1 }] },
+    async equip() {}, async lookAt() {}, setControlState() {},
+    blockAt(p) {
+      const block = Block.fromStateId(registry.blocksByName[cells.get(key(p)) || 'air'].defaultState);
+      block.position = p.floored();
+      return block;
+    },
+    async dig(block) {
+      cells.set(key(block.position), 'air'); digs.push(block.position.clone());
+      const threat = findHostileThreat(bot);
+      if (threat) throw Object.assign(new Error('excavation exposed the known zombie'), {
+        code: 'COLLECTION_SAFETY_PAUSED', threat,
+      });
+    },
+    pathfinder: {
+      async goto(goal) { position.x = goal.x + .5; position.y = goal.y; position.z = goal.z + .5; },
+      stop() {},
+    },
+  };
+  return { bot, digs, wait: async () => {
+    if (Math.floor(position.x) === -1 && position.y === 62
+      && bot.blockAt(position.offset(0, -1, 0)).name === 'air') position.y = 61;
+  } };
+}
+
+test('shaft chooses a protected ledge before excavating a wall toward a known hostile', async () => {
+  const fixture = coveredShaftLedgeFixture();
+  assert.equal(findHostileThreat(fixture.bot), null, 'the original complete wall provides cover');
+  const result = await createMineShaft(fixture).mineShaft(61);
+  assert.match(result, /y=61/);
+  assert.equal(Math.floor(fixture.bot.entity.position.x), -1);
+  assert.equal(fixture.digs.length, 3);
+  assert.ok(fixture.digs.every(p => p.x === -1), 'the east cover must remain intact');
+  assert.equal(findHostileThreat(fixture.bot), null);
+});
+
+test('shaft keeps its cover intact when every available opening would expose a hostile', async () => {
+  const fixture = coveredShaftLedgeFixture(false);
+  await assert.rejects(createMineShaft(fixture).mineShaft(61), error => error.code === 'MINE_SHAFT_STUCK');
+  assert.equal(fixture.digs.length, 0, 'do not harvest the dangerous wall as emergency support');
+  assert.equal(findHostileThreat(fixture.bot), null);
+  assert.equal(fixture.bot.entity.position.y, 62);
 });
 
 test('mineShaft seals side openings while descending a vertical shaft', async () => {

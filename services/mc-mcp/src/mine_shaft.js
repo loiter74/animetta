@@ -3,6 +3,7 @@ import pathfinderPkg from 'mineflayer-pathfinder';
 import { collectionDigSafety, configureDryNavigation } from './collection.js';
 import { activeOperationScope, operationWait } from './runtime/operationScope.js';
 import { ownOxygenLevel } from './runtime/playerVitals.js';
+import { findHostileThreat } from './survivalThreats.js';
 
 // mine_shaft.js — 系统下矿（垂直挖矿井，从 index.js 提取，中度重构）。
 // 依赖注入：bot / disableAuto / enableAuto。
@@ -250,6 +251,29 @@ export function createMineShaft({
     return dirs.sort((a, b) => a.score - b.score);
   }
 
+  function canExcavateTo(positions, destination = null) {
+    if (!Object.keys(bot.entities || {}).length) return true;
+    const key = p => `${Math.floor(p.x)},${Math.floor(p.y)},${Math.floor(p.z)}`;
+    const removed = new Set(positions.map(key));
+    const preview = Object.create(bot);
+    const world = Object.create(bot.world || null);
+    if (typeof bot.world?.raycast === 'function') {
+      Object.defineProperty(world, 'raycast', { value: (...args) => {
+        const hit = bot.world.raycast(...args);
+        // A ray hit on a block about to be removed cannot prove cover. Do not
+        // invent a second hit behind it when the remaining world is unknown.
+        return hit?.position && removed.has(key(hit.position)) ? null : hit;
+      } });
+    }
+    Object.defineProperties(preview, {
+      blockAt: { value: p => removed.has(key(p))
+        ? { name: 'air', boundingBox: 'empty', shapes: [], position: p } : bot.blockAt(p) },
+      world: { value: world },
+    });
+    return !findHostileThreat(preview, bot.entity.position)
+      && (!destination || !findHostileThreat(preview, destination));
+  }
+
   function needsIronPickaxe(blockName = '') {
     return blockName.includes('diamond_ore')
       || blockName.includes('deepslate_diamond_ore')
@@ -274,7 +298,8 @@ export function createMineShaft({
     if (isFluidHazard(block)) throw fluidHazard(block);
     if (isClear(block)) return false;
     if (!isSolid(block)) return false;
-    const safety = collectionDigSafety(bot, block);
+    if (!canExcavateTo([block.position])) throw fluidHazard({ name: 'HOSTILE_THREAT' });
+    const safety = collectionDigSafety(bot, block, { standingPosition: bot.entity.position });
     if (!safety.safe) throw fluidHazard({ name: safety.block || safety.reason_code });
     const tool = await withActionTimeout(
       () => equipBestPickaxe(block.name),
@@ -388,6 +413,7 @@ export function createMineShaft({
       || block.name === 'grass_block'
     );
     for (const dir of candidateDirections()) {
+      if (!canExcavateTo([base.offset(dir.x, 0, dir.z), base.offset(dir.x, 1, dir.z)])) continue;
       for (const yOffset of [0, 1]) {
         const block = bot.blockAt(base.offset(dir.x, yOffset, dir.z));
         if (!harvestable(block)) continue;
@@ -414,6 +440,7 @@ export function createMineShaft({
       const headBlock = bot.blockAt(headPos);
       const feetBlock = bot.blockAt(feetPos);
       if (isFluidHazard(headBlock) || isFluidHazard(feetBlock)) continue;
+      if (!canExcavateTo([headPos, feetPos], feetPos.offset(.5, 0, .5))) continue;
       try {
         await digIfNeeded(headBlock);
         await digIfNeeded(feetBlock);
@@ -453,6 +480,7 @@ export function createMineShaft({
       const feetBlock = bot.blockAt(feetPos);
       const headBlock = bot.blockAt(headPos);
       if (isFluidHazard(feetBlock) || isFluidHazard(headBlock)) continue;
+      if (!canExcavateTo([headPos, feetPos], feetPos.offset(.5, 0, .5))) continue;
       try {
         await digIfNeeded(headBlock);
         await digIfNeeded(feetBlock);
@@ -513,6 +541,7 @@ export function createMineShaft({
       debug(`brace result safe=${hasSafeLandingBelow(base, digDepth + 1)}`);
       if (!hasSafeLandingBelow(base, digDepth + 1)) return false;
     }
+    if (!canExcavateTo([below.position], below.position.offset(.5, 0, .5))) return false;
     await digIfNeeded(below);
     if (shouldStop()) return true;
     stopMovement();
