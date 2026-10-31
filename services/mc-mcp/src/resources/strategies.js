@@ -171,6 +171,14 @@ function _withinBudget(ctx) {
   return Date.now() <= ctx.deadline && ctx.attempts < ctx.def.attemptBudget;
 }
 
+function advancesSearchFrontier(bot, ctx, point) {
+  const current = getBotPosition(bot);
+  if (!current) return false;
+  const origin = ctx.searchOrigin ??= current;
+  return (current.x - origin.x) * (point.x - current.x)
+    + (current.z - origin.z) * (point.z - current.z) >= 0;
+}
+
 // 受限移动（pathfinder），自带超时；失败静默（策略继续扫描或返回 null）。
 async function _tryMove(bot, x, z, deadline) {
   if (!bot || !bot.pathfinder || !bot.pathfinder.goto) return;
@@ -251,7 +259,9 @@ async function surfaceSweep(bot, ctx) {
       const current = getBotPosition(bot) || pos;
       const distance = point => (point.x - current.x) ** 2 + (point.z - current.z) ** 2;
       points.sort((a, b) => distance(a) - distance(b));
-      const point = points.shift();
+      const next = points.findIndex(point => advancesSearchFrontier(bot, ctx, point));
+      if (next < 0) return null;
+      const [point] = points.splice(next, 1);
       await _tryMove(bot, point.x, point.z, ctx.deadline);
       found = findNearestMatchingBlock(
         bot, ctx.mcData, ctx.def.blocks, ctx.options.maxDistance, ctx.options.excludedTargets,
@@ -277,6 +287,7 @@ async function spiralScan(bot, ctx) {
       [0, -step],
     ]) {
       if (!_withinBudget(ctx)) break;
+      if (!advancesSearchFrontier(bot, ctx, { x: pos.x + dx, z: pos.z + dz })) continue;
       await _tryMove(bot, pos.x + dx, pos.z + dz, ctx.deadline);
       const found = findNearestMatchingBlock(
         bot,

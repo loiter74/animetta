@@ -177,13 +177,14 @@ function timedSurfaceBot(t, { blocked = false } = {}) {
           p.z + (goal.z - p.z) * walked / distance,
         );
         loadedFrontier ||= bot.entity.position.x >= 24;
-        moves.push({ x: goal.x, z: goal.z, admittedMs });
+        moves.push({ x: goal.x, z: goal.z, admittedMs, from: { x: p.x, z: p.z } });
         t.mock.timers.setTime(Date.now() + (completed ? neededMs : admittedMs + 1));
         if (!completed) throw new Error('bounded movement timeout');
       },
     },
   };
-  return { bot, metrics: () => ({ elapsedMs: Date.now() - started, travel, moves }) };
+  return { bot, metrics: () => ({ elapsedMs: Date.now() - started, travel,
+    netDistance: Math.hypot(bot.entity.position.x, bot.entity.position.z), moves }) };
 }
 
 test('surface search reaches an unloaded frontier inside the original time and waypoint limits', async t => {
@@ -213,6 +214,24 @@ test('a blocked surface scan leaves the original deadline available to spiral fa
     mcData: { blocksByName: { birch_log: { id: 12 } } },
   }), error => ['SEARCH_TIMEOUT', 'RESOURCE_NOT_FOUND'].includes(error.code));
   assert.ok(enteredAt !== null && enteredAt < 10_000 + getResourceDefinition('any_log').timeBudgetMs);
+});
+
+test('a miss keeps the surface and spiral frontier moving away from the same search origin', async t => {
+  const { bot, metrics } = timedSurfaceBot(t);
+  bot.findBlock = () => null;
+  try {
+    await assert.rejects(locateResource(bot, 'any_log', {
+      mcData: { blocksByName: { birch_log: { id: 12 } } },
+    }), error => ['SEARCH_TIMEOUT', 'RESOURCE_NOT_FOUND'].includes(error.code));
+    assert.ok(metrics().moves.every(({ x, z, from }) => (
+      from.x * (x - from.x) + from.z * (z - from.z) >= 0
+    )), 'a missing resource does not justify walking back through the already scanned origin');
+    assert.ok(metrics().netDistance >= 48);
+    assert.ok(metrics().travel <= 80);
+    assert.ok(metrics().elapsedMs <= getResourceDefinition('any_log').timeBudgetMs + 1);
+  } finally {
+    t.diagnostic(JSON.stringify(metrics()));
+  }
 });
 
 test('resource scans ignore caller-excluded block coordinates', () => {
