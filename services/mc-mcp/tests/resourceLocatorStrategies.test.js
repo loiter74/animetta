@@ -148,6 +148,73 @@ test('surface movement uses remaining deadline and admits no second move after e
   assert.deepEqual(timeouts, [2000], 'the existing 6s move allowance is capped by time remaining');
 });
 
+function timedSurfaceBot(t, { blocked = false } = {}) {
+  const started = 10_000;
+  t.mock.timers.enable({ apis: ['Date'], now: started });
+  const originalTimeout = globalThis.setTimeout;
+  let admittedMs = 0, travel = 0, loadedFrontier = false;
+  const moves = [];
+  t.mock.method(globalThis, 'setTimeout', (callback, ms) => {
+    admittedMs = ms;
+    return originalTimeout(callback, ms);
+  });
+  const birch = { name: 'birch_log', type: 12, position: pos(30, 64, 0) };
+  const bot = {
+    entity: { position: pos(0, 64, 0) },
+    findBlock: ({ matching }) => loadedFrontier && matching(birch) ? birch : null,
+    pathfinder: {
+      stop() {},
+      async goto(goal) {
+        // Let _tryMove create its real, bounded timer before advancing the clock.
+        await Promise.resolve();
+        const p = bot.entity.position, distance = Math.hypot(goal.x - p.x, goal.z - p.z);
+        const neededMs = blocked ? Infinity : Math.ceil(distance * 250);
+        const completed = neededMs <= admittedMs;
+        const walked = blocked ? 0 : Math.min(distance, admittedMs / 250);
+        travel += walked;
+        if (distance && walked) bot.entity.position = pos(
+          p.x + (goal.x - p.x) * walked / distance, 64,
+          p.z + (goal.z - p.z) * walked / distance,
+        );
+        loadedFrontier ||= bot.entity.position.x >= 24;
+        moves.push({ x: goal.x, z: goal.z, admittedMs });
+        t.mock.timers.setTime(Date.now() + (completed ? neededMs : admittedMs + 1));
+        if (!completed) throw new Error('bounded movement timeout');
+      },
+    },
+  };
+  return { bot, metrics: () => ({ elapsedMs: Date.now() - started, travel, moves }) };
+}
+
+test('surface search reaches an unloaded frontier inside the original time and waypoint limits', async t => {
+  const { bot, metrics } = timedSurfaceBot(t);
+  try {
+    const found = await locateResource(bot, 'any_log', {
+      mcData: { blocksByName: { birch_log: { id: 12 } } },
+    });
+    assert.equal(found.block, 'birch_log');
+    assert.ok(metrics().elapsedMs <= getResourceDefinition('any_log').timeBudgetMs);
+    assert.ok(metrics().moves.length <= 6);
+    assert.ok(metrics().moves.every(p => Math.abs(p.x) <= 24 && Math.abs(p.z) <= 24));
+  } finally {
+    t.diagnostic(JSON.stringify(metrics()));
+  }
+});
+
+test('a blocked surface scan leaves the original deadline available to spiral fallback', async t => {
+  const { bot } = timedSurfaceBot(t, { blocked: true });
+  const spiral = STRATEGIES.spiral_scan;
+  let enteredAt = null;
+  t.mock.method(STRATEGIES, 'spiral_scan', async (bot, ctx) => {
+    enteredAt = Date.now();
+    return spiral(bot, ctx);
+  });
+  await assert.rejects(locateResource(bot, 'any_log', {
+    mcData: { blocksByName: { birch_log: { id: 12 } } },
+  }), error => ['SEARCH_TIMEOUT', 'RESOURCE_NOT_FOUND'].includes(error.code));
+  assert.ok(enteredAt !== null && enteredAt < 10_000 + getResourceDefinition('any_log').timeBudgetMs);
+});
+
 test('resource scans ignore caller-excluded block coordinates', () => {
   const excluded = { name: 'iron_ore', type: 42, position: pos(11, 28, 0) };
   const available = { name: 'iron_ore', type: 42, position: pos(18, 16, 4) };

@@ -239,29 +239,26 @@ async function surfaceSweep(bot, ctx) {
   );
   if (found) return _candidate(bot, found, 'surface_sweep');
   const pos = getBotPosition(bot);
+  if (!pos) return null;
+  const points = [];
+  for (let ring = 1; ring <= 3; ring++) {
+    const step = ring * 8;
+    points.push({ x: pos.x + step, z: pos.z }, { x: pos.x - step, z: pos.z + step });
+  }
   for (let ring = 1; ring <= 3 && _withinBudget(ctx); ring++) {
     ctx.attempts += 1;
-    if (!pos) break;
-    const step = ring * 8;
-    await _tryMove(bot, pos.x + step, pos.z, ctx.deadline);
-    found = findNearestMatchingBlock(
-      bot,
-      ctx.mcData,
-      ctx.def.blocks,
-      ctx.options.maxDistance,
-      ctx.options.excludedTargets,
-    );
-    if (found) return _candidate(bot, found, 'surface_sweep');
-    if (!_withinBudget(ctx)) break;
-    await _tryMove(bot, pos.x - step, pos.z + step, ctx.deadline);
-    found = findNearestMatchingBlock(
-      bot,
-      ctx.mcData,
-      ctx.def.blocks,
-      ctx.options.maxDistance,
-      ctx.options.excludedTargets,
-    );
-    if (found) return _candidate(bot, found, 'surface_sweep');
+    for (let move = 0; move < 2; move++) {
+      const current = getBotPosition(bot) || pos;
+      const distance = point => (point.x - current.x) ** 2 + (point.z - current.z) ** 2;
+      points.sort((a, b) => distance(a) - distance(b));
+      const point = points.shift();
+      await _tryMove(bot, point.x, point.z, ctx.deadline);
+      found = findNearestMatchingBlock(
+        bot, ctx.mcData, ctx.def.blocks, ctx.options.maxDistance, ctx.options.excludedTargets,
+      );
+      if (found) return _candidate(bot, found, 'surface_sweep');
+      if (!_withinBudget(ctx)) break;
+    }
   }
   return null;
 }

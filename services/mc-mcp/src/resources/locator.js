@@ -77,7 +77,8 @@ export async function locateResource(bot, resourceName, options = {}) {
     searchFailures: [],
   };
 
-  for (const id of allowed) {
+  for (let index = 0; index < allowed.length; index++) {
+    const id = allowed[index];
     const fn = STRATEGIES[id];
     if (!fn) continue;
     if (Date.now() > deadline) {
@@ -94,6 +95,12 @@ export async function locateResource(bot, resourceName, options = {}) {
     _debugLog(`TRY strategy=${id} resource=${def.canonical} attempts=${ctx.attempts}`);
 
     let candidate = null;
+    const remainingStrategies = allowed.slice(index).filter(name => typeof STRATEGIES[name] === 'function').length;
+    // Surface travel must leave time for the configured fallback, within the
+    // same absolute deadline. Unused time remains available to later stages.
+    ctx.deadline = id === 'surface_sweep' && remainingStrategies > 1
+      ? Date.now() + Math.floor((deadline - Date.now()) / remainingStrategies)
+      : deadline;
     try {
       candidate = await fn(bot, ctx);
     } catch (e) {
