@@ -5,7 +5,7 @@ import { operationWait } from './runtime/operationScope.js';
 import { createNavigationTrace } from './navigationDiagnostics.js';
 
 const { GoalBlock, GoalY } = pathfinderPkg.goals;
-const ASCENT_STEP = 4;
+const VERTICAL_STEP = 4;
 export const AIR_RECOVERY_MS = 8000;
 
 function navigateGoal(bot, goal, context) {
@@ -79,10 +79,10 @@ export async function navigateTo(bot, destination, context = {}) {
   const escape = surfaceEscapePlan(bot, target);
   if (escape) return escapeWaterToShore(bot, escape, context);
   const startY = Math.floor(bot.entity.position.y);
-  const segments = Math.ceil(Math.max(0, target.y - startY) / ASCENT_STEP);
-  if (segments > 128) throw Object.assign(new Error('上升范围超过有限导航边界。'), { code: 'NAVIGATION_RANGE_TOO_LARGE' });
+  const segments = Math.ceil(Math.abs(target.y - startY) / VERTICAL_STEP);
+  if (segments > 128) throw Object.assign(new Error('垂直范围超过有限导航边界。'), { code: 'NAVIGATION_RANGE_TOO_LARGE' });
   const ascending = target.y > startY;
-  const extendedPlanning = segments > 1 || bot.entity.position.distanceTo(new Vec3(target.x, target.y, target.z)) > 16;
+  const extendedPlanning = (ascending && segments > 1) || bot.entity.position.distanceTo(new Vec3(target.x, target.y, target.z)) > 16;
   const originalThinkTimeout = bot.pathfinder.thinkTimeout;
   const movements = bot.pathfinder.movements;
   const originalTowers = movements?.allow1by1towers;
@@ -100,12 +100,16 @@ export async function navigateTo(bot, destination, context = {}) {
     for (let index = 0; index < segments - 1; index++) {
       context.operation_scope?.checkpoint();
       context.signal?.throwIfAborted();
-      const nextY = Math.min(target.y, Math.floor(bot.entity.position.y) + ASCENT_STEP);
+      const currentY = Math.floor(bot.entity.position.y);
+      const nextY = ascending ? Math.min(target.y, currentY + VERTICAL_STEP)
+        : Math.max(target.y, currentY - VERTICAL_STEP);
       const goal = new GoalY(nextY);
       trace?.begin(goal);
       await navigateGoal(bot, goal, context);
       if (!goal.isEnd(bot.entity.position.floored())) {
-        throw Object.assign(new Error('上升导航没有到达已请求的高度。'), { code: 'NAVIGATION_ASCENT_STALLED' });
+        throw Object.assign(new Error('垂直导航没有到达已请求的高度。'), {
+          code: ascending ? 'NAVIGATION_ASCENT_STALLED' : 'NAVIGATION_DESCENT_STALLED',
+        });
       }
     }
     context.operation_scope?.checkpoint();

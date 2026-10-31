@@ -5,6 +5,7 @@ import { getResourceDefinition, isUndergroundCategory } from './resources/regist
 import Vec3 from 'vec3';
 import pathfinderPkg from 'mineflayer-pathfinder';
 import { findHostileThreat } from './survivalThreats.js';
+import { isFullCubeReference } from './placement.js';
 
 const SOFT_LOCATOR_FAILURES = new Set(['RESOURCE_NOT_FOUND', 'SEARCH_TIMEOUT']);
 const MOVEMENT_CONTROLS = ['forward', 'back', 'left', 'right', 'jump', 'sprint', 'sneak'];
@@ -37,6 +38,18 @@ function isAnchoredLeafSupport(block) {
     || (Number(properties.distance) >= 1 && Number(properties.distance) <= 6);
 }
 
+function canLowerSolidFooting(bot, block) {
+  const support = bot.blockAt(offsetPosition(block.position, 0, -1, 0));
+  // The SDK waits for onGround before executing a dig. Keep this planning
+  // proof geometric so a transient falling tick cannot erase a valid route.
+  if (block.name?.endsWith('_leaves')
+    || !isFullCubeReference(block) || !isFullCubeReference(support)
+    || support.name?.endsWith('_leaves') || FALLING_BLOCK_NAMES.has(support.name)
+    || support.name?.endsWith('_concrete_powder')
+    || ['magma_block', 'suspicious_sand', 'suspicious_gravel'].includes(support.name)) return false;
+  return collectionDigSafety(bot, block).safe;
+}
+
 export function configureDryNavigation(movements, bot, { allowSurfaceSwimming = false, retreatPolicy = null } = {}) {
   // The SDK compares the supporting floor, one cell below the actual landing.
   movements.maxDropDown = 2;
@@ -46,13 +59,13 @@ export function configureDryNavigation(movements, bot, { allowSurfaceSwimming = 
   const canopyHeight = origin && isAnchoredLeafSupport(bot.blockAt(offsetPosition(origin, 0, -1, 0)))
     ? origin.y : null;
   if (canopyHeight !== null) {
-    // Clear adjacent leaf obstructions if needed, but never plan a shaft
-    // through the leaf floor or dig away the bot's actual current footing.
+    // Keep leaf footing intact. A solid footing may be lowered only onto one
+    // already known full stable block; never infer an open shaft is safe.
     movements.allow1by1towers = false;
     movements.exclusionAreasBreak.push(block => {
       const feet = flooredPosition(bot.entity.position);
       return block.position.x === feet.x && block.position.z === feet.z
-        && block.position.y === feet.y - 1 ? Infinity : 0;
+        && block.position.y === feet.y - 1 && !canLowerSolidFooting(bot, block) ? Infinity : 0;
     });
     const getMoveDown = movements.getMoveDown.bind(movements);
     movements.getMoveDown = (node, neighbors) => {

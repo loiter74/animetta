@@ -944,6 +944,7 @@ test('navigation refuses a new route whose minimum distance cannot fit before th
 for (const [leg, destination] of [
   ['final', { x: 200, y: 64, z: 0 }],
   ['ascent', { x: 189, y: 72, z: 0 }],
+  ['descent', { x: 189, y: 56, z: 0 }],
 ]) {
   test(`goto checks the remaining travel budget before its ${leg} leg`, async () => {
     const fixture = navigationFixture(189);
@@ -968,6 +969,22 @@ test('goto completes scoped ascent and final legs that fit the unchanged travel 
   assert.equal(fixture.nativeRoutes, 2);
   assert.equal(receipt.budget_usage.max_travel_distance, 184 + Math.hypot(1, 4));
   assert.deepEqual(fixture.bot.entity.position, new Vec3(181, 72, 0));
+  fixture.adapter.dispose();
+});
+
+test('goto charges all planned descent legs to one unchanged native action account', async () => {
+  const fixture = navigationFixture(170);
+  const action = request(fixture.adapter, 'goto', { x: 171, y: 52, z: 0 }, 'goto-descent-fits');
+  action.remaining_budget = budget({ max_travel_distance: 192 });
+  const original = structuredClone(action.remaining_budget);
+  const receipt = await fixture.adapter.runtime.executeAction(action);
+  assert.equal(receipt.outcome, 'success', JSON.stringify(receipt.error));
+  assert.equal(fixture.nativeRoutes, 3);
+  assert.equal(receipt.budget_usage.max_actions, 1);
+  assert.equal(receipt.budget_usage.max_travel_distance, 178 + Math.hypot(1, 4));
+  assert.equal(receipt.budget_usage.max_blocks_changed, 0);
+  assert.deepEqual(action.remaining_budget, original);
+  assert.deepEqual(fixture.bot.entity.position, new Vec3(171, 52, 0));
   fixture.adapter.dispose();
 });
 

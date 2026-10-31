@@ -13,6 +13,7 @@ import {
   getUndergroundCollectionPreparation,
 } from '../src/collection.js';
 import { escapeWaterToShore, navigateTo, surfaceEscapePlan } from '../src/navigation.js';
+import { createOperationScope, operationSettlementReserveMs } from '../src/runtime/operationScope.js';
 
 function fixture(y) {
   const goals = [];
@@ -26,6 +27,43 @@ function fixture(y) {
   } };
   return { bot, goals };
 }
+
+test('descent uses bounded distinct height legs without increasing the search timeout', async () => {
+  const f = fixture(74), timeouts = [], native = f.bot.pathfinder.goto.bind(f.bot.pathfinder);
+  f.bot.pathfinder.goto = async goal => { timeouts.push(f.bot.pathfinder.thinkTimeout); return native(goal); };
+  await navigateTo(f.bot, { x: 18, y: 63, z: 86 });
+  assert.deepEqual(f.goals.map(goal => [goal.constructor.name, goal.y]), [['GoalY', 70], ['GoalY', 66], ['GoalBlock', 63]]);
+  assert.deepEqual(timeouts, [5000, 5000, 5000]);
+  assert.equal(f.bot.pathfinder.thinkTimeout, 5000);
+  assert.deepEqual(f.bot.entity.position, new Vec3(18, 63, 86));
+});
+
+test('descent legs share the original absolute scope deadline and settlement reserve', async () => {
+  const f = fixture(74), native = f.bot.pathfinder.goto.bind(f.bot.pathfinder);
+  let now = 0;
+  const deadline = operationSettlementReserveMs() + 500;
+  const scope = createOperationScope({ bot: f.bot, deadlineMs: deadline, nowMs: () => now });
+  f.bot.pathfinder.goto = async goal => { await native(goal); now += 250; };
+  await assert.rejects(navigateTo(f.bot, { x: 18, y: 63, z: 86 }, { operation_scope: scope }),
+    { code: 'ACTION_DEADLINE_EXPIRED' });
+  assert.equal(scope.deadlineMs, deadline);
+  assert.equal(f.goals.length, 2, 'the final leg cannot borrow a new deadline');
+  assert.equal(f.bot.pathfinder.thinkTimeout, 5000);
+});
+
+test('descent retains the existing finite vertical segment bound', async () => {
+  const f = fixture(74);
+  await assert.rejects(navigateTo(f.bot, { x: 18, y: 74 - 129 * 4, z: 86 }), { code: 'NAVIGATION_RANGE_TOO_LARGE' });
+  assert.deepEqual(f.goals, []);
+});
+
+test('descent stops at the first failed leg without another native attempt', async () => {
+  const f = fixture(74), failure = new Error('original native failure');
+  f.bot.pathfinder.goto = async goal => { f.goals.push(goal); throw failure; };
+  await assert.rejects(navigateTo(f.bot, { x: 18, y: 63, z: 86 }), error => error === failure);
+  assert.deepEqual(f.goals.map(goal => [goal.constructor.name, goal.y]), [['GoalY', 70]]);
+  assert.equal(f.bot.pathfinder.thinkTimeout, 5000);
+});
 
 function diagnosticFixture(t) {
   const previous = process.env.COLLECT_DEBUG;
