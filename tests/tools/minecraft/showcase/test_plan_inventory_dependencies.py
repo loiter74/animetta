@@ -81,6 +81,7 @@ def test_iron_before_water_requires_a_fresh_return_unless_already_provisioned(
     if not valid:
         assert issues[0].objective_id == "water-bucket"
         assert issues[0].candidate_dependencies == ("water-return",)
+        assert issues[0].candidate_dependency_paths == (("iron", "water-return", "water-bucket"),)
         assert issues[0].required_any_of == ()
     assert plan.canonical_hash == before
 
@@ -108,8 +109,43 @@ def test_deep_mining_cannot_spend_surface_access_before_an_independent_water_goa
     assert issues[0].code == "MISSING_ACCESS_PROVISION"
     assert issues[0].objective_id == "diamond-pickaxe"
     assert issues[0].candidate_dependencies == ("water-bucket",)
+    assert issues[0].candidate_dependency_paths == (("water-bucket", "diamond-pickaxe"),)
     assert issues[0].required_any_of == (), "access is not a diamond recipe ingredient"
     assert plan.model_dump(mode="json") == before
+
+
+def test_access_feedback_can_be_satisfied_by_reordering_the_original_nine_objectives() -> None:
+    mission = reference()
+    data = stale_iron_shore(mission).model_dump(mode="json")
+    for objective in data["objectives"]:
+        if objective["objective_id"] == "diamond-pickaxe":
+            objective["dependencies"] = ["iron-pickaxe"]
+        elif objective["objective_id"] == "obsidian":
+            objective["dependencies"] = ["diamond-pickaxe", "water-bucket"]
+    broken = MissionSpec.model_validate(data)
+    original_hash = broken.canonical_hash
+    issues = validate_mission_plan(broken, reference=mission, initial_inventory={})
+    assert [issue.candidate_dependency_paths for issue in issues] == [
+        (("iron", "water-return", "water-bucket"),),
+        (("water-bucket", "diamond-pickaxe"),),
+    ]
+    assert broken.canonical_hash == original_hash
+    changes = {
+        "iron": [],
+        "water-return": ["iron"],
+        "water-bucket": ["water-return"],
+        "diamond-pickaxe": ["iron-pickaxe", "water-bucket"],
+    }
+    for objective in data["objectives"]:
+        if objective["objective_id"] in changes:
+            objective["dependencies"] = changes[objective["objective_id"]]
+    reordered = MissionSpec.model_validate(data)
+    assert len(reordered.objectives) == len(broken.objectives) == 9
+    assert reordered.budget == broken.budget
+    assert {obj.objective_id: (obj.goal, obj.budget) for obj in reordered.objectives} == {
+        obj.objective_id: (obj.goal, obj.budget) for obj in broken.objectives
+    }
+    assert validate_mission_plan(reordered, reference=mission, initial_inventory={}) == ()
 
 
 @pytest.mark.parametrize(
@@ -357,6 +393,14 @@ async def test_structured_input_error_reaches_the_existing_model_repair_once(fai
                 "inventory": ["iron"],
                 "access": ["water-bucket"],
                 "shore": ["water-return"],
+            }[failure_kind]
+        )
+        assert (
+            problem["issues"][0]["candidate_dependency_paths"]
+            == {
+                "inventory": [],
+                "access": [["water-bucket", "diamond-pickaxe"]],
+                "shore": [["iron", "water-return", "water-bucket"]],
             }[failure_kind]
         )
         return response(mission)

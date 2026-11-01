@@ -22,6 +22,9 @@ NETHER_DESCENT_ACCESS_RULE = (
     "采铁作为取水前置时，应在采铁之后、取水之前执行已授权的岸边返回目标；"
     "钻石工作流下矿前应备水，或明确安排下降后返回同岸边再取水。"
     "已具水桶、铁目标已满足或已有本地钻石材料时，按已知库存跳过不必要的顺序。"
+    "目标目录不是执行顺序；修复只能重排、复用已有目标并调整依赖，"
+    "必要时移除失效旧边避免成环，禁止复制或追加新的返岸目标，不得改动预算。"
+    "candidate_dependency_paths 只表示已有目标之间应满足的先后，不是追加动作。"
 )
 
 
@@ -33,6 +36,8 @@ class PlanningIssue(BaseModel):
     objective_id: str | None = None
     required_any_of: tuple[WorkflowCheckpointClause, ...] = ()
     candidate_dependencies: tuple[str, ...] = ()
+    # Diagnostic orderings of existing objectives only; not a new topological rule.
+    candidate_dependency_paths: tuple[tuple[str, ...], ...] = ()
 
 
 def nether_plan_inventory_requirements() -> dict[tuple[str, str], WorkflowCheckpoint]:
@@ -268,6 +273,13 @@ def validate_mission_plan(
                     objective_id=water.objective_id if iron else mining.objective_id,
                     message=NETHER_DESCENT_ACCESS_RULE,
                     candidate_dependencies=suppliers,
+                    candidate_dependency_paths=(
+                        tuple(
+                            (mining.objective_id, shore, water.objective_id) for shore in suppliers
+                        )
+                        if iron
+                        else ((water.objective_id, mining.objective_id),)
+                    ),
                 )
             )
     return tuple(issues)
