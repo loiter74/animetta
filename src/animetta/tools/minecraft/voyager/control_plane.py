@@ -354,11 +354,13 @@ class UnifiedVoyagerController:
                                 observation,
                                 result.after,
                             )
-                        elif exc.error.code in {
+                        if recovered_state is None and exc.error.code in {
                             "UNSAFE_AREA",
                             "NAVIGATION_TARGET_NOT_REACHED",
                             "RESOURCE_NOT_FOUND",
                             "SEARCH_TIMEOUT",
+                            "MINE_SHAFT_STUCK",
+                            "PARTIAL_COLLECT",
                         }:
                             recover = getattr(strategy, "recover_failed_step", None)
                             if callable(recover):
@@ -367,6 +369,14 @@ class UnifiedVoyagerController:
                                         **state,
                                         "budget_remaining": account.remaining,
                                         "settled_error_code": exc.error.code,
+                                        "settled_feedback": {
+                                            "outcome": "error",
+                                            "error_code": exc.error.code,
+                                            "receipt_hash": result.receipt.content_hash,
+                                            "command_id": result.receipt.command_id,
+                                            "correlation_id": result.receipt.correlation_id,
+                                            "start_state_hash": result.receipt.before_observation_hash,
+                                        },
                                         "settled_block_subjects": tuple(
                                             mutation.subject
                                             for mutation in result.receipt.explained_mutations

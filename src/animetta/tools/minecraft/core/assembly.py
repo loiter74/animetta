@@ -568,6 +568,7 @@ async def assemble_control_plane(
                     policy_report={
                         "valid": False,
                         "reason": "MISSING_INDEPENDENT_VALIDATION_EVIDENCE",
+                        "goal_verified": True,
                         "source_command_id": command.command_id,
                     },
                     learning_evidence=tuple(output.get("learning_evidence", ())),
@@ -601,6 +602,38 @@ async def assemble_control_plane(
     ) -> None:
         selected_strategy = state.get("selected_strategy", command.mode)
         strategy_state = state.get("strategy_state", state)
+        if selected_strategy == "learn" and strategy_state.get("generated_program"):
+            environment = stable_environment_fingerprint(manifest.profile)
+            for revision in strategy_state.get("candidate_revisions", ()):
+                await skill_store.save_revision(
+                    SkillDefinition(
+                        definition_id=revision.definition_id,
+                        name=revision.program.name,
+                        description=f"Failed candidate from {command.command_id}",
+                    ),
+                    revision,
+                )
+                await skill_store.record_validation(
+                    SkillEnvironmentTrust(
+                        revision_hash=revision.revision_hash,
+                        environment_fingerprint=environment,
+                        status=TrustStatus.CANDIDATE,
+                        expected_cost=float(revision.static_cost.max_actions),
+                        portable=revision.program.portability.portable,
+                    ),
+                    policy_report={
+                        "valid": False,
+                        "reason": "CANDIDATE_EXECUTION_FAILED",
+                        "goal_verified": False,
+                        "source_command_id": command.command_id,
+                        "error_code": getattr(
+                            getattr(error, "error", None), "code", type(error).__name__
+                        ),
+                    },
+                    learning_evidence=receipt_hashes,
+                    validation_evidence=(),
+                )
+            return
         if selected_strategy != "live" or strategy_state.get("revision") is None:
             return
         revision = strategy_state["revision"]

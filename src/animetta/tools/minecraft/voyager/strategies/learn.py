@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from animetta.tools.gamebot.contracts.v2 import Observation, RuntimeManifest
+from animetta.tools.minecraft.skill.candidate import SkillCandidate, compile_candidate
 from animetta.tools.minecraft.skill.independent_validation import (
     IndependentValidationEvidence,
     ValidationEvidenceChain,
@@ -22,6 +23,7 @@ from animetta.tools.minecraft.skill.ir import (
 from ..budget import BudgetUsage, ExecutionBudget
 from ..goal_models import GoalSpec
 from .base import Complete, ExecuteStep, StrategyDecision, StrategyFailure
+from .program import SkillProgramStrategy
 
 
 class LearnStrategy:
@@ -50,20 +52,26 @@ class LearnStrategy:
 
     @staticmethod
     def _default_program(node: str, proposal: dict, goal: GoalSpec) -> SkillProgram:
+        action = {
+            "kind": "action",
+            "step_id": "execute",
+            "capability": proposal["capability"],
+            "parameters": {
+                name: {"kind": "literal", "value": value}
+                for name, value in proposal["parameters"].items()
+            },
+        }
+        maximum_cost = proposal.get("maximum_cost")
+        if maximum_cost is not None:
+            action["maximum_cost"] = (
+                maximum_cost.model_dump(mode="json")
+                if isinstance(maximum_cost, BudgetUsage)
+                else maximum_cost
+            )
         return SkillProgram.model_validate(
             {
                 "name": f"learn_{node}".replace(":", "_").replace("-", "_"),
-                "steps": [
-                    {
-                        "kind": "action",
-                        "step_id": "execute",
-                        "capability": proposal["capability"],
-                        "parameters": {
-                            name: {"kind": "literal", "value": value}
-                            for name, value in proposal["parameters"].items()
-                        },
-                    }
-                ],
+                "steps": [action],
                 "postconditions": [
                     predicate.model_dump(mode="json") for predicate in goal_postconditions(goal)
                 ],
@@ -105,6 +113,34 @@ class LearnStrategy:
     def prepare(self, goal: GoalSpec | None) -> dict:
         if goal is None:
             raise ValueError("learn strategy requires a structured goal")
+        if "skill_candidate" in goal.constraints:
+            if self._manifest is None or self._compilation_budget is None:
+                return {"failure_code": "CANDIDATE_COMPILATION_UNAVAILABLE", "goal": goal}
+            try:
+                revision, bindings = compile_candidate(
+                    SkillCandidate.model_validate(goal.constraints["skill_candidate"]),
+                    manifest=self._manifest,
+                    budget=self._compilation_budget,
+                    goal=goal,
+                    source_command_id=self._source_command_id,
+                )
+            except ValueError as exc:
+                return {
+                    "failure_code": "INVALID_SKILL_CANDIDATE",
+                    "message": str(exc),
+                    "goal": goal,
+                }
+            interpreter = SkillProgramStrategy(
+                manifest=self._manifest, revision=revision, bindings=bindings
+            )
+            return {
+                "goal": goal,
+                "generated_program": True,
+                "interpreter": interpreter,
+                "program_state": interpreter.prepare(goal),
+                "candidate_revisions": (revision,),
+                "learning_receipts": (),
+            }
         frontier = self._resolve_frontier(goal)[: self._max_frontier_nodes]
         if not frontier:
             return {"failure_code": "UNSUPPORTED_LEARNING_GOAL", "goal": goal}
@@ -124,11 +160,25 @@ class LearnStrategy:
         }
 
     def propose(self, state: dict, observation: Observation) -> StrategyDecision:
-        del observation
         if state.get("failure_code"):
             return StrategyFailure(
-                code=state["failure_code"], message="Goal is outside the technology graph"
+                code=state["failure_code"],
+                message=state.get("message", "Goal is outside the technology graph"),
             )
+        if state.get("generated_program"):
+            decision = state["interpreter"].propose(state["program_state"], observation)
+            if isinstance(decision, Complete):
+                return Complete(
+                    output={
+                        **decision.output,
+                        "candidate_revisions": state["candidate_revisions"],
+                        "learning_evidence": state["learning_receipts"],
+                        "validation_evidence": (),
+                        "independent_validations": (),
+                        "trust_outcomes": ("candidate_untrusted:INDEPENDENT_VALIDATION_DEFERRED",),
+                    }
+                )
+            return decision
         if state["node_index"] >= len(state["frontier"]):
             return Complete(
                 output={
@@ -156,6 +206,14 @@ class LearnStrategy:
     def accept_result(self, state: dict, result: object) -> dict:
         data = result if isinstance(result, dict) else {}
         receipt_hash = data.get("receipt_hash")
+        if state.get("generated_program"):
+            return {
+                **state,
+                "program_state": state["interpreter"].accept_result(state["program_state"], data),
+                "learning_receipts": (*state["learning_receipts"], receipt_hash)
+                if receipt_hash
+                else state["learning_receipts"],
+            }
         chain = self._evidence_chain(data)
         if state["phase"] == "learning":
             receipts = state["learning_receipts"] + ((receipt_hash,) if receipt_hash else ())
@@ -227,3 +285,23 @@ class LearnStrategy:
             start_state_hash=str(data["start_state_hash"]),
             resource_instance_ref=str(data["resource_instance_ref"]),
         )
+
+    def recover_failed_step(
+        self, state: dict, failed_step: ExecuteStep, before: Observation, after: Observation
+    ) -> dict | None:
+        if not state.get("generated_program"):
+            return None
+        delegated = {
+            **state["program_state"],
+            "settled_error_code": state.get("settled_error_code"),
+            "settled_feedback": state.get("settled_feedback"),
+        }
+        recovered = state["interpreter"].recover_failed_step(delegated, failed_step, before, after)
+        if recovered is None:
+            return None
+        feedback = state["settled_feedback"]
+        return {
+            **state,
+            "program_state": recovered,
+            "learning_receipts": (*state["learning_receipts"], feedback["receipt_hash"]),
+        }

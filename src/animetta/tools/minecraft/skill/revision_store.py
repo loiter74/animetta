@@ -174,6 +174,45 @@ def convert_legacy_skill(payload: dict[str, Any]) -> LegacySkillCandidate | None
     )
 
 
+async def copy_skill_snapshot(source: Path, destination: Path) -> None:
+    """Consistently copy a skill database to a never-existing destination.
+
+    The source is opened read-only through a ``mode=ro`` URI and copied with the
+    SQLite backup API, which yields a point-in-time snapshot that already includes
+    every committed WAL frame of the source. Only the skill database itself is
+    produced: no world journal and no ``-wal``/``-shm``/``-journal`` sidecar file
+    is ever copied, and the source file is never rewritten. Existing destinations
+    and self-copies are rejected before anything is created; a failed copy never
+    leaves a partial destination behind.
+    """
+
+    import aiosqlite
+
+    source_path = Path(source).resolve()
+    destination_path = Path(destination).resolve()
+    if source_path == destination_path:
+        raise ValueError("SNAPSHOT_SELF_COPY_NOT_ALLOWED")
+    if not source_path.is_file():
+        raise FileNotFoundError(f"skill snapshot source does not exist: {source_path}")
+    if destination_path.exists():
+        raise ValueError("SNAPSHOT_DESTINATION_ALREADY_EXISTS")
+    destination_path.parent.mkdir(parents=True, exist_ok=True)
+    source_connection = await aiosqlite.connect(f"{source_path.as_uri()}?mode=ro", uri=True)
+    try:
+        # Reserve the name atomically; a racing caller must never be overwritten.
+        with destination_path.open("xb"):
+            pass
+        try:
+            async with aiosqlite.connect(str(destination_path)) as destination_connection:
+                await source_connection.backup(destination_connection)
+                await destination_connection.commit()
+        except BaseException:
+            destination_path.unlink(missing_ok=True)
+            raise
+    finally:
+        await source_connection.close()
+
+
 class SkillRevisionStore:
     SCHEMA_VERSION = 3
 
@@ -660,3 +699,61 @@ class SkillRevisionStore:
             await self._db.rollback()
             raise
         return updated
+
+    async def export_experience(self, limit: int = 8) -> list[dict[str, Any]]:
+        """Export bounded learning context for the next model round; never permission.
+
+        Reads existing revisions and their original environment validations without
+        mutating any row: copied TRUSTED evidence keeps its original environment
+        fingerprint and stays non-executable in other environments (it is learning
+        context only, not an execution grant). Rows are ordered deterministically:
+        trusted first, then candidates, then failure evidence, each by descending
+        successes and finally by revision hash and environment fingerprint.
+        """
+
+        if type(limit) is not int or not 1 <= limit <= 32:
+            raise ValueError("EXPORT_LIMIT_OUT_OF_RANGE")
+        if self._db is None:
+            raise RuntimeError("store is not connected")
+        cursor = await self._db.execute(
+            """SELECT r.revision_hash AS revision_hash,
+                      r.source_command_id AS source_command_id,
+                      r.program_json AS program_json,
+                      v.environment_fingerprint AS environment_fingerprint,
+                      v.trust_status AS trust_status,
+                      v.successes AS successes,
+                      v.failures AS failures,
+                      v.policy_report_json AS policy_report_json,
+                      v.learning_evidence_json AS learning_evidence_json,
+                      v.validation_evidence_json AS validation_evidence_json
+               FROM skill_revisions r
+               JOIN skill_environment_validations v
+                 ON v.revision_hash = r.revision_hash
+               WHERE r.program_json IS NOT NULL
+               ORDER BY CASE v.trust_status
+                          WHEN 'trusted' THEN 0
+                          WHEN 'candidate' THEN 1
+                          WHEN 'demoted' THEN 2
+                          ELSE 3
+                        END,
+                        v.successes DESC,
+                        r.revision_hash,
+                        v.environment_fingerprint
+               LIMIT ?""",
+            (limit,),
+        )
+        return [
+            {
+                "revision_hash": row["revision_hash"],
+                "source_command_id": row["source_command_id"],
+                "program": json.loads(row["program_json"]),
+                "environment_fingerprint": row["environment_fingerprint"],
+                "trust_status": row["trust_status"],
+                "successes": row["successes"],
+                "failures": row["failures"],
+                "policy_report": json.loads(row["policy_report_json"]),
+                "learning_receipt_refs": json.loads(row["learning_evidence_json"]),
+                "validation_receipt_refs": json.loads(row["validation_evidence_json"]),
+            }
+            for row in await cursor.fetchall()
+        ]

@@ -86,7 +86,9 @@ async def test_atomic_learn_validate_live_fallback_status_stop_chain() -> None:
             "node": node,
             "capability": "collect",
             "parameters": {"count": 1},
-            "maximum_cost": BudgetUsage(max_actions=1),
+            "maximum_cost": BudgetUsage.model_validate(
+                manifest.capability("collect").maximum_cost.model_dump(exclude={"protected_items"})
+            ),
         },
         max_frontier_nodes=1,
         max_attempts=2,

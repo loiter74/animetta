@@ -5,9 +5,14 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
 from pydantic import TypeAdapter
 
-from animetta.tools.gamebot.contracts.v2 import Observation, RuntimeManifest
+from animetta.tools.gamebot.contracts.v2 import (
+    BudgetVector,
+    Observation,
+    RuntimeManifest,
+)
 from animetta.tools.minecraft.skill.applicability import applicability_for_goal
 from animetta.tools.minecraft.skill.ir import SkillDefinition, SkillProgram, compile_skill_program
 from animetta.tools.minecraft.skill.trust import (
@@ -29,6 +34,148 @@ from animetta.tools.minecraft.voyager.strategies.fallback import FallbackStrateg
 from animetta.tools.minecraft.voyager.strategies.learn import LearnStrategy
 from animetta.tools.minecraft.voyager.strategies.live import LiveStrategy
 from animetta.tools.minecraft.voyager.strategies.mission import MissionStrategy
+from animetta.tools.minecraft.voyager.strategies.program import SkillProgramStrategy
+
+
+def generated_learner(program: dict, *, maximum: ExecutionBudget | None = None):
+    candidate_goal = goal("oak_log").model_copy(
+        update={"constraints": {"skill_candidate": {"program": program}}}
+    )
+    learner = LearnStrategy(
+        resolve_frontier=lambda _: (),
+        propose_node=lambda _: pytest.fail("generated learning must not call static templates"),
+        max_frontier_nodes=1,
+        max_attempts=2,
+        manifest=runtime_shaped_manifest(),
+        compilation_budget=maximum or budget(),
+        source_command_id="generated-command",
+    )
+    return learner, candidate_goal
+
+
+def candidate_program() -> dict:
+    return {
+        "name": "bounded_oak_candidate",
+        "steps": [
+            {
+                "kind": "action",
+                "step_id": "gather",
+                "capability": "collect",
+                "parameters": {
+                    "count": {"kind": "literal", "value": 1},
+                },
+                "maximum_cost": {
+                    "max_actions": 1,
+                    "max_travel_distance": 8,
+                    "max_blocks_changed": 2,
+                },
+            }
+        ],
+        "postconditions": [
+            {
+                "op": "gte",
+                "left": {"kind": "observation", "path": "inventory.oak_log"},
+                "right": {"kind": "literal", "value": 1},
+            }
+        ],
+    }
+
+
+def test_generated_learning_executes_model_program_once_and_defers_trust() -> None:
+    learner, candidate_goal = generated_learner(candidate_program())
+    mission = MissionStrategy(builtin=None, live=None, learn=learner, fallback=None)
+    state = mission.prepare(candidate_goal)
+    first = mission.propose(state, observation_with({}))
+    assert first.kind == "execute" and first.parameters == {"count": 1}
+    assert first.maximum_cost.max_travel_distance == 8
+    state = mission.accept_result(state, {"outcome": "success", "receipt_hash": "actual-receipt"})
+    complete = mission.propose(state, observation_with({"minecraft:oak_log": 1}))
+    assert complete.kind == "complete"
+    assert complete.output["selected_strategy"] == "learn"
+    assert len(complete.output["candidate_revisions"]) == 1
+    assert complete.output["learning_evidence"] == ("actual-receipt",)
+    assert complete.output["independent_validations"] == ()
+    assert complete.output["trust_outcomes"] == (
+        "candidate_untrusted:INDEPENDENT_VALIDATION_DEFERRED",
+    )
+
+
+def test_generated_candidate_cannot_escape_budget_or_learning_authority() -> None:
+    learner, candidate_goal = generated_learner(
+        candidate_program(), maximum=budget().model_copy(update={"max_travel_distance": 7})
+    )
+    decision = learner.propose(learner.prepare(candidate_goal), observation_with({}))
+    assert decision.code == "INVALID_SKILL_CANDIDATE"
+    no_learning = MissionStrategy(
+        builtin=BuiltinMissionStrategy(manifest=runtime_shaped_manifest()),
+        live=None,
+        learn=None,
+        fallback=None,
+    )
+    assert (
+        no_learning.propose(no_learning.prepare(candidate_goal), observation_with({})).kind
+        == "failure"
+    )
+
+
+def test_generated_program_failure_requires_explicit_settled_error_branch() -> None:
+    program = candidate_program()
+    program["steps"][0]["recover_on_error"] = "SEARCH_TIMEOUT"
+    program["steps"].append(
+        {
+            "kind": "branch",
+            "step_id": "recover_search",
+            "condition": {
+                "op": "eq",
+                "left": {"kind": "step_output", "step_id": "gather", "path": "error_code"},
+                "right": {"kind": "literal", "value": "SEARCH_TIMEOUT"},
+            },
+            "then_steps": [{**candidate_program()["steps"][0], "step_id": "alternate"}],
+            "else_steps": [],
+        }
+    )
+    learner, candidate_goal = generated_learner(program)
+    mission = MissionStrategy(builtin=None, live=None, learn=learner, fallback=None)
+    state = mission.prepare(candidate_goal)
+    before = observation_with({})
+    failed = mission.propose(state, before)
+    assert mission.recover_failed_step(state, failed, before, before) is None
+    feedback = {"outcome": "error", "error_code": "SEARCH_TIMEOUT", "receipt_hash": "charged-error"}
+    state.update(settled_error_code="SEARCH_TIMEOUT", settled_feedback=feedback)
+    recovered = mission.recover_failed_step(state, failed, before, before)
+    assert recovered is not None
+    assert mission.propose(recovered, before).kind == "execute"
+    assert recovered["strategy_state"]["learning_receipts"] == ("charged-error",)
+    state["settled_error_code"] = "OUTCOME_UNKNOWN"
+    assert mission.recover_failed_step(state, failed, before, before) is None
+
+
+def test_generated_program_does_not_skip_unhandled_failure_to_next_action() -> None:
+    program = candidate_program()
+    program["steps"].append({**program["steps"][0], "step_id": "next_action"})
+    learner, candidate_goal = generated_learner(program)
+    mission = MissionStrategy(builtin=None, live=None, learn=learner, fallback=None)
+    state = mission.prepare(candidate_goal)
+    before = observation_with({})
+    first = mission.propose(state, before)
+    state.update(
+        settled_error_code="SEARCH_TIMEOUT",
+        settled_feedback={
+            "outcome": "error",
+            "error_code": "SEARCH_TIMEOUT",
+            "receipt_hash": "error",
+        },
+    )
+    assert mission.recover_failed_step(state, first, before, before) is None
+
+
+def test_recovery_declaration_without_receipt_branch_is_rejected_before_execution() -> None:
+    program = candidate_program()
+    program["steps"][0]["recover_on_error"] = "SEARCH_TIMEOUT"
+    learner, candidate_goal = generated_learner(program)
+    decision = learner.propose(learner.prepare(candidate_goal), observation_with({}))
+    assert decision.code == "INVALID_SKILL_CANDIDATE"
+
 
 ROOT = Path(__file__).resolve().parents[4]
 MESSAGES = json.loads(
@@ -920,12 +1067,17 @@ def test_learn_strategy_bounds_frontier_attempts_and_separates_evidence_chains()
 
 def test_learn_compiles_candidate_ir_before_independent_validation() -> None:
     manifest = RuntimeManifest.model_validate(MESSAGES["RuntimeManifest"])
+    descriptor = manifest.capability("collect").maximum_cost
     strategy = LearnStrategy(
         resolve_frontier=lambda _goal: ("wood_collection",),
         propose_node=lambda node: {
             "capability": "collect",
             "parameters": {"count": 1},
-            "maximum_cost": BudgetUsage(max_actions=1),
+            "maximum_cost": BudgetUsage(
+                max_actions=descriptor.max_actions,
+                max_strategy_attempts=descriptor.max_strategy_attempts,
+                max_damage_taken=descriptor.max_damage_taken,
+            ),
             "node": node,
         },
         max_frontier_nodes=1,
@@ -963,8 +1115,229 @@ def test_learn_compiles_candidate_ir_before_independent_validation() -> None:
 
     assert revision.source_command_id == "command-1"
     assert revision.program.steps[0].kind == "action"
+    assert revision.program.steps[0].maximum_cost == BudgetUsage(
+        max_actions=descriptor.max_actions,
+        max_strategy_attempts=descriptor.max_strategy_attempts,
+        max_damage_taken=descriptor.max_damage_taken,
+    )
+    assert revision.static_cost == BudgetUsage(
+        max_actions=descriptor.max_actions,
+        max_strategy_attempts=descriptor.max_strategy_attempts,
+        max_damage_taken=descriptor.max_damage_taken,
+    )
     assert revision.program.postconditions[0].left.path == "inventory.iron_ingot"
     assert complete.kind == "complete"
     assert complete.output["trust_outcomes"] == ("environment_trusted",)
     assert complete.output["learning_evidence"] == ("a" * 64,)
     assert complete.output["validation_evidence"] == ("b" * 64,)
+
+
+def runtime_shaped_manifest() -> RuntimeManifest:
+    """Mirror the real R100 manifest: atomic admission only, caller-granted work."""
+
+    manifest = RuntimeManifest.model_validate(MESSAGES["RuntimeManifest"])
+    return manifest.model_copy(
+        update={
+            "capabilities": tuple(
+                capability.model_copy(
+                    update={
+                        "maximum_cost": BudgetVector(
+                            max_actions=1,
+                            max_strategy_attempts=0,
+                            max_travel_distance=0.0,
+                            max_blocks_changed=0,
+                            max_damage_taken=0.0,
+                        )
+                    }
+                )
+                if capability.name == "collect"
+                else capability
+                for capability in manifest.capabilities
+            )
+        }
+    )
+
+
+def test_learned_quota_flows_from_proposal_through_compile_into_live_reuse() -> None:
+    manifest = runtime_shaped_manifest()
+    granted = BudgetUsage(max_actions=1, max_travel_distance=64.0, max_blocks_changed=8)
+    learn = LearnStrategy(
+        resolve_frontier=lambda _goal: ("wood_collection",),
+        propose_node=lambda node: {
+            "capability": "collect",
+            "parameters": {"count": 1},
+            "maximum_cost": granted,
+            "node": node,
+        },
+        max_frontier_nodes=1,
+        max_attempts=2,
+        manifest=manifest,
+        compilation_budget=budget(),
+        source_command_id="command-granted",
+    )
+    observation = Observation.model_validate(MESSAGES["Observation"])
+    state = learn.prepare(goal("oak_log"))
+
+    learned = learn.propose(state, observation)
+    assert learned.kind == "execute"
+    assert learned.maximum_cost == granted
+
+    state = learn.accept_result(state, {"outcome": "success", "receipt_hash": "a" * 64})
+    revision = state["candidate_revisions"][0]
+
+    assert revision.program.steps[0].maximum_cost == granted
+    assert revision.static_cost == granted
+    assert revision.revision_hash == revision.program.canonical_hash
+
+    environment = stable_environment_fingerprint(manifest.profile)
+    live = LiveStrategy(
+        revisions={revision.revision_hash: revision},
+        applicabilities={revision.revision_hash: applicability_for_goal(revision, goal("oak_log"))},
+        trusts=[SkillEnvironmentTrust.trusted(revision.revision_hash, environment)],
+        manifest=manifest,
+    )
+
+    reused = live.propose(live.prepare(goal("oak_log")), observation)
+
+    assert reused.kind == "execute"
+    assert reused.capability == "collect"
+    assert reused.maximum_cost == granted
+
+
+def test_live_step_without_explicit_maximum_cost_keeps_manifest_descriptor_cost() -> None:
+    manifest = RuntimeManifest.model_validate(MESSAGES["RuntimeManifest"])
+    program = SkillProgram.model_validate(
+        {
+            "name": "descriptor_collect",
+            "steps": [
+                {
+                    "kind": "action",
+                    "step_id": "collect",
+                    "capability": "collect",
+                    "parameters": {"count": {"kind": "literal", "value": 1}},
+                }
+            ],
+            "postconditions": [
+                {
+                    "op": "gte",
+                    "left": {"kind": "observation", "path": "inventory.oak_log"},
+                    "right": {"kind": "literal", "value": 1},
+                }
+            ],
+        }
+    )
+    revision = compile_skill_program(
+        program,
+        capabilities={
+            "collect": {
+                "parameters_schema": manifest.capability("collect").parameters_schema,
+                "maximum_cost": BudgetUsage(max_actions=1),
+            }
+        },
+        budget=budget(),
+    ).to_revision(
+        SkillDefinition(definition_id="descriptor", name="descriptor", description=""),
+        source_command_id="learn-descriptor",
+    )
+    environment = stable_environment_fingerprint(manifest.profile)
+    live = LiveStrategy(
+        revisions={revision.revision_hash: revision},
+        applicabilities={revision.revision_hash: applicability_for_goal(revision, goal("oak_log"))},
+        trusts=[SkillEnvironmentTrust.trusted(revision.revision_hash, environment)],
+        manifest=manifest,
+    )
+
+    decision = live.propose(
+        live.prepare(goal("oak_log")), Observation.model_validate(MESSAGES["Observation"])
+    )
+
+    descriptor = manifest.capability("collect").maximum_cost
+    assert decision.kind == "execute"
+    assert decision.maximum_cost == BudgetUsage(
+        max_actions=descriptor.max_actions,
+        max_strategy_attempts=descriptor.max_strategy_attempts,
+        max_travel_distance=descriptor.max_travel_distance,
+        max_blocks_changed=descriptor.max_blocks_changed,
+        max_damage_taken=descriptor.max_damage_taken,
+        resource_consumption=descriptor.resource_consumption,
+    )
+
+
+def test_compiled_program_observes_zero_inventory_aliases_and_fresh_loop_state() -> None:
+    manifest = runtime_shaped_manifest()
+    program = SkillProgram.model_validate(
+        {
+            "name": "bounded_logs",
+            "parameters": [
+                {"name": "amount", "value_type": "integer", "required": False, "default": 1}
+            ],
+            "steps": [
+                {
+                    "kind": "repeat",
+                    "step_id": "gather",
+                    "max_iterations": 3,
+                    "condition": {
+                        "op": "lt",
+                        "left": {"kind": "observation", "path": "inventory.minecraft:oak_log"},
+                        "right": {"kind": "literal", "value": 3},
+                    },
+                    "steps": [
+                        {
+                            "kind": "action",
+                            "step_id": "collect",
+                            "capability": "collect",
+                            "parameters": {"count": {"kind": "goal_input", "name": "amount"}},
+                            "maximum_cost": {
+                                "max_actions": 1,
+                                "max_travel_distance": 8,
+                                "max_blocks_changed": 2,
+                            },
+                        }
+                    ],
+                }
+            ],
+            "postconditions": [
+                {
+                    "op": "gte",
+                    "left": {"kind": "observation", "path": "inventory.oak_log"},
+                    "right": {"kind": "literal", "value": 3},
+                }
+            ],
+        }
+    )
+    descriptor = manifest.capability("collect")
+    compiled = compile_skill_program(
+        program,
+        capabilities={
+            "collect": {
+                "parameters_schema": descriptor.parameters_schema,
+                "maximum_cost": BudgetUsage(max_actions=1),
+            }
+        },
+        budget=budget(),
+    )
+    revision = compiled.to_revision(
+        SkillDefinition(definition_id="logs", name="logs", description="logs"),
+        source_command_id="test-program",
+    )
+    strategy = SkillProgramStrategy(manifest=manifest, revision=revision)
+    state = strategy.prepare(goal("oak_log"))
+    empty = Observation.model_validate({**MESSAGES["Observation"], "inventory": {}})
+    decision = strategy.propose(state, empty)
+    assert decision.kind == "execute"
+    assert decision.parameters == {"count": 1}
+    state = strategy.accept_result(state, {"outcome": "success"})
+    aliased = empty.model_copy(update={"inventory": {"oak_log": 1, "minecraft:oak_log": 2}})
+    assert strategy.propose(state, aliased).kind == "execute", (
+        "aliases are maximum counts, never summed"
+    )
+    state = strategy.accept_result(state, {"outcome": "success"})
+    complete = empty.model_copy(update={"inventory": {"minecraft:oak_log": 3}})
+    assert strategy.propose(state, complete).kind == "complete"
+    live = LiveStrategy(
+        revisions={revision.revision_hash: revision},
+        applicabilities={revision.revision_hash: applicability_for_goal(revision, goal("oak_log"))},
+        trusts=[],
+        manifest=manifest,
+    )
+    assert live.propose(live.prepare(goal("oak_log")), empty).code == "NO_ELIGIBLE_SKILL"

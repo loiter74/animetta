@@ -188,6 +188,19 @@ class MissionSpec(_FrozenModel):
 
     @model_validator(mode="after")
     def _valid_dag_and_budget(self) -> Self:
+        from animetta.tools.minecraft.skill.candidate import SkillCandidate
+
+        candidates = tuple(
+            SkillCandidate.model_validate(objective.goal.constraints["skill_candidate"])
+            for objective in self.objectives
+            if "skill_candidate" in objective.goal.constraints
+        )
+        if candidates and (
+            not self.execution.allow_skill_learning
+            or self.autonomy.mode != "bounded"
+            or len(candidates) > self.autonomy.max_new_skills
+        ):
+            raise ValueError("generated candidates exceed authorized learning quota")
         by_id = {objective.objective_id: objective for objective in self.objectives}
         if len(by_id) != len(self.objectives):
             raise ValueError("duplicate objective ID")

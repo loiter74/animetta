@@ -44,6 +44,8 @@ class MissionStrategy:
         candidates = tuple(
             name for name in ("builtin", "live", "learn", "fallback") if name in self._strategies
         )
+        if "skill_candidate" in goal.constraints:
+            candidates = ("learn",) if "learn" in self._strategies else ()
         return {
             "goal": goal,
             "candidates": candidates,
@@ -84,6 +86,8 @@ class MissionStrategy:
             if (
                 isinstance(decision, ExecuteStep)
                 and self._can_retreat
+                and selected != "live"
+                and not state["strategy_state"].get("generated_program")
                 and state["goal"].intent != "combat"
             ):
                 retreat = propose_retreat(state, observation)
@@ -156,6 +160,32 @@ class MissionStrategy:
         delegated = state.get("strategy_state")
         if not isinstance(selected, str) or not isinstance(delegated, dict):
             return None
+        if selected == "live" or delegated.get("generated_program"):
+            # IR frames advance when proposing. Generic re-proposal would silently
+            # skip the failed action; only an explicit program handler may recover.
+            recover = getattr(self._strategies[selected], "recover_failed_step", None)
+            if not callable(recover):
+                return None
+            recovered = recover(
+                {
+                    **delegated,
+                    **{
+                        key: state[key]
+                        for key in ("settled_error_code", "settled_feedback")
+                        if key in state
+                    },
+                },
+                failed_step,
+                before,
+                after,
+            )
+            if recovered is None:
+                return None
+            return {
+                **state,
+                "strategy_state": recovered,
+                "executed_steps": state["executed_steps"] + 1,
+            }
         candidate = {**state, "strategy_state": {**delegated}}
         target = candidate.pop("pending_retreat", None)
         if target is not None:

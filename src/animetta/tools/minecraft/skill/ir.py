@@ -65,6 +65,17 @@ class ActionStep(_IRModel):
     capability: str = Field(pattern=r"^[a-z][a-z0-9_]{0,63}$")
     parameters: dict[str, Expression]
     postconditions: tuple[Predicate, ...] = ()
+    maximum_cost: BudgetUsage | None = Field(default=None, exclude_if=lambda value: value is None)
+    recover_on_error: (
+        Literal[
+            "SEARCH_TIMEOUT",
+            "RESOURCE_NOT_FOUND",
+            "NAVIGATION_TARGET_NOT_REACHED",
+            "MINE_SHAFT_STUCK",
+            "PARTIAL_COLLECT",
+        ]
+        | None
+    ) = Field(default=None, exclude_if=lambda value: value is None)
 
 
 class FailStep(_IRModel):
@@ -247,6 +258,9 @@ def _max_cost(left: BudgetUsage, right: BudgetUsage) -> BudgetUsage:
     )
 
 
+_INDIVISIBLE_COST_FIELDS = ("max_actions", "max_strategy_attempts", "max_damage_taken")
+
+
 def _validate_action(
     step: ActionStep,
     *,
@@ -278,7 +292,21 @@ def _validate_action(
     for predicate in step.postconditions:
         _validate_predicate(predicate, parameters=parameters, prior_steps=prior_steps)
     cost = descriptor.get("maximum_cost", BudgetUsage())
-    return cost if isinstance(cost, BudgetUsage) else BudgetUsage.model_validate(cost)
+    cost = cost if isinstance(cost, BudgetUsage) else BudgetUsage.model_validate(cost)
+    explicit = step.maximum_cost
+    if explicit is None:
+        return cost
+    for field in _INDIVISIBLE_COST_FIELDS:
+        if getattr(explicit, field) < getattr(cost, field):
+            raise SkillIRValidationError(
+                f"explicit maximum_cost under-reports indivisible charge: {field}"
+            )
+    for name, amount in cost.resource_consumption.items():
+        if explicit.resource_consumption.get(name, 0) < amount:
+            raise SkillIRValidationError(
+                f"explicit maximum_cost under-reports indivisible resource: {name}"
+            )
+    return explicit
 
 
 def _cost_fits(cost: BudgetUsage, budget: ExecutionBudget) -> bool:
@@ -360,6 +388,32 @@ def compile_skill_program(
                 _scale_cost(leaf_cost(step.steps, set(prior)), step.max_iterations),
             )
         seen_steps.add(step.step_id)
+
+    # Recovery is explicit dataflow, never permission to silently skip an action.
+    def validate_handlers(steps: tuple[object, ...]) -> None:
+        for index, step in enumerate(steps):
+            if isinstance(step, ActionStep) and step.recover_on_error is not None:
+                following = steps[index + 1] if index + 1 < len(steps) else None
+                condition = following.condition if isinstance(following, BranchStep) else None
+                if not (
+                    condition is not None
+                    and condition.op == "eq"
+                    and isinstance(condition.left, StepOutputExpression)
+                    and condition.left.step_id == step.step_id
+                    and condition.left.path == "error_code"
+                    and isinstance(condition.right, LiteralExpression)
+                    and condition.right.value == step.recover_on_error
+                ):
+                    raise SkillIRValidationError(
+                        "recoverable action requires an immediate error branch"
+                    )
+            elif isinstance(step, BranchStep):
+                validate_handlers(step.then_steps)
+                validate_handlers(step.else_steps)
+            elif isinstance(step, RepeatStep):
+                validate_handlers(step.steps)
+
+    validate_handlers(program.steps)
 
     for predicate in program.postconditions:
         _validate_predicate(predicate, parameters=parameter_map, prior_steps=seen_steps)
