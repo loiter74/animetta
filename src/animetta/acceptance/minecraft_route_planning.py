@@ -36,8 +36,10 @@ from animetta.tools.minecraft.voyager.budget import BudgetUsage
 
 from .minecraft_learning import build_bounded_learning_portal_mission
 from .minecraft_planning import (
+    NETHER_DESCENT_ACCESS_RULE,
     inventory_input_options,
     nether_plan_inventory_requirements,
+    surface_access_input_options,
     validate_mission_plan,
 )
 
@@ -204,6 +206,11 @@ def route_prompt_context(
     return {
         "route_schema": RouteDraft.model_json_schema(),
         "skill_authoring": skill_authoring_contract(manifest),
+        "access_planning_rules": NETHER_DESCENT_ACCESS_RULE,
+        "surface_access_options": [
+            option.model_dump(mode="json")
+            for option in surface_access_input_options(supplier_goals)
+        ],
         "catalogue": [
             {
                 "task": obj.objective_id,

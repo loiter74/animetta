@@ -347,6 +347,83 @@ def test_prompt_and_feedback_share_inventory_options():
     ] == ["obsidian"]
 
 
+def test_r105_omitted_return_is_rejected_using_full_catalogue_location_facts():
+    route = [
+        "iron",
+        "iron-pickaxe",
+        "water-bucket",
+        "diamond-pickaxe",
+        "obsidian",
+        "ignition",
+        "return-home",
+        "portal",
+    ]
+    payload = {"route": route}
+    original = json.dumps(payload)
+    with pytest.raises(RoutePlanningError) as failure:
+        compile_draft(payload)
+    assert json.dumps(payload) == original
+    assert len(failure.value.issues) == 1
+    issue = failure.value.issues[0]
+    assert issue["code"] == "MISSING_ACCESS_PROVISION"
+    assert issue["objective_id"] == "water-bucket"
+    assert issue["candidate_dependencies"] == issue["candidate_dependency_paths"] == []
+    assert issue["location_options"][0]["supplier_tasks"] == ["return-home", "water-return"]
+    context = route_prompt_context(
+        mission_id="route-test",
+        home=(0, 64, 0),
+        observation=Observation.model_validate(MESSAGES["Observation"]),
+        manifest=manifest(),
+    )
+    assert issue["location_options"] == context["surface_access_options"]
+    assert issue["message"] == context["access_planning_rules"]
+
+
+@pytest.mark.parametrize("inventory", [{"water_bucket": 1}, {"minecraft:iron_ingot": 7}])
+def test_catalogue_access_gate_preserves_provisioned_short_routes(inventory):
+    route = [task for task in ROUTE if task != "water-return"]
+    assert len(compile_draft({"route": route}, inventory).objectives) == 8
+
+
+def test_other_authorized_travel_can_prove_fresh_access_without_forcing_nine_tasks():
+    route = [task for task in ROUTE if task not in {"water-return", "return-home"}]
+    route.insert(route.index("water-bucket"), "return-home")
+    mission = compile_draft({"route": route})
+    assert len(mission.objectives) == 8
+    assert [o.objective_id for o in mission.objectives] == route
+
+
+async def test_r105_missing_access_can_be_repaired_within_original_two_proposals():
+    missing = [task for task in ROUTE if task != "water-return"]
+    calls = []
+
+    async def invoke(messages):
+        calls.append(messages)
+        route = missing
+        if len(calls) == 2:
+            feedback = json.loads(messages[-1]["content"])
+            issue = feedback["issues"][0]
+            assert feedback["remaining_proposals"] == 1
+            assert issue["code"] == "MISSING_ACCESS_PROVISION"
+            assert "water-return" in issue["location_options"][0]["supplier_tasks"]
+            route = ROUTE
+        return {"content": json.dumps({"route": route}), "usage": None}
+
+    result = await generate_route_plan(
+        invoke=invoke,
+        messages=[],
+        mission_id="route-test",
+        home=(0, 64, 0),
+        origin=(2, 64, 0),
+        manifest=manifest(),
+        initial_inventory={},
+    )
+    assert len(calls) == len(result.attempts) == 2 and result.mission is not None
+    assert result.attempts[0].issues and not result.attempts[1].issues
+    assert [o.objective_id for o in result.mission.objectives] == ROUTE
+    assert result.mission.budget == compile_draft({"route": ROUTE}).budget
+
+
 def test_selected_later_supplier_is_a_reordering_choice_not_a_new_dependency_edge():
     route = ROUTE.copy()
     route.remove("diamond-pickaxe")

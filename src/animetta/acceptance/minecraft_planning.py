@@ -23,9 +23,11 @@ NETHER_DESCENT_ACCESS_RULE = (
     "采铁作为取水前置时，应在采铁之后、取水之前执行已授权的岸边返回目标；"
     "钻石工作流下矿前应备水，或明确安排下降后返回同岸边再取水。"
     "已具水桶、铁目标已满足或已有本地钻石材料时，按已知库存跳过不必要的顺序。"
-    "目标目录不是执行顺序；修复只能重排、复用已有目标并调整依赖，"
-    "必要时移除失效旧边避免成环，禁止复制或追加新的返岸目标，不得改动预算。"
+    "目标目录不是执行顺序；修复只能在授权目录中选择、重排或复用目标并调整依赖，"
+    "必要时移除失效旧边避免成环，禁止复制目标或创建目录外返岸目标，不得改动预算。"
     "candidate_dependency_paths 只表示已有目标之间应满足的先后，不是追加动作。"
+    "location_options.supplier_tasks是目录中的位置供给选项，不是可直接添加的依赖边；"
+    "须选择供给目标并排在失效位置的采矿之后、取水之前。"
     "工作台属于原地点的设施，不随铁锭移动；零方块预算的铁镐制作应在离开采铁工作台前完成。"
     "就绪目标按优先级降序、同优先级按目录顺序执行，也可通过合法优先级保留设施访问。"
 )
@@ -51,6 +53,13 @@ class InventoryInputOption(BaseModel):
         return all(item.missing_quantity == 0 for item in self.inventory_all)
 
 
+class LocationInputOption(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    region: LocationReached
+    supplier_tasks: tuple[str, ...]
+
+
 class PlanningIssue(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -63,6 +72,7 @@ class PlanningIssue(BaseModel):
     candidate_dependency_paths: tuple[tuple[str, ...], ...] = ()
     # Catalogue choices, not edges that may safely be added to the current DAG.
     input_options: tuple[InventoryInputOption, ...] = ()
+    location_options: tuple[LocationInputOption, ...] = ()
 
 
 def nether_plan_inventory_requirements() -> dict[tuple[str, str], WorkflowCheckpoint]:
@@ -100,6 +110,44 @@ def _inventory(values: Mapping[str, int]) -> dict[str, int]:
         key = _resource_id(item)
         result[key] = max(result.get(key, 0), count)
     return result
+
+
+def _location_within(position: LocationReached, region: LocationReached) -> bool:
+    return (
+        dist((position.x, position.y, position.z), (region.x, region.y, region.z))
+        + position.tolerance
+        <= region.tolerance
+    )
+
+
+def surface_access_input_options(
+    supplier_goals: Mapping[str, GoalSpec],
+) -> tuple[LocationInputOption, ...]:
+    """Describe catalogue location proofs; neither select tasks nor infer live reachability."""
+    regions = [
+        predicate
+        for goal in supplier_goals.values()
+        if goal.intent == "travel" and goal.target == "surface-water-access"
+        for predicate in goal.success_predicates
+        if isinstance(predicate, LocationReached)
+    ]
+    return tuple(
+        LocationInputOption(
+            region=region,
+            supplier_tasks=tuple(
+                sorted(
+                    task
+                    for task, goal in supplier_goals.items()
+                    if goal.intent == "travel"
+                    and any(
+                        isinstance(position, LocationReached) and _location_within(position, region)
+                        for position in goal.success_predicates
+                    )
+                )
+            ),
+        )
+        for region in regions
+    )
 
 
 def _goal_contract(goal: GoalSpec) -> str:
@@ -371,21 +419,14 @@ def validate_mission_plan(
             )
     water = actual.get(("acquire", "water_bucket"))
     if water is not None:
-        shores = [
-            predicate
-            for objective in reference.objectives
-            if objective.goal.intent == "travel" and objective.goal.target == "surface-water-access"
-            for predicate in objective.goal.success_predicates
-            if isinstance(predicate, LocationReached)
-        ]
+        location_options = surface_access_input_options(available_goals)
+        shores = [option.region for option in location_options]
         water_ancestors = upstream(water.objective_id)
 
         def returned_after(objective_id: str) -> bool:
             # Require the whole accepted location region to prove a fresh shore.
             return any(
-                dist((position.x, position.y, position.z), (shore.x, shore.y, shore.z))
-                + position.tolerance
-                <= shore.tolerance
+                _location_within(position, shore)
                 for parent in water_ancestors
                 if by_id[parent].goal.intent == "travel" and objective_id in upstream(parent)
                 for position in by_id[parent].goal.success_predicates
@@ -398,8 +439,8 @@ def validate_mission_plan(
             if mining is None:
                 continue
             iron = key == ("acquire", "nether_iron_kit")
-            # Only constrain an explicitly supplied shore and iron-before-water
-            # relation; existing inventory-only and standalone plans keep scope.
+            # Use the authorized catalogue even when its return task was omitted.
+            # Inventory-only and standalone plans without a shore keep their scope.
             if iron and (not shores or mining.objective_id not in water_ancestors):
                 continue
             known = known_before(mining.objective_id)
@@ -435,6 +476,7 @@ def validate_mission_plan(
                         if iron
                         else ((water.objective_id, mining.objective_id),)
                     ),
+                    location_options=location_options if iron else (),
                 )
             )
     return tuple(issues)
