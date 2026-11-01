@@ -416,11 +416,24 @@ export function createCollectionBlockMatcher(blockId, excludedKeys = new Set(), 
   );
 }
 
-export function findCollectionTarget(bot, blockId, maxDistance, excludedKeys = new Set()) {
-  return bot.findBlock({
-    matching: createCollectionBlockMatcher(blockId, excludedKeys),
+export function findCollectionTarget(bot, blockId, maxDistance, excludedKeys = new Set(), eligible = () => true) {
+  const options = {
+    matching: createCollectionBlockMatcher(blockId, excludedKeys, eligible),
     maxDistance,
-  });
+  };
+  const target = bot.findBlock(options);
+  if (!target?.name?.endsWith('_ore') || !target.position || !bot.entity?.position) return target;
+  const origin = flooredPosition(bot.entity.position);
+  const squaredDistance = position => ['x', 'y', 'z'].reduce((sum, axis) => (
+    sum + (position[axis] - origin[axis]) ** 2
+  ), 0);
+  const distance = squaredDistance(target.position);
+  if (!Number.isSafeInteger(distance) || distance <= 1 || distance > maxDistance ** 2) return target;
+  // Native count=1 stops after a section layer, which need not contain the
+  // closest ore. Integer cell distances let one strictly smaller search check
+  // nearer sections without widening the radius or changing the result count.
+  const closer = bot.findBlock({ ...options, maxDistance: Math.sqrt(distance - 1) });
+  return closer?.position && squaredDistance(closer.position) < distance ? closer : target;
 }
 
 export function isCollectionBlockStillPresent(bot, block) {

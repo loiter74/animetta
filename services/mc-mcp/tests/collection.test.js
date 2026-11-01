@@ -13,6 +13,37 @@ import WorldSync from 'prismarine-world/src/worldsync.js';
 
 import * as collection from '../src/collection.js';
 import * as resourceRegistry from '../src/resources/registry.js';
+import { sectionBoundaryOreFixture } from './fixtures/sectionBoundaryOre.js';
+
+test('ore selection checks a closer target across a native section boundary without widening the search', () => {
+  const f = sectionBoundaryOreFixture();
+  const target = collection.findCollectionTarget(f.bot, f.blockId, 32);
+  assert.deepEqual(target.position, f.near);
+  assert.equal(f.calls.length, 2);
+  assert.equal(f.calls[0].radius, 32);
+  assert.ok(f.calls[1].radius < f.far.distanceTo(f.bot.entity.position.floored()));
+  assert.ok(f.calls.every(call => call.count === 1));
+});
+
+test('closer ore refinement retains safety and excluded-target filters', () => {
+  for (const mode of ['excluded', 'ineligible']) {
+    const f = sectionBoundaryOreFixture();
+    const excluded = mode === 'excluded' ? new Set([collection.collectionBlockKey({ position: f.near })]) : new Set();
+    const target = collection.findCollectionTarget(f.bot, f.blockId, 32, excluded,
+      block => mode !== 'ineligible' || !block.position.equals(f.near));
+    assert.deepEqual(target.position, f.far, mode);
+    assert.equal(f.calls.length, 2);
+    assert.ok(f.calls.every(call => call.radius <= 32 && call.count === 1));
+  }
+});
+
+test('adjacent ore never turns a zero-radius refinement into the SDK default radius', () => {
+  const target = { name: 'iron_ore', position: new Vec3(1, 64, 0) }, calls = [];
+  const bot = { entity: { position: new Vec3(.5, 64, .5) }, findBlock(options) { calls.push(options); return target; } };
+  assert.equal(collection.findCollectionTarget(bot, 15, 1), target);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].maxDistance, 1);
+});
 
 function elevatedWoodDropFixture({ budget = 3, count = 1, wet = false,
   knownProperties = true, blocker = 'spruce_leaves', landing = 'stone', cancelAfterLeaf = false } = {}) {

@@ -756,7 +756,7 @@ async function _collectInner(block_type, count, mcData, context = {}) {
     restrictNavigationHeight(bot.pathfinder.movements, minimumY);
   }
   let discoveredTarget = workTargets?.map(position => bot.blockAt(position)).find(matchesAvailableTarget)
-    ?? bot.findBlock({ matching: matchesAvailableTarget, maxDistance: 32 });
+    ?? findCollectionTarget(bot, blockIds, 32, excludedTargets, matchesAvailableTarget);
   context.collection_safety?.enable();
   const safetyPause = error => context.collection_safety?.pending
     || error?.code === 'COLLECTION_SAFETY_PAUSED';
@@ -811,7 +811,7 @@ async function _collectInner(block_type, count, mcData, context = {}) {
     try {
       // Find block
       let block = discoveredTarget
-        || bot.findBlock({ matching: matchesAvailableTarget, maxDistance: 32 });
+        || findCollectionTarget(bot, blockIds, 32, excludedTargets, matchesAvailableTarget);
       discoveredTarget = null;
       const searchResource = selectedWood || (genericWood ? 'any_log' : resolvedBlockType);
 
