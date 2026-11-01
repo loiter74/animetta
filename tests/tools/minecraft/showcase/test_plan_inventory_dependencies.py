@@ -100,6 +100,71 @@ def test_iron_can_return_to_the_same_shore_using_another_authorized_travel_goal(
     assert validate_mission_plan(plan, reference=mission, initial_inventory={}) == ()
 
 
+@pytest.mark.parametrize(
+    "mode",
+    [
+        "unsafe",
+        "higher_priority",
+        "dependency",
+        "already_crafted",
+        "mobile_workflow",
+        "completed_mobile_workflow",
+        "multiple_movers",
+    ],
+)
+def test_zero_block_craft_keeps_local_workstation_access_in_scheduled_order(mode: str) -> None:
+    mission = reference()
+    data = mission.model_dump(mode="json")
+    changes = {
+        "iron": ([], 80),
+        "iron-pickaxe": (["iron"], 95 if mode == "higher_priority" else 75),
+        "water-return": (
+            [
+                "iron-pickaxe"
+                if mode in {"dependency", "mobile_workflow", "completed_mobile_workflow"}
+                else "iron"
+            ],
+            90,
+        ),
+        "water-bucket": (["water-return"], 65),
+        "ignition": (
+            ["iron"],
+            96
+            if mode in {"mobile_workflow", "completed_mobile_workflow", "multiple_movers"}
+            else 70,
+        ),
+        "diamond-pickaxe": (["iron-pickaxe", "water-bucket"], 60),
+        "obsidian": (["diamond-pickaxe"], 55),
+        "return-home": (["obsidian"], 50),
+        "portal": (["return-home", "ignition"], 40),
+    }
+    for objective in data["objectives"]:
+        objective["dependencies"], objective["priority"] = changes[objective["objective_id"]]
+    plan = MissionSpec.model_validate(data)
+    before = plan.canonical_hash
+    inventory = {"iron_pickaxe": 1} if mode == "already_crafted" else {}
+    if mode == "completed_mobile_workflow":
+        inventory = {"minecraft:flint_and_steel": 1}
+    issues = validate_mission_plan(plan, reference=mission, initial_inventory=inventory)
+    assert [issue.code for issue in issues] == (
+        ["MISSING_WORKSTATION_ACCESS"]
+        if mode in {"unsafe", "mobile_workflow", "multiple_movers"}
+        else []
+    )
+    if mode in {"unsafe", "mobile_workflow"}:
+        assert issues[0].objective_id == "iron-pickaxe"
+        assert issues[0].candidate_dependency_paths == (
+            ("iron", "iron-pickaxe", "water-return" if mode == "unsafe" else "ignition"),
+        )
+    elif mode == "multiple_movers":
+        assert issues[0].candidate_dependency_paths == (
+            ("iron", "iron-pickaxe", "ignition"),
+            ("iron", "iron-pickaxe", "water-return"),
+        )
+    assert plan.canonical_hash == before
+    assert plan.budget == mission.budget
+
+
 def test_deep_mining_cannot_spend_surface_access_before_an_independent_water_goal() -> None:
     mission = reference()
     plan = unprovisioned_descent(mission)

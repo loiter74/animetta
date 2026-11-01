@@ -13,6 +13,7 @@ from animetta.tools.minecraft.survival.workflows import (
     InventoryThreshold,
     WorkflowCheckpoint,
     WorkflowCheckpointClause,
+    nether_preparation_workflows,
 )
 from animetta.tools.minecraft.voyager.goal_models import GoalSpec, InventoryAtLeast, LocationReached
 from animetta.tools.minecraft.voyager.goal_verifier import _resource_id
@@ -25,6 +26,8 @@ NETHER_DESCENT_ACCESS_RULE = (
     "目标目录不是执行顺序；修复只能重排、复用已有目标并调整依赖，"
     "必要时移除失效旧边避免成环，禁止复制或追加新的返岸目标，不得改动预算。"
     "candidate_dependency_paths 只表示已有目标之间应满足的先后，不是追加动作。"
+    "工作台属于原地点的设施，不随铁锭移动；零方块预算的铁镐制作应在离开采铁工作台前完成。"
+    "就绪目标按优先级降序、同优先级按目录顺序执行，也可通过合法优先级保留设施访问。"
 )
 
 
@@ -101,6 +104,19 @@ def _goal_inventory(goal: GoalSpec) -> dict[str, int]:
             item = _resource_id(predicate.item)
             result[item] = max(result.get(item, 0), predicate.quantity)
     return result
+
+
+def _scheduled_objective_ids(mission: MissionSpec) -> tuple[str, ...]:
+    # Match the coordinator's priority/ordinal choice among ready objectives.
+    pending = sorted(mission.objectives, key=lambda obj: -obj.priority)
+    completed: set[str] = set()
+    order = []
+    while pending:
+        objective = next(obj for obj in pending if set(obj.dependencies) <= completed)
+        order.append(objective.objective_id)
+        completed.add(objective.objective_id)
+        pending.remove(objective)
+    return tuple(order)
 
 
 def validate_mission_plan(
@@ -214,6 +230,64 @@ def validate_mission_plan(
                 candidate_dependencies=suppliers,
             )
         )
+    iron_kit = actual.get(("acquire", "nether_iron_kit"))
+    pickaxe = actual.get(("craft", "iron_pickaxe"))
+    if (
+        iron_kit is not None
+        and pickaxe is not None
+        and pickaxe.budget.max_blocks_changed == 0
+        and iron_kit.objective_id in upstream(pickaxe.objective_id)
+        and known_before(pickaxe.objective_id).get(_resource_id("iron_pickaxe"), 0)
+        < pickaxe.goal.quantity
+    ):
+        order = _scheduled_objective_ids(mission)
+        between = order[order.index(iron_kit.objective_id) + 1 : order.index(pickaxe.objective_id)]
+        mobile_workflows = {
+            (workflow.intent, workflow.target)
+            for workflow in nether_preparation_workflows()
+            if any(step.maximum_cost.max_travel_distance > 0 for step in workflow.steps)
+        }
+        moving = []
+        for objective_id in between:
+            objective = by_id[objective_id]
+            goal = objective.goal
+            if (
+                goal.intent not in {"travel", "build"}
+                and (
+                    goal.intent,
+                    goal.target,
+                )
+                not in mobile_workflows
+            ):
+                continue
+            known = known_before(objective_id)
+            if (
+                outputs[objective_id]
+                and all(
+                    isinstance(predicate, InventoryAtLeast) for predicate in goal.success_predicates
+                )
+                and all(
+                    known.get(item, 0) >= quantity
+                    for item, quantity in outputs[objective_id].items()
+                )
+            ):
+                continue
+            moving.append(objective)
+        if moving:
+            issues.append(
+                PlanningIssue(
+                    code="MISSING_WORKSTATION_ACCESS",
+                    objective_id=pickaxe.objective_id,
+                    message=(
+                        "零方块预算不能在离开原工作台后另放工作台；请复用现有目标，"
+                        "调整依赖或优先级，先完成本地铁镐制作，再执行会移动的目标。"
+                    ),
+                    candidate_dependency_paths=tuple(
+                        (iron_kit.objective_id, pickaxe.objective_id, objective.objective_id)
+                        for objective in moving
+                    ),
+                )
+            )
     water = actual.get(("acquire", "water_bucket"))
     if water is not None:
         shores = [
