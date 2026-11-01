@@ -18,9 +18,10 @@ from animetta.tools.minecraft.voyager.goal_models import GoalSpec, InventoryAtLe
 from animetta.tools.minecraft.voyager.goal_verifier import _resource_id
 
 NETHER_DESCENT_ACCESS_RULE = (
-    "钻石镐工作流缺少钻石时会下降矿井，可能失去当前岸边可达性。"
-    "若计划还需取水，应在下降前备水，或用已授权的同岸边位置目标在下降后返回再取水；"
-    "已有足量钻石、成品镐或水桶时不强制该顺序。"
+    "采铁和采钻会改变位置，采矿前访问过岸边不能证明采矿后仍可取水。"
+    "采铁作为取水前置时，应在采铁之后、取水之前执行已授权的岸边返回目标；"
+    "钻石工作流下矿前应备水，或明确安排下降后返回同岸边再取水。"
+    "已具水桶、铁目标已满足或已有本地钻石材料时，按已知库存跳过不必要的顺序。"
 )
 
 
@@ -208,15 +209,8 @@ def validate_mission_plan(
                 candidate_dependencies=suppliers,
             )
         )
-    descent = actual.get(("craft", "diamond_pickaxe"))
     water = actual.get(("acquire", "water_bucket"))
-    if descent is not None and water is not None:
-        known = known_before(descent.objective_id)
-        provisioned = (
-            known.get(_resource_id("water_bucket"), 0) >= water.goal.quantity
-            or known.get(_resource_id("diamond_pickaxe"), 0) >= descent.goal.quantity
-            or known.get(_resource_id("diamond"), 0) >= 3 * descent.goal.quantity
-        )
+    if water is not None:
         shores = [
             predicate
             for objective in reference.objectives
@@ -224,25 +218,56 @@ def validate_mission_plan(
             for predicate in objective.goal.success_predicates
             if isinstance(predicate, LocationReached)
         ]
-        # A pre-descent visit is stale. A return must follow descent and precede
-        # water, and its entire accepted location region must prove the shore.
-        returned = any(
-            dist((position.x, position.y, position.z), (shore.x, shore.y, shore.z))
-            + position.tolerance
-            <= shore.tolerance
-            for parent in upstream(water.objective_id)
-            if by_id[parent].goal.intent == "travel" and descent.objective_id in upstream(parent)
-            for position in by_id[parent].goal.success_predicates
-            if isinstance(position, LocationReached)
-            for shore in shores
-        )
-        if not provisioned and not returned:
+        water_ancestors = upstream(water.objective_id)
+
+        def returned_after(objective_id: str) -> bool:
+            # Require the whole accepted location region to prove a fresh shore.
+            return any(
+                dist((position.x, position.y, position.z), (shore.x, shore.y, shore.z))
+                + position.tolerance
+                <= shore.tolerance
+                for parent in water_ancestors
+                if by_id[parent].goal.intent == "travel" and objective_id in upstream(parent)
+                for position in by_id[parent].goal.success_predicates
+                if isinstance(position, LocationReached)
+                for shore in shores
+            )
+
+        for key in (("acquire", "nether_iron_kit"), ("craft", "diamond_pickaxe")):
+            mining = actual.get(key)
+            if mining is None:
+                continue
+            iron = key == ("acquire", "nether_iron_kit")
+            # Only constrain an explicitly supplied shore and iron-before-water
+            # relation; existing inventory-only and standalone plans keep scope.
+            if iron and (not shores or mining.objective_id not in water_ancestors):
+                continue
+            known = known_before(mining.objective_id)
+            postconditions = outputs[mining.objective_id]
+            completed = bool(postconditions) and all(
+                known.get(item, 0) >= quantity for item, quantity in postconditions.items()
+            )
+            provisioned = known.get(_resource_id("water_bucket"), 0) >= water.goal.quantity
+            local_craft = (
+                not iron and known.get(_resource_id("diamond"), 0) >= 3 * mining.goal.quantity
+            )
+            if completed or provisioned or local_craft or returned_after(mining.objective_id):
+                continue
+            suppliers = (
+                tuple(
+                    obj.objective_id
+                    for obj in mission.objectives
+                    if obj.goal.intent == "travel" and obj.goal.target == "surface-water-access"
+                )
+                if iron
+                else (water.objective_id,)
+            )
             issues.append(
                 PlanningIssue(
                     code="MISSING_ACCESS_PROVISION",
-                    objective_id=descent.objective_id,
+                    objective_id=water.objective_id if iron else mining.objective_id,
                     message=NETHER_DESCENT_ACCESS_RULE,
-                    candidate_dependencies=(water.objective_id,),
+                    candidate_dependencies=suppliers,
                 )
             )
     return tuple(issues)

@@ -36,7 +36,7 @@ def unprovisioned_descent(mission: MissionSpec) -> MissionSpec:
     dependencies = {
         "diamond-pickaxe": ["iron-pickaxe"],
         "water-return": ["iron-pickaxe"],
-        "water-bucket": ["iron"],
+        "water-bucket": ["water-return"],
         "ignition": ["iron"],
         "obsidian": ["diamond-pickaxe", "water-bucket"],
     }
@@ -44,6 +44,59 @@ def unprovisioned_descent(mission: MissionSpec) -> MissionSpec:
         if objective["objective_id"] in dependencies:
             objective["dependencies"] = dependencies[objective["objective_id"]]
     return MissionSpec.model_validate(data)
+
+
+def stale_iron_shore(mission: MissionSpec) -> MissionSpec:
+    # R96: the visited shore precedes mining; water only waits for the iron kit.
+    data = mission.model_dump(mode="json")
+    dependencies = {
+        "water-return": [],
+        "iron": ["water-return"],
+        "water-bucket": ["iron"],
+        "diamond-pickaxe": ["iron-pickaxe", "water-bucket"],
+    }
+    for objective in data["objectives"]:
+        if objective["objective_id"] in dependencies:
+            objective["dependencies"] = dependencies[objective["objective_id"]]
+    return MissionSpec.model_validate(data)
+
+
+@pytest.mark.parametrize(
+    "inventory,valid",
+    [
+        ({}, False),
+        ({"water_bucket": 1}, True),
+        ({"minecraft:iron_ingot": 7}, True),
+        ({"iron_ingot": 4, "minecraft:iron_ingot": 4}, False),
+    ],
+)
+def test_iron_before_water_requires_a_fresh_return_unless_already_provisioned(
+    inventory, valid
+) -> None:
+    mission = reference()
+    plan = stale_iron_shore(mission)
+    before = plan.canonical_hash
+    issues = validate_mission_plan(plan, reference=mission, initial_inventory=inventory)
+    assert [issue.code for issue in issues] == ([] if valid else ["MISSING_ACCESS_PROVISION"])
+    if not valid:
+        assert issues[0].objective_id == "water-bucket"
+        assert issues[0].candidate_dependencies == ("water-return",)
+        assert issues[0].required_any_of == ()
+    assert plan.canonical_hash == before
+
+
+def test_iron_can_return_to_the_same_shore_using_another_authorized_travel_goal() -> None:
+    mission = reference()
+    data = stale_iron_shore(mission).model_dump(mode="json")
+    for objective in data["objectives"]:
+        if objective["objective_id"] == "return-home":
+            objective["dependencies"] = ["iron"]
+        elif objective["objective_id"] == "water-bucket":
+            objective["dependencies"] = ["return-home"]
+        elif objective["objective_id"] == "portal":
+            objective["dependencies"] = ["return-home", "obsidian", "ignition"]
+    plan = MissionSpec.model_validate(data)
+    assert validate_mission_plan(plan, reference=mission, initial_inventory={}) == ()
 
 
 def test_deep_mining_cannot_spend_surface_access_before_an_independent_water_goal() -> None:
@@ -117,9 +170,9 @@ def test_return_access_uses_the_authorized_location_region_instead_of_its_label(
         elif objective["objective_id"] == "water-bucket":
             objective["dependencies"] = ["return-home"]
     issues = validate_mission_plan(
-        MissionSpec.model_validate(data), reference=mission, initial_inventory={}
+        MissionSpec.model_validate(data), reference=mission, initial_inventory={"iron_ingot": 7}
     )
-    assert not issues if valid else [issue.code for issue in issues] == ["MISSING_ACCESS_PROVISION"]
+    assert [issue.code for issue in issues] == ([] if valid else ["MISSING_ACCESS_PROVISION"])
 
 
 def test_a_standalone_diamond_goal_does_not_invent_a_water_task() -> None:
@@ -251,7 +304,7 @@ def test_missing_dependency_is_reported_without_mutating_the_plan() -> None:
     assert plan.model_dump(mode="json") == before
 
 
-@pytest.mark.parametrize("failure_kind", ["inventory", "access"])
+@pytest.mark.parametrize("failure_kind", ["inventory", "access", "shore"])
 async def test_structured_input_error_reaches_the_existing_model_repair_once(failure_kind) -> None:
     mission = reference()
     authority = MinecraftExecuteRequest.model_validate(
@@ -281,7 +334,9 @@ async def test_structured_input_error_reaches_the_existing_model_repair_once(fai
         }
 
     broken = response(
-        missing_iron(mission) if failure_kind == "inventory" else unprovisioned_descent(mission)
+        {"inventory": missing_iron, "access": unprovisioned_descent, "shore": stale_iron_shore}[
+            failure_kind
+        ](mission)
     )
     original = json.dumps(broken, sort_keys=True)
     model_calls = 0
@@ -296,8 +351,13 @@ async def test_structured_input_error_reaches_the_existing_model_repair_once(fai
         assert result["repair_remaining"] is True
         problem = json.loads(result["error"])
         assert problem["code"] == "MC_PLAN_REJECTED"
-        assert problem["issues"][0]["candidate_dependencies"] == (
-            ["iron"] if failure_kind == "inventory" else ["water-bucket"]
+        assert (
+            problem["issues"][0]["candidate_dependencies"]
+            == {
+                "inventory": ["iron"],
+                "access": ["water-bucket"],
+                "shore": ["water-return"],
+            }[failure_kind]
         )
         return response(mission)
 
