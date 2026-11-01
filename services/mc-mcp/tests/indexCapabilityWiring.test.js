@@ -103,19 +103,6 @@ test('mining and collection retry structured underground search before legacy ex
   );
 });
 
-test('collection reuses the bounded mine shaft before deep resource search', async () => {
-  const source = await readFile(indexUrl, 'utf8');
-
-  assert.match(
-    source,
-    /shouldPrepareUndergroundCollection\([\s\S]*?resolvedBlockType,[\s\S]*?count,/,
-  );
-  assert.match(
-    source,
-    /mineShaftMod\.mineShaft\(\s*preparation\.targetY,\s*preparation\.minimumCobblestone,\s*context,\s*\)/,
-  );
-});
-
 test('collection accepts a caller-owned exclusion set for partial retries', async () => {
   const source = await readFile(indexUrl, 'utf8');
 

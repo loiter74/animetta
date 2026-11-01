@@ -468,7 +468,7 @@ export function createMineShaft({
     return false;
   }
 
-  async function digStairStep() {
+  async function digStairStep(preserveReturnPath = false) {
     const base = bot.entity.position.floored();
     const startY = Math.floor(bot.entity.position.y);
     for (const dir of candidateDirections()) {
@@ -480,8 +480,14 @@ export function createMineShaft({
       const feetBlock = bot.blockAt(feetPos);
       const headBlock = bot.blockAt(headPos);
       if (isFluidHazard(feetBlock) || isFluidHazard(headBlock)) continue;
-      if (!canExcavateTo([headPos, feetPos], feetPos.offset(.5, 0, .5))) continue;
+      const returnHeadPos = headPos.offset(0, 1, 0);
+      const returnHead = preserveReturnPath ? bot.blockAt(returnHeadPos) : null;
+      if (preserveReturnPath && !isClear(returnHead) && !isSolid(returnHead)) continue;
+      const excavation = preserveReturnPath ? [returnHeadPos, headPos, feetPos] : [headPos, feetPos];
+      if (!canExcavateTo(excavation, feetPos.offset(.5, 0, .5))) continue;
       try {
+        // A downward step needs this extra headroom to be climbed in reverse.
+        if (preserveReturnPath) await digIfNeeded(returnHead);
         await digIfNeeded(headBlock);
         await digIfNeeded(feetBlock);
       } catch (error) {
@@ -646,6 +652,9 @@ export function createMineShaft({
     let stuck = 0;
     const depth = Math.max(1, startY - targetY);
     const deadline = Date.now() + Math.max(180000, depth * 6000);
+    const preserveReturnPath = context.preserve_return_path === true;
+    const descend = () => preserveReturnPath
+      ? digStairStep(true) : digVerticalStep(() => quotaResult() !== null);
     try {
       await waitForGround(3000);
       while (Math.floor(bot.entity.position.y) > targetY && Date.now() < deadline) {
@@ -655,20 +664,20 @@ export function createMineShaft({
         if (completedQuota) return completedQuota;
         let attemptedDig = false;
         try {
-          attemptedDig = await digVerticalStep(() => quotaResult() !== null);
-          const completedQuotaAfterVertical = quotaResult();
-          if (completedQuotaAfterVertical) return completedQuotaAfterVertical;
+          attemptedDig = await descend();
+          const completedQuotaAfterDescent = quotaResult();
+          if (completedQuotaAfterDescent) return completedQuotaAfterDescent;
           if (!attemptedDig) {
             attemptedDig = await moveToSupportedLedge();
           }
-          if (!attemptedDig) {
+          if (!attemptedDig && !preserveReturnPath) {
             attemptedDig = await digStairStep();
           }
           if (!attemptedDig && !findSealBlock()) {
             const harvestedSupport = await harvestEmergencySupportBlock();
             if (harvestedSupport) {
-              attemptedDig = await digVerticalStep(() => quotaResult() !== null);
-              if (!attemptedDig) {
+              attemptedDig = await descend();
+              if (!attemptedDig && !preserveReturnPath) {
                 attemptedDig = await digStairStep();
               }
             }
@@ -682,7 +691,7 @@ export function createMineShaft({
           }
           if (e?.code === 'MINE_SHAFT_HAZARD') {
             attemptedDig = await moveToSupportedLedge();
-            if (!attemptedDig) attemptedDig = await digStairStep();
+            if (!attemptedDig) attemptedDig = await digStairStep(preserveReturnPath);
             if (!attemptedDig) throw e;
             continue;
           }

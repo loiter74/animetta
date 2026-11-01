@@ -796,6 +796,7 @@ test('native collection passes the pre-dig inventory threshold to ordinary ore p
   let dug = false;
   const context = { budget: { max_blocks_changed: 192 } };
   let toolChecks = 0;
+  let preparationCalls = 0;
   const source = readFileSync(new URL('../src/index.js', import.meta.url), 'utf8');
   const start = source.indexOf('async function _collectInner(');
   const end = source.indexOf('\nfunction craftError(', start);
@@ -808,7 +809,16 @@ test('native collection passes the pre-dig inventory threshold to ordinary ore p
     BLOCK_DROP_ITEM: { iron_ore: 'raw_iron' },
     resolveRequestedBlockName: () => 'iron_ore',
     resolveRequestedBlockNames: () => ['iron_ore'],
-    shouldPrepareUndergroundCollection: () => null,
+    shouldPrepareUndergroundCollection: (resource, count) => {
+      assert.equal(resource,'iron_ore'); assert.equal(count,1);
+      return { targetY: 52, minimumCobblestone: 0 };
+    },
+    mineShaftMod: { mineShaft: async (targetY, quota, preparationContext) => {
+      assert.equal(targetY,52); assert.equal(quota,0);
+      assert.equal(preparationContext.preserve_return_path,true);
+      assert.equal(preparationContext.budget,context.budget,'use the original action allowance');
+      preparationCalls++;
+    } },
     collectionDigSafety: () => ({ safe: true }),
     collectionApproachGoal: () => ({ isEnd: () => true }),
     presentBlockTarget: async () => null,
@@ -836,6 +846,8 @@ test('native collection passes the pre-dig inventory threshold to ordinary ore p
   assert.equal(result, 'Collected 1 iron_ore');
   assert.equal(dug, true);
   assert.equal(toolChecks, 2, 'tool qualification is checked before navigation and again after excavation');
+  assert.equal(preparationCalls,1);
+  assert.equal(context.preserve_return_path,undefined,'do not mutate the caller context');
   assert.equal(collection.pickupInventoryCount(bot, 'raw_iron'), 1);
   assert.deepEqual(goals, [], 'an automatically collected ore must not start an old fallback route');
 });

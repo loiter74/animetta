@@ -771,7 +771,7 @@ async function _collectInner(block_type, count, mcData, context = {}) {
       await mineShaftMod.mineShaft(
         preparation.targetY,
         preparation.minimumCobblestone,
-        context,
+        { ...context, preserve_return_path: true },
       );
     } catch (error) {
       context.signal?.throwIfAborted();

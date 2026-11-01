@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 import Vec3 from 'vec3';
 import minecraftData from 'minecraft-data';
 import prismarineBlock from 'prismarine-block';
+import { EventEmitter } from 'node:events';
+import pathfinder from 'mineflayer-pathfinder';
+import { configureDryNavigation } from '../src/collection.js';
 import { Physics, PlayerState } from 'prismarine-physics';
 import { createMineShaft } from '../src/mine_shaft.js';
 import { findHostileThreat } from '../src/survivalThreats.js';
@@ -60,6 +63,67 @@ test('real player physics needs the entire footprint over the shaft before diggi
   assert.equal(fixture.digs.length, 1, 'do not dig and refill neighboring support repeatedly');
   assert.equal(fixture.bot.entity.onGround, true);
 });
+
+test('collection preparation leaves stairs that can be walked back without excavation', async t => {
+  const f = shaftPhysicsFixture(t, .5, .5), bot = f.bot;
+  Object.setPrototypeOf(bot, EventEmitter.prototype); EventEmitter.call(bot);
+  bot.registry = minecraftData('1.21.1'); bot.entities = {};
+  bot.game = { minY: -64, height: 384 }; bot.clearControlStates = () => {};
+  pathfinder.pathfinder(bot);
+  const plan = goal => {
+    const movements = configureDryNavigation(new pathfinder.Movements(bot),bot);
+    movements.canDig = false; movements.allow1by1towers = false; movements.scafoldingBlocks = [];
+    let result;
+    for (const planned of bot.pathfinder.getPathFromTo(movements,bot.entity.position,goal,{optimizePath:false})) {
+      result = planned.result; if (result.status !== 'partial') break;
+    }
+    return result;
+  };
+  bot.pathfinder.goto = async goal => {
+    const result = plan(goal);
+    assert.equal(result.status,'success','prepared step must be traversable without another dig');
+    assert.equal(result.path.some(m => m.toBreak.length || m.toPlace.length),false);
+    const end = result.path.at(-1);
+    Object.assign(bot.entity.position,{x:end.x+.5,y:end.y,z:end.z+.5});
+  };
+  await createMineShaft(f).mineShaft(77,0,{preserve_return_path:true});
+  assert.equal(bot.blockAt(new Vec3(0,79,0)).name,'stone','keep the original standing support');
+  const reverse = plan(new pathfinder.goals.GoalBlock(0,80,0));
+  assert.equal(reverse.status,'success','collection must not leave a one-way shaft');
+  assert.equal(reverse.path.some(m => m.toBreak.length || m.toPlace.length),false);
+});
+
+test('collection preparation cannot replace an unavailable return stair with a vertical drop', async t => {
+  const f = shaftPhysicsFixture(t,.5,.5), original = f.bot.blockAt;
+  const Block = prismarineBlock(minecraftData('1.21.1'));
+  f.bot.blockAt = position => {
+    const p = position.floored();
+    if ((p.x !== 0 || p.z !== 0) && p.y < 80) {
+      const block = Block.fromProperties('bedrock',{},0); block.position = p; return block;
+    }
+    return original(position);
+  };
+  await assert.rejects(createMineShaft(f).mineShaft(79,0,{preserve_return_path:true}),{code:'MINE_SHAFT_STUCK'});
+  assert.equal(f.digs.length,0);
+  assert.equal(f.bot.entity.position.y,80);
+});
+
+for (const roof of ['water',null]) {
+  test(`collection return clearance does not open a ${roof ?? 'unknown'} ceiling`, async t => {
+    const f = shaftPhysicsFixture(t,.5,.5), original = f.bot.blockAt;
+    const Block = prismarineBlock(minecraftData('1.21.1'));
+    f.bot.blockAt = position => {
+      const p = position.floored();
+      if (p.y === 81 && (p.x !== 0 || p.z !== 0)) {
+        if (roof === null) return null;
+        const block = Block.fromProperties(roof,{},0); block.position = p; return block;
+      }
+      return original(position);
+    };
+    await assert.rejects(createMineShaft(f).mineShaft(79,0,{preserve_return_path:true}),{code:'MINE_SHAFT_STUCK'});
+    assert.equal(f.digs.length,0);
+  });
+}
 
 for (const code of ['COLLECTION_SAFETY_PAUSED', 'DIG_ABORT']) {
   test(`shaft preparation propagates ${code} instead of selecting another excavation`, async t => {
