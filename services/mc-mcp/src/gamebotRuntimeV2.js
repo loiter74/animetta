@@ -150,6 +150,11 @@ function observationIsMotionSettled(observation) {
   return Math.abs(verticalVelocity) <= 0.01;
 }
 
+function observationHasPendingPickups(observation) {
+  const pending = observation?.environment?.pending_item_pickups;
+  return pending !== undefined && (!Number.isSafeInteger(pending) || pending !== 0);
+}
+
 
 function explainedObservableMutations(before, after, claimed = []) {
   const beforeState = durableObservableState(before);
@@ -502,7 +507,7 @@ export function createGameBotRuntimeV2({
       });
     };
     let latestStateHash = contentHash(durableObservableState(latest));
-    let stableSamples = observationIsMotionSettled(latest) ? 1 : 0;
+    let stableSamples = observationIsMotionSettled(latest) && !observationHasPendingPickups(latest) ? 1 : 0;
     if (postActionSettleTimeoutMs === 0) {
       appendSample({
         observation: latest,
@@ -510,14 +515,16 @@ export function createGameBotRuntimeV2({
         stableStreak: stableSamples,
         rejectionReason: 'settlement_disabled',
       });
-      return { observation: latest, stable: true, settlementTrace };
+      return { observation: latest, stable: !observationHasPendingPickups(latest), settlementTrace };
     }
 
     appendSample({
       observation: latest,
       stateHash: latestStateHash,
       stableStreak: stableSamples,
-      rejectionReason: stableSamples === 0 ? 'motion_unsettled' : 'initial_sample',
+      rejectionReason: !observationIsMotionSettled(latest)
+        ? 'motion_unsettled'
+        : observationHasPendingPickups(latest) ? 'stable_streak_incomplete' : 'initial_sample',
     });
     const maximumPolls = Math.ceil(postActionSettleTimeoutMs / postActionSettlePollMs);
     for (let poll = 0; poll < maximumPolls; poll += 1) {
@@ -528,8 +535,9 @@ export function createGameBotRuntimeV2({
       const candidate = await captureObservation(correlationId, sequence);
       const candidateStateHash = contentHash(durableObservableState(candidate));
       const motionSettled = observationIsMotionSettled(candidate);
+      const pickupsPending = observationHasPendingPickups(candidate);
       const durableStateChanged = candidateStateHash !== latestStateHash;
-      if (motionSettled) {
+      if (motionSettled && !pickupsPending) {
         stableSamples = candidateStateHash === latestStateHash ? stableSamples + 1 : 1;
       } else {
         stableSamples = 0;
@@ -542,6 +550,7 @@ export function createGameBotRuntimeV2({
         stableStreak: stableSamples,
         rejectionReason: !motionSettled
           ? 'motion_unsettled'
+          : pickupsPending ? 'stable_streak_incomplete'
           : durableStateChanged
             ? 'durable_state_changed'
             : stableSamples >= postActionStableSamples
@@ -862,6 +871,8 @@ export function createGameBotRuntimeV2({
                 settle_timeout_ms: postActionSettleTimeoutMs,
                 settle_poll_ms: postActionSettlePollMs,
                 required_stable_samples: postActionStableSamples,
+                ...(postAction.observation.environment?.pending_item_pickups
+                  ? { pending_item_pickups: postAction.observation.environment.pending_item_pickups } : {}),
               },
             })
             : null;

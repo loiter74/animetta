@@ -114,6 +114,21 @@ function adapterFixture({ actions: actionOverrides = {}, look = async () => {}, 
   return { adapter, bot, protocolClient };
 }
 
+test('observations expose nearby pending item pickups without treating distant items or mobs as pending', async () => {
+  const { adapter, bot } = adapterFixture();
+  bot.entities = {
+    2: { name: 'item', position: new Vec3(0.5, 64, 0.5) },
+    3: { name: 'item', position: new Vec3(20, 64, 0) },
+    4: { name: 'cow', position: new Vec3(0, 64, 0) },
+  };
+  let observation = await adapter.runtime.observe({ runtime_instance_id: adapter.runtimeInstanceId, correlation_id: 'pending-items' });
+  assert.equal(observation.environment.pending_item_pickups, 1);
+  delete bot.entities[2];
+  observation = await adapter.runtime.observe({ runtime_instance_id: adapter.runtimeInstanceId, correlation_id: 'items-collected' });
+  assert.equal(observation.environment.pending_item_pickups, 0);
+  adapter.dispose();
+});
+
 function navigationFixture(travelBeforeRoute) {
   const fixture = adapterFixture({ actions: {
     goto: async (x, y, z, context) => {

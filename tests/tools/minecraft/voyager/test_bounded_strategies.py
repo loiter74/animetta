@@ -512,6 +512,90 @@ def test_fallback_accept_partial_result_requires_declared_target_progress() -> N
     assert namespaced is not None
 
 
+def ignition_objective():
+    from animetta.tools.minecraft.survival.mainline import build_nether_portal_mission
+
+    mission = build_nether_portal_mission(mission_id="r103-replay", home=(0, 64, 0))
+    return mission, next(obj for obj in mission.objectives if obj.objective_id == "ignition")
+
+
+def test_r103_flint_partial_gravel_resumes_with_only_the_actual_remaining_budget() -> None:
+    from animetta.tools.minecraft.voyager.budget import BudgetAccount
+
+    registry = WorkflowRegistry()
+    for workflow in nether_preparation_workflows():
+        registry.register(workflow)
+    mission, objective = ignition_objective()
+    limit = mission.budget.model_copy(update=objective.budget.model_dump())
+    strategy = MissionStrategy(live=None, learn=None, fallback=FallbackStrategy(registry=registry))
+    state = strategy.prepare(objective.goal)
+    state["budget_remaining"] = limit
+    before = observation_with({"birch_planks": 12, "iron_ingot": 1, "cobblestone": 53})
+    after = observation_with({"birch_planks": 12, "iron_ingot": 1, "cobblestone": 90, "gravel": 1})
+    first = strategy.propose(state, before)
+    assert first.capability == "acquire_flint"
+    assert first.maximum_cost.max_blocks_changed == 48
+    account = BudgetAccount(limit=limit).charge(
+        BudgetUsage(max_actions=1, max_blocks_changed=48, max_travel_distance=29.128003332423816)
+    )
+    recovered = strategy.accept_partial_result(
+        {**state, "settled_capability": "acquire_flint", "budget_remaining": account.remaining},
+        before,
+        after,
+    )
+    assert recovered is not None and recovered["strategy_state"]["step_index"] == 4
+    recovered["budget_remaining"] = account.remaining
+    resumed = strategy.propose(recovered, after)
+    assert resumed.capability == "acquire_flint"
+    assert resumed.maximum_cost.max_blocks_changed == 16
+    assert resumed.maximum_cost.max_travel_distance == 64
+    assert account.limit == limit and account.used.max_blocks_changed == 48
+    account = account.charge(BudgetUsage(max_actions=1, max_blocks_changed=2))
+    recovered = strategy.accept_result(recovered, {"outcome": "success"})
+    recovered["budget_remaining"] = account.remaining
+    obtained = observation_with({"birch_planks": 12, "iron_ingot": 1, "flint": 1})
+    assert strategy.propose(recovered, obtained).parameters["recipe"] == "flint_and_steel"
+    assert account.used.max_blocks_changed == 50 and account.limit.max_blocks_changed == 64
+
+
+@pytest.mark.parametrize("namespace", ["", "minecraft:"])
+def test_flint_partial_progress_rejects_same_inventory_or_unrelated_drops(namespace: str) -> None:
+    registry = WorkflowRegistry()
+    workflow = next(w for w in nether_preparation_workflows() if w.target == "flint_and_steel")
+    registry.register(workflow)
+    strategy = FallbackStrategy(registry=registry)
+    state = strategy.prepare(ignition_objective()[1].goal)
+    state["step_index"] = 4
+    state["settled_capability"] = "acquire_flint"
+    before = observation_with({f"{namespace}gravel": 1})
+    assert strategy.accept_partial_result(state, before, before) is None
+    assert (
+        strategy.accept_partial_result(
+            state, before, observation_with({f"{namespace}gravel": 1, "cobblestone": 99})
+        )
+        is None
+    )
+    assert (
+        strategy.accept_partial_result(state, before, observation_with({f"{namespace}gravel": 2}))
+        is not None
+    )
+
+
+def test_flint_continuation_stops_before_dispatch_when_work_or_followup_cannot_fit() -> None:
+    from animetta.tools.minecraft.voyager.strategies.base import StrategyFailure
+
+    registry = WorkflowRegistry()
+    workflow = next(w for w in nether_preparation_workflows() if w.target == "flint_and_steel")
+    registry.register(workflow)
+    strategy = FallbackStrategy(registry=registry)
+    for change in ({"max_blocks_changed": 0}, {"max_actions": 1}):
+        state = strategy.prepare(ignition_objective()[1].goal)
+        state["step_index"] = 4
+        state["budget_remaining"] = budget().model_copy(update=change)
+        decision = strategy.propose(state, observation_with({"iron_ingot": 1, "gravel": 1}))
+        assert isinstance(decision, StrategyFailure) and decision.code == "BUDGET_EXHAUSTED"
+
+
 def test_mission_accept_partial_result_only_delegates_to_selected_fallback() -> None:
     from animetta.tools.minecraft.voyager.strategies.base import ExecuteStep
 

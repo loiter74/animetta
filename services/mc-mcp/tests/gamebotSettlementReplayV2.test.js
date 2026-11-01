@@ -77,6 +77,65 @@ function runtime({ capability, parametersSchema, observeState, invoke }) {
 }
 
 
+function delayedPickupReplay({ pickupAtMs = 4614, deadlineAfterMs = 20000 } = {}) {
+  const base = 1_800_000_000_000;
+  let elapsed = 0;
+  let active = false;
+  const gamebot = createGameBotRuntimeV2({
+    runtimeInstanceId: 'runtime-replay', environmentProfile: profile(),
+    nowMs: () => base + elapsed, getTick: () => Math.floor(elapsed / 50),
+    waitMs: async delay => { elapsed += delay; },
+    observeState: async () => ({
+      position: { x: 31.5, y: 50, z: 40.6 }, health: 20, food: 20,
+      inventory: { cobblestone: active && elapsed >= pickupAtMs ? 91 : 90, gravel: 1 },
+      environment: {
+        dimension: 'minecraft:overworld', on_ground: true,
+        velocity: { x: 0, y: -0.0784, z: 0 },
+        pending_item_pickups: active && elapsed < pickupAtMs ? 1 : 0,
+      },
+    }),
+    capabilities: { acquire_flint: {
+      risk: 'survival_safe', effectClass: 'state_changing', parametersSchema: { type: 'object' },
+      maximumCost: budget({ max_actions: 1, max_strategy_attempts: 0, max_travel_distance: 0, max_blocks_changed: 0, max_damage_taken: 0 }),
+      invoke: async () => {
+        active = true;
+        throw Object.assign(new Error('remaining block reservation exhausted'), {
+          code: 'BUDGET_EXHAUSTED',
+          budget_usage: budget({ max_actions: 1, max_strategy_attempts: 0, max_travel_distance: 29.128, max_blocks_changed: 48, max_damage_taken: 0 }),
+        });
+      },
+    } },
+  });
+  const action = { ...request('acquire_flint', {}), deadline_ms: base + deadlineAfterMs,
+    remaining_budget: budget({ max_actions: 1, max_blocks_changed: 48, max_travel_distance: 64, max_damage_taken: 0 }) };
+  return { gamebot, action, elapsed: () => elapsed };
+}
+
+
+test('R103 pending pickup cannot publish a stable error before the inventory update', async () => {
+  const { gamebot, action, elapsed } = delayedPickupReplay();
+  const receipt = await gamebot.executeAction(action);
+  assert.equal(receipt.outcome, 'error');
+  assert.equal(receipt.error.code, 'BUDGET_EXHAUSTED');
+  assert.equal(receipt.post_observation, 'stable');
+  assert.equal(receipt.reconciliation, 'accepted');
+  assert.ok(elapsed() >= 4614 && elapsed() < 10000);
+  const after = receipt.explained_mutations.find(m => m.subject === 'observable_state').details.after_state;
+  assert.equal(after.inventory.cobblestone, 91);
+  assert.equal(receipt.budget_usage.max_blocks_changed, 48);
+});
+
+
+test('pending pickup remains unreconciled when the original deadline expires', async () => {
+  const { gamebot, action, elapsed } = delayedPickupReplay({ pickupAtMs: Infinity, deadlineAfterMs: 1000 });
+  const receipt = await gamebot.executeAction(action);
+  assert.equal(receipt.post_observation, 'unstable');
+  assert.equal(receipt.reconciliation, 'pending');
+  assert.ok(elapsed() <= 1000);
+  assert.equal(receipt.settlement_trace.at(-1).stable_streak, 0);
+});
+
+
 test('grounded Mineflayer gravity remainder counts as settled', async () => {
   let actionComplete = false;
   const gamebot = runtime({

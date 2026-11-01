@@ -13,7 +13,7 @@ from animetta.tools.minecraft.survival.workflows import (
     WorkflowDefinition,
 )
 
-from ..budget import BudgetUsage, ExecutionBudget
+from ..budget import BudgetAccount, BudgetExceededError, BudgetUsage, ExecutionBudget
 from ..goal_models import GoalSpec
 from .base import Complete, ExecuteStep, StrategyDecision, StrategyFailure
 
@@ -85,6 +85,25 @@ class FallbackStrategy:
             )
         step = workflow.steps[index]
         available = state.get("budget_remaining")
+        if step.capability == "acquire_flint" and isinstance(available, ExecutionBudget):
+            # A failed gravel search can leave reusable gravel and an unspent
+            # command allowance. Preserve the final craft while reserving only
+            # the work that remains, rather than requesting the original 48 again.
+            try:
+                work = BudgetAccount(limit=available).reserve(
+                    "workflow-followup", self._future_cost(workflow, index, observation)
+                )
+                maximum = step.maximum_cost.bounded_work(work.remaining)
+                minimum_blocks = 2 if self._inventory_count(observation, "gravel") else 1
+                if maximum.max_blocks_changed < minimum_blocks:
+                    raise BudgetExceededError("BUDGET_EXHAUSTED")
+                work.reserve("flint-continuation", maximum)
+            except BudgetExceededError:
+                return StrategyFailure(
+                    code="BUDGET_EXHAUSTED",
+                    message="Remaining command budget cannot cover flint work and follow-up craft",
+                )
+            return step.model_copy(update={"maximum_cost": maximum})
         if step.capability == "mine_shaft" and isinstance(available, ExecutionBudget):
             return step.model_copy(
                 update={"maximum_cost": step.maximum_cost.bounded_work(available)}
@@ -112,12 +131,7 @@ class FallbackStrategy:
             or (batch_size >= target.quantity and not shared_blocks)
         ):
             return step
-        future = BudgetUsage()
-        for future_index in range(index + 1, len(workflow.steps)):
-            checkpoint = workflow.checkpoints[future_index] if workflow.checkpoints else None
-            if checkpoint is not None and self._checkpoint_satisfied(checkpoint, observation):
-                continue
-            future = future.plus(workflow.steps[future_index].maximum_cost)
+        future = self._future_cost(workflow, index, observation)
         maximum = step.maximum_cost
         count = step.parameters["count"]
         if maximum.max_actions == 1:
@@ -182,6 +196,14 @@ class FallbackStrategy:
             and self._checkpoint_satisfied(checkpoint, after)
         ):
             return {**state}
+        if step.capability == "acquire_flint" and checkpoint is not None:
+            # Gravel is a reusable input to the native flint loop, not completion
+            # of the flint checkpoint. Keep this exact workflow step selected.
+            return (
+                {**state}
+                if self._inventory_count(after, "gravel") > self._inventory_count(before, "gravel")
+                else None
+            )
         if step.capability == "mine_shaft":
             target_y = step.parameters.get("target_y")
             if (
@@ -205,6 +227,16 @@ class FallbackStrategy:
         ) <= inventory_resource_count(before, target.item, combine_species=True):
             return None
         return {**state}
+
+    def _future_cost(
+        self, workflow: WorkflowDefinition, index: int, observation: Observation
+    ) -> BudgetUsage:
+        future = BudgetUsage()
+        for future_index in range(index + 1, len(workflow.steps)):
+            checkpoint = workflow.checkpoints[future_index] if workflow.checkpoints else None
+            if checkpoint is None or not self._checkpoint_satisfied(checkpoint, observation):
+                future = future.plus(workflow.steps[future_index].maximum_cost)
+        return future
 
     @staticmethod
     def _declared_collection_target(
