@@ -22,6 +22,12 @@ export function createMineShaft({
     }
   }
 
+  function propagateInterruptedOperation(error) {
+    if (error?.operationSettlement || error?.current_position_unsafe
+      || error?.code === 'COLLECTION_SAFETY_PAUSED'
+      || activeOperationScope()?.signal?.aborted) throw error;
+  }
+
   async function withActionTimeout(operation, timeoutMs, label, onTimeout = () => {}) {
     const start = typeof operation === 'function' ? operation : () => operation;
     const scope = activeOperationScope();
@@ -193,9 +199,8 @@ export function createMineShaft({
       const actual = bot.entity.position.floored();
       return actual.x === target.x && actual.y === target.y && actual.z === target.z;
     } catch (error) {
-      if (error?.code === 'COLLECTION_SAFETY_PAUSED') throw error;
+      propagateInterruptedOperation(error);
       assertDryState();
-      if (error.operationSettlement || error.current_position_unsafe) throw error;
       return false;
     } finally {
       bot.pathfinder.stop?.();
@@ -328,7 +333,7 @@ export function createMineShaft({
     try {
       await withDigTimeout(block, 8000);
     } catch (err) {
-      if (err?.code === 'COLLECTION_SAFETY_PAUSED') throw err;
+      propagateInterruptedOperation(err);
       const refreshed = bot.blockAt(block.position);
       if (isClear(refreshed)) return true;
       if (String(err?.message || '').includes('Digging aborted')) {
@@ -380,7 +385,7 @@ export function createMineShaft({
         await wait(150);
         return isSolid(bot.blockAt(targetPos));
       } catch (err) {
-        if (err?.code === 'COLLECTION_SAFETY_PAUSED') throw err;
+        propagateInterruptedOperation(err);
         debug(`seal failed at ${targetPos.x},${targetPos.y},${targetPos.z}: ${err?.message || err}`);
       }
     }
@@ -445,7 +450,8 @@ export function createMineShaft({
         await digIfNeeded(headBlock);
         await digIfNeeded(feetBlock);
       } catch (error) {
-        if (error.code === 'MINE_SHAFT_HAZARD' && !error.current_position_unsafe) continue;
+        propagateInterruptedOperation(error);
+        if (error.code === 'MINE_SHAFT_HAZARD') continue;
         throw error;
       }
       if (typeof bot.lookAt === 'function' && feetPos?.offset) {
@@ -491,7 +497,8 @@ export function createMineShaft({
         await digIfNeeded(headBlock);
         await digIfNeeded(feetBlock);
       } catch (error) {
-        if (error.code === 'MINE_SHAFT_HAZARD' && !error.current_position_unsafe) continue;
+        propagateInterruptedOperation(error);
+        if (error.code === 'MINE_SHAFT_HAZARD') continue;
         throw error;
       }
 
@@ -683,8 +690,8 @@ export function createMineShaft({
             }
           }
         } catch (e) {
-          if (context.collection_safety?.pending || e?.code === 'COLLECTION_SAFETY_PAUSED') throw e;
-          if (e.current_position_unsafe || activeOperationScope()?.signal?.aborted) throw e;
+          if (context.collection_safety?.pending) throw e;
+          propagateInterruptedOperation(e);
           if (getSurvivalThreat()) {
             await waitForSurvivalThreatToClear();
             continue;

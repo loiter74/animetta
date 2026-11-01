@@ -140,6 +140,48 @@ for (const code of ['COLLECTION_SAFETY_PAUSED', 'DIG_ABORT']) {
   });
 }
 
+for (const phase of ['dig', 'place', 'navigation']) {
+  test(`shaft preserves the unsettled ${phase} lifetime and starts no successor`, async t => {
+    const f = shaftPhysicsFixture(t,.5,.5);
+    const settlement = new Promise(() => {});
+    const failure = Object.assign(new Error(`unsettled ${phase}`), { code: 'ACTION_SETTLEMENT_TIMEOUT' });
+    Object.defineProperty(failure,'operationSettlement',{value:settlement});
+    let attempts = 0;
+    if (phase === 'dig') {
+      const original = f.bot.dig;
+      f.bot.dig = async block => { attempts++; await original(block); throw failure; };
+    } else if (phase === 'place') {
+      const original = f.bot.blockAt;
+      const Block = prismarineBlock(minecraftData('1.21.1'));
+      f.bot.blockAt = position => {
+        const p = position.floored();
+        if (p.equals(new Vec3(1,79,0))) {
+          const block = Block.fromProperties('air',{},0); block.position = p; return block;
+        }
+        return original(position);
+      };
+      f.bot.placeBlock = async () => { attempts++; throw failure; };
+    } else {
+      f.bot.pathfinder.goto = async () => { attempts++; throw failure; };
+    }
+    await assert.rejects(createMineShaft(f).mineShaft(79,0,{
+      preserve_return_path: phase === 'navigation',
+    }), error => error === failure && error.operationSettlement === settlement);
+    assert.equal(attempts,1,'do not retry or advance while the original operation is unsettled');
+    assert.equal(f.digs.length,phase === 'place' ? 0 : 1);
+  });
+}
+
+test('a settled dig abort after the block changed retains ordinary shaft progress', async t => {
+  const f = shaftPhysicsFixture(t,.5,.5), original = f.bot.dig;
+  f.bot.dig = async block => {
+    await original(block);
+    throw new Error('Digging aborted');
+  };
+  assert.match(await createMineShaft(f).mineShaft(79),/y=79/);
+  assert.equal(f.digs.length,1);
+});
+
 test('real supported player descends without unnecessary horizontal steering', async t => {
   const fixture = shaftPhysicsFixture(t, 0.7, 0.3);
   await createMineShaft(fixture).mineShaft(79);
