@@ -31,6 +31,26 @@ NETHER_DESCENT_ACCESS_RULE = (
 )
 
 
+class InventoryInput(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    item: str
+    quantity: int
+    available_quantity: int
+    missing_quantity: int
+    supplier_tasks: tuple[str, ...] = ()
+
+
+class InventoryInputOption(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    inventory_all: tuple[InventoryInput, ...]
+
+    @property
+    def satisfied(self) -> bool:
+        return all(item.missing_quantity == 0 for item in self.inventory_all)
+
+
 class PlanningIssue(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -41,6 +61,8 @@ class PlanningIssue(BaseModel):
     candidate_dependencies: tuple[str, ...] = ()
     # Diagnostic orderings of existing objectives only; not a new topological rule.
     candidate_dependency_paths: tuple[tuple[str, ...], ...] = ()
+    # Catalogue choices, not edges that may safely be added to the current DAG.
+    input_options: tuple[InventoryInputOption, ...] = ()
 
 
 def nether_plan_inventory_requirements() -> dict[tuple[str, str], WorkflowCheckpoint]:
@@ -106,6 +128,52 @@ def _goal_inventory(goal: GoalSpec) -> dict[str, int]:
     return result
 
 
+def inventory_input_options(
+    contract: WorkflowCheckpoint,
+    *,
+    known_inventory: Mapping[str, int],
+    supplier_goals: Mapping[str, GoalSpec],
+    consumer_id: str,
+) -> tuple[InventoryInputOption, ...]:
+    """Describe necessary inventory and conditional suppliers without planning a DAG.
+
+    Quantities are lower bounds, never additive receipts or a consumption simulation.
+    Suppliers may require other inputs or reordering; they are not executable recipes.
+    """
+    if any(option.maximum_y is not None for option in contract.any_of):
+        raise ValueError("inventory planning contracts cannot contain position conditions")
+    known = _inventory(known_inventory)
+    outputs = {
+        task: _goal_inventory(goal) for task, goal in supplier_goals.items() if task != consumer_id
+    }
+    options = []
+    for option in contract.any_of:
+        required: dict[str, int] = {}
+        for threshold in option.inventory_all:
+            item = _resource_id(threshold.item)
+            required[item] = max(required.get(item, 0), threshold.quantity)
+        inputs = []
+        for item, quantity in required.items():
+            available = known.get(item, 0)
+            inputs.append(
+                InventoryInput(
+                    item=item,
+                    quantity=quantity,
+                    available_quantity=available,
+                    missing_quantity=max(0, quantity - available),
+                    supplier_tasks=tuple(
+                        sorted(
+                            task
+                            for task, inventory in outputs.items()
+                            if available < quantity and inventory.get(item, 0) >= quantity
+                        )
+                    ),
+                )
+            )
+        options.append(InventoryInputOption(inventory_all=tuple(inputs)))
+    return tuple(options)
+
+
 def _scheduled_objective_ids(mission: MissionSpec) -> tuple[str, ...]:
     # Match the coordinator's priority/ordinal choice among ready objectives.
     pending = sorted(mission.objectives, key=lambda obj: -obj.priority)
@@ -125,6 +193,7 @@ def validate_mission_plan(
     reference: MissionSpec,
     initial_inventory: Mapping[str, int],
     requirements: Mapping[tuple[str, str], WorkflowCheckpoint] | None = None,
+    supplier_goals: Mapping[str, GoalSpec] | None = None,
 ) -> tuple[PlanningIssue, ...]:
     """Check fixed authority and necessary inputs without rewriting the model DAG.
 
@@ -195,17 +264,23 @@ def validate_mission_plan(
         return known
 
     contracts = nether_plan_inventory_requirements() if requirements is None else requirements
+    available_goals = (
+        {objective.objective_id: objective.goal for objective in mission.objectives}
+        if supplier_goals is None
+        else supplier_goals
+    )
     for key, obj in actual.items():
         contract = contracts.get(key)
         if contract is None:
             continue
-        if any(option.maximum_y is not None for option in contract.any_of):
-            raise ValueError("inventory planning contracts cannot contain position conditions")
         known = known_before(obj.objective_id)
-        if any(
-            all(known.get(_resource_id(i.item), 0) >= i.quantity for i in option.inventory_all)
-            for option in contract.any_of
-        ):
+        options = inventory_input_options(
+            contract,
+            known_inventory=known,
+            supplier_goals=available_goals,
+            consumer_id=obj.objective_id,
+        )
+        if any(option.satisfied for option in options):
             continue
         suppliers = tuple(
             sorted(
@@ -225,9 +300,15 @@ def validate_mission_plan(
             PlanningIssue(
                 code="MISSING_WORKFLOW_INPUTS",
                 objective_id=obj.objective_id,
-                message="初始库存和前置目标未提供必要物品；请补充资源依赖，保持预算和任务范围。",
+                message=(
+                    "初始库存和前置目标未提供必要物品；input_options 列出目录中的供给任务。"
+                    "在原预算内选择可满足的一组前置条件，供给任务必须先于当前目标执行。"
+                    "已选但排在后面的任务应重排并移除失效旧边，不可复制任务或添加成环依赖。"
+                    "供给任务仍需满足自身前置条件；空 supplier_tasks 表示目录没有可证明的供给。"
+                ),
                 required_any_of=contract.any_of,
                 candidate_dependencies=suppliers,
+                input_options=options,
             )
         )
     iron_kit = actual.get(("acquire", "nether_iron_kit"))

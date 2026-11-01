@@ -22,11 +22,19 @@ from animetta.tools.minecraft.skill.ir import (
     SkillStep,
 )
 from animetta.tools.minecraft.survival.mainline import build_nether_portal_mission
+from animetta.tools.minecraft.survival.workflows import (
+    InventoryThreshold,
+    WorkflowCheckpoint,
+    WorkflowCheckpointClause,
+)
 from animetta.tools.minecraft.voyager.budget import BudgetUsage
-from animetta.tools.minecraft.voyager.goal_models import InventoryAtLeast
 
 from .minecraft_learning import build_bounded_learning_portal_mission
-from .minecraft_planning import nether_plan_inventory_requirements, validate_mission_plan
+from .minecraft_planning import (
+    inventory_input_options,
+    nether_plan_inventory_requirements,
+    validate_mission_plan,
+)
 
 CONTRACT_ID = "bounded_route_learning_portal_v2"
 RouteTask = Literal[
@@ -99,6 +107,21 @@ def _skill_parameters(home: tuple[float, float, float]) -> tuple[ParameterSpec, 
     )
 
 
+def _route_inventory_requirements() -> dict[tuple[str, str], WorkflowCheckpoint]:
+    requirements = nether_plan_inventory_requirements()
+    requirements[("build", "nether_portal")] = WorkflowCheckpoint(
+        any_of=(
+            WorkflowCheckpointClause(
+                inventory_all=(
+                    InventoryThreshold(item="obsidian", quantity=10),
+                    InventoryThreshold(item="flint_and_steel", quantity=1),
+                )
+            ),
+        )
+    )
+    return requirements
+
+
 def route_prompt_context(
     *,
     mission_id: str,
@@ -108,6 +131,8 @@ def route_prompt_context(
 ) -> dict:
     """Send routing facts and capability schemas, keeping raw voxel evidence outside the prompt."""
     catalogue = build_nether_portal_mission(mission_id=mission_id, home=home)
+    requirements = _route_inventory_requirements()
+    supplier_goals = {obj.objective_id: obj.goal for obj in catalogue.objectives}
     raw = observation.model_dump(mode="json")
     blocks = raw.get("visible_blocks", [])
     return {
@@ -117,10 +142,30 @@ def route_prompt_context(
                 "task": obj.objective_id,
                 "goal": obj.goal.model_dump(mode="json"),
                 "default_budget": obj.budget.model_dump(mode="json"),
+                "default_workflow_inputs": [
+                    option.model_dump(mode="json")
+                    for option in inventory_input_options(
+                        requirements[(obj.goal.intent, obj.goal.target)],
+                        known_inventory=observation.inventory,
+                        supplier_goals=supplier_goals,
+                        consumer_id=obj.objective_id,
+                    )
+                ]
+                if (obj.goal.intent, obj.goal.target) in requirements
+                else [],
             }
             for obj in sorted(catalogue.objectives, key=lambda obj: obj.objective_id)
         ],
         "parent_budget": catalogue.budget.model_dump(mode="json"),
+        "inventory_planning_rules": (
+            "default_workflow_inputs 是默认流程的必要库存条件，任一组 inventory_all 全部满足即可。"
+            "missing_quantity 按初始库存计算；路线中较早目标的成功谓词也可提供条件。"
+            "supplier_tasks 是可选目录任务，不是已满足的依赖或可直接添加的 DAG 边；"
+            "供给任务须排在使用者之前，并满足自身前置条件。不能复制任务或形成依赖环。"
+            "空 supplier_tasks 表示没有目录供给证明；不得虚构新任务。"
+            "生成小技能只替换所属目标的默认流程，不改变该目标的成功谓词或预算。"
+            "这些条件不模拟物品消耗，也不保证运行成功；最终仍由实际执行和验证器判定。"
+        ),
         "observation": {
             "observation_id": observation.observation_id,
             "position": raw.get("position"),
@@ -226,38 +271,33 @@ def compile_route_draft(
     except ValueError as exc:
         issues.append({"code": "ROUTE_BUDGET_OR_AUTHORITY_INVALID", "message": str(exc)})
         raise RoutePlanningError(issues) from exc
-    requirements = nether_plan_inventory_requirements()
+    requirements = _route_inventory_requirements()
     if draft.skill is not None:
         learned = by_id[draft.skill.task].goal
         requirements.pop((learned.intent, learned.target), None)
-    issues.extend(
-        issue.model_dump(mode="json")
-        for issue in validate_mission_plan(
-            mission,
-            reference=mission,
-            initial_inventory=initial_inventory,
-            requirements=requirements,
-        )
-    )
-    known: dict[str, int] = {}
-    for item, amount in initial_inventory.items():
-        bare = item.removeprefix("minecraft:")
-        known[bare] = max(known.get(bare, 0), amount)
-    for objective in objectives[:-1]:
-        for predicate in objective.goal.success_predicates:
-            if isinstance(predicate, InventoryAtLeast):
-                bare = predicate.item.removeprefix("minecraft:")
-                known[bare] = max(known.get(bare, 0), predicate.quantity)
-    for item, quantity in (("obsidian", 10), ("flint_and_steel", 1)):
-        if known.get(item, 0) < quantity:
-            issues.append(
-                {
-                    "code": "MISSING_PORTAL_INPUT",
-                    "task": "portal",
-                    "item": item,
-                    "quantity": quantity,
-                }
-            )
+    for issue in validate_mission_plan(
+        mission,
+        reference=mission,
+        initial_inventory=initial_inventory,
+        requirements=requirements,
+        supplier_goals={task: obj.goal for task, obj in by_id.items()},
+    ):
+        if issue.code == "MISSING_WORKFLOW_INPUTS" and issue.objective_id == "portal":
+            # Preserve the route contract's per-item error codes using the shared resolver.
+            for option in issue.input_options:
+                for item in option.inventory_all:
+                    if item.missing_quantity:
+                        issues.append(
+                            {
+                                "code": "MISSING_PORTAL_INPUT",
+                                "task": "portal",
+                                **item.model_dump(mode="json"),
+                                "item": item.item.removeprefix("minecraft:"),
+                                "message": issue.message,
+                            }
+                        )
+        else:
+            issues.append(issue.model_dump(mode="json"))
     if issues:
         raise RoutePlanningError(issues)
     return mission

@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
+from animetta.acceptance.minecraft_planning import inventory_input_options
 from animetta.acceptance.minecraft_route_generation import generate_route_plan
 from animetta.acceptance.minecraft_route_planning import (
     RouteDraft,
@@ -15,6 +16,12 @@ from animetta.acceptance.minecraft_route_planning import (
 )
 from animetta.tools.gamebot.contracts.v2 import Observation, RuntimeManifest
 from animetta.tools.minecraft.survival.mainline import build_nether_portal_mission
+from animetta.tools.minecraft.survival.workflows import (
+    InventoryThreshold,
+    WorkflowCheckpoint,
+    WorkflowCheckpointClause,
+)
+from animetta.tools.minecraft.voyager.goal_models import InventoryAtLeast
 from animetta.tools.minecraft.voyager.strategies.builtin import BuiltinMissionStrategy
 
 MESSAGES = json.loads(
@@ -231,3 +238,155 @@ async def test_native_allocation_guard_failure_is_not_returned_as_success():
     )
     assert len(result.attempts) == len(calls) == 2
     assert result.attempts[0].issues and result.mission is not None
+
+
+def test_r102_omitted_supplier_is_reported_from_the_full_catalogue():
+    route = [task for task in ROUTE if task != "diamond-pickaxe"]
+    with pytest.raises(RoutePlanningError) as failure:
+        compile_draft({"route": route})
+    assert len(failure.value.issues) == 1
+    issue = failure.value.issues[0]
+    assert issue["code"] == "MISSING_WORKFLOW_INPUTS"
+    assert issue["objective_id"] == "obsidian"
+    assert issue["candidate_dependencies"] == []
+    diamond, water = issue["input_options"][1]["inventory_all"]
+    assert diamond == {
+        "item": "minecraft:diamond_pickaxe",
+        "quantity": 1,
+        "available_quantity": 0,
+        "missing_quantity": 1,
+        "supplier_tasks": ["diamond-pickaxe"],
+    }
+    assert water["missing_quantity"] == 0 and water["supplier_tasks"] == []
+    assert issue["input_options"][0]["inventory_all"][0]["supplier_tasks"] == []
+    assert issue["input_options"][2]["inventory_all"][0]["supplier_tasks"] == []
+    assert "diamond-pickaxe" not in route, "validation must not silently rewrite the draft"
+    repaired = compile_draft({"route": ROUTE})
+    assert (
+        repaired.budget
+        == build_nether_portal_mission(mission_id="route-test", home=(0, 64, 0)).budget
+    )
+
+
+def test_prompt_and_feedback_share_inventory_options():
+    observation = Observation.model_validate(MESSAGES["Observation"]).model_copy(
+        update={"inventory": {}}
+    )
+    context = route_prompt_context(
+        mission_id="route-test", home=(0, 64, 0), observation=observation, manifest=manifest()
+    )
+    catalogue = {task["task"]: task for task in context["catalogue"]}
+    with pytest.raises(RoutePlanningError) as failure:
+        compile_draft({"route": ["obsidian", "portal"]})
+    obsidian = next(i for i in failure.value.issues if i.get("objective_id") == "obsidian")
+    assert obsidian["input_options"] == catalogue["obsidian"]["default_workflow_inputs"]
+    assert catalogue["portal"]["default_workflow_inputs"][0]["inventory_all"][0][
+        "supplier_tasks"
+    ] == ["obsidian"]
+
+
+def test_selected_later_supplier_is_a_reordering_choice_not_a_new_dependency_edge():
+    route = ROUTE.copy()
+    route.remove("diamond-pickaxe")
+    route.insert(route.index("obsidian") + 1, "diamond-pickaxe")
+    with pytest.raises(RoutePlanningError) as failure:
+        compile_draft({"route": route})
+    issue = next(i for i in failure.value.issues if i.get("objective_id") == "obsidian")
+    assert issue["candidate_dependencies"] == [], "adding this descendant would create a cycle"
+    assert issue["input_options"][1]["inventory_all"][0]["supplier_tasks"] == ["diamond-pickaxe"]
+    assert "重排" in issue["message"]
+    assert compile_draft({"route": ROUTE}).objectives[-1].objective_id == "portal"
+
+
+def test_inventory_resolver_is_not_tied_to_portal_recipes_or_additive_aliases():
+    contract = WorkflowCheckpoint(
+        any_of=(
+            WorkflowCheckpointClause(
+                inventory_all=(
+                    InventoryThreshold(item="example", quantity=10),
+                    InventoryThreshold(item="minecraft:example", quantity=12),
+                )
+            ),
+        )
+    )
+
+    def goal(*quantities):
+        template = (
+            build_nether_portal_mission(mission_id="route-test", home=(0, 64, 0)).objectives[0].goal
+        )
+        return template.model_copy(
+            update={
+                "target": "example",
+                "quantity": 12,
+                "success_predicates": tuple(
+                    InventoryAtLeast(kind="inventory_at_least", item=item, quantity=quantity)
+                    for item, quantity in quantities
+                ),
+            }
+        )
+
+    suppliers = {
+        "consumer": goal(("example", 12)),
+        "too-small": goal(("example", 8), ("minecraft:example", 8)),
+        "custom-supplier": goal(("minecraft:example", 12)),
+    }
+    option = inventory_input_options(
+        contract,
+        known_inventory={"example": 7, "minecraft:example": 8},
+        supplier_goals=suppliers,
+        consumer_id="consumer",
+    )[0]
+    assert not option.satisfied and len(option.inventory_all) == 1
+    item = option.inventory_all[0]
+    assert (item.item, item.quantity, item.available_quantity, item.missing_quantity) == (
+        "minecraft:example",
+        12,
+        8,
+        4,
+    )
+    assert item.supplier_tasks == ("custom-supplier",)
+    satisfied = inventory_input_options(
+        contract,
+        known_inventory={"minecraft:example": 12},
+        supplier_goals=suppliers,
+        consumer_id="consumer",
+    )[0]
+    assert satisfied.satisfied and satisfied.inventory_all[0].supplier_tasks == ()
+
+
+def test_verified_stock_skips_an_unneeded_supplier_and_generated_skill_skips_default_inputs():
+    route = [task for task in ROUTE if task != "diamond-pickaxe"]
+    assert compile_draft({"route": route}, {"minecraft:diamond_pickaxe": 1})
+    learned = skill() | {"task": "obsidian"}
+    # Golden collect's damage cap exceeds obsidian's allowance. Keep that rejection,
+    # but do not also enforce the default mining recipe on its replacement program.
+    with pytest.raises(RoutePlanningError) as failure:
+        compile_draft({"route": route, "skill": learned})
+    assert {issue["code"] for issue in failure.value.issues} == {"SKILL_COMPILE_FAILED"}
+
+
+async def test_r102_feedback_names_the_missing_task_within_the_original_two_proposals():
+    calls = []
+
+    async def invoke(messages):
+        calls.append(messages)
+        route = [task for task in ROUTE if task != "diamond-pickaxe"]
+        if len(calls) == 2:
+            feedback = json.loads(messages[-1]["content"])
+            issue = feedback["issues"][0]
+            supplier = issue["input_options"][1]["inventory_all"][0]["supplier_tasks"][0]
+            route.insert(route.index("obsidian"), supplier)
+        return {"content": json.dumps({"route": route}), "usage": None}
+
+    result = await generate_route_plan(
+        invoke=invoke,
+        messages=[],
+        mission_id="route-test",
+        home=(0, 64, 0),
+        origin=(2, 64, 0),
+        manifest=manifest(),
+        initial_inventory={},
+    )
+    assert result.mission is not None and len(calls) == len(result.attempts) == 2
+    assert [obj.objective_id for obj in result.mission.objectives] == ROUTE
+    assert result.mission.budget.max_actions == 117
