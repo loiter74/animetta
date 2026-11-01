@@ -16,6 +16,7 @@ from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from pydantic import ValidationError
 
 from animetta.acceptance.minecraft_planning import (
+    NETHER_DESCENT_ACCESS_RULE,
     nether_plan_inventory_requirements,
     validate_mission_plan,
 )
@@ -393,6 +394,7 @@ async def run(
     if planning_reference is not None:
         planning_context = {
             "initial_inventory": initial_inventory,
+            "surface_access_contract": NETHER_DESCENT_ACCESS_RULE,
             "known_necessary_inventory_inputs": [
                 {
                     "intent": intent,

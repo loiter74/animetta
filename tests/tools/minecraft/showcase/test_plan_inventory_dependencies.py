@@ -30,6 +30,111 @@ def missing_iron(mission: MissionSpec) -> MissionSpec:
     return MissionSpec.model_validate(data)
 
 
+def unprovisioned_descent(mission: MissionSpec) -> MissionSpec:
+    # R95 kept the water goal independent of the deep mining goal.
+    data = mission.model_dump(mode="json")
+    dependencies = {
+        "diamond-pickaxe": ["iron-pickaxe"],
+        "water-return": ["iron-pickaxe"],
+        "water-bucket": ["iron"],
+        "ignition": ["iron"],
+        "obsidian": ["diamond-pickaxe", "water-bucket"],
+    }
+    for objective in data["objectives"]:
+        if objective["objective_id"] in dependencies:
+            objective["dependencies"] = dependencies[objective["objective_id"]]
+    return MissionSpec.model_validate(data)
+
+
+def test_deep_mining_cannot_spend_surface_access_before_an_independent_water_goal() -> None:
+    mission = reference()
+    plan = unprovisioned_descent(mission)
+    before = plan.model_dump(mode="json")
+    issues = validate_mission_plan(plan, reference=mission, initial_inventory={})
+    assert len(issues) == 1
+    assert issues[0].code == "MISSING_ACCESS_PROVISION"
+    assert issues[0].objective_id == "diamond-pickaxe"
+    assert issues[0].candidate_dependencies == ("water-bucket",)
+    assert issues[0].required_any_of == (), "access is not a diamond recipe ingredient"
+    assert plan.model_dump(mode="json") == before
+
+
+@pytest.mark.parametrize(
+    "inventory", [{"water_bucket": 1}, {"minecraft:diamond": 3}, {"diamond_pickaxe": 1}]
+)
+def test_existing_provision_or_local_diamond_craft_preserves_order_freedom(inventory) -> None:
+    mission = reference()
+    assert (
+        validate_mission_plan(
+            unprovisioned_descent(mission), reference=mission, initial_inventory=inventory
+        )
+        == ()
+    )
+
+
+def test_explicit_shore_return_after_descent_can_supply_water_without_forcing_water_first() -> None:
+    mission = reference()
+    data = unprovisioned_descent(mission).model_dump(mode="json")
+    for objective in data["objectives"]:
+        if objective["objective_id"] == "water-return":
+            objective["dependencies"] = ["diamond-pickaxe"]
+        elif objective["objective_id"] == "water-bucket":
+            objective["dependencies"] = ["water-return"]
+    plan = MissionSpec.model_validate(data)
+    assert validate_mission_plan(plan, reference=mission, initial_inventory={}) == ()
+
+
+def test_a_shore_fact_before_descent_and_split_diamond_aliases_do_not_prove_access() -> None:
+    mission = reference()
+    data = unprovisioned_descent(mission).model_dump(mode="json")
+    for objective in data["objectives"]:
+        if objective["objective_id"] == "water-bucket":
+            objective["dependencies"] = ["water-return"]
+    issues = validate_mission_plan(
+        MissionSpec.model_validate(data),
+        reference=mission,
+        initial_inventory={"diamond": 2, "minecraft:diamond": 2},
+    )
+    assert [issue.code for issue in issues] == ["MISSING_ACCESS_PROVISION"]
+
+
+@pytest.mark.parametrize(
+    "shore_x,tolerance,valid", [(0, 1.5, True), (10, 1.5, False), (0, 3, False)]
+)
+def test_return_access_uses_the_authorized_location_region_instead_of_its_label(
+    shore_x, tolerance, valid
+) -> None:
+    data = reference().model_dump(mode="json")
+    for objective in data["objectives"]:
+        if objective["objective_id"] == "return-home":
+            predicate = objective["goal"]["success_predicates"][0]
+            predicate.update(x=shore_x, tolerance=tolerance)
+    mission = MissionSpec.model_validate(data)
+    data = unprovisioned_descent(mission).model_dump(mode="json")
+    for objective in data["objectives"]:
+        if objective["objective_id"] == "return-home":
+            objective["dependencies"] = ["diamond-pickaxe"]
+        elif objective["objective_id"] == "water-bucket":
+            objective["dependencies"] = ["return-home"]
+    issues = validate_mission_plan(
+        MissionSpec.model_validate(data), reference=mission, initial_inventory={}
+    )
+    assert not issues if valid else [issue.code for issue in issues] == ["MISSING_ACCESS_PROVISION"]
+
+
+def test_a_standalone_diamond_goal_does_not_invent_a_water_task() -> None:
+    data = reference().model_dump(mode="json")
+    diamond = next(
+        objective
+        for objective in data["objectives"]
+        if objective["objective_id"] == "diamond-pickaxe"
+    )
+    diamond["dependencies"] = []
+    data["objectives"] = [diamond]
+    mission = MissionSpec.model_validate(data)
+    assert validate_mission_plan(mission, reference=mission, initial_inventory={}) == ()
+
+
 def test_existing_full_plan_satisfies_known_inventory_dependencies() -> None:
     mission = reference()
     assert validate_mission_plan(mission, reference=mission, initial_inventory={}) == ()
@@ -46,7 +151,10 @@ def test_obsidian_preparation_needs_water_provisioned_before_its_goal(inventory)
             objective["dependencies"] = ["diamond-pickaxe"]
     plan = MissionSpec.model_validate(data)
     original = plan.canonical_hash
-    issues = validate_mission_plan(plan, reference=mission, initial_inventory=inventory)
+    # Local diamond stock isolates the obsidian-input check from deep-access planning.
+    issues = validate_mission_plan(
+        plan, reference=mission, initial_inventory={**inventory, "diamond": 3}
+    )
     assert len(issues) == 1 and issues[0].objective_id == "obsidian"
     assert issues[0].code == "MISSING_WORKFLOW_INPUTS"
     assert issues[0].candidate_dependencies == ("water-bucket",)
@@ -57,7 +165,12 @@ def test_obsidian_preparation_needs_water_provisioned_before_its_goal(inventory)
     )
     assert plan.canonical_hash == original
     for supplied in [{"water_bucket": 1}, {"minecraft:obsidian": 10}]:
-        assert validate_mission_plan(plan, reference=mission, initial_inventory=supplied) == ()
+        assert (
+            validate_mission_plan(
+                plan, reference=mission, initial_inventory={**supplied, "diamond": 3}
+            )
+            == ()
+        )
 
 
 def test_empty_inventory_water_before_iron_returns_actionable_dependency_error() -> None:
@@ -138,7 +251,8 @@ def test_missing_dependency_is_reported_without_mutating_the_plan() -> None:
     assert plan.model_dump(mode="json") == before
 
 
-async def test_structured_input_error_reaches_the_existing_model_repair_once() -> None:
+@pytest.mark.parametrize("failure_kind", ["inventory", "access"])
+async def test_structured_input_error_reaches_the_existing_model_repair_once(failure_kind) -> None:
     mission = reference()
     authority = MinecraftExecuteRequest.model_validate(
         {
@@ -166,7 +280,9 @@ async def test_structured_input_error_reaches_the_existing_model_repair_once() -
             ]
         }
 
-    broken = response(missing_iron(mission))
+    broken = response(
+        missing_iron(mission) if failure_kind == "inventory" else unprovisioned_descent(mission)
+    )
     original = json.dumps(broken, sort_keys=True)
     model_calls = 0
 
@@ -180,7 +296,9 @@ async def test_structured_input_error_reaches_the_existing_model_repair_once() -
         assert result["repair_remaining"] is True
         problem = json.loads(result["error"])
         assert problem["code"] == "MC_PLAN_REJECTED"
-        assert problem["issues"][0]["candidate_dependencies"] == ["iron"]
+        assert problem["issues"][0]["candidate_dependencies"] == (
+            ["iron"] if failure_kind == "inventory" else ["water-bucket"]
+        )
         return response(mission)
 
     calls = await _collect_independent_calls(

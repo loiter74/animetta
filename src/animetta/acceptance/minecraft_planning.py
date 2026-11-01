@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping
+from math import dist
 
 from pydantic import BaseModel, ConfigDict
 
@@ -13,8 +14,14 @@ from animetta.tools.minecraft.survival.workflows import (
     WorkflowCheckpoint,
     WorkflowCheckpointClause,
 )
-from animetta.tools.minecraft.voyager.goal_models import GoalSpec, InventoryAtLeast
+from animetta.tools.minecraft.voyager.goal_models import GoalSpec, InventoryAtLeast, LocationReached
 from animetta.tools.minecraft.voyager.goal_verifier import _resource_id
+
+NETHER_DESCENT_ACCESS_RULE = (
+    "钻石镐工作流缺少钻石时会下降矿井，可能失去当前岸边可达性。"
+    "若计划还需取水，应在下降前备水，或用已授权的同岸边位置目标在下降后返回再取水；"
+    "已有足量钻石、成品镐或水桶时不强制该顺序。"
+)
 
 
 class PlanningIssue(BaseModel):
@@ -157,6 +164,14 @@ def validate_mission_plan(
         return ancestors[objective_id]
 
     outputs = {obj.objective_id: _goal_inventory(obj.goal) for obj in mission.objectives}
+
+    def known_before(objective_id: str) -> dict[str, int]:
+        known = _inventory(initial_inventory)
+        for parent in upstream(objective_id):
+            for item, count in outputs[parent].items():
+                known[item] = max(known.get(item, 0), count)
+        return known
+
     contracts = nether_plan_inventory_requirements() if requirements is None else requirements
     for key, obj in actual.items():
         contract = contracts.get(key)
@@ -164,10 +179,7 @@ def validate_mission_plan(
             continue
         if any(option.maximum_y is not None for option in contract.any_of):
             raise ValueError("inventory planning contracts cannot contain position conditions")
-        known = _inventory(initial_inventory)
-        for parent in upstream(obj.objective_id):
-            for item, count in outputs[parent].items():
-                known[item] = max(known.get(item, 0), count)
+        known = known_before(obj.objective_id)
         if any(
             all(known.get(_resource_id(i.item), 0) >= i.quantity for i in option.inventory_all)
             for option in contract.any_of
@@ -196,4 +208,41 @@ def validate_mission_plan(
                 candidate_dependencies=suppliers,
             )
         )
+    descent = actual.get(("craft", "diamond_pickaxe"))
+    water = actual.get(("acquire", "water_bucket"))
+    if descent is not None and water is not None:
+        known = known_before(descent.objective_id)
+        provisioned = (
+            known.get(_resource_id("water_bucket"), 0) >= water.goal.quantity
+            or known.get(_resource_id("diamond_pickaxe"), 0) >= descent.goal.quantity
+            or known.get(_resource_id("diamond"), 0) >= 3 * descent.goal.quantity
+        )
+        shores = [
+            predicate
+            for objective in reference.objectives
+            if objective.goal.intent == "travel" and objective.goal.target == "surface-water-access"
+            for predicate in objective.goal.success_predicates
+            if isinstance(predicate, LocationReached)
+        ]
+        # A pre-descent visit is stale. A return must follow descent and precede
+        # water, and its entire accepted location region must prove the shore.
+        returned = any(
+            dist((position.x, position.y, position.z), (shore.x, shore.y, shore.z))
+            + position.tolerance
+            <= shore.tolerance
+            for parent in upstream(water.objective_id)
+            if by_id[parent].goal.intent == "travel" and descent.objective_id in upstream(parent)
+            for position in by_id[parent].goal.success_predicates
+            if isinstance(position, LocationReached)
+            for shore in shores
+        )
+        if not provisioned and not returned:
+            issues.append(
+                PlanningIssue(
+                    code="MISSING_ACCESS_PROVISION",
+                    objective_id=descent.objective_id,
+                    message=NETHER_DESCENT_ACCESS_RULE,
+                    candidate_dependencies=(water.objective_id,),
+                )
+            )
     return tuple(issues)
