@@ -8,6 +8,7 @@ import { actionTimeoutFromDeadline } from './actionDeadline.js';
 import { configureMineSupport } from './branch_mine.js';
 import { findReachableCraftingTable } from './craftingTable.js';
 import { availableMaterialCount, craftOperations, WOOD_PLANK_RECIPES } from './crafting/counts.js';
+import { craftMixedPlanks } from './crafting/wood.js';
 import {
   createCraftingTablePlacementBudget,
   recoverPlacedCraftingTableAfterTimeout,
@@ -1387,6 +1388,7 @@ async function _craftWithFallback(recipe, count, craftingTable, context = {}) {
 
 async function _craft(recipe, count = 1, context = {}) {
   context.operation_scope?.checkpoint();
+  if (recipe === 'any_planks') return craftMixedPlanks(bot, count, context, _craft);
   context = { ...context, keep_crafting_table: recipe === 'furnace' };
   const mcData = await getMcData();
   const fallbackRecipe = FALLBACK_RECIPES[recipe] || null;

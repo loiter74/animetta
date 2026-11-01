@@ -46,7 +46,7 @@ class FallbackStrategy:
             return StrategyFailure(
                 code=state["failure_code"], message="No exact deterministic workflow"
             )
-        workflow = bind_workflow_wood(state["workflow"], observation)
+        workflow = bind_workflow_wood(state["workflow"])
         state["workflow"] = workflow
         state.pop("repeat_collection", None)
         index = state["step_index"]
@@ -222,9 +222,9 @@ class FallbackStrategy:
         target = self._declared_collection_target(workflow, index)
         if target is None or step.capability != "collect":
             return None
-        if inventory_resource_count(
-            after, target.item, combine_species=True
-        ) <= inventory_resource_count(before, target.item, combine_species=True):
+        if inventory_resource_count(after, target.item) <= inventory_resource_count(
+            before, target.item
+        ):
             return None
         return {**state}
 

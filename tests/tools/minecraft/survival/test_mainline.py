@@ -38,7 +38,7 @@ MESSAGES = json.loads(
 )["messages"]
 
 
-def test_partial_wood_stock_keeps_species_open_until_one_recipe_stock_is_observed():
+def test_partial_wood_stock_advances_when_mixed_recipe_materials_are_observed():
     mission = build_nether_portal_mission(mission_id="partial-wood-substitution")
     workflow = next(w for w in nether_preparation_workflows() if w.target == "nether_iron_kit")
     registry = WorkflowRegistry()
@@ -65,13 +65,13 @@ def test_partial_wood_stock_keeps_species_open_until_one_recipe_stock_is_observe
     assert first.parameters == {"block_type": "any_log", "count": 4}
     state = strategy.accept_result(state, {})
     mixed = observation.model_copy(update={"inventory": {"jungle_log": 4, "oak_log": 4}})
-    assert inventory_resource_count(mixed, "any_log") == 4
+    assert inventory_resource_count(mixed, "any_log") == 8
     second = strategy.propose(state, mixed)
-    assert second.capability == "collect"
-    assert second.parameters == {"block_type": "any_log", "count": 4}
+    assert second.capability == "craft"
+    assert second.parameters == {"recipe": "any_planks", "count": 32}
     enough = mixed.model_copy(update={"inventory": {"jungle_log": 4, "oak_log": 8}})
     craft = strategy.propose(state, enough)
-    assert craft.parameters == {"recipe": "oak_planks", "count": 32}
+    assert craft.parameters == {"recipe": "any_planks", "count": 32}
     assert state["workflow"].adaptive_wood is False
     assert workflow.steps[0].parameters == {"block_type": "oak_log", "count": 8}
     assert [s.maximum_cost for s in state["workflow"].steps] == [
@@ -79,7 +79,7 @@ def test_partial_wood_stock_keeps_species_open_until_one_recipe_stock_is_observe
     ]
 
 
-def test_partial_mixed_wood_growth_is_recoverable_without_satisfying_the_recipe_stock():
+def test_partial_mixed_wood_growth_is_recoverable_before_total_recipe_stock():
     mission = build_nether_portal_mission(mission_id="partial-mixed-wood-progress")
     registry = WorkflowRegistry()
     registry.register(
@@ -90,15 +90,45 @@ def test_partial_mixed_wood_growth_is_recoverable_without_satisfying_the_recipe_
     before = Observation.model_validate({**MESSAGES["Observation"], "inventory": {"jungle_log": 4}})
     strategy.propose(state, before)
     after = before.model_copy(update={"inventory": {"jungle_log": 4, "minecraft:oak_log": 2}})
-    assert inventory_resource_count(after, "any_log", combine_species=True) == 6
+    assert inventory_resource_count(after, "any_log") == 6
     assert strategy.accept_partial_result(state, before, after) is not None
-    assert strategy.propose(state, after).parameters == {"block_type": "any_log", "count": 4}
+    assert strategy.propose(state, after).parameters == {"block_type": "any_log", "count": 2}
     saplings = before.model_copy(update={"inventory": {"jungle_log": 4, "oak_sapling": 2}})
     assert strategy.accept_partial_result(state, before, saplings) is None
     duplicate = before.model_copy(
         update={"inventory": {"jungle_log": 4, "minecraft:jungle_log": 4}}
     )
     assert strategy.accept_partial_result(state, before, duplicate) is None
+
+
+def test_r106_mixed_stock_advances_without_spending_another_search_action():
+    mission = build_nether_portal_mission(mission_id="r106-mixed-stock", home=(0, 64, 0))
+    workflow = next(w for w in nether_preparation_workflows() if w.target == "nether_iron_kit")
+    registry = WorkflowRegistry()
+    registry.register(workflow)
+    strategy = FallbackStrategy(registry=registry)
+    state = strategy.prepare(mission.objectives[0].goal)
+    limit = mission.budget.model_copy(update=mission.objectives[0].budget.model_dump())
+    spent = BudgetUsage(
+        max_actions=2, max_blocks_changed=16, max_travel_distance=128.14538949888098
+    )
+    account = BudgetAccount(limit=limit).reserve("first-two", spent).settle("first-two", spent)
+    state["budget_remaining"] = account.remaining
+    observation = Observation.model_validate(MESSAGES["Observation"]).model_copy(
+        update={"inventory": {"oak_log": 5, "spruce_log": 3}}
+    )
+    before = account.remaining
+    decision = strategy.propose(state, observation)
+    assert decision.capability == "craft"
+    assert decision.parameters == {"recipe": "any_planks", "count": 32}
+    assert account.remaining == before and account.limit == limit
+    assert limit.max_actions == 16 and limit.max_blocks_changed == 256
+    assert [s.maximum_cost for s in state["workflow"].steps] == [
+        s.maximum_cost for s in workflow.steps
+    ]
+    assert workflow.steps[0].parameters["block_type"] == "oak_log"
+    planks = observation.model_copy(update={"inventory": {"oak_planks": 20, "spruce_planks": 12}})
+    assert inventory_resource_count(planks, "any_planks") == 32
 
 
 def test_workstation_reservations_fit_unchanged_iron_budget_and_leave_a_local_table() -> None:
@@ -161,7 +191,7 @@ def test_iron_kit_collects_successful_small_batches_before_smelting_seven(raw_ir
         )
     decision = strategy.propose(state, observation)
     assert decision.kind == "execute" and decision.capability == "smelt"
-    assert decision.parameters == {"item": "raw_iron", "fuel": "oak_planks", "count": 7}
+    assert decision.parameters == {"item": "raw_iron", "fuel": "any_planks", "count": 7}
     assert count == 7 - raw_iron
     assert account.used.max_actions == count
     assert len(workflow.steps) == 10
@@ -363,7 +393,7 @@ def test_iron_kit_skips_remaining_batches_when_seven_ingots_are_observed() -> No
 
 
 @pytest.mark.parametrize("wood", ["spruce", "birch", "dark_oak", "mangrove", "cherry"])
-def test_wood_bootstrap_binds_recipe_species_after_sufficient_observed_logs(wood: str) -> None:
+def test_wood_bootstrap_uses_native_family_recipes_for_observed_species(wood: str) -> None:
     workflow = next(w for w in nether_preparation_workflows() if w.target == "nether_iron_kit")
     registry = WorkflowRegistry()
     registry.register(workflow)
@@ -384,17 +414,17 @@ def test_wood_bootstrap_binds_recipe_species_after_sufficient_observed_logs(wood
     first = strategy.propose(state, observation)
     assert first.parameters == {"block_type": "any_log", "count": 8}
     assert first.maximum_cost == workflow.steps[0].maximum_cost
-    assert state["workflow"].adaptive_wood is True
+    assert state["workflow"].adaptive_wood is False
     state = strategy.accept_result(state, {})
     second = strategy.propose(
         state, observation.model_copy(update={"inventory": {f"{wood}_log": 8}})
     )
-    assert second.parameters == {"recipe": f"{wood}_planks", "count": 32}
+    assert second.parameters == {"recipe": "any_planks", "count": 32}
     bound = state["workflow"]
-    assert bound.steps[1].parameters == {"recipe": f"{wood}_planks", "count": 32}
-    assert bound.steps[-1].parameters["fuel"] == f"{wood}_planks"
-    assert bound.collection_targets[0].item == f"{wood}_log"
-    assert bound.checkpoints[0].any_of[0].inventory_all[1].item == f"{wood}_planks"
+    assert bound.steps[1].parameters == {"recipe": "any_planks", "count": 32}
+    assert bound.steps[-1].parameters["fuel"] == "any_planks"
+    assert bound.collection_targets[0].item == "any_log"
+    assert bound.checkpoints[0].any_of[0].inventory_all[1].item == "any_planks"
     assert [s.maximum_cost for s in bound.steps] == [s.maximum_cost for s in workflow.steps]
     # Registered templates stay exact and reusable by a different command.
     assert workflow.steps[0].parameters["block_type"] == "oak_log"
@@ -589,7 +619,7 @@ def test_wood_collection_reservation_covers_real_retry10_and_resumes_from_logs()
     decision = strategy.propose(strategy.prepare(mission.objectives[0].goal), observation)
     assert decision.kind == "execute"
     assert decision.capability == "craft"
-    assert decision.parameters == {"recipe": "oak_planks", "count": 32}
+    assert decision.parameters == {"recipe": "any_planks", "count": 32}
 
 
 def test_mainline_resume_from_obsidian_keeps_suffix_and_recomputes_budget() -> None:

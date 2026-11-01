@@ -7,7 +7,7 @@ import {
   projectVisibleDiscovery,
 } from '../gamebotEvidenceV2.js';
 import { createGameBotRuntimeV2 } from '../gamebotRuntimeV2.js';
-import { findPickupItemEntities } from '../collection.js';
+import { projectItemPickupState } from './itemPickupState.js';
 import { AIR_RECOVERY_MS, surfaceEscapePlan } from '../navigation.js';
 import { ownOxygenLevel } from './playerVitals.js';
 import { withActionEvidence } from './actionEvidence.js';
@@ -759,6 +759,7 @@ function runtimeCapabilities(bot, actions, abortActive, motionPolicy) {
 function observationState(bot, advancementAdapter) {
   const snapshot = getStatusSnapshot(bot);
   const discovery = projectVisibleDiscovery(bot);
+  const pickups = projectItemPickupState(bot);
   const equipment = {};
   if (bot.heldItem?.name) equipment.hand = bot.heldItem.name;
   const slots = bot.inventory?.slots || [];
@@ -780,9 +781,8 @@ function observationState(bot, advancementAdapter) {
       fall_distance: snapshot.fall_distance,
       on_ground: snapshot.on_ground,
       velocity: snapshot.velocity,
-      // A stopped player may still receive nearby item entities. Keep this
-      // uncertainty in the bounded post-action settlement, including errors.
-      pending_item_pickups: findPickupItemEntities(bot, 2).length,
+      pending_item_pickups: pickups.pending,
+      ...(pickups.evidence.length ? { pending_item_pickup_evidence: pickups.evidence } : {}),
       ...(discovery.survival_retreat ? { survival_retreat: discovery.survival_retreat } : {}),
       ...(oxygen !== null ? { oxygen_level: oxygen } : {}),
     },

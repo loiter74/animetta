@@ -873,6 +873,8 @@ export function createGameBotRuntimeV2({
                 required_stable_samples: postActionStableSamples,
                 ...(postAction.observation.environment?.pending_item_pickups
                   ? { pending_item_pickups: postAction.observation.environment.pending_item_pickups } : {}),
+                ...(postAction.observation.environment?.pending_item_pickup_evidence?.length
+                  ? { pending_item_pickup_evidence: postAction.observation.environment.pending_item_pickup_evidence.slice(0, 8) } : {}),
               },
             })
             : null;

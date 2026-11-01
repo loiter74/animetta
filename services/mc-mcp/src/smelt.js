@@ -5,6 +5,7 @@ import Vec3 from 'vec3';
 import pathfinderPkg from 'mineflayer-pathfinder';
 import { operationWait } from './runtime/operationScope.js';
 import { presentBlockTarget } from './runtime/presentationAnchors.js';
+import { WOOD_PLANK_RECIPES } from './crafting/counts.js';
 
 const { goals } = pathfinderPkg;
 const { GoalNear } = goals;
@@ -442,11 +443,25 @@ export function createSmelt({ bot, getMcData, wait = operationWait }) {
     const result = SMELT_RESULT[item];
     if (!result) throw new Error(`Unknown smelt recipe for ${item} (add to SMELT_RESULT if needed)`);
     const mcData = await getMcData();
+    const mixedFuel = fuel === 'any_planks';
+    const fuelPlan = [];
+    if (mixedFuel) {
+      let missing = fuelUnitsForSmelt(fuel, count);
+      for (const stack of bot.inventory.items()) {
+        if (!Object.hasOwn(WOOD_PLANK_RECIPES, stack.name) || missing <= 0) continue;
+        const amount = Math.min(missing, stack.count);
+        if (amount > 0) fuelPlan.push({ name: stack.name, count: amount });
+        missing -= amount;
+      }
+      if (missing > 0) throw Object.assign(new Error('木板燃料总量不足，停止冶炼准备。'), {
+        code: 'MISSING_MATERIALS', details: { missing_fuel_units: missing },
+      });
+    }
     let furnaceInfo = await findOrPlaceFurnace(mcData, beforeBlockChange);
     let furnaceBlock = furnaceInfo.block;
     const inputItem = mcData.itemsByName[item];
     const fuelItem = mcData.itemsByName[fuel];
-    if (!inputItem || !fuelItem) throw new Error(`Unknown item: ${item} or ${fuel}`);
+    if (!inputItem || (!mixedFuel && !fuelItem)) throw new Error(`Unknown item: ${item} or ${fuel}`);
     const presentationTarget = await presentBlockTarget({
       context,
       phase: 'aiming',
@@ -540,6 +555,22 @@ export function createSmelt({ bot, getMcData, wait = operationWait }) {
 
       // Mineflayer can throw a stale inventory lookup error after the item has
       // already moved into the furnace slot. Trust the furnace slot state.
+      let fuelIndex = 0;
+      const feedMixedFuel = async (timeoutMs = 10_000) => {
+        if (!mixedFuel || fuelIndex >= fuelPlan.length) return;
+        context.operation_scope?.checkpoint();
+        context.signal?.throwIfAborted();
+        const current = typeof furnace.fuelItem === 'function' ? furnace.fuelItem() : null;
+        if (current?.count > 0 || Number(furnace.fuel) > 0) return;
+        const next = fuelPlan[fuelIndex];
+        await acceptMovedStack(
+          () => runContainerOperation('put mixed plank fuel',
+            () => furnace.putFuel(mcData.itemsByName[next.name].id, null, next.count), timeoutMs),
+          () => (typeof furnace.fuelItem === 'function' ? furnace.fuelItem() : null),
+          next.name, 1,
+        );
+        fuelIndex++;
+      };
       await acceptMovedStack(
         () => runContainerOperation(
           'put furnace input',
@@ -549,7 +580,8 @@ export function createSmelt({ bot, getMcData, wait = operationWait }) {
         item,
         count,
       );
-      await acceptMovedStack(
+      if (mixedFuel) await feedMixedFuel();
+      else await acceptMovedStack(
         () => runContainerOperation(
           'put furnace fuel',
           () => furnace.putFuel(fuelItem.id, null, fuelUnitsForSmelt(fuel, count)),
@@ -566,6 +598,8 @@ export function createSmelt({ bot, getMcData, wait = operationWait }) {
       // long in survival caves and can lose the whole input if it dies.
       const deadline = Date.now() + count * 13000 + 5000;
       while (Date.now() < deadline && inventoryCount(result) - startingResultCount < count) {
+        await feedMixedFuel(Math.max(1, Math.min(10_000, deadline - Date.now())));
+        if (mixedFuel && Date.now() >= deadline) break;
         const out = furnace.outputItem();
         const available = out ? out.count : 0;
         if (available <= 0) {

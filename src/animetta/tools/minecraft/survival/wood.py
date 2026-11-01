@@ -1,4 +1,4 @@
-"""Bind survival recipes only after the required carried wood stock is observed."""
+"""Use material families without confusing them with a single-species recipe."""
 
 from __future__ import annotations
 
@@ -8,71 +8,39 @@ from .workflows import InventoryThreshold, WorkflowDefinition
 
 _WOOD_TYPES = ("oak", "spruce", "birch", "jungle", "acacia", "dark_oak", "mangrove", "cherry")
 _WOOD_LOGS = frozenset(f"{wood}_log" for wood in _WOOD_TYPES)
+_WOOD_PLANKS = frozenset(f"{wood}_planks" for wood in _WOOD_TYPES)
 
 
-def inventory_resource_count(
-    observation: Observation, item: str, *, combine_species: bool = False
-) -> int:
-    """Count exact stock; any_log uses one species unless measuring combined growth."""
+def inventory_resource_count(observation: Observation, item: str) -> int:
+    """Aggregate family stock while aliases of the same real item remain nonadditive."""
     resource = item.removeprefix("minecraft:")
-    names = _WOOD_LOGS if resource == "any_log" else {resource}
+    names = (
+        _WOOD_LOGS
+        if resource == "any_log"
+        else _WOOD_PLANKS
+        if resource == "any_planks"
+        else {resource}
+    )
     stocks: dict[str, int] = {}
     for key, count in observation.inventory.items():
         name = key.removeprefix("minecraft:")
         if name in names:
             stocks[name] = max(stocks.get(name, 0), count)
-    return sum(stocks.values()) if combine_species else max(stocks.values(), default=0)
+    return sum(stocks.values())
 
 
-def _observed_wood(observation: Observation) -> str | None:
-    inventory: dict[str, int] = {}
-    for item, count in observation.inventory.items():
-        name = item.removeprefix("minecraft:")
-        inventory[name] = max(inventory.get(name, 0), count)
-    # Recipe choice comes from carried materials rather than a visible tree.
-    stock = {
-        wood: inventory.get(f"{wood}_log", 0) * 4 + inventory.get(f"{wood}_planks", 0)
-        for wood in _WOOD_TYPES
-    }
-    if max(stock.values()) > 0:
-        return max(stock, key=lambda wood: stock[wood])
-    return None
-
-
-def bind_workflow_wood(
-    workflow: WorkflowDefinition, observation: Observation
-) -> WorkflowDefinition:
-    """Keep exact goals and budgets; bind only workflows that allow wood substitution."""
+def bind_workflow_wood(workflow: WorkflowDefinition) -> WorkflowDefinition:
+    """Bind opted-in workflows to native families, preserving all goals and budgets."""
     if not workflow.adaptive_wood:
         return workflow
-    wood = _observed_wood(observation)
-    log_target = next(
-        (
-            target
-            for target in workflow.collection_targets
-            if target is not None and (target.item == "any_log" or target.item in _WOOD_LOGS)
-        ),
-        None,
-    )
-    if (
-        wood is not None
-        and log_target is not None
-        and inventory_resource_count(observation, f"{wood}_log") < log_target.quantity
-        and not inventory_resource_count(observation, f"{wood}_planks")
-    ):
-        wood = None
-    replacements = (
-        {"oak_log": f"{wood}_log", "any_log": f"{wood}_log", "oak_planks": f"{wood}_planks"}
-        if wood is not None
-        else {"oak_log": "any_log"}
-    )
+    replacements = {"oak_log": "any_log", "oak_planks": "any_planks"}
 
     def threshold(item: InventoryThreshold) -> InventoryThreshold:
         return item.model_copy(update={"item": replacements.get(item.item, item.item)})
 
     return workflow.model_copy(
         update={
-            "adaptive_wood": wood is None,
+            "adaptive_wood": False,
             "steps": tuple(
                 step.model_copy(
                     update={

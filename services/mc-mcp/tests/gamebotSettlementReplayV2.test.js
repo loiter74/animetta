@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createGameBotRuntimeV2 } from '../src/gamebotRuntimeV2.js';
+import { projectItemPickupState } from '../src/runtime/itemPickupState.js';
 
 
 function budget(overrides = {}) {
@@ -77,23 +78,36 @@ function runtime({ capability, parametersSchema, observeState, invoke }) {
 }
 
 
-function delayedPickupReplay({ pickupAtMs = 4614, deadlineAfterMs = 20000 } = {}) {
+function delayedPickupReplay({ pickupAtMs = 4614, deadlineAfterMs = 20000, outsidePickupArea = false } = {}) {
   const base = 1_800_000_000_000;
   let elapsed = 0;
   let active = false;
+  const bot = {
+    entity: { position: { x: 31.5, y: 50, z: 40.6 }, width: 0.6, height: 1.8 },
+    entities: {},
+  };
   const gamebot = createGameBotRuntimeV2({
     runtimeInstanceId: 'runtime-replay', environmentProfile: profile(),
     nowMs: () => base + elapsed, getTick: () => Math.floor(elapsed / 50),
     waitMs: async delay => { elapsed += delay; },
-    observeState: async () => ({
+    observeState: async () => {
+      bot.entities = active && elapsed < pickupAtMs ? { 1: {
+        id: 1, name: 'item', width: 0.25, height: 0.25,
+        position: { x: 31.5 + (outsidePickupArea ? 1.75 : 0.5), y: 50, z: 40.6 },
+        onGround: true, velocity: { x: 0, y: 0, z: 0 },
+      } } : {};
+      const pickups = projectItemPickupState(bot);
+      return ({
       position: { x: 31.5, y: 50, z: 40.6 }, health: 20, food: 20,
       inventory: { cobblestone: active && elapsed >= pickupAtMs ? 91 : 90, gravel: 1 },
       environment: {
         dimension: 'minecraft:overworld', on_ground: true,
         velocity: { x: 0, y: -0.0784, z: 0 },
-        pending_item_pickups: active && elapsed < pickupAtMs ? 1 : 0,
+        pending_item_pickups: pickups.pending,
+        pending_item_pickup_evidence: pickups.evidence,
       },
-    }),
+      });
+    },
     capabilities: { acquire_flint: {
       risk: 'survival_safe', effectClass: 'state_changing', parametersSchema: { type: 'object' },
       maximumCost: budget({ max_actions: 1, max_strategy_attempts: 0, max_travel_distance: 0, max_blocks_changed: 0, max_damage_taken: 0 }),
@@ -133,6 +147,19 @@ test('pending pickup remains unreconciled when the original deadline expires', a
   assert.equal(receipt.reconciliation, 'pending');
   assert.ok(elapsed() <= 1000);
   assert.equal(receipt.settlement_trace.at(-1).stable_streak, 0);
+  assert.equal(receipt.reconciliation_error.details.pending_item_pickup_evidence[0].reason, 'pickup_overlap');
+});
+
+
+test('a resting item outside collision pickup contact does not quarantine a known failure', async () => {
+  const { gamebot, action, elapsed } = delayedPickupReplay({ pickupAtMs: Infinity, outsidePickupArea: true });
+  const receipt = await gamebot.executeAction(action);
+  assert.equal(receipt.outcome, 'error');
+  assert.equal(receipt.error.code, 'BUDGET_EXHAUSTED');
+  assert.equal(receipt.post_observation, 'stable');
+  assert.equal(receipt.reconciliation, 'accepted');
+  assert.ok(elapsed() < 1000);
+  assert.equal(receipt.budget_usage.max_blocks_changed, 48);
 });
 
 

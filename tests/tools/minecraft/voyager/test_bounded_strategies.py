@@ -245,7 +245,7 @@ def observation_with(inventory: dict[str, int]) -> Observation:
     )
 
 
-def test_unknown_adaptive_wood_defers_binding_without_changing_costs() -> None:
+def test_adaptive_wood_binds_native_families_without_changing_costs() -> None:
     registry = WorkflowRegistry()
     workflow = iron_survival_workflow()
     registry.register(workflow)
@@ -254,23 +254,23 @@ def test_unknown_adaptive_wood_defers_binding_without_changing_costs() -> None:
     first = strategy.propose(state, observation_with({}))
     assert first.parameters == {"block_type": "any_log", "count": 8}
     assert first.maximum_cost == workflow.steps[0].maximum_cost
-    assert state["workflow"].adaptive_wood is True
+    assert state["workflow"].adaptive_wood is False
     assert state["workflow"].collection_targets[0].item == "any_log"
     after = observation_with({"minecraft:spruce_log": 8})
     assert strategy.accept_partial_result(state, observation_with({}), after) is not None
     craft = strategy.propose(state, after)
-    assert craft.parameters == {"recipe": "spruce_planks", "count": 32}
+    assert craft.parameters == {"recipe": "any_planks", "count": 32}
     assert state["workflow"].adaptive_wood is False
     assert (
         next(s for s in state["workflow"].steps if s.capability == "smelt").parameters["fuel"]
-        == "spruce_planks"
+        == "any_planks"
     )
     assert tuple(s.maximum_cost for s in state["workflow"].steps) == tuple(
         s.maximum_cost for s in workflow.steps
     )
 
 
-def test_unknown_wood_partial_stock_keeps_species_open_and_collects_only_gap() -> None:
+def test_family_wood_partial_stock_collects_only_total_gap() -> None:
     registry = WorkflowRegistry()
     registry.register(iron_survival_workflow())
     strategy = FallbackStrategy(registry=registry)
@@ -278,16 +278,16 @@ def test_unknown_wood_partial_stock_keeps_species_open_and_collects_only_gap() -
     strategy.propose(state, observation_with({}))
     decision = strategy.propose(state, observation_with({"spruce_log": 3}))
     assert decision.parameters == {"block_type": "any_log", "count": 5}
-    assert state["workflow"].adaptive_wood is True
+    assert state["workflow"].adaptive_wood is False
     assert state["workflow"].collection_targets[0].item == "any_log"
     enough = observation_with({"spruce_log": 3, "birch_log": 8})
-    assert strategy.propose(state, enough).parameters == {"recipe": "birch_planks", "count": 32}
+    assert strategy.propose(state, enough).parameters == {"recipe": "any_planks", "count": 32}
     assert state["workflow"].adaptive_wood is False
 
 
-def test_any_log_threshold_requires_same_species_without_namespace_double_counting() -> None:
+def test_any_log_threshold_combines_species_without_namespace_double_counting() -> None:
     observation = observation_with({"oak_log": 4, "minecraft:oak_log": 4, "birch_log": 4})
-    assert FallbackStrategy._inventory_count(observation, "any_log") == 4
+    assert FallbackStrategy._inventory_count(observation, "any_log") == 8
     assert FallbackStrategy._inventory_count(observation, "minecraft:oak_log") == 4
 
 
@@ -424,7 +424,7 @@ def test_fallback_propose_skips_collect_when_declared_target_is_already_satisfie
 
     assert decision.kind == "execute"
     assert decision.capability == "craft"
-    assert decision.parameters == {"recipe": "oak_planks", "count": 32}
+    assert decision.parameters == {"recipe": "any_planks", "count": 32}
     assert state["step_index"] == 1
 
 

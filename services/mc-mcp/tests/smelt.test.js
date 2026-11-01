@@ -150,6 +150,99 @@ function createMcData() {
   };
 }
 
+function mixedFuelFixture(t, stock = { oak_planks: 3, spruce_planks: 2 }, onWait = () => {}) {
+  const registry = minecraftData('1.21.1');
+  const bag = { raw_iron: 7, iron_ingot: 0, ...stock };
+  const feeds = [];
+  let clock = 0;
+  let input = 0;
+  let fuel = null;
+  let burnMs = 0;
+  let cookMs = 0;
+  let output = 0;
+  let closed = false;
+  let scans = 0;
+  t.mock.method(Date, 'now', () => clock);
+  const furnace = {
+    fuel: 0,
+    async putInput(_id, _metadata, count) { bag.raw_iron -= count; input += count; },
+    async putFuel(id, _metadata, count) {
+      assert.equal(fuel, null);
+      assert.equal(burnMs, 0);
+      const name = registry.items[id].name;
+      assert.ok(bag[name] >= count);
+      bag[name] -= count;
+      fuel = { name, count };
+      feeds.push([name, count, clock]);
+    },
+    fuelItem: () => fuel,
+    inputItem: () => input ? { name: 'raw_iron', count: input } : null,
+    outputItem: () => output ? { name: 'iron_ingot', count: output } : null,
+    async takeOutput() {
+      const taken = { name: 'iron_ingot', count: output };
+      bag.iron_ingot += output; output = 0;
+      return taken;
+    },
+    async close() { closed = true; },
+  };
+  const block = { name: 'furnace', type: registry.blocksByName.furnace.id, position: new Vec3(1, 64, 0) };
+  const bot = {
+    entity: { position: new Vec3(0.5, 64, 0.5), onGround: true },
+    inventory: { items: () => Object.entries(bag).filter(([, count]) => count > 0)
+      .map(([name, count]) => ({ name, count })) },
+    findBlock: () => { scans++; return block; }, blockAt: () => block,
+    openFurnace: async () => furnace,
+  };
+  const wait = async ms => {
+    clock += ms;
+    onWait(clock);
+    if (!input) return;
+    if (burnMs <= 0 && fuel?.count > 0) {
+      burnMs = 15000; fuel.count--;
+      if (!fuel.count) fuel = null;
+    }
+    if (burnMs > 0) {
+      const elapsed = Math.min(ms, burnMs);
+      burnMs -= elapsed; cookMs += elapsed;
+      while (cookMs >= 10000 && input > 0) { cookMs -= 10000; input--; output++; }
+    }
+    furnace.fuel = burnMs / 15000;
+  };
+  return { smelt: createSmelt({ bot, getMcData: async () => registry, wait }), bag, feeds,
+    state: () => ({ clock, closed, scans }) };
+}
+
+test('mixed planks feed one furnace batch without extending its original deadline', async t => {
+  const f = mixedFuelFixture(t);
+  assert.match(await f.smelt.smelt('raw_iron', 'any_planks', 7), /Smelted 7\/7/);
+  assert.equal(f.bag.iron_ingot, 7);
+  assert.deepEqual(f.feeds.map(([name, count]) => [name, count]), [
+    ['oak_planks', 3], ['spruce_planks', 2],
+  ]);
+  assert.ok(f.feeds[1][2] >= 45000, 'second species waits for the first fuel to burn');
+  assert.ok(f.state().clock <= 7 * 13000 + 5000);
+  assert.equal(f.state().closed, true);
+});
+
+test('insufficient mixed fuel fails before furnace or input mutation', async t => {
+  const f = mixedFuelFixture(t, { oak_planks: 3, spruce_planks: 1 });
+  await assert.rejects(f.smelt.smelt('raw_iron', 'any_planks', 7), { code: 'MISSING_MATERIALS' });
+  assert.equal(f.bag.raw_iron, 7);
+  assert.deepEqual(f.feeds, []);
+  assert.equal(f.state().scans, 0);
+});
+
+test('mixed fuel cancellation does not feed another species and closes the furnace', async t => {
+  const abort = new AbortController();
+  const f = mixedFuelFixture(t, undefined, clock => { if (clock >= 44000) abort.abort(); });
+  await assert.rejects(f.smelt.smelt('raw_iron', 'any_planks', 7, { signal: abort.signal }), {
+    name: 'AbortError',
+  });
+  assert.equal(f.feeds.length, 1);
+  assert.equal(f.bag.spruce_planks, 2);
+  assert.equal(f.state().closed, true);
+});
+
 test('smelt places a carried furnace when none is nearby', async () => {
   const calls = [];
   const solidBlock = { name: 'stone', position: { x: 1, y: 63, z: 1 } };
