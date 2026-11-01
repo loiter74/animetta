@@ -13,6 +13,7 @@ from animetta.acceptance.minecraft_route_planning import (
     RoutePlanningError,
     compile_route_draft,
     route_prompt_context,
+    skill_authoring_contract,
 )
 from animetta.tools.gamebot.contracts.v2 import Observation, RuntimeManifest
 from animetta.tools.minecraft.survival.mainline import build_nether_portal_mission
@@ -123,6 +124,66 @@ def test_small_skill_uses_host_types_and_goal_postconditions():
             compile_draft({"route": ROUTE, "skill": bad})
 
 
+def test_authoring_example_compiles_with_real_ir_and_host_goal():
+    example = {**skill(), "steps": skill_authoring_contract(manifest())["example_steps"]}
+    mission = compile_draft({"route": ROUTE, "skill": example})
+    candidate = mission.objectives[5].goal.constraints["skill_candidate"]["program"]
+    assert candidate["steps"] == example["steps"]
+    assert candidate["postconditions"][0]["left"]["path"] == "inventory.diamond_pickaxe"
+    assert (
+        mission.budget
+        == build_nether_portal_mission(mission_id="route-test", home=(0, 64, 0)).budget
+    )
+
+
+@pytest.mark.parametrize("change", ["missing", "different_code", "different_step"])
+def test_authoring_contract_does_not_relax_recovery_branch_validation(change):
+    steps = skill_authoring_contract(manifest())["example_steps"]
+    if change == "missing":
+        steps.pop()
+    elif change == "different_code":
+        steps[1]["condition"]["right"]["value"] = "SEARCH_TIMEOUT"
+    else:
+        steps[1]["condition"]["left"]["step_id"] = "missing_step"
+    with pytest.raises(RoutePlanningError, match="SKILL_COMPILE_FAILED"):
+        compile_draft({"route": ROUTE, "skill": {**skill(), "steps": steps}})
+
+
+async def test_schema_failure_feedback_also_supplies_complete_compiler_contract():
+    contract = skill_authoring_contract(manifest())
+    malformed = {**skill(), "steps": json.loads(json.dumps(contract["example_steps"]))}
+    malformed["steps"][0]["parameters"]["count"] = 1
+    malformed["steps"].pop()  # The latent compiler error from R104 must also be explained.
+    calls = []
+
+    async def invoke(messages):
+        calls.append(messages)
+        candidate = malformed
+        if len(calls) == 2:
+            feedback = json.loads(messages[-1]["content"])
+            assert feedback["remaining_proposals"] == 1
+            assert feedback["issues"][0]["code"] == "ROUTE_DRAFT_INVALID"
+            assert feedback["skill_authoring"] == contract
+            candidate = {**skill(), "steps": feedback["skill_authoring"]["example_steps"]}
+        return {"content": json.dumps({"route": ROUTE, "skill": candidate}), "usage": None}
+
+    result = await generate_route_plan(
+        invoke=invoke,
+        messages=[],
+        mission_id="route-test",
+        home=(0, 64, 0),
+        origin=(2, 64, 0),
+        manifest=manifest(),
+        initial_inventory={},
+    )
+    assert len(calls) == len(result.attempts) == 2
+    assert result.attempts[0].raw_response == calls[1][-2]["content"]
+    assert not result.attempts[1].issues and result.mission is not None
+    reference = compile_draft({"route": ROUTE})
+    assert result.mission.budget == reference.budget
+    assert result.mission.objectives[-1].goal == reference.objectives[-1].goal
+
+
 def test_skill_cannot_take_over_portal_or_escape_child_budget():
     with pytest.raises(RoutePlanningError, match="SKILL_SCOPE_FORBIDDEN"):
         compile_draft({"route": ROUTE, "skill": skill() | {"task": "portal"}})
@@ -198,6 +259,7 @@ def test_route_prompt_keeps_voxel_dump_and_frame_bindings_outside_model_authorit
     context = route_prompt_context(
         mission_id="route-test", home=(0, 64, 0), observation=observation, manifest=manifest()
     )
+    assert context["skill_authoring"] == skill_authoring_contract(manifest())
     encoded = json.dumps(context)
     assert "voxel_payload" not in encoded and "frame_x0" not in encoded
     assert len(context["observation"]["nearby_block_samples"]) <= 16

@@ -13,7 +13,12 @@ from animetta.tools.gamebot.contracts.v2 import RuntimeManifest
 from animetta.tools.minecraft.mission.models import MissionSpec
 
 from .minecraft_learning import MAX_MODEL_PROPOSALS
-from .minecraft_route_planning import RouteDraft, RoutePlanningError, compile_route_draft
+from .minecraft_route_planning import (
+    RouteDraft,
+    RoutePlanningError,
+    compile_route_draft,
+    skill_authoring_contract,
+)
 
 
 class RouteAttempt(BaseModel):
@@ -111,6 +116,7 @@ async def generate_route_plan(
                         {
                             "issues": issues,
                             "remaining_proposals": max_proposals - attempt.proposal,
+                            "skill_authoring": skill_authoring_contract(manifest),
                             "instruction": "修正这些问题，只输出简短 RouteDraft JSON；主机任务、预算上限和蓝图不变。",
                         },
                         ensure_ascii=False,

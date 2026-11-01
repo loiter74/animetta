@@ -15,11 +15,16 @@ from animetta.tools.minecraft.skill.independent_validation import goal_postcondi
 from animetta.tools.minecraft.skill.ir import (
     ActionStep,
     BranchStep,
+    Expression,
+    FailStep,
+    GoalInputExpression,
+    LiteralExpression,
     ParameterSpec,
     Predicate,
     RepeatStep,
     SkillProgram,
     SkillStep,
+    StepOutputExpression,
 )
 from animetta.tools.minecraft.survival.mainline import build_nether_portal_mission
 from animetta.tools.minecraft.survival.workflows import (
@@ -122,6 +127,67 @@ def _route_inventory_requirements() -> dict[tuple[str, str], WorkflowCheckpoint]
     return requirements
 
 
+def skill_authoring_contract(manifest: RuntimeManifest) -> dict:
+    """Expose compiler semantics once for both initial proposals and corrections."""
+    examples = []
+    collect = next((cap for cap in manifest.capabilities if cap.name == "collect"), None)
+    if collect is not None:
+        parameters: dict[str, Expression] = {
+            "count": GoalInputExpression(kind="goal_input", name="quantity")
+        }
+        if "block_type" in collect.parameters_schema.get("properties", {}):
+            parameters["block_type"] = LiteralExpression(kind="literal", value="oak_log")
+        cost = BudgetUsage.model_validate(
+            collect.maximum_cost.model_dump(mode="json", exclude={"protected_items"})
+        )
+        cost = cost.model_copy(
+            update={
+                "max_travel_distance": max(8, cost.max_travel_distance),
+                "max_blocks_changed": max(4, cost.max_blocks_changed),
+            }
+        )
+        action = ActionStep(
+            kind="action",
+            step_id="gather",
+            capability="collect",
+            parameters=parameters,
+            maximum_cost=cost,
+            recover_on_error="RESOURCE_NOT_FOUND",
+        )
+        branch = BranchStep(
+            kind="branch",
+            step_id="handle_gather",
+            condition=Predicate(
+                op="eq",
+                left=StepOutputExpression(kind="step_output", step_id="gather", path="error_code"),
+                right=LiteralExpression(kind="literal", value="RESOURCE_NOT_FOUND"),
+            ),
+            then_steps=(FailStep(kind="fail", step_id="no_resource", code="RESOURCE_NOT_FOUND"),),
+            else_steps=(),
+        )
+        examples = [step.model_dump(mode="json") for step in (action, branch)]
+    return {
+        "rules": [
+            "已有原生工作流适用时用 skill:null；历史失败不证明当前缺少能力。仅补确实缺少的小技能。",
+            "skill顶层只有task/name/steps/preconditions；主机声明参数和成功条件。"
+            "每个action.parameters的值仍必须是Expression对象，例如{kind:literal,value:8}，不能直接写8；"
+            "goal_input.name只能使用host_skill_parameters声明的名称。",
+            "技能替换所属目标的完整默认流程，steps必须产生该目标最终结果，不能只取得中间素材；"
+            "最后独立核验主机成功谓词，静态编译通过不代表游戏完成。",
+            "recover_on_error只声明允许捕获的错误，不会自动重试或跳过。其action后必须紧邻branch："
+            "condition.op=eq，left={kind:step_output,step_id:该action的id,path:error_code}，"
+            "right={kind:literal,value:同一错误码}。then明确换策略或fail，else继续正常路径；未知结果仍停止。",
+            "step_id全局唯一；step_output只能引用已完成步骤。branch和repeat内部只允许action/fail叶子，"
+            "不能嵌套branch/repeat，因此叶子action不能声明需要分支的recover_on_error。",
+            "每action显式maximum_cost：动作/策略/伤害及资源消耗不得低报能力声明；"
+            "需要移动或挖放方块时须分配相应正额度，不需要时可为0；每项不得超过native_action_caps。"
+            "顺序成本相加、分支取逐维最大值、repeat乘max_iterations，合计必须在所属目标原预算内。",
+        ],
+        "example_steps": examples,
+        "example_scope": "仅展示Expression和紧邻错误分支的结构；不是任何目录目标的完整方案，不要照抄路线、资源或额度。",
+    }
+
+
 def route_prompt_context(
     *,
     mission_id: str,
@@ -137,6 +203,7 @@ def route_prompt_context(
     blocks = raw.get("visible_blocks", [])
     return {
         "route_schema": RouteDraft.model_json_schema(),
+        "skill_authoring": skill_authoring_contract(manifest),
         "catalogue": [
             {
                 "task": obj.objective_id,
