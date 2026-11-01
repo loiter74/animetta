@@ -50,6 +50,26 @@ _GROUND = frozenset(
 )
 _FALLING_GROUND = frozenset({"minecraft:sand", "minecraft:red_sand", "minecraft:gravel"})
 _AIR = frozenset({"minecraft:air", "minecraft:cave_air"})
+_OVERHEAD_COVER = (
+    _AIR
+    | {"minecraft:vine"}
+    | {
+        f"minecraft:{tree}_leaves"
+        for tree in (
+            "oak",
+            "spruce",
+            "birch",
+            "jungle",
+            "acacia",
+            "dark_oak",
+            "mangrove",
+            "cherry",
+            "azalea",
+            "flowering_azalea",
+            "pale_oak",
+        )
+    }
+)
 # Only known single-cell cover may occupy the standing/bottom placement row.
 # Snow is cleared explicitly; these non-solid plants are replaced by placement.
 _FOOT_COVER = _AIR | {
@@ -123,13 +143,18 @@ def select_nether_portal_site(
         if not _supported_ground(blocks, (x, support_y, z)):
             continue
         y = support_y + 1
-        # The home stands beside the portal, on permanent ground. Require a
-        # fully known open column, so a cave or a harvested canopy is not home.
+        # Home and portal need the same clear building height. A higher natural
+        # canopy is allowed; unknown cover and cave roofs remain excluded.
         if y + dimensions.height > ceiling + 1:
             continue
         cover = blocks.get((x, y, z))
         if cover not in _FOOT_COVER or not all(
-            blocks.get((x, yy, z)) in _AIR for yy in range(y + 1, ceiling + 1)
+            blocks.get((x, yy, z)) in _AIR for yy in range(y + 1, y + dimensions.height)
+        ):
+            continue
+        if not all(
+            blocks.get((x, yy, z)) in _OVERHEAD_COVER
+            for yy in range(y + dimensions.height, ceiling + 1)
         ):
             continue
         if not all(

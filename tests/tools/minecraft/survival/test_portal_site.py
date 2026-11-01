@@ -76,7 +76,30 @@ def test_portal_site_does_not_infer_air_from_missing_or_occluded_voxels() -> Non
     with pytest.raises(ValueError, match="no permanent"):
         select_nether_portal_site(observation, (inspection,))
     inspection.blocks["2,66,0"] = "minecraft:air"
-    inspection.blocks["0,76,0"] = "minecraft:spruce_leaves"
+    inspection.blocks["0,68,0"] = "minecraft:spruce_leaves"
+    with pytest.raises(ValueError, match="no permanent"):
+        select_nether_portal_site(observation, (inspection,))
+
+
+@pytest.mark.parametrize("cover", ["jungle_leaves", "oak_leaves", "vine"])
+def test_natural_canopy_above_the_clear_building_envelope_is_allowed(cover: str) -> None:
+    observation, inspection = _survey()
+    inspection.blocks["0,69,0"] = f"minecraft:{cover}"
+    site = select_nether_portal_site(observation, (inspection,))
+    assert site.home == (0, 64, 0)
+    assert site.origin == (1, 64, 0)
+    inspection.blocks["0,68,0"] = f"minecraft:{cover}"
+    with pytest.raises(ValueError, match="no permanent"):
+        select_nether_portal_site(observation, (inspection,))
+
+
+@pytest.mark.parametrize("cover", ["stone", "jungle_log", "water", None])
+def test_canopy_rule_still_requires_known_natural_cover_above_home(cover: str | None) -> None:
+    observation, inspection = _survey()
+    if cover is None:
+        del inspection.blocks["0,76,0"]
+    else:
+        inspection.blocks["0,76,0"] = f"minecraft:{cover}"
     with pytest.raises(ValueError, match="no permanent"):
         select_nether_portal_site(observation, (inspection,))
 
