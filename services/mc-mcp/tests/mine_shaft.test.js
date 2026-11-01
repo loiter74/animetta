@@ -9,8 +9,9 @@ import { configureDryNavigation } from '../src/collection.js';
 import { Physics, PlayerState } from 'prismarine-physics';
 import { createMineShaft } from '../src/mine_shaft.js';
 import { findHostileThreat } from '../src/survivalThreats.js';
+import { isolatePathfinderGeometry } from '../src/navigation.js';
 
-function shaftPhysicsFixture(t, x = 0.95, z = 0.95) {
+function shaftPhysicsFixture(t, x = 0.95, z = 0.95, floor = 'stone') {
   const registry = minecraftData('1.21.1');
   const Block = prismarineBlock(registry);
   const changed = new Map();
@@ -33,7 +34,7 @@ function shaftPhysicsFixture(t, x = 0.95, z = 0.95) {
     setControlState(control, value) { controls[control] = value; },
     blockAt(position) {
       const pos = position.floored();
-      const name = changed.get(pos.toString()) ?? (pos.y < 80 ? 'stone' : 'air');
+      const name = changed.get(pos.toString()) ?? (pos.y < 80 ? floor : 'air');
       const block = Block.fromStateId(registry.blocksByName[name].defaultState);
       block.position = pos;
       return block;
@@ -92,6 +93,45 @@ test('collection preparation leaves stairs that can be walked back without excav
   assert.equal(reverse.status,'success','collection must not leave a one-way shaft');
   assert.equal(reverse.path.some(m => m.toBreak.length || m.toPlace.length),false);
 });
+
+for (const floor of ['mud', 'oak_slab']) {
+  test(`return stairs use the actual partial-block standing cell on ${floor}`, async t => {
+    const f = shaftPhysicsFixture(t, .5, .5, floor), bot = f.bot;
+    const support = bot.blockAt(new Vec3(0, 79, 0));
+    bot.entity.position.y = 79 + Math.max(...support.shapes.map(shape => shape[4]));
+    Object.setPrototypeOf(bot, EventEmitter.prototype); EventEmitter.call(bot);
+    bot.registry = minecraftData('1.21.1'); bot.entities = {};
+    bot.game = { minY: -64, height: 384 }; bot.clearControlStates = () => {};
+    pathfinder.pathfinder(bot); isolatePathfinderGeometry();
+    const plan = goal => {
+      const movements = configureDryNavigation(new pathfinder.Movements(bot), bot);
+      movements.canDig = false; movements.allow1by1towers = false; movements.scafoldingBlocks = [];
+      let result;
+      // The fixture freezes Date.now for player physics; bound its otherwise
+      // infinite flat world so an intentionally unreachable RED goal terminates.
+      for (const planned of bot.pathfinder.getPathFromTo(movements, bot.entity.position, goal, { searchRadius: 8 })) {
+        result = planned.result; if (result.status !== 'partial') break;
+      }
+      return result;
+    };
+    bot.pathfinder.goto = async goal => {
+      const result = plan(goal);
+      assert.equal(result.status, 'success', 'prepared stair must be traversable');
+      assert.equal(result.path.some(move => move.toBreak.length || move.toPlace.length), false);
+      const end = result.path.at(-1);
+      Object.assign(bot.entity.position, { x: end.x, y: end.y, z: end.z });
+    };
+    const result = await createMineShaft(f).mineShaft(76, 0, { preserve_return_path: true });
+    assert.match(result, /y=76/);
+    assert.equal(Math.ceil(bot.entity.position.y), 76);
+    assert.equal(bot.blockAt(new Vec3(0, 79, 0)).name, floor, 'retain original support');
+    assert.equal(bot.entity.onGround, true);
+    assert.equal(bot.pathfinder.thinkTimeout, 5000);
+    const reverse = plan(new pathfinder.goals.GoalBlock(0, 80, 0));
+    assert.equal(reverse.status, 'success', 'partial-height stairs remain reversible');
+    assert.equal(reverse.path.some(move => move.toBreak.length || move.toPlace.length), false);
+  });
+}
 
 test('collection preparation cannot replace an unavailable return stair with a vertical drop', async t => {
   const f = shaftPhysicsFixture(t,.5,.5), original = f.bot.blockAt;
@@ -203,15 +243,13 @@ test('real player keeps descending through a deep solid column without ledge det
 test('mineShaft throws when it gets stuck above targetY', async () => {
   const bot = {
     entity: {
-      position: {
-        y: 80,
-        offset() {
-          return { x: 0, y: 79, z: 0 };
-        },
-      },
+      position: new Vec3(.5, 80, .5),
+      onGround: true,
     },
-    blockAt() {
-      return { boundingBox: 'block' };
+    blockAt(position) {
+      const p = position.floored();
+      return { name: p.y < 80 ? 'bedrock' : 'air',
+        boundingBox: p.y < 80 ? 'block' : 'empty', position: p };
     },
     async dig() {
       // y never changes, simulating a stuck shaft.

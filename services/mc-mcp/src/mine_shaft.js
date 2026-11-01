@@ -75,6 +75,14 @@ export function createMineShaft({
       && !block.name?.endsWith('_concrete_powder');
   }
 
+  function standingCell() {
+    const position = bot.entity.position, cell = position.floored();
+    // Match the SDK's grounded partial-block start offset. Mud and slabs
+    // support the player inside their own cell, rather than the cell below it.
+    return position.y - cell.y > 0.001 && bot.entity.onGround === true
+      && isStableSupport(bot.blockAt(cell)) ? cell.offset(0, 1, 0) : cell;
+  }
+
   function assertDryState() {
     activeOperationScope()?.checkpoint();
     const base = bot.entity?.position?.floored?.();
@@ -146,7 +154,7 @@ export function createMineShaft({
 
   async function centerAboveSupport({ tolerance = 0.2, checkpoint = () => {} } = {}) {
     checkpoint();
-    const base = bot.entity.position.floored();
+    const base = standingCell();
     const center = base.offset(0.5, 0, 0.5);
     const centered = tolerance => Math.abs(bot.entity.position.x - center.x) <= tolerance
       && Math.abs(bot.entity.position.z - center.z) <= tolerance;
@@ -161,7 +169,7 @@ export function createMineShaft({
       for (let step = 0; step < 20 && !centered(0.05); step++) {
         checkpoint();
         assertDryState();
-        const current = bot.entity.position.floored();
+        const current = standingCell();
         if (current.x !== base.x || current.z !== base.z) return false;
         await withActionTimeout(() => bot.lookAt(
           center.offset(0, bot.entity.eyeHeight || 1.62, 0), true,
@@ -196,7 +204,7 @@ export function createMineShaft({
         new pathfinderPkg.goals.GoalBlock(target.x, target.y, target.z)),
       5000, 'move to supported shaft step', () => bot.pathfinder.stop?.());
       assertDryState();
-      const actual = bot.entity.position.floored();
+      const actual = standingCell();
       return actual.x === target.x && actual.y === target.y && actual.z === target.z;
     } catch (error) {
       propagateInterruptedOperation(error);
@@ -411,7 +419,7 @@ export function createMineShaft({
 
   async function harvestEmergencySupportBlock() {
     if (findSealBlock()) return true;
-    const base = bot.entity.position.floored();
+    const base = standingCell();
     const harvestable = (block) => isSolid(block) && (
       isRockLike(block.name)
       || block.name === 'dirt'
@@ -433,7 +441,7 @@ export function createMineShaft({
   }
 
   async function moveToSupportedLedge() {
-    const base = bot.entity.position.floored();
+    const base = standingCell();
     const startX = bot.entity.position.x;
     const startZ = bot.entity.position.z;
     for (const dir of candidateDirections()) {
@@ -475,8 +483,8 @@ export function createMineShaft({
   }
 
   async function digStairStep(preserveReturnPath = false) {
-    const base = bot.entity.position.floored();
-    const startY = Math.floor(bot.entity.position.y);
+    const base = standingCell();
+    const startY = base.y;
     for (const dir of candidateDirections()) {
       const feetPos = base.offset(dir.x, -1, dir.z);
       const headPos = feetPos.offset(0, 1, 0);
@@ -514,7 +522,7 @@ export function createMineShaft({
       await waitForGround(1500);
       await waitForStableY(1800, 3);
 
-      if (Math.floor(bot.entity.position.y) < startY) {
+      if (standingCell().y < startY) {
         return true;
       }
     }
@@ -525,7 +533,7 @@ export function createMineShaft({
     if (!await centerAboveSupport()) return false;
     const startY = Math.floor(bot.entity.position.y);
     const startExactY = bot.entity.position.y;
-    const base = bot.entity.position.floored();
+    const base = standingCell();
     const currentFeet = bot.blockAt(base);
     const currentHead = bot.blockAt(base.offset(0, 1, 0));
     if (isFluidHazard(currentFeet)) throw fluidHazard(currentFeet);
@@ -655,7 +663,7 @@ export function createMineShaft({
     const keepSurvivalSystems = process.env.MINE_SHAFT_KEEP_SURVIVAL !== 'false';
     if (!keepSurvivalSystems && typeof disableAuto === 'function') disableAuto();
     const startY = Math.floor(bot.entity.position.y);
-    let lastY = startY;
+    let lastY = standingCell().y;
     let stuck = 0;
     const depth = Math.max(1, startY - targetY);
     const deadline = Date.now() + Math.max(180000, depth * 6000);
@@ -664,7 +672,7 @@ export function createMineShaft({
       ? digStairStep(true) : digVerticalStep(() => quotaResult() !== null);
     try {
       await waitForGround(3000);
-      while (Math.floor(bot.entity.position.y) > targetY && Date.now() < deadline) {
+      while (standingCell().y > targetY && Date.now() < deadline) {
         assertDryState();
         await waitForSurvivalThreatToClear();
         const completedQuota = quotaResult();
@@ -711,18 +719,19 @@ export function createMineShaft({
         }
         if (!attemptedDig) {
           stopMovement();
+          const currentY = standingCell().y;
           const err = new Error(
-            `mine_shaft stuck above target: y=${Math.floor(bot.entity.position.y)}, target=${targetY}; no safe stair step`
+            `mine_shaft stuck above target: y=${currentY}, target=${targetY}; no safe stair step`
           );
           err.code = 'MINE_SHAFT_STUCK';
-          err.currentY = Math.floor(bot.entity.position.y);
+          err.currentY = currentY;
           err.targetY = targetY;
           throw err;
         }
         stopMovement();
         await waitForGround(1500);
         await waitForStableY(1800, 3);
-        const curY = Math.floor(bot.entity.position.y);
+        const curY = standingCell().y;
         if (curY === lastY) {
           if (bot.entity.onGround || attemptedDig) stuck++;
           if (stuck > 6) {
@@ -744,7 +753,7 @@ export function createMineShaft({
       await waitForStableY(1800, 3);
       const completedQuota = quotaResult();
       if (completedQuota) return completedQuota;
-      const finalY = Math.floor(bot.entity.position.y);
+      const finalY = standingCell().y;
       if (finalY > targetY) {
         const err = new Error(`mine_shaft timed out above target: y=${finalY}, target=${targetY}`);
         err.code = 'MINE_SHAFT_TIMEOUT';
@@ -752,7 +761,7 @@ export function createMineShaft({
         err.targetY = targetY;
         throw err;
       }
-      return `Shaft mined ${startY} -> y=${Math.floor(bot.entity.position.y)} (target ${targetY})`;
+      return `Shaft mined ${startY} -> y=${finalY} (target ${targetY})`;
     } finally {
       stopMovement();
       if (!keepSurvivalSystems && typeof enableAuto === 'function') enableAuto();
