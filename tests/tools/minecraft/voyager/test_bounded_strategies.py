@@ -177,6 +177,39 @@ def test_recovery_declaration_without_receipt_branch_is_rejected_before_executio
     assert decision.code == "INVALID_SKILL_CANDIDATE"
 
 
+def test_route_without_missing_skill_uses_existing_workflow_without_static_learning() -> None:
+    learner = LearnStrategy(
+        resolve_frontier=lambda _: pytest.fail("route must not execute legacy templates"),
+        propose_node=lambda _: {},
+        max_frontier_nodes=1,
+        max_attempts=2,
+    )
+    registry = WorkflowRegistry()
+    registry.register(iron_survival_workflow())
+    strategy = MissionStrategy(
+        builtin=None, live=None, learn=learner, fallback=FallbackStrategy(registry=registry)
+    )
+    routed_goal = goal().model_copy(
+        update={"constraints": {"learning_mode": "model_generated_only"}}
+    )
+    state = strategy.prepare(routed_goal)
+    assert strategy.propose(state, observation_with({})).kind == "execute"
+    assert state["selected_strategy"] == "fallback"
+
+
+def test_route_with_explicit_small_skill_preserves_candidate_execution() -> None:
+    learner, candidate_goal = generated_learner(candidate_program())
+    candidate_goal = candidate_goal.model_copy(
+        update={
+            "constraints": {**candidate_goal.constraints, "learning_mode": "model_generated_only"}
+        }
+    )
+    strategy = MissionStrategy(builtin=None, live=None, learn=learner, fallback=None)
+    state = strategy.prepare(candidate_goal)
+    assert strategy.propose(state, observation_with({})).kind == "execute"
+    assert state["selected_strategy"] == "learn"
+
+
 ROOT = Path(__file__).resolve().parents[4]
 MESSAGES = json.loads(
     (ROOT / "contracts/gamebot/v2/fixtures/golden.json").read_text(encoding="utf-8")

@@ -46,6 +46,8 @@ class MissionStrategy:
         )
         if "skill_candidate" in goal.constraints:
             candidates = ("learn",) if "learn" in self._strategies else ()
+        elif goal.constraints.get("learning_mode") == "model_generated_only":
+            candidates = tuple(name for name in candidates if name != "learn")
         return {
             "goal": goal,
             "candidates": candidates,
