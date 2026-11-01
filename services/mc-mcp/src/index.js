@@ -533,11 +533,15 @@ async function _waitForInventoryIncrease(itemName, beforeCount, minimumIncrease 
   const deadline = Date.now() + timeout;
   const expected = beforeCount + Math.max(1, minimumIncrease);
   while (Date.now() < deadline) {
+    activeOperationScope()?.checkpoint();
     if (_inventoryCount(itemName) >= expected) return true;
-    await operationWait(100);
+    await operationWait(Math.min(100, deadline - Date.now()));
   }
+  activeOperationScope()?.checkpoint();
   if (_inventoryCount(itemName) >= expected) return true;
-  throw craftError(`Craft result not observed: ${itemName}`, 'CRAFT_FAILED');
+  throw craftError(`未确认完整合成产物：${itemName}`, 'CRAFT_OUTPUT_UNCONFIRMED', {
+    details: { recipe: itemName, expected: minimumIncrease, observed: _inventoryCount(itemName) - beforeCount },
+  });
 }
 
 function _collectDebug(message) {
@@ -1275,9 +1279,9 @@ async function _craftWithFallback(recipe, count, craftingTable, context = {}) {
               try {
                 const before = _inventoryCount(recipe);
                 await bot.craft(candidateRecipe, craftOperations(candidateRecipe, count, fallback.result), null);
-                await _waitForInventoryIncrease(recipe, before, 1);
+                await _waitForInventoryIncrease(recipe, before, count);
                 return `Crafted ${count} ${recipe} (fallback)`;
-              } catch (e) { /* try next */ }
+              } catch (e) { if (e.code) throw e; }
             }
           }
         }
@@ -1303,10 +1307,10 @@ async function _craftWithFallback(recipe, count, craftingTable, context = {}) {
                     craftOperations(candidateRecipe, count, fallback.result),
                     craftingTable,
                   );
-                  await _waitForInventoryIncrease(recipe, before, 1);
+                  await _waitForInventoryIncrease(recipe, before, count);
                   await _reclaimCraftingTable(craftingTable, context);
                   return `Crafted ${count} ${recipe} (fallback-table)`;
-                } catch (e) { /* try next */ }
+                } catch (e) { if (e.code) throw e; }
               }
             }
           }
@@ -1320,7 +1324,7 @@ async function _craftWithFallback(recipe, count, craftingTable, context = {}) {
         craftOperations(recipes[0], count, fallback.result),
         craftingTable || null,
       );
-      await _waitForInventoryIncrease(recipe, before, 1);
+      await _waitForInventoryIncrease(recipe, before, count);
       await _reclaimCraftingTable(craftingTable, context);
       return `Crafted ${count} ${recipe}`;
     } catch (e) {
@@ -1347,7 +1351,7 @@ async function _craftWithFallback(recipe, count, craftingTable, context = {}) {
         craftOperations(recipes[0], count, fallback.result),
         craftingTable,
       );
-      await _waitForInventoryIncrease(recipe, before, 1);
+      await _waitForInventoryIncrease(recipe, before, count);
       await _reclaimCraftingTable(craftingTable, context);
       return `Crafted ${count} ${recipe}`;
     }
@@ -1372,10 +1376,10 @@ async function _craftWithFallback(recipe, count, craftingTable, context = {}) {
             craftOperations(preferred, count, fallback.result),
             craftingTable,
           );
-          await _waitForInventoryIncrease(recipe, before, 1);
+          await _waitForInventoryIncrease(recipe, before, count);
           await _reclaimCraftingTable(craftingTable, context);
           return `Crafted ${count} ${recipe} (fallback)`;
-        } catch (e) { /* continue */ }
+        } catch (e) { if (e.code) throw e; }
       }
     }
 
@@ -1469,10 +1473,10 @@ async function _craft(recipe, count = 1, context = {}) {
           craftOperations(r, count, fallbackRecipe?.result),
           needsCraftingTable === false ? null : craftingTable || null,
         );
-        await _waitForInventoryIncrease(recipe, before, 1);
+        await _waitForInventoryIncrease(recipe, before, count);
         await _reclaimCraftingTable(needsCraftingTable === false ? null : craftingTable || null, context);
         return `Crafted ${count} ${recipe} (tried-all)`;
-      } catch (e) { /* try next */ }
+      } catch (e) { if (e.code) throw e; }
     }
     if (fallbackRecipe) {
       const fallbackTable = fallbackRecipe.requiresTable ? (craftingTable || await _ensureCraftingTable(mcData, context)) : null;
@@ -1493,10 +1497,10 @@ async function _craft(recipe, count = 1, context = {}) {
         craftOperations(recipeToUse, count, fallbackRecipe?.result),
         needsCraftingTable === false ? null : craftingTable || null,
       );
-      await _waitForInventoryIncrease(recipe, before, 1);
+      await _waitForInventoryIncrease(recipe, before, count);
       await _reclaimCraftingTable(needsCraftingTable === false ? null : craftingTable || null, context);
       return `Crafted ${count} ${recipe}`;
-    } catch (e) { /* try next */ }
+    } catch (e) { if (e.code) throw e; }
   }
 
   // If no viable recipe worked, try all recipes as last resort
@@ -1508,10 +1512,10 @@ async function _craft(recipe, count = 1, context = {}) {
         craftOperations(r, count, fallbackRecipe?.result),
         needsCraftingTable === false ? null : craftingTable || null,
       );
-      await _waitForInventoryIncrease(recipe, before, 1);
+      await _waitForInventoryIncrease(recipe, before, count);
       await _reclaimCraftingTable(needsCraftingTable === false ? null : craftingTable || null, context);
       return `Crafted ${count} ${recipe} (all-recipes)`;
-    } catch (e) { /* try next */ }
+    } catch (e) { if (e.code) throw e; }
   }
 
   if (fallbackRecipe) {

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { runInNewContext } from 'node:vm';
 
 
 const indexUrl = new URL('../src/index.js', import.meta.url);
@@ -75,11 +76,20 @@ test('production index delegates every viewer attachment to one controller', asy
 
 test('craft completion timeout is a structured failure instead of a false success', async () => {
   const source = await readFile(indexUrl, 'utf8');
-
-  assert.match(
-    source,
-    /throw craftError\(`Craft result not observed: \$\{itemName\}`,\s*'CRAFT_FAILED'\)/,
-  );
+  const start = source.indexOf('async function _waitForInventoryIncrease(');
+  const end = source.indexOf('\nfunction _collectDebug(', start);
+  assert.ok(start > 0 && end > start);
+  const confirm = runInNewContext(`(${source.slice(start, end)})`, {
+    Date: { now: () => 0 }, activeOperationScope: () => null, _inventoryCount: () => 4,
+    craftError: (message, code, details) => Object.assign(new Error(message), { code, ...details }),
+  });
+  await assert.rejects(confirm('birch_planks', 0, 32, 0), error => {
+    assert.equal(error.code, 'CRAFT_OUTPUT_UNCONFIRMED');
+    assert.equal(error.details.recipe, 'birch_planks');
+    assert.equal(error.details.expected, 32);
+    assert.equal(error.details.observed, 4);
+    return true;
+  });
 });
 
 test('crafting prefers recipes whose exact ingredients are present', async () => {
