@@ -5,9 +5,10 @@ from __future__ import annotations
 from math import dist, floor, isfinite
 
 from animetta.tools.gamebot.contracts.v2 import Observation, RuntimeManifest
+from animetta.tools.minecraft.survival.recovery import propose_recovery_move
 from animetta.tools.minecraft.survival.retreat import propose_retreat
 
-from ..budget import ExecutionBudget
+from ..budget import ExecutionBudget, budget_usage_from_vector
 from ..goal_models import GoalSpec
 from .base import BoundedStrategy, Complete, ExecuteStep, StrategyDecision, StrategyFailure
 
@@ -26,6 +27,12 @@ class MissionStrategy:
     ) -> None:
         self._can_retreat = manifest is not None and any(
             capability.name == "goto" for capability in manifest.capabilities
+        )
+        self._recovery_move_minimum = (
+            budget_usage_from_vector(manifest.capability("explore_surface").maximum_cost)
+            if manifest is not None
+            and any(c.name == "explore_surface" for c in manifest.capabilities)
+            else None
         )
         self._strategies = {
             name: strategy
@@ -59,6 +66,25 @@ class MissionStrategy:
         }
 
     def propose(self, state: dict, observation: Observation) -> StrategyDecision:
+        pending_move = state.get("pending_recovery_move")
+        if isinstance(pending_move, ExecuteStep):
+            return pending_move
+        previous_position = state.pop("recovery_probe_origin", None)
+        if previous_position is not None:
+            position = observation.position
+            if position is None:
+                return StrategyFailure(
+                    code="RECOVERY_STATE_UNKNOWN", message="Recovery position missing"
+                )
+            if dist(previous_position, (position.x, position.y, position.z)) < 1:
+                recovered = self._schedule_recovery_move(state, observation)
+                if recovered is None:
+                    return StrategyFailure(
+                        code="RECOVERY_NO_EXECUTABLE_ALTERNATIVE",
+                        message="No untried recovery column fits the remaining original budget",
+                    )
+                state.update(recovered)
+                return state["pending_recovery_move"]
         while True:
             selected = state.get("selected_strategy")
             if selected is None:
@@ -84,7 +110,10 @@ class MissionStrategy:
                 observation,
             )
             if isinstance(decision, Complete):
-                return Complete(output={**decision.output, "selected_strategy": selected})
+                output = {**decision.output, "selected_strategy": selected}
+                if state.get("recovery_decisions"):
+                    output["recovery_decisions"] = state["recovery_decisions"]
+                return Complete(output=output)
             if (
                 isinstance(decision, ExecuteStep)
                 and self._can_retreat
@@ -104,6 +133,8 @@ class MissionStrategy:
             state["strategy_state"] = None
 
     def accept_result(self, state: dict, result: object) -> dict:
+        if state.get("pending_recovery_move") is not None:
+            return {**state, "pending_recovery_move": None}
         target = state.get("pending_retreat")
         if target is not None:
             return {
@@ -131,6 +162,17 @@ class MissionStrategy:
         after: Observation,
     ) -> dict | None:
         """Forward settled subgoal progress only to the selected fallback delegate."""
+
+        pending = state.get("pending_recovery_move")
+        if (
+            isinstance(pending, ExecuteStep)
+            and state.get("settled_capability") == pending.capability
+            and before.world_identity == after.world_identity
+            and before.environment.get("dimension") == after.environment.get("dimension")
+        ):
+            # A settled auxiliary budget stop is not workflow progress. The next
+            # proposal sees the freshly charged account and checks actual movement.
+            return {**state, "pending_recovery_move": None}
 
         if state.get("selected_strategy") != "fallback":
             return None
@@ -162,6 +204,20 @@ class MissionStrategy:
         delegated = state.get("strategy_state")
         if not isinstance(selected, str) or not isinstance(delegated, dict):
             return None
+        if state.get("pending_recovery_move") is not None:
+            if state.get("settled_error_code") not in {
+                "SEARCH_TIMEOUT",
+                "NAVIGATION_TARGET_NOT_REACHED",
+                "RESOURCE_NOT_FOUND",
+                "UNSAFE_AREA",
+            } or (
+                before.world_identity != after.world_identity
+                or before.environment.get("dimension") != after.environment.get("dimension")
+            ):
+                return None
+            if self._recovery_progress(before, after):
+                return {**state, "pending_recovery_move": None}
+            return self._schedule_recovery_move(state, after)
         if selected == "live" or delegated.get("generated_program"):
             # IR frames advance when proposing. Generic re-proposal would silently
             # skip the failed action; only an explicit program handler may recover.
@@ -290,7 +346,81 @@ class MissionStrategy:
                     scene,
                 )
                 return candidate
+        if (
+            selected == "fallback"
+            and self._recovery_move_minimum is not None
+            and failed_step.capability in {"collect", "mine_shaft"}
+            and state.get("settled_error_code")
+            in {
+                "RESOURCE_NOT_FOUND",
+                "SEARCH_TIMEOUT",
+                "MINE_SHAFT_STUCK",
+                "NAVIGATION_TARGET_NOT_REACHED",
+            }
+            and before.world_identity == after.world_identity
+            and before.environment.get("dimension") == after.environment.get("dimension")
+            and isinstance(state.get("budget_remaining"), ExecutionBudget)
+        ):
+            return self._schedule_recovery_move(state, after)
         return None
+
+    def _schedule_recovery_move(self, state: dict, observation: Observation) -> dict | None:
+        remaining = state.get("budget_remaining")
+        origin = self._search_origin(observation)
+        position = observation.position
+        if (
+            self._recovery_move_minimum is None
+            or origin is None
+            or position is None
+            or not isinstance(remaining, ExecutionBudget)
+        ):
+            return None
+        anchor = state.get("recovery_anchor", origin)
+        attempted = state.get("recovery_targets", ())
+        move = propose_recovery_move(
+            observation,
+            remaining=remaining,
+            minimum_cost=self._recovery_move_minimum,
+            anchor=anchor,
+            attempted=attempted,
+        )
+        if move is None:
+            return None
+        target = (move.parameters["x"], move.parameters["z"])
+        feedback = state.get("settled_feedback", {})
+        return {
+            **state,
+            "pending_recovery_move": move,
+            "recovery_anchor": anchor,
+            "recovery_probe_origin": (
+                position.x,
+                position.y,
+                position.z,
+            ),
+            "recovery_targets": (*attempted, target),
+            "recovery_decisions": (
+                *state.get("recovery_decisions", ()),
+                {
+                    "error_code": state.get("settled_error_code"),
+                    "receipt_hash": feedback.get("receipt_hash"),
+                    "target": target,
+                },
+            ),
+        }
+
+    @staticmethod
+    def _recovery_progress(before: Observation, after: Observation) -> bool:
+        return (
+            before.world_identity == after.world_identity
+            and before.environment.get("dimension") == after.environment.get("dimension")
+            and before.position is not None
+            and after.position is not None
+            and dist(
+                (before.position.x, before.position.y, before.position.z),
+                (after.position.x, after.position.y, after.position.z),
+            )
+            >= 1
+        )
 
     @staticmethod
     def _search_origin(observation: Observation) -> tuple[int, int, int] | None:

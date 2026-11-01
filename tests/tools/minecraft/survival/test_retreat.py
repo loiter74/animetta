@@ -7,10 +7,11 @@ import pytest
 from pydantic import TypeAdapter
 
 from animetta.tools.gamebot.contracts.v2 import Observation, RuntimeManifest
+from animetta.tools.minecraft.survival.recovery import propose_recovery_move
 from animetta.tools.minecraft.survival.registry import WorkflowRegistry
 from animetta.tools.minecraft.survival.retreat import propose_retreat
 from animetta.tools.minecraft.survival.workflows import iron_survival_workflow
-from animetta.tools.minecraft.voyager.budget import ExecutionBudget
+from animetta.tools.minecraft.voyager.budget import BudgetUsage, ExecutionBudget
 from animetta.tools.minecraft.voyager.goal_models import GoalSpec
 from animetta.tools.minecraft.voyager.strategies.base import Complete
 from animetta.tools.minecraft.voyager.strategies.fallback import FallbackStrategy
@@ -359,3 +360,174 @@ def test_completed_mission_primitive_does_not_start_an_unnecessary_retreat():
     state = strategy.prepare(goal)
     state["budget_remaining"] = available()
     assert isinstance(strategy.propose(state, observed()), Complete)
+
+
+def recovery_observation():
+    base = observed([])
+    return base.model_copy(
+        update={
+            "environment": {
+                "dimension": "overworld",
+                "blocks": {
+                    "feet": {"name": "air", "position": {"x": 0, "y": 64, "z": 0}},
+                    "head": {"name": "air", "position": {"x": 0, "y": 65, "z": 0}},
+                },
+            }
+        }
+    )
+
+
+def recovery_strategy():
+    native = manifest()
+    explorer = native.capability("goto").model_copy(
+        update={
+            "name": "explore_surface",
+            "parameters_schema": {
+                "type": "object",
+                "properties": {axis: {"type": "integer"} for axis in ("x", "z")},
+                "additionalProperties": False,
+            },
+            "maximum_cost": native.capability("goto").maximum_cost.model_copy(
+                update={
+                    "max_strategy_attempts": 0,
+                    "max_travel_distance": 0.0,
+                    "max_blocks_changed": 0,
+                    "max_damage_taken": 0.0,
+                }
+            ),
+        }
+    )
+    native = native.model_copy(update={"capabilities": (*native.capabilities, explorer)})
+    registry = WorkflowRegistry()
+    registry.register(iron_survival_workflow())
+    strategy = MissionStrategy(
+        manifest=native, live=None, learn=None, fallback=FallbackStrategy(registry=registry)
+    )
+    goal = TypeAdapter(GoalSpec).validate_python(
+        {
+            "intent": "acquire",
+            "target": "iron_ingot",
+            "quantity": 1,
+            "success_predicates": [
+                {"kind": "inventory_at_least", "item": "iron_ingot", "quantity": 1}
+            ],
+        }
+    )
+    state = strategy.prepare(goal)
+    state["budget_remaining"] = available()
+    state["settled_error_code"] = "SEARCH_TIMEOUT"
+    state["settled_feedback"] = {"receipt_hash": "a" * 64}
+    return strategy, state
+
+
+def test_sparse_search_failure_explores_without_skipping_work_or_replenishing_budget():
+    from animetta.tools.minecraft.voyager.budget import BudgetAccount
+
+    strategy, state = recovery_strategy()
+    observation = recovery_observation()
+    failed = strategy.propose(state, observation)
+    assert failed.capability == "collect"
+    account = BudgetAccount(limit=available()).charge(
+        BudgetUsage(max_actions=1, max_travel_distance=2)
+    )
+    state["budget_remaining"] = account.remaining
+    recovered = strategy.recover_failed_step(state, failed, observation, observation)
+    assert recovered is not None
+    move = strategy.propose(recovered, observation)
+    assert move.capability == "explore_surface" and move.parameters == {"x": 8, "z": 0}
+    assert move.maximum_cost.max_travel_distance == 16
+    assert recovered["strategy_state"]["step_index"] == 0
+    assert recovered["recovery_decisions"][0]["receipt_hash"] == "a" * 64
+    assert "pending_recovery_move" not in state
+    account = account.charge(BudgetUsage(max_actions=1, max_travel_distance=8))
+    resumed = strategy.accept_result(recovered, {"outcome": "success"})
+    after = observation.model_copy(
+        update={"position": observation.position.model_copy(update={"x": 8})}
+    )
+    resumed["budget_remaining"] = account.remaining
+    assert strategy.propose(resumed, after).capability == "collect"
+    assert resumed["strategy_state"]["step_index"] == 0
+    assert account.limit == available()
+    assert account.remaining.max_actions == 14 and account.remaining.max_travel_distance == 54
+
+
+def test_zero_progress_exploration_never_replays_the_failed_collection_or_column():
+    from animetta.tools.minecraft.voyager.budget import BudgetAccount
+    from animetta.tools.minecraft.voyager.strategies.base import StrategyFailure
+
+    strategy, state = recovery_strategy()
+    observation = recovery_observation()
+    failed = strategy.propose(state, observation)
+    account = BudgetAccount(limit=available()).charge(BudgetUsage(max_actions=1))
+    state["budget_remaining"] = account.remaining
+    state = strategy.recover_failed_step(state, failed, observation, observation)
+    columns = []
+    for _ in range(8):
+        move = strategy.propose(state, observation)
+        assert move.capability == "explore_surface"
+        columns.append(tuple(move.parameters[axis] for axis in ("x", "z")))
+        account = account.charge(BudgetUsage(max_actions=1))
+        state = strategy.accept_result(state, {"outcome": "success"})
+        state["budget_remaining"] = account.remaining
+    assert len(set(columns)) == 8
+    assert isinstance(strategy.propose(state, observation), StrategyFailure)
+    assert state["strategy_state"]["step_index"] == 0
+    assert account.used.max_actions == 9
+
+
+def test_failed_recovery_exploration_changes_column_and_partial_progress_keeps_workflow():
+    strategy, state = recovery_strategy()
+    observation = recovery_observation()
+    failed = strategy.propose(state, observation)
+    state = strategy.recover_failed_step(state, failed, observation, observation)
+    move = strategy.propose(state, observation)
+    state["settled_error_code"] = "NAVIGATION_TARGET_NOT_REACHED"
+    second = strategy.recover_failed_step(state, move, observation, observation)
+    assert second is not None
+    assert strategy.propose(second, observation).parameters == {"x": 8, "z": 8}
+    after = observation.model_copy(
+        update={"position": observation.position.model_copy(update={"x": 2})}
+    )
+    progressed = strategy.accept_partial_result(
+        {**state, "settled_capability": "explore_surface"}, observation, after
+    )
+    assert progressed is not None and progressed["strategy_state"]["step_index"] == 0
+    assert strategy.propose(progressed, after).capability == "collect"
+    assert (
+        strategy.accept_partial_result(
+            {**state, "settled_capability": "collect"}, observation, after
+        )
+        is None
+    )
+
+
+@pytest.mark.parametrize(
+    "change", [{"max_actions": 1}, {"max_travel_distance": 8.0}, {"max_actions": 0}]
+)
+def test_recovery_exploration_keeps_action_and_travel_reserves(change):
+    assert (
+        propose_recovery_move(
+            recovery_observation(),
+            remaining=available().model_copy(update=change),
+            minimum_cost=BudgetUsage(max_actions=1),
+            anchor=(0, 64, 0),
+            attempted=(),
+        )
+        is None
+    )
+
+
+def test_recovery_does_not_handle_unknown_failure_or_cross_dimension():
+    strategy, state = recovery_strategy()
+    observation = recovery_observation()
+    failed = strategy.propose(state, observation)
+    state["settled_error_code"] = "RUNTIME_DISCONNECTED"
+    assert strategy.recover_failed_step(state, failed, observation, observation) is None
+    state["settled_error_code"] = "SEARCH_TIMEOUT"
+    changed = observation.model_copy(
+        update={"environment": {**observation.environment, "dimension": "the_nether"}}
+    )
+    assert strategy.recover_failed_step(state, failed, observation, changed) is None
+    state = strategy.recover_failed_step(state, failed, observation, observation)
+    move = strategy.propose(state, observation)
+    assert strategy.recover_failed_step(state, move, observation, changed) is None
