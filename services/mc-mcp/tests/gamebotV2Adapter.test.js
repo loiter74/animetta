@@ -583,6 +583,35 @@ test('collection damage immediately stops work without hiding a real budget over
   fixture.adapter.dispose();
 });
 
+for (const becomesAngry of [false, true]) {
+  test(`crafting near a calm enderman keeps live hostility guards: angry=${becomesAngry}`, async () => {
+    let entered = false, continued = false;
+    const f = adapterFixture({ actions: { craft: async (_recipe, _count, context) => {
+      entered = true;
+      if (becomesAngry) enderman.metadata[keys.indexOf('creepy')] = true;
+      f.bot.emit('physicsTick');
+      await context.operation_scope.wait(1);
+      continued = true;
+      return 'craft complete';
+    } } });
+    const keys = f.bot.registry.entitiesByName.enderman.metadataKeys, metadata = [];
+    metadata[keys.indexOf('health')] = 40;
+    const enderman = { id: 526, name: 'enderman', metadata, position: new Vec3(3, 64, 0) };
+    f.bot.entities = { 526: enderman };
+    const action = request(f.adapter, 'craft', { recipe: 'stone_pickaxe', count: 1 }, `enderman-${becomesAngry}`);
+    action.remaining_budget = budget({ max_travel_distance: 0, max_blocks_changed: 0, max_damage_taken: 0 });
+    const receipt = await f.adapter.runtime.executeAction(action);
+    assert.equal(entered, true);
+    assert.equal(continued, !becomesAngry);
+    assert.equal(receipt.outcome, becomesAngry ? 'error' : 'success');
+    if (becomesAngry) assert.equal(receipt.error.code, 'UNSAFE_AREA');
+    assert.equal(receipt.budget_usage.max_actions, 1);
+    assert.equal(receipt.budget_usage.max_damage_taken, 0);
+    for (const event of ['physicsTick', 'entityMoved', 'entitySpawn']) assert.equal(f.bot.listenerCount(event), 0);
+    f.adapter.dispose();
+  });
+}
+
 test('a newly approaching skeleton stops collection before damage and removes threat listeners', async () => {
   let continued = false;
   const fixture = adapterFixture({ actions: {

@@ -24,8 +24,8 @@ const DORMANT_CREEPER_METADATA = [
   ['is_ignited', false],
 ];
 
-function hasDormantCreeperMetadata(bot, entity) {
-  const keys = bot.registry?.entitiesByName?.creeper?.metadataKeys;
+function hasSafeMetadata(bot, entity, name, expectedValues) {
+  const keys = bot.registry?.entitiesByName?.[name]?.metadataKeys;
   if (!Array.isArray(keys) || !Array.isArray(entity?.metadata)) return false;
   // Protocol 767 sends only non-default metadata at spawn. Its health update
   // proves initial metadata arrived; before that, absent flags remain unknown.
@@ -35,11 +35,18 @@ function hasDormantCreeperMetadata(bot, entity) {
     && Number.isFinite(health) && health > 0;
   // Every key must exist in the schema. Only omitted protocol defaults may
   // substitute for a slot; unknown or mistyped values retain the warning.
-  return DORMANT_CREEPER_METADATA.every(([key, expected]) => {
+  return expectedValues.every(([key, expected]) => {
     const index = keys.indexOf(key);
     return index >= 0 && (entity.metadata[index] === expected
       || (knownVanillaDefaults && !Object.hasOwn(entity.metadata, index)));
   });
+}
+
+export function isCalmEnderman(bot, entity) {
+  const name = String(entity?.name || entity?.type || '').replace(/^minecraft:/, '');
+  return name === 'enderman' && hasSafeMetadata(bot, entity, name, [
+    ['creepy', false], ['stared_at', false],
+  ]);
 }
 
 const isFullCube = block => block?.shapes?.some(shape => (
@@ -133,12 +140,13 @@ export function hostileThreatAt(bot, entity, origin, radius = null) {
   if (!origin || !entity || entity === bot.entity) return null;
   const name = String(entity.name || entity.type || '').replace(/^minecraft:/, '');
   if (!HOSTILE_NAMES.has(name) && entity.kind !== 'Hostile mobs') return null;
+  if (isCalmEnderman(bot, entity)) return null;
   const position = entity.position;
   if (!position || !['x', 'y', 'z'].every(axis => Number.isFinite(position[axis]))) return null;
   const distance = Math.hypot(position.x - origin.x, position.y - origin.y, position.z - origin.z);
   const warningRadius = radius ?? hostileWarningRadius(entity);
   const mayProveCover = PHYSICAL_ATTACKERS.has(name)
-    || (name === 'creeper' && hasDormantCreeperMetadata(bot, entity));
+    || (name === 'creeper' && hasSafeMetadata(bot, entity, name, DORMANT_CREEPER_METADATA));
   if (!(distance <= warningRadius) || (mayProveCover && hasSolidCover(bot, origin, entity))) return null;
   return { entity_id: String(entity.id), entity_type: name, distance,
     position: { x: position.x, y: position.y, z: position.z }, warning_radius: warningRadius };

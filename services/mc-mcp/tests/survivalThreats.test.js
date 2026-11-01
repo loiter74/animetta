@@ -7,6 +7,71 @@ import pathfinderPkg from 'mineflayer-pathfinder';
 import WorldSync from 'prismarine-world/src/worldsync.js';
 import { findHostileThreat } from '../src/survivalThreats.js';
 import { collectionDigSafety, configureDryNavigation, createCollectionBlockMatcher } from '../src/collection.js';
+import { checkSafety } from '../src/resources/strategies.js';
+
+function endermanFixture() {
+  const bot = fixture();
+  bot.entity.position = new Vec3(33.5, 80, 6.515268426558999);
+  const metadata = [], keys = bot.registry.entitiesByName.enderman.metadataKeys;
+  metadata[keys.indexOf('health')] = 40;
+  metadata[keys.indexOf('creepy')] = false;
+  metadata[keys.indexOf('stared_at')] = false;
+  const enderman = { id: 526, name: 'enderman', kind: 'Hostile mobs', metadata,
+    position: new Vec3(30.667269515220106, 84, 3.6537515595645864) };
+  bot.entities = { 526: enderman };
+  bot.nearestEntity = predicate => Object.values(bot.entities).find(predicate);
+  return { bot, enderman, keys };
+}
+
+test('observably calm endermen do not interrupt work in either native or resource safety', () => {
+  // R92 positions, with controlled metadata: historic flags were not retained.
+  const { bot } = endermanFixture();
+  assert.equal(findHostileThreat(bot), null);
+  assert.equal(checkSafety(bot).safe, true);
+});
+
+test('unknown or dangerous enderman metadata preserves both existing warnings', () => {
+  for (const state of ['missing', 'uninitialized', 'angry', 'stared', 'wrong-type', 'missing-key']) {
+    const { bot, enderman, keys } = endermanFixture();
+    if (state === 'missing') delete enderman.metadata;
+    if (state === 'uninitialized') enderman.metadata = [];
+    if (state === 'angry') enderman.metadata[keys.indexOf('creepy')] = true;
+    if (state === 'stared') enderman.metadata[keys.indexOf('stared_at')] = true;
+    if (state === 'wrong-type') enderman.metadata[keys.indexOf('creepy')] = 0;
+    if (state === 'missing-key') bot.registry = { ...bot.registry, entitiesByName: {
+      ...bot.registry.entitiesByName, enderman: { metadataKeys: keys.filter(key => key !== 'creepy') },
+    } };
+    assert.equal(findHostileThreat(bot)?.entity_type, 'enderman', state);
+    assert.equal(checkSafety(bot).safe, false, state);
+  }
+});
+
+test('enderman omitted defaults require known vanilla initial metadata and changes take effect immediately', () => {
+  const { bot, enderman, keys } = endermanFixture();
+  enderman.metadata = [];
+  enderman.metadata[keys.indexOf('health')] = 40;
+  assert.equal(findHostileThreat(bot), null);
+  assert.equal(checkSafety(bot).safe, true);
+  enderman.metadata[keys.indexOf('creepy')] = true;
+  assert.equal(findHostileThreat(bot)?.warning_radius, 12);
+  assert.equal(checkSafety(bot).safe, false);
+  delete enderman.metadata[keys.indexOf('creepy')];
+  enderman.metadata[keys.indexOf('stared_at')] = undefined;
+  assert.equal(findHostileThreat(bot)?.entity_type, 'enderman', 'malformed is not omitted');
+  delete enderman.metadata[keys.indexOf('stared_at')];
+  bot.registry = { ...bot.registry, version: { ...bot.registry.version, version: -1 } };
+  assert.equal(findHostileThreat(bot)?.entity_type, 'enderman', 'unknown defaults stay unknown');
+});
+
+test('a calm enderman never masks another hostile or bypasses low-health admission', () => {
+  const { bot } = endermanFixture();
+  bot.health = 2;
+  assert.equal(checkSafety(bot).safe, false);
+  bot.health = 20;
+  bot.entities[527] = { id: 527, name: 'creeper', position: bot.entity.position.offset(2, 0, 0) };
+  assert.equal(findHostileThreat(bot)?.entity_id, '527');
+  assert.equal(checkSafety(bot).safe, false);
+});
 
 function fixture() {
   const registry = minecraftData('1.21.1');
@@ -337,7 +402,8 @@ test('R62 creeper cover exemption demands exact safe metadata and a complete kno
   assert.equal(findHostileThreat(bot, new Vec3(-75.5, 35, 8.5))?.entity_type, 'creeper', 'excavation origin inside the wall');
   // The same geometry and metadata never exempt other special enemies.
   creeper.name = 'enderman';
-  assert.equal(findHostileThreat(bot)?.entity_type, 'enderman', 'identical metadata on a non-creeper stays a threat');
+  creeper.metadata[bot.registry.entitiesByName.enderman.metadataKeys.indexOf('creepy')] = true;
+  assert.equal(findHostileThreat(bot)?.entity_type, 'enderman', 'an angry enderman cannot borrow the dormant creeper cover exemption');
 });
 
 test('R62 a safe creeper behind the wall never masks other visible enemies', () => {

@@ -12,6 +12,7 @@ import pathfinderPkg from 'mineflayer-pathfinder';
 import { operationWait } from '../runtime/operationScope.js';
 import { createBranchMine } from '../branch_mine.js';
 import { TOOL_TIER } from './registry.js';
+import { isCalmEnderman } from '../survivalThreats.js';
 
 const { goals } = pathfinderPkg;
 const { GoalXZ } = goals;
@@ -142,6 +143,7 @@ export function checkSafety(bot, { minHealth = 6, minFood = 6, hostileRadius = 1
           e &&
           e.name &&
           HOSTILE_NAMES.has(e.name) &&
+          !isCalmEnderman(bot, e) &&
           e.position &&
           bot.entity.position.distanceTo(e.position) < hostileRadius
       );
