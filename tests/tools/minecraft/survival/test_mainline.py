@@ -880,6 +880,79 @@ def test_ignition_reallocates_ore_budget_but_rejects_unaffordable_cold_chain(woo
 
 
 @pytest.mark.parametrize("wrapped", [False, True])
+@pytest.mark.parametrize(
+    "spent_blocks,spent_travel,first_blocks,first_travel,next_blocks,next_travel",
+    [
+        (238, 100, 18, 24, 10, 24),
+        (100, 370, 24, 14, 24, 8),
+        (100, 100, 24, 24, 24, 24),
+    ],
+)
+def test_depth_reservations_fit_the_current_original_account_after_partial_progress(
+    wrapped, spent_blocks, spent_travel, first_blocks, first_travel, next_blocks, next_travel
+):
+    from animetta.tools.minecraft.voyager.strategies.mission import MissionStrategy
+
+    mission = build_nether_portal_mission(mission_id="depth-reservation-frontier")
+    objective = next(o for o in mission.objectives if o.objective_id == "diamond-pickaxe")
+    registry = WorkflowRegistry()
+    registry.register(
+        next(w for w in nether_preparation_workflows() if w.target == "diamond_pickaxe")
+    )
+    fallback = FallbackStrategy(registry=registry)
+    strategy = MissionStrategy(live=None, learn=None, fallback=fallback) if wrapped else fallback
+    state = strategy.prepare(objective.goal)
+    limit = mission.budget.model_copy(update=objective.budget.model_dump())
+    account = BudgetAccount(
+        limit=limit,
+        used=BudgetUsage(
+            max_actions=18, max_blocks_changed=spent_blocks, max_travel_distance=spent_travel
+        ),
+    )
+    before = Observation.model_validate(
+        {
+            **MESSAGES["Observation"],
+            "position": {"x": 448, "y": -40, "z": 285},
+            "inventory": {
+                "iron_pickaxe": 1,
+                "stone_pickaxe": 2,
+                "stick": 8,
+                "oak_planks": 12,
+                "crafting_table": 1,
+            },
+        }
+    )
+    state["budget_remaining"] = account.remaining
+    first = strategy.propose(state, before)
+    assert first.parameters == {"target_y": -48, "minimum_cobblestone": 0}
+    assert first.maximum_cost.max_blocks_changed == first_blocks
+    assert first.maximum_cost.max_travel_distance == first_travel
+    delegate = state["strategy_state"] if wrapped else state
+    index = delegate["step_index"]
+    # Reservation and runtime settlement share this same bounded maximum.
+    account = account.reserve("frontier", first.maximum_cost).settle(
+        "frontier", BudgetUsage(max_actions=1, max_blocks_changed=8, max_travel_distance=6)
+    )
+    after = before.model_copy(update={"position": before.position.model_copy(update={"y": -46})})
+    recovered = strategy.accept_partial_result(state, before, after)
+    assert recovered is not None
+    recovered["budget_remaining"] = account.remaining
+    second = strategy.propose(recovered, after)
+    assert second.parameters == first.parameters
+    assert second.maximum_cost.max_blocks_changed == next_blocks
+    assert second.maximum_cost.max_travel_distance == next_travel
+    account.reserve("next-frontier", second.maximum_cost)
+    delegate = recovered["strategy_state"] if wrapped else recovered
+    assert delegate["step_index"] == index
+    assert delegate["workflow"].steps[index].maximum_cost.max_blocks_changed == 24
+    assert account.used.max_blocks_changed == spent_blocks + 8
+    assert account.used.max_travel_distance == spent_travel + 6
+    assert account.used.max_actions == 19
+    assert account.limit == limit and limit.max_blocks_changed == 256
+    assert recovered["goal"] == objective.goal
+
+
+@pytest.mark.parametrize("wrapped", [False, True])
 def test_partial_shaft_depth_resumes_the_same_checkpoint_in_the_original_charged_account(wrapped):
     from animetta.tools.minecraft.voyager.strategies.mission import MissionStrategy
 
