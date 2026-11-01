@@ -187,6 +187,185 @@ async def test_controller_passes_collected_typed_evidence_to_goal_verifier() -> 
     assert activity.phases == ["observing", "checking"]
 
 
+@pytest.mark.parametrize(
+    "mode", ["recover", "strict", "moving", "stationary", "away", "different_world", "exhausted"]
+)
+async def test_known_navigation_progress_reuses_the_original_travel_account(mode: str) -> None:
+    from animetta.tools.minecraft.voyager.strategies.builtin import BuiltinMissionStrategy
+    from animetta.tools.minecraft.voyager.strategies.mission import MissionStrategy
+
+    runtime = RuntimeStub()
+    goto = runtime.manifest.capability("collect").model_copy(
+        update={
+            "name": "goto",
+            "parameters_schema": {
+                "type": "object",
+                "required": ["x", "y", "z"],
+                "properties": {axis: {"type": "number"} for axis in ("x", "y", "z")},
+                "additionalProperties": False,
+            },
+        }
+    )
+    runtime.manifest = runtime.manifest.model_copy(
+        update={"capabilities": (*runtime.manifest.capabilities, goto)}
+    )
+    before = runtime.observation.model_copy(
+        update={
+            "position": runtime.observation.position.model_copy(update={"x": 8, "y": 66, "z": -4}),
+            "visible_entities": (),
+            "environment": {
+                **runtime.observation.environment,
+                "on_ground": True,
+                "velocity": {"x": 0, "y": -0.0784, "z": 0},
+            },
+        }
+    )
+    runtime.observation = before
+    after = before.model_copy(
+        update={"position": before.position.model_copy(update={"x": 5, "y": 65, "z": -8})}
+    )
+    if mode == "stationary":
+        after = before
+    elif mode == "away":
+        after = before.model_copy(update={"position": before.position.model_copy(update={"x": 7})})
+    elif mode == "different_world":
+        after = after.model_copy(
+            update={
+                "world_identity": before.world_identity.model_copy(
+                    update={"world_identity_hash": "f" * 64}
+                )
+            }
+        )
+    elif mode == "moving":
+        after = after.model_copy(
+            update={
+                "environment": {
+                    **after.environment,
+                    "on_ground": False,
+                    "velocity": {"x": 0, "y": -0.1, "z": 0},
+                }
+            }
+        )
+    cmd = _command()
+    limit = ExecutionBudget.model_validate_json(json.dumps(cmd.effective_budget)).model_copy(
+        update={
+            "max_actions": 1 if mode == "exhausted" else 2,
+            "max_strategy_attempts": 1,
+            "max_travel_distance": 192,
+            "max_blocks_changed": 128,
+            "max_damage_taken": 0,
+        }
+    )
+    travel = TypeAdapter(GoalSpec).validate_python(
+        {
+            "intent": "travel",
+            "target": "surface-water-access",
+            "success_predicates": [
+                {"kind": "location_reached", "x": 11, "y": 65, "z": -16, "tolerance": 1.5}
+            ],
+        }
+    )
+    strategy = MissionStrategy(
+        builtin=BuiltinMissionStrategy(manifest=runtime.manifest, execution_budget=limit),
+        live=None,
+        learn=None,
+        fallback=None,
+    )
+
+    class TravelExecutor(ExecutorStub):
+        def __init__(self):
+            self.calls = []
+
+        async def execute_step(self, **kwargs):
+            self.calls.append(kwargs)
+            first = len(self.calls) == 1
+            usage = BudgetUsage(
+                max_actions=1, max_travel_distance=6.047729319808125 if first else 10
+            )
+            account = (
+                kwargs["account"]
+                .reserve(str(len(self.calls)), kwargs["step"].maximum_cost)
+                .settle(str(len(self.calls)), usage)
+            )
+            receipt = ActionReceipt.model_validate(MESSAGES["ActionReceipt"])
+            receipt = receipt.model_copy(
+                update={
+                    "outcome": ReceiptOutcome.ERROR if first else ReceiptOutcome.SUCCESS,
+                    "budget_usage": receipt.budget_usage.model_copy(update=usage.model_dump()),
+                    "content_hash": ("a" if first else "b") * 64,
+                }
+            )
+            result = StepExecutionResult(
+                receipt=receipt,
+                after=after
+                if first
+                else after.model_copy(
+                    update={
+                        "position": after.position.model_copy(update={"x": 11, "y": 65, "z": -16})
+                    }
+                ),
+                account=account,
+            )
+            if first:
+                raise ExecutorError(
+                    ControlPlaneError(
+                        code="SEARCH_TIMEOUT",
+                        message="native travel slice ended",
+                        phase="execution",
+                        outcome_known=True,
+                        world_may_have_changed=True,
+                        caller_may_resubmit=False,
+                        operator_action="inspect receipt",
+                    ),
+                    settled_result=result,
+                )
+            return result
+
+    class TravelEvidenceCollector:
+        async def collect(self, **kwargs):
+            assert kwargs["output"] == {"builtin_kind": "travel", "selected_strategy": "builtin"}
+            return GoalEvidence()
+
+    executor, verifier = TravelExecutor(), VerifierStub()
+    controller = UnifiedVoyagerController(
+        runtime=runtime,
+        repository=object(),
+        executor=executor,
+        strategy_factories={"mission": lambda _manifest, _command: strategy},
+        verifier=verifier,
+        evidence_collector=TravelEvidenceCollector(),
+        make_id=lambda prefix: f"{prefix}-id",
+        now_ms=lambda: 10,
+    )
+    cmd = cmd.model_copy(
+        update={
+            "payload": {
+                "goal": travel.model_dump(mode="json"),
+                "execution_policy": {"stop_on_action_failure": mode == "strict"},
+            },
+            "effective_budget": limit.model_dump(mode="json"),
+        }
+    )
+    if mode != "recover":
+        with pytest.raises(CommandExecutionError, match="native travel slice ended"):
+            await controller.execute_command(cmd)
+        assert len(executor.calls) == 1
+        return
+    await controller.execute_command(cmd)
+    first, second = executor.calls
+    assert (
+        first["step"].parameters == second["step"].parameters == {"x": 11.0, "y": 65.0, "z": -16.0}
+    )
+    assert second["account"].limit == first["account"].limit == limit
+    assert second["account"].used.max_actions == 1
+    assert second["account"].used.max_travel_distance == pytest.approx(6.047729319808125)
+    assert second["step"].maximum_cost.max_travel_distance == pytest.approx(192 - 6.047729319808125)
+    assert second["step"].maximum_cost.max_actions == 1
+    assert second["previous_receipt_hash"] == "a" * 64
+    assert second["command"] is first["command"]
+    assert len(verifier.received["receipts"]) == 2
+
+
 async def test_controller_refreshes_canonical_budget_through_mission_fallback() -> None:
     from animetta.tools.minecraft.survival.mainline import build_nether_portal_mission
     from animetta.tools.minecraft.survival.registry import WorkflowRegistry

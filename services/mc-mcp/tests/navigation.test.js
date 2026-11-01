@@ -12,7 +12,7 @@ import {
   configureDryNavigation,
   getUndergroundCollectionPreparation,
 } from '../src/collection.js';
-import { escapeWaterToShore, navigateTo, surfaceEscapePlan } from '../src/navigation.js';
+import { escapeWaterToShore, iteratePathSearch, navigateTo, surfaceEscapePlan } from '../src/navigation.js';
 import { createOperationScope, operationSettlementReserveMs } from '../src/runtime/operationScope.js';
 
 function fixture(y) {
@@ -26,6 +26,60 @@ function fixture(y) {
     },
   } };
   return { bot, goals };
+}
+
+function nativeGridFixture() {
+  const bot = new EventEmitter(), registry = minecraftData('1.21.1'), Block = prismarineBlock(registry);
+  Object.assign(bot,{registry,game:{minY:-64,height:384},entities:{},inventory:{items:()=>[]},
+    entity:{position:new Vec3(.5,64,.5),onGround:true,effects:{}},
+    blockAt(position) {
+      const p=position.floored(),block=Block.fromStateId(registry.blocksByName[p.y<64?'stone':'air'].defaultState,0);
+      block.position=p;return block;
+    },
+  });
+  pathfinderPackage.pathfinder(bot);
+  const movements=new pathfinderPackage.Movements(bot);
+  // Exercise the existing navigation adapter before the SDK's default mode.
+  for(const _ of iteratePathSearch(bot,movements,new pathfinderPackage.goals.GoalBlock(0,64,0)))break;
+  return {bot,movements};
+}
+
+test('native path centering leaves the continuing AStar grid coordinates and hashes intact', () => {
+  const {bot,movements}=nativeGridFixture();
+  let result,context;
+  for(const planned of bot.pathfinder.getPathFromTo(movements,bot.entity.position,
+    new pathfinderPackage.goals.GoalBlock(4,64,0))) {
+    result=planned.result;context=planned.astarContext;if(result.status!=='partial')break;
+  }
+  assert.equal(result.status,'success');
+  assert.equal(result.path.at(-1).x,4.5,'native execution keeps its ordinary centered coordinates');
+  assert.equal(context.bestNode.data.x,4,'centering must not change the search node');
+  assert.equal(context.bestNode.data.hash,`${context.bestNode.data.x},${context.bestNode.data.y},${context.bestNode.data.z}`);
+  assert.notEqual(result.path.at(-1),context.bestNode.data);
+  assert.equal(bot.pathfinder.thinkTimeout,5000);
+});
+
+test('geometry isolation preserves consumed native work queues across later path results', () => {
+  nativeGridFixture();
+  const start=new Move(0,64,0,1,0), search=new AStar(start,{}, {heuristic:()=>0},5000);
+  const move=new Move(1,64,0,1,1,[new Vec3(1,64,0)],[{x:1,y:63,z:0,returnPos:new Vec3(0,64,0)}]);
+  const node={data:move,parent:search.bestNode,g:1};
+  const first=search.makeResult('partial',node);
+  first.path[0].x=.5;
+  first.path[0].toBreak.shift();first.path[0].toPlace.shift();
+  const next=search.makeResult('partial',node);
+  assert.equal(next.path[0].x,1,'later slices must start with the original grid geometry');
+  assert.deepEqual(next.path[0].toBreak,[],'already consumed digging must not reappear');
+  assert.deepEqual(next.path[0].toPlace,[],'already consumed placement must not reappear');
+});
+
+for(const [name,code] of [['Timeout','SEARCH_TIMEOUT'],['NoPath','NAVIGATION_TARGET_NOT_REACHED']]) {
+  test(`known native ${name} retains a specific navigation failure code`,async()=>{
+    const {bot}=fixture(64),error=Object.assign(new Error('native path search ended'),{name});
+    bot.pathfinder.goto=async()=>{throw error;};
+    await assert.rejects(navigateTo(bot,{x:19,y:64,z:86}),actual=>actual===error&&actual.code===code&&actual.name===name);
+    assert.equal(bot.pathfinder.thinkTimeout,5000);
+  });
 }
 
 test('descent uses bounded distinct height legs without increasing the search timeout', async () => {

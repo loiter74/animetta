@@ -75,6 +75,15 @@ class BudgetUsage(_BudgetModel):
     max_damage_taken: float = Field(default=0, ge=0)
     resource_consumption: dict[str, int] = Field(default_factory=dict)
 
+    def bounded_work(self, remaining: ExecutionBudget) -> Self:
+        """Cap divisible work without reducing required atomic admission costs."""
+        return self.model_copy(
+            update={
+                "max_travel_distance": min(self.max_travel_distance, remaining.max_travel_distance),
+                "max_blocks_changed": min(self.max_blocks_changed, remaining.max_blocks_changed),
+            }
+        )
+
     def plus(self, other: BudgetUsage) -> BudgetUsage:
         resources = dict(self.resource_consumption)
         for name, amount in other.resource_consumption.items():

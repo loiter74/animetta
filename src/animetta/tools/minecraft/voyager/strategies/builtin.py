@@ -155,17 +155,21 @@ class BuiltinMissionStrategy:
                 code="CAPABILITY_NOT_AUTHORIZED",
                 message="Runtime does not expose the typed goto capability",
             )
+        maximum = BudgetUsage(
+            max_actions=1,
+            max_strategy_attempts=1,
+            max_travel_distance=budget.max_travel_distance if budget else 64,
+            max_blocks_changed=budget.max_blocks_changed if budget else 0,
+            max_damage_taken=budget.max_damage_taken if budget else 0,
+            resource_consumption=budget.resource_consumption if budget else {},
+        )
+        remaining = state.get("budget_remaining")
+        if isinstance(remaining, ExecutionBudget):
+            maximum = maximum.bounded_work(remaining)
         return ExecuteStep(
             capability="goto",
             parameters={"x": predicate.x, "y": predicate.y, "z": predicate.z},
-            maximum_cost=BudgetUsage(
-                max_actions=1,
-                max_strategy_attempts=1,
-                max_travel_distance=budget.max_travel_distance if budget else 64,
-                max_blocks_changed=budget.max_blocks_changed if budget else 0,
-                max_damage_taken=budget.max_damage_taken if budget else 0,
-                resource_consumption=budget.resource_consumption if budget else {},
-            ),
+            maximum_cost=maximum,
         )
 
     def _propose_combat(self, state: dict, observation: Observation) -> StrategyDecision:

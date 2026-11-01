@@ -86,20 +86,8 @@ class FallbackStrategy:
         step = workflow.steps[index]
         available = state.get("budget_remaining")
         if step.capability == "mine_shaft" and isinstance(available, ExecutionBudget):
-            maximum = step.maximum_cost
             return step.model_copy(
-                update={
-                    "maximum_cost": maximum.model_copy(
-                        update={
-                            "max_blocks_changed": min(
-                                maximum.max_blocks_changed, available.max_blocks_changed
-                            ),
-                            "max_travel_distance": min(
-                                maximum.max_travel_distance, available.max_travel_distance
-                            ),
-                        }
-                    )
-                }
+                update={"maximum_cost": step.maximum_cost.bounded_work(available)}
             )
         return step
 

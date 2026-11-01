@@ -1,4 +1,5 @@
 import pathfinderPkg from 'mineflayer-pathfinder';
+import AStar from 'mineflayer-pathfinder/lib/astar.js';
 import Vec3 from 'vec3';
 import { configureDryNavigation, isAirLikeForStanding, isSafeStandingPosition, isWaterBlock } from './collection.js';
 import { operationWait } from './runtime/operationScope.js';
@@ -7,12 +8,30 @@ import { createNavigationTrace } from './navigationDiagnostics.js';
 const { GoalBlock, GoalY } = pathfinderPkg.goals;
 const VERTICAL_STEP = 4;
 export const AIR_RECOVERY_MS = 8000;
+const GEOMETRY_VIEW = Symbol.for('animetta.pathfinder.geometryView');
+
+export function isolatePathfinderGeometry() {
+  const original = AStar.prototype.makeResult;
+  if (original?.[GEOMETRY_VIEW]) return;
+  if (typeof original !== 'function') throw new TypeError('已安装的寻路器缺少结果几何扩展点。');
+  const isolated = function (...args) {
+    const result = original.apply(this, args);
+    // SDK centering changes coordinates in place. Its consumed work queues
+    // remain shared so later slices do not repeat completed digs or placements.
+    return { ...result, path: result.path.map(move => Object.assign(
+      Object.create(Object.getPrototypeOf(move)), move,
+    )) };
+  };
+  Object.defineProperty(isolated, GEOMETRY_VIEW, { value: true });
+  AStar.prototype.makeResult = isolated;
+}
 
 export function* iteratePathSearch(bot, movements, goal) {
+  isolatePathfinderGeometry();
   const timeout = bot.pathfinder.thinkTimeout;
   const deadline = Number.isFinite(timeout) && timeout >= 0 ? Date.now() + timeout : null;
-  // SDK postprocessing mutates A* nodes between partial slices. Its slice
-  // check also precedes the total-time check, so enforce that same limit here.
+  // Keep discrete coordinates for callers. The SDK's slice check precedes its
+  // total-time check, so enforce the same existing total limit here too.
   for (const planned of bot.pathfinder.getPathFromTo(movements, bot.entity.position, goal, { optimizePath: false })) {
     if (planned.result.status === 'partial' && deadline !== null && Date.now() >= deadline) {
       yield { ...planned, result: { ...planned.result, status: 'timeout' } };
@@ -91,6 +110,7 @@ export async function escapeWaterToShore(bot, plan, context, { wait = operationW
 export async function navigateTo(bot, destination, context = {}) {
   const target = Object.fromEntries(['x', 'y', 'z'].map(axis => [axis, Math.floor(destination[axis])]));
   if (!Object.values(target).every(Number.isFinite)) throw new TypeError('导航坐标必须是有限数值。');
+  isolatePathfinderGeometry();
   const escape = surfaceEscapePlan(bot, target);
   if (escape) return escapeWaterToShore(bot, escape, context);
   const startY = Math.floor(bot.entity.position.y);
@@ -142,6 +162,10 @@ export async function navigateTo(bot, destination, context = {}) {
       throw error;
     }
   } catch (error) {
+    if (!error.code && !error.operationSettlement && !context.signal?.aborted) {
+      if (error.name === 'Timeout') error.code = 'SEARCH_TIMEOUT';
+      else if (error.name === 'NoPath') error.code = 'NAVIGATION_TARGET_NOT_REACHED';
+    }
     if (trace) error.details = { ...error.details, navigation_trace: trace.snapshot() };
     throw error;
   } finally {

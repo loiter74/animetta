@@ -50,7 +50,7 @@ import { createEquip } from './equip.js';
 import { eatFood, forageApples } from './food.js';
 import { executeCombatWithEvidence } from './gamebotEvidenceV2.js';
 import { createMineShaft } from './mine_shaft.js';
-import { navigateTo } from './navigation.js';
+import { isolatePathfinderGeometry, navigateTo } from './navigation.js';
 import { backfillObsidianHole } from './obsidianSupport.js';
 import { acquireFlint, ignitePortal } from './portal.js';
 import { fillWaterBucket, prepareObsidian } from './water.js';
@@ -108,6 +108,7 @@ bot.loadPlugin(pvp);
 let _pathfinderPatched = false;
 function patchPathfinder() {
   if (_pathfinderPatched || !bot.pathfinder?.goto) return;
+  isolatePathfinderGeometry();
   _pathfinderPatched = true;
   const _originalGoto = bot.pathfinder.goto.bind(bot.pathfinder);
   bot.pathfinder.goto = async function patchedGoto(goal, ...args) {

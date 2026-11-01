@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from math import floor, isfinite
+from math import dist, floor, isfinite
 
 from animetta.tools.gamebot.contracts.v2 import Observation, RuntimeManifest
 from animetta.tools.minecraft.survival.retreat import propose_retreat
 
+from ..budget import ExecutionBudget
 from ..goal_models import GoalSpec
 from .base import BoundedStrategy, Complete, ExecuteStep, StrategyDecision, StrategyFailure
 
@@ -182,6 +183,30 @@ class MissionStrategy:
             )
         ):
             return candidate
+        if (
+            isinstance(decision, ExecuteStep)
+            and failed_step.capability == decision.capability == "goto"
+            and failed_step.parameters == decision.parameters
+            and state.get("settled_error_code")
+            in {"SEARCH_TIMEOUT", "NAVIGATION_TARGET_NOT_REACHED"}
+            and before.world_identity == after.world_identity
+            and before.position is not None
+            and after.position is not None
+        ):
+            remaining = state.get("budget_remaining")
+            target = tuple(decision.parameters.get(axis) for axis in ("x", "y", "z"))
+            start = (before.position.x, before.position.y, before.position.z)
+            end = (after.position.x, after.position.y, after.position.z)
+            if (
+                isinstance(remaining, ExecutionBudget)
+                and remaining.max_actions >= decision.maximum_cost.max_actions
+                and remaining.max_strategy_attempts >= decision.maximum_cost.max_strategy_attempts
+                and remaining.max_travel_distance > 0
+                and all(type(v) in (int, float) and isfinite(v) for v in (*target, *start, *end))
+                and dist(start, target) - dist(end, target) >= 1
+            ):
+                candidate["executed_steps"] = state["executed_steps"] + 1
+                return candidate
         if same_search and state.get("settled_error_code") in {
             "RESOURCE_NOT_FOUND",
             "SEARCH_TIMEOUT",
