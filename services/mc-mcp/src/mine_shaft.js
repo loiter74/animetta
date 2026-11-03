@@ -444,7 +444,13 @@ export function createMineShaft({
     const base = standingCell();
     const startX = bot.entity.position.x;
     const startZ = bot.entity.position.z;
-    for (const dir of candidateDirections()) {
+    const candidates = candidateDirections().map(dir => {
+      const feet = base.offset(dir.x, 0, dir.z);
+      const floor = bot.blockAt(feet.offset(0, -1, 0));
+      return { dir, dryDescent: isStableSupport(floor)
+        && collectionDigSafety(bot, floor, { standingPosition: feet }).safe };
+    }).sort((left, right) => Number(right.dryDescent) - Number(left.dryDescent));
+    for (const { dir } of candidates) {
       const feetPos = base.offset(dir.x, 0, dir.z);
       const headPos = feetPos.offset(0, 1, 0);
       const support = bot.blockAt(feetPos.offset(0, -1, 0));
@@ -538,7 +544,6 @@ export function createMineShaft({
     const currentHead = bot.blockAt(base.offset(0, 1, 0));
     if (isFluidHazard(currentFeet)) throw fluidHazard(currentFeet);
     if (isFluidHazard(currentHead)) throw fluidHazard(currentHead);
-    await sealShaftOpenings();
     let below = bot.blockAt(base.offset(0, -1, 0));
     if (isFluidHazard(below)) throw fluidHazard(below);
     if (!isSolid(below)) {
@@ -563,6 +568,9 @@ export function createMineShaft({
       if (!hasSafeLandingBelow(base, digDepth + 1)) return false;
     }
     if (!canExcavateTo([below.position], below.position.offset(.5, 0, .5))) return false;
+    const safety = collectionDigSafety(bot, below, { standingPosition: bot.entity.position });
+    if (!safety.safe) throw fluidHazard({ name: safety.block || safety.reason_code });
+    await sealShaftOpenings();
     await digIfNeeded(below);
     if (shouldStop()) return true;
     stopMovement();
@@ -708,7 +716,6 @@ export function createMineShaft({
             attemptedDig = await moveToSupportedLedge();
             if (!attemptedDig) attemptedDig = await digStairStep(preserveReturnPath);
             if (!attemptedDig) throw e;
-            continue;
           }
           if (e && [
             'MINE_SHAFT_ACTION_TIMEOUT',

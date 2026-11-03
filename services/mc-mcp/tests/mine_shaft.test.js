@@ -65,6 +65,63 @@ test('real player physics needs the entire footprint over the shaft before diggi
   assert.equal(fixture.bot.entity.onGround, true);
 });
 
+test('shore descent chooses natural dry ground instead of paving a bridge above water', async t => {
+  const f = shaftPhysicsFixture(t, .5, .5), bot = f.bot;
+  const registry = minecraftData('1.21.1'), Block = prismarineBlock(registry);
+  const originalBlockAt = bot.blockAt.bind(bot);
+  const originalPlace = bot.placeBlock.bind(bot);
+  const placed = new Set();
+  const routes = [];
+  bot.blockAt = position => {
+    const p = position.floored();
+    if (p.x >= 0 && !placed.has(p.toString())) {
+      const name = p.y === 79 && p.x === 0 && p.z === 0 ? 'gravel'
+        : p.y === 78 ? 'water' : 'air';
+      const block = Block.fromStateId(registry.blocksByName[name].defaultState);
+      block.position = p;
+      return block;
+    }
+    return originalBlockAt(p);
+  };
+  bot.placeBlock = async (block, face) => {
+    placed.add(block.position.plus(face).toString());
+    await originalPlace(block, face);
+  };
+  bot.pathfinder.goto = async goal => {
+    routes.push([goal.x, goal.y, goal.z]);
+    Object.assign(bot.entity.position, { x: goal.x + .5, y: goal.y, z: goal.z + .5 });
+  };
+  const result = await createMineShaft(f).mineShaft(77);
+  assert.match(result, /y=77/);
+  assert.equal(bot.entity.onGround, true);
+  assert.equal(placed.size, 0, 'a known fluid landing must be rejected before placing side support');
+  assert.ok(routes.length > 0 && routes.every(([x]) => x < 0), 'relocate onto the original dry shore');
+});
+
+test('hazard side steps still obey the original bound on attempts without descent', async t => {
+  const f = shaftPhysicsFixture(t, .5, .5), bot = f.bot;
+  const registry = minecraftData('1.21.1'), Block = prismarineBlock(registry);
+  const originalBlockAt = bot.blockAt.bind(bot);
+  let routes = 0;
+  bot.blockAt = position => {
+    const p = position.floored(), block = originalBlockAt(p);
+    if (p.y === 79 && Math.abs(p.z) === 1) {
+      const water = Block.fromStateId(registry.blocksByName.water.defaultState);
+      water.position = p;
+      return water;
+    }
+    return block;
+  };
+  bot.pathfinder.goto = async goal => {
+    routes++;
+    Object.assign(bot.entity.position, { x: goal.x + .5, y: goal.y, z: goal.z + .5 });
+  };
+  await assert.rejects(createMineShaft(f).mineShaft(79), { code: 'MINE_SHAFT_STUCK' });
+  assert.ok(routes > 0 && routes <= 7, 'hazard recovery must not bypass the existing no-descent bound');
+  assert.equal(Math.floor(bot.entity.position.y), 80);
+  assert.equal(f.digs.length, 0, 'keep the barrier against the water layer');
+});
+
 test('collection preparation leaves stairs that can be walked back without excavation', async t => {
   const f = shaftPhysicsFixture(t, .5, .5), bot = f.bot;
   Object.setPrototypeOf(bot, EventEmitter.prototype); EventEmitter.call(bot);
