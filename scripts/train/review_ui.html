@@ -1,0 +1,1350 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>角色语音听审</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f2f4f7;
+        --surface: #fafbfc;
+        --panel: #ffffff;
+        --panel-muted: #eef1f5;
+        --line: #cbd2dc;
+        --line-strong: #9da8b8;
+        --text: #172033;
+        --muted: #596579;
+        --accent: #315f9f;
+        --accent-strong: #244b80;
+        --accent-soft: #e4edf8;
+        --danger: #a33b43;
+        --danger-soft: #f8e7e8;
+        --warning: #8a5b17;
+        --warning-soft: #f8efd9;
+        --success: #276746;
+        --success-soft: #e3f2e9;
+        --focus: #477fc8;
+        --shadow: 0 12px 36px rgb(33 47 69 / 0.1);
+        --radius: 10px;
+        font-family: "Segoe UI", "Microsoft YaHei UI", system-ui, sans-serif;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #111722;
+          --surface: #161e2a;
+          --panel: #1c2532;
+          --panel-muted: #242f3e;
+          --line: #3b4859;
+          --line-strong: #5c6b7d;
+          --text: #edf2f8;
+          --muted: #aab5c4;
+          --accent: #78a6e2;
+          --accent-strong: #a4c3eb;
+          --accent-soft: #243a57;
+          --danger: #ef9aa0;
+          --danger-soft: #4a292e;
+          --warning: #e5bd76;
+          --warning-soft: #46391f;
+          --success: #89d1aa;
+          --success-soft: #243f33;
+          --focus: #8cb9f2;
+          --shadow: 0 12px 36px rgb(3 8 15 / 0.34);
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        background: var(--bg);
+        color: var(--text);
+        font-size: 14px;
+      }
+
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+      }
+
+      button,
+      select,
+      input,
+      textarea {
+        border-radius: var(--radius);
+      }
+
+      button {
+        color: inherit;
+      }
+
+      button:focus-visible,
+      select:focus-visible,
+      input:focus-visible,
+      textarea:focus-visible,
+      audio:focus-visible {
+        outline: 3px solid color-mix(in srgb, var(--focus) 65%, transparent);
+        outline-offset: 2px;
+      }
+
+      button:active {
+        transform: translateY(1px);
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        display: grid;
+        grid-template-columns: minmax(220px, 1fr) auto minmax(220px, 1fr);
+        align-items: center;
+        gap: 20px;
+        min-height: 68px;
+        padding: 10px 20px;
+        border-bottom: 1px solid var(--line);
+        background: color-mix(in srgb, var(--surface) 94%, transparent);
+        backdrop-filter: blur(12px);
+      }
+
+      .brand {
+        min-width: 0;
+      }
+
+      .brand h1 {
+        margin: 0;
+        overflow: hidden;
+        font-size: 18px;
+        font-weight: 680;
+        letter-spacing: -0.01em;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .brand p {
+        margin: 3px 0 0;
+        color: var(--muted);
+        font-family: ui-monospace, "Cascadia Mono", monospace;
+        font-size: 11px;
+      }
+
+      .progress-summary {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(74px, auto));
+        align-items: center;
+        gap: 6px;
+      }
+
+      .metric-mini {
+        min-width: 74px;
+        padding: 5px 10px;
+        border-left: 1px solid var(--line);
+      }
+
+      .metric-mini:first-child {
+        border-left: 0;
+      }
+
+      .metric-mini strong {
+        display: block;
+        font-family: ui-monospace, "Cascadia Mono", monospace;
+        font-size: 15px;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .metric-mini span {
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .reviewer-field {
+        justify-self: end;
+        width: min(100%, 280px);
+      }
+
+      label {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        border: 1px solid var(--line-strong);
+        background: var(--panel);
+        color: var(--text);
+      }
+
+      input,
+      select {
+        min-height: 38px;
+        padding: 7px 10px;
+      }
+
+      textarea {
+        display: block;
+        min-height: 120px;
+        padding: 11px 12px;
+        line-height: 1.65;
+        resize: vertical;
+      }
+
+      input::placeholder,
+      textarea::placeholder {
+        color: color-mix(in srgb, var(--muted) 84%, transparent);
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: 306px minmax(420px, 1fr) 316px;
+        gap: 0;
+        min-height: calc(100dvh - 68px);
+        margin: 0 auto;
+        border-inline: 1px solid var(--line);
+        background: var(--surface);
+      }
+
+      .queue-panel,
+      .inspector {
+        min-width: 0;
+        background: var(--surface);
+      }
+
+      .queue-panel {
+        border-right: 1px solid var(--line);
+      }
+
+      .inspector {
+        border-left: 1px solid var(--line);
+      }
+
+      .panel-head {
+        position: sticky;
+        top: 68px;
+        z-index: 1;
+        padding: 13px 14px 12px;
+        border-bottom: 1px solid var(--line);
+        background: var(--surface);
+      }
+
+      .panel-head-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .panel-head label {
+        margin-bottom: 5px;
+      }
+
+      .queue-list {
+        display: grid;
+        padding: 6px;
+      }
+
+      .queue-item {
+        display: grid;
+        grid-template-columns: 34px minmax(0, 1fr) auto;
+        gap: 9px;
+        align-items: start;
+        width: 100%;
+        padding: 10px 8px;
+        border: 0;
+        border-bottom: 1px solid var(--line);
+        border-radius: 0;
+        background: transparent;
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .queue-item:hover {
+        background: var(--panel-muted);
+      }
+
+      .queue-item[aria-current="true"] {
+        border-bottom-color: transparent;
+        border-radius: var(--radius);
+        background: var(--accent-soft);
+        box-shadow: inset 3px 0 0 var(--accent);
+      }
+
+      .queue-number {
+        color: var(--muted);
+        font-family: ui-monospace, "Cascadia Mono", monospace;
+        font-size: 11px;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .queue-copy {
+        min-width: 0;
+      }
+
+      .queue-copy strong {
+        display: block;
+        overflow: hidden;
+        font-size: 12px;
+        font-weight: 640;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .queue-copy span {
+        display: -webkit-box;
+        overflow: hidden;
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.35;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+      }
+
+      .state-label,
+      .flag {
+        display: inline-flex;
+        align-items: center;
+        min-height: 22px;
+        border: 1px solid currentColor;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .state-label {
+        padding: 4px 7px;
+      }
+
+      .state-pending {
+        color: var(--muted);
+      }
+
+      .state-accepted {
+        color: var(--success);
+        background: var(--success-soft);
+      }
+
+      .state-rejected {
+        color: var(--danger);
+        background: var(--danger-soft);
+      }
+
+      .state-deferred {
+        color: var(--warning);
+        background: var(--warning-soft);
+      }
+
+      .review-stage {
+        min-width: 0;
+        padding: 26px clamp(20px, 3vw, 46px) 84px;
+        background: var(--panel);
+      }
+
+      .empty-state,
+      .error-state {
+        max-width: 560px;
+        margin: 18vh auto 0;
+        padding: 28px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+        text-align: center;
+      }
+
+      .error-state {
+        border-color: var(--danger);
+        color: var(--danger);
+      }
+
+      .item-heading {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 22px;
+      }
+
+      .item-heading h2 {
+        margin: 0;
+        font-family: ui-monospace, "Cascadia Mono", monospace;
+        font-size: clamp(18px, 2.2vw, 24px);
+        font-weight: 650;
+        letter-spacing: -0.02em;
+      }
+
+      .item-heading p {
+        margin: 5px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .position-label {
+        color: var(--muted);
+        font-family: ui-monospace, "Cascadia Mono", monospace;
+        font-size: 12px;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .audio-zone {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: center;
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+      }
+
+      audio {
+        width: 100%;
+        min-width: 200px;
+      }
+
+      .nav-buttons {
+        display: flex;
+        gap: 7px;
+      }
+
+      .plain-button,
+      .decision-button {
+        min-height: 38px;
+        border: 1px solid var(--line-strong);
+        background: var(--panel);
+        cursor: pointer;
+      }
+
+      .plain-button {
+        padding: 7px 12px;
+      }
+
+      .plain-button:hover {
+        background: var(--panel-muted);
+      }
+
+      .form-section {
+        margin-top: 22px;
+      }
+
+      .helper-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .save-state {
+        min-height: 17px;
+        text-align: right;
+      }
+
+      .decision-bar {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+        margin-top: 22px;
+      }
+
+      .decision-button {
+        min-height: 48px;
+        padding: 10px 14px;
+        font-weight: 700;
+      }
+
+      .decision-button small {
+        display: block;
+        margin-top: 3px;
+        color: inherit;
+        font-family: ui-monospace, "Cascadia Mono", monospace;
+        font-size: 10px;
+        font-weight: 500;
+        opacity: 0.78;
+      }
+
+      .decision-button.accept {
+        border-color: var(--success);
+        background: var(--success-soft);
+        color: var(--success);
+      }
+
+      .decision-button.reject {
+        border-color: var(--danger);
+        background: var(--danger-soft);
+        color: var(--danger);
+      }
+
+      .decision-button.defer {
+        border-color: var(--warning);
+        background: var(--warning-soft);
+        color: var(--warning);
+      }
+
+      .decision-button:disabled,
+      .plain-button:disabled {
+        cursor: not-allowed;
+        opacity: 0.48;
+      }
+
+      .message {
+        min-height: 22px;
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: 12px;
+        text-align: center;
+      }
+
+      .message.error {
+        color: var(--danger);
+      }
+
+      .inspector-body {
+        padding: 16px;
+      }
+
+      .inspector h3 {
+        margin: 0 0 12px;
+        font-size: 13px;
+      }
+
+      .flags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        min-height: 24px;
+      }
+
+      .flag {
+        padding: 4px 8px;
+        color: var(--warning);
+        background: var(--warning-soft);
+      }
+
+      .flag.clean {
+        color: var(--success);
+        background: var(--success-soft);
+      }
+
+      .details {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 0 12px;
+        margin: 18px 0 0;
+        font-size: 12px;
+      }
+
+      .details dt,
+      .details dd {
+        margin: 0;
+        padding: 7px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .details dt {
+        color: var(--muted);
+      }
+
+      .details dd {
+        max-width: 170px;
+        overflow: hidden;
+        font-family: ui-monospace, "Cascadia Mono", monospace;
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .source-reference {
+        margin-top: 18px;
+        padding: 12px;
+        overflow-wrap: anywhere;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--panel-muted);
+        color: var(--muted);
+        font-family: ui-monospace, "Cascadia Mono", monospace;
+        font-size: 10px;
+        line-height: 1.55;
+      }
+
+      .shortcut-bar {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        left: 306px;
+        z-index: 2;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 16px;
+        padding: 8px 16px;
+        border-top: 1px solid var(--line);
+        background: color-mix(in srgb, var(--surface) 95%, transparent);
+        color: var(--muted);
+        font-size: 11px;
+        backdrop-filter: blur(12px);
+      }
+
+      kbd {
+        display: inline-block;
+        min-width: 23px;
+        margin-right: 4px;
+        padding: 2px 5px;
+        border: 1px solid var(--line-strong);
+        border-bottom-width: 2px;
+        border-radius: 5px;
+        background: var(--panel);
+        color: var(--text);
+        font-family: ui-monospace, "Cascadia Mono", monospace;
+        text-align: center;
+      }
+
+      .loading-row {
+        height: 58px;
+        margin: 7px;
+        border-radius: var(--radius);
+        background: var(--panel-muted);
+      }
+
+      @media (max-width: 1080px) {
+        .topbar {
+          grid-template-columns: 1fr auto;
+        }
+
+        .progress-summary {
+          display: none;
+        }
+
+        .workspace {
+          grid-template-columns: 280px minmax(0, 1fr);
+        }
+
+        .inspector {
+          grid-column: 2;
+          border-top: 1px solid var(--line);
+          border-left: 0;
+        }
+
+        .shortcut-bar {
+          left: 280px;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .topbar {
+          position: static;
+          grid-template-columns: 1fr;
+          padding: 12px 14px;
+        }
+
+        .reviewer-field {
+          justify-self: stretch;
+          width: 100%;
+        }
+
+        .workspace {
+          display: block;
+          min-height: 100dvh;
+          border-inline: 0;
+        }
+
+        .queue-panel {
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+
+        .panel-head {
+          position: static;
+        }
+
+        .queue-list {
+          max-height: 280px;
+          overflow-y: auto;
+        }
+
+        .review-stage {
+          padding: 22px 14px 100px;
+        }
+
+        .audio-zone {
+          grid-template-columns: 1fr;
+        }
+
+        .decision-bar {
+          grid-template-columns: 1fr;
+        }
+
+        .inspector {
+          border-left: 0;
+        }
+
+        .shortcut-bar {
+          left: 0;
+          gap: 8px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <h1 id="project-name">角色语音听审</h1>
+        <p id="run-id">正在读取候选队列</p>
+      </div>
+      <div class="progress-summary" aria-label="评审进度">
+        <div class="metric-mini">
+          <strong id="accepted-count">0</strong><span>接受</span>
+        </div>
+        <div class="metric-mini">
+          <strong id="rejected-count">0</strong><span>拒绝</span>
+        </div>
+        <div class="metric-mini">
+          <strong id="deferred-count">0</strong><span>暂缓</span>
+        </div>
+        <div class="metric-mini">
+          <strong id="pending-count">0</strong><span>未处理</span>
+        </div>
+      </div>
+      <div class="reviewer-field">
+        <label for="reviewer">评审人</label>
+        <input
+          id="reviewer"
+          autocomplete="name"
+          placeholder="作出决定前必须填写"
+        />
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside class="queue-panel" aria-label="听审队列">
+        <div class="panel-head">
+          <div class="panel-head-row">
+            <div>
+              <label for="batch-select">批次</label>
+              <select id="batch-select"></select>
+            </div>
+            <div>
+              <label for="filter-select">显示</label>
+              <select id="filter-select">
+                <option value="all">全部</option>
+                <option value="pending">未结束</option>
+                <option value="flagged">有异常</option>
+                <option value="accepted">已接受</option>
+                <option value="rejected">已拒绝</option>
+                <option value="deferred">暂缓</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div id="queue-list" class="queue-list" aria-live="polite">
+          <div class="loading-row"></div>
+          <div class="loading-row"></div>
+          <div class="loading-row"></div>
+        </div>
+      </aside>
+
+      <section id="review-stage" class="review-stage" aria-live="polite">
+        <div class="empty-state">正在载入本批语音和已有决定。</div>
+      </section>
+
+      <aside class="inspector" aria-label="音频证据">
+        <div class="panel-head">
+          <strong>自动检测与来源</strong>
+        </div>
+        <div id="inspector-body" class="inspector-body">
+          <p class="position-label">选择一条语音后显示证据。</p>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="shortcut-bar" aria-label="快捷键">
+      <span><kbd>Space</kbd>播放</span>
+      <span><kbd>A</kbd>接受</span>
+      <span><kbd>R</kbd>拒绝</span>
+      <span><kbd>D</kbd>暂缓</span>
+      <span><kbd>J</kbd>下一条</span>
+      <span><kbd>K</kbd>上一条</span>
+    </footer>
+
+    <script>
+      "use strict";
+
+      const reviewToken = "__REVIEW_TOKEN__";
+      const ui = {
+        projectName: document.querySelector("#project-name"),
+        runId: document.querySelector("#run-id"),
+        accepted: document.querySelector("#accepted-count"),
+        rejected: document.querySelector("#rejected-count"),
+        deferred: document.querySelector("#deferred-count"),
+        pending: document.querySelector("#pending-count"),
+        reviewer: document.querySelector("#reviewer"),
+        batch: document.querySelector("#batch-select"),
+        filter: document.querySelector("#filter-select"),
+        queue: document.querySelector("#queue-list"),
+        stage: document.querySelector("#review-stage"),
+        inspector: document.querySelector("#inspector-body"),
+      };
+
+      const state = {
+        batch: Number(localStorage.getItem("voice-review-batch") || "1"),
+        data: null,
+        visibleItems: [],
+        selectedId: localStorage.getItem("voice-review-selected") || "",
+        saving: false,
+        draftTimer: null,
+        draftPromise: null,
+      };
+
+      ui.reviewer.value = localStorage.getItem("voice-review-reviewer") || "";
+
+      async function api(path, options = {}) {
+        const response = await fetch(path, {
+          ...options,
+          cache: "no-store",
+          headers: {
+            "X-Review-Token": reviewToken,
+            ...(options.body ? { "Content-Type": "application/json" } : {}),
+            ...(options.headers || {}),
+          },
+        });
+        const payload = await response.json();
+        if (!response.ok)
+          throw new Error(payload.error || `请求失败 ${response.status}`);
+        return payload;
+      }
+
+      function text(tag, className, value) {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        node.textContent = value;
+        return node;
+      }
+
+      function decisionOf(item) {
+        return item.latest_decision?.decision || "pending";
+      }
+
+      function decisionLabel(value) {
+        return {
+          accepted: "接受",
+          rejected: "拒绝",
+          deferred: "暂缓",
+          pending: "待审",
+        }[value];
+      }
+
+      function priorityLabel(value) {
+        return (
+          {
+            missing_transcript: "无文本",
+            qc_and_transcript: "QC 和文本",
+            qc: "QC 异常",
+            transcript: "文本复核",
+            clean: "无自动异常",
+          }[value] || value
+        );
+      }
+
+      function currentItem() {
+        return (
+          state.data?.items.find((item) => item.item_id === state.selectedId) ||
+          null
+        );
+      }
+
+      function currentForm() {
+        return {
+          transcript: document.querySelector("#transcript")?.value || "",
+          notes: document.querySelector("#notes")?.value || "",
+        };
+      }
+
+      function updateProgress(status) {
+        const counts = status.decision_counts;
+        ui.accepted.textContent = counts.accepted;
+        ui.rejected.textContent = counts.rejected;
+        ui.deferred.textContent = counts.deferred;
+        ui.pending.textContent = counts.pending;
+      }
+
+      function filteredItems() {
+        const filter = ui.filter.value;
+        return state.data.items.filter((item) => {
+          const decision = decisionOf(item);
+          if (filter === "all") return true;
+          if (filter === "pending")
+            return decision === "pending" || decision === "deferred";
+          if (filter === "flagged")
+            return item.qc_flags.length > 0 || item.transcript_review_required;
+          return decision === filter;
+        });
+      }
+
+      function renderQueue() {
+        state.visibleItems = filteredItems();
+        ui.queue.replaceChildren();
+        if (state.visibleItems.length === 0) {
+          ui.queue.append(text("p", "empty-state", "当前筛选没有条目。"));
+          return;
+        }
+        for (const item of state.visibleItems) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "queue-item";
+          button.dataset.itemId = item.item_id;
+          button.setAttribute(
+            "aria-current",
+            String(item.item_id === state.selectedId),
+          );
+          button.append(
+            text(
+              "span",
+              "queue-number",
+              String(item.queue_index + 1).padStart(3, "0"),
+            ),
+          );
+          const copy = text("span", "queue-copy", "");
+          copy.append(text("strong", "", item.item_id));
+          const transcript =
+            item.draft?.transcript ??
+            item.latest_decision?.transcript ??
+            item.transcript;
+          copy.append(text("span", "", transcript || "等待补写文本"));
+          button.append(copy);
+          const decision = decisionOf(item);
+          button.append(
+            text(
+              "span",
+              `state-label state-${decision}`,
+              decisionLabel(decision),
+            ),
+          );
+          button.addEventListener("click", () => selectItem(item.item_id));
+          ui.queue.append(button);
+        }
+      }
+
+      function renderInspector(item) {
+        ui.inspector.replaceChildren();
+        ui.inspector.append(
+          text("h3", "", priorityLabel(item.priority_reason)),
+        );
+        const flags = text("div", "flags", "");
+        if (item.qc_flags.length) {
+          for (const flag of item.qc_flags)
+            flags.append(text("span", "flag", flag));
+        } else {
+          flags.append(text("span", "flag clean", "无自动异常"));
+        }
+        if (item.transcript_review_required)
+          flags.append(text("span", "flag", "文本待复核"));
+        ui.inspector.append(flags);
+
+        const details = document.createElement("dl");
+        details.className = "details";
+        const entries = [
+          ["时长", `${Number(item.duration_s).toFixed(3)} s`],
+          ["场景", item.scene || "unknown"],
+          ["来源类型", item.origin],
+          ["文本来源", item.transcript_source || "unknown"],
+          ["匹配", item.match || "unknown"],
+          ["置信度", item.confidence || "unknown"],
+          ["采样率", item.metrics.sample_rate || "未处理"],
+          ["SNR", item.metrics.snr_db || "未处理"],
+          ["静音比例", item.metrics.silence_ratio || "未处理"],
+          ["削波比例", item.metrics.clipping_ratio || "未处理"],
+          ["F0 中位", item.metrics.f0_median_hz || "未解析"],
+          ["音频哈希", item.audio_sha256.slice(0, 12)],
+        ];
+        for (const [label, value] of entries) {
+          details.append(text("dt", "", label));
+          const data = text("dd", "", value);
+          data.title = value;
+          details.append(data);
+        }
+        ui.inspector.append(details);
+        ui.inspector.append(
+          text(
+            "div",
+            "source-reference",
+            item.source_reference || item.audio_relpath,
+          ),
+        );
+      }
+
+      function addDecisionButton(
+        container,
+        className,
+        label,
+        shortcut,
+        decision,
+      ) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `decision-button ${className}`;
+        button.dataset.decision = decision;
+        button.append(document.createTextNode(label));
+        button.append(text("small", "", shortcut));
+        button.addEventListener("click", () => decide(decision));
+        container.append(button);
+      }
+
+      function renderStage(item) {
+        ui.stage.replaceChildren();
+        const heading = text("div", "item-heading", "");
+        const title = text("div", "", "");
+        title.append(text("h2", "", item.item_id));
+        title.append(
+          text(
+            "p",
+            "",
+            `${priorityLabel(item.priority_reason)} / ${item.scene || "unknown"}`,
+          ),
+        );
+        heading.append(title);
+        heading.append(
+          text(
+            "span",
+            "position-label",
+            `${item.queue_index + 1} / ${state.data.status.total_items}`,
+          ),
+        );
+        ui.stage.append(heading);
+
+        const audioZone = text("div", "audio-zone", "");
+        const player = document.createElement("audio");
+        player.id = "audio-player";
+        player.controls = true;
+        player.preload = "metadata";
+        player.src = `/audio/${encodeURIComponent(item.item_id)}`;
+        audioZone.append(player);
+        const nav = text("div", "nav-buttons", "");
+        const previous = text("button", "plain-button", "上一条");
+        previous.type = "button";
+        previous.addEventListener("click", () => move(-1));
+        const next = text("button", "plain-button", "下一条");
+        next.type = "button";
+        next.addEventListener("click", () => move(1));
+        nav.append(previous, next);
+        audioZone.append(nav);
+        ui.stage.append(audioZone);
+
+        const transcriptSection = text("div", "form-section", "");
+        const transcriptLabel = text("label", "", "对话文本");
+        transcriptLabel.htmlFor = "transcript";
+        const transcript = document.createElement("textarea");
+        transcript.id = "transcript";
+        transcript.placeholder = "听清后补写或修正文本";
+        transcript.value =
+          item.draft?.transcript ??
+          item.latest_decision?.transcript ??
+          item.transcript;
+        transcriptSection.append(transcriptLabel, transcript);
+        const transcriptHelper = text("div", "helper-row", "");
+        transcriptHelper.append(
+          text(
+            "span",
+            "",
+            item.origin === "unresolved"
+              ? "无文本条目接受前必须补写"
+              : "原文本保留在审计事件中",
+          ),
+        );
+        transcriptHelper.append(
+          text("span", "", `${transcript.value.length} 字`),
+        );
+        transcript.addEventListener("input", () => {
+          transcriptHelper.lastElementChild.textContent = `${transcript.value.length} 字`;
+          scheduleDraft();
+        });
+        transcriptSection.append(transcriptHelper);
+        ui.stage.append(transcriptSection);
+
+        const notesSection = text("div", "form-section", "");
+        const notesLabel = text("label", "", "评审备注");
+        notesLabel.htmlFor = "notes";
+        const notes = document.createElement("textarea");
+        notes.id = "notes";
+        notes.style.minHeight = "88px";
+        notes.placeholder = "记录噪声、咬字、情绪或排除原因";
+        notes.value = item.draft?.notes ?? item.latest_decision?.notes ?? "";
+        notes.addEventListener("input", scheduleDraft);
+        notesSection.append(notesLabel, notes);
+        const helper = text("div", "helper-row", "");
+        helper.append(text("span", "", "输入停止后自动保存草稿"));
+        helper.append(
+          text("span", "save-state", item.draft ? "已恢复草稿" : ""),
+        );
+        notesSection.append(helper);
+        ui.stage.append(notesSection);
+
+        const decisions = text("div", "decision-bar", "");
+        addDecisionButton(decisions, "accept", "接受", "A", "accepted");
+        addDecisionButton(decisions, "reject", "拒绝", "R", "rejected");
+        addDecisionButton(decisions, "defer", "暂缓", "D", "deferred");
+        ui.stage.append(decisions);
+        ui.stage.append(
+          text(
+            "div",
+            "message",
+            item.latest_decision
+              ? `当前结论：${decisionLabel(item.latest_decision.decision)}`
+              : "",
+          ),
+        );
+        renderInspector(item);
+      }
+
+      function selectItem(itemId) {
+        state.selectedId = itemId;
+        localStorage.setItem("voice-review-selected", itemId);
+        renderQueue();
+        const item = currentItem();
+        if (item) renderStage(item);
+      }
+
+      async function move(delta) {
+        const items = state.visibleItems.length
+          ? state.visibleItems
+          : state.data.items;
+        const index = Math.max(
+          0,
+          items.findIndex((item) => item.item_id === state.selectedId),
+        );
+        const targetIndex = index + delta;
+        if (targetIndex >= 0 && targetIndex < items.length) {
+          selectItem(items[targetIndex].item_id);
+          return;
+        }
+        if (delta > 0 && state.batch < state.data.status.batch_count) {
+          state.selectedId = "";
+          localStorage.removeItem("voice-review-selected");
+          await loadBatch(state.batch + 1);
+          return;
+        }
+        if (delta < 0 && state.batch > 1) {
+          state.selectedId = "";
+          localStorage.removeItem("voice-review-selected");
+          await loadBatch(state.batch - 1);
+          const previousItems = filteredItems();
+          const previous = previousItems[previousItems.length - 1];
+          if (previous) selectItem(previous.item_id);
+        }
+      }
+
+      function setMessage(value, isError = false) {
+        const message = document.querySelector(".message");
+        if (!message) return;
+        message.textContent = value;
+        message.classList.toggle("error", isError);
+      }
+
+      function setSaving(value) {
+        state.saving = value;
+        for (const button of document.querySelectorAll(".decision-button"))
+          button.disabled = value;
+      }
+
+      async function saveDraft() {
+        const item = currentItem();
+        const reviewer = ui.reviewer.value.trim();
+        const saveState = document.querySelector(".save-state");
+        if (!item || !reviewer) {
+          if (saveState) saveState.textContent = "填写评审人后保存";
+          return;
+        }
+        const form = currentForm();
+        if (saveState) saveState.textContent = "保存中";
+        try {
+          const payload = await api(
+            `/api/drafts/${encodeURIComponent(item.item_id)}`,
+            {
+              method: "PUT",
+              body: JSON.stringify({ reviewer, ...form }),
+            },
+          );
+          item.draft = payload.draft;
+          if (saveState) saveState.textContent = "草稿已保存";
+          renderQueue();
+        } catch (error) {
+          if (saveState) saveState.textContent = `保存失败：${error.message}`;
+        }
+      }
+
+      function scheduleDraft() {
+        window.clearTimeout(state.draftTimer);
+        state.draftTimer = window.setTimeout(() => {
+          state.draftTimer = null;
+          const promise = saveDraft();
+          state.draftPromise = promise;
+          promise.finally(() => {
+            if (state.draftPromise === promise) state.draftPromise = null;
+          });
+        }, 650);
+      }
+
+      async function decide(decision) {
+        const item = currentItem();
+        if (!item || state.saving) return;
+        const reviewer = ui.reviewer.value.trim();
+        if (!reviewer) {
+          ui.reviewer.focus();
+          setMessage("请先填写评审人。", true);
+          return;
+        }
+        const form = currentForm();
+        if (decision === "accepted" && !form.transcript.trim()) {
+          document.querySelector("#transcript")?.focus();
+          setMessage("接受条目之前必须填写对话文本。", true);
+          return;
+        }
+        window.clearTimeout(state.draftTimer);
+        state.draftTimer = null;
+        if (state.draftPromise) await state.draftPromise;
+        setSaving(true);
+        setMessage("正在写入追加日志");
+        try {
+          const payload = await api("/api/decisions", {
+            method: "POST",
+            body: JSON.stringify({
+              request_id: crypto.randomUUID(),
+              item_id: item.item_id,
+              decision,
+              reviewer,
+              ...form,
+            }),
+          });
+          item.latest_decision = payload.event;
+          item.draft = null;
+          state.data.status = payload.status;
+          updateProgress(payload.status);
+          renderQueue();
+          setMessage(`已保存：${decisionLabel(decision)}`);
+          window.setTimeout(() => move(1), 160);
+        } catch (error) {
+          setMessage(error.message, true);
+        } finally {
+          setSaving(false);
+        }
+      }
+
+      function populateBatchOptions(batchCount) {
+        ui.batch.replaceChildren();
+        for (let batch = 1; batch <= batchCount; batch += 1) {
+          const option = document.createElement("option");
+          option.value = batch;
+          option.textContent = `第 ${batch} 批`;
+          ui.batch.append(option);
+        }
+        state.batch = Math.min(Math.max(state.batch, 1), batchCount);
+        ui.batch.value = state.batch;
+      }
+
+      async function loadBatch(batch) {
+        ui.queue.replaceChildren(
+          text("div", "loading-row", ""),
+          text("div", "loading-row", ""),
+        );
+        ui.stage.replaceChildren(
+          text("div", "empty-state", "正在载入本批语音和已有决定。"),
+        );
+        try {
+          const data = await api(`/api/page?batch=${batch}`);
+          state.data = data;
+          state.batch = data.batch;
+          localStorage.setItem("voice-review-batch", String(data.batch));
+          ui.projectName.textContent = data.run.display_name;
+          ui.runId.textContent = data.run.run_id;
+          updateProgress(data.status);
+          populateBatchOptions(data.status.batch_count);
+          const selectedInBatch = data.items.some(
+            (item) => item.item_id === state.selectedId,
+          );
+          if (!selectedInBatch) {
+            const firstPending = data.items.find((item) => {
+              const decision = decisionOf(item);
+              return decision === "pending" || decision === "deferred";
+            });
+            state.selectedId =
+              firstPending?.item_id || data.items[0]?.item_id || "";
+          }
+          renderQueue();
+          const item = currentItem();
+          if (item) renderStage(item);
+          else
+            ui.stage.replaceChildren(
+              text("div", "empty-state", "本批没有条目。"),
+            );
+        } catch (error) {
+          ui.stage.replaceChildren(
+            text("div", "error-state", `载入失败：${error.message}`),
+          );
+        }
+      }
+
+      ui.reviewer.addEventListener("input", () => {
+        localStorage.setItem("voice-review-reviewer", ui.reviewer.value.trim());
+        scheduleDraft();
+      });
+      ui.batch.addEventListener("change", () =>
+        loadBatch(Number(ui.batch.value)),
+      );
+      ui.filter.addEventListener("change", () => {
+        renderQueue();
+        if (
+          !state.visibleItems.some((item) => item.item_id === state.selectedId)
+        ) {
+          const first = state.visibleItems[0];
+          if (first) selectItem(first.item_id);
+        }
+      });
+
+      document.addEventListener("keydown", (event) => {
+        const target = event.target;
+        const editing =
+          target instanceof HTMLInputElement ||
+          target instanceof HTMLTextAreaElement ||
+          target instanceof HTMLSelectElement;
+        if (editing || event.ctrlKey || event.metaKey || event.altKey) return;
+        if (event.code === "Space") {
+          event.preventDefault();
+          const player = document.querySelector("#audio-player");
+          if (player) player.paused ? player.play() : player.pause();
+        } else if (event.key.toLowerCase() === "a") decide("accepted");
+        else if (event.key.toLowerCase() === "r") decide("rejected");
+        else if (event.key.toLowerCase() === "d") decide("deferred");
+        else if (event.key.toLowerCase() === "j") move(1);
+        else if (event.key.toLowerCase() === "k") move(-1);
+      });
+
+      loadBatch(state.batch);
+    </script>
+  </body>
+</html>

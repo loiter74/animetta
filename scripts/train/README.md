@@ -4,6 +4,7 @@
 
 - `workspace.py`：校验清单、按来源冻结划分、生成 RVC 命令计划。
 - `prepare_data.py`：统一为 48 kHz 单声道 PCM WAV，并写入自动 QC 指标。
+- `review_data.py`：创建、托管、查询、整理并应用追加式人工听审 run；应用前不改主清单。
 - `materialize_dataset.py`：按 `split.csv` 物化训练集和固定验证集。
 - `cli.py`：带 GPU 证据门禁的 fail-fast RVC v2 + RMVPE runner。
 - `deploy.py`：生成包含模型/index 哈希的晋级候选，不直接改生产配置。
