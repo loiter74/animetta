@@ -209,3 +209,37 @@ class TestDanmakuBuffer:
         stats_after = b.get_stats()
         # Stats should still be valid
         assert stats_after["total_danmaku"] == 2
+
+    # ── Regression: eviction decrement must dedupe like the increment path ──
+
+    def test_eviction_decrement_is_dedup_symmetric(self):
+        """A phrase repeated k times in one message counts +1 on add (dedup),
+        so eviction must also decrement exactly -1, not -k."""
+        b = DanmakuBuffer(max_size=3)
+        for _ in range(3):
+            b.add("牛牛牛")  # "牛牛" occurs twice per message but counts +1
+
+        hot = {p.text: p.frequency for p in b.get_hot_phrases(min_freq=3)}
+        assert hot["牛牛"] == 3  # 3 messages × 1 unique occurrence each
+
+        b.add("其他消息呀")  # evicts one "牛牛牛"
+        hot = {p.text: p.frequency for p in b.get_hot_phrases(min_freq=2)}
+        # Two "牛牛牛" messages remain — count must be exactly 2.
+        # Buggy version subtracted per-occurrence (−2) leaving 1, deleting the hot phrase.
+        assert hot["牛牛"] == 2
+        assert hot["牛牛牛"] == 2
+
+    def test_phrase_counts_match_buffered_messages(self):
+        """After eviction, each phrase's count must equal the number of buffered
+        messages containing it (per unique message, not per occurrence)."""
+        b = DanmakuBuffer(max_size=4)
+        b.add("牛牛牛")
+        b.add("哈哈哈哈")
+        b.add("牛牛牛")
+        b.add("测试文本")
+        b.add("驱逐一条")  # evicts first "牛牛牛"; buffer keeps one "牛牛牛"
+
+        counter = b._phrase_counter
+        assert counter["牛牛"] == 1  # exactly one remaining message contains it
+        assert counter["哈哈"] == 1
+        assert counter["测试"] == 1

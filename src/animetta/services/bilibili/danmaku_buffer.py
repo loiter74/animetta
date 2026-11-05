@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import logging
 import time
-from collections import Counter
+from collections import Counter, deque
 
 from .models import DanmakuPhrase
 from .text_utils import STOPWORDS
@@ -44,8 +44,8 @@ class DanmakuBuffer:
             max_size: Maximum number of danmaku entries in the ring buffer.
         """
         self._max_size = max_size
-        self._buffer: list[str] = []  # ring buffer (list used as circular with trim)
-        self._timestamps: list[float] = []  # parallel timestamp list
+        self._buffer: deque[str] = deque()  # FIFO; manual evict keeps phrase counts in sync
+        self._timestamps: deque[float] = deque()  # parallel timestamp queue
         self._phrase_counter: Counter = Counter()  # phrase -> total count
         self._phrase_first_seen: dict[str, float] = {}  # phrase -> first timestamp
         self._phrase_last_seen: dict[str, float] = {}  # phrase -> last timestamp
@@ -72,10 +72,10 @@ class DanmakuBuffer:
         now = time.time()
         self._room_id = room_id or self._room_id
 
-        # Ring buffer: trim oldest when full
+        # Ring buffer: evict oldest when full (deque.popleft is O(1); list.pop(0) is O(n))
         if len(self._buffer) >= self._max_size:
-            oldest = self._buffer.pop(0)
-            self._timestamps.pop(0)
+            oldest = self._buffer.popleft()
+            self._timestamps.popleft()
             self._decrement_phrase(oldest)
 
         self._buffer.append(cleaned)
@@ -169,42 +169,47 @@ class DanmakuBuffer:
 
     # ── Internal helpers ────────────────────────────────────────────────
 
+    @staticmethod
+    def _extract_phrases(text: str) -> set[str]:
+        """Extract the set of unique 2-6 char n-gram phrases from text.
+
+        Deduplicates within one message and filters junk (whitespace-only,
+        digit-only, stopwords). Shared by the increment and decrement paths
+        so every message contributes exactly +1/-1 per unique phrase.
+        """
+        phrases: set[str] = set()
+        for n in range(2, min(7, len(text) + 1)):
+            for i in range(len(text) - n + 1):
+                phrase = text[i : i + n]
+                if not phrase.strip() or phrase.isdigit() or phrase in STOPWORDS:
+                    continue
+                phrases.add(phrase)
+        return phrases
+
     def _update_phrases(self, text: str, now: float) -> None:
         """Extract n-gram phrases from text and update frequency table.
 
         Uses simple character n-grams for Chinese text (2-6 chars).
         Filters out stopwords and pure punctuation/digit phrases.
         """
-        # Simple sliding window for Chinese text
-        chars = list(text)
-        ngram_set = set()
-        for n in range(2, min(7, len(chars) + 1)):
-            for i in range(len(chars) - n + 1):
-                phrase = "".join(chars[i : i + n])
-                # Filter junk: skip if all digits/punctuation/whitespace
-                if not phrase.strip():
-                    continue
-                if phrase.isdigit():
-                    continue
-                if phrase in STOPWORDS:
-                    continue
-                ngram_set.add(phrase)
-
-        for phrase in ngram_set:
+        for phrase in self._extract_phrases(text):
             self._phrase_counter[phrase] += 1
             if phrase not in self._phrase_first_seen:
                 self._phrase_first_seen[phrase] = now
             self._phrase_last_seen[phrase] = now
 
     def _decrement_phrase(self, text: str) -> None:
-        """Decrement frequency counts when a danmaku is evicted from the buffer."""
-        chars = list(text)
-        for n in range(2, min(7, len(chars) + 1)):
-            for i in range(len(chars) - n + 1):
-                phrase = "".join(chars[i : i + n])
-                if phrase in self._phrase_counter:
-                    self._phrase_counter[phrase] -= 1
-                    if self._phrase_counter[phrase] <= 0:
-                        del self._phrase_counter[phrase]
-                        self._phrase_first_seen.pop(phrase, None)
-                        self._phrase_last_seen.pop(phrase, None)
+        """Decrement frequency counts when a danmaku is evicted from the buffer.
+
+        Mirrors _update_phrases via the same deduplicated phrase set: one
+        decrement per unique phrase per message. Without the dedup, a message
+        like "哈哈哈哈哈" would subtract 4 from "哈哈" (four occurrences) while
+        it only ever added 1, corrupting hot-phrase counts toward zero.
+        """
+        for phrase in self._extract_phrases(text):
+            if phrase in self._phrase_counter:
+                self._phrase_counter[phrase] -= 1
+                if self._phrase_counter[phrase] <= 0:
+                    del self._phrase_counter[phrase]
+                    self._phrase_first_seen.pop(phrase, None)
+                    self._phrase_last_seen.pop(phrase, None)
