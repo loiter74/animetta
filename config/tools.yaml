@@ -92,6 +92,8 @@ minecraft:
     request_timeout_seconds: 60
     event_poll_seconds: 0.5
     auth_token_env: "MC_MCP_AUTH_TOKEN"
+  perception:
+    enabled: true               # 双感知安全监控：观众窗口画面 + 本地 Ollama 视觉模型
 
 # ========================================
 # 工具调用设置
