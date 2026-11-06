@@ -3,6 +3,7 @@ Minecraft configuration models
 """
 
 import os
+import re
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -36,6 +37,39 @@ class MinecraftMcpConfig(BaseModel):
 
 
 MinecraftPresentationMode = Literal["off", "visual_only", "full"]
+
+
+class MinecraftPerceptionConfig(BaseModel):
+    """Dual-perception safety monitoring over the spectator viewer window."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    enabled: bool = False
+    window_title_pattern: str = "(?i)minecraft"
+    ollama_base_url: str = "http://127.0.0.1:11434"
+    vision_model: str = "qwen2.5vl:7b"
+    vision_max_edge: int = Field(default=896, ge=256, le=1920)
+    request_timeout_seconds: float = Field(default=12, gt=0, le=60)
+    monitor_interval_seconds: float = Field(default=20, gt=1, le=600)
+    health_critical: int = Field(default=6, ge=0, le=20)
+    health_warning: int = Field(default=12, ge=0, le=20)
+    food_critical: int = Field(default=2, ge=0, le=20)
+    hostile_warning_blocks: float = Field(default=8, gt=0, le=64)
+    hostile_critical_blocks: float = Field(default=3.5, gt=0, le=64)
+    creeper_critical_blocks: float = Field(default=6, gt=0, le=64)
+    hazard_warning_blocks: float = Field(default=6, gt=0, le=32)
+    hazard_critical_blocks: float = Field(default=3, gt=0, le=32)
+    stuck_radius: float = Field(default=1.5, gt=0, le=16)
+    stuck_minimum_samples: int = Field(default=4, ge=2, le=16)
+
+    @field_validator("window_title_pattern")
+    @classmethod
+    def validate_window_title_pattern(cls, value: str) -> str:
+        try:
+            re.compile(value)
+        except re.error as exc:
+            raise ValueError(f"window_title_pattern must be a valid regex: {exc}") from exc
+        return value
 
 
 class MinecraftPresentationConfig(BaseModel):
@@ -73,6 +107,7 @@ class MinecraftConfig(BaseModel):
     safety: MinecraftSafetyConfig = Field(default_factory=MinecraftSafetyConfig)
     mcp: MinecraftMcpConfig = Field(default_factory=MinecraftMcpConfig)
     presentation: MinecraftPresentationConfig = Field(default_factory=MinecraftPresentationConfig)
+    perception: MinecraftPerceptionConfig = Field(default_factory=MinecraftPerceptionConfig)
 
     @model_validator(mode="before")
     @classmethod

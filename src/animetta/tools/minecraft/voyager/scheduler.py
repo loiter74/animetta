@@ -36,7 +36,7 @@ class VoyagerCommandScheduler:
         self,
         *,
         repository: CommandJournal,
-        consumer: Callable[[JournalCommand], Awaitable[None]],
+        consumer: Callable[[JournalCommand], Awaitable[dict | None]],
         now_ms: Callable[[], int],
         poll_interval: float = 0.05,
         on_command_changed: Callable[[str], Awaitable[None]] | None = None,
@@ -78,8 +78,9 @@ class VoyagerCommandScheduler:
             except StaleCommandVersionError:
                 return False
             await self._notify(running.command_id)
+            completion_result: dict | None = None
             try:
-                await self._consumer(running)
+                completion_result = await self._consumer(running)
             except CommandExecutionError as exc:
                 current = running
                 if exc.requires_reconciliation:
@@ -123,6 +124,7 @@ class VoyagerCommandScheduler:
                 reason_code="VERIFIED",
                 actor="controller",
                 occurred_at_ms=self._now_ms(),
+                terminal_result=completion_result,
             )
             await self._notify(running.command_id)
             return True

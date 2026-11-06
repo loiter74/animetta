@@ -41,7 +41,7 @@ _REPOSITORY_CLI_BRIDGE_PATH = "src/animetta/tools/minecraft/core/bridge.py"
 _MC_MCP_SERVICE_PATH = "services/mc-mcp"
 _MC_MCP_PACKAGE_PATH = f"{_MC_MCP_SERVICE_PATH}/package.json"
 _MC_MCP_CONTRACT_COPY_PATH = f"{_MC_MCP_SERVICE_PATH}/contracts/gamebot/v2"
-_DOMAIN_PATH_PARTS = frozenset({"discovery", "skill", "survival", "tech_tree"})
+_DOMAIN_PATH_PARTS = frozenset({"discovery", "perception", "skill", "survival", "tech_tree"})
 _FORBIDDEN_DOMAIN_IMPORTS = (
     "animetta.tools.minecraft.core.adapter",
     "animetta.tools.minecraft.core.bridge",

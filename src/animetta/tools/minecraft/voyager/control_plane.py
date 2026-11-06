@@ -4,13 +4,16 @@ from __future__ import annotations
 
 import contextlib
 import json
+from collections import deque
 from collections.abc import Awaitable, Callable
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pydantic import TypeAdapter
 
 from animetta.tools.gamebot.contracts.v2 import (
+    ActionReceipt,
     CancellationRequest,
+    Observation,
     ObservationRequest,
 )
 from animetta.tools.gamebot.runtime import GameBotRuntimeV2
@@ -27,6 +30,9 @@ from .reconciliation import RecoveryDecision
 from .scheduler import CommandExecutionError
 from .strategies.atomic import AtomicStrategy
 from .strategies.base import Complete, ExecuteStep, StrategyFailure
+
+if TYPE_CHECKING:
+    from ..perception.service import DualPerceptionService
 
 
 def execution_budget_from_json(value: dict[str, object]) -> ExecutionBudget:
@@ -89,6 +95,8 @@ class UnifiedVoyagerController:
         now_ms: Callable[[], int],
         initial_state: ControllerState = ControllerState.IDLE,
         activity_recorder: PublicActivityRecorder | None = None,
+        perception: DualPerceptionService | None = None,
+        perception_interval_ms: int = 20_000,
     ) -> None:
         self._runtime = runtime
         self._repository = repository
@@ -101,6 +109,8 @@ class UnifiedVoyagerController:
         self._make_id = make_id
         self._now_ms = now_ms
         self._activity_recorder = activity_recorder
+        self._perception = perception
+        self._perception_interval_ms = max(1_000, perception_interval_ms)
         self.state = initial_state
         self.active_command_id: str | None = None
         self._active_correlation_id: str | None = None
@@ -110,13 +120,13 @@ class UnifiedVoyagerController:
         if command_id == self.active_command_id:
             self._active_correlation_id = correlation_id
 
-    async def execute_command(self, command: JournalCommand) -> None:
+    async def execute_command(self, command: JournalCommand) -> dict[str, Any] | None:
         if self.state is ControllerState.QUARANTINED:
             raise RuntimeError("CONTROLLER_QUARANTINED")
         self.state = ControllerState.RUNNING
         self.active_command_id = command.command_id
         try:
-            await self._execute_active(command)
+            completion_result = await self._execute_active(command)
         except ExecutorError as exc:
             if not exc.error.outcome_known:
                 self.state = ControllerState.RECONCILING
@@ -200,8 +210,9 @@ class UnifiedVoyagerController:
                 self.state = ControllerState.IDLE
             self.active_command_id = None
             self._active_correlation_id = None
+        return completion_result
 
-    async def _execute_active(self, command: JournalCommand) -> None:
+    async def _execute_active(self, command: JournalCommand) -> dict[str, Any] | None:
         manifest = await self._runtime.get_manifest()
         payload = command.payload
         execution_policy = payload.get("execution_policy", {})
@@ -240,11 +251,85 @@ class UnifiedVoyagerController:
                 phase="observing",
             )
         initial = observation
-        receipts = []
+        receipts: list[ActionReceipt] = []
         previous_hash = ""
         ordinal = 0
+        perception_history: deque[Observation] = deque(maxlen=8)
+        perception_history.append(observation)
+        perception_alerts: list[dict[str, Any]] = []
+        perception_enabled = self._perception is not None and command.mode != "atomic"
+        perception_next_ms: int | None = 0 if perception_enabled else None
         try:
             while True:
+                if (
+                    perception_enabled
+                    and perception_next_ms is not None
+                    and self._now_ms() >= perception_next_ms
+                ):
+                    perception_next_ms = self._now_ms() + self._perception_interval_ms
+                    try:
+                        consensus = await self._perception.monitor(  # type: ignore[union-attr]
+                            observation,
+                            tuple(perception_history),
+                            goal=goal,
+                        )
+                    except Exception:
+                        consensus = None
+                    if consensus is not None:
+                        if consensus.action == "halt":
+                            if self._activity_recorder is not None:
+                                with contextlib.suppress(Exception):
+                                    await self._activity_recorder.record_command(
+                                        command,
+                                        source_key=(
+                                            f"{command.command_id}:perception-halt:"
+                                            f"{consensus.checked_at_ms}"
+                                        ),
+                                        phase="checking",
+                                        outcome="failed",
+                                    )
+                            consensus_dump = consensus.model_dump(mode="json")
+                            alerts_payload: dict[str, Any] = (
+                                {"perception_alerts": perception_alerts}
+                                if perception_alerts
+                                else {}
+                            )
+                            error = ControlPlaneError(
+                                code="PERCEPTION_SAFETY_HALT",
+                                message=consensus.headline,
+                                phase="safety_monitor",
+                                outcome_known=True,
+                                world_may_have_changed=False,
+                                caller_may_resubmit=False,
+                                operator_action="review dual-perception evidence and surroundings",
+                                details={"perception": consensus_dump, **alerts_payload},
+                            )
+                            terminal_result = CommandResult(
+                                command_id=command.command_id,
+                                state=CommandState.FAILED,
+                                output={"perception_consensus": consensus_dump, **alerts_payload},
+                                receipt_ids=tuple(receipt.receipt_id for receipt in receipts),
+                                error=error,
+                            ).model_dump(mode="json")
+                            raise CommandExecutionError(
+                                terminal_state=CommandState.FAILED,
+                                reason_code="PERCEPTION_SAFETY_HALT",
+                                message=consensus.headline,
+                                details=error.details,
+                                terminal_result=terminal_result,
+                            )
+                        if consensus.action == "alert":
+                            perception_alerts.append(consensus.model_dump(mode="json"))
+                            if self._activity_recorder is not None:
+                                with contextlib.suppress(Exception):
+                                    await self._activity_recorder.record_command(
+                                        command,
+                                        source_key=(
+                                            f"{command.command_id}:perception-alert:"
+                                            f"{consensus.checked_at_ms}"
+                                        ),
+                                        phase="checking",
+                                    )
                 state["budget_remaining"] = account.remaining
                 decision = strategy.propose(state, observation)
                 if isinstance(decision, StrategyFailure):
@@ -301,13 +386,46 @@ class UnifiedVoyagerController:
                                 details=error.details,
                                 terminal_result=terminal_result,
                             )
+                    completion_output: dict[str, Any] | None = None
+                    if perception_enabled:
+                        try:
+                            consensus = await self._perception.verify_completion(  # type: ignore[union-attr]
+                                observation,
+                                goal=goal,
+                            )
+                        except Exception:
+                            consensus = None
+                        if consensus is not None:
+                            if self._activity_recorder is not None:
+                                with contextlib.suppress(Exception):
+                                    await self._activity_recorder.record_command(
+                                        command,
+                                        source_key=(
+                                            f"{command.command_id}:perception-verify:"
+                                            f"{consensus.checked_at_ms}"
+                                        ),
+                                        phase="checking",
+                                        outcome=(
+                                            "succeeded"
+                                            if consensus.action == "continue"
+                                            else "failed"
+                                        ),
+                                    )
+                            completion_output = {
+                                "perception_consensus": consensus.model_dump(mode="json"),
+                                **(
+                                    {"perception_alerts": perception_alerts}
+                                    if perception_alerts
+                                    else {}
+                                ),
+                            }
                     if self._on_strategy_complete is not None:
                         await self._on_strategy_complete(
                             command=command,
                             manifest=manifest,
                             output=decision.output,
                         )
-                    return
+                    return completion_output
                 if not isinstance(decision, ExecuteStep):
                     raise RuntimeError("INVALID_STRATEGY_DECISION")
                 ordinal += 1
@@ -397,9 +515,11 @@ class UnifiedVoyagerController:
                         )
                     state = recovered_state
                     observation = result.after
+                    perception_history.append(observation)
                     continue
                 account = result.account
                 observation = result.after
+                perception_history.append(observation)
                 receipts.append(result.receipt)
                 previous_hash = result.receipt.content_hash
                 state = strategy.accept_result(

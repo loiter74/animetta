@@ -681,6 +681,7 @@ groups:
       - tests/tools/minecraft/skill
       - tests/tools/minecraft/survival
       - tests/tools/minecraft/tech_tree
+      - tests/tools/minecraft/perception
     args: *daily-pytest
     timeout_seconds: 300
     cacheable: true
@@ -1327,6 +1328,21 @@ components:
       - tests/tools/minecraft/skill/**
       - tests/tools/minecraft/survival/**
       - tests/tools/minecraft/tech_tree/**
+    direct_groups:
+      - minecraft-domain-unit
+      - minecraft-architecture-audit
+      - python-format
+      - backend-static
+      - backend-typecheck
+      - backend-deadcode
+    impacts: [minecraft-voyager-control-plane]
+    risk: high
+
+  minecraft-perception-domain:
+    domain: backend
+    paths:
+      - src/animetta/tools/minecraft/perception/**
+      - tests/tools/minecraft/perception/**
     direct_groups:
       - minecraft-domain-unit
       - minecraft-architecture-audit

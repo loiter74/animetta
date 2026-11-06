@@ -30,6 +30,7 @@ from animetta.tools.minecraft.mission.events import ProjectionEventPublisher
 from animetta.tools.minecraft.mission.projection import MissionProjectionService
 from animetta.tools.minecraft.mission.repository import SQLiteMissionRepository
 from animetta.tools.minecraft.mission.runtime import AdaptiveMissionRuntime
+from animetta.tools.minecraft.perception.service import build_default_service
 from animetta.tools.minecraft.skill.applicability import applicability_for_goal
 from animetta.tools.minecraft.skill.independent_validation import (
     IndependentValidationEvidence,
@@ -691,6 +692,7 @@ async def assemble_control_plane(
                     }
                 )
 
+    perception_service = build_default_service(config.perception)
     controller = UnifiedVoyagerController(
         runtime=adapter,
         repository=repository,
@@ -707,6 +709,8 @@ async def assemble_control_plane(
         on_strategy_complete=persist_strategy_completion,
         on_strategy_failed=persist_strategy_failure,
         activity_recorder=activity_recorder,
+        perception=perception_service,
+        perception_interval_ms=int(config.perception.monitor_interval_seconds * 1000),
         initial_state=(
             ControllerState.QUARANTINED if startup_recovery.quarantined else ControllerState.IDLE
         ),
