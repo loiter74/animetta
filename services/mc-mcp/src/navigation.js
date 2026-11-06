@@ -18,12 +18,47 @@ export function isolatePathfinderGeometry() {
     const result = original.apply(this, args);
     // SDK centering changes coordinates in place. Its consumed work queues
     // remain shared so later slices do not repeat completed digs or placements.
-    return { ...result, path: result.path.map(move => Object.assign(
-      Object.create(Object.getPrototypeOf(move)), move,
-    )) };
+    // reconstructPath omits the root, so recover the start move from the node
+    // chain to give the first path move a predecessor for corner completion.
+    let root = args[1];
+    while (root?.parent) root = root.parent;
+    const startMove = root?.data ?? null;
+    const path = result.path.map((move, index) => {
+      const clone = Object.assign(Object.create(Object.getPrototypeOf(move)), move);
+      completeDiagonalAscentCorners(this, index > 0 ? result.path[index - 1] : startMove, clone);
+      return clone;
+    });
+    return { ...result, path };
   };
   Object.defineProperty(isolated, GEOMETRY_VIEW, { value: true });
   AStar.prototype.makeResult = isolated;
+}
+
+// mineflayer-pathfinder validates only the cheaper orthogonal column when it
+// emits a diagonal jump-up move (getMoveDiagonal keeps one of two approach
+// columns and leaves the other untouched). The native executor beelines
+// toward the landing point and cannot slide around a solid corner column, so
+// such a move stalls in a stuck/reset loop until the segment deadline kills
+// the action (first observed as the r110 water-return ascent failure). Mirror
+// the losing column's dig targets so the native dig pipeline clears the
+// corner before the beeline; flat diagonals, already planned digs and
+// dig-forbidden movement sets keep their existing behavior.
+function completeDiagonalAscentCorners(astar, previous, move) {
+  const movements = astar.movements;
+  const bot = movements?.bot;
+  if (!previous || !bot || movements.canDig === false) return;
+  if (!Array.isArray(move.toBreak) || move.toBreak.length > 0) return;
+  const dx = move.x - previous.x;
+  const dz = move.z - previous.z;
+  if (move.y - previous.y !== 1 || Math.abs(dx) !== 1 || Math.abs(dz) !== 1) return;
+  const corners = [];
+  for (const [x, z] of [[previous.x + dx, previous.z], [previous.x, previous.z + dz]]) {
+    for (const dy of [1, 2]) {
+      const position = new Vec3(x, previous.y + dy, z);
+      if (bot.blockAt(position)?.boundingBox === 'block') corners.push(position);
+    }
+  }
+  if (corners.length > 0) move.toBreak = corners;
 }
 
 export function* iteratePathSearch(bot, movements, goal) {

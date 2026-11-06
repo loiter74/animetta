@@ -73,6 +73,99 @@ test('geometry isolation preserves consumed native work queues across later path
   assert.deepEqual(next.path[0].toPlace,[],'already consumed placement must not reappear');
 });
 
+function pocketMovementFixture(air) {
+  const registry = minecraftData('1.21.1');
+  const Block = prismarineBlock(registry);
+  const bot = { registry, inventory: { items: () => [] }, entities: {}, game: { minY: -64 },
+    pathfinder: { bestHarvestTool: () => null },
+    entity: { position: new Vec3(2.5, 52, 8.5), effects: {} },
+    blockAt(position) {
+      const p = position.floored();
+      if (p.x < 0 || p.x > 5 || p.z < 5 || p.z > 12 || p.y < 50 || p.y > 57) return null;
+      const name = air.has(`${p.x},${p.y},${p.z}`) ? 'air' : p.y === 51 && p.x === 2 && p.z === 8
+        ? 'cobblestone' : 'stone';
+      const block = Block.fromStateId(registry.blocksByName[name].defaultState, 0);
+      block.position = p;
+      return block;
+    },
+  };
+  return new pathfinderPackage.Movements(bot);
+}
+
+// The r110 water-return failure geometry: standing at (2,52,8) the planner
+// emits the cheap diagonal jump-up onto (1,53,9) with an empty dig queue even
+// though the x-axis corner column (1,53,8)/(1,54,8) is solid stone; the
+// executor beelines into that corner and stalls until the deadline.
+function r110PocketAir() {
+  return new Set([
+    '3,51,7', '3,51,8', '2,51,9',
+    '2,52,8', '2,52,9', '3,52,8',
+    '1,53,9', '2,53,8', '2,53,9',
+    '1,54,9', '2,54,8', '2,54,9',
+    '1,55,9',
+  ]);
+}
+
+function diagonalResult(movements, landing) {
+  const start = new Move(2, 52, 8, 0, 0);
+  const search = new AStar(start, movements, { heuristic: () => 0 }, 5000);
+  // Parent directly on the start node: reconstructPath omits the root, so the
+  // path is the single landing move and the patch recovers `start` as the
+  // predecessor from the node chain (r110: diagonal ascent from the stance).
+  const move = new Move(landing.x, landing.y, landing.z, 0, 2.5);
+  return search.makeResult('partial', { data: move, parent: search.bestNode, g: 2.5 });
+}
+
+test('diagonal ascent inherits dig targets for the unvalidated solid corner column', () => {
+  nativeGridFixture();
+  const result = diagonalResult(pocketMovementFixture(r110PocketAir()), { x: 1, y: 53, z: 9 });
+  const [move] = result.path;
+  assert.deepEqual(move.toBreak, [new Vec3(1, 53, 8), new Vec3(1, 54, 8)],
+    'the r110 corner column must be queued for digging before the beeline');
+});
+
+test('diagonal ascent keeps its empty dig queue when both corner columns are clear', () => {
+  nativeGridFixture();
+  const air = r110PocketAir();
+  air.add('1,53,8'); air.add('1,54,8');
+  const result = diagonalResult(pocketMovementFixture(air), { x: 1, y: 53, z: 9 });
+  assert.deepEqual(result.path[0].toBreak, [], 'clear corners must not add work');
+});
+
+test('flat diagonals and dig-forbidden movement sets stay untouched', () => {
+  nativeGridFixture();
+  const air = r110PocketAir();
+  air.delete('1,53,9'); air.add('1,52,9'); air.add('3,52,9');
+  const flat = diagonalResult(pocketMovementFixture(air), { x: 3, y: 52, z: 9 });
+  assert.deepEqual(flat.path[0].toBreak, [], 'flat diagonal moves keep their own semantics');
+  const dry = pocketMovementFixture(r110PocketAir());
+  dry.canDig = false;
+  const forbidden = diagonalResult(dry, { x: 1, y: 53, z: 9 });
+  assert.deepEqual(forbidden.path[0].toBreak, [], 'dig-forbidden movement sets gain no work');
+});
+
+test('a real pocket search never returns an uncleared diagonal ascent', () => {
+  nativeGridFixture();
+  const movements = pocketMovementFixture(r110PocketAir());
+  movements.allow1by1towers = false;
+  const result = new AStar(new Move(2, 52, 8, 0, 0), movements,
+    new pathfinderPackage.goals.GoalY(56), 1000, 1000).compute();
+  assert.equal(result.status, 'success');
+  for (const [index, node] of result.path.entries()) {
+    const previous = index ? result.path[index - 1] : { x: 2, y: 52, z: 8 };
+    const dx = node.x - previous.x, dz = node.z - previous.z;
+    if (node.y - previous.y !== 1 || Math.abs(dx) !== 1 || Math.abs(dz) !== 1) continue;
+    for (const [x, z] of [[previous.x + dx, previous.z], [previous.x, previous.z + dz]]) {
+      for (const dy of [1, 2]) {
+        const solid = result.context.movements.bot.blockAt(new Vec3(x, previous.y + dy, z))
+          ?.boundingBox === 'block';
+        assert.ok(!solid || node.toBreak.some(p => p.x === x && p.y === previous.y + dy && p.z === z),
+          `diagonal ascent to (${node.x},${node.y},${node.z}) must dig solid corner (${x},${previous.y + dy},${z}) first`);
+      }
+    }
+  }
+});
+
 for(const [name,code] of [['Timeout','SEARCH_TIMEOUT'],['NoPath','NAVIGATION_TARGET_NOT_REACHED']]) {
   test(`known native ${name} retains a specific navigation failure code`,async()=>{
     const {bot}=fixture(64),error=Object.assign(new Error('native path search ended'),{name});
