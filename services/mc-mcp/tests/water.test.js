@@ -900,3 +900,128 @@ test('failed pickup paths never enable forward or sprint and restore movements',
   assert.equal(result.path_failures, 2);
   assert.equal(bot.pathfinder.movements, original);
 });
+
+// The R109 pond regression: the vanilla server clips item use against
+// decorative plants (shoreline short_grass) that expose no collision shape to
+// the SDK raycast, so doomed stances reached the bucket activation. The
+// emulated server below intersects the sight line analytically against plant
+// boxes (probe-measured effective height 0.72), every source fluid surface
+// (scooping any pond source along the line fills the bucket), and lets
+// zero-width corner grazes pass — matching live-server semantics verified by
+// probe: fills failed only when the line crossed a plant cell below
+// plant-relative height 0.75.
+const POND_SOURCE = new Vec3(41, 62, 31);
+const POND_WATER = new Set(['41,62,30', '42,62,30', '42,62,31', '43,62,29', '43,62,30', '43,62,31', '43,62,32', '41,62,32', '42,62,32']);
+const R109_STANCE = new Vec3(38.5, 63, 30.4677);
+
+function firstSegmentBoxHit(eye, delta, boxes) {
+  let best = null;
+  const origin = [eye.x, eye.y, eye.z];
+  const direction = [delta.x, delta.y, delta.z];
+  for (const box of boxes) {
+    let enter = 0, exit = 1, hit = true;
+    for (let axis = 0; axis < 3; axis++) {
+      if (Math.abs(direction[axis]) < 1e-12) {
+        if (origin[axis] < box.min[axis] || origin[axis] > box.max[axis]) { hit = false; break; }
+        continue;
+      }
+      let near = (box.min[axis] - origin[axis]) / direction[axis];
+      let far = (box.max[axis] - origin[axis]) / direction[axis];
+      if (near > far) [near, far] = [far, near];
+      enter = Math.max(enter, near);
+      exit = Math.min(exit, far);
+      if (enter > exit) { hit = false; break; }
+    }
+    if (hit && exit - enter > 1e-9 && (!best || enter < best.enter)) best = { enter, box };
+  }
+  return best;
+}
+
+function pondR109Fixture({ plants = ['40,63,31', '39,63,30', '41,63,30'],
+  support = ['38,62,30', '40,62,31', '40,62,29', '41,62,29', '42,62,29', '39,62,29'], filler62 = 'stone' } = {}) {
+  const bot = waterBot();
+  bot.registry = minecraftData('1.21.1');
+  bot.game = { minY: -64, height: 384 };
+  bot.entity.position = R109_STANCE.clone();
+  const Block = blockLoader(bot.registry);
+  const plantCells = new Set(plants);
+  const supportCells = new Set(support);
+  const blockFor = (point) => {
+    const key = `${point.x},${point.y},${point.z}`;
+    const name = point.equals(POND_SOURCE) || POND_WATER.has(key) ? 'water'
+      : supportCells.has(key) ? 'grass_block'
+        : plantCells.has(key) ? 'short_grass'
+          : point.y < 62 ? 'stone' : point.y === 62 ? filler62 : 'air';
+    const block = Block.fromStateId(bot.registry.blocksByName[name].defaultState, 0);
+    block.position = point;
+    return block;
+  };
+  bot.world = new WorldSync(null);
+  bot.world.getBlock = point => blockFor(point.floored());
+  bot.blockAt = point => blockFor(point.floored());
+  bot.findBlocks = () => [POND_SOURCE.clone()];
+  let target, activations = 0;
+  bot.lookAt = async point => { target = point.clone(); completeWaterLook(bot, point); };
+  bot.activateItem = () => {
+    activations++;
+    const eye = bot.entity.position.offset(0, 1.62, 0);
+    const delta = target.minus(eye);
+    const boxes = [...plantCells].map(key => {
+      const [x, y, z] = key.split(',').map(Number);
+      return { min: [x, y, z], max: [x + 1, y + 0.72, z + 1], plant: true };
+    });
+    boxes.push({ min: [POND_SOURCE.x, POND_SOURCE.y, POND_SOURCE.z],
+      max: [POND_SOURCE.x + 1, POND_SOURCE.y + 8 / 9, POND_SOURCE.z + 1] });
+    const hit = firstSegmentBoxHit(eye, delta, boxes);
+    if (hit && !hit.box.plant) bot.items = [{ name: 'water_bucket', count: 1 }];
+  };
+  const goals = [];
+  const original = {};
+  bot.pathfinder = {
+    movements: original, setMovements(value) { this.movements = value; }, stop() {},
+    getPathFromTo: directWaterPath,
+    async goto(goal) {
+      goals.push(new Vec3(goal.x, goal.y, goal.z));
+      assert.equal(isSafeStandingPosition(bot, new Vec3(goal.x, goal.y, goal.z)), true);
+      bot.entity.position = new Vec3(goal.x + 0.5, goal.y, goal.z + 0.5);
+    },
+  };
+  return { bot, goals, activations: () => activations };
+}
+
+test('water fill abandons the R109 grass-blocked stance for a clear shore cell', async () => {
+  const { bot, goals, activations } = pondR109Fixture();
+  const result = await fillWaterBucket(bot, {}, { wait: async () => {} });
+  assert.equal(result.output.filled, true);
+  assert.deepEqual(result.output.source, POND_SOURCE);
+  assert.equal(activations(), 1);
+  assert.equal(goals.length, 1);
+  assert.deepEqual(goals[0], new Vec3(39, 63, 29), 'the nearest live-verified clear shore cell must be used');
+});
+
+test('a sight line grazing decorative grass inside the conservative band still fills from a clear cell', async () => {
+  const { bot, goals, activations } = pondR109Fixture({ plants: ['39,63,30'] });
+  const result = await fillWaterBucket(bot, {}, { wait: async () => {} });
+  assert.equal(result.output.filled, true);
+  assert.equal(activations(), 1);
+  assert.equal(goals.length, 1);
+  // The R109 stance's line dips to plant-relative height 0.7494 — above the
+  // probe-measured plant height 0.72 but inside the conservative 0.75 band,
+  // so the stance is rejected; the nearest clear option is the grass cell
+  // itself (eye above the plant, line through air only), which still fills.
+  assert.deepEqual(goals[0], new Vec3(39, 63, 30));
+  assert.deepEqual(bot.entity.position.floored(), new Vec3(39, 63, 30));
+});
+
+test('a pond whose every stance is grass-blocked fails honestly without bucket use', async () => {
+  const fixture = pondR109Fixture({
+    plants: ['40,63,31', '39,63,30', '41,63,30', '41,63,31'],
+    support: ['38,62,30', '40,62,31'], filler62: 'water',
+  });
+  fixture.bot.pathfinder.getPathFromTo = () => assert.fail('no stance may reach planning');
+  fixture.bot.pathfinder.goto = () => assert.fail('no stance may be navigated to');
+  fixture.bot.activateItem = () => assert.fail('the bucket must never be used');
+  await assert.rejects(fillWaterBucket(fixture.bot, {}, { wait: async () => {} }),
+    error => error.code === 'WATER_TARGET_UNREACHABLE'
+      && error.message === '有限次水源检查没有找到安全岸边站位。');
+});

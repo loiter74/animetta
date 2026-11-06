@@ -91,6 +91,49 @@ async function aimWaterItem(bot, target, confirmation) {
   }
 }
 
+// Vanilla 1.21 also clips item use against decorative plants (shoreline
+// short_grass, lily pads) even though the SDK exposes no collision shape for
+// them, leaving the raycast below structurally blind to doomed sight lines
+// (probe-verified on a live server: bucket fills failed whenever the line
+// crossed such a cell below plant-relative height 0.75 and succeeded at or
+// above it). Walk the exact cells the sight line passes through and require
+// that clearance in every non-air, non-water cell; water cells are skipped
+// because scooping any source along the line still fills the bucket, and
+// zero-width corner grazes are skipped because the live server lets them
+// pass (boundary-touch semantics, also probe-verified).
+const DECORATIVE_CLEARANCE = 0.75;
+
+function hasDecorativeClearance(bot, eye, delta, targetCell) {
+  const distance = delta.norm();
+  if (distance === 0) return true;
+  const direction = delta.scaled(1 / distance);
+  // Collect every parameter where the line crosses an integer grid plane;
+  // between consecutive crossings the line stays inside one cell.
+  const cuts = [0, distance];
+  for (const axis of ['x', 'y', 'z']) {
+    if (Math.abs(direction[axis]) < 1e-12) continue;
+    const near = Math.min(eye[axis], eye[axis] + direction[axis] * distance);
+    const far = Math.max(eye[axis], eye[axis] + direction[axis] * distance);
+    for (let bound = Math.floor(near); bound <= Math.floor(far); bound++) {
+      const cut = (bound - eye[axis]) / direction[axis];
+      if (cut > 0 && cut < distance) cuts.push(cut);
+    }
+  }
+  cuts.sort((a, b) => a - b);
+  for (let index = 0; index + 1 < cuts.length; index++) {
+    const enter = cuts[index];
+    const exit = cuts[index + 1];
+    if (exit - enter < 1e-9) continue;
+    const cell = eye.plus(direction.scaled((enter + exit) / 2)).floored();
+    if (cell.equals(targetCell)) continue;
+    const block = bot.blockAt(cell);
+    if (!block || block.name === 'air' || isWaterBlock(block)) continue;
+    const low = Math.min(eye.y + direction.y * enter, eye.y + direction.y * exit);
+    if (low - cell.y < DECORATIVE_CLEARANCE) return false;
+  }
+  return true;
+}
+
 function canInteractFrom(bot, position, interactionTarget, feet, expectedFace) {
   const target = interactionTarget ?? position.offset(0.5, 0.5, 0.5);
   const eye = feet.offset(0, 1.62, 0);
@@ -98,8 +141,9 @@ function canInteractFrom(bot, position, interactionTarget, feet, expectedFace) {
   if (delta.norm() > 4.25) return false;
   if (!interactionTarget) return true;
   const hit = bot.world.raycast(eye, delta.scaled(1 / delta.norm()), delta.norm());
-  return hit ? hit.position.equals(position) && (expectedFace === undefined || hit.face === expectedFace)
+  const visible = hit ? hit.position.equals(position) && (expectedFace === undefined || hit.face === expectedFace)
     : expectedFace === undefined;
+  return visible && hasDecorativeClearance(bot, eye, delta, position);
 }
 
 function standingCandidates(bot, position, interactionTarget, expectedFace) {
