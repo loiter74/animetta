@@ -504,7 +504,15 @@ async def assemble_control_plane(
                         )
                         await mission_events.publish_mission(projection)
                     return
-        mission_advance = await mission_coordinator.on_child_transition(child_transition)
+        try:
+            mission_advance = await mission_coordinator.on_child_transition(child_transition)
+        except Exception as error:
+            logger.warning(
+                "mission child transition failed for command {}: {}",
+                command_id,
+                repr(error),
+            )
+            return
         advanced_mission_commands.add(command_id)
         if (
             adaptive_runtime is not None

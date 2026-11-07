@@ -768,3 +768,109 @@ async def test_on_child_transition_is_idempotent_when_rebalance_chain_already_fa
     assert result.mission_status is MissionStatus.FAILED
     final = await repository2.snapshot(spec2.mission_id)
     assert final.mission.status is MissionStatus.FAILED
+
+
+async def test_rebalanced_retry_success_completes_objective_and_advances() -> None:
+    """r127 regression: after a rebalance retry SUCCEEDS, on_child_transition must
+    settle the rebalance reservation, complete the objective, and advance to the
+    next objective — the r127 run stranded the mission in running because the
+    rebalance reservation id was invisible to the standard settle lookup."""
+    coordinator_module, _, _ = _rebalance_modules()
+    from animetta.tools.minecraft.mission.repository import InMemoryMissionRepository, MissionStatus
+    from animetta.tools.minecraft.voyager.command_models import CommandState
+    from animetta.tools.minecraft.voyager.journal import InMemoryCommandJournal
+
+    repository = InMemoryMissionRepository()
+    journal = InMemoryCommandJournal()
+    await repository.connect()
+    coordinator = coordinator_module.MissionCoordinator(repository=repository, journal=journal)
+    spec, submitted = await _submit_mission(
+        coordinator, repository, journal, _rebalance_mission_payload()
+    )
+
+    await _fail_command(journal, submitted.eligible_command_id, 1_100)
+    observation_digest, vision_digest = _digests()
+    outcome = await coordinator.request_rebalance(
+        coordinator_module.VerifiedChildTransition(
+            mission_id=spec.mission_id,
+            objective_id="fight-zombie",
+            command_id=submitted.eligible_command_id,
+            command_state="failed",
+            verification="failed",
+            evidence_refs=("receipt:" + _hex64("content"),),
+            actual_budget=BudgetUsage(max_actions=2, max_travel_distance=32.0),
+            occurred_at_ms=1_200,
+        ),
+        planner=_ScriptedPlanner(
+            RebalanceProposal(
+                rationale="重试包络：吸收已花费后仍可负担。",
+                new_budget=BudgetUsage(
+                    max_actions=4,
+                    max_strategy_attempts=2,
+                    max_travel_distance=64.0,
+                    max_blocks_changed=0,
+                    max_damage_taken=2.0,
+                ),
+            )
+        ),
+        observation_digest=observation_digest,
+        vision_digest=vision_digest,
+        terminal_receipt=_budget_exhausted_receipt(command_id=submitted.eligible_command_id),
+    )
+    assert outcome == "rebalanced"
+    snapshot = await repository.snapshot(spec.mission_id)
+    fight = next(
+        item for item in snapshot.objectives if item.objective.objective_id == "fight-zombie"
+    )
+    retry_command_id = f"mission-{spec.mission_id}-fight-zombie-v{fight.version}"
+
+    # The retry command runs and succeeds.
+    queued = await journal.get_command(retry_command_id)
+    assert queued is not None
+    running = await journal.transition(
+        retry_command_id,
+        expected_version=queued.state_version,
+        target=CommandState.RUNNING,
+        reason_code="WORKER_CLAIMED",
+        actor="worker",
+        occurred_at_ms=1_300,
+    )
+    await journal.transition(
+        retry_command_id,
+        expected_version=running.state_version,
+        target=CommandState.SUCCEEDED,
+        reason_code="VERIFIED",
+        actor="worker",
+        occurred_at_ms=1_400,
+    )
+
+    result = await coordinator.on_child_transition(
+        coordinator_module.VerifiedChildTransition(
+            mission_id=spec.mission_id,
+            objective_id="fight-zombie",
+            command_id=retry_command_id,
+            command_state="succeeded",
+            verification="verified",
+            evidence_refs=("receipt:" + _hex64("retry"),),
+            actual_budget=BudgetUsage(max_actions=1, max_travel_distance=8.0),
+            occurred_at_ms=1_500,
+        )
+    )
+
+    assert result.mission_status is MissionStatus.RUNNING
+    final = await repository.snapshot(spec.mission_id)
+    fight_after = next(
+        item for item in final.objectives if item.objective.objective_id == "fight-zombie"
+    )
+    assert fight_after.status is ObjectiveStatus.COMPLETED
+    copper = next(
+        item for item in final.objectives if item.objective.objective_id == "discover-copper"
+    )
+    assert copper.status is ObjectiveStatus.ACTIVE
+    assert final.mission.status is MissionStatus.RUNNING
+    assert final.budget is not None
+    assert not any(key.startswith("objective:fight-zombie") for key in final.budget.reservations)
+    copper_command = await journal.get_command(
+        f"mission-{spec.mission_id}-discover-copper-v{copper.version}"
+    )
+    assert copper_command is not None

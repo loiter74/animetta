@@ -654,8 +654,15 @@ class MissionCoordinator:
 
         budget = snapshot.budget or _initial_budget_account(snapshot.mission.spec)
         fixed_reservation = f"objective:{transition.objective_id}"
+        rebalance_reservations = [
+            key for key in budget.reservations if key.startswith(f"{fixed_reservation}:rebalance")
+        ]
         if fixed_reservation in budget.reservations:
             reservation_id = fixed_reservation
+        elif len(rebalance_reservations) == 1:
+            # A tactical rebalance re-armed this objective; the retry envelope
+            # lives under the rebalance reservation id until it settles.
+            reservation_id = rebalance_reservations[0]
         else:
             proposal_reservations = [
                 stored.proposal.proposal_id
@@ -804,6 +811,12 @@ class MissionCoordinator:
         # Mirror on_child_transition: settle the spent reservation first.
         budget = snapshot.budget or _initial_budget_account(snapshot.mission.spec)
         fixed_reservation = f"objective:{transition.objective_id}"
+        rebalance_reservations = [
+            key for key in budget.reservations if key.startswith(f"{fixed_reservation}:rebalance")
+        ]
+        if fixed_reservation not in budget.reservations and len(rebalance_reservations) == 1:
+            # The failed command was itself a rebalance retry; settle its envelope.
+            fixed_reservation = rebalance_reservations[0]
         if fixed_reservation not in budget.reservations:
             proposal_reservations = [
                 stored.proposal.proposal_id
