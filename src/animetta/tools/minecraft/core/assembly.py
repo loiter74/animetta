@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from typing import Any
 from uuid import uuid4
 
+from loguru import logger
 from pydantic import TypeAdapter
 
 from animetta.tools.gamebot.contracts.v2 import ActionReceipt, RuntimeManifest
@@ -484,7 +485,12 @@ async def assemble_control_plane(
                         vision_digest=vision_digest,
                         terminal_receipt=terminal_receipt,
                     )
-                except Exception:
+                except Exception as error:
+                    logger.warning(
+                        "mission rebalance chain failed for command {}: {}",
+                        command_id,
+                        repr(error),
+                    )
                     rebalance_outcome = "not_applicable"
                 if rebalance_outcome != "not_applicable":
                     advanced_mission_commands.add(command_id)
