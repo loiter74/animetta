@@ -99,6 +99,12 @@ LLM / ASR / TTS Provider 遵循 `interface.py → implementation → factory →
 
 新增设计令牌时同时更新 `design-system/colors_and_type.css` 和 `frontend/uno.config.ts`；新增真正的公共组件模式时更新 `components.html`。
 
+## 依赖安装（pip）
+
+- 清华镜像 `pypi.tuna.tsinghua.edu.cn` 同步不完整：部分包（实测 `rapidocr`、`opencv-python`、`pyclipper`）会报 `from versions: none`，不要据此判定包不存在或 Python 版本不兼容。
+- 排查顺序：先试阿里镜像 `https://mirrors.aliyun.com/pypi/simple`（同步较全），仍缺的包再走官方 `-i https://pypi.org/simple`（无代理时较慢，几分钟后仍未出进度条应中止改道，不要原地等待）。
+- 大包（onnxruntime、opencv）在镜像装，缺的小包单独从其他源补装，避免整条命令被单个缺包卡死。
+
 ## 运行时与 Docker
 
 日常源码修改不启动 Docker。仅当用户明确要求启动/运行/发布，或改动 Docker/Compose、运行生命周期、端口、启动协议及其他高风险运行时行为时进入运行时验证。
