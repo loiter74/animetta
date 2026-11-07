@@ -202,7 +202,7 @@ def test_validate_rebalance_accepts_growing_exhausted_dimension() -> None:
     assert accepted.max_travel_distance == 64.0
 
 
-def test_validate_rebalance_rejects_shrinking_dimension() -> None:
+def test_validate_rebalance_accepts_shrinking_non_exhausted_dimension() -> None:
     request = type(
         "R",
         (),
@@ -214,12 +214,31 @@ def test_validate_rebalance_rejects_shrinking_dimension() -> None:
         },
     )()
     proposal = RebalanceProposal(
-        rationale="错误提议：缩小 travel。",
+        rationale="travel 撞墙，缩小 actions 档位换取行程余量（账户内的真重分配）。",
         new_budget=BudgetUsage(max_actions=2, max_travel_distance=48.0),
+    )
+    accepted = validate_rebalance(proposal=proposal, request=request)
+    assert accepted.max_actions == 2 and accepted.max_travel_distance == 48.0
+
+
+def test_validate_rebalance_rejects_growing_non_exhausted_dimension() -> None:
+    request = type(
+        "R",
+        (),
+        {
+            "failed_objective": type(
+                "O", (), {"budget": BudgetUsage(max_actions=4, max_travel_distance=32.0)}
+            )(),
+            "terminal_receipt": _budget_exhausted_receipt(),
+        },
+    )()
+    proposal = RebalanceProposal(
+        rationale="错误提议：顺带扩大未耗尽的 actions。",
+        new_budget=BudgetUsage(max_actions=8, max_travel_distance=64.0),
     )
     from animetta.tools.minecraft.mission.replan import RebalanceValidationError
 
-    with pytest.raises(RebalanceValidationError, match="may not shrink"):
+    with pytest.raises(RebalanceValidationError, match="may not grow non-exhausted"):
         validate_rebalance(proposal=proposal, request=request)
 
 
@@ -240,7 +259,7 @@ def test_validate_rebalance_rejects_no_growth() -> None:
     )
     from animetta.tools.minecraft.mission.replan import RebalanceValidationError
 
-    with pytest.raises(RebalanceValidationError, match="must grow"):
+    with pytest.raises(RebalanceValidationError, match="must strictly grow"):
         validate_rebalance(proposal=proposal, request=request)
 
 
@@ -276,8 +295,42 @@ def test_validate_rebalance_deadline_class_rejects_budget_drift() -> None:
         new_budget=BudgetUsage(max_actions=4, max_travel_distance=64.0),
         navigation_timeout_ms=90_000,
     )
-    with pytest.raises(RebalanceValidationError, match="must keep dimension"):
+    with pytest.raises(RebalanceValidationError, match="may not grow dimension"):
         validate_rebalance(proposal=proposal, request=_deadline_request())
+
+
+def test_validate_rebalance_deadline_class_accepts_affordable_smaller_envelope() -> None:
+    request = _deadline_request()
+    proposal = RebalanceProposal(
+        rationale="旧 travel 包络超出账户剩余，降到剩余额度内重走。",
+        new_budget=BudgetUsage(max_actions=4, max_travel_distance=24.0),
+        navigation_timeout_ms=90_000,
+    )
+    accepted = validate_rebalance(proposal=proposal, request=request)
+    assert accepted.max_travel_distance == 24.0
+
+
+def test_validate_rebalance_rejects_exceeding_account_remaining() -> None:
+    request = type(
+        "R",
+        (),
+        {
+            "failed_objective": type(
+                "O", (), {"budget": BudgetUsage(max_actions=4, max_travel_distance=32.0)}
+            )(),
+            "terminal_receipt": _deadline_receipt(),
+            "remaining_budget": BudgetUsage(max_actions=4, max_travel_distance=20.0),
+        },
+    )()
+    proposal = RebalanceProposal(
+        rationale="旧包络 32 超过账户剩余 20，仍按旧值提交。",
+        new_budget=BudgetUsage(max_actions=4, max_travel_distance=32.0),
+        navigation_timeout_ms=90_000,
+    )
+    from animetta.tools.minecraft.mission.replan import RebalanceValidationError
+
+    with pytest.raises(RebalanceValidationError, match="remaining 'max_travel_distance'"):
+        validate_rebalance(proposal=proposal, request=request)
 
 
 def test_validate_rebalance_deadline_class_accepts_pure_timeout_extension() -> None:
@@ -372,6 +425,10 @@ async def test_request_rebalance_retries_objective_with_new_budget() -> None:
 
     assert outcome == "rebalanced"
     assert len(planner.requests) == 1
+    assert planner.requests[0].remaining_budget is not None
+    assert (
+        planner.requests[0].remaining_budget.max_travel_distance <= spec.budget.max_travel_distance
+    )
     snapshot = await repository.snapshot(spec.mission_id)
     fight = next(
         item for item in snapshot.objectives if item.objective.objective_id == "fight-zombie"

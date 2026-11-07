@@ -848,6 +848,13 @@ class MissionCoordinator:
             ),
             rebalances_used=rebalances_used,
             rebalances_allowed=policy.max_budget_rebalances,
+            remaining_budget=BudgetUsage(
+                max_actions=budget.remaining.max_actions,
+                max_strategy_attempts=budget.remaining.max_strategy_attempts,
+                max_travel_distance=budget.remaining.max_travel_distance,
+                max_blocks_changed=budget.remaining.max_blocks_changed,
+                max_damage_taken=budget.remaining.max_damage_taken,
+            ),
         )
         proposal = await planner.plan_rebalance(request)
         new_budget: BudgetUsage | None = None

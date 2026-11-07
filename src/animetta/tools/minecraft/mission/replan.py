@@ -8,11 +8,19 @@ consensus (visual perception) — and retry the objective once per allowed
 rebalance with a proposal-validated change. Two failure classes exist:
 
 * Budget wall (``BUDGET_EXHAUSTED`` with a dimension at >=95%): the proposal
-  must grow at least one exhausted dimension and never shrink any dimension.
+  must strictly grow at least one exhausted dimension and may not grow any
+  non-exhausted dimension; shrinking any dimension is allowed so the retry can
+  fund its growth from within the mission account.
 * Deadline/tactic class (progress-but-slow navigation, e.g. the r114 gravel
-  churn climb killed by the default segment timer): the proposal must set
-  :attr:`RebalanceProposal.navigation_timeout_ms` and keep the budget
-  unchanged — a deadline extension may not smuggle extra budget.
+  churn climb killed by the default segment timer, or a mislabelled envelope
+  stop with every dimension far from exhausted): the proposal must set
+  :attr:`RebalanceProposal.navigation_timeout_ms` and may not grow any budget
+  dimension — a smaller, affordable retry envelope is fine, a bigger one is
+  smuggled budget.
+
+In both classes the retry envelope must fit the mission account's
+``remaining_budget`` (settled after the failed attempt); the coordinator's
+reserve enforces that arithmetic regardless of what validation accepts.
 
 The product side owns the mechanism and hard constraints; the model dialogue
 lives in the harness (:mod:`.zcode.mc-route-acceptance-v2.replan_planning`).
@@ -74,6 +82,7 @@ class RebalanceRequest:
     failure_reason_code: str
     rebalances_used: int
     rebalances_allowed: int
+    remaining_budget: BudgetUsage | None = None
 
 
 class RebalanceProposal(_FrozenModel):
@@ -117,21 +126,40 @@ def validate_rebalance(
 ) -> BudgetUsage:
     """Check a proposal against the mechanism's hard constraints.
 
-    Budget-wall class (some dimension >=95% exhausted): the new envelope may
-    never shrink any dimension and must strictly grow at least one exhausted
-    dimension; a rebalance that changes nothing is an infinite retry loop in
-    disguise.
+    Budget-wall class (some dimension >=95% exhausted): the new envelope must
+    strictly grow at least one exhausted dimension; non-exhausted dimensions
+    may not grow (shrinking any dimension is allowed so the growth can be
+    funded from within the mission account).
 
     Deadline class (nothing exhausted): the proposal must set
-    ``navigation_timeout_ms`` and keep every budget dimension unchanged —
-    deadline extensions may not smuggle extra budget.
+    ``navigation_timeout_ms`` and may not grow any budget dimension — smaller
+    affordable envelopes are fine, larger ones are smuggled budget.
+
+    Affordability (every dimension within ``request.remaining_budget`` when
+    present) is checked here too so the planner gets an honest, specific
+    rejection instead of a bare reserve failure.
     """
 
     if _exhausted_dimensions(request):
         _validate_dimensions(proposal.new_budget, request.failed_objective.budget, request)
-        return proposal.new_budget
-    _validate_deadline_extension(proposal, request)
+    else:
+        _validate_deadline_extension(proposal, request)
+    _validate_affordable(proposal.new_budget, request)
     return proposal.new_budget
+
+
+def _validate_affordable(new_budget: BudgetUsage, request: RebalanceRequest) -> None:
+    remaining = getattr(request, "remaining_budget", None)
+    if remaining is None:
+        return
+    for dimension in _BUDGET_DIMENSIONS:
+        limit = getattr(remaining, dimension)
+        if limit <= 0:
+            continue
+        if getattr(new_budget, dimension) > limit:
+            raise RebalanceValidationError(
+                f"rebalance exceeds the mission account's remaining '{dimension}' headroom ({limit})"
+            )
 
 
 def _validate_deadline_extension(
@@ -144,9 +172,9 @@ def _validate_deadline_extension(
         )
     old_budget = request.failed_objective.budget
     for dimension in _BUDGET_DIMENSIONS:
-        if getattr(proposal.new_budget, dimension) != getattr(old_budget, dimension):
+        if getattr(proposal.new_budget, dimension) > getattr(old_budget, dimension):
             raise RebalanceValidationError(
-                f"deadline-class rebalance must keep dimension '{dimension}' unchanged"
+                f"deadline-class rebalance may not grow dimension '{dimension}'"
             )
 
 
@@ -160,20 +188,20 @@ def _validate_dimensions(
         raise RebalanceValidationError(
             "rebalance requires an exhausted dimension in the failed objective"
         )
-    grew = False
+    grew_exhausted = False
     for dimension in _BUDGET_DIMENSIONS:
         old_limit = getattr(old_budget, dimension)
         new_limit = getattr(new_budget, dimension)
-        if new_limit < old_limit:
+        if dimension not in exhausted_dimensions and new_limit > old_limit:
             raise RebalanceValidationError(
-                f"rebalance may not shrink dimension '{dimension}' of the failed objective"
+                f"rebalance may not grow non-exhausted dimension '{dimension}'"
             )
-        if dimension in exhausted_dimensions and new_limit <= old_limit:
-            raise RebalanceValidationError(f"rebalance must grow exhausted dimension '{dimension}'")
-        if new_limit > old_limit:
-            grew = True
-    if not grew:
-        raise RebalanceValidationError("rebalance must enlarge at least one budget dimension")
+        if dimension in exhausted_dimensions and new_limit > old_limit:
+            grew_exhausted = True
+    if not grew_exhausted:
+        raise RebalanceValidationError(
+            "rebalance must strictly grow at least one exhausted dimension"
+        )
 
 
 _BUDGET_DIMENSIONS = (
