@@ -660,3 +660,111 @@ async def test_second_budget_exhaustion_exhausts_rebalance_window() -> None:
     retry_command_id = f"mission-{spec.mission_id}-fight-zombie-v{fight.version}"
     second = await exhaust_once(retry_command_id, 64.0)
     assert second == "not_applicable"
+
+
+def test_state_machine_allows_audited_same_state_replace_on_failed() -> None:
+    _, state_machine_module, repository_module = _rebalance_modules()
+
+    assert (
+        state_machine_module.validate_objective_transition(
+            ObjectiveStatus.FAILED,
+            ObjectiveStatus.FAILED,
+            reason_code="BUDGET_REBALANCED_RETRY",
+        )
+        is True
+    )
+    with pytest.raises(ValueError, match="illegal objective transition"):
+        state_machine_module.validate_objective_transition(
+            ObjectiveStatus.FAILED,
+            ObjectiveStatus.FAILED,
+            reason_code="CHILD_VERIFICATION_FAILED",
+        )
+    assert repository_module.ObjectiveStatus.FAILED is ObjectiveStatus.FAILED
+
+
+async def test_on_child_transition_is_idempotent_when_rebalance_chain_already_failed_objective() -> (
+    None
+):
+    """r124 regression: the chain failed after its planner; the replayed child
+    transition must finish mission-level REQUIRED_CHILD_FAILED accounting
+    instead of stranding the mission in running until the harness grace expires."""
+    coordinator_module, _, _ = _rebalance_modules()
+    from animetta.tools.minecraft.mission.repository import (
+        InMemoryMissionRepository,
+        MissionStatus,
+    )
+    from animetta.tools.minecraft.voyager.journal import InMemoryCommandJournal
+
+    repository = InMemoryMissionRepository()
+    journal = InMemoryCommandJournal()
+    await repository.connect()
+    coordinator = coordinator_module.MissionCoordinator(repository=repository, journal=journal)
+    spec, submitted = await _submit_mission(
+        coordinator, repository, journal, _rebalance_mission_payload()
+    )
+
+    await _fail_command(journal, submitted.eligible_command_id, 1_100)
+    observation_digest, vision_digest = _digests()
+    # The chain runs, settles, transitions the objective to FAILED itself, then
+    # its planner declines -> terminal_failed (mission already FAILED here).
+    outcome = await coordinator.request_rebalance(
+        coordinator_module.VerifiedChildTransition(
+            mission_id=spec.mission_id,
+            objective_id="fight-zombie",
+            command_id=submitted.eligible_command_id,
+            command_state="failed",
+            verification="failed",
+            evidence_refs=("receipt:" + _hex64("content"),),
+            actual_budget=BudgetUsage(max_actions=2, max_travel_distance=32.0),
+            occurred_at_ms=1_200,
+        ),
+        planner=_ScriptedPlanner(None),
+        observation_digest=observation_digest,
+        vision_digest=vision_digest,
+        terminal_receipt=_budget_exhausted_receipt(command_id=submitted.eligible_command_id),
+    )
+    assert outcome == "terminal_failed"
+
+    # Now the r124 replay scenario: the chain instead THREW after transitioning
+    # the objective (planner proposal accepted then replace raised). Rebuild
+    # that state: objective already FAILED, mission still running, and the
+    # fallback on_child_transition arrives with the same child failure.
+    repository2 = InMemoryMissionRepository()
+    journal2 = InMemoryCommandJournal()
+    await repository2.connect()
+    coordinator2 = coordinator_module.MissionCoordinator(repository=repository2, journal=journal2)
+    spec2, submitted2 = await _submit_mission(
+        coordinator2, repository2, journal2, _rebalance_mission_payload()
+    )
+    await _fail_command(journal2, submitted2.eligible_command_id, 1_100)
+    snapshot = await repository2.snapshot(spec2.mission_id)
+    await repository2.transition_objective(
+        spec2.mission_id,
+        "fight-zombie",
+        expected_version=next(
+            item for item in snapshot.objectives if item.objective.objective_id == "fight-zombie"
+        ).version,
+        target=ObjectiveStatus.FAILED,
+        reason_code="BUDGET_EXHAUSTED_CHILD",
+        actor="mission-coordinator",
+        occurred_at_ms=1_150,
+        details={},
+        evidence_refs=(),
+    )
+
+    result = await coordinator2.on_child_transition(
+        coordinator_module.VerifiedChildTransition(
+            mission_id=spec2.mission_id,
+            objective_id="fight-zombie",
+            command_id=submitted2.eligible_command_id,
+            command_state="failed",
+            verification="failed",
+            evidence_refs=("receipt:" + _hex64("content"),),
+            actual_budget=BudgetUsage(max_actions=2, max_travel_distance=32.0),
+            occurred_at_ms=1_200,
+        )
+    )
+
+    assert result.mission_status is MissionStatus.FAILED
+    final = await repository2.snapshot(spec2.mission_id)
+    assert final.mission.status is MissionStatus.FAILED

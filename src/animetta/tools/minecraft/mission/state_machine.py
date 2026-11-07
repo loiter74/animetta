@@ -102,6 +102,15 @@ def validate_objective_transition(
         raise ValueError(
             "illegal objective transition: failed -> pending requires BUDGET_REBALANCED_RETRY"
         )
+    if (
+        current is ObjectiveStatus.FAILED
+        and target is ObjectiveStatus.FAILED
+        and reason_code == "BUDGET_REBALANCED_RETRY"
+    ):
+        # Audited same-state version bump: replace_objective_budget rewrites the
+        # envelope (and optionally the goal) on a failed objective right before
+        # the FAILED -> PENDING recovery transition. Not a lifecycle change.
+        return True
     if target not in _OBJECTIVE_TRANSITIONS.get(current, set()) and not (
         current is ObjectiveStatus.FAILED and target is ObjectiveStatus.PENDING
     ):

@@ -623,6 +623,26 @@ class MissionCoordinator:
             for item in snapshot.objectives
             if item.objective.objective_id == transition.objective_id
         )
+        if objective.status is ObjectiveStatus.FAILED and transition.verification == "failed":
+            # The rebalance chain already transitioned this objective to FAILED
+            # (BUDGET_EXHAUSTED_CHILD) before its planner ran. A replayed child
+            # failure must stay idempotent: skip the redundant objective
+            # transition (and the already-settled reservation) and finish the
+            # mission-level REQUIRED_CHILD_FAILED accounting instead of
+            # stranding the mission in running until the harness grace expires.
+            mission = await self._repository.transition_mission(
+                transition.mission_id,
+                expected_version=snapshot.mission.version,
+                target=MissionStatus.FAILED,
+                reason_code="REQUIRED_CHILD_FAILED",
+                actor="mission-coordinator",
+                occurred_at_ms=transition.occurred_at_ms,
+                evidence_refs=transition.evidence_refs,
+            )
+            return MissionAdvanceResult(
+                mission_id=transition.mission_id,
+                mission_status=mission.status,
+            )
         if objective.status is not ObjectiveStatus.ACTIVE:
             raise ValueError("child objective is not active")
         linked_command = self._linked_command(snapshot.transitions, objective)
