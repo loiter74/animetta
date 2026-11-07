@@ -77,6 +77,12 @@ class AutonomyPolicy(_FrozenModel):
     max_travel_distance: float = Field(default=0, ge=0, le=10_000)
     max_damage_taken: float = Field(default=0, ge=0, le=20)
     max_blocks_changed: int = Field(default=0, ge=0, le=4096)
+    max_budget_rebalances: int = Field(
+        default=0,
+        ge=0,
+        le=2,
+        description="允许模型在目标预算耗尽失败后，基于代码感知与视觉共识重分配剩余预算并重试该目标的次数。",
+    )
     max_risk: Literal["read_only", "survival_safe", "destructive"] = "read_only"
     stop_conditions: frozenset[
         Literal[
@@ -106,6 +112,7 @@ class AutonomyPolicy(_FrozenModel):
                 self.max_travel_distance,
                 self.max_damage_taken,
                 self.max_blocks_changed,
+                self.max_budget_rebalances,
                 self.stop_conditions,
             )
         ):

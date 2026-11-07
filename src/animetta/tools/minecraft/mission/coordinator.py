@@ -7,16 +7,25 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from animetta.tools.gamebot.contracts.v2 import RuntimeManifest, canonical_json_hash
+from animetta.tools.gamebot.contracts.v2.receipts import ActionReceipt
 from animetta.tools.minecraft.discovery.exploration import (
     ExplorationInput,
     ExplorationProposer,
 )
-from animetta.tools.minecraft.voyager.budget import BudgetAccount, BudgetUsage
+from animetta.tools.minecraft.voyager.budget import BudgetAccount, BudgetExceededError, BudgetUsage
 from animetta.tools.minecraft.voyager.command_models import CommandState
 from animetta.tools.minecraft.voyager.journal import CommandDraft, CommandJournal
 
 from .admission import AdmissionContext, GoalAdmission
 from .models import MissionObjective, MissionSpec
+from .replan import (
+    ObservationDigest,
+    RebalancePlanner,
+    RebalanceRequest,
+    RebalanceValidationError,
+    VisionDigest,
+    validate_rebalance,
+)
 from .repository import (
     MissionEvidenceLink,
     MissionRepository,
@@ -721,3 +730,178 @@ class MissionCoordinator:
             caller_scope=snapshot.mission.caller_scope,
             occurred_at_ms=transition.occurred_at_ms,
         )
+
+    async def request_rebalance(
+        self,
+        transition: VerifiedChildTransition,
+        *,
+        planner: RebalancePlanner,
+        observation_digest: ObservationDigest,
+        vision_digest: VisionDigest,
+        terminal_receipt: ActionReceipt,
+    ) -> Literal["rebalanced", "terminal_failed", "not_applicable"]:
+        """Handle one budget-exhausted child failure with a planner-driven rebalance.
+
+        Outcomes:
+
+        - ``not_applicable``: this failure is not a rebalance candidate; the
+          caller must fall back to :meth:`on_child_transition`.
+        - ``terminal_failed``: the objective stays FAILED and the mission is
+          terminally failed here (planner declined, proposal invalid, or the
+          new envelope no longer fits the mission account).
+        - ``rebalanced``: the objective was moved back to PENDING with a new
+          validated budget and a fresh command was dispatched; the mission
+          keeps running.
+        """
+
+        if (
+            transition.command_state not in {"failed", "failed_reconciled"}
+            or transition.verification != "failed"
+        ):
+            return "not_applicable"
+        snapshot = await self._repository.snapshot(transition.mission_id)
+        objective = next(
+            (
+                item
+                for item in snapshot.objectives
+                if item.objective.objective_id == transition.objective_id
+            ),
+            None,
+        )
+        if objective is None or objective.status is not ObjectiveStatus.ACTIVE:
+            return "not_applicable"
+        if self._linked_command(snapshot.transitions, objective) != transition.command_id:
+            return "not_applicable"
+        policy = snapshot.mission.spec.autonomy
+        if policy.mode != "bounded" or policy.max_budget_rebalances <= 0:
+            return "not_applicable"
+        rebalances_used = sum(
+            1 for record in snapshot.transitions if record.reason_code == "BUDGET_REBALANCED_RETRY"
+        )
+        if rebalances_used >= policy.max_budget_rebalances:
+            return "not_applicable"
+
+        # Mirror on_child_transition: settle the spent reservation first.
+        budget = snapshot.budget or _initial_budget_account(snapshot.mission.spec)
+        fixed_reservation = f"objective:{transition.objective_id}"
+        if fixed_reservation not in budget.reservations:
+            proposal_reservations = [
+                stored.proposal.proposal_id
+                for stored in snapshot.proposals
+                if stored.decision.outcome == "accepted"
+                and stored.proposal.goal.canonical_hash == objective.objective.goal.canonical_hash
+                and stored.proposal.proposal_id in budget.reservations
+            ]
+            if len(proposal_reservations) != 1:
+                return "not_applicable"
+            fixed_reservation = proposal_reservations[0]
+        budget = budget.settle(fixed_reservation, transition.actual_budget)
+        await self._repository.save_budget(
+            transition.mission_id, budget, updated_at_ms=transition.occurred_at_ms
+        )
+        failed = await self._repository.transition_objective(
+            transition.mission_id,
+            transition.objective_id,
+            expected_version=objective.version,
+            target=ObjectiveStatus.FAILED,
+            reason_code="BUDGET_EXHAUSTED_CHILD",
+            actor="mission-coordinator",
+            occurred_at_ms=transition.occurred_at_ms,
+            details={"command_id": transition.command_id},
+            evidence_refs=transition.evidence_refs,
+        )
+        for ordinal, evidence_ref in enumerate(transition.evidence_refs):
+            link_hash = canonical_json_hash(
+                {
+                    "mission_id": transition.mission_id,
+                    "objective_id": transition.objective_id,
+                    "command_id": transition.command_id,
+                    "evidence_ref": evidence_ref,
+                }
+            )
+            await self._repository.link_evidence(
+                MissionEvidenceLink(
+                    link_id=f"evidence-{link_hash[:24]}-{ordinal}",
+                    mission_id=transition.mission_id,
+                    objective_id=transition.objective_id,
+                    evidence_kind=evidence_ref.partition(":")[0],
+                    evidence_ref=evidence_ref,
+                    command_id=transition.command_id,
+                    attributable=True,
+                    linked_at_ms=transition.occurred_at_ms,
+                )
+            )
+
+        request = RebalanceRequest(
+            mission_id=transition.mission_id,
+            failed_objective=objective.objective,
+            remaining_objectives=tuple(
+                item.objective
+                for item in snapshot.objectives
+                if item.objective.objective_id != transition.objective_id
+            ),
+            observation_digest=observation_digest,
+            vision_digest=vision_digest,
+            terminal_receipt=terminal_receipt,
+            failure_reason_code=(
+                terminal_receipt.error.code if terminal_receipt.error is not None else ""
+            ),
+            rebalances_used=rebalances_used,
+            rebalances_allowed=policy.max_budget_rebalances,
+        )
+        proposal = await planner.plan_rebalance(request)
+        new_budget: BudgetUsage | None = None
+        if proposal is not None:
+            try:
+                new_budget = validate_rebalance(proposal=proposal, request=request)
+                budget = budget.reserve(
+                    f"objective:{transition.objective_id}:rebalance{rebalances_used + 1}",
+                    new_budget,
+                )
+            except (RebalanceValidationError, BudgetExceededError):
+                new_budget = None
+        if new_budget is None:
+            await self._repository.transition_mission(
+                transition.mission_id,
+                expected_version=snapshot.mission.version,
+                target=MissionStatus.FAILED,
+                reason_code="REQUIRED_CHILD_FAILED",
+                actor="mission-coordinator",
+                occurred_at_ms=transition.occurred_at_ms,
+                evidence_refs=transition.evidence_refs,
+            )
+            return "terminal_failed"
+        await self._repository.save_budget(
+            transition.mission_id, budget, updated_at_ms=transition.occurred_at_ms
+        )
+        replaced = await self._repository.replace_objective_budget(
+            transition.mission_id,
+            transition.objective_id,
+            expected_version=failed.version,
+            budget=new_budget,
+            reason_code="BUDGET_REBALANCED_RETRY",
+            actor="mission-coordinator",
+            occurred_at_ms=transition.occurred_at_ms,
+            details={
+                "rationale": proposal.rationale if proposal else "",
+                "command_id": transition.command_id,
+            },
+            evidence_refs=transition.evidence_refs,
+        )
+        await self._repository.transition_objective(
+            transition.mission_id,
+            transition.objective_id,
+            expected_version=replaced.version,
+            target=ObjectiveStatus.PENDING,
+            reason_code="BUDGET_REBALANCED_RETRY",
+            actor="mission-coordinator",
+            occurred_at_ms=transition.occurred_at_ms,
+            details={"command_id": transition.command_id},
+            evidence_refs=transition.evidence_refs,
+        )
+        await self._advance(
+            transition.mission_id,
+            caller_scope=snapshot.mission.caller_scope,
+            occurred_at_ms=transition.occurred_at_ms,
+        )
+        return "rebalanced"

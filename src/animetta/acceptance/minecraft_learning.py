@@ -51,6 +51,7 @@ def build_bounded_learning_portal_mission(
             max_travel_distance=previous.budget.max_travel_distance,
             max_damage_taken=previous.budget.max_damage_taken,
             max_blocks_changed=previous.budget.max_blocks_changed,
+            max_budget_rebalances=1,
             max_risk="destructive",
             stop_conditions=frozenset(
                 {"mission_complete", "budget_exhausted", "user_stop", "unknown_world_state"}

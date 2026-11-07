@@ -82,10 +82,29 @@ def validate_mission_transition(current: MissionStatus, target: MissionStatus) -
     return True
 
 
-def validate_objective_transition(current: ObjectiveStatus, target: ObjectiveStatus) -> bool:
-    """Reject objective lifecycle edges outside the minimal persistent model."""
+def validate_objective_transition(
+    current: ObjectiveStatus,
+    target: ObjectiveStatus,
+    *,
+    reason_code: str | None = None,
+) -> bool:
+    """Reject objective lifecycle edges outside the minimal persistent model.
 
-    if target not in _OBJECTIVE_TRANSITIONS.get(current, set()):
+    ``FAILED -> PENDING`` stays illegal except for the single audited
+    ``BUDGET_REBALANCED_RETRY`` recovery edge used by bounded budget rebalancing.
+    """
+
+    if (
+        current is ObjectiveStatus.FAILED
+        and target is ObjectiveStatus.PENDING
+        and reason_code != "BUDGET_REBALANCED_RETRY"
+    ):
+        raise ValueError(
+            "illegal objective transition: failed -> pending requires BUDGET_REBALANCED_RETRY"
+        )
+    if target not in _OBJECTIVE_TRANSITIONS.get(current, set()) and not (
+        current is ObjectiveStatus.FAILED and target is ObjectiveStatus.PENDING
+    ):
         raise ValueError(f"illegal objective transition: {current.value} -> {target.value}")
     return True
 

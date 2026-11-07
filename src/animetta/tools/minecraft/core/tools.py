@@ -27,6 +27,7 @@ from animetta.tools.minecraft.voyager.public_activity import (
 from animetta.tools.minecraft.voyager.sqlite_repository import SQLiteCommandJournal
 from animetta.tools.minecraft.voyager.stop import StopResult
 
+from ..mission.replan import RebalancePlanner
 from .assembly import MinecraftControlPlane, assemble_control_plane
 from .bridge import MinecraftMcpBridge
 from .config import MinecraftConfig
@@ -192,6 +193,7 @@ async def configure_voyager_control_plane(
     blueprint_origins: dict[str, tuple[int, int, int]] | None = None,
     entity_origins: dict[str, tuple[int, int, int]] | None = None,
     adaptive_frontier: ExplorationFrontier | None = None,
+    rebalance_planner: RebalancePlanner | None = None,
 ) -> MinecraftControlPlane:
     global _control_plane
     if _control_plane is not None:
@@ -203,6 +205,7 @@ async def configure_voyager_control_plane(
         blueprint_origins=blueprint_origins,
         entity_origins=entity_origins,
         adaptive_frontier=adaptive_frontier,
+        rebalance_planner=rebalance_planner,
     )
     logger.info(
         "[MinecraftTools] GameBot v2 control plane ready: {}",

@@ -10,7 +10,7 @@ from typing import Any, Protocol
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from animetta.tools.minecraft.voyager.budget import BudgetAccount
+from animetta.tools.minecraft.voyager.budget import BudgetAccount, BudgetUsage
 
 from .models import (
     GoalAdmissionDecision,
@@ -182,6 +182,20 @@ class MissionRepository(Protocol):
         *,
         expected_version: int,
         target: ObjectiveStatus,
+        reason_code: str,
+        actor: str,
+        occurred_at_ms: int,
+        details: dict[str, Any] | None = None,
+        evidence_refs: tuple[str, ...] = (),
+    ) -> ObjectiveRecord: ...
+
+    async def replace_objective_budget(
+        self,
+        mission_id: str,
+        objective_id: str,
+        *,
+        expected_version: int,
+        budget: BudgetUsage,
         reason_code: str,
         actor: str,
         occurred_at_ms: int,
@@ -402,7 +416,7 @@ class InMemoryMissionRepository:
             current = records[index]
             if current.version != expected_version:
                 raise ValueError("STALE_OBJECTIVE_VERSION")
-            validate_objective_transition(current.status, target)
+            validate_objective_transition(current.status, target, reason_code=reason_code)
             updated = current.model_copy(update={"status": target, "version": current.version + 1})
             records[index] = updated
             self._objectives[mission_id] = tuple(records)
@@ -415,6 +429,60 @@ class InMemoryMissionRepository:
                     entity_version=updated.version,
                     from_state=current.status.value,
                     to_state=target.value,
+                    reason_code=reason_code,
+                    actor=actor,
+                    details=details or {},
+                    evidence_refs=evidence_refs,
+                    occurred_at_ms=occurred_at_ms,
+                )
+            )
+            return updated.model_copy(deep=True)
+
+    async def replace_objective_budget(
+        self,
+        mission_id: str,
+        objective_id: str,
+        *,
+        expected_version: int,
+        budget: BudgetUsage,
+        reason_code: str,
+        actor: str,
+        occurred_at_ms: int,
+        details: dict[str, Any] | None = None,
+        evidence_refs: tuple[str, ...] = (),
+    ) -> ObjectiveRecord:
+        async with self._lock:
+            records = list(self._objectives[mission_id])
+            index = next(
+                (
+                    index
+                    for index, record in enumerate(records)
+                    if record.objective.objective_id == objective_id
+                ),
+                None,
+            )
+            if index is None:
+                raise KeyError(objective_id)
+            current = records[index]
+            if current.version != expected_version:
+                raise ValueError("STALE_OBJECTIVE_VERSION")
+            updated = current.model_copy(
+                update={
+                    "objective": current.objective.model_copy(update={"budget": budget}),
+                    "version": current.version + 1,
+                }
+            )
+            records[index] = updated
+            self._objectives[mission_id] = tuple(records)
+            self._transition_id += 1
+            self._transitions[mission_id].append(
+                MissionTransitionRecord(
+                    transition_id=self._transition_id,
+                    mission_id=mission_id,
+                    objective_id=objective_id,
+                    entity_version=updated.version,
+                    from_state=current.status.value,
+                    to_state=current.status.value,
                     reason_code=reason_code,
                     actor=actor,
                     details=details or {},
@@ -898,7 +966,7 @@ class SQLiteMissionRepository:
                 )
                 if current.version != expected_version:
                     raise ValueError("STALE_OBJECTIVE_VERSION")
-                validate_objective_transition(current.status, target)
+                validate_objective_transition(current.status, target, reason_code=reason_code)
                 changed = await db.execute(
                     """UPDATE mission_objectives SET status=?,version=version+1
                     WHERE mission_id=? AND objective_id=? AND version=?""",
@@ -927,6 +995,88 @@ class SQLiteMissionRepository:
                 await db.commit()
                 return current.model_copy(
                     update={"status": target, "version": expected_version + 1}
+                )
+            except Exception:
+                await db.rollback()
+                raise
+
+    async def replace_objective_budget(
+        self,
+        mission_id: str,
+        objective_id: str,
+        *,
+        expected_version: int,
+        budget: BudgetUsage,
+        reason_code: str,
+        actor: str,
+        occurred_at_ms: int,
+        details: dict[str, Any] | None = None,
+        evidence_refs: tuple[str, ...] = (),
+    ) -> ObjectiveRecord:
+        from .state_machine import validate_objective_transition
+
+        db = self._require_db()
+        async with self._lock:
+            await db.execute("BEGIN IMMEDIATE")
+            try:
+                cursor = await db.execute(
+                    """SELECT * FROM mission_objectives
+                    WHERE mission_id=? AND objective_id=?""",
+                    (mission_id, objective_id),
+                )
+                row = await cursor.fetchone()
+                if row is None:
+                    raise KeyError(objective_id)
+                current = ObjectiveRecord(
+                    mission_id=row["mission_id"],
+                    ordinal=row["ordinal"],
+                    objective=MissionObjective.model_validate(json.loads(row["objective_json"])),
+                    status=ObjectiveStatus(row["status"]),
+                    version=row["version"],
+                )
+                if current.version != expected_version:
+                    raise ValueError("STALE_OBJECTIVE_VERSION")
+                validate_objective_transition(
+                    current.status, current.status, reason_code=reason_code
+                )
+                updated_objective = current.objective.model_copy(update={"budget": budget})
+                changed = await db.execute(
+                    """UPDATE mission_objectives
+                    SET objective_json=?,version=version+1
+                    WHERE mission_id=? AND objective_id=? AND version=?""",
+                    (
+                        updated_objective.model_dump_json(),
+                        mission_id,
+                        objective_id,
+                        expected_version,
+                    ),
+                )
+                if changed.rowcount != 1:
+                    raise ValueError("STALE_OBJECTIVE_VERSION")
+                await db.execute(
+                    """INSERT INTO mission_transitions
+                    (mission_id,objective_id,entity_version,from_state,to_state,
+                     reason_code,actor,details_json,evidence_refs_json,occurred_at_ms)
+                    VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                    (
+                        mission_id,
+                        objective_id,
+                        expected_version + 1,
+                        current.status.value,
+                        current.status.value,
+                        reason_code,
+                        actor,
+                        _dump(details or {}),
+                        _dump(evidence_refs),
+                        occurred_at_ms,
+                    ),
+                )
+                await db.commit()
+                return current.model_copy(
+                    update={
+                        "objective": updated_objective,
+                        "version": expected_version + 1,
+                    }
                 )
             except Exception:
                 await db.rollback()

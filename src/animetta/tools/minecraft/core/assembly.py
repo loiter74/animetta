@@ -12,6 +12,7 @@ from uuid import uuid4
 from pydantic import TypeAdapter
 
 from animetta.tools.gamebot.contracts.v2 import ActionReceipt, RuntimeManifest
+from animetta.tools.gamebot.contracts.v2.requests import ObservationRequest
 from animetta.tools.minecraft.discovery import (
     ExplorationBounds,
     ExplorationProposer,
@@ -28,6 +29,11 @@ from animetta.tools.minecraft.mission.coordinator import (
 )
 from animetta.tools.minecraft.mission.events import ProjectionEventPublisher
 from animetta.tools.minecraft.mission.projection import MissionProjectionService
+from animetta.tools.minecraft.mission.replan import (
+    ObservationDigest,
+    RebalancePlanner,
+    VisionDigest,
+)
 from animetta.tools.minecraft.mission.repository import SQLiteMissionRepository
 from animetta.tools.minecraft.mission.runtime import AdaptiveMissionRuntime
 from animetta.tools.minecraft.perception.service import build_default_service
@@ -101,6 +107,15 @@ def _now_ms() -> int:
 
 def _make_id(prefix: str) -> str:
     return f"{prefix}-{uuid4().hex}"
+
+
+def _goal_from_payload(goal_payload: Any) -> GoalSpec | None:
+    if not isinstance(goal_payload, dict):
+        return None
+    try:
+        return TypeAdapter(GoalSpec).validate_python(goal_payload)
+    except Exception:
+        return None
 
 
 def _budget_policy(config: MinecraftConfig) -> ModeBudgetPolicy:
@@ -249,6 +264,7 @@ async def assemble_control_plane(
     blueprint_origins: dict[str, tuple[int, int, int]] | None = None,
     entity_origins: dict[str, tuple[int, int, int]] | None = None,
     adaptive_frontier: ExplorationFrontier | None = None,
+    rebalance_planner: RebalancePlanner | None = None,
 ) -> MinecraftControlPlane:
     adapter = MinecraftGameBotV2Adapter(bridge)
     manifest = await adapter.get_manifest()
@@ -394,18 +410,95 @@ async def assemble_control_plane(
             verification = "unknown"
         else:
             verification = "failed"
-        mission_advance = await mission_coordinator.on_child_transition(
-            VerifiedChildTransition(
-                mission_id=mission_id,
-                objective_id=objective_id,
-                command_id=command_id,
-                command_state=command.state.value,
-                verification=verification,
-                evidence_refs=evidence_refs,
-                actual_budget=actual_budget,
-                occurred_at_ms=_now_ms(),
-            )
+        child_transition = VerifiedChildTransition(
+            mission_id=mission_id,
+            objective_id=objective_id,
+            command_id=command_id,
+            command_state=command.state.value,
+            verification=verification,
+            actual_budget=actual_budget,
+            occurred_at_ms=_now_ms(),
+            evidence_refs=evidence_refs,
         )
+        if (
+            rebalance_planner is not None
+            and perception_service is not None
+            and verification == "failed"
+            and command.state in {CommandState.FAILED, CommandState.FAILED_RECONCILED}
+        ):
+            receipts = [
+                ActionReceipt.model_validate(step.receipt)
+                for step in steps
+                if step.receipt is not None
+            ]
+            terminal_receipt = receipts[-1] if receipts else None
+            if terminal_receipt is not None:
+                try:
+                    observation = await adapter.observe(
+                        ObservationRequest(
+                            transport_id=_make_id("transport"),
+                            command_id=command_id,
+                            step_id="rebalance-observation",
+                            correlation_id=_make_id("correlation"),
+                            runtime_instance_id=manifest.runtime_instance_id,
+                            deadline_ms=_now_ms() + 5_000,
+                        )
+                    )
+                    consensus = await perception_service.monitor(
+                        observation,
+                        history=(),
+                        goal=_goal_from_payload(command.payload.get("goal")),
+                    )
+                    elapsed_ms = max(
+                        (receipt.finished_at_ms - receipt.started_at_ms for receipt in receipts),
+                        default=0,
+                    )
+                    observation_digest = ObservationDigest(
+                        position=(
+                            (
+                                observation.position.x,
+                                observation.position.y,
+                                observation.position.z,
+                            )
+                            if observation.position is not None
+                            else None
+                        ),
+                        health=observation.health,
+                        food=observation.food,
+                        inventory=dict(observation.inventory or {}),
+                        distance_travelled=actual_budget.max_travel_distance,
+                        blocks_changed=actual_budget.max_blocks_changed,
+                        commands_issued=actual_budget.max_actions,
+                        elapsed_ms=elapsed_ms,
+                    )
+                    vision_digest = VisionDigest(
+                        consensus_action=consensus.action,
+                        adopted_danger=consensus.adopted_danger,
+                        mode=consensus.mode,
+                        checked_at_ms=consensus.checked_at_ms,
+                    )
+                    rebalance_outcome = await mission_coordinator.request_rebalance(
+                        child_transition,
+                        planner=rebalance_planner,
+                        observation_digest=observation_digest,
+                        vision_digest=vision_digest,
+                        terminal_receipt=terminal_receipt,
+                    )
+                except Exception:
+                    rebalance_outcome = "not_applicable"
+                if rebalance_outcome != "not_applicable":
+                    advanced_mission_commands.add(command_id)
+                    if mission_events is not None:
+                        page = await mission_projection.read(
+                            caller_scope=command.caller_scope,
+                            limit=100,
+                        )
+                        projection = next(
+                            item for item in page.missions if item.mission_id == mission_id
+                        )
+                        await mission_events.publish_mission(projection)
+                    return
+        mission_advance = await mission_coordinator.on_child_transition(child_transition)
         advanced_mission_commands.add(command_id)
         if (
             adaptive_runtime is not None
