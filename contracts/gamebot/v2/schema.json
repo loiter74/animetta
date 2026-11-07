@@ -1527,7 +1527,8 @@
         "initial_sample",
         "motion_unsettled",
         "durable_state_changed",
-        "stable_streak_incomplete"
+        "stable_streak_incomplete",
+        "dwell_incomplete"
       ],
       "title": "SettlementRejectionReason",
       "type": "string"

@@ -44,6 +44,7 @@ class SettlementRejectionReason(StrEnum):
     MOTION_UNSETTLED = "motion_unsettled"
     DURABLE_STATE_CHANGED = "durable_state_changed"
     STABLE_STREAK_INCOMPLETE = "stable_streak_incomplete"
+    DWELL_INCOMPLETE = "dwell_incomplete"
 
 
 class SettlementSample(V2ContractModel):

@@ -1,5 +1,5 @@
 // Generated from contracts/gamebot/v2/schema.json; do not edit.
-// schema-digest: b6390f5c987ca210c35eeaf2feea130033dc9f3b1479d2dbf8ecdea5217e7a82
+// schema-digest: a36c3073a33871d2d6b2a9435ecc12debf511bded5ce3108115e65fad5f7a80d
 
 export type ActionInspectionState = "not_found" | "accepted" | "running" | "terminal";
 
@@ -263,7 +263,7 @@ export type RuntimeProtocolError = {
   readonly details?: Readonly<Record<string, unknown>>;
 };
 
-export type SettlementRejectionReason = "settlement_disabled" | "initial_sample" | "motion_unsettled" | "durable_state_changed" | "stable_streak_incomplete";
+export type SettlementRejectionReason = "settlement_disabled" | "initial_sample" | "motion_unsettled" | "durable_state_changed" | "stable_streak_incomplete" | "dwell_incomplete";
 
 export type SettlementSample = {
   readonly sample_index: number;
