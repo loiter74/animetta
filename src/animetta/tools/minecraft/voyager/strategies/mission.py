@@ -66,6 +66,17 @@ class MissionStrategy:
         }
 
     def propose(self, state: dict, observation: Observation) -> StrategyDecision:
+        decision = self._propose(state, observation)
+        if isinstance(decision, ExecuteStep) and decision.capability == "goto":
+            goal = state.get("goal")
+            timeout = goal.constraints.get("navigation_timeout_ms") if goal is not None else None
+            if timeout is not None:
+                decision = decision.model_copy(
+                    update={"parameters": {**decision.parameters, "navigation_timeout_ms": timeout}}
+                )
+        return decision
+
+    def _propose(self, state: dict, observation: Observation) -> StrategyDecision:
         pending_move = state.get("pending_recovery_move")
         if isinstance(pending_move, ExecuteStep):
             return pending_move

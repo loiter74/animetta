@@ -6,7 +6,7 @@ import asyncio
 import json
 from enum import StrEnum
 from pathlib import Path, PurePosixPath
-from typing import Any, Protocol
+from typing import TYPE_CHECKING, Any, Protocol
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -18,6 +18,9 @@ from .models import (
     MissionObjective,
     MissionSpec,
 )
+
+if TYPE_CHECKING:
+    from animetta.tools.minecraft.voyager.goal_models import GoalSpec
 
 
 class MissionIdempotencyConflictError(ValueError):
@@ -199,6 +202,7 @@ class MissionRepository(Protocol):
         reason_code: str,
         actor: str,
         occurred_at_ms: int,
+        goal: GoalSpec | None = None,
         details: dict[str, Any] | None = None,
         evidence_refs: tuple[str, ...] = (),
     ) -> ObjectiveRecord: ...
@@ -448,6 +452,7 @@ class InMemoryMissionRepository:
         reason_code: str,
         actor: str,
         occurred_at_ms: int,
+        goal: GoalSpec | None = None,
         details: dict[str, Any] | None = None,
         evidence_refs: tuple[str, ...] = (),
     ) -> ObjectiveRecord:
@@ -468,7 +473,9 @@ class InMemoryMissionRepository:
                 raise ValueError("STALE_OBJECTIVE_VERSION")
             updated = current.model_copy(
                 update={
-                    "objective": current.objective.model_copy(update={"budget": budget}),
+                    "objective": current.objective.model_copy(
+                        update={"budget": budget, **({"goal": goal} if goal is not None else {})}
+                    ),
                     "version": current.version + 1,
                 }
             )
@@ -1010,6 +1017,7 @@ class SQLiteMissionRepository:
         reason_code: str,
         actor: str,
         occurred_at_ms: int,
+        goal: GoalSpec | None = None,
         details: dict[str, Any] | None = None,
         evidence_refs: tuple[str, ...] = (),
     ) -> ObjectiveRecord:
@@ -1039,7 +1047,9 @@ class SQLiteMissionRepository:
                 validate_objective_transition(
                     current.status, current.status, reason_code=reason_code
                 )
-                updated_objective = current.objective.model_copy(update={"budget": budget})
+                updated_objective = current.objective.model_copy(
+                    update={"budget": budget, **({"goal": goal} if goal is not None else {})}
+                )
                 changed = await db.execute(
                     """UPDATE mission_objectives
                     SET objective_json=?,version=version+1

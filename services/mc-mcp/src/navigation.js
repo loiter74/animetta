@@ -77,9 +77,27 @@ export function* iteratePathSearch(bot, movements, goal) {
   }
 }
 
+// Bounded per-action navigation deadline override. The agent-side tactical
+// rebalance may extend a goto segment deadline (first observed as the r114
+// gravel-churn climb that was making progress but exceeded the default);
+// the clamp keeps every override inside the same envelope the default uses.
+const NAVIGATION_TIMEOUT_MIN_MS = 15_000;
+const NAVIGATION_TIMEOUT_MAX_MS = 120_000;
+
+export function navigationTimeoutOverride(value) {
+  const timeout = Number(value);
+  if (!Number.isFinite(timeout)) return null;
+  return Math.min(
+    NAVIGATION_TIMEOUT_MAX_MS,
+    Math.max(NAVIGATION_TIMEOUT_MIN_MS, Math.round(timeout)),
+  );
+}
+
 function navigateGoal(bot, goal, context) {
   const navigate = () => bot.pathfinder.goto(goal);
-  return context.operation_scope ? context.operation_scope.navigate(goal, navigate) : navigate();
+  if (!context.operation_scope) return navigate();
+  const timeoutMs = navigationTimeoutOverride(context.navigation_timeout_ms);
+  return context.operation_scope.navigate(goal, navigate, timeoutMs === null ? {} : { timeoutMs });
 }
 
 export function surfaceEscapePlan(bot, destination) {

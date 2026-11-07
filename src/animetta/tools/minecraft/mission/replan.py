@@ -1,11 +1,18 @@
-"""Bounded, perception-driven budget rebalancing for mission objectives.
+"""Bounded, perception-driven tactical rebalancing for mission objectives.
 
-When an objective fails because its static budget envelope is exhausted
-(``BUDGET_EXHAUSTED``), the coordinator may consult a :class:`RebalancePlanner`
-with dual-channel evidence — a structured :class:`ObservationDigest` built from
-the runtime control plane (code perception) and a :class:`VisionDigest` built
-from the dual-perception consensus (visual perception) — and retry the
-objective once per allowed rebalance with a proposal-validated budget.
+When an objective fails, the coordinator may consult a
+:class:`RebalancePlanner` with dual-channel evidence — a structured
+:class:`ObservationDigest` built from the runtime control plane (code
+perception) and a :class:`VisionDigest` built from the dual-perception
+consensus (visual perception) — and retry the objective once per allowed
+rebalance with a proposal-validated change. Two failure classes exist:
+
+* Budget wall (``BUDGET_EXHAUSTED`` with a dimension at >=95%): the proposal
+  must grow at least one exhausted dimension and never shrink any dimension.
+* Deadline/tactic class (progress-but-slow navigation, e.g. the r114 gravel
+  churn climb killed by the default segment timer): the proposal must set
+  :attr:`RebalanceProposal.navigation_timeout_ms` and keep the budget
+  unchanged — a deadline extension may not smuggle extra budget.
 
 The product side owns the mechanism and hard constraints; the model dialogue
 lives in the harness (:mod:`.zcode.mc-route-acceptance-v2.replan_planning`).
@@ -70,10 +77,16 @@ class RebalanceRequest:
 
 
 class RebalanceProposal(_FrozenModel):
-    """A model (or rule) proposal for redistributing mission budget."""
+    """A model (or rule) proposal for changing one failed objective's retry.
+
+    ``new_budget`` redistributes the envelope (budget-wall class);
+    ``navigation_timeout_ms`` extends the per-goto-segment navigation deadline
+    (deadline class, 15s-120s, mirroring the runtime's clamp).
+    """
 
     rationale: str = Field(max_length=1200)
     new_budget: BudgetUsage
+    navigation_timeout_ms: int | None = Field(default=None, ge=15_000, le=120_000)
 
 
 @dataclass
@@ -104,16 +117,37 @@ def validate_rebalance(
 ) -> BudgetUsage:
     """Check a proposal against the mechanism's hard constraints.
 
-    Hard constraints (all must hold):
+    Budget-wall class (some dimension >=95% exhausted): the new envelope may
+    never shrink any dimension and must strictly grow at least one exhausted
+    dimension; a rebalance that changes nothing is an infinite retry loop in
+    disguise.
 
-    1. The failed objective must actually be exhausted on some dimension.
-    2. The new envelope may never shrink any dimension, and must strictly grow
-       at least one exhausted dimension — a rebalance that changes nothing is
-       an infinite retry loop in disguise.
+    Deadline class (nothing exhausted): the proposal must set
+    ``navigation_timeout_ms`` and keep every budget dimension unchanged —
+    deadline extensions may not smuggle extra budget.
     """
 
-    _validate_dimensions(proposal.new_budget, request.failed_objective.budget, request)
+    if _exhausted_dimensions(request):
+        _validate_dimensions(proposal.new_budget, request.failed_objective.budget, request)
+        return proposal.new_budget
+    _validate_deadline_extension(proposal, request)
     return proposal.new_budget
+
+
+def _validate_deadline_extension(
+    proposal: RebalanceProposal,
+    request: RebalanceRequest,
+) -> None:
+    if proposal.navigation_timeout_ms is None:
+        raise RebalanceValidationError(
+            "deadline-class rebalance requires navigation_timeout_ms (no dimension is exhausted)"
+        )
+    old_budget = request.failed_objective.budget
+    for dimension in _BUDGET_DIMENSIONS:
+        if getattr(proposal.new_budget, dimension) != getattr(old_budget, dimension):
+            raise RebalanceValidationError(
+                f"deadline-class rebalance must keep dimension '{dimension}' unchanged"
+            )
 
 
 def _validate_dimensions(

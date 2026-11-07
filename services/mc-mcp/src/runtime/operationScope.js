@@ -392,7 +392,8 @@ export class OperationScope {
     const verticalOnly = target === null && Number.isFinite(goal?.y);
     this.checkNavigationBudget(minimumNavigationDistance(goal, origin));
     const navigationTimeoutMs = timeoutMs ?? (verticalOnly
-      ? 30_000 : Math.min(120_000, Math.max(15_000, distance * 1_500)));
+      ? Math.min(120_000, Math.max(30_000, Math.abs((goal?.y ?? 0) - (origin?.y ?? 0)) * 4_000))
+      : Math.min(120_000, Math.max(15_000, distance * 1_500)));
     let result;
     try {
       result = await this.runInterruptible(() => {

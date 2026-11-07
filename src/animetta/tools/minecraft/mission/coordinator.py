@@ -874,6 +874,16 @@ class MissionCoordinator:
         await self._repository.save_budget(
             transition.mission_id, budget, updated_at_ms=transition.occurred_at_ms
         )
+        replacement_goal = failed.objective.goal
+        if proposal.navigation_timeout_ms is not None:
+            replacement_goal = replacement_goal.model_copy(
+                update={
+                    "constraints": {
+                        **replacement_goal.constraints,
+                        "navigation_timeout_ms": proposal.navigation_timeout_ms,
+                    }
+                }
+            )
         replaced = await self._repository.replace_objective_budget(
             transition.mission_id,
             transition.objective_id,
@@ -882,9 +892,11 @@ class MissionCoordinator:
             reason_code="BUDGET_REBALANCED_RETRY",
             actor="mission-coordinator",
             occurred_at_ms=transition.occurred_at_ms,
+            goal=replacement_goal,
             details={
                 "rationale": proposal.rationale if proposal else "",
                 "command_id": transition.command_id,
+                "navigation_timeout_ms": proposal.navigation_timeout_ms,
             },
             evidence_refs=transition.evidence_refs,
         )

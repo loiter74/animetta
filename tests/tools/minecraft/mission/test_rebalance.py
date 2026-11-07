@@ -17,7 +17,7 @@ from animetta.tools.minecraft.mission.replan import (
 from animetta.tools.minecraft.mission.repository import ObjectiveStatus
 from animetta.tools.minecraft.voyager.budget import BudgetUsage
 
-from .test_models import _cost, _mission_payload, _objective
+from .test_models import _combat_goal, _cost, _mission_payload, _objective
 
 
 def _rebalance_modules():
@@ -75,6 +75,22 @@ def _budget_exhausted_receipt(
             max_damage_taken=0,
         ),
         content_hash=_hex64("content"),
+    )
+
+
+def _deadline_receipt(command_id: str = "mission-m-fight-zombie-v1") -> ActionReceipt:
+    return _budget_exhausted_receipt(command_id=command_id, travel=5.0).model_copy(
+        update={
+            "error": RuntimeProtocolError(
+                code="ACTION_DEADLINE_EXPIRED",
+                message="pathfinder navigation did not finish before its deadline",
+                phase="runtime",
+                outcome_known=True,
+                world_may_have_changed=True,
+                caller_may_resubmit=False,
+                operator_action="inspect navigation trace",
+            )
+        }
     )
 
 
@@ -228,6 +244,53 @@ def test_validate_rebalance_rejects_no_growth() -> None:
         validate_rebalance(proposal=proposal, request=request)
 
 
+def _deadline_request():
+    return type(
+        "R",
+        (),
+        {
+            "failed_objective": type(
+                "O", (), {"budget": BudgetUsage(max_actions=4, max_travel_distance=32.0)}
+            )(),
+            "terminal_receipt": _deadline_receipt(),
+        },
+    )()
+
+
+def test_validate_rebalance_deadline_class_requires_navigation_timeout() -> None:
+    from animetta.tools.minecraft.mission.replan import RebalanceValidationError
+
+    proposal = RebalanceProposal(
+        rationale="无效提议：无耗尽维度却未给出导航时限。",
+        new_budget=BudgetUsage(max_actions=4, max_travel_distance=32.0),
+    )
+    with pytest.raises(RebalanceValidationError, match="requires navigation_timeout_ms"):
+        validate_rebalance(proposal=proposal, request=_deadline_request())
+
+
+def test_validate_rebalance_deadline_class_rejects_budget_drift() -> None:
+    from animetta.tools.minecraft.mission.replan import RebalanceValidationError
+
+    proposal = RebalanceProposal(
+        rationale="无效提议：借时限之名扩大预算。",
+        new_budget=BudgetUsage(max_actions=4, max_travel_distance=64.0),
+        navigation_timeout_ms=90_000,
+    )
+    with pytest.raises(RebalanceValidationError, match="must keep dimension"):
+        validate_rebalance(proposal=proposal, request=_deadline_request())
+
+
+def test_validate_rebalance_deadline_class_accepts_pure_timeout_extension() -> None:
+    request = _deadline_request()
+    proposal = RebalanceProposal(
+        rationale="导航在持续推进（砂砾回填段挖搭有真实进展），延长导航时限而非预算。",
+        new_budget=request.failed_objective.budget.model_copy(),
+        navigation_timeout_ms=90_000,
+    )
+    accepted = validate_rebalance(proposal=proposal, request=request)
+    assert accepted.max_travel_distance == 32.0
+
+
 def test_state_machine_permits_only_rebalance_retry_from_failed() -> None:
     _, state_machine, _ = _rebalance_modules()
     assert (
@@ -325,6 +388,86 @@ async def test_request_rebalance_retries_objective_with_new_budget() -> None:
     )
     assert retry_command is not None
     assert retry_command.requested_budget["max_travel_distance"] == 64.0
+
+
+async def test_request_rebalance_deadline_class_extends_navigation_timeout() -> None:
+    coordinator_module, _, _ = _rebalance_modules()
+    from animetta.tools.minecraft.mission.repository import InMemoryMissionRepository
+    from animetta.tools.minecraft.voyager.journal import InMemoryCommandJournal
+
+    repository = InMemoryMissionRepository()
+    journal = InMemoryCommandJournal()
+    await repository.connect()
+    coordinator = coordinator_module.MissionCoordinator(repository=repository, journal=journal)
+    spec, submitted = await _submit_mission(
+        coordinator, repository, journal, _rebalance_mission_payload()
+    )
+    snapshot = await repository.snapshot(spec.mission_id)
+    fight_before = next(
+        item for item in snapshot.objectives if item.objective.objective_id == "fight-zombie"
+    )
+    unchanged_budget = fight_before.objective.budget.model_copy()
+
+    await _fail_command(journal, submitted.eligible_command_id, 1_100)
+    observation_digest, vision_digest = _digests()
+    planner = _ScriptedPlanner(
+        RebalanceProposal(
+            rationale="导航轨迹显示持续进展但被 30 秒段级时限收尸（r114 砂砾回填爬升），延长导航时限。",
+            new_budget=unchanged_budget,
+            navigation_timeout_ms=90_000,
+        )
+    )
+    outcome = await coordinator.request_rebalance(
+        coordinator_module.VerifiedChildTransition(
+            mission_id=spec.mission_id,
+            objective_id="fight-zombie",
+            command_id=submitted.eligible_command_id,
+            command_state="failed",
+            verification="failed",
+            evidence_refs=("receipt:" + _hex64("content"),),
+            actual_budget=BudgetUsage(max_actions=2, max_travel_distance=32.0),
+            occurred_at_ms=1_200,
+        ),
+        planner=planner,
+        observation_digest=observation_digest,
+        vision_digest=vision_digest,
+        terminal_receipt=_deadline_receipt(submitted.eligible_command_id),
+    )
+
+    assert outcome == "rebalanced"
+    snapshot = await repository.snapshot(spec.mission_id)
+    fight = next(
+        item for item in snapshot.objectives if item.objective.objective_id == "fight-zombie"
+    )
+    assert fight.status is ObjectiveStatus.ACTIVE
+    assert fight.objective.goal.constraints["navigation_timeout_ms"] == 90_000
+    assert fight.objective.budget == unchanged_budget
+
+
+def test_mission_strategy_injects_navigation_timeout_into_goto_steps() -> None:
+    from animetta.tools.minecraft.voyager.goal_models import CombatGoal
+    from animetta.tools.minecraft.voyager.strategies.base import ExecuteStep
+    from animetta.tools.minecraft.voyager.strategies.mission import MissionStrategy
+
+    class _GotoStrategy:
+        def prepare(self, goal):
+            return {}
+
+        def propose(self, state, observation):
+            return ExecuteStep(
+                capability="goto",
+                parameters={"x": 35, "y": 63, "z": 11},
+                maximum_cost=BudgetUsage(max_actions=2),
+            )
+
+    goal = CombatGoal.model_validate(
+        {**_combat_goal(), "constraints": {"navigation_timeout_ms": 90_000}}
+    )
+    strategy = MissionStrategy(live=_GotoStrategy(), learn=_GotoStrategy(), fallback=None)
+    state = strategy.prepare(goal)
+    decision = strategy.propose(state, None)
+    assert decision.parameters["navigation_timeout_ms"] == 90_000
+    assert decision.parameters["x"] == 35
 
 
 async def test_request_rebalance_terminal_when_planner_declines() -> None:

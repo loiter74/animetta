@@ -8,7 +8,7 @@ import {
 } from '../gamebotEvidenceV2.js';
 import { createGameBotRuntimeV2 } from '../gamebotRuntimeV2.js';
 import { projectItemPickupState } from './itemPickupState.js';
-import { AIR_RECOVERY_MS, surfaceEscapePlan } from '../navigation.js';
+import { AIR_RECOVERY_MS, navigationTimeoutOverride, surfaceEscapePlan } from '../navigation.js';
 import { ownOxygenLevel } from './playerVitals.js';
 import { withActionEvidence } from './actionEvidence.js';
 import { projectJumpTravel } from './motionBudget.js';
@@ -239,7 +239,12 @@ function capabilityDescriptors(bot, actions) {
       invoke: () => getStatusSnapshot(bot),
     },
     goto: {
-      parameters: { x: { type: 'number' }, y: { type: 'number' }, z: { type: 'number' } },
+      parameters: {
+        x: { type: 'number' },
+        y: { type: 'number' },
+        z: { type: 'number' },
+        navigation_timeout_ms: { type: 'integer', minimum: 15000, maximum: 120000 },
+      },
       invoke: ({ x, y, z }, context) => actions.goto(x, y, z, context),
       target: ({ x, y, z }) => ({ x, y: y + 0.5, z }),
     },
@@ -710,6 +715,7 @@ function runtimeCapabilities(bot, actions, abortActive, motionPolicy) {
             retreat_policy: name === 'goto' ? createRetreatPolicy(bot, parameters) : null,
             collection_safety: collectionSafety,
             motion_usage: motionUsage,
+            navigation_timeout_ms: navigationTimeoutOverride(parameters.navigation_timeout_ms),
           });
           const invoke = (_annotations, readBlockChanges) => runWithOperationScope(scope, () => guardBotAction(
             bot,

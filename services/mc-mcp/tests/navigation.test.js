@@ -12,7 +12,7 @@ import {
   configureDryNavigation,
   getUndergroundCollectionPreparation,
 } from '../src/collection.js';
-import { escapeWaterToShore, iteratePathSearch, navigateTo, surfaceEscapePlan } from '../src/navigation.js';
+import { escapeWaterToShore, iteratePathSearch, navigateTo, navigationTimeoutOverride, surfaceEscapePlan } from '../src/navigation.js';
 import { createOperationScope, operationSettlementReserveMs } from '../src/runtime/operationScope.js';
 
 function fixture(y) {
@@ -44,8 +44,33 @@ function nativeGridFixture() {
   return {bot,movements};
 }
 
-test('native path centering leaves the continuing AStar grid coordinates and hashes intact', () => {
-  const {bot,movements}=nativeGridFixture();
+test('tactical navigation timeout override clamps into the shared deadline envelope', () => {
+  assert.equal(navigationTimeoutOverride(undefined), null);
+  assert.equal(navigationTimeoutOverride('not-a-number'), null);
+  assert.equal(navigationTimeoutOverride(1_000), 15_000);
+  assert.equal(navigationTimeoutOverride(45_000), 45_000);
+  assert.equal(navigationTimeoutOverride(9_999_999), 120_000);
+});
+
+test('navigateTo forwards the tactical timeout to the operation scope navigation', async () => {
+  const { bot } = fixture(64);
+  const observed = [];
+  const scope = {
+    checkpoint() {},
+    navigate(goal, navigate, options = {}) {
+      observed.push(options);
+      return navigate();
+    },
+  };
+  await navigateTo(bot, { x: 18, y: 64, z: 86 }, { operation_scope: scope });
+  await navigateTo(bot, { x: 18, y: 64, z: 86 }, { operation_scope: scope, navigation_timeout_ms: 45_000 });
+  await navigateTo(bot, { x: 18, y: 64, z: 86 }, { navigation_timeout_ms: 90_000 });
+  assert.deepEqual(observed[0], {});
+  assert.deepEqual(observed[1], { timeoutMs: 45_000 });
+  assert.equal(observed.length, 2, 'without an operation scope the timeout is not consumed');
+});
+
+test('native path centering leaves the continuing AStar grid coordinates and hashes intact', () => {  const {bot,movements}=nativeGridFixture();
   let result,context;
   for(const planned of bot.pathfinder.getPathFromTo(movements,bot.entity.position,
     new pathfinderPackage.goals.GoalBlock(4,64,0))) {
