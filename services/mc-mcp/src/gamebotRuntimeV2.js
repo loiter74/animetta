@@ -926,7 +926,14 @@ export function createGameBotRuntimeV2({
         }
 
         const after = postAction.observation;
-        if (!budgetFitsWithin(budgetUsage, request.remaining_budget)) {
+        if (!budgetFitsWithin(budgetUsage, request.remaining_budget)
+          && error?.code !== 'BUDGET_EXHAUSTED') {
+          // Only un-enforced overshoots quarantine the receipt. When the adapter
+          // already stopped the action at an admitted envelope (BUDGET_EXHAUSTED
+          // from checkActionBudget/checkJumpBudget/checkDigBudget), the boundary
+          // overshoot is the enforcement event itself: the runtime observed and
+          // reported it, so the honest budget-stop error is kept as-is instead
+          // of being rewritten into an unknown-quarantine contract violation.
           outcome = 'unknown';
           error = structuredError({
             code: 'BUDGET_CONTRACT_VIOLATION',

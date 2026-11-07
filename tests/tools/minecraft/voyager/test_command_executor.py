@@ -1169,3 +1169,51 @@ async def test_budget_overrun_preserves_valid_receipt_before_quarantine() -> Non
     assert caught.value.error.code == "BUDGET_CONTRACT_VIOLATION"
     assert caught.value.error.details["actual_usage"]["max_travel_distance"] == 2
     assert caught.value.error.outcome_known is False
+
+
+async def test_enforced_budget_stop_settles_as_honest_budget_error() -> None:
+    repository = InMemoryCommandJournal()
+
+    class EnforcedStopRuntime(Runtime):
+        async def execute_action(self, request, *, timeout=60.0):
+            receipt = await super().execute_action(request, timeout=timeout)
+            payload = receipt.model_dump(mode="json", exclude={"content_hash"})
+            error = dict(MESSAGES["RuntimeProtocolError"])
+            error.update(
+                code="BUDGET_EXHAUSTED",
+                outcome_known=True,
+                world_may_have_changed=True,
+                details={"cause": {"code": "BUDGET_EXHAUSTED"}},
+            )
+            payload.update(outcome="error", error=error)
+            payload["content_hash"] = canonical_json_hash(payload)
+            return ActionReceipt.model_validate(payload)
+
+    executor = CommandExecutor(
+        runtime=EnforcedStopRuntime(repository),
+        repository=repository,
+        now_ms=lambda: 1_800_000_000_000,
+        make_id=lambda prefix: f"{prefix}-1",
+    )
+    with pytest.raises(ExecutorError) as caught:
+        await executor.execute_step(
+            command=await command(repository),
+            step=ExecuteStep(
+                capability="collect",
+                parameters={"count": 1},
+                maximum_cost=BudgetUsage(
+                    max_actions=1, max_travel_distance=1, max_blocks_changed=4
+                ),
+            ),
+            before=Observation.model_validate(MESSAGES["Observation"]),
+            ordinal=1,
+            strategy_state_hash="b" * 64,
+            account=BudgetAccount(limit=budget()),
+        )
+
+    persisted = await repository.get_step("step-1")
+    assert persisted is not None and persisted.state == "failed"
+    assert persisted.receipt["error"]["code"] == "BUDGET_EXHAUSTED"
+    assert caught.value.error.code == "BUDGET_EXHAUSTED"
+    assert caught.value.error.outcome_known is True
+    assert caught.value.error.phase == "budget"

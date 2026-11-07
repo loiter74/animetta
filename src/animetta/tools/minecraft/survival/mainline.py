@@ -73,6 +73,10 @@ def build_nether_portal_mission(
                         max_strategy_attempts=1,
                         max_travel_distance=192,
                         max_blocks_changed=128,
+                        # Surface climbs are exposed to fall damage; a single
+                        # enforcement-boundary scratch must stay inside the
+                        # admitted envelope instead of tripping the contract.
+                        max_damage_taken=1,
                     ),
                 )
             )

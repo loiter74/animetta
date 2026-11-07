@@ -136,7 +136,7 @@ def _budget_policy(config: MinecraftConfig) -> ModeBudgetPolicy:
             max_strategy_attempts=attempts,
             max_travel_distance=min(distance, travel),
             max_blocks_changed=blocks,
-            max_damage_taken=8,
+            max_damage_taken=9,
             protected_items=frozenset({"diamond_pickaxe", "netherite_pickaxe"}),
         )
 

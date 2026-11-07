@@ -679,7 +679,7 @@ def test_mainline_default_resume_keeps_full_chain_and_total_budget() -> None:
     ]
     assert mission.objectives[0].dependencies == ()
     assert mission.budget.max_travel_distance == 1_984
-    assert mission.budget.max_damage_taken == 8
+    assert mission.budget.max_damage_taken == 9
     assert mission.budget.max_blocks_changed == 1088
 
 

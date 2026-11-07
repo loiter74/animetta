@@ -64,6 +64,10 @@ class WorkflowDefinition(BaseModel):
 
 
 def _step(capability: str, parameters: dict, *, travel: float = 0, blocks: int = 0):
+    # Steps that move or change blocks may absorb one enforcement-boundary
+    # damage event (a fall, a scratch) without a contract violation; the
+    # command-level damage budget still bounds the total across steps.
+    damage = 1.0 if (travel > 0 or blocks > 0) else 0.0
     return ExecuteStep(
         capability=capability,
         parameters=parameters,
@@ -71,6 +75,7 @@ def _step(capability: str, parameters: dict, *, travel: float = 0, blocks: int =
             max_actions=1,
             max_travel_distance=travel,
             max_blocks_changed=blocks,
+            max_damage_taken=damage,
         ),
     )
 

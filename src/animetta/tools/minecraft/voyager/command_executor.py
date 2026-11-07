@@ -609,6 +609,29 @@ class CommandExecutor:
         try:
             settled_account = reserved_account.settle(step_id, _receipt_usage(receipt))
         except BudgetContractViolationError as exc:
+            runtime_error = receipt.error
+            details = getattr(runtime_error, "details", None)
+            nested_cause = details.get("cause") if isinstance(details, dict) else None
+            enforced_budget_stop = runtime_error is not None and (
+                runtime_error.code == "BUDGET_EXHAUSTED"
+                or (
+                    isinstance(nested_cause, dict)
+                    and nested_cause.get("code") == "BUDGET_EXHAUSTED"
+                )
+            )
+            if enforced_budget_stop:
+                # The runtime stopped this action at an admitted envelope and
+                # reported the boundary crossing itself; the settle overshoot is
+                # the enforcement event, not unobserved world drift. Surface the
+                # honest budget stop so bounded replan can react to it.
+                await self._repository.update_step_state(step_id, "failed")  # type: ignore[attr-defined]
+                raise _error(
+                    "BUDGET_EXHAUSTED",
+                    str(exc),
+                    phase="budget",
+                    outcome_known=True,
+                    world_may_have_changed=True,
+                ) from exc
             await self._repository.update_step_state(step_id, "unknown")  # type: ignore[attr-defined]
             raise _error(
                 "BUDGET_CONTRACT_VIOLATION",

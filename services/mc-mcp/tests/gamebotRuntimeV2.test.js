@@ -793,7 +793,7 @@ test('receipt usage above the request budget becomes a contract violation receip
 });
 
 
-test('over-budget failure preserves the stop cause and unmodified consumed usage', async () => {
+test('over-budget failure keeps the enforced budget stop honest', async () => {
   const usage = budget({ max_actions: 1, max_travel_distance: 32.13 });
   const stopDetails = { travel_distance: 30.1, stopping_reserve: 2,
     position: { x: -25.5, y: 97, z: -14.5 } };
@@ -807,14 +807,13 @@ test('over-budget failure preserves the stop cause and unmodified consumed usage
 
   const receipt = await runtime.executeAction(request());
 
-  assert.equal(receipt.outcome, 'unknown');
-  assert.equal(receipt.reconciliation, 'pending');
-  assert.equal(receipt.error.code, 'BUDGET_CONTRACT_VIOLATION');
+  // The runtime stopped the action at an admitted envelope and reported the
+  // boundary crossing itself; the receipt keeps the honest budget-stop error
+  // and the unmodified consumed usage instead of quarantining as unknown.
+  assert.equal(receipt.outcome, 'error');
+  assert.equal(receipt.reconciliation, 'accepted');
+  assert.equal(receipt.error.code, 'BUDGET_EXHAUSTED');
   assert.deepEqual(receipt.budget_usage, usage);
-  assert.equal(receipt.error.details.cause.code, 'BUDGET_EXHAUSTED');
-  assert.deepEqual(receipt.error.details.cause.details, { ...stopDetails, budget_usage: usage });
-  assert.deepEqual(receipt.error.details.budget_usage, usage);
-  assert.deepEqual(receipt.error.details.remaining_budget, request().remaining_budget);
 });
 
 

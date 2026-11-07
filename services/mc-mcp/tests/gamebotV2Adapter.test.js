@@ -411,8 +411,10 @@ test('generic budget guard permits stationary zero-block crafting and stops dama
   goto.remaining_budget = budget({ max_damage_taken: 0 });
   const stopped = await fixture.adapter.runtime.executeAction(goto);
   assert.equal(continued, false);
-  assert.equal(stopped.outcome, 'unknown');
-  assert.equal(stopped.error.code, 'BUDGET_CONTRACT_VIOLATION');
+  // An envelope stop the runtime enforced itself stays an honest budget error;
+  // the boundary overshoot is not rewritten into an unknown contract violation.
+  assert.equal(stopped.outcome, 'error');
+  assert.equal(stopped.error.code, 'BUDGET_EXHAUSTED');
   assert.equal(stopped.budget_usage.max_damage_taken, 2);
   assert.equal(stopped.budget_usage.max_travel_distance, 5);
   assert.equal(stopped.budget_usage.max_blocks_changed, 2);
@@ -591,8 +593,10 @@ test('collection damage immediately stops work without hiding a real budget over
   const receipt = await fixture.adapter.runtime.executeAction(action);
   assert.equal(continued, false);
   assert.equal(receipt.budget_usage.max_damage_taken, 2);
-  assert.equal(receipt.outcome, 'unknown');
-  assert.equal(receipt.error.code, 'BUDGET_CONTRACT_VIOLATION');
+  // Enforced damage stops stay honest budget errors; the consumed usage is
+  // reported unmodified instead of being hidden as an unknown violation.
+  assert.equal(receipt.outcome, 'error');
+  assert.equal(receipt.error.code, 'BUDGET_EXHAUSTED');
   assert.equal(fixture.bot.listenerCount('move'), 0);
   assert.equal(fixture.bot.listenerCount('health'), 0);
   fixture.adapter.dispose();
