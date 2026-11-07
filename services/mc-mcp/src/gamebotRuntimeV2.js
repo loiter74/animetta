@@ -349,6 +349,7 @@ export function createGameBotRuntimeV2({
   postActionSettleTimeoutMs = 10_000,
   postActionSettlePollMs = 100,
   postActionStableSamples = 3,
+  postActionErrorSettleDwellMs = 1_000,
   waitMs = (delayMs) => new Promise((resolve) => setTimeout(resolve, delayMs)),
   emitActionPhase = () => {},
   presentationMode = 'off',
@@ -380,6 +381,9 @@ export function createGameBotRuntimeV2({
   }
   if (!Number.isInteger(postActionStableSamples) || postActionStableSamples < 2) {
     throw new TypeError('postActionStableSamples must be an integer of at least 2');
+  }
+  if (!Number.isInteger(postActionErrorSettleDwellMs) || postActionErrorSettleDwellMs < 0) {
+    throw new TypeError('postActionErrorSettleDwellMs must be a non-negative integer');
   }
   if (typeof waitMs !== 'function') {
     throw new TypeError('waitMs must be a function');
@@ -491,7 +495,16 @@ export function createGameBotRuntimeV2({
     return { ...observation, content_hash: contentHash(observation) };
   }
 
-  async function captureSettledPostActionObservation(correlationId, sequence, deadlineMs) {
+  async function captureSettledPostActionObservation(correlationId, sequence, deadlineMs, { minimumStableDwellMs = 0 } = {}) {
+    // A failed action may have dispatched an actuator event (block place/dig)
+    // whose server echo lands well after motion settles; the streak alone can
+    // declare stability inside that latency. Require the streak to also span a
+    // minimum dwell when asked (error paths), bounded by the configured budget
+    // so small settle windows keep their existing semantics.
+    const effectiveDwellMs = Math.min(
+      minimumStableDwellMs,
+      Math.max(0, postActionSettleTimeoutMs - postActionStableSamples * postActionSettlePollMs),
+    );
     let latest = await captureObservation(correlationId, sequence);
     const settlementTrace = [];
     const appendSample = ({ observation, stateHash, stableStreak, rejectionReason }) => {
@@ -508,6 +521,9 @@ export function createGameBotRuntimeV2({
     };
     let latestStateHash = contentHash(durableObservableState(latest));
     let stableSamples = observationIsMotionSettled(latest) && !observationHasPendingPickups(latest) ? 1 : 0;
+    let stableSinceAtMs = stableSamples > 0 ? latest.captured_at_ms : null;
+    const dwellSatisfied = () => effectiveDwellMs <= 0
+      || (stableSinceAtMs !== null && latest.captured_at_ms - stableSinceAtMs >= effectiveDwellMs);
     if (postActionSettleTimeoutMs === 0) {
       appendSample({
         observation: latest,
@@ -539,8 +555,10 @@ export function createGameBotRuntimeV2({
       const durableStateChanged = candidateStateHash !== latestStateHash;
       if (motionSettled && !pickupsPending) {
         stableSamples = candidateStateHash === latestStateHash ? stableSamples + 1 : 1;
+        if (stableSamples === 1) stableSinceAtMs = candidate.captured_at_ms;
       } else {
         stableSamples = 0;
+        stableSinceAtMs = null;
       }
       latest = candidate;
       latestStateHash = candidateStateHash;
@@ -554,10 +572,10 @@ export function createGameBotRuntimeV2({
           : durableStateChanged
             ? 'durable_state_changed'
             : stableSamples >= postActionStableSamples
-              ? null
+              ? (dwellSatisfied() ? null : 'dwell_incomplete')
               : 'stable_streak_incomplete',
       });
-      if (stableSamples >= postActionStableSamples) {
+      if (stableSamples >= postActionStableSamples && dwellSatisfied()) {
         return { observation: latest, stable: true, settlementTrace };
       }
     }
@@ -856,6 +874,7 @@ export function createGameBotRuntimeV2({
               `${request.correlation_id}:after`,
               actionSequence,
               request.deadline_ms,
+              { minimumStableDwellMs: error ? postActionErrorSettleDwellMs : 0 },
             );
           reconciliationError = !postAction.stable
             ? structuredError({

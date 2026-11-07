@@ -179,6 +179,169 @@ test('default settlement window accepts durable state after a two second landing
 });
 
 
+test('failed actions keep sampling until the error settle dwell spans late actuator echoes', async () => {
+  let actionStarted = false;
+  let postActionSamples = 0;
+  let virtualNow = 1_000_000;
+  const stableState = {
+    position: { x: 74, y: 55, z: 26 },
+    health: 20,
+    food: 20,
+    inventory: { cobblestone: 91 },
+    equipment: {},
+    environment: {
+      dimension: 'minecraft:overworld',
+      on_ground: true,
+      velocity: { x: 0, y: 0, z: 0 },
+    },
+  };
+  const { runtime } = fixture({
+    disableSettlement: false,
+    invoke: async () => {
+      actionStarted = true;
+      // r114 shape: deadline kills the pathfinder while a dispatched block
+      // placement is still awaiting its server echo.
+      throw Object.assign(
+        new Error('pathfinder navigation did not finish before its deadline'),
+        { code: 'ACTION_DEADLINE_EXPIRED' },
+      );
+    },
+    observeState: async () => {
+      if (!actionStarted) return stableState;
+      postActionSamples += 1;
+      // The placement echo (cobblestone 91 -> 90) lands on the 6th sample.
+      if (postActionSamples < 6) return stableState;
+      return { ...stableState, inventory: { cobblestone: 90 } };
+    },
+    runtimeOptions: {
+      postActionSettlePollMs: 100,
+      postActionStableSamples: 3,
+      postActionErrorSettleDwellMs: 500,
+      nowMs: () => virtualNow,
+      waitMs: async (delayMs) => { virtualNow += delayMs; },
+    },
+  });
+
+  const receipt = await runtime.executeAction(request());
+
+  assert.equal(receipt.outcome, 'error');
+  assert.equal(receipt.error.code, 'ACTION_DEADLINE_EXPIRED');
+  assert.equal(receipt.post_observation, 'stable');
+  assert.equal(receipt.reconciliation, 'accepted');
+  const observable = receipt.explained_mutations
+    .find((mutation) => mutation.subject === 'observable_state');
+  assert.equal(observable.details.after_state.inventory.cobblestone, 90);
+  assert.ok(
+    receipt.settlement_trace.some((sample) => sample.rejection_reason === 'dwell_incomplete'),
+    'the streak alone must not satisfy settlement while the dwell window is open',
+  );
+  assert.equal(receipt.settlement_trace.at(-1).rejection_reason, null);
+  assert.ok(postActionSamples >= 9, `expected dwell-extended sampling, got ${postActionSamples} samples`);
+});
+
+
+test('settlement dwell applies only to failed actions', async () => {
+  let actionStarted = false;
+  let postActionSamples = 0;
+  let virtualNow = 1_000_000;
+  const stableState = {
+    position: { x: 74, y: 55, z: 26 },
+    health: 20,
+    food: 20,
+    inventory: { cobblestone: 91 },
+    equipment: {},
+    environment: {
+      dimension: 'minecraft:overworld',
+      on_ground: true,
+      velocity: { x: 0, y: 0, z: 0 },
+    },
+  };
+  const { runtime } = fixture({
+    disableSettlement: false,
+    invoke: async () => {
+      actionStarted = true;
+      return {
+        output: { collected: 1 },
+        explained_mutations: [],
+        budget_usage: budget({ max_actions: 1 }),
+      };
+    },
+    observeState: async () => {
+      if (!actionStarted) return stableState;
+      postActionSamples += 1;
+      // A late durable change must NOT extend the fast success path.
+      if (postActionSamples < 6) return stableState;
+      return { ...stableState, inventory: { cobblestone: 90 } };
+    },
+    runtimeOptions: {
+      postActionSettlePollMs: 100,
+      postActionStableSamples: 3,
+      postActionErrorSettleDwellMs: 500,
+      nowMs: () => virtualNow,
+      waitMs: async (delayMs) => { virtualNow += delayMs; },
+    },
+  });
+
+  const receipt = await runtime.executeAction(request());
+
+  assert.equal(receipt.outcome, 'success');
+  assert.equal(receipt.post_observation, 'stable');
+  const observable = receipt.explained_mutations
+    .find((mutation) => mutation.subject === 'observable_state');
+  assert.equal(observable.details.after_state.inventory.cobblestone, 91);
+  assert.ok(postActionSamples <= 4, `success must keep the fast settle path, got ${postActionSamples} samples`);
+});
+
+
+test('settlement dwell never exceeds the configured settle budget', async () => {
+  let actionStarted = false;
+  let postActionSamples = 0;
+  let virtualNow = 1_000_000;
+  const stableState = {
+    position: { x: 74, y: 55, z: 26 },
+    health: 20,
+    food: 20,
+    inventory: { cobblestone: 91 },
+    equipment: {},
+    environment: {
+      dimension: 'minecraft:overworld',
+      on_ground: true,
+      velocity: { x: 0, y: 0, z: 0 },
+    },
+  };
+  const { runtime } = fixture({
+    disableSettlement: false,
+    invoke: async () => {
+      actionStarted = true;
+      throw Object.assign(new Error('deadline'), { code: 'ACTION_DEADLINE_EXPIRED' });
+    },
+    observeState: async () => {
+      if (!actionStarted) return stableState;
+      postActionSamples += 1;
+      return stableState;
+    },
+    runtimeOptions: {
+      // Budget can only afford the streak itself (40 - 4*10 = 0 effective dwell).
+      postActionSettleTimeoutMs: 40,
+      postActionSettlePollMs: 10,
+      postActionStableSamples: 4,
+      postActionErrorSettleDwellMs: 500,
+      nowMs: () => virtualNow,
+      waitMs: async (delayMs) => { virtualNow += delayMs; },
+    },
+  });
+
+  const receipt = await runtime.executeAction(request());
+
+  assert.equal(receipt.outcome, 'error');
+  assert.equal(receipt.post_observation, 'stable');
+  assert.ok(postActionSamples <= 5, `tiny budgets must keep legacy behaviour, got ${postActionSamples} samples`);
+  assert.ok(
+    !receipt.settlement_trace.some((sample) => sample.rejection_reason === 'dwell_incomplete'),
+  );
+});
+
+
 test('v2 manifest exposes required production guarantees and immutable instance identity', () => {
   const { runtime } = fixture();
 

@@ -78,7 +78,7 @@ function runtime({ capability, parametersSchema, observeState, invoke }) {
 }
 
 
-function delayedPickupReplay({ pickupAtMs = 4614, deadlineAfterMs = 20000, outsidePickupArea = false } = {}) {
+function delayedPickupReplay({ pickupAtMs = 4614, deadlineAfterMs = 20000, outsidePickupArea = false, errorDwellMs = 1_000 } = {}) {
   const base = 1_800_000_000_000;
   let elapsed = 0;
   let active = false;
@@ -90,6 +90,7 @@ function delayedPickupReplay({ pickupAtMs = 4614, deadlineAfterMs = 20000, outsi
     runtimeInstanceId: 'runtime-replay', environmentProfile: profile(),
     nowMs: () => base + elapsed, getTick: () => Math.floor(elapsed / 50),
     waitMs: async delay => { elapsed += delay; },
+    postActionErrorSettleDwellMs: errorDwellMs,
     observeState: async () => {
       bot.entities = active && elapsed < pickupAtMs ? { 1: {
         id: 1, name: 'item', width: 0.25, height: 0.25,
@@ -152,7 +153,9 @@ test('pending pickup remains unreconciled when the original deadline expires', a
 
 
 test('a resting item outside collision pickup contact does not quarantine a known failure', async () => {
-  const { gamebot, action, elapsed } = delayedPickupReplay({ pickupAtMs: Infinity, outsidePickupArea: true });
+  // Durable state is final from the first post-action sample here, so the
+  // error settle dwell is disabled to keep pinning the fast reconciliation path.
+  const { gamebot, action, elapsed } = delayedPickupReplay({ pickupAtMs: Infinity, outsidePickupArea: true, errorDwellMs: 0 });
   const receipt = await gamebot.executeAction(action);
   assert.equal(receipt.outcome, 'error');
   assert.equal(receipt.error.code, 'BUDGET_EXHAUSTED');

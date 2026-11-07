@@ -1332,9 +1332,11 @@ test('bot end during initial presentation is protected before the action starts'
   protocolClient.state = 'ended';
   bot.emit('end', 'connection lost');
   releaseLook();
+  // Failed actions deliberately settle for a 1s error dwell with real timers;
+  // the race guard only needs to beat a deadlock, not the settle window.
   const receipt = await Promise.race([
     pending,
-    new Promise((resolve) => setTimeout(() => resolve('timed_out'), 1_000)),
+    new Promise((resolve) => setTimeout(() => resolve('timed_out'), 3_000)),
   ]);
 
   assert.notEqual(receipt, 'timed_out');
