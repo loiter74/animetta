@@ -501,6 +501,92 @@ async def test_request_rebalance_deadline_class_extends_navigation_timeout() -> 
     assert fight.objective.budget == unchanged_budget
 
 
+async def test_request_rebalance_clamps_enforced_stop_overshoot() -> None:
+    coordinator_module, _, _ = _rebalance_modules()
+    from animetta.tools.minecraft.mission.repository import InMemoryMissionRepository
+    from animetta.tools.minecraft.voyager.journal import InMemoryCommandJournal
+
+    repository = InMemoryMissionRepository()
+    journal = InMemoryCommandJournal()
+    await repository.connect()
+    coordinator = coordinator_module.MissionCoordinator(repository=repository, journal=journal)
+    spec, submitted = await _submit_mission(
+        coordinator, repository, journal, _rebalance_mission_payload()
+    )
+
+    await _fail_command(journal, submitted.eligible_command_id, 1_100)
+    observation_digest, vision_digest = _digests()
+    planner = _ScriptedPlanner(
+        RebalanceProposal(
+            rationale="执法停止本身超支 1.5 米（r165 形态）：按账户剩余提出可负担重试包络。",
+            new_budget=BudgetUsage(max_actions=4, max_travel_distance=64.0),
+        )
+    )
+    outcome = await coordinator.request_rebalance(
+        coordinator_module.VerifiedChildTransition(
+            mission_id=spec.mission_id,
+            objective_id="fight-zombie",
+            command_id=submitted.eligible_command_id,
+            command_state="failed",
+            verification="failed",
+            evidence_refs=("receipt:" + _hex64("content"),),
+            actual_budget=BudgetUsage(max_actions=2, max_travel_distance=33.5),
+            terminal_error_code="BUDGET_EXHAUSTED",
+            occurred_at_ms=1_200,
+        ),
+        planner=planner,
+        observation_digest=observation_digest,
+        vision_digest=vision_digest,
+        terminal_receipt=_budget_exhausted_receipt(command_id=submitted.eligible_command_id),
+    )
+
+    assert outcome == "rebalanced"
+    assert planner.requests[0].remaining_budget is not None
+    # 256 total - 32 clamped settle - 32 discover-copper open reservation;
+    # an unclamped settle would leave 191.5.
+    assert planner.requests[0].remaining_budget.max_travel_distance == pytest.approx(192.0)
+    snapshot = await repository.snapshot(spec.mission_id)
+    assert snapshot.mission.status == "running"
+
+
+async def test_request_rebalance_overshoot_without_enforced_stop_violates() -> None:
+    coordinator_module, _, _ = _rebalance_modules()
+    from animetta.tools.minecraft.mission.repository import InMemoryMissionRepository
+    from animetta.tools.minecraft.voyager.budget import BudgetContractViolationError
+    from animetta.tools.minecraft.voyager.journal import InMemoryCommandJournal
+
+    repository = InMemoryMissionRepository()
+    journal = InMemoryCommandJournal()
+    await repository.connect()
+    coordinator = coordinator_module.MissionCoordinator(repository=repository, journal=journal)
+    spec, submitted = await _submit_mission(
+        coordinator, repository, journal, _rebalance_mission_payload()
+    )
+
+    await _fail_command(journal, submitted.eligible_command_id, 1_100)
+    observation_digest, vision_digest = _digests()
+    planner = _ScriptedPlanner(None)
+    with pytest.raises(BudgetContractViolationError, match="usage exceeds reservation"):
+        await coordinator.request_rebalance(
+            coordinator_module.VerifiedChildTransition(
+                mission_id=spec.mission_id,
+                objective_id="fight-zombie",
+                command_id=submitted.eligible_command_id,
+                command_state="failed",
+                verification="failed",
+                evidence_refs=("receipt:" + _hex64("content"),),
+                actual_budget=BudgetUsage(max_actions=2, max_travel_distance=33.5),
+                terminal_error_code=None,
+                occurred_at_ms=1_200,
+            ),
+            planner=planner,
+            observation_digest=observation_digest,
+            vision_digest=vision_digest,
+            terminal_receipt=_budget_exhausted_receipt(command_id=submitted.eligible_command_id),
+        )
+    assert planner.requests == []
+
+
 def test_mission_strategy_injects_navigation_timeout_into_goto_steps() -> None:
     from animetta.tools.minecraft.voyager.goal_models import CombatGoal
     from animetta.tools.minecraft.voyager.strategies.base import ExecuteStep

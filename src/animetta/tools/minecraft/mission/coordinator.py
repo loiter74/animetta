@@ -12,7 +12,12 @@ from animetta.tools.minecraft.discovery.exploration import (
     ExplorationInput,
     ExplorationProposer,
 )
-from animetta.tools.minecraft.voyager.budget import BudgetAccount, BudgetExceededError, BudgetUsage
+from animetta.tools.minecraft.voyager.budget import (
+    BudgetAccount,
+    BudgetContractViolationError,
+    BudgetExceededError,
+    BudgetUsage,
+)
 from animetta.tools.minecraft.voyager.command_models import CommandState
 from animetta.tools.minecraft.voyager.journal import CommandDraft, CommandJournal
 
@@ -70,7 +75,51 @@ class VerifiedChildTransition(_FrozenModel):
     verification: Literal["verified", "failed", "unknown"]
     evidence_refs: tuple[str, ...] = Field(min_length=1)
     actual_budget: BudgetUsage = BudgetUsage()
+    terminal_error_code: str | None = None
     occurred_at_ms: int = Field(ge=0)
+
+
+def _settle_child_reservation(
+    budget: BudgetAccount,
+    reservation_id: str,
+    actual: BudgetUsage,
+    *,
+    terminal_error_code: str | None,
+) -> BudgetAccount:
+    """Settle a spent child objective reservation.
+
+    An enforced budget stop (the runtime's own BUDGET_EXHAUSTED interrupt) can
+    overshoot the reserved envelope by the bounded enforcement event itself; the
+    receipt reports that overshoot honestly. Clamp such overshoots to the
+    reservation envelope so the mission account stays conservative without
+    stranding the child transition. Any other overshoot stays a loud contract
+    violation.
+    """
+
+    try:
+        return budget.settle(reservation_id, actual)
+    except BudgetContractViolationError:
+        if terminal_error_code != "BUDGET_EXHAUSTED" or reservation_id not in budget.reservations:
+            raise
+        reserved = budget.reservations[reservation_id]
+        clamped = actual.model_copy(
+            update={
+                "max_actions": min(actual.max_actions, reserved.max_actions),
+                "max_strategy_attempts": min(
+                    actual.max_strategy_attempts, reserved.max_strategy_attempts
+                ),
+                "max_travel_distance": min(
+                    actual.max_travel_distance, reserved.max_travel_distance
+                ),
+                "max_blocks_changed": min(actual.max_blocks_changed, reserved.max_blocks_changed),
+                "max_damage_taken": min(actual.max_damage_taken, reserved.max_damage_taken),
+                "resource_consumption": {
+                    key: min(amount, reserved.resource_consumption.get(key, amount))
+                    for key, amount in actual.resource_consumption.items()
+                },
+            }
+        )
+        return budget.settle(reservation_id, clamped)
 
 
 def _effective_budget(objective: ObjectiveRecord, spec: MissionSpec) -> dict[str, object]:
@@ -676,7 +725,12 @@ class MissionCoordinator:
             reservation_id = proposal_reservations[0]
         await self._repository.save_budget(
             transition.mission_id,
-            budget.settle(reservation_id, transition.actual_budget),
+            _settle_child_reservation(
+                budget,
+                reservation_id,
+                transition.actual_budget,
+                terminal_error_code=transition.terminal_error_code,
+            ),
             updated_at_ms=transition.occurred_at_ms,
         )
 
@@ -828,7 +882,12 @@ class MissionCoordinator:
             if len(proposal_reservations) != 1:
                 return "not_applicable"
             fixed_reservation = proposal_reservations[0]
-        budget = budget.settle(fixed_reservation, transition.actual_budget)
+        budget = _settle_child_reservation(
+            budget,
+            fixed_reservation,
+            transition.actual_budget,
+            terminal_error_code=transition.terminal_error_code,
+        )
         await self._repository.save_budget(
             transition.mission_id, budget, updated_at_ms=transition.occurred_at_ms
         )

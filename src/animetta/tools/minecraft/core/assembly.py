@@ -395,11 +395,16 @@ async def assemble_control_plane(
             return
         steps = await repository.list_steps(command_id)
         actual_budget = BudgetUsage()
+        receipts: list[ActionReceipt] = []
         for step in steps:
             if step.receipt is None:
                 continue
             receipt = ActionReceipt.model_validate(step.receipt)
+            receipts.append(receipt)
             actual_budget = actual_budget.plus(budget_usage_from_vector(receipt.budget_usage))
+        terminal_error_code = (
+            receipts[-1].error.code if receipts and receipts[-1].error is not None else None
+        )
         evidence_refs = tuple(
             f"receipt:{step.receipt['content_hash']}"
             for step in steps
@@ -418,6 +423,7 @@ async def assemble_control_plane(
             command_state=command.state.value,
             verification=verification,
             actual_budget=actual_budget,
+            terminal_error_code=terminal_error_code,
             occurred_at_ms=_now_ms(),
             evidence_refs=evidence_refs,
         )
