@@ -68,12 +68,17 @@ providers:
       top_p: 0.93
       max_tokens: 4096
       pricing:
+        # 2026-11-14 re-verified against the official page: billing is now
+        # peak/off-peak (legacy deepseek-v4-flash name serves V4.1-Flash-1017
+        # at the Flash price). The single-rate schema records the off-peak
+        # rate (weekends + most hours); peak is 2x: cached-hit $0.006,
+        # input $0.30, output $1.20 per 1M tokens.
         schema_version: 1
         currency: USD
-        cached_input_per_million: 0.0028
-        input_per_million: 0.14
-        output_per_million: 0.28
-        verified_on: 2026-08-15
+        cached_input_per_million: 0.003
+        input_per_million: 0.15
+        output_per_million: 0.6
+        verified_on: 2026-11-14
         source: https://api-docs.deepseek.com/quick_start/pricing/
 
   asr:
