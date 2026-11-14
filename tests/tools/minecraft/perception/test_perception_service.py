@@ -156,6 +156,59 @@ class TestDualPerceptionServiceMonitor:
         assert consensus.action == "alert"
         assert consensus.environment.stuck is True
 
+    async def test_obsidian_goal_tolerates_adjacent_lava(self) -> None:
+        from animetta.tools.gamebot.contracts.v2 import DiscoverableBlock
+
+        lava_adjacent = _observation(
+            visible_blocks=(
+                DiscoverableBlock(
+                    block_id="minecraft:lava",
+                    position=Position(x=1.0, y=64.0, z=0.0),
+                ),
+            )
+        )
+        obsidian_goal = TypeAdapter(GoalSpec).validate_python(
+            {
+                "intent": "acquire",
+                "target": "minecraft:obsidian",
+                "quantity": 1,
+                "success_predicates": [
+                    {"kind": "inventory_at_least", "item": "obsidian", "quantity": 1}
+                ],
+            }
+        )
+        service = _service(
+            capture=_StaticCapture(None),
+            vision=_StaticVision(VisionVerdict(available=True)),
+        )
+
+        without_goal = await service.monitor(lava_adjacent)
+        with_goal = await service.monitor(lava_adjacent, goal=obsidian_goal)
+
+        assert without_goal.action == "halt"
+        assert with_goal.action == "alert"
+        assert with_goal.adopted_danger is PerceptionDanger.WARNING
+
+    async def test_non_obsidian_goal_still_halts_on_lava(self) -> None:
+        from animetta.tools.gamebot.contracts.v2 import DiscoverableBlock
+
+        lava_adjacent = _observation(
+            visible_blocks=(
+                DiscoverableBlock(
+                    block_id="minecraft:lava",
+                    position=Position(x=1.0, y=64.0, z=0.0),
+                ),
+            )
+        )
+        service = _service(
+            capture=_StaticCapture(None),
+            vision=_StaticVision(VisionVerdict(available=True)),
+        )
+
+        consensus = await service.monitor(lava_adjacent, goal=_goal())
+
+        assert consensus.action == "halt"
+
 
 class TestDualPerceptionServiceVerifyCompletion:
     async def test_implausible_goal_is_flagged_in_verify_mode(self) -> None:

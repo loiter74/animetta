@@ -13,13 +13,16 @@ const faceOffsets = [
 ];
 
 function basinBot({ sizes = [10], unknown = false, flowing = false,
-  abort = false, noWater = false, blockLimit = 16, changeWallOnLook = false } = {}) {
+  abort = false, noWater = false, blockLimit = 16, changeWallOnLook = false,
+  openWalls = [], cobble = 0 } = {}) {
   const registry = minecraftData('1.21.1'), Block = BlockLoader(registry);
   const bot = new EventEmitter(), world = new WorldSync(null), controller = new AbortController();
   const pools = sizes.map((size, index) => Array.from({ length: size }, (_, x) => new Vec3(index * 20 + x, 64, 0)));
   const lava = new Set(pools.flat().map(p => p.toString())), converted = new Set(), water = new Map();
+  const openAir = new Set(openWalls.map(w => w.toString())), placedWalls = new Set();
   let uses = 0, lastLook, wallMissing = unknown;
   bot.items = noWater ? [] : [{ name: 'water_bucket', count: 1 }];
+  if (cobble) bot.items.push({ name: 'cobblestone', count: cobble });
   Object.assign(bot, { registry, world, health: 20,
     game: { dimension: 'minecraft:overworld', minY: -64, height: 384 },
     entity: { position: new Vec3(Math.floor(sizes[0] / 2) + .5, 66, -.5),
@@ -30,14 +33,21 @@ function basinBot({ sizes = [10], unknown = false, flowing = false,
   world.getBlock = point => {
     const p = point.floored(), key = p.toString();
     if (wallMissing && p.equals(new Vec3(0, 65, -1))) return null;
-    const name = water.has(key) ? 'water' : converted.has(key) ? 'obsidian'
-      : lava.has(key) ? 'lava' : p.y === 65 && lava.has(p.offset(0, -1, 0).toString())
+    const name = placedWalls.has(key) ? 'cobblestone' : water.has(key) ? 'water' : converted.has(key) ? 'obsidian'
+      : lava.has(key) ? 'lava' : openAir.has(key) ? 'air'
+      : p.y === 65 && lava.has(p.offset(0, -1, 0).toString())
         ? 'air' : p.y < 66 ? 'stone' : 'air';
     const block = Block.fromStateId(registry.blocksByName[name].defaultState + (name === 'lava' && flowing ? 1 : 0), 0);
     block.position = p;
     return block;
   };
   bot.blockAt = p => world.getBlock(p);
+  bot.placeBlock = async (reference, face) => {
+    assert.equal(bot.heldItem?.name, 'cobblestone');
+    const p = reference.position.plus(face);
+    placedWalls.add(p.toString());
+    bot.emit('blockUpdate', null, bot.blockAt(p));
+  };
   const scans = [];
   bot.findBlocks = options => {
     scans.push(options);
@@ -90,6 +100,7 @@ function basinBot({ sizes = [10], unknown = false, flowing = false,
   const context = { signal: controller.signal,
     budget: { max_blocks_changed: blockLimit, max_travel_distance: 128 } };
   return { bot, context, scans, converted, water, uses: () => uses,
+    placedWalls: () => placedWalls,
     run: () => prepareObsidian(bot, context, { wait: async () => {} }) };
 }
 
@@ -139,5 +150,30 @@ test('interrupted conversion retains observed effects and forbids treating an un
   });
   assert.equal(f.uses(), 1);
   assert.equal(f.converted.size, 1);
+  assert.equal(f.bot.listenerCount('blockUpdate'), 0);
+});
+
+test('an open lava pool is closed with cobblestone walls and then cast inside the same allowance', async () => {
+  const openEnd = new Vec3(3, 65, 0);
+  const f = basinBot({ sizes: [3], openWalls: [openEnd], cobble: 8 });
+  const result = await f.run();
+  assert.equal(result.output.created_obsidian.length, 3);
+  assert.deepEqual([...f.placedWalls()], [openEnd.toString()]);
+  assert.equal(result.budget_usage.max_blocks_changed, 5, '3 obsidian + 1 water + 1 wall');
+  assert.equal(f.uses(), 1);
+  assert.equal(f.converted.size, 3);
+  assert.equal(f.bot.listenerCount('blockUpdate'), 0);
+});
+
+test('without cobblestone an open pool still fails honestly with the diagnostic count', async () => {
+  const f = basinBot({ sizes: [3], openWalls: [new Vec3(3, 65, 0)] });
+  await assert.rejects(f.run(), error => {
+    assert.equal(error.code, 'RESOURCE_NOT_FOUND');
+    assert.equal(error.details.lava_sources_seen, 3);
+    return true;
+  });
+  assert.equal(f.uses(), 0);
+  assert.equal(f.placedWalls().size, 0);
+  assert.equal(f.converted.size, 0);
   assert.equal(f.bot.listenerCount('blockUpdate'), 0);
 });

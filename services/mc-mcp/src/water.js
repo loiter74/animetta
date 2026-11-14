@@ -376,6 +376,87 @@ function closedLavaBasin(bot, start, maximum, origin) {
   return [...cells.values()];
 }
 
+// A lava pool that satisfies every per-cell requirement of closedLavaBasin but
+// may have open edges that cobblestone walls can close. Each fixable edge is a
+// wall position standing on solid ground beside the pool; edges over holes,
+// flowing lava or partial blocks cannot be closed within a bounded proof.
+function openLavaPool(bot, start, maximum, origin) {
+  const cells = new Map(), walls = new Map(), pending = [start];
+  let unfixable = false;
+  while (pending.length) {
+    const p = pending.pop(), key = p.toString();
+    if (cells.has(key)) continue;
+    if (cells.size >= maximum || p.distanceTo(origin) > 64
+      || !isLavaSource(bot.blockAt(p))
+      || !isFullCubeReference(bot.blockAt(p.offset(0, -1, 0)))
+      || !castingAir(bot.blockAt(p.offset(0, 1, 0)))) return null;
+    cells.set(key, p);
+    for (const side of BASIN_SIDES) {
+      const adjacent = p.offset(side.x, 0, side.z);
+      const boundary = bot.blockAt(adjacent.offset(0, 1, 0));
+      if (isFullCubeReference(boundary)) continue;
+      if (castingAir(boundary) && isLavaSource(bot.blockAt(adjacent))) {
+        pending.push(adjacent);
+        continue;
+      }
+      const ground = bot.blockAt(adjacent);
+      if (castingAir(boundary) && isFullCubeReference(ground)) {
+        walls.set(boundary.position.toString(), boundary.position);
+        continue;
+      }
+      unfixable = true;
+    }
+  }
+  if (unfixable) return null;
+  return { cells: [...cells.values()], walls: [...walls.values()] };
+}
+
+const totalItemCount = (bot, name) => bot.inventory.items()
+  .filter(item => item.name === name).reduce((total, item) => total + item.count, 0);
+
+// Build cobblestone walls to close an otherwise qualifying lava pool, then
+// re-run the unchanged closed-basin proof. Every placed wall is a counted
+// mutation; if the proof still fails nothing is poured.
+async function buildClosedBasin(bot, context, mutations, sources, maximum, origin) {
+  const scanned = new Set(), candidates = [];
+  for (const source of sources) {
+    if (scanned.has(source.toString())) continue;
+    const pool = openLavaPool(bot, source, Math.max(2, Math.min(maximum - 1, 10)), origin);
+    if (!pool) continue;
+    for (const p of pool.cells) scanned.add(p.toString());
+    if (!pool.walls.length) continue;
+    candidates.push(pool);
+  }
+  candidates.sort((a, b) => (a.walls.length + a.cells.length) - (b.walls.length + b.cells.length)
+    || a.cells[0].distanceTo(origin) - b.cells[0].distanceTo(origin));
+  const pick = candidates.find(pool => pool.cells.length + pool.walls.length + 1 <= maximum
+    && totalItemCount(bot, 'cobblestone') >= pool.walls.length);
+  if (!pick) return null;
+  const placed = [];
+  for (const wall of pick.walls) {
+    const ground = bot.blockAt(wall.offset(0, -1, 0));
+    if (!ground || !isFullCubeReference(ground) || !castingAir(bot.blockAt(wall))) {
+      fail('TARGET_CHANGED', '盆壁放置目标已发生变化，停止建造。');
+    }
+    await approachObsidian(bot, ground.position, context, {
+      interactionTarget: wall.offset(0.5, 0, 0.5), allowDig: false,
+    });
+    const material = hasItem(bot, 'cobblestone');
+    if (!material) fail('MISSING_MATERIAL', '封闭熔岩盆地的圆石材料不足。');
+    await bot.equip(material, 'hand');
+    context.operation_scope?.checkpoint();
+    await bot.placeBlock(ground, new (wall.constructor)(0, 1, 0));
+    if (bot.blockAt(wall)?.name !== 'cobblestone') {
+      fail('BASIN_WALL_UNCONFIRMED', '放置盆壁后未观测到圆石。');
+    }
+    mutations.push(placementMutation('cobblestone', wall, bot.game?.dimension));
+    placed.push(wall);
+  }
+  const proof = closedLavaBasin(bot, pick.cells[0], maximum - placed.length, origin);
+  if (!proof) return null;
+  return { cells: proof, walls: placed };
+}
+
 async function castObservedObsidian(bot, context, mutations, wait) {
   if (!hasItem(bot, 'water_bucket')) fail('TOOL_REQUIRED', '制备黑曜石前需要装满的水桶。');
   const maximum = context.budget?.max_blocks_changed;
@@ -400,7 +481,20 @@ async function castObservedObsidian(bot, context, mutations, wait) {
     if (cost > remaining) continue;
     selected.push(basin); remaining -= cost;
   }
-  if (!selected.length) fail('RESOURCE_NOT_FOUND', '原范围和预算内没有已知封闭、可安全制备的熔岩盆地。');
+  if (!selected.length) {
+    // No naturally closed basin in range: try closing a qualifying pool with
+    // cobblestone walls before declaring the resource unavailable.
+    const built = await buildClosedBasin(bot, context, mutations, sources, maximum, origin);
+    if (built) {
+      for (const p of built.cells) seen.add(p.toString());
+      remaining = maximum - built.walls.length - built.cells.length - 1;
+      selected.push(built.cells);
+    } else {
+      fail('RESOURCE_NOT_FOUND', '原范围和预算内没有已知封闭、可安全制备的熔岩盆地。', {
+        lava_sources_seen: sources.length,
+      });
+    }
+  }
   const confirmation = waterConfirmation(context, wait), created = new Map();
   let lastWater;
   for (let index = 0; index < selected.length; index++) {

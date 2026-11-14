@@ -126,6 +126,24 @@ class TestEnvironmentJudgeHazards:
         assert verdict.danger is PerceptionDanger.CRITICAL
         assert verdict.threats == ("lava:1.0m",)
 
+    def test_adjacent_lava_with_tolerance_is_warning(self) -> None:
+        observation = _observation(visible_blocks=(_block("minecraft:lava", x=1.0, z=0.0),))
+
+        verdict = EnvironmentJudge().assess(observation, tolerate_instant_hazards=True)
+
+        assert verdict.danger is PerceptionDanger.WARNING
+        assert verdict.threats == ("lava:1.0m",)
+
+    def test_tolerance_does_not_mask_adjacent_hostile(self) -> None:
+        observation = _observation(
+            visible_blocks=(_block("minecraft:lava", x=1.0, z=0.0),),
+            visible_entities=(_entity("minecraft:creeper", x=1.0, z=0.0),),
+        )
+
+        verdict = EnvironmentJudge().assess(observation, tolerate_instant_hazards=True)
+
+        assert verdict.danger is PerceptionDanger.CRITICAL
+
     def test_nearby_cactus_is_warning(self) -> None:
         observation = _observation(visible_blocks=(_block("minecraft:cactus", x=1.0, z=0.0),))
 

@@ -394,10 +394,16 @@ def nether_preparation_workflows() -> tuple[WorkflowDefinition, ...]:
             intent="acquire",
             target="obsidian",
             steps=(_step("prepare_obsidian", {}, travel=128, blocks=16),)
+            + (
+                # First dig walks to the cast site; follow-ups chip adjacent
+                # obsidian in the same basin, so their declared envelopes must
+                # stay small enough that the summed future cost still fits the
+                # objective travel budget (fallback.py _future_cost admission).
+                _step("collect", {"block_type": "obsidian", "count": 1}, travel=64, blocks=8),
+            )
             + tuple(
-                # Four bounded dig attempts, each followed by a verified backfill.
-                _step("collect", {"block_type": "obsidian", "count": 1}, travel=64, blocks=8)
-                for _ in range(10)
+                _step("collect", {"block_type": "obsidian", "count": 1}, travel=12, blocks=4)
+                for _ in range(9)
             ),
             collection_targets=(None,)
             + tuple(InventoryThreshold(item="obsidian", quantity=count) for count in range(1, 11)),

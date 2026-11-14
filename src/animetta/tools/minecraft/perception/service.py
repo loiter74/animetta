@@ -54,6 +54,22 @@ def describe_goal(goal: GoalSpec | None) -> str:
     return f"{intent} {target}{suffix}"
 
 
+def _tolerates_instant_hazards(goal: GoalSpec | None) -> bool:
+    """Goals whose workflows legitimately operate next to lava/fire.
+
+    Acquiring obsidian pours water onto a lava basin from the basin edge, so
+    the executor must stand within the instant-hazard critical radius for the
+    whole objective. Capping that signal at WARNING keeps every other danger
+    channel (hostiles, health, food, stuck) fully armed.
+    """
+
+    return (
+        goal is not None
+        and goal.intent == "acquire"
+        and goal.target.removeprefix("minecraft:") == "obsidian"
+    )
+
+
 def _environment_digest(verdict: EnvironmentVerdict, observation: Observation) -> str:
     health = observation.health
     food = observation.food
@@ -127,8 +143,13 @@ class DualPerceptionService:
         history: tuple[Observation, ...],
         prompt_builder: Callable[[str], str],
         mode: Literal["monitor", "verify_completion"],
+        tolerate_instant_hazards: bool = False,
     ) -> tuple[VisionVerdict, EnvironmentVerdict, PerceptionConsensus]:
-        environment_verdict = self._environment.assess(observation, history)
+        environment_verdict = self._environment.assess(
+            observation,
+            history,
+            tolerate_instant_hazards=tolerate_instant_hazards,
+        )
         frame = await asyncio.to_thread(self._capture.capture)
         jpeg = getattr(frame, "jpeg", None)
         if isinstance(jpeg, bytes) and jpeg:
@@ -163,6 +184,7 @@ class DualPerceptionService:
             history=history,
             prompt_builder=lambda digest: _monitor_prompt(goal_text, digest),
             mode="monitor",
+            tolerate_instant_hazards=_tolerates_instant_hazards(goal),
         )
         return consensus
 

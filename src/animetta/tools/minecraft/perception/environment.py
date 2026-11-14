@@ -85,7 +85,20 @@ class EnvironmentJudge:
         self,
         observation: Observation,
         history: tuple[Observation, ...] = (),
+        *,
+        tolerate_instant_hazards: bool = False,
     ) -> EnvironmentVerdict:
+        """Assess the observation.
+
+        ``tolerate_instant_hazards`` caps instant-hazard proximity (lava, fire,
+        magma) at WARNING instead of CRITICAL. It is meant for goals whose
+        workflow legitimately operates next to those hazards — acquiring
+        obsidian requires pouring water while standing at the lava basin edge,
+        so an unconditional CRITICAL verdict would make the capability
+        unusable. Hostiles, health, food and stuck signals keep their normal
+        semantics.
+        """
+
         thresholds = self._thresholds
         danger = PerceptionDanger.NONE
         threats: list[str] = []
@@ -141,7 +154,10 @@ class EnvironmentJudge:
                     hazard_nearest = distance
                     hazard_name = block_type
                 if instant and distance < thresholds.hazard_critical_blocks:
-                    danger = danger.at_least(PerceptionDanger.CRITICAL)
+                    if tolerate_instant_hazards:
+                        danger = danger.at_least(PerceptionDanger.WARNING)
+                    else:
+                        danger = danger.at_least(PerceptionDanger.CRITICAL)
                 elif distance < thresholds.hazard_warning_blocks:
                     danger = danger.at_least(PerceptionDanger.WARNING)
             if hazard_name is not None and hazard_nearest is not None:
