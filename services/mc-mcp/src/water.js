@@ -360,8 +360,13 @@ function closedLavaBasin(bot, start, maximum, origin) {
     if (cells.has(key)) continue;
     if (cells.size >= maximum || p.distanceTo(origin) > 64
       || !isLavaSource(bot.blockAt(p))
-      || !isFullCubeReference(bot.blockAt(p.offset(0, -1, 0)))
       || !castingAir(bot.blockAt(p.offset(0, 1, 0)))) return null;
+    // The floor under a top-layer cell may itself be lava: deep, multi-layer
+    // lakes carry their own floor, and the pour plane stays bounded because
+    // the conversion only happens on the layer the placed water can reach.
+    // An open overhang (air below) still breaks the bounded proof.
+    const floor = bot.blockAt(p.offset(0, -1, 0));
+    if (!isFullCubeReference(floor) && !isLavaSource(floor)) return null;
     cells.set(key, p);
     for (const side of BASIN_SIDES) {
       const adjacent = p.offset(side.x, 0, side.z);
@@ -388,8 +393,11 @@ function openLavaPool(bot, start, maximum, origin) {
     if (cells.has(key)) continue;
     if (cells.size >= maximum || p.distanceTo(origin) > 64
       || !isLavaSource(bot.blockAt(p))
-      || !isFullCubeReference(bot.blockAt(p.offset(0, -1, 0)))
       || !castingAir(bot.blockAt(p.offset(0, 1, 0)))) return null;
+    // Same deep-lake relaxation as closedLavaBasin: the cell below may be a
+    // lower lava layer; only an open overhang disqualifies the cell.
+    const floor = bot.blockAt(p.offset(0, -1, 0));
+    if (!isFullCubeReference(floor) && !isLavaSource(floor)) return null;
     cells.set(key, p);
     for (const side of BASIN_SIDES) {
       const adjacent = p.offset(side.x, 0, side.z);

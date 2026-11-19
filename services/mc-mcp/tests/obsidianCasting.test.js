@@ -14,11 +14,15 @@ const faceOffsets = [
 
 function basinBot({ sizes = [10], unknown = false, flowing = false,
   abort = false, noWater = false, blockLimit = 16, changeWallOnLook = false,
-  openWalls = [], cobble = 0 } = {}) {
+  openWalls = [], cobble = 0, deep = false, raisedLava = [] } = {}) {
   const registry = minecraftData('1.21.1'), Block = BlockLoader(registry);
   const bot = new EventEmitter(), world = new WorldSync(null), controller = new AbortController();
   const pools = sizes.map((size, index) => Array.from({ length: size }, (_, x) => new Vec3(index * 20 + x, 64, 0)));
   const lava = new Set(pools.flat().map(p => p.toString())), converted = new Set(), water = new Map();
+  // Deep lakes keep a lower lava layer under every top cell; raised columns
+  // put lava one block above the shared top layer on an edge column.
+  const deepLayer = new Set(deep ? pools.flat().map(p => p.offset(0, -1, 0).toString()) : []);
+  const raised = new Set(raisedLava.map(p => p.toString()));
   const openAir = new Set(openWalls.map(w => w.toString())), placedWalls = new Set();
   let uses = 0, lastLook, wallMissing = unknown;
   bot.items = noWater ? [] : [{ name: 'water_bucket', count: 1 }];
@@ -34,8 +38,8 @@ function basinBot({ sizes = [10], unknown = false, flowing = false,
     const p = point.floored(), key = p.toString();
     if (wallMissing && p.equals(new Vec3(0, 65, -1))) return null;
     const name = placedWalls.has(key) ? 'cobblestone' : water.has(key) ? 'water' : converted.has(key) ? 'obsidian'
-      : lava.has(key) ? 'lava' : openAir.has(key) ? 'air'
-      : p.y === 65 && lava.has(p.offset(0, -1, 0).toString())
+      : lava.has(key) || deepLayer.has(key) || raised.has(key) ? 'lava' : openAir.has(key) ? 'air'
+      : p.y === 65 && (lava.has(p.offset(0, -1, 0).toString()) || raised.has(p.offset(0, -1, 0).toString()))
         ? 'air' : p.y < 66 ? 'stone' : 'air';
     const block = Block.fromStateId(registry.blocksByName[name].defaultState + (name === 'lava' && flowing ? 1 : 0), 0);
     block.position = p;
@@ -51,7 +55,7 @@ function basinBot({ sizes = [10], unknown = false, flowing = false,
   const scans = [];
   bot.findBlocks = options => {
     scans.push(options);
-    return pools.flat().filter(p => {
+    return [...pools.flat(), ...raisedLava].filter(p => {
       const block = bot.blockAt(p);
       return typeof options.matching === 'function' ? options.matching(block) : block.type === options.matching;
     }).slice(0, options.count);
@@ -174,6 +178,30 @@ test('without cobblestone an open pool still fails honestly with the diagnostic 
   });
   assert.equal(f.uses(), 0);
   assert.equal(f.placedWalls().size, 0);
+  assert.equal(f.converted.size, 0);
+  assert.equal(f.bot.listenerCount('blockUpdate'), 0);
+});
+
+test('a deep lava lake with a flat top layer casts within the original allowance', async () => {
+  const f = basinBot({ deep: true });
+  const result = await f.run();
+  assert.equal(result.output.protected, true);
+  assert.equal(result.output.created_obsidian.length, 10);
+  assert.equal(f.converted.size, 10);
+  assert.equal(result.budget_usage.max_blocks_changed, 11);
+  assert.equal(f.uses(), 1);
+  assert.equal(f.bot.listenerCount('blockUpdate'), 0);
+});
+
+test('an uneven lake whose edge column rises into lava is still rejected as unprovable', async () => {
+  const raised = [new Vec3(-1, 64, 0), new Vec3(-1, 65, 0)];
+  const f = basinBot({ raisedLava: raised });
+  await assert.rejects(f.run(), error => {
+    assert.equal(error.code, 'RESOURCE_NOT_FOUND');
+    assert.equal(error.details.lava_sources_seen, 12);
+    return true;
+  });
+  assert.equal(f.uses(), 0);
   assert.equal(f.converted.size, 0);
   assert.equal(f.bot.listenerCount('blockUpdate'), 0);
 });
