@@ -509,7 +509,7 @@ async function castObservedObsidian(bot, context, mutations, wait) {
     }
   }
   const confirmation = waterConfirmation(context, wait), created = new Map();
-  let lastWater;
+  let lastWater, pouredAny = false;
   for (let index = 0; index < selected.length; index++) {
     confirmation.checkpoint();
     const basin = selected[index];
@@ -521,7 +521,13 @@ async function castObservedObsidian(bot, context, mutations, wait) {
         span: Math.max(...basin.map(cell => Math.abs(cell.x - p.x) + Math.abs(cell.z - p.z))) }];
     })).sort((a, b) => a.span - b.span || a.water.distanceTo(bot.entity.position) - b.water.distanceTo(bot.entity.position));
     const placement = options.find(option => standingCandidates(bot, option.reference, option.target, option.face).length);
-    if (!placement) fail('WATER_TARGET_UNREACHABLE', '封闭熔岩盆地没有可安全瞄准的放水面。');
+    console.error(`[dbg] idx=${index} selected=${selected.length} basin0=${basin[0]} placement=${!!placement}`);
+    if (!placement) {
+      // This basin has no safely aimable pour face (e.g. ceiling-blocked rim).
+      // Later basins may still be pourable — skip instead of failing outright.
+      continue;
+    }
+    pouredAny = true;
     await approachObsidian(bot, placement.reference, context, {
       interactionTarget: placement.target, expectedFace: placement.face, allowDig: false,
     });
@@ -597,6 +603,8 @@ async function castObservedObsidian(bot, context, mutations, wait) {
       }
     }
   }
+  if (!pouredAny) fail('WATER_TARGET_UNREACHABLE', '封闭熔岩盆地没有可安全瞄准的放水面。');
+  if (!lastWater) fail('WATER_PLACEMENT_UNCONFIRMED', '没有盆地完成放水。');
   return { position: lastWater.offset(0, -1, 0), created: [...created.values()] };
 }
 

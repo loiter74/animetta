@@ -14,7 +14,7 @@ const faceOffsets = [
 
 function basinBot({ sizes = [10], unknown = false, flowing = false,
   abort = false, noWater = false, blockLimit = 16, changeWallOnLook = false,
-  openWalls = [], cobble = 0, deep = false, raisedLava = [] } = {}) {
+  openWalls = [], cobble = 0, deep = false, raisedLava = [], ceilings = [] } = {}) {
   const registry = minecraftData('1.21.1'), Block = BlockLoader(registry);
   const bot = new EventEmitter(), world = new WorldSync(null), controller = new AbortController();
   const pools = sizes.map((size, index) => Array.from({ length: size }, (_, x) => new Vec3(index * 20 + x, 64, 0)));
@@ -24,6 +24,7 @@ function basinBot({ sizes = [10], unknown = false, flowing = false,
   const deepLayer = new Set(deep ? pools.flat().map(p => p.offset(0, -1, 0).toString()) : []);
   const raised = new Set(raisedLava.map(p => p.toString()));
   const openAir = new Set(openWalls.map(w => w.toString())), placedWalls = new Set();
+  const ceilSet = new Set(ceilings.map(w => w.toString()));
   let uses = 0, lastLook, wallMissing = unknown;
   bot.items = noWater ? [] : [{ name: 'water_bucket', count: 1 }];
   if (cobble) bot.items.push({ name: 'cobblestone', count: cobble });
@@ -39,6 +40,7 @@ function basinBot({ sizes = [10], unknown = false, flowing = false,
     if (wallMissing && p.equals(new Vec3(0, 65, -1))) return null;
     const name = placedWalls.has(key) ? 'cobblestone' : water.has(key) ? 'water' : converted.has(key) ? 'obsidian'
       : lava.has(key) || deepLayer.has(key) || raised.has(key) ? 'lava' : openAir.has(key) ? 'air'
+      : ceilSet.has(key) ? 'stone'
       : p.y === 65 && (lava.has(p.offset(0, -1, 0).toString()) || raised.has(p.offset(0, -1, 0).toString()))
         ? 'air' : p.y < 66 ? 'stone' : 'air';
     const block = Block.fromStateId(registry.blocksByName[name].defaultState + (name === 'lava' && flowing ? 1 : 0), 0);
@@ -227,6 +229,37 @@ test('pools beyond the bounded wall-building exploration stay rejected', async (
   });
   assert.equal(f.uses(), 0);
   assert.equal(f.placedWalls().size, 0);
+  assert.equal(f.converted.size, 0);
+  assert.equal(f.bot.listenerCount('blockUpdate'), 0);
+});
+
+test('a ceiling-blocked basin is skipped when a later basin has a pourable rim', async () => {
+  // Stone forced at y=66/67 over the first pool's surroundings removes every
+  // standable + sighted pour cell there (feet options die on headroom or LOS);
+  // the second pool must still be cast within the same action.
+  const ceilings = [];
+  for (let dx = -5; dx <= 8; dx++) for (let dz = -5; dz <= 5; dz++) {
+    ceilings.push(new Vec3(dx, 66, dz), new Vec3(dx, 67, dz));
+  }
+  const f = basinBot({ sizes: [4, 6], ceilings });
+  const result = await f.run();
+  assert.equal(result.output.created_obsidian.length, 6, 'only the pourable basin is cast');
+  assert.equal(f.converted.size, 6);
+  assert.equal(f.uses(), 2, 'one pour plus the standard pre-next-basin water recovery');
+  assert.equal(f.bot.listenerCount('blockUpdate'), 0);
+});
+
+test('a single ceiling-blocked basin still fails honestly as unreachable', async () => {
+  const ceilings = [];
+  for (let dx = -5; dx <= 11; dx++) for (let dz = -5; dz <= 5; dz++) {
+    ceilings.push(new Vec3(dx, 66, dz), new Vec3(dx, 67, dz));
+  }
+  const f = basinBot({ sizes: [6], ceilings });
+  await assert.rejects(f.run(), error => {
+    assert.equal(error.code, 'WATER_TARGET_UNREACHABLE');
+    return true;
+  });
+  assert.equal(f.uses(), 0);
   assert.equal(f.converted.size, 0);
   assert.equal(f.bot.listenerCount('blockUpdate'), 0);
 });
