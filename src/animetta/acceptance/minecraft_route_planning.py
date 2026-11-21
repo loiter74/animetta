@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Iterator
-from typing import Literal, Self
+from typing import Any, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -196,6 +196,7 @@ def route_prompt_context(
     home: tuple[float, float, float],
     observation: Observation,
     manifest: RuntimeManifest,
+    jitrl_guidance: dict[str, Any] | None = None,
 ) -> dict:
     """Send routing facts and capability schemas, keeping raw voxel evidence outside the prompt."""
     catalogue = build_nether_portal_mission(mission_id=mission_id, home=home)
@@ -203,7 +204,7 @@ def route_prompt_context(
     supplier_goals = {obj.objective_id: obj.goal for obj in catalogue.objectives}
     raw = observation.model_dump(mode="json")
     blocks = raw.get("visible_blocks", [])
-    return {
+    context: dict[str, Any] = {
         "route_schema": RouteDraft.model_json_schema(),
         "skill_authoring": skill_authoring_contract(manifest),
         "access_planning_rules": NETHER_DESCENT_ACCESS_RULE,
@@ -267,6 +268,9 @@ def route_prompt_context(
             if cap.effect_class != "read_only" and cap.name != "ignite_portal"
         ],
     }
+    if jitrl_guidance is not None:
+        context["jitrl_guidance"] = jitrl_guidance
+    return context
 
 
 def compile_route_draft(
