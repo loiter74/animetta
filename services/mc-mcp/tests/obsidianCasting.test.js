@@ -205,3 +205,28 @@ test('an uneven lake whose edge column rises into lava is still rejected as unpr
   assert.equal(f.converted.size, 0);
   assert.equal(f.bot.listenerCount('blockUpdate'), 0);
 });
+
+test('a terrain-rimmed pool larger than the old wall cap casts within budget', async () => {
+  const openEnd = new Vec3(14, 65, 0);
+  const f = basinBot({ sizes: [14], openWalls: [openEnd], cobble: 8, blockLimit: 24 });
+  const result = await f.run();
+  assert.equal(result.output.created_obsidian.length, 14);
+  assert.deepEqual([...f.placedWalls()], [openEnd.toString()]);
+  assert.equal(result.budget_usage.max_blocks_changed, 16, '14 obsidian + 1 water + 1 wall');
+  assert.equal(f.uses(), 1);
+  assert.equal(f.converted.size, 14);
+  assert.equal(f.bot.listenerCount('blockUpdate'), 0);
+});
+
+test('pools beyond the bounded wall-building exploration stay rejected', async () => {
+  const f = basinBot({ sizes: [40], openWalls: [new Vec3(40, 65, 0)], cobble: 8, blockLimit: 64 });
+  await assert.rejects(f.run(), error => {
+    assert.equal(error.code, 'RESOURCE_NOT_FOUND');
+    assert.equal(error.details.lava_sources_seen, 40);
+    return true;
+  });
+  assert.equal(f.uses(), 0);
+  assert.equal(f.placedWalls().size, 0);
+  assert.equal(f.converted.size, 0);
+  assert.equal(f.bot.listenerCount('blockUpdate'), 0);
+});

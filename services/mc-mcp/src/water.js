@@ -427,9 +427,14 @@ const totalItemCount = (bot, name) => bot.inventory.items()
 // mutation; if the proof still fails nothing is poured.
 async function buildClosedBasin(bot, context, mutations, sources, maximum, origin) {
   const scanned = new Set(), candidates = [];
+  // The exploration bound keeps one wall-building effort bounded, but it must
+  // not sit below a realistic terrain-rimmed section: a 10-cell cap rejected
+  // closable pools that a single pour handles well inside the block budget.
+  // The budget filter below (cells + walls + 1 <= maximum) stays the hard cap.
+  const poolLimit = Math.max(2, Math.min(maximum - 1, 32));
   for (const source of sources) {
     if (scanned.has(source.toString())) continue;
-    const pool = openLavaPool(bot, source, Math.max(2, Math.min(maximum - 1, 10)), origin);
+    const pool = openLavaPool(bot, source, poolLimit, origin);
     if (!pool) continue;
     for (const p of pool.cells) scanned.add(p.toString());
     if (!pool.walls.length) continue;
