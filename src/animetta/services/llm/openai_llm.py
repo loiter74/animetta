@@ -79,8 +79,21 @@ class OpenAILLM(LLMInterface):
         self.history: list[dict[str, str]] = []
 
         # Initialize async client for connection stability
+        import os
+
         import httpx
 
+        # Ambient NO_PROXY can contain a bracketed IPv6 entry ("[::1]") that
+        # httpx parses as a URL pattern and rejects with InvalidURL ("Invalid
+        # port: ':1]'"), aborting client construction before any request. Disable
+        # trust_env so NO_PROXY is never parsed, and forward the ambient proxy
+        # explicitly so remote OpenAI-compatible endpoints still use it.
+        ambient_proxy = (
+            os.environ.get("HTTPS_PROXY")
+            or os.environ.get("https_proxy")
+            or os.environ.get("HTTP_PROXY")
+            or os.environ.get("http_proxy")
+        )
         http_client = httpx.AsyncClient(
             timeout=httpx.Timeout(30.0, connect=10.0),
             limits=httpx.Limits(
@@ -88,6 +101,8 @@ class OpenAILLM(LLMInterface):
                 max_keepalive_connections=5,
                 keepalive_expiry=30.0,
             ),
+            trust_env=False,
+            proxy=ambient_proxy,
         )
         if base_url:
             self.client = AsyncOpenAI(

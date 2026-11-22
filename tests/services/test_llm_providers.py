@@ -323,6 +323,47 @@ class TestMockLLM:
     not __import__("importlib").util.find_spec("openai"),
     reason="openai package not installed",
 )
+class TestOpenAILLMProxyEnv:
+    """The LLM httpx client must survive a malformed ambient NO_PROXY.
+
+    Some proxy tools export NO_PROXY with a bracketed IPv6 entry ("[::1]"),
+    which httpx parses as a URL pattern and rejects with InvalidURL when
+    trust_env=True, aborting client construction. The client must disable
+    trust_env and forward the ambient proxy explicitly instead.
+    """
+
+    def test_constructor_ignores_malformed_no_proxy(self, monkeypatch):
+        import httpx
+
+        captured: dict = {}
+        real_async_client = httpx.AsyncClient
+
+        class SpyClient(real_async_client):
+            def __init__(self, *args, **kwargs):
+                captured.update(kwargs)
+                super().__init__(*args, **kwargs)
+
+        monkeypatch.setattr("httpx.AsyncClient", SpyClient)
+        monkeypatch.setenv("HTTP_PROXY", "http://127.0.0.1:7890")
+        monkeypatch.setenv("HTTPS_PROXY", "http://127.0.0.1:7890")
+        monkeypatch.setenv("NO_PROXY", "localhost,127.0.0.1,[::1]")
+
+        with patch("animetta.services.llm.openai_llm.AsyncOpenAI"):
+            instance = OpenAILLM(
+                api_key="key",
+                model="deepseek-v4-flash",
+                base_url="https://api.deepseek.com/v1",
+            )
+
+        assert instance.client is not None
+        assert captured.get("trust_env") is False
+        assert captured.get("proxy") == "http://127.0.0.1:7890"
+
+
+@pytest.mark.skipif(
+    not __import__("importlib").util.find_spec("openai"),
+    reason="openai package not installed",
+)
 class TestOpenAILLM:
     """Tests for the OpenAILLM provider (all external calls mocked)."""
 
