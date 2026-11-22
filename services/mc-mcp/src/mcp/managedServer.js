@@ -99,11 +99,12 @@ async function acquireProjectLock(lockFile) {
 
 
 export class ManagedMinecraftServer {
-  constructor({ root, registryFile, command, probe, clock = Date.now, persist = async () => {} }) {
+  constructor({ root, registryFile, command, probe, readyProbe, clock = Date.now, persist = async () => {} }) {
     this.root = root;
     this.registryFile = registryFile;
     this.command = command;
     this.probe = probe;
+    this.readyProbe = readyProbe ?? probe;
     this.clock = clock;
     this.persist = persist;
     this.ownership = null;
@@ -151,7 +152,7 @@ export class ManagedMinecraftServer {
       }
       if (this.ownership) {
         await this.persist();
-        if (await this.probe(profile.server.host, profile.server.port)) return;
+        if (await this.readyProbe(profile.server.host, profile.server.port)) return;
         const { cwd, env: ownedEnv } = this.ownership;
         await this.command([
           'docker', 'compose', '-p', projectName, '-f', composeFile,
@@ -232,7 +233,7 @@ export class ManagedMinecraftServer {
   async #waitUntilReady(profile, timeoutMs) {
     const deadline = this.clock() + timeoutMs;
     while (this.clock() < deadline) {
-      if (await this.probe(profile.server.host, profile.server.port)) return;
+      if (await this.readyProbe(profile.server.host, profile.server.port)) return;
       await new Promise((resolve) => setTimeout(resolve, 1_000));
     }
     throw new Error('SERVER_START_TIMEOUT');

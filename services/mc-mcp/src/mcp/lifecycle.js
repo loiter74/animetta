@@ -54,6 +54,91 @@ export async function tcpProbe(host, port, timeoutMs = 1_000) {
   });
 }
 
+function writeVarInt(value) {
+  const bytes = [];
+  let v = value >>> 0;
+  do {
+    let b = v & 0x7f;
+    v >>>= 7;
+    if (v !== 0) b |= 0x80;
+    bytes.push(b);
+  } while (v !== 0);
+  return Buffer.from(bytes);
+}
+
+function readVarInt(buf, offset) {
+  let value = 0;
+  let shift = 0;
+  let size = 0;
+  while (true) {
+    if (offset + size >= buf.length) return null;
+    const b = buf[offset + size];
+    value |= (b & 0x7f) << shift;
+    size += 1;
+    if ((b & 0x80) === 0) break;
+    shift += 7;
+    if (shift > 35) return null;
+  }
+  return { value: value >>> 0, size };
+}
+
+// A bare TCP connect succeeds as soon as the Java server binds its game port,
+// which happens before the server can process logins (world generation is still
+// running). Using TCP as the readiness signal let the bot send its login start
+// to a server that was not ready yet, so the 10s login timeout aborted the round
+// on slow cold starts (e.g. the first container after a Docker engine restart).
+// A Minecraft status ping is only answered once the server is fully started, so
+// it is the canonical login-readiness signal (the same one itzg's mc-health uses).
+export async function minecraftStatusProbe(host, port, timeoutMs = 2_000) {
+  return new Promise((resolve) => {
+    let settled = false;
+    const socket = createConnection({ host, port });
+    const finish = (ready) => {
+      if (settled) return;
+      settled = true;
+      socket.destroy();
+      resolve(ready);
+    };
+    socket.setTimeout(timeoutMs, () => finish(false));
+    socket.once('error', () => finish(false));
+    socket.once('connect', () => {
+      const address = Buffer.from(host, 'utf8');
+      const data = Buffer.concat([
+        writeVarInt(0x00),
+        writeVarInt(767),
+        writeVarInt(address.length),
+        address,
+        Buffer.from([(port >> 8) & 0xff, port & 0xff]),
+        writeVarInt(1),
+      ]);
+      const handshake = Buffer.concat([writeVarInt(data.length), data]);
+      const statusRequest = Buffer.from([0x01, 0x00]);
+      socket.write(Buffer.concat([handshake, statusRequest]));
+    });
+    let buf = Buffer.alloc(0);
+    socket.on('data', (chunk) => {
+      buf = Buffer.concat([buf, chunk]);
+      const length = readVarInt(buf, 0);
+      if (!length || buf.length < length.size + length.value) return;
+      const packet = buf.subarray(length.size, length.size + length.value);
+      const id = readVarInt(packet, 0);
+      if (!id || id.value !== 0x00) { finish(false); return; }
+      const strLength = readVarInt(packet, id.size);
+      if (!strLength) { finish(false); return; }
+      const jsonBytes = packet.subarray(
+        id.size + strLength.size,
+        id.size + strLength.size + strLength.value,
+      );
+      try {
+        const parsed = JSON.parse(jsonBytes.toString('utf8'));
+        finish(Boolean(parsed && typeof parsed === 'object'));
+      } catch {
+        finish(false);
+      }
+    });
+  });
+}
+
 export function runCommand(argv, { cwd, env = process.env } = {}) {
   return new Promise((resolve, reject) => {
     const child = spawn(argv[0], argv.slice(1), {
@@ -77,6 +162,7 @@ export function runCommand(argv, { cwd, env = process.env } = {}) {
 export class MinecraftLifecycle {
   constructor({
     config, runtime, eventBuffer, stateFile, command = runCommand, probe = tcpProbe,
+    readyProbe = probe,
     clock = Date.now, managedRegistryFile = null, env = process.env,
   }) {
     this.config = config;
@@ -85,6 +171,7 @@ export class MinecraftLifecycle {
     this.stateFile = stateFile;
     this.command = command;
     this.probe = probe;
+    this.readyProbe = readyProbe;
     this.clock = clock;
     this.presentationForceOff = forcePresentationOff(env.MC_MCP_PRESENTATION_FORCE_OFF);
     this.managedServer = new ManagedMinecraftServer({
@@ -92,6 +179,7 @@ export class MinecraftLifecycle {
       registryFile: managedRegistryFile,
       command,
       probe,
+      readyProbe,
       clock,
       persist: () => this.#persist(),
     });

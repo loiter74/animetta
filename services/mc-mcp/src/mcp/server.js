@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { RuntimeEventBuffer } from './eventBuffer.js';
-import { MinecraftLifecycle } from './lifecycle.js';
+import { MinecraftLifecycle, minecraftStatusProbe } from './lifecycle.js';
 import { validateConfig } from './profile.js';
 import { BotRuntimeClient } from './runtimeClient.js';
 import { createMcpServer } from './tools.js';
@@ -30,6 +30,7 @@ const lifecycle = new MinecraftLifecycle({
   runtime,
   eventBuffer: events,
   stateFile: path.join(stateDir, 'lifecycle.json'),
+  readyProbe: minecraftStatusProbe,
   managedRegistryFile: process.env.MC_MCP_MANAGED_REGISTRY
     || path.join(os.tmpdir(), 'animetta-mc-mcp', 'managed-projects.json'),
 });

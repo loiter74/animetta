@@ -3,7 +3,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, it } from 'node:test';
-import { MinecraftLifecycle } from '../src/mcp/lifecycle.js';
+import { MinecraftLifecycle, minecraftStatusProbe } from '../src/mcp/lifecycle.js';
 import { writePrivateStateFile } from '../src/mcp/secureState.js';
 
 class FakeRuntime {
@@ -830,5 +830,81 @@ describe('MinecraftLifecycle', () => {
       /SERVER_PORT_ALREADY_IN_USE/,
     );
     assert.equal(commands.some((argv) => argv.includes('up')), false);
+  });
+
+  it('waits for login-readiness, not just an open TCP port, before connecting the bot', async () => {
+    // Cold-start race: the game port accepts TCP connections while the server is
+    // still generating the world. The TCP probe stays true the whole time, but the
+    // status (login-readiness) probe only succeeds after the server finishes starting.
+    const commands = [];
+    let readyCalls = 0;
+    const readyProbe = async () => {
+      readyCalls += 1;
+      return readyCalls >= 3;
+    };
+    const runtime = new FakeRuntime();
+    const instance = new MinecraftLifecycle({
+      config: {
+        root: 'C:/mc',
+        profiles: {
+          test: {
+            mode: 'managed',
+            server: { compose_file: 'server/compose.yml', host: '127.0.0.1', port: 25565 },
+            bot: { username: 'Bot' },
+            viewer: {},
+          },
+        },
+      },
+      runtime,
+      eventBuffer: new FakeEventBuffer(),
+      stateFile: null,
+      command: async (argv) => {
+        commands.push(argv);
+        return argv.includes('ps') ? 'minecraft' : 'ok';
+      },
+      probe: async () => true,
+      readyProbe,
+    });
+
+    await instance.prepare('test', 'prepare-cold-start', true);
+    assert.equal(runtime.starts.length, 0);
+    assert.ok(readyCalls >= 3, 'readiness must poll the status probe until the server is login-ready');
+
+    await instance.connect('test', 'connect-after-readiness');
+    assert.equal(runtime.starts.length, 1);
+  });
+
+  it('minecraftStatusProbe answers true only for a server that completes the status handshake', async () => {
+    const { createServer } = await import('node:net');
+    const varint = (value) => {
+      const bytes = [];
+      let v = value >>> 0;
+      do {
+        let b = v & 0x7f;
+        v >>>= 7;
+        if (v !== 0) b |= 0x80;
+        bytes.push(b);
+      } while (v !== 0);
+      return Buffer.from(bytes);
+    };
+    const json = Buffer.from(JSON.stringify({
+      version: { name: '1.21', protocol: 767 },
+      players: { max: 20, online: 0 },
+      description: { text: 'ok' },
+    }), 'utf8');
+    const body = Buffer.concat([varint(0x00), varint(json.length), json]);
+    const response = Buffer.concat([varint(body.length), body]);
+    const server = createServer((socket) => {
+      socket.once('data', () => socket.write(response));
+    });
+    await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const port = server.address().port;
+    try {
+      assert.equal(await minecraftStatusProbe('127.0.0.1', port, 2000), true);
+    } finally {
+      await new Promise((resolve) => server.close(resolve));
+    }
+    // A closed port must report not-ready rather than throwing.
+    assert.equal(await minecraftStatusProbe('127.0.0.1', port, 500), false);
   });
 });
