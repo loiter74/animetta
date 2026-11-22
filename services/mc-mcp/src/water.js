@@ -546,6 +546,68 @@ async function castDirectPourSource(bot, context, mutations, sources, maximum, o
   return { position: pick.source, created: [...created.values()] };
 }
 
+async function buildPourPost(bot, context, mutations, basin, maximum) {
+  // A closed basin can have full-cube rim references yet no safe standing cell
+  // within aiming reach (the rim drops into a lava moat, or the only floor is
+  // beyond the ±3/−1..2 standing search). Extend a SINGLE cobblestone floor block
+  // under a candidate standing cell so the bot can aim an existing pour face.
+  // No recursion: one floor block per attempt, and only where a placement
+  // reference already exists (no scaffolding chains).
+  if (totalItemCount(bot, 'cobblestone') < 1) return null;
+  if (!Number.isSafeInteger(maximum) || maximum < 2) return null;
+  const candidates = [];
+  for (const p of basin) {
+    const water = p.offset(0, 1, 0);
+    if (!castingAir(bot.blockAt(water))) continue;
+    for (const side of BASIN_SIDES) {
+      const reference = water.offset(side.x, 0, side.z);
+      if (!isFullCubeReference(bot.blockAt(reference))) continue;
+      const target = reference.offset(.5 - side.x * (.5 - .01), .5, .5 - side.z * (.5 - .01));
+      if (standingCandidates(bot, reference, target, side.face).length) continue;
+      for (let dx = -3; dx <= 3; dx++) {
+        for (let dz = -3; dz <= 3; dz++) {
+          for (let dy = -1; dy <= 2; dy++) {
+            const feet = reference.offset(dx, dy, dz);
+            const floor = feet.offset(0, -1, 0);
+            const floorBlock = bot.blockAt(floor);
+            if (!floorBlock || !['air', 'cave_air', 'water', 'flowing_water'].includes(floorBlock.name)) continue;
+            if (!isAirLikeForStanding(bot.blockAt(feet)) || !isAirLikeForStanding(bot.blockAt(feet.offset(0, 1, 0)))) continue;
+            const pref = findPlacementReference(bot, floor, Vec3);
+            if (!pref) continue;
+            candidates.push({ water, reference, face: side.face, target, floor, pref,
+              dist: bot.entity.position.distanceTo(feet) });
+          }
+        }
+      }
+    }
+  }
+  candidates.sort((a, b) => a.dist - b.dist);
+  for (const c of candidates.slice(0, 4)) {
+    context.operation_scope?.checkpoint();
+    context.signal?.throwIfAborted();
+    const item = hasItem(bot, 'cobblestone');
+    if (!item) return null;
+    try {
+      await approachObsidian(bot, c.pref.reference, context, {
+        interactionTarget: c.pref.reference.offset(.5, .5, .5), allowDig: false,
+      });
+      await bot.equip(item, 'hand');
+      context.operation_scope?.checkpoint();
+      await bot.placeBlock(c.pref.reference, c.pref.face);
+    } catch (error) {
+      context.signal?.throwIfAborted();
+      if (!['NoPath', 'PathStopped', 'Timeout', 'NAVIGATION_TARGET_NOT_REACHED', 'ACTION_DEADLINE_EXPIRED', 'WATER_TARGET_UNREACHABLE'].includes(error.code || error.name)) throw error;
+      continue;
+    }
+    if (bot.blockAt(c.floor)?.name !== 'cobblestone') continue;
+    mutations.push(placementMutation('cobblestone', c.floor, bot.game?.dimension));
+    if (standingCandidates(bot, c.reference, c.target, c.face).length) {
+      return { water: c.water, reference: c.reference, face: c.face, target: c.target };
+    }
+  }
+  return null;
+}
+
 async function castObservedObsidian(bot, context, mutations, wait) {
   if (!hasItem(bot, 'water_bucket')) fail('TOOL_REQUIRED', '制备黑曜石前需要装满的水桶。');
   const maximum = context.budget?.max_blocks_changed;
@@ -600,7 +662,12 @@ async function castObservedObsidian(bot, context, mutations, wait) {
         target: reference.offset(.5 - side.x * (.5 - .01), .5, .5 - side.z * (.5 - .01)),
         span: Math.max(...basin.map(cell => Math.abs(cell.x - p.x) + Math.abs(cell.z - p.z))) }];
     })).sort((a, b) => a.span - b.span || a.water.distanceTo(bot.entity.position) - b.water.distanceTo(bot.entity.position));
-    const placement = options.find(option => standingCandidates(bot, option.reference, option.target, option.face).length);
+    let placement = options.find(option => standingCandidates(bot, option.reference, option.target, option.face).length);
+    if (!placement) {
+      // No natural standing cell aims this basin's rim. Try a single cobblestone
+      // floor post to create one before giving up on the basin.
+      placement = await buildPourPost(bot, context, mutations, basin, maximum);
+    }
     if (!placement) {
       // This basin has no safely aimable pour face (e.g. ceiling-blocked rim).
       // Later basins may still be pourable — skip instead of failing outright.
