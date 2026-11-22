@@ -14,7 +14,7 @@ const faceOffsets = [
 
 function basinBot({ sizes = [10], unknown = false, flowing = false,
   abort = false, noWater = false, blockLimit = 16, changeWallOnLook = false,
-  openWalls = [], cobble = 0, deep = false, raisedLava = [], ceilings = [] } = {}) {
+  openWalls = [], cobble = 0, deep = false, raisedLava = [], ceilings = [], bigLake = false } = {}) {
   const registry = minecraftData('1.21.1'), Block = BlockLoader(registry);
   const bot = new EventEmitter(), world = new WorldSync(null), controller = new AbortController();
   const pools = sizes.map((size, index) => Array.from({ length: size }, (_, x) => new Vec3(index * 20 + x, 64, 0)));
@@ -95,7 +95,8 @@ function basinBot({ sizes = [10], unknown = false, flowing = false,
     water.set(p.toString(), p);
     bot.items = [{ name: 'bucket', count: 1 }];
     bot.emit('blockUpdate', before, bot.blockAt(p));
-    for (const cell of pool) {
+    const cellsToConvert = bigLake ? [p.offset(0, -1, 0)] : pool;
+    for (const cell of cellsToConvert) {
       const old = bot.blockAt(cell);
       converted.add(cell.toString());
       bot.emit('blockUpdate', old, bot.blockAt(cell));
@@ -134,8 +135,6 @@ test('separate bounded basins reuse the same water within the same original acti
 
 for (const [name, options] of Object.entries({
   missing_water: { noWater: true }, flowing_lava: { flowing: true },
-  unknown_wall: { unknown: true }, oversized_basin: { sizes: [17] },
-  insufficient_allowance: { blockLimit: 8 },
   changed_boundary: { changeWallOnLook: true },
 })) {
   test(`casting rejects ${name} before a world mutation`, async () => {
@@ -146,6 +145,62 @@ for (const [name, options] of Object.entries({
     assert.equal(f.bot.listenerCount('blockUpdate'), 0);
   });
 }
+
+test('an unknown wall distant from the pour face does not block a safe direct pour', async () => {
+  const f = basinBot({ unknown: true });
+  const result = await f.run();
+  assert.equal(result.output.created_obsidian.length, 10);
+  assert.equal(result.budget_usage.max_blocks_changed, 11);
+  assert.equal(f.uses(), 1);
+  assert.equal(f.converted.size, 10);
+  assert.equal(f.bot.listenerCount('blockUpdate'), 0);
+});
+
+test('an oversized open lake yields a single-source direct pour within budget', async () => {
+  const f = basinBot({ sizes: [17], bigLake: true });
+  const result = await f.run();
+  assert.equal(result.output.created_obsidian.length, 1);
+  assert.equal(result.budget_usage.max_blocks_changed, 2);
+  assert.equal(f.uses(), 1);
+  assert.equal(f.converted.size, 1);
+  assert.equal(f.bot.listenerCount('blockUpdate'), 0);
+});
+
+test('a small remaining allowance still permits a single-source direct pour', async () => {
+  const f = basinBot({ blockLimit: 8, bigLake: true });
+  const result = await f.run();
+  assert.equal(result.output.created_obsidian.length, 1);
+  assert.equal(result.budget_usage.max_blocks_changed, 2);
+  assert.equal(f.uses(), 1);
+  assert.equal(f.bot.listenerCount('blockUpdate'), 0);
+});
+
+test('an allowance below two blocks rejects before any direct pour', async () => {
+  const f = basinBot({ blockLimit: 1, bigLake: true });
+  await assert.rejects(f.run(), error => {
+    assert.equal(error.code, 'BUDGET_EXHAUSTED');
+    return true;
+  });
+  assert.equal(f.uses(), 0);
+  assert.equal(f.converted.size, 0);
+  assert.equal(f.bot.listenerCount('blockUpdate'), 0);
+});
+
+test('a direct pour with no safe standing position anywhere fails honestly', async () => {
+  const ceilings = [];
+  for (let dx = -5; dx <= 22; dx++) for (let dz = -5; dz <= 5; dz++) {
+    ceilings.push(new Vec3(dx, 66, dz), new Vec3(dx, 67, dz));
+  }
+  const f = basinBot({ sizes: [17], bigLake: true, ceilings });
+  await assert.rejects(f.run(), error => {
+    assert.equal(error.code, 'RESOURCE_NOT_FOUND');
+    assert.equal(error.details.lava_sources_seen, 17);
+    return true;
+  });
+  assert.equal(f.uses(), 0);
+  assert.equal(f.converted.size, 0);
+  assert.equal(f.bot.listenerCount('blockUpdate'), 0);
+});
 
 test('interrupted conversion retains observed effects and forbids treating an unfinished cast as settled', async () => {
   const f = basinBot({ abort: true });
@@ -171,16 +226,14 @@ test('an open lava pool is closed with cobblestone walls and then cast inside th
   assert.equal(f.bot.listenerCount('blockUpdate'), 0);
 });
 
-test('without cobblestone an open pool still fails honestly with the diagnostic count', async () => {
+test('an open pool without cobblestone is cast by a guarded direct pour', async () => {
   const f = basinBot({ sizes: [3], openWalls: [new Vec3(3, 65, 0)] });
-  await assert.rejects(f.run(), error => {
-    assert.equal(error.code, 'RESOURCE_NOT_FOUND');
-    assert.equal(error.details.lava_sources_seen, 3);
-    return true;
-  });
-  assert.equal(f.uses(), 0);
-  assert.equal(f.placedWalls().size, 0);
-  assert.equal(f.converted.size, 0);
+  const result = await f.run();
+  assert.equal(result.output.created_obsidian.length, 3);
+  assert.equal(f.placedWalls().size, 0, 'direct pour needs no walls');
+  assert.equal(result.budget_usage.max_blocks_changed, 4, '3 obsidian + 1 water');
+  assert.equal(f.uses(), 1);
+  assert.equal(f.converted.size, 3);
   assert.equal(f.bot.listenerCount('blockUpdate'), 0);
 });
 
@@ -195,16 +248,14 @@ test('a deep lava lake with a flat top layer casts within the original allowance
   assert.equal(f.bot.listenerCount('blockUpdate'), 0);
 });
 
-test('an uneven lake whose edge column rises into lava is still rejected as unprovable', async () => {
+test('an uneven lake edge does not block a direct pour on a safe source', async () => {
   const raised = [new Vec3(-1, 64, 0), new Vec3(-1, 65, 0)];
   const f = basinBot({ raisedLava: raised });
-  await assert.rejects(f.run(), error => {
-    assert.equal(error.code, 'RESOURCE_NOT_FOUND');
-    assert.equal(error.details.lava_sources_seen, 12);
-    return true;
-  });
-  assert.equal(f.uses(), 0);
-  assert.equal(f.converted.size, 0);
+  const result = await f.run();
+  assert.equal(result.output.created_obsidian.length, 10, 'the safe top-layer basin is cast');
+  assert.equal(result.budget_usage.max_blocks_changed, 11);
+  assert.equal(f.uses(), 1);
+  assert.equal(f.converted.size, 10);
   assert.equal(f.bot.listenerCount('blockUpdate'), 0);
 });
 
@@ -220,16 +271,14 @@ test('a terrain-rimmed pool larger than the old wall cap casts within budget', a
   assert.equal(f.bot.listenerCount('blockUpdate'), 0);
 });
 
-test('pools beyond the bounded wall-building exploration stay rejected', async () => {
-  const f = basinBot({ sizes: [40], openWalls: [new Vec3(40, 65, 0)], cobble: 8, blockLimit: 64 });
-  await assert.rejects(f.run(), error => {
-    assert.equal(error.code, 'RESOURCE_NOT_FOUND');
-    assert.equal(error.details.lava_sources_seen, 40);
-    return true;
-  });
-  assert.equal(f.uses(), 0);
-  assert.equal(f.placedWalls().size, 0);
-  assert.equal(f.converted.size, 0);
+test('a lake beyond wall-building reach still yields a single-source direct pour', async () => {
+  const f = basinBot({ sizes: [40], openWalls: [new Vec3(40, 65, 0)], cobble: 8, blockLimit: 64, bigLake: true });
+  const result = await f.run();
+  assert.equal(result.output.created_obsidian.length, 1, 'one source, not the whole lake');
+  assert.equal(f.placedWalls().size, 0, 'no walls are built beyond reach');
+  assert.equal(result.budget_usage.max_blocks_changed, 2, '1 obsidian + 1 water');
+  assert.equal(f.uses(), 1);
+  assert.equal(f.converted.size, 1);
   assert.equal(f.bot.listenerCount('blockUpdate'), 0);
 });
 

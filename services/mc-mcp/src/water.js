@@ -470,6 +470,82 @@ async function buildClosedBasin(bot, context, mutations, sources, maximum, origi
   return { cells: proof, walls: placed };
 }
 
+// Direct pour fallback: when no bounded basin can be proven (a large open lava
+// lake), convert a single reachable level-0 lava SOURCE by placing water above
+// it. The same safety invariants as the closed-basin path apply: never flowing
+// lava, a known full-cube pour reference with a safe standing position, no
+// unknown blocks in the pour neighbourhood, and every observed conversion is
+// counted against the block budget. Confirmation targets the single source cell.
+async function castDirectPourSource(bot, context, mutations, sources, maximum, origin, wait) {
+  if (!Number.isSafeInteger(maximum) || maximum < 2) return null;
+  const candidates = [];
+  for (const source of sources) {
+    if (source.distanceTo(origin) > 64 || !isLavaSource(bot.blockAt(source))) continue;
+    if (!castingAir(bot.blockAt(source.offset(0, 1, 0)))) continue;
+    for (const side of BASIN_SIDES) {
+      const water = source.offset(0, 1, 0), reference = water.offset(side.x, 0, side.z);
+      if (!isFullCubeReference(bot.blockAt(reference))) continue;
+      const neighbourhood = [water, reference, source, source.offset(0, -1, 0),
+        ...BASIN_SIDES.map(s => source.offset(s.x, 0, s.z))];
+      if (neighbourhood.some(p => !bot.blockAt(p))) continue;
+      const target = reference.offset(.5 - side.x * (.5 - .01), .5, .5 - side.z * (.5 - .01));
+      if (!standingCandidates(bot, reference, target, side.face).length) continue;
+      candidates.push({ source, water, reference, face: side.face, target });
+    }
+  }
+  candidates.sort((a, b) => a.source.distanceTo(origin) - b.source.distanceTo(origin));
+  const pick = candidates[0];
+  if (!pick) return null;
+  const confirmation = waterConfirmation(context, wait), created = new Map();
+  await approachObsidian(bot, pick.reference, context, {
+    interactionTarget: pick.target, expectedFace: pick.face, allowDig: false,
+  });
+  let placed = false, activated = false, settled = false;
+  const recordWater = () => {
+    if (!placed) { mutations.push(placementMutation('water', pick.water, bot.game?.dimension)); placed = true; }
+  };
+  const recordObsidian = p => {
+    if (created.has(p.toString())) return;
+    created.set(p.toString(), p);
+    mutations.push(placementMutation('obsidian', p, bot.game?.dimension));
+  };
+  const onUpdate = (before, after) => {
+    if (!activated || !after?.position) return;
+    if (before?.name === 'lava' && after.name === 'obsidian' && after.position.distanceTo(origin) <= 64) recordObsidian(after.position);
+    if (after.position.equals(pick.water) && isWaterSource(after)) recordWater();
+  };
+  bot.on('blockUpdate', onUpdate);
+  try {
+    await bot.equip(hasItem(bot, 'water_bucket'), 'hand');
+    await aimWaterItem(bot, pick.target, confirmation);
+    if (!isLavaSource(bot.blockAt(pick.source)) || !castingAir(bot.blockAt(pick.water))
+      || !canInteractFrom(bot, pick.reference, pick.target, bot.entity.position, pick.face)) {
+      fail('TARGET_CHANGED', '直接浇铸前熔岩源或放水面发生变化。');
+    }
+    activated = true;
+    bot.activateItem();
+    try {
+      if (!await confirmation.until(() => bot.blockAt(pick.source)?.name === 'obsidian')) {
+        fail('WATER_PLACEMENT_UNCONFIRMED', '原等待额度内没有确认熔岩源转化为黑曜石。');
+      }
+    } finally { bot.deactivateItem?.(); }
+    recordWater();
+    recordObsidian(pick.source);
+    settled = true;
+  } catch (error) {
+    if (activated && !settled) throw new OperationScopeError('ACTION_SETTLEMENT_TIMEOUT',
+      '直接浇铸后的转化结果尚未确认，已禁止重放并保留实际消耗。', { cause_code: error.code ?? null });
+    throw error;
+  } finally {
+    bot.removeListener('blockUpdate', onUpdate);
+    if (activated) {
+      if (bot.blockAt(pick.source)?.name === 'obsidian') recordObsidian(pick.source);
+      if (isWaterSource(bot.blockAt(pick.water))) recordWater();
+    }
+  }
+  return { position: pick.source, created: [...created.values()] };
+}
+
 async function castObservedObsidian(bot, context, mutations, wait) {
   if (!hasItem(bot, 'water_bucket')) fail('TOOL_REQUIRED', '制备黑曜石前需要装满的水桶。');
   const maximum = context.budget?.max_blocks_changed;
@@ -503,6 +579,10 @@ async function castObservedObsidian(bot, context, mutations, wait) {
       remaining = maximum - built.walls.length - built.cells.length - 1;
       selected.push(built.cells);
     } else {
+      // No bounded basin can be proven (large open lake). Convert a single
+      // reachable lava source by direct pour, under the same safety invariants.
+      const direct = await castDirectPourSource(bot, context, mutations, sources, maximum, origin, wait);
+      if (direct) return direct;
       fail('RESOURCE_NOT_FOUND', '原范围和预算内没有已知封闭、可安全制备的熔岩盆地。', {
         lava_sources_seen: sources.length,
       });
@@ -521,7 +601,6 @@ async function castObservedObsidian(bot, context, mutations, wait) {
         span: Math.max(...basin.map(cell => Math.abs(cell.x - p.x) + Math.abs(cell.z - p.z))) }];
     })).sort((a, b) => a.span - b.span || a.water.distanceTo(bot.entity.position) - b.water.distanceTo(bot.entity.position));
     const placement = options.find(option => standingCandidates(bot, option.reference, option.target, option.face).length);
-    console.error(`[dbg] idx=${index} selected=${selected.length} basin0=${basin[0]} placement=${!!placement}`);
     if (!placement) {
       // This basin has no safely aimable pour face (e.g. ceiling-blocked rim).
       // Later basins may still be pourable — skip instead of failing outright.
