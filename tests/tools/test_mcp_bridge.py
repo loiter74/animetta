@@ -65,6 +65,48 @@ class TestMCPClient:
         result = await client.call_tool("test_tool", {"arg": "val"})
         assert result is None
 
+    @pytest.mark.asyncio
+    async def test_streamable_http_client_ignores_ambient_proxy(self, monkeypatch):
+        """The loopback mc-mcp client must not inherit ambient proxy settings.
+
+        Some proxy tools export NO_PROXY with a bracketed IPv6 entry ("[::1]"),
+        which httpx fails to parse as a URL pattern when trust_env=True, raising
+        InvalidURL before the client ever reaches the local service. The bridge
+        must construct its httpx client with trust_env=False.
+        """
+
+        import httpx
+
+        captured: dict = {}
+        real_async_client = httpx.AsyncClient
+
+        class SpyClient(real_async_client):
+            def __init__(self, *args, **kwargs):
+                captured.update(kwargs)
+                super().__init__(*args, **kwargs)
+
+        monkeypatch.setattr("animetta.tools.mcp_bridge.httpx.AsyncClient", SpyClient)
+        monkeypatch.setenv("HTTP_PROXY", "http://127.0.0.1:7890")
+        monkeypatch.setenv("NO_PROXY", "localhost,127.0.0.1,[::1]")
+
+        def stop_after_client_construction(*_args, **_kwargs):
+            raise RuntimeError("stop-after-client-construction")
+
+        monkeypatch.setattr(
+            "animetta.tools.mcp_bridge.streamable_http_client",
+            stop_after_client_construction,
+        )
+
+        client = MCPClient(
+            name="mc",
+            transport="streamable_http",
+            url="http://127.0.0.1:9197/mcp",
+            headers={},
+        )
+        result = await client.connect()
+        assert result is False  # transport short-circuited after client construction
+        assert captured.get("trust_env") is False
+
 
 class TestMCPManager:
     """MCPManager handles unavailable Docker gracefully."""

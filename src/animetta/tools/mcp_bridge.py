@@ -70,6 +70,12 @@ class MCPClient:
                         timeout,
                         read=self._config.get("read_timeout", timeout),
                     ),
+                    # The mc-mcp service is always reached over loopback, so ambient
+                    # proxy settings must not apply. trust_env=True also makes httpx
+                    # parse NO_PROXY as URL patterns, which raises InvalidURL on a
+                    # bracketed IPv6 entry such as "[::1]" (set by some proxy tools),
+                    # aborting the client before it ever reaches the local service.
+                    trust_env=False,
                 )
                 await self._exit_stack.enter_async_context(http_client)
                 streams = await self._exit_stack.enter_async_context(
