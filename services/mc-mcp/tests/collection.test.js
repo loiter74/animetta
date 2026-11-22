@@ -1241,6 +1241,26 @@ test('obsidian work height permits one supported step down from a bank but exclu
   assert.equal(obsidianWorkMinimumY(bot, [floor, pit]), -54);
 });
 
+test('obsidian work height accepts an adjacent rim when water covers the top', () => {
+  // A contained lake-bed obsidian has water directly above (unsafe to stand on)
+  // but a solid cobblestone rim beside it. The bot must be allowed down to the
+  // rim level (obsidian.y + 1) to mine it, not pinned at its current height.
+  const obsidian = new Vec3(20, 84, -4);
+  const bot = {
+    entity: { position: new Vec3(21.5, 86, -3.5) },
+    blockAt(position) {
+      let name = 'air';
+      if (position.equals(obsidian)) name = 'obsidian';
+      else if (position.equals(obsidian.offset(0, 1, 0))) name = 'water';
+      else if (position.equals(new Vec3(21, 84, -4))) name = 'cobblestone';
+      return { name, boundingBox: name === 'obsidian' || name === 'cobblestone' ? 'block' : 'empty', position };
+    },
+  };
+  assert.equal(obsidianWorkMinimumY(bot, [obsidian]), 85);
+  assert.equal(isPreparedObsidianTarget(bot, { position: obsidian }, 85), true);
+  assert.equal(isPreparedObsidianTarget(bot, { position: obsidian }, 86), false);
+});
+
 test('ordinary ore collection also refuses a water breach before invoking dig', async () => {
   const bot = {
     blockAt: position => ({ name: position.x === 2 ? 'water' : 'stone' }),

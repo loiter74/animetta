@@ -576,11 +576,19 @@ export function isNaturallySafeObsidianTarget(bot, block) {
 
 export function obsidianWorkMinimumY(bot, targets) {
   const currentY = Math.floor(bot.entity.position.y);
-  const surfaces = targets.map(position => position.offset(0, 1, 0)).filter(position => (
-    position.y >= currentY - 1 && position.y <= currentY
-    && isSafeStandingPosition(bot, position)
-  ));
-  return surfaces.length ? Math.max(...surfaces.map(position => position.y)) : currentY;
+  const levels = [];
+  for (const position of targets) {
+    // The bot mines obsidian standing at its top level (feet = obsidian.y + 1),
+    // either directly above it or on an adjacent rim/wall. Accept any safe
+    // standing cell at that level so a contained lake-bed obsidian (water above,
+    // cobblestone rim beside) is reachable instead of defaulting to currentY.
+    const level = position.y + 1;
+    if (level < currentY - 1 || level > currentY) continue;
+    const stands = [position.offset(0, 1, 0),
+      ...[[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dz]) => position.offset(dx, 1, dz))];
+    if (stands.some(cell => isSafeStandingPosition(bot, cell))) levels.push(level);
+  }
+  return levels.length ? Math.max(...levels) : currentY;
 }
 
 export function collectionDigSafety(bot, block, { standingPosition } = {}) {
