@@ -12,7 +12,7 @@ import {
   waitForCollectionMovementToSettle,
   withCollectionEvidence,
 } from './collection.js';
-import { isFullCubeReference, placementMutation } from './placement.js';
+import { findPlacementReference, isFullCubeReference, placementMutation } from './placement.js';
 import { configureMineSupport } from './branch_mine.js';
 import { iteratePathSearch, navigateTo } from './navigation.js';
 import { restoreObsidianWorkSurface } from './obsidianSupport.js';
@@ -588,8 +588,8 @@ async function buildPourPost(bot, context, mutations, basin, maximum) {
     const item = hasItem(bot, 'cobblestone');
     if (!item) return null;
     try {
-      await approachObsidian(bot, c.pref.reference, context, {
-        interactionTarget: c.pref.reference.offset(.5, .5, .5), allowDig: false,
+      await approachObsidian(bot, c.pref.reference.position, context, {
+        interactionTarget: c.pref.reference.position.offset(.5, .5, .5), allowDig: false,
       });
       await bot.equip(item, 'hand');
       context.operation_scope?.checkpoint();
@@ -604,6 +604,75 @@ async function buildPourPost(bot, context, mutations, basin, maximum) {
     if (standingCandidates(bot, c.reference, c.target, c.face).length) {
       return { water: c.water, reference: c.reference, face: c.face, target: c.target };
     }
+  }
+  return null;
+}
+
+async function buildSyntheticBasin(bot, context, mutations, sources, maximum, origin) {
+  // The bot builds its OWN contained casting basin around a natural lava source
+  // that rests on a solid floor: a two-high ring of solid blocks (cobblestone or
+  // dirt) on the four horizontal neighbours both encloses the source at its own
+  // level (so the closed-basin proof holds) and raises a standable pour rim one
+  // level up. This removes the dependence on a naturally closed basin or a
+  // naturally standable rim — the geometry the bot constructs is safe by design.
+  const material = totalItemCount(bot, 'cobblestone') >= 8 ? 'cobblestone'
+    : totalItemCount(bot, 'dirt') >= 8 ? 'dirt' : null;
+  if (!material) return null;
+  if (!Number.isSafeInteger(maximum) || maximum < 10) return null;
+  const candidates = sources.filter(source => {
+    if (origin.distanceTo(source) > 64) return false;
+    if (!isLavaSource(bot.blockAt(source))) return false;
+    if (!castingAir(bot.blockAt(source.offset(0, 1, 0)))) return false;
+    return isFullCubeReference(bot.blockAt(source.offset(0, -1, 0)));
+  }).sort((a, b) => origin.distanceTo(a) - origin.distanceTo(b));
+  for (const source of candidates.slice(0, 3)) {
+    const ring = [];
+    for (const side of BASIN_SIDES) {
+      ring.push(source.offset(side.x, 0, side.z));
+      ring.push(source.offset(side.x, 1, side.z));
+    }
+    // Build nearest cells first so the bot starts from natural ground it can
+    // already stand on, then uses each newly placed block as the reference and
+    // footing for the next cell (progressive construction around the source).
+    ring.sort((a, b) => origin.distanceTo(a) - origin.distanceTo(b));
+    let ok = true;
+    for (const cell of ring) {
+      context.operation_scope?.checkpoint();
+      context.signal?.throwIfAborted();
+      if (isFullCubeReference(bot.blockAt(cell))) continue;
+      const item = hasItem(bot, material);
+      if (!item) { ok = false; break; }
+      // Prefer a HORIZONTAL solid reference beside the cell: aiming down through
+      // the lava surface at the floor below is raycast-obstructed, but a solid
+      // block beside the cell gives a clean horizontal placement face.
+      let pref = null;
+      for (const side of BASIN_SIDES) {
+        const refBlock = bot.blockAt(cell.offset(side.x, 0, side.z));
+        if (isFullCubeReference(refBlock)) {
+          pref = { reference: refBlock, face: new Vec3(-side.x, 0, -side.z) };
+          break;
+        }
+      }
+      if (!pref) pref = findPlacementReference(bot, cell, Vec3);
+      if (!pref) { ok = false; break; }
+      try {
+        await approachObsidian(bot, pref.reference.position, context, {
+          interactionTarget: pref.reference.position.offset(.5, .5, .5), allowDig: false,
+        });
+        await bot.equip(item, 'hand');
+        context.operation_scope?.checkpoint();
+        await bot.placeBlock(pref.reference, pref.face);
+      } catch (error) {
+        context.signal?.throwIfAborted();
+        if (!['NoPath', 'PathStopped', 'Timeout', 'NAVIGATION_TARGET_NOT_REACHED', 'ACTION_DEADLINE_EXPIRED', 'WATER_TARGET_UNREACHABLE'].includes(error.code || error.name)) throw error;
+        ok = false; break;
+      }
+      if (!isFullCubeReference(bot.blockAt(cell))) { ok = false; break; }
+      mutations.push(placementMutation(material, cell, bot.game?.dimension));
+    }
+    if (!ok) continue;
+    const basin = closedLavaBasin(bot, source, maximum - 1, origin);
+    if (basin && basin.length === 1 && basin[0].equals(source)) return { cells: basin, walls: ring };
   }
   return null;
 }
@@ -641,13 +710,22 @@ async function castObservedObsidian(bot, context, mutations, wait) {
       remaining = maximum - built.walls.length - built.cells.length - 1;
       selected.push(built.cells);
     } else {
-      // No bounded basin can be proven (large open lake). Convert a single
-      // reachable lava source by direct pour, under the same safety invariants.
+      // No naturally bounded basin (large open lake). Prefer the cheap direct
+      // pour on a single reachable source with a natural standable rim; only when
+      // no such rim exists does the bot BUILD its own contained basin (stack a
+      // two-high rim around a solid-floor source). Both keep the safety invariants.
       const direct = await castDirectPourSource(bot, context, mutations, sources, maximum, origin, wait);
       if (direct) return direct;
-      fail('RESOURCE_NOT_FOUND', '原范围和预算内没有已知封闭、可安全制备的熔岩盆地。', {
-        lava_sources_seen: sources.length,
-      });
+      const synthetic = await buildSyntheticBasin(bot, context, mutations, sources, maximum, origin);
+      if (synthetic) {
+        for (const p of synthetic.cells) seen.add(p.toString());
+        remaining = maximum - synthetic.walls.length - synthetic.cells.length - 1;
+        selected.push(synthetic.cells);
+      } else {
+        fail('RESOURCE_NOT_FOUND', '原范围和预算内没有已知封闭、可安全制备的熔岩盆地。', {
+          lava_sources_seen: sources.length,
+        });
+      }
     }
   }
   const confirmation = waterConfirmation(context, wait), created = new Map();
