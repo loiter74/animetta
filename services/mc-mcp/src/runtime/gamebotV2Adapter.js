@@ -331,6 +331,14 @@ function capabilityDescriptors(bot, actions) {
       parameters: {},
       invoke: (_parameters, context) => actions.prepareObsidian(context),
     },
+    build_infinite_water_source: {
+      parameters: {},
+      invoke: (_parameters, context) => actions.buildInfiniteWaterSource(context),
+    },
+    build_lava_drip_farm: {
+      parameters: {},
+      invoke: (_parameters, context) => actions.buildLavaDripFarm(context),
+    },
     eat: {
       parameters: { item: { type: 'string' } },
       invoke: ({ item }, context) => actions.eat(item, context),

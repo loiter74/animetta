@@ -31,9 +31,9 @@ export function isWaterSource(block) {
 }
 
 // Exposed level-zero water occupies 8/9 of the block, unlike a solid top face.
-const waterFillTarget = position => position.offset(0.5, 8 / 9 - 0.01, 0.5);
+export const waterFillTarget = position => position.offset(0.5, 8 / 9 - 0.01, 0.5);
 
-function waterConfirmation(context, wait) {
+export function waterConfirmation(context, wait) {
   let remaining = 30;
   const checkpoint = () => {
     context.operation_scope?.checkpoint();
@@ -55,7 +55,7 @@ function waterConfirmation(context, wait) {
   } };
 }
 
-async function aimWaterItem(bot, target, confirmation) {
+export async function aimWaterItem(bot, target, confirmation) {
   confirmation.checkpoint();
   const settled = await waitForCollectionMovementToSettle(bot, {
     timeoutMs: 3000,
@@ -134,7 +134,7 @@ function hasDecorativeClearance(bot, eye, delta, targetCell) {
   return true;
 }
 
-function canInteractFrom(bot, position, interactionTarget, feet, expectedFace) {
+export function canInteractFrom(bot, position, interactionTarget, feet, expectedFace) {
   const target = interactionTarget ?? position.offset(0.5, 0.5, 0.5);
   const eye = feet.offset(0, 1.62, 0);
   const delta = target.minus(eye);
@@ -146,7 +146,7 @@ function canInteractFrom(bot, position, interactionTarget, feet, expectedFace) {
   return visible && hasDecorativeClearance(bot, eye, delta, position);
 }
 
-function standingCandidates(bot, position, interactionTarget, expectedFace) {
+export function standingCandidates(bot, position, interactionTarget, expectedFace) {
   const candidates = [];
   for (let dx = -3; dx <= 3; dx++) {
     for (let dz = -3; dz <= 3; dz++) {
@@ -218,7 +218,7 @@ function selectWaterSources(sources) {
   return selected;
 }
 
-async function approachWaterSources(bot, sources, context, wait) {
+export async function approachWaterSources(bot, sources, context, wait) {
   const reachableSource = pool => isSafeStandingPosition(bot, bot.entity.position.floored())
     ? pool.find(source => canInteractFrom(bot, source.position,
       waterFillTarget(source.position), bot.entity.position)) : undefined;
@@ -349,7 +349,7 @@ const BASIN_SIDES = [
   { x: 1, z: 0, face: 4 }, { x: -1, z: 0, face: 5 },
   { x: 0, z: 1, face: 2 }, { x: 0, z: -1, face: 3 },
 ];
-const isLavaSource = block => block?.name === 'lava'
+export const isLavaSource = block => block?.name === 'lava'
   && Number(block.getProperties?.().level ?? block.metadata) === 0;
 const castingAir = block => ['air', 'cave_air'].includes(block?.name);
 

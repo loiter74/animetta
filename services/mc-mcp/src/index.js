@@ -55,6 +55,7 @@ import { isolatePathfinderGeometry, navigateTo } from './navigation.js';
 import { backfillObsidianHole } from './obsidianSupport.js';
 import { acquireFlint, ignitePortal } from './portal.js';
 import { fillWaterBucket, prepareObsidian } from './water.js';
+import { buildInfiniteWaterSource, buildLavaDripFarm } from './renewable.js';
 import {
   normalizePlacementBlockName,
   isFullCubeReference,
@@ -1897,6 +1898,8 @@ gameBotV2Adapter = createGameBotV2Adapter({
     ignitePortal: (parameters, context) => ignitePortal(bot, parameters, context),
     fillWaterBucket: (context) => fillWaterBucket(bot, context),
     prepareObsidian: (context) => prepareObsidian(bot, context),
+    buildInfiniteWaterSource: (context) => buildInfiniteWaterSource(bot, context),
+    buildLavaDripFarm: (context) => buildLavaDripFarm(bot, context),
     acquireFlint: (maxAttempts, context) => acquireFlint(bot, maxAttempts, context, {
       collect: (scopedContext) => _collect('gravel', 1, scopedContext),
       place: (position, scopedContext) => (
