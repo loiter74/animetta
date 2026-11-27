@@ -174,7 +174,7 @@ def test_iron_kit_collects_successful_small_batches_before_smelting_forty_four(
     state = strategy.prepare(mission.objectives[0].goal)
     observation = Observation.model_validate(MESSAGES["Observation"]).model_copy(
         update={
-            "inventory": {"stone_pickaxe": 1, "furnace": 1, "oak_planks": 7, "raw_iron": raw_iron}
+            "inventory": {"stone_pickaxe": 1, "furnace": 1, "oak_planks": 30, "raw_iron": raw_iron}
         }
     )
     account = BudgetAccount(
@@ -242,7 +242,7 @@ def test_iron_batch_reservation_uses_current_account_and_preserves_remaining_wor
     state = strategy.prepare(mission.objectives[0].goal)
     observation = Observation.model_validate(MESSAGES["Observation"]).model_copy(
         update={
-            "inventory": {"stone_pickaxe": 1, "oak_planks": 23, "cobblestone": 40, "raw_iron": 1}
+            "inventory": {"stone_pickaxe": 1, "oak_planks": 30, "cobblestone": 40, "raw_iron": 1}
         }
     )
     limit = mission.budget.model_copy(update=mission.objectives[0].budget.model_dump())
@@ -336,7 +336,7 @@ def test_a_settled_failed_search_is_paid_for_by_packing_work_inside_the_same_iro
     )
     observation = Observation.model_validate(MESSAGES["Observation"]).model_copy(
         update={
-            "inventory": {"stone_pickaxe": 1, "oak_planks": 23, "cobblestone": 40, "raw_iron": 1},
+            "inventory": {"stone_pickaxe": 1, "oak_planks": 30, "cobblestone": 40, "raw_iron": 1},
         }
     )
     batches = []
@@ -1131,7 +1131,7 @@ def test_observed_checkpoint_completion_is_recoverable_only_for_the_failed_primi
             "stone_pickaxe": 1,
             "raw_iron": 44,
             "furnace": 1,
-            "oak_planks": 23,
+            "oak_planks": 30,
         }
     )
     before = Observation.model_validate({**MESSAGES["Observation"], "inventory": inventory})

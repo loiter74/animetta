@@ -299,6 +299,49 @@ def test_explicit_nonadaptive_workflow_keeps_exact_oak_request() -> None:
     assert decision.parameters == {"block_type": "oak_log", "count": 8}
 
 
+def test_smelt_provisions_missing_plank_fuel_before_the_smelt_step() -> None:
+    registry = WorkflowRegistry()
+    registry.register(
+        next(w for w in nether_preparation_workflows() if w.target == "nether_iron_kit")
+    )
+    strategy = FallbackStrategy(registry=registry)
+    state = strategy.prepare(goal("nether_iron_kit"))
+    # Resumed iron mission: wood steps checkpoint-skipped via the bootstrap,
+    # all 44 raw iron and the furnace in stock, but only 21 planks — one
+    # plank smelts 1.5 items, so 44 smelts need 30 fuel units (9 missing).
+    resumed = observation_with(
+        {"stone_pickaxe": 1, "furnace": 1, "raw_iron": 44, "birch_planks": 21}
+    )
+    collect = strategy.propose(state, resumed)
+    assert collect.kind == "execute" and collect.capability == "collect"
+    assert collect.parameters == {"block_type": "any_log", "count": 3}
+    assert collect.maximum_cost.max_blocks_changed == 8
+    # Provisioning settles without advancing the plan past the smelt step.
+    state = strategy.accept_result(state, {})
+    assert state["step_index"] == next(
+        i for i, s in enumerate(state["workflow"].steps) if s.capability == "smelt"
+    )
+    with_logs = observation_with(
+        {"stone_pickaxe": 1, "furnace": 1, "raw_iron": 44, "birch_planks": 21, "spruce_log": 3}
+    )
+    craft = strategy.propose(state, with_logs)
+    assert craft.kind == "execute" and craft.capability == "craft"
+    assert craft.parameters == {"recipe": "any_planks", "count": 9}
+    state = strategy.accept_result(state, {})
+    fueled = observation_with(
+        {"stone_pickaxe": 1, "furnace": 1, "raw_iron": 44, "birch_planks": 30}
+    )
+    smelt = strategy.propose(state, fueled)
+    assert smelt.kind == "execute" and smelt.capability == "smelt"
+    assert smelt.parameters == {"item": "raw_iron", "fuel": "any_planks", "count": 44}
+    # Sufficient fuel proposes the smelt immediately with no synthesized step.
+    direct = strategy.propose(
+        strategy.prepare(goal("nether_iron_kit")),
+        observation_with({"stone_pickaxe": 1, "furnace": 1, "raw_iron": 44, "birch_planks": 34}),
+    )
+    assert direct.kind == "execute" and direct.capability == "smelt"
+
+
 def test_atomic_strategy_proposes_exactly_one_manifest_valid_action() -> None:
     manifest = RuntimeManifest.model_validate(MESSAGES["RuntimeManifest"])
     strategy = AtomicStrategy(

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from math import isfinite
+from math import ceil, isfinite
 
 from animetta.tools.gamebot.contracts.v2 import Observation
 from animetta.tools.minecraft.survival.registry import WorkflowRegistry
@@ -84,6 +84,13 @@ class FallbackStrategy:
                 }
             )
         step = workflow.steps[index]
+        if step.capability == "smelt":
+            fuel_step = self._plank_fuel_provision_step(step, observation)
+            if fuel_step is not None:
+                # Provisioning settles without advancing the plan: the same
+                # smelt step is re-proposed once the fuel gap is closed.
+                state["repeat_collection"] = True
+                return fuel_step
         available = state.get("budget_remaining")
         if step.capability == "acquire_flint" and isinstance(available, ExecutionBudget):
             # A failed gravel search can leave reusable gravel and an unspent
@@ -109,6 +116,47 @@ class FallbackStrategy:
                 update={"maximum_cost": step.maximum_cost.bounded_work(available)}
             )
         return step
+
+    def _plank_fuel_provision_step(
+        self, step: ExecuteStep, observation: Observation
+    ) -> ExecuteStep | None:
+        """Synthesize wood provisioning when a mixed-plank smelt lacks fuel.
+
+        The furnace burns one plank per 1.5 smelted items; a resumed mission
+        often reaches the smelt with the wood steps already checkpoint-skipped
+        and too few planks in stock. Collect the missing logs first, then
+        craft them into planks, before the smelt itself is proposed.
+        """
+
+        fuel = step.parameters.get("fuel")
+        count = step.parameters.get("count")
+        if fuel != "any_planks" or not isinstance(count, int) or count <= 0:
+            return None
+        required = max(1, ceil(count * 2 / 3))
+        planks = inventory_resource_count(observation, "any_planks")
+        missing = required - planks
+        if missing <= 0:
+            return None
+        logs = inventory_resource_count(observation, "any_log")
+        craftable = 4 * logs
+        if craftable >= missing:
+            return ExecuteStep(
+                capability="craft",
+                parameters={"recipe": "any_planks", "count": missing},
+                maximum_cost=BudgetUsage(max_actions=1),
+            )
+        logs_needed = ceil((missing - craftable) / 4)
+        return ExecuteStep(
+            capability="collect",
+            parameters={"block_type": "any_log", "count": logs_needed},
+            maximum_cost=BudgetUsage(
+                max_actions=1,
+                max_travel_distance=192,
+                # One dig per log plus the runtime's two-block stopping reserve.
+                max_blocks_changed=2 * logs_needed + 2,
+                max_damage_taken=1.0,
+            ),
+        )
 
     def _bounded_collection_step(
         self,
