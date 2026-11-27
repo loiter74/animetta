@@ -128,6 +128,10 @@ def build_nether_portal_mission(
                         "cauldron": 0,
                         "iron-pickaxe": 0,
                         "bucket-stock": 0,
+                        # Underground mining spans dozens of ore batches and
+                        # honest falls: one deep-fall allowance (six hearts)
+                        # keeps a survivable misstep from ending the mission.
+                        "iron": 6,
                         "lava-supply": 2,
                     }.get(objective_id, 1),
                 ),

@@ -623,8 +623,11 @@ class CommandExecutor:
                 # The runtime stopped this action at an admitted envelope and
                 # reported the boundary crossing itself; the settle overshoot is
                 # the enforcement event, not unobserved world drift. Surface the
-                # honest budget stop so bounded replan can react to it.
-                await self._repository.update_step_state(step_id, "failed")  # type: ignore[attr-defined]
+                # honest budget stop so bounded replan can react to it. The step
+                # keeps a receipt-persisted state ("settled", never replayed);
+                # the command-level failure is carried by the raised error, and
+                # "failed" is not part of the persisted step-state vocabulary.
+                await self._repository.update_step_state(step_id, "settled")  # type: ignore[attr-defined]
                 raise _error(
                     "BUDGET_EXHAUSTED",
                     str(exc),

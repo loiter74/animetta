@@ -148,7 +148,7 @@ def _budget_policy(config: MinecraftConfig) -> ModeBudgetPolicy:
         mission=limits(192, 20, 512, 1_536, 60 * 60_000).model_copy(
             update={
                 "max_travel_distance": float(config.safety.max_mission_travel_distance),
-                "max_damage_taken": 13.0,
+                "max_damage_taken": 18.0,
             }
         ),
     )

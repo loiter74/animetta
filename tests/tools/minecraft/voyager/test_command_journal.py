@@ -431,6 +431,36 @@ async def test_sqlite_rejects_different_receipt_for_settled_step(tmp_path) -> No
     assert persisted_budget(path, command.command_id) == (2, {"max_actions": 1}, {})
 
 
+async def test_sqlite_step_state_vocabulary_is_the_persisted_contract(tmp_path) -> None:
+    repository = SQLiteCommandJournal(tmp_path / "step-vocabulary.db")
+    await repository.connect()
+    try:
+        command, _ = await repository.create_command(draft("vocab", "a" * 64))
+        step = StepRecord(
+            step_id="step-vocab",
+            command_id=command.command_id,
+            ordinal=1,
+            strategy_state_hash="a" * 64,
+            capability="collect",
+            params_hash="b" * 64,
+            params={"block_type": "iron_ore", "count": 1},
+            correlation_id="correlation-vocab",
+            runtime_instance_id="runtime-vocab",
+            state="reserved",
+            reservation={"max_actions": 1},
+            before_observation_hash="c" * 64,
+        )
+        await repository.reserve_step(step)
+        # The durable journal only knows reserved/dispatched/settled/unknown:
+        # command-level failure is carried by the terminal command result, not
+        # by a step state, so an executor bug writing "failed" must fail loudly
+        # instead of silently masking the honest budget-stop error.
+        with pytest.raises(ValueError):
+            await repository.update_step_state(step.step_id, "failed")
+    finally:
+        await repository.close()
+
+
 async def test_existing_blocked_unknown_keeps_restart_quarantined() -> None:
     repository = InMemoryCommandJournal()
     command, _ = await repository.create_command(draft("one", "a" * 64))

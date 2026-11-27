@@ -1212,7 +1212,10 @@ async def test_enforced_budget_stop_settles_as_honest_budget_error() -> None:
         )
 
     persisted = await repository.get_step("step-1")
-    assert persisted is not None and persisted.state == "failed"
+    # "failed" is not a persisted step-state: the receipt is already recorded,
+    # so the step settles (never replayed) and the budget stop is carried by
+    # the raised command error instead of the step-state vocabulary.
+    assert persisted is not None and persisted.state == "settled"
     assert persisted.receipt["error"]["code"] == "BUDGET_EXHAUSTED"
     assert caught.value.error.code == "BUDGET_EXHAUSTED"
     assert caught.value.error.outcome_known is True

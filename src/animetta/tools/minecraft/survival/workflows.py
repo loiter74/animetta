@@ -63,11 +63,18 @@ class WorkflowDefinition(BaseModel):
         return self
 
 
-def _step(capability: str, parameters: dict, *, travel: float = 0, blocks: int = 0):
+def _step(
+    capability: str,
+    parameters: dict,
+    *,
+    travel: float = 0,
+    blocks: int = 0,
+    damage: float | None = None,
+):
     # Steps that move or change blocks may absorb one enforcement-boundary
     # damage event (a fall, a scratch) without a contract violation; the
     # command-level damage budget still bounds the total across steps.
-    damage = 1.0 if (travel > 0 or blocks > 0) else 0.0
+    resolved_damage = (1.0 if (travel > 0 or blocks > 0) else 0.0) if damage is None else damage
     return ExecuteStep(
         capability=capability,
         parameters=parameters,
@@ -75,7 +82,7 @@ def _step(capability: str, parameters: dict, *, travel: float = 0, blocks: int =
             max_actions=1,
             max_travel_distance=travel,
             max_blocks_changed=blocks,
-            max_damage_taken=damage,
+            max_damage_taken=resolved_damage,
         ),
     )
 
@@ -123,7 +130,7 @@ def _iron_progression_steps(
         _step("craft", {"recipe": "stick", "count": 4}),
         _step("craft", {"recipe": "wooden_pickaxe", "count": 1}, travel=8, blocks=8),
         # Collection includes the bounded shaft preparation before gathering stone.
-        _step("collect", {"block_type": "stone", "count": 16}, travel=96, blocks=96),
+        _step("collect", {"block_type": "stone", "count": 16}, travel=96, blocks=96, damage=6.0),
         _step("craft", {"recipe": "stone_pickaxe", "count": 1}, travel=8, blocks=8),
         _step(
             "collect",
@@ -133,6 +140,11 @@ def _iron_progression_steps(
             },
             travel=192,
             blocks=192,
+            # Underground ore batches carry real fall risk: a shaft misstep
+            # costs several hearts in one action, so the per-step envelope has
+            # to admit one deep fall instead of stopping the mission at the
+            # first scratch. The objective budget still bounds the total.
+            damage=6.0,
         ),
         # Set up the stationary workstation at the ore site, after travelling.
         _step("craft", {"recipe": "furnace", "count": 1}, travel=8, blocks=8),

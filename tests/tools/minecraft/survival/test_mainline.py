@@ -701,7 +701,7 @@ def test_mainline_default_resume_keeps_full_chain_and_total_budget() -> None:
     assert mission.objectives[0].dependencies == ()
     assert mission.budget.max_actions == 156
     assert mission.budget.max_travel_distance == 3_840
-    assert mission.budget.max_damage_taken == 13  # includes lava-supply burn allowance
+    assert mission.budget.max_damage_taken == 18  # iron mining fall allowance + lava burn
     assert mission.budget.max_blocks_changed == 1_070
 
 
