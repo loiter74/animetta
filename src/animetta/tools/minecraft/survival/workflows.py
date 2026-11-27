@@ -259,41 +259,8 @@ def diamond_survival_workflow(diamond_quantity: int = 1) -> WorkflowDefinition:
 
 
 def nether_preparation_workflows() -> tuple[WorkflowDefinition, ...]:
-    """Extend the reviewed survival chain without changing the one-diamond goal."""
-    diamond_quantity = 3
-    diamond = diamond_survival_workflow(diamond_quantity)
-    diamond_stock = _inventory_checkpoint({"diamond": diamond_quantity})
-    pickaxe = _inventory_checkpoint({"diamond_pickaxe": 1})
-    pickaxe_steps = (
-        _step("collect", {"block_type": "stone", "count": 6}, travel=48, blocks=16),
-        _step("craft", {"recipe": "stick", "count": 8}),
-        _step("craft", {"recipe": "stone_pickaxe", "count": 2}, travel=8, blocks=8),
-        *diamond.steps,
-        _step("craft", {"recipe": "stick", "count": 4}),
-        _step("craft", {"recipe": "diamond_pickaxe", "count": 1}, travel=8, blocks=8),
-    )
-    pickaxe_collection_targets = (
-        InventoryThreshold(item="cobblestone", quantity=6),
-        None,
-        None,
-        *diamond.collection_targets,
-        None,
-        None,
-    )
-    checkpoints = (
-        *(
-            WorkflowCheckpoint(any_of=(*checkpoint.any_of, *diamond_stock.any_of))
-            for checkpoint in (
-                _inventory_checkpoint({"cobblestone": 6}, {"stone_pickaxe": 2}),
-                _inventory_checkpoint({"stick": 4}, {"stone_pickaxe": 2}),
-                _inventory_checkpoint({"stone_pickaxe": 2}),
-                *diamond.checkpoints,
-            )
-            if checkpoint is not None
-        ),
-        _inventory_checkpoint({"stick": 2}),
-        pickaxe,
-    )
+    """Extend the survival chain with the pure-casting portal stages."""
+    lava_bucket_supply = 10
     ignition = _inventory_checkpoint({"flint_and_steel": 1})
     return (
         WorkflowDefinition(
@@ -301,13 +268,13 @@ def nether_preparation_workflows() -> tuple[WorkflowDefinition, ...]:
             adaptive_wood=True,
             intent="acquire",
             target="nether_iron_kit",
-            steps=_iron_progression_steps(7, ore_batch_size=1),
-            collection_targets=_iron_progression_collection_targets(7),
+            steps=_iron_progression_steps(14, ore_batch_size=1),
+            collection_targets=_iron_progression_collection_targets(14),
             checkpoints=(
                 *_iron_progression_checkpoints()[:7],
-                _inventory_checkpoint({"raw_iron": 7}, {"iron_ingot": 7}),
-                _inventory_checkpoint({"furnace": 1}, {"iron_ingot": 7}),
-                _inventory_checkpoint({"iron_ingot": 7}),
+                _inventory_checkpoint({"raw_iron": 14}, {"iron_ingot": 14}),
+                _inventory_checkpoint({"furnace": 1}, {"iron_ingot": 14}),
+                _inventory_checkpoint({"iron_ingot": 14}),
             ),
         ),
         WorkflowDefinition(
@@ -337,17 +304,68 @@ def nether_preparation_workflows() -> tuple[WorkflowDefinition, ...]:
             ),
         ),
         WorkflowDefinition(
-            workflow_id="survival:diamond-pickaxe",
-            shared_collection_budget_items=diamond.shared_collection_budget_items,
-            adaptive_wood=True,
+            workflow_id="survival:cauldron",
             intent="craft",
-            target="diamond_pickaxe",
-            steps=pickaxe_steps,
-            collection_targets=pickaxe_collection_targets,
-            checkpoints=tuple(
-                WorkflowCheckpoint(any_of=(*checkpoint.any_of, *pickaxe.any_of))
-                for checkpoint in checkpoints
-                if checkpoint is not None
+            target="cauldron",
+            steps=(_step("craft", {"recipe": "cauldron", "count": 1}),),
+            checkpoints=(_inventory_checkpoint({"cauldron": 1}),),
+        ),
+        WorkflowDefinition(
+            workflow_id="survival:dripstone",
+            intent="acquire",
+            target="pointed_dripstone",
+            steps=(
+                _step(
+                    "collect", {"block_type": "pointed_dripstone", "count": 1}, travel=192, blocks=4
+                ),
+            ),
+            collection_targets=(InventoryThreshold(item="pointed_dripstone", quantity=1),),
+            checkpoints=(_inventory_checkpoint({"pointed_dripstone": 1}),),
+        ),
+        WorkflowDefinition(
+            workflow_id="survival:portal-mold",
+            intent="acquire",
+            target="dirt",
+            steps=(_step("collect", {"block_type": "dirt", "count": 32}, travel=192, blocks=40),),
+            collection_targets=(InventoryThreshold(item="dirt", quantity=32),),
+            checkpoints=(_inventory_checkpoint({"dirt": 32}),),
+        ),
+        WorkflowDefinition(
+            workflow_id="survival:deepslate",
+            intent="acquire",
+            target="cobbled_deepslate",
+            steps=(
+                _step(
+                    "collect",
+                    {"block_type": "cobbled_deepslate", "count": 4},
+                    travel=256,
+                    blocks=12,
+                ),
+            ),
+            collection_targets=(InventoryThreshold(item="cobbled_deepslate", quantity=4),),
+            checkpoints=(_inventory_checkpoint({"cobbled_deepslate": 4}),),
+        ),
+        WorkflowDefinition(
+            workflow_id="survival:lava-bucket-supply",
+            intent="acquire",
+            target="lava_bucket",
+            steps=(
+                # The first bucket is scooped from a natural lava source; the
+                # rest drip into the cauldron, whose refill is slow — mission
+                # retries span runs and each successful harvest advances the
+                # checkpoint ladder by one bucket.
+                _step("fill_lava_bucket", {}, travel=192, blocks=1),
+            )
+            + tuple(_step("harvest_lava_bucket", {}, travel=64, blocks=1) for _ in range(10)),
+            collection_targets=(None,)
+            + tuple(
+                InventoryThreshold(item="lava_bucket", quantity=count)
+                for count in range(1, lava_bucket_supply + 1)
+            ),
+            checkpoints=(None,)
+            + tuple(
+                _inventory_checkpoint({"lava_bucket": count})
+                for count in range(1, lava_bucket_supply + 1)
             ),
         ),
         WorkflowDefinition(
@@ -388,26 +406,5 @@ def nether_preparation_workflows() -> tuple[WorkflowDefinition, ...]:
                     ignition,
                 )
             ),
-        ),
-        WorkflowDefinition(
-            workflow_id="survival:obsidian",
-            intent="acquire",
-            target="obsidian",
-            steps=(_step("prepare_obsidian", {}, travel=128, blocks=16),)
-            + (
-                # First dig walks to the cast site; follow-ups chip adjacent
-                # obsidian in the same basin, so their declared envelopes must
-                # stay small enough that the summed future cost still fits the
-                # objective travel budget (fallback.py _future_cost admission).
-                _step("collect", {"block_type": "obsidian", "count": 1}, travel=64, blocks=8),
-            )
-            + tuple(
-                _step("collect", {"block_type": "obsidian", "count": 1}, travel=12, blocks=4)
-                for _ in range(9)
-            ),
-            collection_targets=(None,)
-            + tuple(InventoryThreshold(item="obsidian", quantity=count) for count in range(1, 11)),
-            checkpoints=(None,)
-            + tuple(_inventory_checkpoint({"obsidian": count}) for count in range(1, 11)),
         ),
     )

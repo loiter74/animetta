@@ -58,8 +58,8 @@ def test_outcome_contract_redistributes_exact_original_caps_and_keeps_portal_pro
     mission = reference()
     old = build_nether_portal_mission(mission_id=mission.mission_id, home=(0, 64, 0))
     assert mission.budget == old.budget
-    assert mission.budget.max_actions == 117
-    assert mission.budget.max_travel_distance == 1984
+    assert mission.budget.max_actions == 120
+    assert mission.budget.max_travel_distance == 2688
     assert mission.autonomy.max_new_skills == 1
     assert len(mission.objectives) == 1
     assert (

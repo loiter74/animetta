@@ -57,6 +57,11 @@ import { acquireFlint, ignitePortal } from './portal.js';
 import { fillWaterBucket, prepareObsidian } from './water.js';
 import { buildInfiniteWaterSource, buildLavaDripFarm } from './renewable.js';
 import {
+  castNetherPortalFrame,
+  fillLavaBucket,
+  harvestLavaBucket,
+} from './portalCast.js';
+import {
   normalizePlacementBlockName,
   isFullCubeReference,
   placeBlockAt,
@@ -1898,8 +1903,23 @@ gameBotV2Adapter = createGameBotV2Adapter({
     ignitePortal: (parameters, context) => ignitePortal(bot, parameters, context),
     fillWaterBucket: (context) => fillWaterBucket(bot, context),
     prepareObsidian: (context) => prepareObsidian(bot, context),
-    buildInfiniteWaterSource: (context) => buildInfiniteWaterSource(bot, context),
-    buildLavaDripFarm: (context) => buildLavaDripFarm(bot, context),
+    buildInfiniteWaterSource: (parameters = {}, context) => (
+      buildInfiniteWaterSource(bot, context, {}, {
+        origin: parameters?.origin ?? (parameters?.x !== undefined
+          ? { x: parameters.x, y: parameters.y, z: parameters.z }
+          : undefined),
+      })
+    ),
+    buildLavaDripFarm: (parameters = {}, context) => (
+      buildLavaDripFarm(bot, context, {}, {
+        origin: parameters?.origin ?? (parameters?.x !== undefined
+          ? { x: parameters.x, y: parameters.y, z: parameters.z }
+          : undefined),
+      })
+    ),
+    fillLavaBucket: (context) => fillLavaBucket(bot, context),
+    harvestLavaBucket: (context) => harvestLavaBucket(bot, context),
+    castNetherPortal: (parameters, context) => castNetherPortalFrame(bot, context, parameters),
     acquireFlint: (maxAttempts, context) => acquireFlint(bot, maxAttempts, context, {
       collect: (scopedContext) => _collect('gravel', 1, scopedContext),
       place: (position, scopedContext) => (

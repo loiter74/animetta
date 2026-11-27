@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from pydantic import TypeAdapter
@@ -446,8 +447,8 @@ async def test_controller_refreshes_canonical_budget_through_mission_fallback() 
     assert executor.calls[0]["account"].used.max_blocks_changed == 0
     assert executor.calls[0]["step"].maximum_cost.max_blocks_changed == 192
     assert executor.calls[1]["account"].used.max_blocks_changed == 89
-    assert executor.calls[1]["account"].remaining.max_blocks_changed == 167
-    assert executor.calls[1]["step"].maximum_cost.max_blocks_changed == 146
+    assert executor.calls[1]["account"].remaining.max_blocks_changed == 295
+    assert executor.calls[1]["step"].maximum_cost.max_blocks_changed == 192
     assert executor.calls[1]["account"].limit == executor.calls[0]["account"].limit
 
 
@@ -571,16 +572,33 @@ async def test_controller_resumes_only_known_settled_depth_progress(
 ):
     from animetta.tools.minecraft.survival.mainline import build_nether_portal_mission
     from animetta.tools.minecraft.survival.registry import WorkflowRegistry
-    from animetta.tools.minecraft.survival.workflows import nether_preparation_workflows
+    from animetta.tools.minecraft.survival.workflows import diamond_survival_workflow
+    from animetta.tools.minecraft.voyager.goal_models import AcquireGoal, InventoryAtLeast
     from animetta.tools.minecraft.voyager.strategies.fallback import FallbackStrategy
     from animetta.tools.minecraft.voyager.strategies.mission import MissionStrategy
 
+    # The casting mainline no longer mines diamonds; keep the depth-recovery
+    # contract alive through the standalone diamond workflow goal.
     mission = build_nether_portal_mission(mission_id="depth-recovery-controller")
-    objective = next(o for o in mission.objectives if o.objective_id == "diamond-pickaxe")
-    registry = WorkflowRegistry()
-    registry.register(
-        next(w for w in nether_preparation_workflows() if w.target == "diamond_pickaxe")
+    goal = AcquireGoal(
+        intent="acquire",
+        target="diamond",
+        quantity=3,
+        success_predicates=(
+            InventoryAtLeast(kind="inventory_at_least", item="diamond", quantity=3),
+        ),
     )
+    objective = SimpleNamespace(
+        goal=goal,
+        budget=BudgetUsage(
+            max_actions=40,
+            max_travel_distance=384,
+            max_blocks_changed=256,
+            max_damage_taken=2,
+        ),
+    )
+    registry = WorkflowRegistry()
+    registry.register(diamond_survival_workflow(3))
     strategy = MissionStrategy(live=None, learn=None, fallback=FallbackStrategy(registry=registry))
     before = Observation.model_validate(
         {
@@ -602,7 +620,7 @@ async def test_controller_resumes_only_known_settled_depth_progress(
             self.calls.append(kwargs)
             if len(self.calls) > 1:
                 # Stop this controller fixture before another world action or
-                # any claim that the whole diamond-pickaxe goal is complete.
+                # any claim that the whole diamond goal is complete.
                 raise ExecutorError(
                     ControlPlaneError(
                         code="TEST_STOP",

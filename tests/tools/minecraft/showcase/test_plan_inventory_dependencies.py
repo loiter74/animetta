@@ -31,14 +31,13 @@ def missing_iron(mission: MissionSpec) -> MissionSpec:
 
 
 def unprovisioned_descent(mission: MissionSpec) -> MissionSpec:
-    # R95 kept the water goal independent of the deep mining goal.
+    # R95 kept the water goal independent of the lava supply: harvesting away
+    # from shore has no local shortcut, so water must be provisioned first.
     data = mission.model_dump(mode="json")
     dependencies = {
-        "diamond-pickaxe": ["iron-pickaxe"],
         "water-return": ["iron-pickaxe"],
         "water-bucket": ["water-return"],
         "ignition": ["iron"],
-        "obsidian": ["diamond-pickaxe", "water-bucket"],
     }
     for objective in data["objectives"]:
         if objective["objective_id"] in dependencies:
@@ -53,7 +52,6 @@ def stale_iron_shore(mission: MissionSpec) -> MissionSpec:
         "water-return": [],
         "iron": ["water-return"],
         "water-bucket": ["iron"],
-        "diamond-pickaxe": ["iron-pickaxe", "water-bucket"],
     }
     for objective in data["objectives"]:
         if objective["objective_id"] in dependencies:
@@ -66,8 +64,8 @@ def stale_iron_shore(mission: MissionSpec) -> MissionSpec:
     [
         ({}, False),
         ({"water_bucket": 1}, True),
-        ({"minecraft:iron_ingot": 7}, True),
-        ({"iron_ingot": 4, "minecraft:iron_ingot": 4}, False),
+        ({"minecraft:iron_ingot": 14}, True),
+        ({"iron_ingot": 7, "minecraft:iron_ingot": 7}, False),
     ],
 )
 def test_iron_before_water_requires_a_fresh_return_unless_already_provisioned(
@@ -95,7 +93,7 @@ def test_iron_can_return_to_the_same_shore_using_another_authorized_travel_goal(
         elif objective["objective_id"] == "water-bucket":
             objective["dependencies"] = ["return-home"]
         elif objective["objective_id"] == "portal":
-            objective["dependencies"] = ["return-home", "obsidian", "ignition"]
+            objective["dependencies"] = ["return-home", "lava-supply", "ignition"]
     plan = MissionSpec.model_validate(data)
     assert validate_mission_plan(plan, reference=mission, initial_inventory={}) == ()
 
@@ -115,6 +113,7 @@ def test_iron_can_return_to_the_same_shore_using_another_authorized_travel_goal(
 def test_zero_block_craft_keeps_local_workstation_access_in_scheduled_order(mode: str) -> None:
     mission = reference()
     data = mission.model_dump(mode="json")
+    detaches_water = mode in {"mobile_workflow", "completed_mobile_workflow", "multiple_movers"}
     changes = {
         "iron": ([], 80),
         "iron-pickaxe": (["iron"], 95 if mode == "higher_priority" else 75),
@@ -128,14 +127,19 @@ def test_zero_block_craft_keeps_local_workstation_access_in_scheduled_order(mode
         ),
         "water-bucket": (["water-return"], 65),
         "ignition": (
-            ["iron"],
-            96
-            if mode in {"mobile_workflow", "completed_mobile_workflow", "multiple_movers"}
-            else 70,
+            ["iron"] if detaches_water else ["water-bucket"],
+            96 if detaches_water else 70,
         ),
-        "diamond-pickaxe": (["iron-pickaxe", "water-bucket"], 60),
-        "obsidian": (["diamond-pickaxe"], 55),
-        "return-home": (["obsidian"], 50),
+        "cauldron": (["ignition"], 68),
+        "dripstone": (["cauldron"], 67),
+        "portal-mold": (["dripstone"], 66),
+        "deepslate": (["portal-mold"], 64),
+        # Keep the water bucket provisioned for the lava supply even while the
+        # ignition workflow is pulled ahead of the workstation craft.
+        "lava-supply": (["deepslate", "water-bucket"] if detaches_water else ["deepslate"], 63),
+        "water-pool": (["lava-supply"], 62),
+        "lava-farm": (["water-pool"], 61),
+        "return-home": (["lava-farm"], 55),
         "portal": (["return-home", "ignition"], 40),
     }
     for objective in data["objectives"]:
@@ -172,40 +176,38 @@ def test_deep_mining_cannot_spend_surface_access_before_an_independent_water_goa
     issues = validate_mission_plan(plan, reference=mission, initial_inventory={})
     assert len(issues) == 1
     assert issues[0].code == "MISSING_ACCESS_PROVISION"
-    assert issues[0].objective_id == "diamond-pickaxe"
+    assert issues[0].objective_id == "lava-supply"
     assert issues[0].candidate_dependencies == ("water-bucket",)
-    assert issues[0].candidate_dependency_paths == (("water-bucket", "diamond-pickaxe"),)
-    assert issues[0].required_any_of == (), "access is not a diamond recipe ingredient"
+    assert issues[0].candidate_dependency_paths == (("water-bucket", "lava-supply"),)
+    assert issues[0].required_any_of == (), "access is not a lava recipe ingredient"
     assert plan.model_dump(mode="json") == before
 
 
-def test_access_feedback_can_be_satisfied_by_reordering_the_original_nine_objectives() -> None:
+def test_access_feedback_can_be_satisfied_by_reordering_the_original_fourteen_objectives() -> None:
     mission = reference()
     data = stale_iron_shore(mission).model_dump(mode="json")
     for objective in data["objectives"]:
-        if objective["objective_id"] == "diamond-pickaxe":
-            objective["dependencies"] = ["iron-pickaxe"]
-        elif objective["objective_id"] == "obsidian":
-            objective["dependencies"] = ["diamond-pickaxe", "water-bucket"]
+        if objective["objective_id"] == "ignition":
+            objective["dependencies"] = ["iron"]
     broken = MissionSpec.model_validate(data)
     original_hash = broken.canonical_hash
     issues = validate_mission_plan(broken, reference=mission, initial_inventory={})
     assert [issue.candidate_dependency_paths for issue in issues] == [
         (("iron", "water-return", "water-bucket"),),
-        (("water-bucket", "diamond-pickaxe"),),
+        (("water-bucket", "lava-supply"),),
     ]
     assert broken.canonical_hash == original_hash
     changes = {
         "iron": [],
         "water-return": ["iron"],
         "water-bucket": ["water-return"],
-        "diamond-pickaxe": ["iron-pickaxe", "water-bucket"],
+        "ignition": ["water-bucket"],
     }
     for objective in data["objectives"]:
         if objective["objective_id"] in changes:
             objective["dependencies"] = changes[objective["objective_id"]]
     reordered = MissionSpec.model_validate(data)
-    assert len(reordered.objectives) == len(broken.objectives) == 9
+    assert len(reordered.objectives) == len(broken.objectives) == 14
     assert reordered.budget == broken.budget
     assert {obj.objective_id: (obj.goal, obj.budget) for obj in reordered.objectives} == {
         obj.objective_id: (obj.goal, obj.budget) for obj in broken.objectives
@@ -214,9 +216,9 @@ def test_access_feedback_can_be_satisfied_by_reordering_the_original_nine_object
 
 
 @pytest.mark.parametrize(
-    "inventory", [{"water_bucket": 1}, {"minecraft:diamond": 3}, {"diamond_pickaxe": 1}]
+    "inventory", [{"water_bucket": 1}, {"minecraft:lava_bucket": 10}, {"lava_bucket": 10}]
 )
-def test_existing_provision_or_local_diamond_craft_preserves_order_freedom(inventory) -> None:
+def test_existing_provision_or_stocked_lava_preserves_order_freedom(inventory) -> None:
     mission = reference()
     assert (
         validate_mission_plan(
@@ -231,14 +233,14 @@ def test_explicit_shore_return_after_descent_can_supply_water_without_forcing_wa
     data = unprovisioned_descent(mission).model_dump(mode="json")
     for objective in data["objectives"]:
         if objective["objective_id"] == "water-return":
-            objective["dependencies"] = ["diamond-pickaxe"]
+            objective["dependencies"] = ["lava-supply"]
         elif objective["objective_id"] == "water-bucket":
             objective["dependencies"] = ["water-return"]
     plan = MissionSpec.model_validate(data)
     assert validate_mission_plan(plan, reference=mission, initial_inventory={}) == ()
 
 
-def test_a_shore_fact_before_descent_and_split_diamond_aliases_do_not_prove_access() -> None:
+def test_a_shore_fact_before_descent_and_split_lava_aliases_do_not_prove_access() -> None:
     mission = reference()
     data = unprovisioned_descent(mission).model_dump(mode="json")
     for objective in data["objectives"]:
@@ -247,7 +249,7 @@ def test_a_shore_fact_before_descent_and_split_diamond_aliases_do_not_prove_acce
     issues = validate_mission_plan(
         MissionSpec.model_validate(data),
         reference=mission,
-        initial_inventory={"diamond": 2, "minecraft:diamond": 2},
+        initial_inventory={"lava_bucket": 5, "minecraft:lava_bucket": 5},
     )
     assert [issue.code for issue in issues] == ["MISSING_ACCESS_PROVISION"]
 
@@ -267,24 +269,22 @@ def test_return_access_uses_the_authorized_location_region_instead_of_its_label(
     data = unprovisioned_descent(mission).model_dump(mode="json")
     for objective in data["objectives"]:
         if objective["objective_id"] == "return-home":
-            objective["dependencies"] = ["diamond-pickaxe"]
+            objective["dependencies"] = ["lava-supply"]
         elif objective["objective_id"] == "water-bucket":
             objective["dependencies"] = ["return-home"]
     issues = validate_mission_plan(
-        MissionSpec.model_validate(data), reference=mission, initial_inventory={"iron_ingot": 7}
+        MissionSpec.model_validate(data), reference=mission, initial_inventory={"iron_ingot": 14}
     )
     assert [issue.code for issue in issues] == ([] if valid else ["MISSING_ACCESS_PROVISION"])
 
 
-def test_a_standalone_diamond_goal_does_not_invent_a_water_task() -> None:
+def test_a_standalone_lava_goal_does_not_invent_a_water_task() -> None:
     data = reference().model_dump(mode="json")
-    diamond = next(
-        objective
-        for objective in data["objectives"]
-        if objective["objective_id"] == "diamond-pickaxe"
+    lava = next(
+        objective for objective in data["objectives"] if objective["objective_id"] == "lava-supply"
     )
-    diamond["dependencies"] = []
-    data["objectives"] = [diamond]
+    lava["dependencies"] = []
+    data["objectives"] = [lava]
     mission = MissionSpec.model_validate(data)
     assert validate_mission_plan(mission, reference=mission, initial_inventory={}) == ()
 
@@ -295,33 +295,28 @@ def test_existing_full_plan_satisfies_known_inventory_dependencies() -> None:
 
 
 @pytest.mark.parametrize("inventory", [{}, {"bucket": 1}, {"iron_ingot": 3}])
-def test_obsidian_preparation_needs_water_provisioned_before_its_goal(inventory) -> None:
+def test_lava_harvest_needs_water_provisioned_before_its_goal(inventory) -> None:
     mission = reference()
     data = mission.model_dump(mode="json")
     for objective in data["objectives"]:
-        if objective["objective_id"] == "diamond-pickaxe":
-            objective["dependencies"] = ["iron-pickaxe"]
-        if objective["objective_id"] == "obsidian":
-            objective["dependencies"] = ["diamond-pickaxe"]
+        if objective["objective_id"] == "ignition":
+            objective["dependencies"] = ["iron"]
     plan = MissionSpec.model_validate(data)
     original = plan.canonical_hash
-    # Local diamond stock isolates the obsidian-input check from deep-access planning.
+    # A completed iron kit isolates the lava-input check from iron access planning.
     issues = validate_mission_plan(
-        plan, reference=mission, initial_inventory={**inventory, "diamond": 3}
+        plan, reference=mission, initial_inventory={**inventory, "minecraft:iron_ingot": 14}
     )
-    assert len(issues) == 1 and issues[0].objective_id == "obsidian"
-    assert issues[0].code == "MISSING_WORKFLOW_INPUTS"
+    assert len(issues) == 1 and issues[0].objective_id == "lava-supply"
+    assert issues[0].code == "MISSING_ACCESS_PROVISION"
     assert issues[0].candidate_dependencies == ("water-bucket",)
-    assert all(
-        any(item.item == "water_bucket" for item in clause.inventory_all)
-        for clause in issues[0].required_any_of
-        if not any(item.item == "obsidian" for item in clause.inventory_all)
-    )
+    assert issues[0].candidate_dependency_paths == (("water-bucket", "lava-supply"),)
+    assert issues[0].required_any_of == ()
     assert plan.canonical_hash == original
-    for supplied in [{"water_bucket": 1}, {"minecraft:obsidian": 10}]:
+    for supplied in [{"water_bucket": 1}, {"minecraft:lava_bucket": 10}]:
         assert (
             validate_mission_plan(
-                plan, reference=mission, initial_inventory={**supplied, "diamond": 3}
+                plan, reference=mission, initial_inventory={**supplied, "minecraft:iron_ingot": 14}
             )
             == ()
         )
@@ -330,7 +325,7 @@ def test_obsidian_preparation_needs_water_provisioned_before_its_goal(inventory)
 def test_empty_inventory_water_before_iron_returns_actionable_dependency_error() -> None:
     mission = reference()
     issues = validate_mission_plan(missing_iron(mission), reference=mission, initial_inventory={})
-    assert len(issues) == 1
+    assert len(issues) == 2
     issue = issues[0]
     assert issue.code == "MISSING_WORKFLOW_INPUTS"
     assert issue.objective_id == "water-bucket"
@@ -339,10 +334,23 @@ def test_empty_inventory_water_before_iron_returns_actionable_dependency_error()
         any(i.item == "iron_ingot" and i.quantity == 3 for i in c.inventory_all)
         for c in issue.required_any_of
     )
+    # The downstream cauldron craft loses its iron supply at the same time.
+    assert issues[1].code == "MISSING_WORKFLOW_INPUTS"
+    assert issues[1].objective_id == "cauldron"
+    assert issues[1].candidate_dependencies == ("iron",)
+    assert any(
+        any(i.item == "iron_ingot" and i.quantity == 7 for i in c.inventory_all)
+        for c in issues[1].required_any_of
+    )
 
 
 @pytest.mark.parametrize(
-    "inventory", [{"bucket": 1}, {"minecraft:iron_ingot": 3}, {"water_bucket": 1}]
+    "inventory",
+    [
+        {"minecraft:iron_ingot": 7},
+        {"bucket": 1, "minecraft:iron_ingot": 7},
+        {"water_bucket": 1, "minecraft:cauldron": 1},
+    ],
 )
 def test_existing_inventory_does_not_force_an_unnecessary_iron_dependency(inventory) -> None:
     mission = reference()
@@ -357,9 +365,12 @@ def test_inventory_aliases_are_not_added_together() -> None:
     issues = validate_mission_plan(
         missing_iron(mission),
         reference=mission,
-        initial_inventory={"iron_ingot": 2, "minecraft:iron_ingot": 2},
+        initial_inventory={"iron_ingot": 5, "minecraft:iron_ingot": 5},
     )
+    # Summed aliases (10) would satisfy the seven-ingot cauldron contract;
+    # the maximum per alias (5) leaves it unsatisfied.
     assert len(issues) == 1 and issues[0].code == "MISSING_WORKFLOW_INPUTS"
+    assert issues[0].objective_id == "cauldron"
 
 
 def test_namespaced_predicates_and_reordered_nodes_are_semantically_equivalent() -> None:
@@ -464,7 +475,7 @@ async def test_structured_input_error_reaches_the_existing_model_repair_once(fai
             problem["issues"][0]["candidate_dependency_paths"]
             == {
                 "inventory": [],
-                "access": [["water-bucket", "diamond-pickaxe"]],
+                "access": [["water-bucket", "lava-supply"]],
                 "shore": [["iron", "water-return", "water-bucket"]],
             }[failure_kind]
         )

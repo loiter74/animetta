@@ -36,7 +36,7 @@ from animetta.tools.minecraft.voyager.budget import BudgetUsage
 
 from .minecraft_learning import build_bounded_learning_portal_mission
 from .minecraft_planning import (
-    NETHER_DESCENT_ACCESS_RULE,
+    NETHER_CASTING_ACCESS_RULE,
     inventory_input_options,
     nether_plan_inventory_requirements,
     surface_access_input_options,
@@ -50,8 +50,13 @@ RouteTask = Literal[
     "water-return",
     "water-bucket",
     "ignition",
-    "diamond-pickaxe",
-    "obsidian",
+    "cauldron",
+    "dripstone",
+    "portal-mold",
+    "deepslate",
+    "lava-supply",
+    "water-pool",
+    "lava-farm",
     "return-home",
     "portal",
 ]
@@ -69,7 +74,7 @@ class SmallSkillDraft(_Draft):
 
 
 class RouteDraft(_Draft):
-    route: tuple[RouteTask, ...] = Field(min_length=1, max_length=9)
+    route: tuple[RouteTask, ...] = Field(min_length=1, max_length=14)
     budget_overrides: dict[RouteTask, BudgetUsage] = Field(default_factory=dict)
     skill: SmallSkillDraft | None = None
 
@@ -120,7 +125,7 @@ def _route_inventory_requirements() -> dict[tuple[str, str], WorkflowCheckpoint]
         any_of=(
             WorkflowCheckpointClause(
                 inventory_all=(
-                    InventoryThreshold(item="obsidian", quantity=10),
+                    InventoryThreshold(item="lava_bucket", quantity=10),
                     InventoryThreshold(item="flint_and_steel", quantity=1),
                 )
             ),
@@ -207,7 +212,7 @@ def route_prompt_context(
     context: dict[str, Any] = {
         "route_schema": RouteDraft.model_json_schema(),
         "skill_authoring": skill_authoring_contract(manifest),
-        "access_planning_rules": NETHER_DESCENT_ACCESS_RULE,
+        "access_planning_rules": NETHER_CASTING_ACCESS_RULE,
         "surface_access_options": [
             option.model_dump(mode="json")
             for option in surface_access_input_options(supplier_goals)

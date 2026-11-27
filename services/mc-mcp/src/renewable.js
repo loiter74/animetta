@@ -23,27 +23,27 @@ import {
 
 const { Movements } = pathfinderPkg;
 
-function fail(code, message, details = {}) {
+export function fail(code, message, details = {}) {
   throw Object.assign(new Error(message), { code, details });
 }
 
-const hasItem = (bot, name) => bot.inventory.items().find(item => item.name === name && item.count > 0);
+export const hasItem = (bot, name) => bot.inventory.items().find(item => item.name === name && item.count > 0);
 
-const isSolid = block => block && block.boundingBox === 'block' && block.name !== 'pointed_dripstone';
+export const isSolid = block => block && block.boundingBox === 'block' && block.name !== 'pointed_dripstone';
 
 // Cells that can host poured fluid without digging (fluids replace them).
-const TRENCH_REPLACEABLE = new Set(['air', 'cave_air', 'short_grass', 'fern', 'dead_bush', 'snow', 'water']);
+export const TRENCH_REPLACEABLE = new Set(['air', 'cave_air', 'short_grass', 'fern', 'dead_bush', 'snow', 'water']);
 
 // Common ground blocks the bot may carve a trench or farm shaft through.
-const CARVABLE_GROUND = new Set([
+export const CARVABLE_GROUND = new Set([
   'dirt', 'grass_block', 'coarse_dirt', 'podzol', 'rooted_dirt', 'moss_block', 'clay',
   'stone', 'cobblestone', 'granite', 'diorite', 'andesite', 'tuff', 'calcite',
   'deepslate', 'cobbled_deepslate', 'sandstone', 'snow_block', 'dirt_path',
 ]);
 
-const SOLID_BLOCK_OPTIONS = ['cobblestone', 'dirt'];
+export const SOLID_BLOCK_OPTIONS = ['cobblestone', 'dirt'];
 const SITE_SCAN_RADIUS = 6;
-const NAVIGATION_ERROR_CODES = ['NoPath', 'PathStopped', 'Timeout', 'NAVIGATION_TARGET_NOT_REACHED',
+export const NAVIGATION_ERROR_CODES = ['NoPath', 'PathStopped', 'Timeout', 'NAVIGATION_TARGET_NOT_REACHED',
   'SEARCH_TIMEOUT', 'ACTION_DEADLINE_EXPIRED'];
 
 function dryMovementSet(bot) {
@@ -56,7 +56,7 @@ function dryMovementSet(bot) {
 
 // Navigate to a stance from which the bot can interact with (dig or pour onto)
 // the target cell; digging itself is left to digCollectionBlock.
-async function approachInteractionStance(bot, position, interactionTarget, context, options = {}) {
+export async function approachInteractionStance(bot, position, interactionTarget, context, options = {}) {
   const inReach = () => canInteractFrom(bot, position, interactionTarget, bot.entity.position)
     && isSafeStandingPosition(bot, bot.entity.position.floored());
   if (inReach()) return;
@@ -85,7 +85,7 @@ async function approachInteractionStance(bot, position, interactionTarget, conte
   fail('WATER_TARGET_UNREACHABLE', '找不到有支撑且能安全接近目标的站位。', { position });
 }
 
-async function carveCell(bot, cell, context, mutations) {
+export async function carveCell(bot, cell, context, mutations) {
   const block = bot.blockAt(cell);
   if (!block) fail('REGION_NOT_LOADED', '目标格所在区块尚未加载。', { position: cell });
   if (isAirLikeForStanding(block) || TRENCH_REPLACEABLE.has(block.name)) return;
@@ -108,7 +108,7 @@ async function carveCell(bot, cell, context, mutations) {
   mutations.push(collectionResourceMutation(block.name, cell, bot.game?.dimension));
 }
 
-async function placeCellBlock(bot, cell, itemName, context, mutations) {
+export async function placeCellBlock(bot, cell, itemName, context, mutations) {
   const reference = findPlacementReference(bot, cell, Vec3);
   if (!reference) {
     fail('PLACEMENT_REFERENCE_NOT_FOUND', '目标格四周没有可借力的实心参照方块。', { position: cell, item: itemName });
@@ -127,7 +127,7 @@ async function placeCellBlock(bot, cell, itemName, context, mutations) {
 
 // Pour the currently held bucket fluid onto the top face of the floor below
 // `cell`, then confirm the fluid landed as a level-zero source in `cell`.
-async function pourFluidIntoCell(bot, cell, heldItemName, confirmation, context, mutations) {
+export async function pourFluidIntoCell(bot, cell, heldItemName, confirmation, context, mutations) {
   const floor = cell.offset(0, -1, 0);
   const target = floor.offset(0.5, 0.99, 0.5);
   await approachInteractionStance(bot, floor, target, context);
@@ -156,7 +156,7 @@ async function pourFluidIntoCell(bot, cell, heldItemName, confirmation, context,
 
 // Refill an empty bucket from a nearby natural water source without nesting
 // another evidence scope.
-async function ensureWaterBucket(bot, context, wait, mutations) {
+export async function ensureWaterBucket(bot, context, wait, mutations) {
   if (hasItem(bot, 'water_bucket')) return;
   const bucket = hasItem(bot, 'bucket');
   if (!bucket) fail('TOOL_REQUIRED', '建造水池前需要铁桶。');
@@ -246,10 +246,47 @@ function selectTrenchSite(bot) {
   return candidates[0] || null;
 }
 
+// Trench site anchored at an explicit origin: three cells along +x starting
+// at `origin`. Same per-cell invariants as selectTrenchSite, but the location
+// is fixed, so an unsuitable cell fails the call instead of relocating.
+function fixedTrenchSite(bot, origin) {
+  const cells = [origin, origin.offset(1, 0, 0), origin.offset(2, 0, 0)];
+  let needsDig = 0;
+  for (const cell of cells) {
+    const block = bot.blockAt(cell);
+    if (!block || !bot.blockAt(cell.offset(0, -1, 0)) || !bot.blockAt(cell.offset(0, 1, 0))) return null;
+    if (TRENCH_REPLACEABLE.has(block.name)) continue;
+    if (CARVABLE_GROUND.has(block.name)) { needsDig++; continue; }
+    return null;
+  }
+  const feet = bot.entity.position.floored();
+  // Never carve away the bot's own support column.
+  if (cells.some(cell => cell.x === feet.x && cell.z === feet.z && cell.y === feet.y - 1)) return null;
+  const rim = [];
+  for (const cell of cells) {
+    rim.push(cell.offset(0, 0, 1), cell.offset(0, 0, -1));
+  }
+  rim.push(cells[0].offset(-1, 0, 0), cells[2].offset(1, 0, 0));
+  if (!rim.every(position => isSolid(bot.blockAt(position)))) return null;
+  if (!cells.every(cell => isSolid(bot.blockAt(cell.offset(0, -1, 0))))) return null;
+  if (!cells.every(cell => isAirLikeForStanding(bot.blockAt(cell.offset(0, 1, 0))))) return null;
+  return { cells, needsDig };
+}
+
+function normalizeOrigin(origin) {
+  if (origin === undefined || origin === null) return null;
+  const { x, y, z } = origin ?? {};
+  if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)
+    || !Number.isInteger(x) || !Number.isInteger(y) || !Number.isInteger(z)) {
+    fail('INVALID_PARAMETERS', '指定原点必须是整数坐标。', { origin });
+  }
+  return new Vec3(x, y, z);
+}
+
 // An infinite water source is a three-cell line whose end cells are poured as
 // level-zero sources; the middle cell then settles into a source itself, so
 // the pool never depletes no matter how many buckets are scooped from it.
-export async function buildInfiniteWaterSource(bot, context = {}, { wait = operationWait } = {}) {
+export async function buildInfiniteWaterSource(bot, context = {}, { wait = operationWait } = {}, options = {}) {
   return withCollectionEvidence(bot, async mutations => {
     const waterId = bot.registry?.blocksByName?.water?.id;
     const nearby = typeof bot.findBlocks === 'function' && waterId !== undefined
@@ -260,9 +297,13 @@ export async function buildInfiniteWaterSource(bot, context = {}, { wait = opera
     if (existing) {
       return { created: false, already_present: true, position: existing.center, cells: existing.cells };
     }
-    const site = selectTrenchSite(bot);
+    const requestedOrigin = normalizeOrigin(options?.origin);
+    const site = requestedOrigin ? fixedTrenchSite(bot, requestedOrigin) : selectTrenchSite(bot);
     if (!site) {
-      fail('WATER_SOURCE_SITE_NOT_FOUND', '附近没有适合建造水池的地形：需要三格沟槽、实心底板和封闭侧壁。');
+      fail('WATER_SOURCE_SITE_NOT_FOUND', requestedOrigin
+        ? '指定位置不适合建造水池：需要三格沟槽、实心底板和封闭侧壁。'
+        : '附近没有适合建造水池的地形：需要三格沟槽、实心底板和封闭侧壁。',
+      { requested_origin: requestedOrigin ?? null });
     }
     for (const cell of site.cells) {
       await carveCell(bot, cell, context, mutations);
@@ -336,8 +377,119 @@ function selectLavaFarmSite(bot) {
   return candidates[0] || null;
 }
 
-export async function buildLavaDripFarm(bot, context = {}, { wait = operationWait } = {}) {
+// Lava drip farm anchored at an explicit origin: the cauldron sits AT the
+// origin and the drip column (dripstone, support, lava) rises three blocks
+// above it. The bot builds its own stair, walls and seal, so the site only
+// needs replaceable/carvable cells and a solid floor beneath the structure.
+function fixedLavaFarmSite(bot, origin) {
+  const at = (dx, dy, dz) => origin.offset(dx, dy, dz);
+  const cells = {
+    cauldron: at(0, 0, 0),
+    dripstone: at(0, 1, 0),
+    support: at(0, 2, 0),
+    lava: at(0, 3, 0),
+    stairs: [at(1, 0, 0), at(1, 1, 0), at(1, 2, 0)],
+    bases: [at(-1, 0, 0), at(0, 0, 1), at(0, 0, -1)],
+    shaft: [at(-1, 1, 0), at(-1, 2, 0),
+      at(0, 1, 1), at(0, 1, -1), at(0, 2, 1), at(0, 2, -1)],
+    ring: [at(-1, 3, 0), at(0, 3, 1), at(0, 3, -1)],
+    seal: at(1, 3, 0),
+  };
+  const buildable = [cells.cauldron, cells.dripstone, cells.support, cells.lava,
+    ...cells.stairs, ...cells.bases, ...cells.shaft, ...cells.ring, cells.seal];
+  const usable = position => {
+    const block = bot.blockAt(position);
+    return Boolean(block) && (TRENCH_REPLACEABLE.has(block.name) || CARVABLE_GROUND.has(block.name));
+  };
+  if (!buildable.every(usable)) return null;
+  // Solid floor beneath the structure column, the walls and the seal stance.
+  for (let dx = -1; dx <= 2; dx++) {
+    for (let dz = -1; dz <= 1; dz++) {
+      if (!isSolid(bot.blockAt(at(dx, -1, dz)))) return null;
+    }
+  }
+  // Pour stance on the stair top plus headroom above the lava source.
+  if (!isAirLikeForStanding(bot.blockAt(at(1, 3, 0))) || !isAirLikeForStanding(bot.blockAt(at(1, 4, 0)))
+    || !isAirLikeForStanding(bot.blockAt(at(0, 4, 0)))) return null;
+  const solids = buildable.filter(position => isSolid(bot.blockAt(position)));
+  return { cells, neededSolidBlocks: buildable.length - solids.length + 1, origin };
+}
+
+async function buildLavaDripFarmAtOrigin(bot, origin, context, wait, mutations) {
+  const site = fixedLavaFarmSite(bot, origin);
+  if (!site) {
+    fail('LAVA_FARM_SITE_NOT_FOUND', '指定位置不适合建造岩浆滴落农场：需要可开挖的竖井与封闭侧壁。', {
+      requested_origin: origin,
+    });
+  }
+  const { cells } = site;
+  const supportName = hasItem(bot, 'cobblestone') ? 'cobblestone' : 'dirt';
+  // Stair first: it is the footing for every upper carve and pour.
+  for (const cell of cells.stairs) {
+    await carveCell(bot, cell, context, mutations);
+    await placeCellBlock(bot, cell, supportName, context, mutations);
+  }
+  // Carve the drip column from the top down while the stair still supports
+  // a safe stance beside each cell.
+  for (const cell of [cells.lava, cells.support, cells.dripstone, cells.cauldron]) {
+    await carveCell(bot, cell, context, mutations);
+  }
+  await placeCellBlock(bot, cells.cauldron, 'cauldron', context, mutations);
+  await placeCellBlock(bot, cells.dripstone, 'pointed_dripstone', context, mutations);
+  await placeCellBlock(bot, cells.support, supportName, context, mutations);
+  for (const cell of [...cells.bases, ...cells.shaft, ...cells.ring]) {
+    if (isSolid(bot.blockAt(cell))) continue;
+    await carveCell(bot, cell, context, mutations);
+    await placeCellBlock(bot, cell, supportName, context, mutations);
+  }
+  const confirmation = waterConfirmation(context, wait);
+  await pourFluidIntoCell(bot, cells.lava, 'lava_bucket', confirmation, context, mutations);
+  // Step off the pour stance before sealing the stair column above it.
+  try {
+    await navigateTo(bot, origin.offset(2, 0, 0), context);
+  } catch (error) {
+    if (!NAVIGATION_ERROR_CODES.includes(error.code || error.name)) throw error;
+  }
+  await placeCellBlock(bot, cells.seal, supportName, context, mutations);
+  const structureOk = () => isLavaSource(bot.blockAt(cells.lava))
+    && bot.blockAt(cells.support)?.name === supportName
+    && bot.blockAt(cells.dripstone)?.name === 'pointed_dripstone'
+    && bot.blockAt(cells.cauldron)?.name === 'cauldron'
+    && bot.blockAt(cells.seal)?.name === supportName;
+  if (!await confirmation.until(structureOk)) {
+    fail('FARM_STRUCTURE_UNCONFIRMED', '岩浆滴落农场的最终结构没有全部就位。', { cells });
+  }
+  return {
+    created: true,
+    position: cells.lava,
+    cauldron: cells.cauldron,
+    dripstone: cells.dripstone,
+    lava_support: cells.support,
+    fills_over_time: true,
+  };
+}
+
+export async function buildLavaDripFarm(bot, context = {}, { wait = operationWait } = {}, options = {}) {
   return withCollectionEvidence(bot, async mutations => {
+    const requestedOrigin = normalizeOrigin(options?.origin);
+    if (requestedOrigin) {
+      if (!hasItem(bot, 'cauldron') || !hasItem(bot, 'pointed_dripstone') || !hasItem(bot, 'lava_bucket')) {
+        fail('MISSING_MATERIAL', '建造岩浆滴落农场缺少材料：需要炼药锅、滴水石锥、岩浆桶和实心方块。', {
+          cauldron: Boolean(hasItem(bot, 'cauldron')),
+          pointed_dripstone: Boolean(hasItem(bot, 'pointed_dripstone')),
+          lava_bucket: Boolean(hasItem(bot, 'lava_bucket')),
+          solid_blocks: countSolidBlocks(bot),
+        });
+      }
+      const site = fixedLavaFarmSite(bot, requestedOrigin);
+      if (site && countSolidBlocks(bot) < site.neededSolidBlocks) {
+        fail('MISSING_MATERIAL', `指定位置建造岩浆滴落农场需要约 ${site.neededSolidBlocks} 块实心方块。`, {
+          solid_blocks: countSolidBlocks(bot),
+          needed: site.neededSolidBlocks,
+        });
+      }
+      return buildLavaDripFarmAtOrigin(bot, requestedOrigin, context, wait, mutations);
+    }
     if (!hasItem(bot, 'cauldron') || !hasItem(bot, 'pointed_dripstone') || !hasItem(bot, 'lava_bucket')
       || countSolidBlocks(bot) < 2) {
       fail('MISSING_MATERIAL', '建造岩浆滴落农场缺少材料：需要炼药锅、滴水石锥、岩浆桶和两块实心方块。', {

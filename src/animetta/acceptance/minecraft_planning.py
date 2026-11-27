@@ -18,16 +18,16 @@ from animetta.tools.minecraft.survival.workflows import (
 from animetta.tools.minecraft.voyager.goal_models import GoalSpec, InventoryAtLeast, LocationReached
 from animetta.tools.minecraft.voyager.goal_verifier import _resource_id
 
-NETHER_DESCENT_ACCESS_RULE = (
-    "采铁和采钻会改变位置，采矿前访问过岸边不能证明采矿后仍可取水。"
+NETHER_CASTING_ACCESS_RULE = (
+    "采铁和浇铸备料会改变位置，备料前访问过岸边不能证明备料后仍可取水。"
     "采铁作为取水前置时，应在采铁之后、取水之前执行已授权的岸边返回目标；"
-    "钻石工作流下矿前应备水，或明确安排下降后返回同岸边再取水。"
-    "已具水桶、铁目标已满足或已有本地钻石材料时，按已知库存跳过不必要的顺序。"
+    "岩浆浇铸链在舀取天然岩浆前应备水，或明确安排返回同岸边再取水。"
+    "已具水桶、铁目标已满足或已有浇铸材料时，按已知库存跳过不必要的顺序。"
     "目标目录不是执行顺序；修复只能在授权目录中选择、重排或复用目标并调整依赖，"
     "必要时移除失效旧边避免成环，禁止复制目标或创建目录外返岸目标，不得改动预算。"
     "candidate_dependency_paths 只表示已有目标之间应满足的先后，不是追加动作。"
     "location_options.supplier_tasks是目录中的位置供给选项，不是可直接添加的依赖边；"
-    "须选择供给目标并排在失效位置的采矿之后、取水之前。"
+    "须选择供给目标并排在失效位置的备料之后、取水之前。"
     "工作台属于原地点的设施，不随铁锭移动；零方块预算的铁镐制作应在离开采铁工作台前完成。"
     "就绪目标按优先级降序、同优先级按目录顺序执行，也可通过合法优先级保留设施访问。"
 )
@@ -96,11 +96,11 @@ def nether_plan_inventory_requirements() -> dict[tuple[str, str], WorkflowCheckp
         ("acquire", "water_bucket"): alternatives(
             {"water_bucket": 1}, {"bucket": 1}, {"iron_ingot": 3}
         ),
-        ("acquire", "obsidian"): alternatives(
-            {"obsidian": 10},
-            {"diamond_pickaxe": 1, "water_bucket": 1},
-            {"netherite_pickaxe": 1, "water_bucket": 1},
-        ),
+        # The casting chain replaces the mined-obsidian contract: cauldron may
+        # come from stock or from the enlarged fourteen-ingot iron kit, and the
+        # portal frame itself consumes poured lava buckets (checked through the
+        # route-level build contract rather than a self-referential acquire key).
+        ("craft", "cauldron"): alternatives({"cauldron": 1}, {"iron_ingot": 7}),
     }
 
 
@@ -434,7 +434,7 @@ def validate_mission_plan(
                 for shore in shores
             )
 
-        for key in (("acquire", "nether_iron_kit"), ("craft", "diamond_pickaxe")):
+        for key in (("acquire", "nether_iron_kit"), ("acquire", "lava_bucket")):
             mining = actual.get(key)
             if mining is None:
                 continue
@@ -449,9 +449,9 @@ def validate_mission_plan(
                 known.get(item, 0) >= quantity for item, quantity in postconditions.items()
             )
             provisioned = known.get(_resource_id("water_bucket"), 0) >= water.goal.quantity
-            local_craft = (
-                not iron and known.get(_resource_id("diamond"), 0) >= 3 * mining.goal.quantity
-            )
+            # The casting chain has no local diamond shortcut: harvesting lava
+            # away from shore always needs a provisioned water bucket.
+            local_craft = False
             if completed or provisioned or local_craft or returned_after(mining.objective_id):
                 continue
             suppliers = (
@@ -467,7 +467,7 @@ def validate_mission_plan(
                 PlanningIssue(
                     code="MISSING_ACCESS_PROVISION",
                     objective_id=water.objective_id if iron else mining.objective_id,
-                    message=NETHER_DESCENT_ACCESS_RULE,
+                    message=NETHER_CASTING_ACCESS_RULE,
                     candidate_dependencies=suppliers,
                     candidate_dependency_paths=(
                         tuple(

@@ -19,6 +19,9 @@ def run_script(*args: str, check: bool = True) -> subprocess.CompletedProcess[st
         check=check,
         capture_output=True,
         text=True,
+        # The regression scripts report Chinese diagnostics as UTF-8; a GBK
+        # console locale would otherwise crash the reader thread (AGENTS.md).
+        encoding="utf-8",
     )
 
 

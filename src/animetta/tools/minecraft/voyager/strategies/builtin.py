@@ -12,7 +12,9 @@ from animetta.tools.minecraft.blueprint import (
     CompiledBlueprint,
     starter_shelter_blueprint,
 )
+from animetta.tools.minecraft.blueprint.lava_farm import lava_drip_farm_blueprint
 from animetta.tools.minecraft.blueprint.portal import nether_portal_blueprint
+from animetta.tools.minecraft.blueprint.water_pool import infinite_water_source_blueprint
 from animetta.tools.minecraft.survival.food import propose_food_recovery
 
 from ..budget import BudgetUsage, ExecutionBudget
@@ -50,6 +52,15 @@ class BuiltinMissionStrategy:
         self._blueprints = {shelter.blueprint_id: shelter}
         portal = nether_portal_blueprint()
         self._blueprints[portal.blueprint_id] = portal
+        water_pool = infinite_water_source_blueprint()
+        self._blueprints[water_pool.blueprint_id] = water_pool
+        lava_farm = lava_drip_farm_blueprint()
+        self._blueprints[lava_farm.blueprint_id] = lava_farm
+        # Single-shot structure capabilities dispatched by blueprint_id.
+        self._cast_capabilities = {
+            "infinite-water-source-v1": "build_infinite_water_source",
+            "lava-drip-farm-v1": "build_lava_drip_farm",
+        }
 
     def prepare(self, goal: GoalSpec | None) -> dict:
         if goal is None:
@@ -275,14 +286,73 @@ class BuiltinMissionStrategy:
                 )
             state["compiled_blueprint"] = compiled
         index = state["completed_steps"]
-        if compiled.blueprint_id == "nether-portal-v1" and index == len(compiled.steps):
+        cast_capability = self._cast_capabilities.get(compiled.blueprint_id)
+        if cast_capability is not None:
+            try:
+                self._manifest.capability(cast_capability)
+            except KeyError:
+                return StrategyFailure(
+                    code="CAPABILITY_NOT_AUTHORIZED",
+                    message=f"Runtime does not expose the typed {cast_capability} capability",
+                )
+            if index >= 1:
+                return Complete(
+                    output={
+                        "builtin_kind": "blueprint",
+                        "compiled_blueprints": (compiled,),
+                    }
+                )
+            x, y, z = compiled.origin
+            return ExecuteStep(
+                capability=cast_capability,
+                parameters={"x": x, "y": y, "z": z},
+                maximum_cost=BudgetUsage(
+                    max_actions=1,
+                    max_travel_distance=128,
+                    max_blocks_changed=24,
+                    max_damage_taken=1,
+                ),
+            )
+        if compiled.blueprint_id == "nether-portal-v1" and index == 0:
+            try:
+                self._manifest.capability("cast_nether_portal")
+            except KeyError:
+                return StrategyFailure(
+                    code="CAPABILITY_NOT_AUTHORIZED",
+                    message="Runtime does not expose the typed cast_nether_portal capability",
+                )
+            x, y, z = compiled.origin
+            return ExecuteStep(
+                capability="cast_nether_portal",
+                parameters={"x": x, "y": y, "z": z},
+                maximum_cost=BudgetUsage(
+                    max_actions=1,
+                    max_travel_distance=128,
+                    max_blocks_changed=24,
+                ),
+            )
+        if compiled.blueprint_id == "nether-portal-v1" and index == 1:
+            try:
+                self._manifest.capability("goto")
+            except KeyError:
+                return StrategyFailure(
+                    code="CAPABILITY_NOT_AUTHORIZED",
+                    message="Runtime does not expose the typed goto capability",
+                )
             x, y, z = compiled.origin
             return ExecuteStep(
                 capability="goto",
                 parameters={"x": x + 1, "y": y, "z": z + 2},
                 maximum_cost=BudgetUsage(max_actions=1, max_travel_distance=8),
             )
-        if compiled.blueprint_id == "nether-portal-v1" and index == len(compiled.steps) + 1:
+        if compiled.blueprint_id == "nether-portal-v1" and index == 2:
+            try:
+                self._manifest.capability("ignite_portal")
+            except KeyError:
+                return StrategyFailure(
+                    code="CAPABILITY_NOT_AUTHORIZED",
+                    message="Runtime does not expose the typed ignite_portal capability",
+                )
             x, y, z = compiled.origin
             return ExecuteStep(
                 capability="ignite_portal",
@@ -292,6 +362,13 @@ class BuiltinMissionStrategy:
                     max_travel_distance=8,
                     max_blocks_changed=6,
                 ),
+            )
+        if compiled.blueprint_id == "nether-portal-v1":
+            return Complete(
+                output={
+                    "builtin_kind": "blueprint",
+                    "compiled_blueprints": (compiled,),
+                }
             )
         if index >= len(compiled.steps):
             return Complete(

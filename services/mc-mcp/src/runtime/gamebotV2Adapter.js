@@ -332,12 +332,37 @@ function capabilityDescriptors(bot, actions) {
       invoke: (_parameters, context) => actions.prepareObsidian(context),
     },
     build_infinite_water_source: {
-      parameters: {},
-      invoke: (_parameters, context) => actions.buildInfiniteWaterSource(context),
+      parameters: {
+        x: { type: 'integer' },
+        y: { type: 'integer' },
+        z: { type: 'integer' },
+      },
+      invoke: (parameters, context) => actions.buildInfiniteWaterSource(parameters, context),
     },
     build_lava_drip_farm: {
+      parameters: {
+        x: { type: 'integer' },
+        y: { type: 'integer' },
+        z: { type: 'integer' },
+      },
+      invoke: (parameters, context) => actions.buildLavaDripFarm(parameters, context),
+    },
+    fill_lava_bucket: {
       parameters: {},
-      invoke: (_parameters, context) => actions.buildLavaDripFarm(context),
+      invoke: (_parameters, context) => actions.fillLavaBucket(context),
+    },
+    harvest_lava_bucket: {
+      parameters: {},
+      invoke: (_parameters, context) => actions.harvestLavaBucket(context),
+    },
+    cast_nether_portal: {
+      parameters: {
+        x: { type: 'integer' },
+        y: { type: 'integer' },
+        z: { type: 'integer' },
+      },
+      required: ['x', 'y', 'z'],
+      invoke: (parameters, context) => actions.castNetherPortal(parameters, context),
     },
     eat: {
       parameters: { item: { type: 'string' } },
@@ -630,6 +655,7 @@ function runtimeCapabilities(bot, actions, abortActive, motionPolicy) {
         parametersSchema: {
           type: 'object',
           properties: descriptor.parameters,
+          ...(descriptor.required ? { required: descriptor.required } : {}),
           additionalProperties: false,
         },
         maximumCost: emptyBudget({ max_actions: readOnly ? 0 : 1 }),

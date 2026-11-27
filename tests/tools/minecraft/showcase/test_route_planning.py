@@ -36,8 +36,13 @@ ROUTE = [
     "water-return",
     "water-bucket",
     "ignition",
-    "diamond-pickaxe",
-    "obsidian",
+    "cauldron",
+    "dripstone",
+    "portal-mold",
+    "deepslate",
+    "lava-supply",
+    "water-pool",
+    "lava-farm",
     "return-home",
     "portal",
 ]
@@ -60,7 +65,7 @@ def compile_draft(payload, inventory=None):
 
 def skill():
     return {
-        "task": "diamond-pickaxe",
+        "task": "lava-supply",
         "name": "bounded_test_skill",
         "steps": [
             {
@@ -74,6 +79,10 @@ def skill():
             }
         ],
     }
+
+
+def example_steps():
+    return json.loads(json.dumps(skill_authoring_contract(manifest())["example_steps"]))
 
 
 def test_short_route_retains_original_budget_and_builtin_blueprint():
@@ -97,11 +106,11 @@ def test_short_route_retains_original_budget_and_builtin_blueprint():
     )
 
 
-def test_route_does_not_require_old_nine_if_verified_inputs_already_exist():
+def test_route_does_not_require_full_chain_if_verified_inputs_already_exist():
     mission = compile_draft(
-        {"route": ["portal"]}, {"obsidian": 10, "flint_and_steel": 1, "cobbled_deepslate": 4}
+        {"route": ["portal"]}, {"lava_bucket": 10, "flint_and_steel": 1, "cobbled_deepslate": 4}
     )
-    assert len(mission.objectives) == 1 and mission.budget.max_actions == 117
+    assert len(mission.objectives) == 1 and mission.budget.max_actions == 120
 
 
 @pytest.mark.parametrize("extra", ["mission_id", "coordinates", "blueprint", "budget"])
@@ -112,11 +121,11 @@ def test_model_cannot_rewrite_host_fields(extra):
 
 def test_small_skill_uses_host_types_and_goal_postconditions():
     mission = compile_draft({"route": ROUTE, "skill": skill()})
-    learned = next(o for o in mission.objectives if o.objective_id == "diamond-pickaxe")
+    learned = next(o for o in mission.objectives if o.objective_id == "lava-supply")
     program = learned.goal.constraints["skill_candidate"]["program"]
     types = {p["name"]: p["value_type"] for p in program["parameters"]}
     assert types["home_x"] == types["quantity"] == "integer"
-    assert program["postconditions"][0]["left"]["path"] == "inventory.diamond_pickaxe"
+    assert program["postconditions"][0]["left"]["path"] == "inventory.lava_bucket"
     assert all("frame_" not in p["name"] for p in program["parameters"])
     for forbidden in ("parameters", "postconditions"):
         bad = skill() | {forbidden: []}
@@ -125,11 +134,13 @@ def test_small_skill_uses_host_types_and_goal_postconditions():
 
 
 def test_authoring_example_compiles_with_real_ir_and_host_goal():
-    example = {**skill(), "steps": skill_authoring_contract(manifest())["example_steps"]}
+    example = {**skill(), "steps": example_steps()}
     mission = compile_draft({"route": ROUTE, "skill": example})
-    candidate = mission.objectives[5].goal.constraints["skill_candidate"]["program"]
+    candidate = next(
+        o for o in mission.objectives if o.objective_id == "lava-supply"
+    ).goal.constraints["skill_candidate"]["program"]
     assert candidate["steps"] == example["steps"]
-    assert candidate["postconditions"][0]["left"]["path"] == "inventory.diamond_pickaxe"
+    assert candidate["postconditions"][0]["left"]["path"] == "inventory.lava_bucket"
     assert (
         mission.budget
         == build_nether_portal_mission(mission_id="route-test", home=(0, 64, 0)).budget
@@ -164,7 +175,7 @@ async def test_schema_failure_feedback_also_supplies_complete_compiler_contract(
             assert feedback["remaining_proposals"] == 1
             assert feedback["issues"][0]["code"] == "ROUTE_DRAFT_INVALID"
             assert feedback["skill_authoring"] == contract
-            candidate = {**skill(), "steps": feedback["skill_authoring"]["example_steps"]}
+            candidate = {**skill(), "steps": example_steps()}
         return {"content": json.dumps({"route": ROUTE, "skill": candidate}), "usage": None}
 
     result = await generate_route_plan(
@@ -199,7 +210,7 @@ def test_missing_portal_materials_are_reported_together():
     with pytest.raises(RoutePlanningError) as failure:
         compile_draft({"route": ["portal"]})
     assert {i["item"] for i in failure.value.issues if i["code"] == "MISSING_PORTAL_INPUT"} == {
-        "obsidian",
+        "lava_bucket",
         "flint_and_steel",
     }
 
@@ -303,26 +314,17 @@ async def test_native_allocation_guard_failure_is_not_returned_as_success():
 
 
 def test_r102_omitted_supplier_is_reported_from_the_full_catalogue():
-    route = [task for task in ROUTE if task != "diamond-pickaxe"]
+    route = [task for task in ROUTE if task != "lava-supply"]
     with pytest.raises(RoutePlanningError) as failure:
         compile_draft({"route": route})
     assert len(failure.value.issues) == 1
     issue = failure.value.issues[0]
-    assert issue["code"] == "MISSING_WORKFLOW_INPUTS"
-    assert issue["objective_id"] == "obsidian"
-    assert issue["candidate_dependencies"] == []
-    diamond, water = issue["input_options"][1]["inventory_all"]
-    assert diamond == {
-        "item": "minecraft:diamond_pickaxe",
-        "quantity": 1,
-        "available_quantity": 0,
-        "missing_quantity": 1,
-        "supplier_tasks": ["diamond-pickaxe"],
-    }
-    assert water["missing_quantity"] == 0 and water["supplier_tasks"] == []
-    assert issue["input_options"][0]["inventory_all"][0]["supplier_tasks"] == []
-    assert issue["input_options"][2]["inventory_all"][0]["supplier_tasks"] == []
-    assert "diamond-pickaxe" not in route, "validation must not silently rewrite the draft"
+    assert issue["code"] == "MISSING_PORTAL_INPUT"
+    assert issue["task"] == "portal"
+    assert issue["item"] == "lava_bucket"
+    assert issue["missing_quantity"] == 10
+    assert issue["supplier_tasks"] == ["lava-supply"]
+    assert "lava-supply" not in route, "validation must not silently rewrite the draft"
     repaired = compile_draft({"route": ROUTE})
     assert (
         repaired.budget
@@ -339,12 +341,12 @@ def test_prompt_and_feedback_share_inventory_options():
     )
     catalogue = {task["task"]: task for task in context["catalogue"]}
     with pytest.raises(RoutePlanningError) as failure:
-        compile_draft({"route": ["obsidian", "portal"]})
-    obsidian = next(i for i in failure.value.issues if i.get("objective_id") == "obsidian")
-    assert obsidian["input_options"] == catalogue["obsidian"]["default_workflow_inputs"]
+        compile_draft({"route": ["cauldron", "portal"]})
+    cauldron = next(i for i in failure.value.issues if i.get("objective_id") == "cauldron")
+    assert cauldron["input_options"] == catalogue["cauldron"]["default_workflow_inputs"]
     assert catalogue["portal"]["default_workflow_inputs"][0]["inventory_all"][0][
         "supplier_tasks"
-    ] == ["obsidian"]
+    ] == ["lava-supply"]
 
 
 def test_r105_omitted_return_is_rejected_using_full_catalogue_location_facts():
@@ -352,9 +354,10 @@ def test_r105_omitted_return_is_rejected_using_full_catalogue_location_facts():
         "iron",
         "iron-pickaxe",
         "water-bucket",
-        "diamond-pickaxe",
-        "obsidian",
+        "cauldron",
+        "dripstone",
         "ignition",
+        "lava-supply",
         "return-home",
         "portal",
     ]
@@ -379,17 +382,17 @@ def test_r105_omitted_return_is_rejected_using_full_catalogue_location_facts():
     assert issue["message"] == context["access_planning_rules"]
 
 
-@pytest.mark.parametrize("inventory", [{"water_bucket": 1}, {"minecraft:iron_ingot": 7}])
+@pytest.mark.parametrize("inventory", [{"water_bucket": 1}, {"minecraft:iron_ingot": 14}])
 def test_catalogue_access_gate_preserves_provisioned_short_routes(inventory):
     route = [task for task in ROUTE if task != "water-return"]
-    assert len(compile_draft({"route": route}, inventory).objectives) == 8
+    assert len(compile_draft({"route": route}, inventory).objectives) == 13
 
 
-def test_other_authorized_travel_can_prove_fresh_access_without_forcing_nine_tasks():
+def test_other_authorized_travel_can_prove_fresh_access_without_forcing_all_tasks():
     route = [task for task in ROUTE if task not in {"water-return", "return-home"}]
     route.insert(route.index("water-bucket"), "return-home")
     mission = compile_draft({"route": route})
-    assert len(mission.objectives) == 8
+    assert len(mission.objectives) == 13
     assert [o.objective_id for o in mission.objectives] == route
 
 
@@ -426,13 +429,13 @@ async def test_r105_missing_access_can_be_repaired_within_original_two_proposals
 
 def test_selected_later_supplier_is_a_reordering_choice_not_a_new_dependency_edge():
     route = ROUTE.copy()
-    route.remove("diamond-pickaxe")
-    route.insert(route.index("obsidian") + 1, "diamond-pickaxe")
+    route.remove("iron")
+    route.insert(route.index("cauldron") + 1, "iron")
     with pytest.raises(RoutePlanningError) as failure:
         compile_draft({"route": route})
-    issue = next(i for i in failure.value.issues if i.get("objective_id") == "obsidian")
+    issue = next(i for i in failure.value.issues if i.get("objective_id") == "cauldron")
     assert issue["candidate_dependencies"] == [], "adding this descendant would create a cycle"
-    assert issue["input_options"][1]["inventory_all"][0]["supplier_tasks"] == ["diamond-pickaxe"]
+    assert issue["input_options"][1]["inventory_all"][0]["supplier_tasks"] == ["iron"]
     assert "重排" in issue["message"]
     assert compile_draft({"route": ROUTE}).objectives[-1].objective_id == "portal"
 
@@ -494,13 +497,14 @@ def test_inventory_resolver_is_not_tied_to_portal_recipes_or_additive_aliases():
 
 
 def test_verified_stock_skips_an_unneeded_supplier_and_generated_skill_skips_default_inputs():
-    route = [task for task in ROUTE if task != "diamond-pickaxe"]
-    assert compile_draft({"route": route}, {"minecraft:diamond_pickaxe": 1})
-    learned = skill() | {"task": "obsidian"}
-    # Golden collect's damage cap exceeds obsidian's allowance. Keep that rejection,
-    # but do not also enforce the default mining recipe on its replacement program.
+    route = [task for task in ROUTE if task != "lava-supply"]
+    assert compile_draft({"route": route}, {"minecraft:lava_bucket": 10})
+    learned = skill() | {"task": "dripstone"}
+    # Restore the unclamped golden damage cap: it exceeds dripstone's allowance, so the
+    # replacement program is rejected without also enforcing the default collection recipe.
+    learned["steps"][0]["maximum_cost"]["max_damage_taken"] = 2.0
     with pytest.raises(RoutePlanningError) as failure:
-        compile_draft({"route": route, "skill": learned})
+        compile_draft({"route": route, "skill": learned}, {"minecraft:lava_bucket": 10})
     assert {issue["code"] for issue in failure.value.issues} == {"SKILL_COMPILE_FAILED"}
 
 
@@ -509,12 +513,12 @@ async def test_r102_feedback_names_the_missing_task_within_the_original_two_prop
 
     async def invoke(messages):
         calls.append(messages)
-        route = [task for task in ROUTE if task != "diamond-pickaxe"]
+        route = [task for task in ROUTE if task != "lava-supply"]
         if len(calls) == 2:
             feedback = json.loads(messages[-1]["content"])
             issue = feedback["issues"][0]
-            supplier = issue["input_options"][1]["inventory_all"][0]["supplier_tasks"][0]
-            route.insert(route.index("obsidian"), supplier)
+            supplier = issue["supplier_tasks"][0]
+            route.insert(route.index("water-pool"), supplier)
         return {"content": json.dumps({"route": route}), "usage": None}
 
     result = await generate_route_plan(
@@ -528,4 +532,4 @@ async def test_r102_feedback_names_the_missing_task_within_the_original_two_prop
     )
     assert result.mission is not None and len(calls) == len(result.attempts) == 2
     assert [obj.objective_id for obj in result.mission.objectives] == ROUTE
-    assert result.mission.budget.max_actions == 117
+    assert result.mission.budget.max_actions == 120

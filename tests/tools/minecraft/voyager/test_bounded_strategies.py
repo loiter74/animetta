@@ -444,8 +444,8 @@ def test_survival_workflows_declare_absolute_collection_targets() -> None:
     iron = iron_survival_workflow()
     diamond = diamond_survival_workflow()
     workflows = {workflow.target: workflow for workflow in nether_preparation_workflows()}
-    pickaxe, ignition, obsidian = (
-        workflows[target] for target in ("diamond_pickaxe", "flint_and_steel", "obsidian")
+    dripstone, ignition, lava_supply = (
+        workflows[target] for target in ("pointed_dripstone", "flint_and_steel", "lava_bucket")
     )
 
     assert iron.collection_targets[0] == InventoryThreshold(item="oak_log", quantity=8)
@@ -459,14 +459,9 @@ def test_survival_workflows_declare_absolute_collection_targets() -> None:
     )
     assert len(diamond.collection_targets) == len(diamond.steps)
     assert diamond.collection_targets[-1] == InventoryThreshold(item="diamond", quantity=1)
-    assert len(pickaxe.collection_targets) == len(pickaxe.steps)
-    pickaxe_diamond_index = len(pickaxe.steps) - 3
-    assert pickaxe.steps[pickaxe_diamond_index].parameters == {
-        "block_type": "diamond_ore",
-        "count": 3,
-    }
-    assert pickaxe.collection_targets[pickaxe_diamond_index] == InventoryThreshold(
-        item="diamond", quantity=3
+    assert len(dripstone.collection_targets) == len(dripstone.steps)
+    assert dripstone.collection_targets == (
+        InventoryThreshold(item="pointed_dripstone", quantity=1),
     )
     assert ignition.collection_targets == (
         InventoryThreshold(item="oak_log", quantity=2),
@@ -476,9 +471,12 @@ def test_survival_workflows_declare_absolute_collection_targets() -> None:
         None,
         None,
     )
-    assert obsidian.collection_targets == (None,) + tuple(
-        InventoryThreshold(item="obsidian", quantity=count) for count in range(1, 11)
+    assert lava_supply.collection_targets == (None,) + tuple(
+        InventoryThreshold(item="lava_bucket", quantity=count) for count in range(1, 11)
     )
+    assert lava_supply.steps[0].capability == "fill_lava_bucket"
+    assert all(step.capability == "harvest_lava_bucket" for step in lava_supply.steps[1:])
+    assert len(lava_supply.checkpoints) == len(lava_supply.steps)
 
 
 def test_fallback_accept_partial_result_requires_declared_target_progress() -> None:

@@ -2,7 +2,9 @@
 
 from typing import Literal
 
+from animetta.tools.minecraft.blueprint.lava_farm import lava_drip_farm_blueprint
 from animetta.tools.minecraft.blueprint.portal import nether_portal_blueprint
+from animetta.tools.minecraft.blueprint.water_pool import infinite_water_source_blueprint
 from animetta.tools.minecraft.mission.models import ExecutionPolicy, MissionObjective, MissionSpec
 from animetta.tools.minecraft.voyager.budget import BudgetUsage, ExecutionBudget
 from animetta.tools.minecraft.voyager.goal_models import (
@@ -26,8 +28,13 @@ def build_nether_portal_mission(
         "water-return",
         "water-bucket",
         "ignition",
-        "diamond-pickaxe",
-        "obsidian",
+        "cauldron",
+        "dripstone",
+        "portal-mold",
+        "deepslate",
+        "lava-supply",
+        "water-pool",
+        "lava-farm",
         "return-home",
         "portal",
     ] = "iron",
@@ -44,15 +51,21 @@ def build_nether_portal_mission(
     the original home or portal site.
     """
     blueprint = nether_portal_blueprint()
+    water_pool_blueprint = infinite_water_source_blueprint()
+    lava_farm_blueprint = lava_drip_farm_blueprint()
     objectives: list[MissionObjective] = []
     for objective_id, intent, target, quantity, actions, travel, blocks in (
-        ("iron", "acquire", "nether_iron_kit", 7, 16, 512, 256),
+        # Casting chain needs pickaxe 3 + bucket 3 + flint&steel 1 + cauldron 7.
+        ("iron", "acquire", "nether_iron_kit", 14, 24, 640, 384),
         ("iron-pickaxe", "craft", "iron_pickaxe", 1, 3, 0, 0),
         ("water-bucket", "acquire", "water_bucket", 1, 4, 128, 8),
         ("ignition", "craft", "flint_and_steel", 1, 8, 128, 64),
-        ("diamond-pickaxe", "craft", "diamond_pickaxe", 1, 40, 384, 256),
-        # Preparation (16) plus ten collections (at most 8 changes each).
-        ("obsidian", "acquire", "obsidian", 10, 16, 256, 96),
+        ("cauldron", "craft", "cauldron", 1, 3, 0, 0),
+        ("dripstone", "acquire", "pointed_dripstone", 1, 8, 192, 8),
+        ("portal-mold", "acquire", "dirt", 32, 8, 192, 48),
+        ("deepslate", "acquire", "cobbled_deepslate", 4, 8, 256, 16),
+        # One fill plus ten harvests; cauldron refills span mission retries.
+        ("lava-supply", "acquire", "lava_bucket", 10, 16, 320, 16),
     ):
         if objective_id == "water-bucket" and home is not None:
             objectives.append(
@@ -101,30 +114,84 @@ def build_nether_portal_mission(
                     max_strategy_attempts=1,
                     max_travel_distance=travel,
                     max_blocks_changed=blocks,
-                    max_damage_taken={"diamond-pickaxe": 2, "iron-pickaxe": 0}.get(objective_id, 1),
+                    # Lava handling carries burn risk; the rest of the casting chain
+                    # keeps the standard single point of damage allowance.
+                    max_damage_taken={"cauldron": 0, "iron-pickaxe": 0, "lava-supply": 2}.get(
+                        objective_id, 1
+                    ),
                 ),
             )
         )
     if home is not None:
-        objectives.append(
-            MissionObjective(
-                objective_id="return-home",
-                dependencies=(objectives[-1].objective_id,),
-                goal=TravelGoal(
-                    intent="travel",
-                    target="portal-site",
-                    success_predicates=(
-                        LocationReached(kind="location_reached", x=home[0], y=home[1], z=home[2]),
+        objectives.extend(
+            (
+                MissionObjective(
+                    objective_id="water-pool",
+                    dependencies=(objectives[-1].objective_id,),
+                    goal=BuildGoal(
+                        intent="build",
+                        target="infinite_water_source",
+                        success_predicates=(
+                            StructureMatchesBlueprint(
+                                kind="structure_matches_blueprint",
+                                blueprint_id=water_pool_blueprint.blueprint_id,
+                                blueprint_hash=water_pool_blueprint.canonical_hash,
+                            ),
+                        ),
+                    ),
+                    budget=BudgetUsage(
+                        max_actions=4,
+                        max_strategy_attempts=1,
+                        max_travel_distance=128,
+                        max_blocks_changed=24,
+                        max_damage_taken=1,
                     ),
                 ),
-                budget=BudgetUsage(
-                    max_actions=8,
-                    max_strategy_attempts=1,
-                    max_travel_distance=256,
-                    max_blocks_changed=256,
-                    max_damage_taken=1,
+                MissionObjective(
+                    objective_id="lava-farm",
+                    dependencies=("water-pool",),
+                    goal=BuildGoal(
+                        intent="build",
+                        target="lava_drip_farm",
+                        success_predicates=(
+                            StructureMatchesBlueprint(
+                                kind="structure_matches_blueprint",
+                                blueprint_id=lava_farm_blueprint.blueprint_id,
+                                blueprint_hash=lava_farm_blueprint.canonical_hash,
+                            ),
+                        ),
+                    ),
+                    budget=BudgetUsage(
+                        max_actions=4,
+                        max_strategy_attempts=1,
+                        max_travel_distance=128,
+                        max_blocks_changed=24,
+                        max_damage_taken=1,
+                    ),
                 ),
-            )
+                MissionObjective(
+                    objective_id="return-home",
+                    # The extend tuple is built before appending, so name the
+                    # predecessor explicitly instead of reading objectives[-1].
+                    dependencies=("lava-farm",),
+                    goal=TravelGoal(
+                        intent="travel",
+                        target="portal-site",
+                        success_predicates=(
+                            LocationReached(
+                                kind="location_reached", x=home[0], y=home[1], z=home[2]
+                            ),
+                        ),
+                    ),
+                    budget=BudgetUsage(
+                        max_actions=8,
+                        max_strategy_attempts=1,
+                        max_travel_distance=256,
+                        max_blocks_changed=256,
+                        max_damage_taken=1,
+                    ),
+                ),
+            ),
         )
     objectives.append(
         MissionObjective(
@@ -145,9 +212,13 @@ def build_nether_portal_mission(
                 max_actions=20,
                 max_strategy_attempts=1,
                 max_travel_distance=128,
-                max_blocks_changed=24,
+                # cast_nether_portal envelope (24) plus ignite_portal (6).
+                max_blocks_changed=30,
                 max_damage_taken=1,
-                resource_consumption={"minecraft:obsidian": 10, "minecraft:cobbled_deepslate": 4},
+                resource_consumption={
+                    "minecraft:lava_bucket": 10,
+                    "minecraft:cobbled_deepslate": 4,
+                },
             ),
         )
     )
