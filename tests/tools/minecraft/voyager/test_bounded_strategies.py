@@ -471,11 +471,11 @@ def test_survival_workflows_declare_absolute_collection_targets() -> None:
         None,
         None,
     )
-    assert lava_supply.collection_targets == (None,) + tuple(
+    assert lava_supply.collection_targets == (None,) * 4 + tuple(
         InventoryThreshold(item="lava_bucket", quantity=count) for count in range(1, 11)
     )
-    assert lava_supply.steps[0].capability == "fill_lava_bucket"
-    assert all(step.capability == "harvest_lava_bucket" for step in lava_supply.steps[1:])
+    assert lava_supply.steps[0].capability == "scoop_lava_bucket"
+    assert all(step.capability == "harvest_lava_bucket" for step in lava_supply.steps[4:])
     assert len(lava_supply.checkpoints) == len(lava_supply.steps)
 
 

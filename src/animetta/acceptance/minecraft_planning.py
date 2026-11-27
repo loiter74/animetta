@@ -97,10 +97,13 @@ def nether_plan_inventory_requirements() -> dict[tuple[str, str], WorkflowCheckp
             {"water_bucket": 1}, {"bucket": 1}, {"iron_ingot": 3}
         ),
         # The casting chain replaces the mined-obsidian contract: cauldron may
-        # come from stock or from the enlarged fourteen-ingot iron kit, and the
-        # portal frame itself consumes poured lava buckets (checked through the
-        # route-level build contract rather than a self-referential acquire key).
+        # come from stock or from the enlarged forty-four-ingot iron kit, the
+        # bucket stock converts the same kit into the eleven scooping/casting
+        # buckets, and the portal frame itself consumes poured lava buckets
+        # (checked through the route-level build contract rather than a
+        # self-referential acquire key).
         ("craft", "cauldron"): alternatives({"cauldron": 1}, {"iron_ingot": 7}),
+        ("craft", "bucket"): alternatives({"bucket": 10}, {"iron_ingot": 30}),
     }
 
 

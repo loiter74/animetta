@@ -40,6 +40,7 @@ ROUTE = [
     "dripstone",
     "portal-mold",
     "deepslate",
+    "bucket-stock",
     "lava-supply",
     "water-pool",
     "lava-farm",
@@ -110,7 +111,7 @@ def test_route_does_not_require_full_chain_if_verified_inputs_already_exist():
     mission = compile_draft(
         {"route": ["portal"]}, {"lava_bucket": 10, "flint_and_steel": 1, "cobbled_deepslate": 4}
     )
-    assert len(mission.objectives) == 1 and mission.budget.max_actions == 120
+    assert len(mission.objectives) == 1 and mission.budget.max_actions == 156
 
 
 @pytest.mark.parametrize("extra", ["mission_id", "coordinates", "blueprint", "budget"])
@@ -382,17 +383,17 @@ def test_r105_omitted_return_is_rejected_using_full_catalogue_location_facts():
     assert issue["message"] == context["access_planning_rules"]
 
 
-@pytest.mark.parametrize("inventory", [{"water_bucket": 1}, {"minecraft:iron_ingot": 14}])
+@pytest.mark.parametrize("inventory", [{"water_bucket": 1}, {"minecraft:iron_ingot": 44}])
 def test_catalogue_access_gate_preserves_provisioned_short_routes(inventory):
     route = [task for task in ROUTE if task != "water-return"]
-    assert len(compile_draft({"route": route}, inventory).objectives) == 13
+    assert len(compile_draft({"route": route}, inventory).objectives) == 14
 
 
 def test_other_authorized_travel_can_prove_fresh_access_without_forcing_all_tasks():
     route = [task for task in ROUTE if task not in {"water-return", "return-home"}]
     route.insert(route.index("water-bucket"), "return-home")
     mission = compile_draft({"route": route})
-    assert len(mission.objectives) == 13
+    assert len(mission.objectives) == 14
     assert [o.objective_id for o in mission.objectives] == route
 
 
@@ -532,4 +533,4 @@ async def test_r102_feedback_names_the_missing_task_within_the_original_two_prop
     )
     assert result.mission is not None and len(calls) == len(result.attempts) == 2
     assert [obj.objective_id for obj in result.mission.objectives] == ROUTE
-    assert result.mission.budget.max_actions == 120
+    assert result.mission.budget.max_actions == 156

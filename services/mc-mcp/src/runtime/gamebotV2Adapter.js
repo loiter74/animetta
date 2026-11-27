@@ -351,6 +351,10 @@ function capabilityDescriptors(bot, actions) {
       parameters: {},
       invoke: (_parameters, context) => actions.fillLavaBucket(context),
     },
+    scoop_lava_bucket: {
+      parameters: {},
+      invoke: (_parameters, context) => actions.scoopLavaBucket(context),
+    },
     harvest_lava_bucket: {
       parameters: {},
       invoke: (_parameters, context) => actions.harvestLavaBucket(context),

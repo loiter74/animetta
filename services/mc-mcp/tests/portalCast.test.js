@@ -5,7 +5,7 @@ import Vec3 from 'vec3';
 import pathfinderPkg from 'mineflayer-pathfinder';
 import minecraftData from 'minecraft-data';
 import { buildInfiniteWaterSource } from '../src/renewable.js';
-import { castNetherPortalFrame, fillLavaBucket, harvestLavaBucket } from '../src/portalCast.js';
+import { castNetherPortalFrame, fillLavaBucket, harvestLavaBucket, scoopLavaBucket } from '../src/portalCast.js';
 
 const wait = async () => {};
 
@@ -163,6 +163,115 @@ test('fill_lava_bucket scoops a nearby safe lava source', async () => {
   assert.equal(get(source), 'air');
   assert.equal(bot.items.filter(item => item.name === 'lava_bucket').length, 1);
   assert.equal(bot.items.filter(item => item.name === 'bucket').length, 0);
+});
+
+test('scoop_lava_bucket scoops a nearby safe lava source', async () => {
+  const source = new Vec3(8, 63, 0);
+  const { bot, get, set } = portalBot({ position: new Vec3(10.5, 64, 1.5) });
+  bot.items = [{ name: 'bucket', count: 1 }];
+  set(source, 'lava');
+  const result = await scoopLavaBucket(bot, {}, { wait });
+  assert.equal(result.output.scooped, true);
+  assert.equal(result.output.source.position.toString(), source.toString());
+  assert.deepEqual(result.output.scout_waypoints, []);
+  assert.equal(get(source), 'air');
+  assert.equal(bot.items.filter(item => item.name === 'lava_bucket').length, 1);
+  assert.equal(bot.items.filter(item => item.name === 'bucket').length, 0);
+});
+
+test('scoop_lava_bucket keeps scooping with lava buckets already held', async () => {
+  const source = new Vec3(8, 63, 0);
+  const { bot, get, set } = portalBot({ position: new Vec3(10.5, 64, 1.5) });
+  bot.items = [
+    { name: 'lava_bucket', count: 2 },
+    { name: 'bucket', count: 1 },
+  ];
+  set(source, 'lava');
+  const result = await scoopLavaBucket(bot, {}, { wait });
+  assert.equal(result.output.scooped, true);
+  assert.equal(get(source), 'air');
+  const lavaBuckets = bot.items.find(item => item.name === 'lava_bucket');
+  assert.equal(lavaBuckets.count, 3);
+  assert.equal(bot.items.filter(item => item.name === 'bucket').length, 0);
+});
+
+test('scoop_lava_bucket fails without an empty bucket', async () => {
+  const { bot } = portalBot({ position: new Vec3(10.5, 64, 1.5) });
+  bot.items = [{ name: 'lava_bucket', count: 2 }];
+  await assert.rejects(scoopLavaBucket(bot, {}, { wait }), {
+    code: 'TOOL_REQUIRED',
+    message: '舀取岩浆前需要先合成铁桶。',
+  });
+});
+
+test('scoop_lava_bucket returns gracefully when scouting finds no lava', async () => {
+  const { bot } = portalBot({ position: new Vec3(10.5, 64, 1.5) });
+  bot.items = [{ name: 'bucket', count: 10 }];
+  const gotoCalls = [];
+  const originalGoto = bot.pathfinder.goto.bind(bot.pathfinder);
+  bot.pathfinder.goto = async goal => {
+    gotoCalls.push({ x: goal.x, y: goal.y, z: goal.z });
+    await originalGoto(goal);
+  };
+  const result = await scoopLavaBucket(bot, {}, { wait });
+  assert.equal(result.output.scooped, false);
+  assert.equal(result.output.reason, 'LAVA_REGION_NOT_FOUND');
+  assert.equal(result.output.scout_waypoints.length, 4);
+  assert.equal(gotoCalls.length, 4);
+  const anchor = new Vec3(10, 64, 1);
+  assert.deepEqual(result.output.scout_waypoints.map(entry => entry.position.toString()), [
+    anchor.offset(32, 0, 0).toString(),
+    anchor.offset(32, 0, 32).toString(),
+    anchor.offset(0, 0, 32).toString(),
+    anchor.offset(-32, 0, 32).toString(),
+  ]);
+  assert.equal(result.explained_mutations.length, 0);
+  assert.equal(bot.items.filter(item => item.name === 'lava_bucket').length, 0);
+});
+
+test('scoop_lava_bucket scouts to a lava source beyond the local radius', async () => {
+  const { bot, get, set } = portalBot({ position: new Vec3(10.5, 64, 1.5) });
+  bot.items = [{ name: 'bucket', count: 10 }];
+  const gotoCalls = [];
+  const originalGoto = bot.pathfinder.goto.bind(bot.pathfinder);
+  bot.pathfinder.goto = async goal => {
+    gotoCalls.push(goal);
+    await originalGoto(goal);
+    // Lava only shows up once the first scout waypoint has been reached.
+    if (gotoCalls.length === 1) set(new Vec3(40, 63, 1), 'lava');
+  };
+  const result = await scoopLavaBucket(bot, {}, { wait });
+  assert.equal(result.output.scooped, true);
+  assert.equal(result.output.source.position.toString(), new Vec3(40, 63, 1).toString());
+  assert.equal(result.output.scout_waypoints.length, 1);
+  assert.equal(result.output.scout_waypoints[0].position.toString(), new Vec3(42, 64, 1).toString());
+  assert.equal(get(new Vec3(40, 63, 1)), 'air');
+  assert.equal(bot.items.find(item => item.name === 'lava_bucket').count, 1);
+});
+
+test('scoop_lava_bucket skips an unreachable scout waypoint', async () => {
+  const { bot, get, set } = portalBot({ position: new Vec3(10.5, 64, 1.5) });
+  bot.items = [{ name: 'bucket', count: 10 }];
+  const gotoCalls = [];
+  const originalGoto = bot.pathfinder.goto.bind(bot.pathfinder);
+  bot.pathfinder.goto = async goal => {
+    gotoCalls.push(goal);
+    if (goal.x === 42 && goal.z === 1) {
+      // First waypoint is unreachable; lava near the second one (32, +32)
+      // only becomes observable after scouting started.
+      set(new Vec3(40, 63, 33), 'lava');
+      throw Object.assign(new Error('第一个侦察点无法抵达。'), { code: 'NoPath' });
+    }
+    await originalGoto(goal);
+  };
+  const source = new Vec3(40, 63, 33);
+  const result = await scoopLavaBucket(bot, {}, { wait });
+  assert.equal(result.output.scooped, true);
+  assert.equal(result.output.source.position.toString(), source.toString());
+  assert.equal(result.output.scout_waypoints.length, 1);
+  assert.equal(result.output.scout_waypoints[0].position.toString(), new Vec3(42, 64, 33).toString());
+  assert.equal(get(source), 'air');
+  assert.equal(gotoCalls.length, 2);
 });
 
 test('fill_lava_bucket fails without a nearby lava source', async () => {

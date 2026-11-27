@@ -47,7 +47,7 @@ async def test_full_portal_mission_fits_the_advertised_runtime_ceiling(monkeypat
     assert match is not None
     ceiling = json.loads(match.group(1))
     mission = build_nether_portal_mission(mission_id="portal-planning", home=(0, 64, 0))
-    assert len(mission.objectives) == 14
+    assert len(mission.objectives) == 15
     requested = mission.budget.model_dump(mode="json")
     assert all(requested[key] <= value for key, value in ceiling.items())
     assert "showcase-specific examples, not general limits" in compiled.system_prompt

@@ -261,6 +261,7 @@ def diamond_survival_workflow(diamond_quantity: int = 1) -> WorkflowDefinition:
 def nether_preparation_workflows() -> tuple[WorkflowDefinition, ...]:
     """Extend the survival chain with the pure-casting portal stages."""
     lava_bucket_supply = 10
+    lava_scoops = 4
     ignition = _inventory_checkpoint({"flint_and_steel": 1})
     return (
         WorkflowDefinition(
@@ -268,13 +269,13 @@ def nether_preparation_workflows() -> tuple[WorkflowDefinition, ...]:
             adaptive_wood=True,
             intent="acquire",
             target="nether_iron_kit",
-            steps=_iron_progression_steps(14, ore_batch_size=1),
-            collection_targets=_iron_progression_collection_targets(14),
+            steps=_iron_progression_steps(44, ore_batch_size=1),
+            collection_targets=_iron_progression_collection_targets(44),
             checkpoints=(
                 *_iron_progression_checkpoints()[:7],
-                _inventory_checkpoint({"raw_iron": 14}, {"iron_ingot": 14}),
-                _inventory_checkpoint({"furnace": 1}, {"iron_ingot": 14}),
-                _inventory_checkpoint({"iron_ingot": 14}),
+                _inventory_checkpoint({"raw_iron": 44}, {"iron_ingot": 44}),
+                _inventory_checkpoint({"furnace": 1}, {"iron_ingot": 44}),
+                _inventory_checkpoint({"iron_ingot": 44}),
             ),
         ),
         WorkflowDefinition(
@@ -346,23 +347,34 @@ def nether_preparation_workflows() -> tuple[WorkflowDefinition, ...]:
             checkpoints=(_inventory_checkpoint({"cobbled_deepslate": 4}),),
         ),
         WorkflowDefinition(
+            workflow_id="survival:bucket-stock",
+            intent="craft",
+            target="bucket",
+            steps=(_step("craft", {"recipe": "bucket", "count": 10}),),
+            checkpoints=(_inventory_checkpoint({"bucket": 10}),),
+        ),
+        WorkflowDefinition(
             workflow_id="survival:lava-bucket-supply",
             intent="acquire",
             target="lava_bucket",
             steps=(
-                # The first bucket is scooped from a natural lava source; the
-                # rest drip into the cauldron, whose refill is slow — mission
-                # retries span runs and each successful harvest advances the
-                # checkpoint ladder by one bucket.
-                _step("fill_lava_bucket", {}, travel=192, blocks=1),
+                # Hybrid acquisition: the four scoops are an exploration phase
+                # that always runs (each scout no-ops gracefully when no
+                # natural lava is reachable) and tops up however many buckets
+                # it can. The drip-farm harvests below carry the checkpoint
+                # ladder, so settled buckets skip the matching harvest steps
+                # on mission retries instead of replaying earlier scoops.
+                *tuple(
+                    _step("scoop_lava_bucket", {}, travel=192, blocks=1) for _ in range(lava_scoops)
+                ),
             )
             + tuple(_step("harvest_lava_bucket", {}, travel=64, blocks=1) for _ in range(10)),
-            collection_targets=(None,)
+            collection_targets=(None,) * lava_scoops
             + tuple(
                 InventoryThreshold(item="lava_bucket", quantity=count)
                 for count in range(1, lava_bucket_supply + 1)
             ),
-            checkpoints=(None,)
+            checkpoints=(None,) * lava_scoops
             + tuple(
                 _inventory_checkpoint({"lava_bucket": count})
                 for count in range(1, lava_bucket_supply + 1)

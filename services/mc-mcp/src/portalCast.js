@@ -1,3 +1,4 @@
+import pathfinderPkg from 'mineflayer-pathfinder';
 import Vec3 from 'vec3';
 import {
   approachInteractionStance,
@@ -11,6 +12,7 @@ import {
   pourFluidIntoCell,
   TRENCH_REPLACEABLE,
 } from './renewable.js';
+import { navigateTo } from './navigation.js';
 import {
   collectionResourceMutation,
   isAirLikeForStanding,
@@ -34,63 +36,145 @@ const totalItemCount = (bot, name) => bot.inventory.items()
 // Frame cells that must start out replaceable by the cast geometry.
 const PORTAL_REPLACEABLE = new Set(['air', 'cave_air', 'short_grass', 'fern', 'dead_bush', 'snow']);
 
+// Safe lava sources within the local search radius (source block with an
+// air-like cell above it).
+function findSafeLavaSources(bot) {
+  const lavaId = bot.registry?.blocksByName?.lava?.id;
+  const positions = typeof bot.findBlocks === 'function' && lavaId !== undefined
+    ? bot.findBlocks({
+      matching: lavaId,
+      maxDistance: 64,
+      count: 512,
+      useExtraInfo: block => isLavaSource(block)
+        && isAirLikeForStanding(bot.blockAt(block.position.offset(0, 1, 0))),
+    }) || []
+    : [];
+  return {
+    candidates: positions.length,
+    sources: positions
+      .map(position => bot.blockAt(position))
+      .filter(block => isLavaSource(block)
+        && isAirLikeForStanding(bot.blockAt(block.position.offset(0, 1, 0)))),
+  };
+}
+
+// Shared scoop flow for a known, non-empty set of safe lava sources: pick the
+// nearest, approach, equip, aim, activate, confirm, and record the mutation.
+// No idempotency check happens here; callers decide whether to scoop at all.
+async function scoopNearestLavaSource(bot, context, wait, mutations, sources) {
+  const bucket = hasItem(bot, 'bucket');
+  if (!bucket) fail('TOOL_REQUIRED', '舀取岩浆前需要先合成铁桶。');
+  const origin = bot.entity.position.floored();
+  const sorted = [...sources].sort((a, b) =>
+    a.position.distanceTo(origin) - b.position.distanceTo(origin));
+  const source = sorted[0];
+  const target = source.position.offset(0.5, 0.99, 0.5);
+  await approachInteractionStance(bot, source.position, target, context);
+  await bot.equip(bucket, 'hand');
+  const confirmation = waterConfirmation(context, wait);
+  await aimWaterItem(bot, target, confirmation);
+  context.operation_scope?.checkpoint();
+  context.signal?.throwIfAborted();
+  if (!isSafeStandingPosition(bot, bot.entity.position.floored())
+    || !canInteractFrom(bot, source.position, target, bot.entity.position)) {
+    fail('WATER_TARGET_UNREACHABLE', '使用铁桶前当前位置已不满足安全舀取岩浆条件。', {
+      source: source.position,
+    });
+  }
+  if (!isLavaSource(bot.blockAt(source.position))) {
+    fail('TARGET_CHANGED', '舀取岩浆前岩浆源发生变化。', { source: source.position });
+  }
+  bot.activateItem();
+  try {
+    if (!await confirmation.until(() => hasItem(bot, 'lava_bucket'))) {
+      fail('LAVA_FILL_UNCONFIRMED', '舀取岩浆后未在背包确认获得岩浆桶。', {
+        source: source.position,
+        target,
+      });
+    }
+  } finally {
+    bot.deactivateItem?.();
+  }
+  mutations.push(collectionResourceMutation('lava', source.position, bot.game?.dimension));
+  return { source: { position: source.position } };
+}
+
 // Scoop lava from a nearby safe lava source with an empty bucket.
 export async function fillLavaBucket(bot, context = {}, { wait = operationWait } = {}) {
   return withCollectionEvidence(bot, async mutations => {
     if (hasItem(bot, 'lava_bucket')) return { filled: true, already_present: true };
-    const bucket = hasItem(bot, 'bucket');
-    if (!bucket) fail('TOOL_REQUIRED', '舀取岩浆前需要先合成铁桶。');
-    const lavaId = bot.registry?.blocksByName?.lava?.id;
-    const positions = typeof bot.findBlocks === 'function' && lavaId !== undefined
-      ? bot.findBlocks({
-        matching: lavaId,
-        maxDistance: 64,
-        count: 512,
-        useExtraInfo: block => isLavaSource(block)
-          && isAirLikeForStanding(bot.blockAt(block.position.offset(0, 1, 0))),
-      }) || []
-      : [];
-    const sources = positions
-      .map(position => bot.blockAt(position))
-      .filter(block => isLavaSource(block)
-        && isAirLikeForStanding(bot.blockAt(block.position.offset(0, 1, 0))));
+    if (!hasItem(bot, 'bucket')) fail('TOOL_REQUIRED', '舀取岩浆前需要先合成铁桶。');
+    const { candidates, sources } = findSafeLavaSources(bot);
     if (!sources.length) {
       fail('LAVA_SOURCE_NOT_FOUND', '附近未观察到可以安全舀取的岩浆源。', {
-        returned_candidates: positions.length,
+        returned_candidates: candidates,
       });
     }
-    const origin = bot.entity.position.floored();
-    sources.sort((a, b) => a.position.distanceTo(origin) - b.position.distanceTo(origin));
-    const source = sources[0];
-    const target = source.position.offset(0.5, 0.99, 0.5);
-    await approachInteractionStance(bot, source.position, target, context);
-    await bot.equip(bucket, 'hand');
-    const confirmation = waterConfirmation(context, wait);
-    await aimWaterItem(bot, target, confirmation);
-    context.operation_scope?.checkpoint();
-    context.signal?.throwIfAborted();
-    if (!isSafeStandingPosition(bot, bot.entity.position.floored())
-      || !canInteractFrom(bot, source.position, target, bot.entity.position)) {
-      fail('WATER_TARGET_UNREACHABLE', '使用铁桶前当前位置已不满足安全舀取岩浆条件。', {
-        source: source.position,
-      });
-    }
-    if (!isLavaSource(bot.blockAt(source.position))) {
-      fail('TARGET_CHANGED', '舀取岩浆前岩浆源发生变化。', { source: source.position });
-    }
-    bot.activateItem();
-    try {
-      if (!await confirmation.until(() => hasItem(bot, 'lava_bucket'))) {
-        fail('LAVA_FILL_UNCONFIRMED', '舀取岩浆后未在背包确认获得岩浆桶。', {
-          source: source.position,
-          target,
-        });
+    const scooped = await scoopNearestLavaSource(bot, context, wait, mutations, sources);
+    return { filled: true, source: scooped.source };
+  });
+}
+
+const SCOUT_WAYPOINT_OFFSETS = [
+  [32, 0], [32, 32], [0, 32], [-32, 32],
+  [-32, 0], [-32, -32], [0, -32], [32, -32],
+];
+
+function scoutDryMovementSet(bot) {
+  const movements = new pathfinderPkg.Movements(bot);
+  movements.canDig = false;
+  movements.allow1by1towers = false;
+  movements.scafoldingBlocks = [];
+  return movements;
+}
+
+// Scoop one bucket of lava from natural lava sources nearby, or — when the
+// local radius holds none — scout outward along fixed waypoints until a source
+// shows up. Unlike fillLavaBucket this has NO lava-bucket idempotency early
+// exit, and exhausting the scouting budget without lava is a graceful success
+// so upstream workflows can fall back to the farm harvest.
+export async function scoopLavaBucket(bot, context = {}, {
+  wait = operationWait,
+  maxScoutWaypoints = 4,
+} = {}) {
+  return withCollectionEvidence(bot, async mutations => {
+    if (!hasItem(bot, 'bucket')) fail('TOOL_REQUIRED', '舀取岩浆前需要先合成铁桶。');
+    const anchor = bot.entity.position.floored();
+    const scout_waypoints = [];
+
+    const scoopHere = async () => {
+      const { sources } = findSafeLavaSources(bot);
+      if (!sources.length) return null;
+      return scoopNearestLavaSource(bot, context, wait, mutations, sources);
+    };
+
+    const direct = await scoopHere();
+    if (direct) return { scooped: true, source: direct.source, scout_waypoints };
+
+    // Scout ring: dry walk (no digging/scaffolding) toward each waypoint.
+    for (const [dx, dz] of SCOUT_WAYPOINT_OFFSETS.slice(0, maxScoutWaypoints)) {
+      const waypoint = new Vec3(anchor.x + dx, Math.floor(anchor.y), anchor.z + dz);
+      const previous = bot.pathfinder.movements;
+      bot.pathfinder.setMovements(scoutDryMovementSet(bot));
+      try {
+        context.operation_scope?.checkpoint();
+        context.signal?.throwIfAborted();
+        try {
+          await navigateTo(bot, waypoint, context);
+          scout_waypoints.push({ position: waypoint });
+        } catch (error) {
+          context.signal?.throwIfAborted();
+          if (!NAVIGATION_ERROR_CODES.includes(error.code || error.name)) throw error;
+          continue;
+        }
+      } finally {
+        bot.pathfinder.setMovements(previous);
       }
-    } finally {
-      bot.deactivateItem?.();
+      const found = await scoopHere();
+      if (found) return { scooped: true, source: found.source, scout_waypoints };
     }
-    mutations.push(collectionResourceMutation('lava', source.position, bot.game?.dimension));
-    return { filled: true, source: { position: source.position } };
+
+    return { scooped: false, reason: 'LAVA_REGION_NOT_FOUND', scout_waypoints };
   });
 }
 

@@ -32,6 +32,7 @@ def build_nether_portal_mission(
         "dripstone",
         "portal-mold",
         "deepslate",
+        "bucket-stock",
         "lava-supply",
         "water-pool",
         "lava-farm",
@@ -55,8 +56,10 @@ def build_nether_portal_mission(
     lava_farm_blueprint = lava_drip_farm_blueprint()
     objectives: list[MissionObjective] = []
     for objective_id, intent, target, quantity, actions, travel, blocks in (
-        # Casting chain needs pickaxe 3 + bucket 3 + flint&steel 1 + cauldron 7.
-        ("iron", "acquire", "nether_iron_kit", 14, 24, 640, 384),
+        # Casting chain needs pickaxe 3 + water bucket 3 + ten lava buckets 30
+        # + flint&steel 1 + cauldron 7: holding ten lava buckets at once plus
+        # the water bucket requires eleven buckets' worth of iron ingots.
+        ("iron", "acquire", "nether_iron_kit", 44, 54, 704, 448),
         ("iron-pickaxe", "craft", "iron_pickaxe", 1, 3, 0, 0),
         ("water-bucket", "acquire", "water_bucket", 1, 4, 128, 8),
         ("ignition", "craft", "flint_and_steel", 1, 8, 128, 64),
@@ -64,8 +67,13 @@ def build_nether_portal_mission(
         ("dripstone", "acquire", "pointed_dripstone", 1, 8, 192, 8),
         ("portal-mold", "acquire", "dirt", 32, 8, 192, 48),
         ("deepslate", "acquire", "cobbled_deepslate", 4, 8, 256, 16),
-        # One fill plus ten harvests; cauldron refills span mission retries.
-        ("lava-supply", "acquire", "lava_bucket", 10, 16, 320, 16),
+        # Ten empty buckets so the lava supply can accumulate ten full
+        # lava buckets at once (the water bucket is kept separate).
+        ("bucket-stock", "craft", "bucket", 10, 2, 0, 0),
+        # Hybrid acquisition: scoop from scouted natural lava first (each
+        # scoop explores when no lava is nearby and no-ops gracefully),
+        # then drip-farm harvests cover the remainder across retries.
+        ("lava-supply", "acquire", "lava_bucket", 10, 20, 1408, 16),
     ):
         if objective_id == "water-bucket" and home is not None:
             objectives.append(
@@ -116,9 +124,12 @@ def build_nether_portal_mission(
                     max_blocks_changed=blocks,
                     # Lava handling carries burn risk; the rest of the casting chain
                     # keeps the standard single point of damage allowance.
-                    max_damage_taken={"cauldron": 0, "iron-pickaxe": 0, "lava-supply": 2}.get(
-                        objective_id, 1
-                    ),
+                    max_damage_taken={
+                        "cauldron": 0,
+                        "iron-pickaxe": 0,
+                        "bucket-stock": 0,
+                        "lava-supply": 2,
+                    }.get(objective_id, 1),
                 ),
             )
         )

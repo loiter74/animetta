@@ -54,6 +54,7 @@ RouteTask = Literal[
     "dripstone",
     "portal-mold",
     "deepslate",
+    "bucket-stock",
     "lava-supply",
     "water-pool",
     "lava-farm",
@@ -74,7 +75,7 @@ class SmallSkillDraft(_Draft):
 
 
 class RouteDraft(_Draft):
-    route: tuple[RouteTask, ...] = Field(min_length=1, max_length=14)
+    route: tuple[RouteTask, ...] = Field(min_length=1, max_length=15)
     budget_overrides: dict[RouteTask, BudgetUsage] = Field(default_factory=dict)
     skill: SmallSkillDraft | None = None
 

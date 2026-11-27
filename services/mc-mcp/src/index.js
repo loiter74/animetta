@@ -60,6 +60,7 @@ import {
   castNetherPortalFrame,
   fillLavaBucket,
   harvestLavaBucket,
+  scoopLavaBucket,
 } from './portalCast.js';
 import {
   normalizePlacementBlockName,
@@ -1918,6 +1919,7 @@ gameBotV2Adapter = createGameBotV2Adapter({
       })
     ),
     fillLavaBucket: (context) => fillLavaBucket(bot, context),
+    scoopLavaBucket: (context) => scoopLavaBucket(bot, context),
     harvestLavaBucket: (context) => harvestLavaBucket(bot, context),
     castNetherPortal: (parameters, context) => castNetherPortalFrame(bot, context, parameters),
     acquireFlint: (maxAttempts, context) => acquireFlint(bot, maxAttempts, context, {

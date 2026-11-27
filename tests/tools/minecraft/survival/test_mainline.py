@@ -125,7 +125,7 @@ def test_r106_mixed_stock_advances_without_spending_another_search_action():
     assert decision.capability == "craft"
     assert decision.parameters == {"recipe": "any_planks", "count": 32}
     assert account.remaining == before and account.limit == limit
-    assert limit.max_actions == 24 and limit.max_blocks_changed == 384
+    assert limit.max_actions == 54 and limit.max_blocks_changed == 448
     assert [s.maximum_cost for s in state["workflow"].steps] == [
         s.maximum_cost for s in workflow.steps
     ]
@@ -142,10 +142,10 @@ def test_workstation_reservations_fit_unchanged_iron_budget_and_leave_a_local_ta
     iron, pickaxe = mission.objectives[:2]
     workflow = registry.resolve(iron.goal)
     assert workflow is not None
-    assert iron.budget.max_travel_distance == 640
-    assert iron.budget.max_blocks_changed == 384
+    assert iron.budget.max_travel_distance == 704
+    assert iron.budget.max_blocks_changed == 448
     assert pickaxe.budget.max_travel_distance == pickaxe.budget.max_blocks_changed == 0
-    assert len(mission.objectives) == 14
+    assert len(mission.objectives) == 15
     assert [step.capability for step in workflow.steps[-3:]] == ["collect", "craft", "smelt"]
     assert workflow.steps[-2].parameters["recipe"] == "furnace"
     for step in workflow.steps:
@@ -163,7 +163,9 @@ def test_workstation_reservations_fit_unchanged_iron_budget_and_leave_a_local_ta
 
 
 @pytest.mark.parametrize("raw_iron", [0, 2, 6, 12])
-def test_iron_kit_collects_successful_small_batches_before_smelting_fourteen(raw_iron: int) -> None:
+def test_iron_kit_collects_successful_small_batches_before_smelting_forty_four(
+    raw_iron: int,
+) -> None:
     mission = build_nether_portal_mission(mission_id="iron-batches")
     registry = WorkflowRegistry()
     workflow = next(w for w in nether_preparation_workflows() if w.target == "nether_iron_kit")
@@ -179,7 +181,7 @@ def test_iron_kit_collects_successful_small_batches_before_smelting_fourteen(raw
         limit=mission.budget.model_copy(update=mission.objectives[0].budget.model_dump())
     )
     count = 0
-    for stock in range(raw_iron, 14):
+    for stock in range(raw_iron, 44):
         decision = strategy.propose(state, observation)
         assert decision.kind == "execute" and decision.capability == "collect"
         assert decision.parameters == {"block_type": "iron_ore", "count": 1}
@@ -194,15 +196,15 @@ def test_iron_kit_collects_successful_small_batches_before_smelting_fourteen(raw
         )
     decision = strategy.propose(state, observation)
     assert decision.kind == "execute" and decision.capability == "smelt"
-    assert decision.parameters == {"item": "raw_iron", "fuel": "any_planks", "count": 14}
-    assert count == 14 - raw_iron
+    assert decision.parameters == {"item": "raw_iron", "fuel": "any_planks", "count": 44}
+    assert count == 44 - raw_iron
     assert account.used.max_actions == count
     assert len(workflow.steps) == 10
-    # Nine fixed steps plus fourteen one-ore batches fit the objective budget.
-    assert len(workflow.steps) - 1 + 14 == 23 <= mission.objectives[0].budget.max_actions == 24
+    # Nine fixed steps plus forty-four one-ore batches fit the objective budget.
+    assert len(workflow.steps) - 1 + 44 == 53 <= mission.objectives[0].budget.max_actions == 54
     assert sum(step.maximum_cost.max_travel_distance for step in workflow.steps) == 512
     state = strategy.accept_result(state, {})
-    final = observation.model_copy(update={"inventory": {"iron_ingot": 14}})
+    final = observation.model_copy(update={"inventory": {"iron_ingot": 44}})
     assert strategy.propose(state, final).kind == "complete"
 
 
@@ -251,7 +253,7 @@ def test_iron_batch_reservation_uses_current_account_and_preserves_remaining_wor
             max_actions=8, max_blocks_changed=89, max_travel_distance=63.67350095384333
         ),
     )
-    for stock in range(1, 14):
+    for stock in range(1, 44):
         state["budget_remaining"] = account.remaining
         decision = strategy.propose(state, observation)
         assert decision.kind == "execute" and decision.parameters == {
@@ -262,7 +264,7 @@ def test_iron_batch_reservation_uses_current_account_and_preserves_remaining_wor
         assert (
             3
             <= decision.maximum_cost.max_blocks_changed
-            <= account.remaining.max_blocks_changed - 16 - (13 - stock)
+            <= account.remaining.max_blocks_changed - 16 - (43 - stock)
         )
         assert decision.maximum_cost.max_blocks_changed <= 192
         assert decision.maximum_cost.max_travel_distance <= min(
@@ -286,12 +288,12 @@ def test_iron_batch_reservation_uses_current_account_and_preserves_remaining_wor
         state = strategy.accept_result(state, {})
         inventory = {**observation.inventory, "furnace": 1}
         if recipe == "smelt":
-            inventory.update(raw_iron=0, iron_ingot=14)
+            inventory.update(raw_iron=0, iron_ingot=44)
         observation = observation.model_copy(update={"inventory": inventory})
     assert strategy.propose(state, observation).kind == "complete"
     assert account.limit == limit
-    assert account.used.max_actions == 23 <= limit.max_actions == 24
-    assert account.used.max_blocks_changed <= limit.max_blocks_changed == 384
+    assert account.used.max_actions == 53 <= limit.max_actions == 54
+    assert account.used.max_blocks_changed <= limit.max_blocks_changed == 448
 
 
 @pytest.mark.parametrize(
@@ -338,13 +340,13 @@ def test_a_settled_failed_search_is_paid_for_by_packing_work_inside_the_same_iro
         }
     )
     batches = []
-    while observation.inventory["raw_iron"] < 14:
+    while observation.inventory["raw_iron"] < 44:
         state["budget_remaining"] = account.remaining
         decision = strategy.propose(state, observation)
         assert decision.capability == "collect"
         count = decision.parameters["count"]
         batches.append(count)
-        assert 1 <= count <= 14 - observation.inventory["raw_iron"]
+        assert 1 <= count <= 44 - observation.inventory["raw_iron"]
         assert decision.maximum_cost.max_actions == 1
         assert decision.maximum_cost.max_blocks_changed <= 192
         assert decision.maximum_cost.max_travel_distance <= 192
@@ -360,7 +362,7 @@ def test_a_settled_failed_search_is_paid_for_by_packing_work_inside_the_same_iro
                 }
             }
         )
-    assert batches == [1] * 13
+    assert batches == [1] * 43
     for capability in ("craft", "smelt"):
         state["budget_remaining"] = account.remaining
         decision = strategy.propose(state, observation)
@@ -371,17 +373,17 @@ def test_a_settled_failed_search_is_paid_for_by_packing_work_inside_the_same_iro
         state = strategy.accept_result(state, {})
         inventory = {**observation.inventory, "furnace": 1}
         if capability == "smelt":
-            inventory.update(raw_iron=0, iron_ingot=14)
+            inventory.update(raw_iron=0, iron_ingot=44)
         observation = observation.model_copy(update={"inventory": inventory})
     assert strategy.propose(state, observation).kind == "complete"
     assert GoalVerifier().verify(goal=mission.objectives[0].goal, final=observation)["satisfied"]
     assert account.limit == limit
-    assert account.used.max_actions == limit.max_actions == 24
-    assert account.used.max_blocks_changed <= limit.max_blocks_changed == 384
+    assert account.used.max_actions == limit.max_actions == 54
+    assert account.used.max_blocks_changed <= limit.max_blocks_changed == 448
     assert account.used.max_travel_distance == 174.94 < limit.max_travel_distance
 
 
-def test_iron_kit_skips_remaining_batches_when_fourteen_ingots_are_observed() -> None:
+def test_iron_kit_skips_remaining_batches_when_forty_four_ingots_are_observed() -> None:
     mission = build_nether_portal_mission(mission_id="iron-already-smelted")
     registry = WorkflowRegistry()
     registry.register(
@@ -391,7 +393,7 @@ def test_iron_kit_skips_remaining_batches_when_fourteen_ingots_are_observed() ->
     state = strategy.prepare(mission.objectives[0].goal)
     state["step_index"] = 7
     observation = Observation.model_validate(MESSAGES["Observation"]).model_copy(
-        update={"inventory": {"iron_ingot": 14}}
+        update={"inventory": {"iron_ingot": 44}}
     )
     assert strategy.propose(state, observation).kind == "complete"
 
@@ -500,7 +502,7 @@ def test_mainline_fits_finite_mission_authority_and_workflow_reservations() -> N
         ),
     )
     type(mission).model_validate({**mission.model_dump(), "budget": authorized})
-    assert mission.budget.max_travel_distance <= 3_072
+    assert mission.budget.max_travel_distance <= 4_096
     assert policy.learn.max_travel_distance == 500
     registry = WorkflowRegistry()
     from animetta.tools.minecraft.survival.workflows import iron_survival_workflow
@@ -542,6 +544,7 @@ def test_mainline_orders_dependencies_and_resolves_prerequisites() -> None:
             "dripstone",
             "portal-mold",
             "deepslate",
+            "bucket-stock",
             "lava-supply",
         }:
             assert registry.resolve(objective.goal) is not None
@@ -566,7 +569,7 @@ def test_lava_supply_reservation_covers_real_multi_harvest_backfill_receipt() ->
     assert mission.objectives[0].budget.max_blocks_changed >= sum(
         step.maximum_cost.max_blocks_changed for step in workflow.steps
     )
-    assert mission.objectives[0].budget.max_actions >= 11
+    assert mission.objectives[0].budget.max_actions >= 14
 
 
 def test_stone_preparation_cost_and_inventory_resume_cover_real_retry8_receipt() -> None:
@@ -646,9 +649,9 @@ def test_mainline_resume_from_lava_supply_keeps_suffix_and_recomputes_budget() -
     assert mission.objectives[2].dependencies == ("water-pool",)
     assert mission.objectives[3].dependencies == ("lava-farm",)
     assert mission.objectives[4].dependencies == ("return-home",)
-    assert mission.budget.max_actions == 52
+    assert mission.budget.max_actions == 56
     assert mission.budget.max_strategy_attempts == 5
-    assert mission.budget.max_travel_distance == 960
+    assert mission.budget.max_travel_distance == 2_048
     assert mission.budget.max_blocks_changed == 350
     assert mission.budget.max_damage_taken == 6  # lava-supply allows two damage units
     assert mission.budget.resource_consumption == {
@@ -688,6 +691,7 @@ def test_mainline_default_resume_keeps_full_chain_and_total_budget() -> None:
         "dripstone",
         "portal-mold",
         "deepslate",
+        "bucket-stock",
         "lava-supply",
         "water-pool",
         "lava-farm",
@@ -695,10 +699,10 @@ def test_mainline_default_resume_keeps_full_chain_and_total_budget() -> None:
         "portal",
     ]
     assert mission.objectives[0].dependencies == ()
-    assert mission.budget.max_actions == 120
-    assert mission.budget.max_travel_distance == 2_688
+    assert mission.budget.max_actions == 156
+    assert mission.budget.max_travel_distance == 3_840
     assert mission.budget.max_damage_taken == 13  # includes lava-supply burn allowance
-    assert mission.budget.max_blocks_changed == 1_006
+    assert mission.budget.max_blocks_changed == 1_070
 
 
 def test_casting_preparation_reserves_iron_before_lava_harvest() -> None:
@@ -710,7 +714,7 @@ def test_casting_preparation_reserves_iron_before_lava_harvest() -> None:
 
     assert isinstance(iron_threshold, InventoryAtLeast)
     assert iron_threshold.item == "iron_ingot"
-    assert iron_threshold.quantity == 14  # pickaxe3 + bucket3 + flint&steel1 + cauldron7
+    assert iron_threshold.quantity == 44  # pickaxe3 + buckets33 + flint&steel1 + cauldron7
     assert iron_pickaxe.dependencies == (iron.objective_id,)
     assert water.dependencies == (iron_pickaxe.objective_id,)
     assert ignition.dependencies == (water.objective_id,)
@@ -726,15 +730,15 @@ def test_casting_preparation_reserves_iron_before_lava_harvest() -> None:
     )
     assert kit.steps[ore_index].parameters["count"] == 1
     raw_threshold = kit.collection_targets[ore_index]
-    assert raw_threshold is not None and raw_threshold.quantity == 14
+    assert raw_threshold is not None and raw_threshold.quantity == 44
     water_workflow = registry.resolve(water.goal)
     assert water_workflow is not None
     assert [step.capability for step in water_workflow.steps] == ["craft", "fill_water_bucket"]
     assert water_workflow.steps[-1].maximum_cost.max_blocks_changed == 1
-    lava_workflow = registry.resolve(mission.objectives[8].goal)
+    lava_workflow = registry.resolve(mission.objectives[9].goal)
     assert lava_workflow is not None
-    assert lava_workflow.steps[0].capability == "fill_lava_bucket"
-    assert all(step.capability == "harvest_lava_bucket" for step in lava_workflow.steps[1:])
+    assert lava_workflow.steps[0].capability == "scoop_lava_bucket"
+    assert all(step.capability == "harvest_lava_bucket" for step in lava_workflow.steps[4:])
     ignition_workflow = registry.resolve(ignition.goal)
     assert ignition_workflow is not None
     flint = next(step for step in ignition_workflow.steps if step.capability == "acquire_flint")
@@ -780,12 +784,16 @@ def test_partial_lava_stock_keeps_the_harvest_progression_and_skips_settled_buck
     state = strategy.prepare(goal)
     fill = strategy.propose(state, observation)
     assert fill.kind == "execute"
-    assert fill.capability == "fill_lava_bucket"
+    assert fill.capability == "scoop_lava_bucket"
     assert fill.parameters == {}
+    # The exploration phase always runs: remaining scoops keep scouting.
     state = strategy.accept_result(state, {})
+    stocked = observation.model_copy(update={"inventory": {"lava_bucket": 3}})
+    for _ in range(3):
+        assert strategy.propose(state, stocked).capability == "scoop_lava_bucket"
+        state = strategy.accept_result(state, {})
     # Three settled buckets must skip the matching harvest checkpoints
     # instead of replaying earlier scoops.
-    stocked = observation.model_copy(update={"inventory": {"lava_bucket": 3}})
     skipped = strategy.propose(state, stocked)
     assert skipped.kind == "execute"
     assert skipped.capability == "harvest_lava_bucket"
@@ -822,18 +830,19 @@ def test_lava_harvest_uses_unspent_command_blocks_and_keeps_the_supply_reservati
     observation = Observation.model_validate(MESSAGES["Observation"]).model_copy(
         update={"inventory": {"lava_bucket": lava_stock}}
     )
-    if lava_stock:
-        # The natural fill already settled in an earlier command of this run.
-        state = strategy.accept_result(state, {})
     state["budget_remaining"] = account.remaining
+    # The exploration phase always starts with a scout even when buckets
+    # already settled in an earlier command of this run.
     decision = strategy.propose(state, observation)
-    assert decision.capability == ("fill_lava_bucket" if lava_stock == 0 else "harvest_lava_bucket")
+    assert decision.capability == "scoop_lava_bucket"
     assert decision.maximum_cost.max_blocks_changed == 1
     account = account.reserve("scoop", decision.maximum_cost).settle(
         "scoop", BudgetUsage(max_actions=1, max_blocks_changed=1, max_travel_distance=28.3)
     )
     state = strategy.accept_result(state, {})
     observation = observation.model_copy(update={"inventory": {"lava_bucket": lava_stock + 1}})
+    for _ in range(3):
+        state = strategy.accept_result(state, {})
     state["budget_remaining"] = account.remaining
     followup = strategy.propose(state, observation)
     assert followup.capability == "harvest_lava_bucket"
@@ -841,14 +850,14 @@ def test_lava_harvest_uses_unspent_command_blocks_and_keeps_the_supply_reservati
     final = observation.model_copy(update={"inventory": {"lava_bucket": 10}})
     assert GoalVerifier().verify(goal=objective.goal, final=final)["satisfied"]
     assert account.limit == limit
-    assert limit.max_actions == 16
-    assert limit.max_travel_distance == 320
+    assert limit.max_actions == 20
+    assert limit.max_travel_distance == 1_408
     assert limit.max_blocks_changed == 16
     assert account.used.max_blocks_changed <= 3
 
 
 @pytest.mark.parametrize(
-    "spent", [{"max_blocks_changed": 380}, {"max_actions": 24}, {"max_travel_distance": 639}]
+    "spent", [{"max_blocks_changed": 444}, {"max_actions": 54}, {"max_travel_distance": 703}]
 )
 def test_iron_ore_collection_cannot_borrow_the_stopping_or_future_work_budget(spent) -> None:
     mission = build_nether_portal_mission(mission_id="iron-ore-no-budget")
@@ -1120,7 +1129,7 @@ def test_observed_checkpoint_completion_is_recoverable_only_for_the_failed_primi
         if target == "water_bucket"
         else {
             "stone_pickaxe": 1,
-            "raw_iron": 14,
+            "raw_iron": 44,
             "furnace": 1,
             "oak_planks": 23,
         }
@@ -1129,14 +1138,14 @@ def test_observed_checkpoint_completion_is_recoverable_only_for_the_failed_primi
     step = strategy.propose(state, before)
     state["settled_capability"] = step.capability
     if target == "nether_iron_kit":
-        # A relative 14-item smelt must not be replayed after only 8 arrive.
+        # A relative 44-item smelt must not be replayed after only 8 arrive.
         incomplete = before.model_copy(
             update={"inventory": {**inventory, "raw_iron": 8, "iron_ingot": 6}}
         )
         assert strategy.accept_partial_result(state, before, incomplete) is None
     after = before.model_copy(
         update={
-            "inventory": {"water_bucket": 1} if target == "water_bucket" else {"iron_ingot": 14}
+            "inventory": {"water_bucket": 1} if target == "water_bucket" else {"iron_ingot": 44}
         }
     )
     assert GoalVerifier().verify(goal=objective.goal, final=after)["satisfied"]
@@ -1174,7 +1183,7 @@ def test_resumed_mission_can_recover_to_a_verified_shore_without_moving_home() -
     assert lava_supply.dependencies == (recovery.objective_id,)
     assert recovery.goal.success_predicates[0].y == -54
     assert home.goal.success_predicates[0].y == 64
-    assert mission.budget.max_travel_distance == 1_024
+    assert mission.budget.max_travel_distance == 2_112
     assert mission.budget.max_blocks_changed == 350
     with pytest.raises(ValueError, match="resumed mission"):
         build_nether_portal_mission(mission_id="invalid-recovery", recover_at=(0, 64, 0))
@@ -1300,8 +1309,8 @@ def test_snow_clearance_reservations_fit_the_cast_portal_limits() -> None:
     assert sum(d.maximum_cost.max_blocks_changed for d in decisions) == 30
     assert mission.objectives[-1].budget.max_actions == 20
     assert mission.objectives[-1].budget.max_blocks_changed == 30
-    assert mission.budget.max_actions == 120
-    assert mission.budget.max_blocks_changed == 1_006
+    assert mission.budget.max_actions == 156
+    assert mission.budget.max_blocks_changed == 1_070
 
 
 def test_water_pool_is_a_single_typed_capability_step() -> None:

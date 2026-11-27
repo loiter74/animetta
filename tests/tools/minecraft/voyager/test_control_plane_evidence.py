@@ -447,7 +447,7 @@ async def test_controller_refreshes_canonical_budget_through_mission_fallback() 
     assert executor.calls[0]["account"].used.max_blocks_changed == 0
     assert executor.calls[0]["step"].maximum_cost.max_blocks_changed == 192
     assert executor.calls[1]["account"].used.max_blocks_changed == 89
-    assert executor.calls[1]["account"].remaining.max_blocks_changed == 295
+    assert executor.calls[1]["account"].remaining.max_blocks_changed == 359
     assert executor.calls[1]["step"].maximum_cost.max_blocks_changed == 192
     assert executor.calls[1]["account"].limit == executor.calls[0]["account"].limit
 
