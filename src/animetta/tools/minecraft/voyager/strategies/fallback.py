@@ -17,6 +17,11 @@ from ..budget import BudgetAccount, BudgetExceededError, BudgetUsage, ExecutionB
 from ..goal_models import GoalSpec
 from .base import Complete, ExecuteStep, StrategyDecision, StrategyFailure
 
+# Below this height the bot is in the mining band (iron ore, mine shafts):
+# trees sit on the surface far outside the bounded collect search's digging
+# reach, while coal ore — eight smelts per unit — lives in the same band.
+_FUEL_COAL_MAX_Y = 56.0
+
 
 class FallbackStrategy:
     def __init__(self, *, registry: WorkflowRegistry) -> None:
@@ -88,8 +93,11 @@ class FallbackStrategy:
             fuel_step = self._plank_fuel_provision_step(step, observation)
             if fuel_step is not None:
                 # Provisioning settles without advancing the plan: the same
-                # smelt step is re-proposed once the fuel gap is closed.
-                state["repeat_collection"] = True
+                # smelt step is re-proposed once the fuel gap is closed. The
+                # coal-sufficient smelt override is the smelt itself, so it
+                # settles and advances normally.
+                if fuel_step.capability != "smelt":
+                    state["repeat_collection"] = True
                 return fuel_step
         available = state.get("budget_remaining")
         if step.capability == "acquire_flint" and isinstance(available, ExecutionBudget):
@@ -120,18 +128,25 @@ class FallbackStrategy:
     def _plank_fuel_provision_step(
         self, step: ExecuteStep, observation: Observation
     ) -> ExecuteStep | None:
-        """Synthesize wood provisioning when a mixed-plank smelt lacks fuel.
+        """Synthesize fuel provisioning when a mixed-plank smelt lacks fuel.
 
         The furnace burns one plank per 1.5 smelted items; a resumed mission
         often reaches the smelt with the wood steps already checkpoint-skipped
-        and too few planks in stock. Collect the missing logs first, then
-        craft them into planks, before the smelt itself is proposed.
+        and too few planks in stock. Above the mining band, collect the
+        missing logs first, then craft them into planks. Underground — the
+        bot typically sits in the iron-ore band after mining, with the
+        surface far outside the bounded search's digging reach — coal ore
+        sits in the same band and one coal smelts eight items, so the
+        strategy provisions coal and switches the smelt onto it instead.
         """
 
         fuel = step.parameters.get("fuel")
         count = step.parameters.get("count")
         if fuel != "any_planks" or not isinstance(count, int) or count <= 0:
             return None
+        position = observation.position
+        if position is not None and position.y <= _FUEL_COAL_MAX_Y:
+            return self._coal_fuel_provision_step(step, count, observation)
         required = max(1, ceil(count * 2 / 3))
         planks = inventory_resource_count(observation, "any_planks")
         missing = required - planks
@@ -154,6 +169,26 @@ class FallbackStrategy:
                 max_travel_distance=192,
                 # One dig per log plus the runtime's two-block stopping reserve.
                 max_blocks_changed=2 * logs_needed + 2,
+                max_damage_taken=1.0,
+            ),
+        )
+
+    def _coal_fuel_provision_step(
+        self, step: ExecuteStep, count: int, observation: Observation
+    ) -> ExecuteStep:
+        """Underground fuel fallback: coal ore is in reach when trees are not."""
+        required = max(1, ceil(count / 8))
+        coal = self._inventory_count(observation, "coal")
+        if coal >= required:
+            return step.model_copy(update={"parameters": {**step.parameters, "fuel": "coal"}})
+        return ExecuteStep(
+            capability="collect",
+            parameters={"block_type": "coal_ore", "count": required - coal},
+            maximum_cost=BudgetUsage(
+                max_actions=1,
+                max_travel_distance=192,
+                # One dig per ore plus the runtime's two-block stopping reserve.
+                max_blocks_changed=2 * (required - coal) + 2,
                 max_damage_taken=1.0,
             ),
         )

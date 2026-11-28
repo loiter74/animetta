@@ -342,7 +342,51 @@ def test_smelt_provisions_missing_plank_fuel_before_the_smelt_step() -> None:
     assert direct.kind == "execute" and direct.capability == "smelt"
 
 
-def test_atomic_strategy_proposes_exactly_one_manifest_valid_action() -> None:
+def test_smelt_switches_to_underground_coal_fuel_when_logs_are_out_of_reach() -> None:
+    registry = WorkflowRegistry()
+    registry.register(
+        next(w for w in nether_preparation_workflows() if w.target == "nether_iron_kit")
+    )
+    strategy = FallbackStrategy(registry=registry)
+    state = strategy.prepare(goal("nether_iron_kit"))
+
+    def underground(extra: dict[str, int]) -> Observation:
+        return Observation.model_validate(
+            {
+                **MESSAGES["Observation"],
+                "position": {"x": 10, "y": 28, "z": 106},
+                "inventory": {
+                    "stone_pickaxe": 1,
+                    "furnace": 1,
+                    "raw_iron": 44,
+                    "birch_planks": 21,
+                    **extra,
+                },
+            }
+        )
+
+    # Resumed iron mission, bot still in the mining band at y=28: planks are
+    # short and trees are unreachable, so the strategy provisions coal —
+    # 44 smelts need ceil(44/8) = 6 coal units.
+    collect = strategy.propose(state, underground({}))
+    assert collect.kind == "execute" and collect.capability == "collect"
+    assert collect.parameters == {"block_type": "coal_ore", "count": 6}
+    assert collect.maximum_cost.max_blocks_changed == 14
+    # Provisioning settles without advancing the plan past the smelt step.
+    state = strategy.accept_result(state, {})
+    assert state["step_index"] == next(
+        i for i, s in enumerate(state["workflow"].steps) if s.capability == "smelt"
+    )
+    smelt = strategy.propose(state, underground({"coal": 6}))
+    assert smelt.kind == "execute" and smelt.capability == "smelt"
+    assert smelt.parameters == {"item": "raw_iron", "fuel": "coal", "count": 44}
+    # The coal smelt is the smelt itself: it settles and advances normally.
+    state = strategy.accept_result(state, {})
+    assert state["step_index"] == len(state["workflow"].steps)
+    # Coal already in stock proposes the coal smelt directly.
+    direct = strategy.propose(strategy.prepare(goal("nether_iron_kit")), underground({"coal": 8}))
+    assert direct.kind == "execute" and direct.capability == "smelt"
+    assert direct.parameters["fuel"] == "coal"
     manifest = RuntimeManifest.model_validate(MESSAGES["RuntimeManifest"])
     strategy = AtomicStrategy(
         action=AtomicAction(capability="collect", parameters={"count": 1}),
